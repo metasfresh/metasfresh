@@ -21,10 +21,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
@@ -128,7 +128,7 @@ public class ForecastCreatedHandlerTest
 		final I_MD_Candidate demandCandidate = result.get(0);
 		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
-		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
+		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class ForecastCreatedHandlerTest
 
 		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
-		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
+		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_Customer_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	private ForecastCreatedEvent createForecastWithQtyOfEight()
@@ -175,7 +175,7 @@ public class ForecastCreatedHandlerTest
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
-						.bPartnerId(BPARTNER_ID)
+						.customerId(BPARTNER_ID)
 						.quantity(new BigDecimal("8"))
 						.date(NOW)
 						.build())

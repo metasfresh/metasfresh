@@ -45,10 +45,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.esr.ESRTestBase;

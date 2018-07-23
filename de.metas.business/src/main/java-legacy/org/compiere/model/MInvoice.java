@@ -32,12 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.BPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.BPartnerNoAddressException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,12 +52,17 @@ import com.google.common.base.Joiner;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.exceptions.BPartnerNoAddressException;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
@@ -1908,7 +1908,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();

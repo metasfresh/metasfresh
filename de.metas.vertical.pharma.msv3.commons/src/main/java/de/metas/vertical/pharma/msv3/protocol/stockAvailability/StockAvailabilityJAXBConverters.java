@@ -115,7 +115,7 @@ public class StockAvailabilityJAXBConverters
 		soapShare.setTyp(share.getType().getSoapCode());
 		soapShare.setLieferzeitpunkt(share.getDeliveryDate() != null ? JAXBDateUtils.toXMLGregorianCalendar(share.getDeliveryDate()) : null);
 		soapShare.setTour(share.getTour());
-		soapShare.setGrund(share.getReason().getSoapCode());
+		soapShare.setGrund(share.getReason() != null ? share.getReason().getSoapCode() : null);
 		soapShare.setTourabweichung(share.isTourDeviation());
 		return soapShare;
 	}

@@ -28,7 +28,6 @@ import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
 import org.adempiere.util.Services;
 import org.compiere.model.AdempiereProcessor;
-import org.compiere.model.MAcctProcessor;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MScheduler;
@@ -120,16 +119,6 @@ public final class AdempiereServerMgr
 		final Properties ctx = getCtx();
 
 		int noServers = 0;
-		// Accounting
-		MAcctProcessor[] acctModels = MAcctProcessor.getActive(ctx);
-		for (int i = 0; i < acctModels.length; i++)
-		{
-			MAcctProcessor pModel = acctModels[i];
-			AdempiereServer server = AdempiereServer.create(pModel);
-			server.start();
-			server.setPriority(Thread.NORM_PRIORITY - 2);
-			m_servers.add(server);
-		}
 		// Request
 		MRequestProcessor[] requestModels = MRequestProcessor.getActive(ctx);
 		for (int i = 0; i < requestModels.length; i++)

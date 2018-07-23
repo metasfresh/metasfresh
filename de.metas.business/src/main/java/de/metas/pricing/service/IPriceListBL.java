@@ -13,11 +13,11 @@ package de.metas.pricing.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,27 +28,36 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.lang.SOTrx;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+
 /**
  * @author RC
  *
  */
 public interface IPriceListBL extends ISingletonService
 {
-	int getPricePrecision(int priceListId);
-	
+	int getPricePrecision(PriceListId priceListId);
+
+	default int getPricePrecision(final int priceListId)
+	{
+		return getPricePrecision(PriceListId.ofRepoIdOrNull(priceListId));
+	}
+
 	/**
 	 * @param pricingSystem
 	 * @param countryId
 	 * @param date
-	 * @param isSOTrx: true is SO, false if PO
+	 * @param soTrx
 	 *
 	 * @return the current price list for vendor if any (for the giver pricing system), null otherwise
 	 */
 	I_M_PriceList getCurrentPricelistOrNull(
-			int pricingSystemId,
+			PricingSystemId pricingSystemId,
 			int countryId,
 			Timestamp date,
-			boolean isSOTrx);
+			SOTrx soTrx);
 
 	/**
 	 * Find the current version from a pricing system based on the given parameters.
@@ -56,15 +65,15 @@ public interface IPriceListBL extends ISingletonService
 	 * @param pricingSystem
 	 * @param country
 	 * @param date
-	 * @param isSoTrx
+	 * @param soTrx SO/PO or null
 	 * @param processedPLVFiltering if not <code>null</code>, then only PLVs which have the give value in their <code>Processed</code> column are considered.
 	 *            task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
 	 * @return
 	 */
 	I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			int pricingSystemId,
+			PricingSystemId pricingSystemId,
 			int countryId,
 			Timestamp date,
-			Boolean isSOTrx,
+			SOTrx soTrx,
 			Boolean processedPLVFiltering);
 }

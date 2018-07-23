@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -269,7 +270,7 @@ public class HUTraceEventsService
 		result.put(true, new ArrayList<>());
 		result.put(false, new ArrayList<>());
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		// iterate the lines and create an every per vhuId and sourceVhuId
 		for (final I_M_HU_Trx_Line trxLine : trxLinesToUse)
@@ -279,7 +280,7 @@ public class HUTraceEventsService
 			final List<I_M_HU> vhus = getVhus.apply(trxLine);
 			for (final I_M_HU vhu : vhus)
 			{
-				if (!handlingUnitsBL.isPhysicalHU(vhu.getHUStatus()))
+				if (!huStatusBL.isPhysicalHU(vhu))
 				{
 					logger.info("vhu of the current trxLine has status={}; nothing to do with that trxLine; vhu={}; trxLine={}", vhu.getHUStatus(), vhu, trxLine);
 					continue;
@@ -306,7 +307,7 @@ public class HUTraceEventsService
 				final List<I_M_HU> sourceVhus = getVhus.apply(sourceTrxLine);
 				for (final I_M_HU sourceVhu : sourceVhus)
 				{
-					if (!handlingUnitsBL.isPhysicalHU(sourceVhu.getHUStatus()))
+					if (!huStatusBL.isPhysicalHU(sourceVhu))
 					{
 						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
 								sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
@@ -397,8 +398,8 @@ public class HUTraceEventsService
 	 */
 	public void createAndAddForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		if (!handlingUnitsBL.isPhysicalHU(hu.getHUStatus()))
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		if (!huStatusBL.isPhysicalHU(hu))
 		{
 			logger.info("Param hu has status={}; nothing to do; hu={}", hu.getHUStatus(), hu);
 			return;
@@ -454,16 +455,24 @@ public class HUTraceEventsService
 	 * @param builder a pre fabricated builder. {@code huId}s and {@code eventTime} will be set by this method.
 	 * @param models stream of objects that might be associated with HUs (e.g. inout lines).
 	 */
-	public void createAndAddEvents(
+	@VisibleForTesting
+	void createAndAddEvents(
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 		for (final Object model : models)
 		{
 			final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(model);
 
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
+				if (huStatusBL.isStatusDestroyed(huAssignment.getM_HU()))
+				{
+					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
+				}
+
 				final int topLevelHuId = huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU());
 				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 

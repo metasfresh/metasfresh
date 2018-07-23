@@ -1,9 +1,14 @@
 package de.metas.purchasecandidate.grossprofit;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.lang.Percent;
-import de.metas.money.Currency;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,68 +44,123 @@ import lombok.Value;
 public class PurchaseProfitInfo
 {
 	/** sales priceActual minus cash discount minus refund/bonus (if any) */
-	Optional<Money> salesNetPrice;
+	Optional<Money> profitSalesPriceActual;
 
-	/** {@link #purchaseGrossPrice} minus cash discount minus refund/bonus (if any); should better be less than {@link #salesNetPrice}.. */
-	Money purchaseNetPrice;
+	/** {@link #purchasePriceActual} minus cash discount minus refund/bonus (if any); should better be less than {@link #profitSalesPriceActual}.. */
+	Optional<Money> profitPurchasePriceActual;
 
-	Money purchaseGrossPrice;
+	Optional<Money> purchasePriceActual;
 
 	@Builder(toBuilder = true)
 	private PurchaseProfitInfo(
-			@NonNull final Optional<Money> salesNetPrice,
-			@NonNull final Money purchaseNetPrice,
-			@NonNull final Money purchaseGrossPrice)
+			@NonNull final Optional<Money> profitSalesPriceActual,
+			@NonNull final Optional<Money> profitPurchasePriceActual,
+			@NonNull final Optional<Money> purchasePriceActual)
 	{
-		this.salesNetPrice = salesNetPrice;
-		this.purchaseNetPrice = purchaseNetPrice;
-		this.purchaseGrossPrice = purchaseGrossPrice;
+		if (!profitSalesPriceActual.isPresent()
+				&& !profitPurchasePriceActual.isPresent()
+				&& !purchasePriceActual.isPresent())
+		{
+			throw new AdempiereException("At least one price shall be present")
+					.setParameter("profitSalesPriceActual", profitSalesPriceActual)
+					.setParameter("profitPurchasePriceActual", profitPurchasePriceActual)
+					.setParameter("purchasePriceActual", purchasePriceActual);
+		}
+		this.profitSalesPriceActual = profitSalesPriceActual;
+		this.profitPurchasePriceActual = profitPurchasePriceActual;
+		this.purchasePriceActual = purchasePriceActual;
 	}
 
-	public Currency getCommonCurrency()
+	public CurrencyId getCommonCurrency()
 	{
-		return Money.getCommonCurrencyOfAll(salesNetPrice.orElse(null), purchaseNetPrice, purchaseGrossPrice);
+		return Money.getCommonCurrencyIdOfAll(
+				profitSalesPriceActual.orElse(null),
+				profitPurchasePriceActual.orElse(null),
+				purchasePriceActual.orElse(null));
+	}
+
+	public int getCommonCurrencyRepoIdOr(final int defaultValue)
+	{
+		final CurrencyId currencyId = getCommonCurrency();
+		return currencyId != null ? currencyId.getRepoId() : defaultValue;
 	}
 
 	public Optional<Percent> getProfitPercent()
 	{
-		return calculateProfitPercent(getSalesNetPrice().orElse(null), getPurchaseNetPrice());
+		return calculateProfitPercent(
+				getProfitSalesPriceActual().orElse(null),
+				getProfitPurchasePriceActual().orElse(null));
 	}
 
-	private static Optional<Percent> calculateProfitPercent(final Money salesNetPrice, final Money purchaseNetPrice)
+	private static Optional<Percent> calculateProfitPercent(
+			@Nullable final Money profitSalesPriceActual,
+			@Nullable final Money profitPurchasePriceActual)
 	{
-		if (salesNetPrice == null || purchaseNetPrice == null)
+		if (profitSalesPriceActual == null || profitPurchasePriceActual == null)
 		{
 			return Optional.empty();
 		}
 
 		// If not the same currency then we cannot calculate the profit percentage
-		if (!Money.isSameCurrency(purchaseNetPrice, salesNetPrice))
+		if (!Money.isSameCurrency(profitPurchasePriceActual, profitSalesPriceActual))
 		{
 			return Optional.empty();
 		}
 
-		final Percent profitPercent = Percent.ofDelta(purchaseNetPrice.getValue(), salesNetPrice.getValue());
+		final Percent profitPercent = Percent.ofDelta(profitPurchasePriceActual.getValue(), profitSalesPriceActual.getValue());
 		return Optional.of(profitPercent);
+	}
+
+	public BigDecimal getProfitSalesPriceActualAsBigDecimalOr(final BigDecimal defaultValue)
+	{
+		return profitSalesPriceActual.map(Money::getValue).orElse(defaultValue);
+	}
+
+	public BigDecimal getProfitPurchasePriceActualAsBigDecimalOr(@Nullable final BigDecimal defaultValue)
+	{
+		return profitPurchasePriceActual.map(Money::getValue).orElse(defaultValue);
+	}
+
+	public BigDecimal getPurchasePriceActualAsBigDecimalOr(@Nullable final BigDecimal defaultValue)
+	{
+		return purchasePriceActual.map(Money::getValue).orElse(defaultValue);
 	}
 
 	//
 	//
-	//
-	//
-	//
 	public static class PurchaseProfitInfoBuilder
 	{
-		public PurchaseProfitInfoBuilder salesNetPrice(final Money salesNetPrice)
+		public PurchaseProfitInfoBuilder profitSalesPriceActual(@Nullable final Money profitSalesPriceActual)
 		{
-			return salesNetPrice(Optional.ofNullable(salesNetPrice));
+			return profitSalesPriceActual(Optional.ofNullable(profitSalesPriceActual));
 		}
 
-		public PurchaseProfitInfoBuilder salesNetPrice(@NonNull final Optional<Money> salesNetPrice)
+		public PurchaseProfitInfoBuilder profitSalesPriceActual(@NonNull final Optional<Money> profitSalesPriceActual)
 		{
-			this.salesNetPrice = salesNetPrice;
+			this.profitSalesPriceActual = profitSalesPriceActual;
 			return this;
 		}
 
+		public PurchaseProfitInfoBuilder profitPurchasePriceActual(@Nullable final Money profitPurchasePriceActual)
+		{
+			return profitPurchasePriceActual(Optional.ofNullable(profitPurchasePriceActual));
+		}
+
+		public PurchaseProfitInfoBuilder profitPurchasePriceActual(@NonNull final Optional<Money> profitPurchasePriceActual)
+		{
+			this.profitPurchasePriceActual = profitPurchasePriceActual;
+			return this;
+		}
+
+		public PurchaseProfitInfoBuilder purchasePriceActual(@Nullable final Money purchasePriceActual)
+		{
+			return purchasePriceActual(Optional.ofNullable(purchasePriceActual));
+		}
+
+		public PurchaseProfitInfoBuilder purchasePriceActual(@NonNull final Optional<Money> purchasePriceActual)
+		{
+			this.purchasePriceActual = purchasePriceActual;
+			return this;
+		}
 	}
 }

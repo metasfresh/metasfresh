@@ -28,9 +28,11 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_AD_Workflow;
@@ -45,9 +47,12 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Manufacturing order callout
@@ -170,14 +175,16 @@ public class PP_Order extends CalloutEngine
 	 * @param ppOrder manufacturing order
 	 * @return product planning data (never return null)
 	 */
-	protected static I_PP_Product_Planning findPP_Product_Planning(final I_PP_Order ppOrder)
+	protected static I_PP_Product_Planning findPP_Product_Planning(@NonNull final I_PP_Order ppOrder)
 	{
-		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(
-				ppOrder.getAD_Org_ID(),
-				ppOrder.getM_Warehouse_ID(),
-				ppOrder.getS_Resource_ID(),
-				ppOrder.getM_Product_ID(),
-				ppOrder.getM_AttributeSetInstance_ID());
+		final ProductPlanningQuery query = ProductPlanningQuery.builder()
+				.orgId(ppOrder.getAD_Org_ID())
+				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrder.getM_Warehouse_ID()))
+				.plantId(ppOrder.getS_Resource_ID())
+				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
+				.build();
+		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(query);
 
 		if (pp == null)
 		{

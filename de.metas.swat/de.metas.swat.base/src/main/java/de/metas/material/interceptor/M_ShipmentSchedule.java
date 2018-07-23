@@ -3,7 +3,7 @@ package de.metas.material.interceptor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.ad.modelvalidator.InterceptorUtil;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -83,13 +83,13 @@ public class M_ShipmentSchedule
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean created = timing.isNew() || InterceptorUtil.isJustActivated(shipmentSchedule);
+		final boolean created = timing.isNew() || ModelChangeUtil.isJustActivated(shipmentSchedule);
 		if (created)
 		{
 			return createCreatedEvent(shipmentSchedule);
 		}
 
-		final boolean deleted = timing.isDelete() || InterceptorUtil.isJustDeactivated(shipmentSchedule);
+		final boolean deleted = timing.isDelete() || ModelChangeUtil.isJustDeactivated(shipmentSchedule);
 		if (deleted)
 		{
 			return createDeletedEvent(shipmentSchedule);
@@ -185,7 +185,7 @@ public class M_ShipmentSchedule
 				.date(preparationDate)
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
-				.bPartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
+				.customerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
 				.quantity(orderedQuantity)
 				.build();
 		return orderedMaterial;

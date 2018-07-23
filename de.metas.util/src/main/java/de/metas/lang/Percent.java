@@ -213,7 +213,10 @@ public class Percent
 		}
 		else
 		{
-			return base
+			// make sure the base we work with does not have more digits than we expect from the given precision.
+			final BigDecimal baseToUse = base.setScale(precision, RoundingMode.HALF_UP);
+
+			return baseToUse
 					.setScale(precision + 2)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
 					.multiply(ONE_HUNDRED_VALUE.subtract(valueAsBigDecimal))
@@ -222,10 +225,7 @@ public class Percent
 	}
 
 	/**
-	 * Round the nearest {@code .5%} percent value
-	 *
-	 * @param halfUp
-	 * @return
+	 * Round to the nearest {@code .5%} percent value.
 	 */
 	public Percent roundToHalf(@NonNull final RoundingMode roundingMode)
 	{

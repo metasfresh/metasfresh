@@ -39,6 +39,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -107,8 +108,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.engine.IDocument;
@@ -226,7 +225,7 @@ public class ImportHelper implements IImportHelper
 		{
 			// Find which Export format to Load...
 			final String version = rootElement.getAttribute(RPL_Constants.XML_ATTR_Version);
-			log.info("Version = {}", version);
+			log.debug("Version = {}", version);
 			if (Check.isEmpty(version, true))
 			{
 				throw new ReplicationException(MSG_XMLVersionAttributeMandatory);
@@ -239,7 +238,7 @@ public class ImportHelper implements IImportHelper
 
 			String EXP_Format_Value = null;
 			EXP_Format_Value = rootElement.getNodeName();
-			log.info("EXP_Format_Value = {}", EXP_Format_Value);
+			log.debug("EXP_Format_Value = {}", EXP_Format_Value);
 
 			final int adClientId = Env.getAD_Client_ID(ctx);
 			MEXPFormat expFormatPO = null;
@@ -262,7 +261,7 @@ public class ImportHelper implements IImportHelper
 						.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
 						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
 			}
-			log.info("expFormat = " + expFormatPO.toString());
+			log.debug("expFormat = " + expFormatPO.toString());
 
 			final IMeter meter = Services.get(IMonitoringBL.class).createOrGet("org.adempiere.replication", ImportHelper.class.getSimpleName() + "_" + expFormatPO.getName());
 
@@ -310,7 +309,7 @@ public class ImportHelper implements IImportHelper
 			Check.assumeNotNull(po, "po not null");
 			if (!po.is_Changed() && !isChanged)
 			{
-				log.info("Object not changed = " + po.toString());
+				log.debug("Object not changed = " + po.toString());
 				return null;
 			}
 
@@ -400,7 +399,7 @@ public class ImportHelper implements IImportHelper
 		{
 			if (!Services.get(IDocumentBL.class).processIt(documentObj))
 			{
-				log.info("Cannot process {}", documentObj);
+				log.debug("Cannot process {}", documentObj);
 			}
 		}
 		catch (final Exception ex)
@@ -546,7 +545,7 @@ public class ImportHelper implements IImportHelper
 			}
 		}
 
-		log.info("PO.toString() = " + po.toString());
+		log.debug("PO.toString() = " + po.toString());
 
 		if (po.get_KeyColumns().length < 1)
 		{
@@ -574,8 +573,8 @@ public class ImportHelper implements IImportHelper
 		{
 			try
 			{
-				log.info("=================== Beginning of Format Line ===============================");
-				log.info("formatLine: [" + formatLine.toString() + "]");
+				log.debug("=================== Beginning of Format Line ===============================");
+				log.debug("formatLine: [" + formatLine.toString() + "]");
 
 				//
 				// Get the value from xml
@@ -683,7 +682,7 @@ public class ImportHelper implements IImportHelper
 				throw new ReplicationException(MSG_CantGetUniqueFormatLine, e)
 						.setParameter(X_EXP_FormatLine.TYPE_XMLElement, line.getValue());
 			}
-			log.info("value=[" + value + "]");
+			log.debug("value=[" + value + "]");
 
 		}
 		else if (X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(line.getType()))
@@ -691,7 +690,7 @@ public class ImportHelper implements IImportHelper
 			// Referenced Export Format
 			// get from cache
 			final MEXPFormat referencedExpFormat = MEXPFormat.get(ctx, line.getEXP_EmbeddedFormat_ID(), ITrx.TRXNAME_None);
-			log.info("referencedExpFormat = " + referencedExpFormat);
+			log.debug("referencedExpFormat = " + referencedExpFormat);
 
 			// int refRecord_ID = 0;
 
@@ -707,7 +706,7 @@ public class ImportHelper implements IImportHelper
 						.setParameter(X_EXP_FormatLine.TYPE_XMLElement, valueXPath);
 			}
 
-			log.info("referencedNode = " + referencedNode);
+			log.debug("referencedNode = " + referencedNode);
 			if (referencedNode != null && referencedNode.hasChildNodes())
 			{
 				try
@@ -731,15 +730,15 @@ public class ImportHelper implements IImportHelper
 							.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, referencedExpFormat)
 							.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, line.getValue());
 				}
-				// log.info("refRecord_ID = " + refRecord_ID);
+				// log.debug("refRecord_ID = " + refRecord_ID);
 				// value = new Integer(refRecord_ID);
 			}
 			else
 			{
-				log.info("NULL VALUE FOR " + valueXPath);
+				log.debug("NULL VALUE FOR " + valueXPath);
 				value = null;
 			}
-			log.info("value=[" + value + "]");
+			log.debug("value=[" + value + "]");
 		}
 		else if (X_EXP_FormatLine.TYPE_EmbeddedEXPFormat.equals(line.getType()))
 		{
@@ -752,7 +751,7 @@ public class ImportHelper implements IImportHelper
 			// Embedded Export Format It is used for Parent-Son records like Order&OrderLine
 			// get from cache
 			final MEXPFormat referencedExpFormat = MEXPFormat.get(ctx, line.getEXP_EmbeddedFormat_ID(), ITrx.TRXNAME_None);
-			log.info("embeddedExpFormat = " + referencedExpFormat);
+			log.debug("embeddedExpFormat = " + referencedExpFormat);
 
 			NodeList nodeList;
 			try
@@ -767,7 +766,7 @@ public class ImportHelper implements IImportHelper
 			for (int j = 0; j < nodeList.getLength(); j++)
 			{
 				final Element referencedElement = (Element)nodeList.item(j);
-				log.info("EmbeddedEXPFormat - referencedElement.getNodeName = " + referencedElement.getNodeName());
+				log.debug("EmbeddedEXPFormat - referencedElement.getNodeName = " + referencedElement.getNodeName());
 
 				PO embeddedPo = null;
 				// Import embedded PO
@@ -804,7 +803,7 @@ public class ImportHelper implements IImportHelper
 				throw new ReplicationException(MSG_CantGetUniqueFormatLine, e)
 						.setParameter(X_EXP_FormatLine.TYPE_XMLElement, line.getValue());
 			}
-			log.info("value=[" + value + "]");
+			log.debug("value=[" + value + "]");
 		}
 		else
 		{
@@ -827,11 +826,11 @@ public class ImportHelper implements IImportHelper
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		final MColumn column = MColumn.get(ctx, line.getAD_Column_ID());
-		log.info("column=[" + column + "]");
+		log.debug("column=[" + column + "]");
 
 		if (adTableDAO.isVirtualColumn(column))
 		{
-			log.info("Skip importing value '{}' ({}) for {} because it's a virtual column", new Object[] { value, line, po });
+			log.debug("Skip importing value '{}' ({}) for {} because it's a virtual column", new Object[] { value, line, po });
 			return;
 		}
 
@@ -869,7 +868,7 @@ public class ImportHelper implements IImportHelper
 			// Note: at this place there was a check for column names AD_Language and EntityType.
 			// That code didn't work and has been removed
 
-			log.info("clazz = " + clazz.getName());
+			log.debug("clazz = " + clazz.getName());
 
 			if (DisplayType.isDate(adReferenceId))
 			{
@@ -877,13 +876,13 @@ public class ImportHelper implements IImportHelper
 				value = handleDateTime(value, column, line);
 			}
 
-			log.info("formatLinesType = " + line.getType());
+			log.debug("formatLinesType = " + line.getType());
 
 			if (DisplayType.DateTime == adReferenceId
 					|| DisplayType.Date == adReferenceId)
 			{
 				final boolean ok = setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
-				log.info("Set value of column [{}]=[{}] (ok={})", columnName, value, ok);
+				log.debug("Set value of column [{}]=[{}] (ok={})", columnName, value, ok);
 			}
 			else if (DisplayType.Integer == adReferenceId
 					|| DisplayType.isID(adReferenceId)
@@ -912,7 +911,7 @@ public class ImportHelper implements IImportHelper
 					if (DisplayType.isText(referencedCol.getAD_Reference_ID()))
 					{
 						final boolean ok = setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
-						log.info("Set string value of column [{}]=[{}] (ok={})", columnName, value, ok);
+						log.debug("Set string value of column [{}]=[{}] (ok={})", columnName, value, ok);
 						stringValueAlreadySet = true;
 					}
 				}
@@ -930,9 +929,9 @@ public class ImportHelper implements IImportHelper
 						value = null;
 					}
 
-					log.info("About to set int value of column [" + columnName + "]=[" + value + "]");
+					log.debug("About to set int value of column [" + columnName + "]=[" + value + "]");
 					setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
-					log.info("Set int value of column [" + columnName + "]=[" + value + "]");
+					log.debug("Set int value of column [" + columnName + "]=[" + value + "]");
 				}
 
 			}
@@ -950,9 +949,9 @@ public class ImportHelper implements IImportHelper
 				}
 				// value = new Double( doubleValue );
 
-				log.info("About to set BigDecimal value of column [" + columnName + "]=[" + value + "]");
+				log.debug("About to set BigDecimal value of column [" + columnName + "]=[" + value + "]");
 				setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
-				log.info("Set BigDecimal value of column [" + columnName + "]=[" + value + "]");
+				log.debug("Set BigDecimal value of column [" + columnName + "]=[" + value + "]");
 			}
 			else if (DisplayType.YesNo == adReferenceId)
 			{
@@ -966,7 +965,7 @@ public class ImportHelper implements IImportHelper
 			{
 				try
 				{
-					log.info("About to set value of column [" + columnName + "]=[" + value + "]");
+					log.debug("About to set value of column [" + columnName + "]=[" + value + "]");
 
 					if (clazz == Boolean.class)
 					{
@@ -978,7 +977,7 @@ public class ImportHelper implements IImportHelper
 						setColumnOfPOtoValue(line.getAD_Column_ID(), po, clazz.cast(value));
 					}
 
-					log.info("Set value of column [" + columnName + "]=[" + value + "]");
+					log.debug("Set value of column [" + columnName + "]=[" + value + "]");
 				}
 				catch (final ClassCastException ex)
 				{
@@ -1050,13 +1049,13 @@ public class ImportHelper implements IImportHelper
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		log.info("expFormat = " + expFormat);
-		log.info("rootNode.getNodeName() = " + rootElement.getNodeName());
-		log.info("rootNodeName = " + rootNodeName);
+		log.debug("expFormat = " + expFormat);
+		log.debug("rootNode.getNodeName() = " + rootElement.getNodeName());
+		log.debug("rootNodeName = " + rootNodeName);
 
 		if (rootElement.getParentNode() != null)
 		{
-			log.info("rootNode.ParentName = " + rootElement.getParentNode().getNodeName());
+			log.debug("rootNode.ParentName = " + rootElement.getParentNode().getNodeName());
 		}
 
 		// get the import mode to see if the format specifies any assumptions
@@ -1088,7 +1087,7 @@ public class ImportHelper implements IImportHelper
 		{
 			boolean nodeExists = true;
 			final MColumn column = MColumn.get(ctx, uniqueFormatLine.getAD_Column_ID());
-			log.info("column = [" + column + "]");
+			log.debug("column = [" + column + "]");
 			final String columnName = column.getColumnName();
 			String columnSQL;
 			if (adTableDAO.isVirtualColumn(column))
@@ -1121,21 +1120,21 @@ public class ImportHelper implements IImportHelper
 					// 03259: the (lookup) value doesn't exist in the incoming XML. This is equivalent to a null value
 					nodeExists = false;
 				}
-				log.info("values[" + col + "]=" + String.valueOf(cols[col]));
+				log.debug("values[" + col + "]=" + String.valueOf(cols[col]));
 
 			}
 			else if (X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(uniqueFormatLine.getType()))
 			{
 				// Referenced Export Format
-				log.info("referencedExpFormat.EXP_EmbeddedFormat_ID = " + uniqueFormatLine.getEXP_EmbeddedFormat_ID());
+				log.debug("referencedExpFormat.EXP_EmbeddedFormat_ID = " + uniqueFormatLine.getEXP_EmbeddedFormat_ID());
 				// get from cache
 				final MEXPFormat referencedExpFormat = MEXPFormat.get(ctx, uniqueFormatLine.getEXP_EmbeddedFormat_ID(), ITrx.TRXNAME_None);
-				log.info("referencedExpFormat = " + referencedExpFormat);
+				log.debug("referencedExpFormat = " + referencedExpFormat);
 
 				// Find Record_ID by ???Value??? In fact by Columns set as Part Of Unique Index in Export Format!
 				// metas-ts: currently this is consistent with the way be create our XSD file. There, we also use line.getValue for the XSD name
 				final Element referencedNode = (Element)rootElement.getElementsByTagName(uniqueFormatLine.getValue()).item(0);
-				log.info("referencedNode = " + referencedNode);
+				log.debug("referencedNode = " + referencedNode);
 
 				final int record_ID;
 				if (referencedNode == null)
@@ -1164,7 +1163,7 @@ public class ImportHelper implements IImportHelper
 								.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, uniqueFormatLine.getValue());
 					}
 				}
-				log.info("record_ID = " + record_ID);
+				log.debug("record_ID = " + record_ID);
 
 				cols[col] = record_ID;
 			}
@@ -1531,7 +1530,7 @@ public class ImportHelper implements IImportHelper
 						.setParameter(I_AD_Attribute_Value.COLUMNNAME_V_String, value)
 						.setParameter(I_EXP_FormatLine.COLUMNNAME_DateFormat, dateFormat);
 			}
-			log.info("Parsed value = " + result.toString() + " (Format:" + df.toPattern() + ")");
+			log.debug("Parsed value = " + result.toString() + " (Format:" + df.toPattern() + ")");
 		}
 		else
 		{
@@ -1690,12 +1689,12 @@ public class ImportHelper implements IImportHelper
 		final MFSession session = Services.get(ISessionBL.class).getSessionById(ctx, adSessionId);
 		if (session == null)
 		{
-			s_log.info("Skip because no session found for ID: {}", adSessionId);
+			s_log.debug("Skip because no session found for ID: {}", adSessionId);
 			return;
 		}
 		if (session.isDestroyed())
 		{
-			s_log.info("Skip because session is already processed: {}", session);
+			s_log.debug("Skip because session is already processed: {}", session);
 			return;
 		}
 

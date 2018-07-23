@@ -10,12 +10,12 @@ package de.metas.document.archive.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,12 +39,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.document.archive.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, DocOutboundLogMailRecipientRegistry.class })
 public class DocOutboundArchiveEventListenerTest
 {
 	@BeforeClass
@@ -77,7 +85,7 @@ public class DocOutboundArchiveEventListenerTest
 		InterfaceWrapperHelper.save(bpartner);
 		final I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(user);
-		
+
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
 		invoice.setDocumentNo(documentNoExpected);
 		invoice.setC_BPartner_ID(bpartner.getC_BPartner_ID());

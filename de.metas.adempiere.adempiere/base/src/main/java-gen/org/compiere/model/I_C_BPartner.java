@@ -552,6 +552,52 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
+	 * Set Kreditoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditorId (int CreditorId);
+
+	/**
+	 * Get Kreditoren-Nr.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCreditorId();
+
+    /** Column definition for CreditorId */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditorId = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditorId", null);
+    /** Column name CreditorId */
+    public static final String COLUMNNAME_CreditorId = "CreditorId";
+
+	/**
+	 * Set Eigene-Kd. Nr. .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomerNoAtVendor (java.lang.String CustomerNoAtVendor);
+
+	/**
+	 * Get Eigene-Kd. Nr. .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomerNoAtVendor();
+
+    /** Column definition for CustomerNoAtVendor */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CustomerNoAtVendor = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CustomerNoAtVendor", null);
+    /** Column name CustomerNoAtVendor */
+    public static final String COLUMNNAME_CustomerNoAtVendor = "CustomerNoAtVendor";
+
+	/**
 	 * Set Debitoren-Nr.
 	 *
 	 * <br>Type: Integer
@@ -1071,6 +1117,29 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsEmployee = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsEmployee", null);
     /** Column name IsEmployee */
     public static final String COLUMNNAME_IsEmployee = "IsEmployee";
+
+	/**
+	 * Set Manufacturer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsManufacturer (boolean IsManufacturer);
+
+	/**
+	 * Get Manufacturer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isManufacturer();
+
+    /** Column definition for IsManufacturer */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsManufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsManufacturer", null);
+    /** Column name IsManufacturer */
+    public static final String COLUMNNAME_IsManufacturer = "IsManufacturer";
 
 	/**
 	 * Set One time transaction.
@@ -2043,6 +2112,29 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_PotentialLifeTimeValue = "PotentialLifeTimeValue";
 
 	/**
+	 * Set Qualification .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQualification (java.lang.String Qualification);
+
+	/**
+	 * Get Qualification .
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getQualification();
+
+    /** Column definition for Qualification */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Qualification = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Qualification", null);
+    /** Column name Qualification */
+    public static final String COLUMNNAME_Qualification = "Qualification";
+
+	/**
 	 * Set Rating.
 	 * Classification or Importance
 	 *
@@ -2544,4 +2636,29 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_VATaxID = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "VATaxID", null);
     /** Column name VATaxID */
     public static final String COLUMNNAME_VATaxID = "VATaxID";
+
+	/**
+	 * Set Produkt-Kategorie Geschäftspartner.
+	 * Produkt-Kategorie des Geschäftspartner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVendorCategory (java.lang.String VendorCategory);
+
+	/**
+	 * Get Produkt-Kategorie Geschäftspartner.
+	 * Produkt-Kategorie des Geschäftspartner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVendorCategory();
+
+    /** Column definition for VendorCategory */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_VendorCategory = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "VendorCategory", null);
+    /** Column name VendorCategory */
+    public static final String COLUMNNAME_VendorCategory = "VendorCategory";
 }

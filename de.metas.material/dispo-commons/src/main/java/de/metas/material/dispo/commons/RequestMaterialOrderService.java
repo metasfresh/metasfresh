@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -13,8 +14,8 @@ import com.google.common.base.Preconditions;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -28,6 +29,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -76,10 +78,13 @@ public class RequestMaterialOrderService
 		switch (group.get(0).getBusinessCase())
 		{
 			case PRODUCTION:
-				createAndFireProductionRequestedEvent(group);
+				createAndFirePPOrderRequestedEvent(group);
 				break;
 			case DISTRIBUTION:
-				requestDistributionOrder(group);
+				createAndFireDDOrderRequestedEvent(group);
+				break;
+			case PURCHASE:
+				createAndFirePurchaseCandidateRequestedEvent(group);
 				break;
 			default:
 				break;
@@ -94,7 +99,7 @@ public class RequestMaterialOrderService
 	 * @return
 	 */
 
-	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
+	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
 		materialEventService.postEventNow(ppOrderRequestEvent);
@@ -125,7 +130,7 @@ public class RequestMaterialOrderService
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
-						.bPartnerId(materialDescriptor.getBPartnerId())
+						.bPartnerId(materialDescriptor.getCustomerId())
 						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}
@@ -165,7 +170,7 @@ public class RequestMaterialOrderService
 				.build();
 	}
 
-	private void requestDistributionOrder(@NonNull final List<Candidate> group)
+	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
 		materialEventService.postEventNow(ddOrderRequestEvent);
@@ -176,7 +181,10 @@ public class RequestMaterialOrderService
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
-		final DDOrderBuilder ddOrderBuilder = DDOrder.builder();
+		final DDOrderBuilder ddOrderBuilder = DDOrder
+				.builder()
+				.materialDispoGroupId(10);
+
 		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
 
 		Date startDate = null;
@@ -198,7 +206,7 @@ public class RequestMaterialOrderService
 			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			ddOrderLineBuilder
 					.productDescriptor(materialDescriptor)
-					.bPartnerId(materialDescriptor.getBPartnerId())
+					.bPartnerId(materialDescriptor.getCustomerId())
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
@@ -229,5 +237,26 @@ public class RequestMaterialOrderService
 								.build())
 						.build())
 				.build();
+	}
+
+	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
+	{
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group);
+		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+	}
+
+	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
+	{
+		final Candidate createdCandidate = ListUtils.singleElement(group);
+
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientId(), createdCandidate.getOrgId()))
+				.purchaseMaterialDescriptor(createdCandidate.getMaterialDescriptor())
+				.supplyCandidateRepoId(createdCandidate.getId().getRepoId())
+				.salesOrderLineRepoId(createdCandidate.getAdditionalDemandDetail().getOrderLineId())
+				.salesOrderRepoId(createdCandidate.getAdditionalDemandDetail().getOrderId())
+				.build();
+
+		return purchaseCandidateRequestedEvent;
 	}
 }

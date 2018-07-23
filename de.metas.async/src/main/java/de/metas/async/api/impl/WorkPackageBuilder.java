@@ -67,10 +67,8 @@ import lombok.NonNull;
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
 
-	/* package */ WorkPackageBuilder(final WorkPackageBlockBuilder blockBuilder)
+	/* package */ WorkPackageBuilder(@NonNull final WorkPackageBlockBuilder blockBuilder)
 	{
-		super();
-		Check.assumeNotNull(blockBuilder, "blockBuilder not null");
 		_blockBuilder = blockBuilder;
 	}
 
@@ -135,7 +133,7 @@ import lombok.NonNull;
 
 		//
 		// Actually mark the workpackage as ready for processing
-		// NOTE: method also accepts null transaction and in that case it will immediatelly mark as ready for processing
+		// NOTE: method also accepts null transaction and in that case it will immediately mark as ready for processing
 		workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage, _trxName);
 
 		return workpackage;

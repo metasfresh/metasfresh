@@ -1,5 +1,5 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -19,22 +19,14 @@
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- Import dependency management from Spring Boot -->
-
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.util</groupId>
@@ -62,18 +54,6 @@
 			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
-		</dependency>
-
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>

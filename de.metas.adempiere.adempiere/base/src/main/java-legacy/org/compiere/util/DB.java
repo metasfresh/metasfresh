@@ -73,6 +73,7 @@ import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ILanguageDAO;
+import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
@@ -206,10 +207,10 @@ public final class DB
 		// Costing Setup
 		log.info("After migration: Product costing check");
 		MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, 0);
-		for (int i = 0; i < ass.length; i++)
+		for (MAcctSchema as : ass)
 		{
-			ass[i].checkCosting();
-			ass[i].save();
+			as.checkCosting();
+			as.save();
 		}
 
 		// Reset Flag
@@ -796,6 +797,10 @@ public final class DB
 		//
 		else if (param instanceof Boolean)
 			pstmt.setString(index, ((Boolean)param).booleanValue() ? "Y" : "N");
+		//
+		else if(param instanceof RepoIdAware)
+			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
+		//
 		else
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");
 	}
@@ -2331,17 +2336,17 @@ public final class DB
 		Check.assumeNotEmpty(paramsIn, "paramsIn not empty");
 
 		final boolean embedSqlParams = paramsOut == null;
-		
+
 		final InArrayQueryFilter<?> builder = new InArrayQueryFilter<>(columnName, paramsIn)
 				.setEmbedSqlParams(embedSqlParams);
 		final String sql = builder.getSql();
-		
+
 		if(!embedSqlParams)
 		{
 			final List<Object> sqlParams = builder.getSqlParams(Env.getCtx());
 			paramsOut.addAll(sqlParams);
 		}
-		
+
 		return sql;
 	}
 
@@ -2604,7 +2609,7 @@ public final class DB
 
 		return value;
 	}
-	
+
 	/**
 	 * Retrieves a primite value from given {@link ResultSet}. <br/>
 	 * The value is converted to given type.<br/>
@@ -2660,7 +2665,7 @@ public final class DB
 		return value;
 	}
 
-	
+
 	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value = retrieveValue(rs, columnIndex, returnType);
@@ -2668,7 +2673,7 @@ public final class DB
 		{
 			return value;
 		}
-		
+
 		return retrieveDefaultValue(returnType);
 	}
 

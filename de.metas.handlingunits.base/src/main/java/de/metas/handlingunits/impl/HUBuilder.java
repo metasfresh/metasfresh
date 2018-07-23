@@ -42,7 +42,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
@@ -96,9 +96,8 @@ import lombok.NonNull;
 
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
-	public HUBuilder(final IHUContext huContext)
+	public HUBuilder(@NonNull final IHUContext huContext)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
 		setHUContext(huContext);
 
 		registerNodeIterator(I_M_HU.class, new HUNodeIncludedItemBuilder());
@@ -308,10 +307,10 @@ import lombok.NonNull;
 		final AbstractNodeIterator<I_M_HU> huBuilder = getNodeIterator(I_M_HU.class);
 		huBuilder.iterate(hu);
 
-		// Collect the HU (only if physical) in order to be taken from the gebindelager into the current lager
-		if (Services.get(IHandlingUnitsBL.class).isPhysicalHU(hu.getHUStatus()))
+		// Collect the HU (only if physical and unless the collector is disabled) in order to be taken from the empties warehouse into the current warehouse.
+		if (Services.get(IHUStatusBL.class).isPhysicalHU(hu))
 		{
-			huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
+			huContext.getHUPackingMaterialsCollector().requirePackingMaterialForHURecursively(hu);
 		}
 		//
 		// If after running everything the status is still running, switch it to finished
@@ -382,7 +381,7 @@ import lombok.NonNull;
 			huStatus = getHUStatus();
 		}
 
-		handlingUnitsBL.setHUStatus(huContext, hu, huStatus);
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
 
 		//
 		// Copy C_BPartner_ID from parent

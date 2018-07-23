@@ -326,17 +326,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getC_Currency_ID()); // 03805
 
-			//
-			// Set Description and DescriptionBottom.
-			// Don't override if already set (e.g. copied from C_DocType).
-			if (Check.isEmpty(invoice.getDescription(), true))
-			{
-				invoice.setDescription(invoiceHeader.getDescription());
-			}
-			if (Check.isEmpty(invoice.getDescriptionBottom(), true))
-			{
-				invoice.setDescriptionBottom(invoiceHeader.getDescriptionBottom());
-			}
+
+			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
 

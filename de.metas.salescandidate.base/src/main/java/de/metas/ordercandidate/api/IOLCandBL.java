@@ -26,13 +26,14 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 
 /**
  * @author RC
@@ -64,11 +65,11 @@ public interface IOLCandBL extends ISingletonService
 	 *
 	 * @param olc the order line candidate for which we compute the priceActual
 	 * @param qtyOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getQty()}
-	 * @param pricingSystemIdOverride if <code>>0</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
+	 * @param pricingSystemIdOverride if not <code>null</code>, then this value is used instead of {@link I_C_OLCand#getM_PricingSystem_ID()}
 	 * @Param date to be used in retrieving the actual price
 	 * @return
 	 */
-	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, int pricingSystemIdOverride, Timestamp date);
+	IPricingResult computePriceActual(I_C_OLCand olCand, BigDecimal qtyOverride, PricingSystemId pricingSystemIdOverride, Timestamp date);
 
 	/**
 	 * Returning the pricing system to use for the given {@code olCand}.
@@ -84,5 +85,5 @@ public interface IOLCandBL extends ISingletonService
 	 * @return
 	 * @see IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)
 	 */
-	int getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
+	PricingSystemId getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
 }

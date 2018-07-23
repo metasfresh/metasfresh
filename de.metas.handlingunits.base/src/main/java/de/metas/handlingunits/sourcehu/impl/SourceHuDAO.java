@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -16,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheModel;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
@@ -33,12 +35,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -83,9 +85,9 @@ public class SourceHuDAO implements ISourceHuDAO
 
 		return queryBuilder.create().list();
 	}
-	
+
 	@Override
-	public Set<Integer> retrieveActiveSourceHUIds(@NonNull final MatchingSourceHusQuery query)
+	public Set<HuId> retrieveActiveSourceHUIds(@NonNull final MatchingSourceHusQuery query)
 	{
 		final IQueryBuilder<I_M_HU> queryBuilder = retrieveActiveSourceHusQuery(query);
 		if (queryBuilder == null)
@@ -93,8 +95,13 @@ public class SourceHuDAO implements ISourceHuDAO
 			return ImmutableSet.of();
 		}
 
-		final List<Integer> huIds = queryBuilder.create().listIds();
-		return ImmutableSet.copyOf(huIds);
+		final Set<HuId> huIds = queryBuilder
+				.create()
+				.listIds()
+				.stream()
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return huIds;
 	}
 
 	private IQueryBuilder<I_M_HU> retrieveActiveSourceHusQuery(@NonNull final MatchingSourceHusQuery query)
@@ -146,7 +153,7 @@ public class SourceHuDAO implements ISourceHuDAO
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
 				.addOnlyWithProductIds(query.getProductIds())
-				.addOnlyInWarehouseId(query.getWarehouseId())
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(query.getWarehouseId()))
 				.createQueryFilter();
 		huFilters.addFilter(huFilter);
 

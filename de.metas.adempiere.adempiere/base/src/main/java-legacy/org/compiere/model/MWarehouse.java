@@ -28,7 +28,7 @@ import org.compiere.util.CCache;
 
 /**
  *	Warehouse Model
- *	
+ *
  *  @author Jorg Janke
  *  @author victor.perez@e-evolution.com
  *  @see FR [ 1966337 ] New Method to get the Transit Warehouse based in ID Org http://sourceforge.net/tracker/index.php?func=detail&aid=1966337&group_id=176962&atid=879335
@@ -39,7 +39,7 @@ import org.compiere.util.CCache;
 public class MWarehouse extends X_M_Warehouse
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -848214135445693460L;
 	/**
@@ -52,7 +52,7 @@ public class MWarehouse extends X_M_Warehouse
 	{
 		return get(ctx, M_Warehouse_ID, null);
 	}
-	
+
 	/**
 	 * Retrieves warehouse from cache under transaction scope
 	 * @param ctx				context
@@ -63,7 +63,7 @@ public class MWarehouse extends X_M_Warehouse
 	public static MWarehouse get (Properties ctx, int M_Warehouse_ID, String trxName)
 	{
 		Integer key = new Integer(M_Warehouse_ID);
-		MWarehouse retValue = (MWarehouse)s_cache.get(key);
+		MWarehouse retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;
 		//
@@ -85,9 +85,9 @@ public class MWarehouse extends X_M_Warehouse
 		final List<I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, AD_Org_ID);
 		return LegacyAdapters.convertToPOArray(warehouses, MWarehouse.class);
 	}	//	get
-	
+
 	/**
-	 *  FR [ 1966337 ] 
+	 *  FR [ 1966337 ]
 	 * 	Get Warehouses Transit for Org
 	 *	@param ctx context
 	 *	@param AD_Org_ID id
@@ -100,9 +100,9 @@ public class MWarehouse extends X_M_Warehouse
 		final List<I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveWarehousesInTransitForOrg(ctx, AD_Org_ID);
 		return LegacyAdapters.convertToPOArray(warehouses, MWarehouse.class);
 	}	//	get
-	
+
 	/**	Cache					*/
-	private static CCache<Integer,MWarehouse> s_cache = new CCache<Integer,MWarehouse>("M_Warehouse", 50 );	
+	private static CCache<Integer,MWarehouse> s_cache = new CCache<>("M_Warehouse", 50 );
 	/**
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -150,7 +150,7 @@ public class MWarehouse extends X_M_Warehouse
 
 //	/**	Warehouse Locators				*/
 //	private MLocator[]	m_locators = null;
-	
+
 	/**
 	 * 	Get Locators
 	 *	@param reload if true reload
@@ -164,7 +164,7 @@ public class MWarehouse extends X_M_Warehouse
 		final List<I_M_Locator> locators = Services.get(IWarehouseDAO.class).retrieveLocators(this);
 		return LegacyAdapters.convertToPOArray(locators, MLocator.class);
 	}	//	getLocators
-	
+
 	/**
 	 * 	Get Default Locator
 	 *	@return (first) default locator
@@ -177,7 +177,7 @@ public class MWarehouse extends X_M_Warehouse
 		final I_M_Locator locator =Services.get(IWarehouseBL.class).getDefaultLocator(this);
 		return LegacyAdapters.convertToPO(locator);
 	}	//	getLocators
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -189,7 +189,7 @@ public class MWarehouse extends X_M_Warehouse
 	{
 		if (newRecord && success)
 			insert_Accounting("M_Warehouse_Acct", "C_AcctSchema_Default", null);
-		
+
 		return success;
 	}	//	afterSave
 
@@ -200,7 +200,7 @@ public class MWarehouse extends X_M_Warehouse
 	@Override
 	protected boolean beforeDelete ()
 	{
-		return delete_Accounting("M_Warehouse_Acct"); 
+		return delete_Accounting("M_Warehouse_Acct");
 	}	//	beforeDelete
 
 }	//	MWarehouse

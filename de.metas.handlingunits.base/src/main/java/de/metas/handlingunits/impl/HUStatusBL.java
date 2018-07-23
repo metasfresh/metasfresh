@@ -25,8 +25,14 @@ import java.util.Collection;
  */
 
 import java.util.List;
+import java.util.Objects;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -34,8 +40,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import lombok.NonNull;
@@ -64,7 +72,7 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			// active => shipped transition is used in vendor returns
+			// active => shipped state-transition is used in vendor returns
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
@@ -138,12 +146,208 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public void assertLocatorChangeIsAllowed(@NonNull final String huStatus)
+	public void assertLocatorChangeIsAllowed(
+			@NonNull final I_M_HU huRecord,
+			@NonNull final String huStatus)
 	{
 		if (ALLOWED_STATUSES_FOR_LOCATOR_CHANGE.contains(huStatus))
 		{
 			return;
 		}
-		throw new HUException(StringUtils.formatMessage("A HU's locator cannot be changed if the M_HU.HUStatus is {}", huStatus));
+		throw new HUException(StringUtils.formatMessage("A HU's locator cannot be changed if the M_HU.HUStatus is {}; hu={}", huStatus, huRecord));
+	}
+
+	@Override
+	public boolean isPhysicalHU(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+
+		final String huStatus = huRecord.getHUStatus();
+		if (Check.isEmpty(huStatus,true))
+		{
+			return false; // can be the case with a new/unsaved HU
+		}
+
+		if (X_M_HU.HUSTATUS_Destroyed.equals(huStatus))
+		{
+			return false;
+		}
+
+		if (X_M_HU.HUSTATUS_Planning.equals(huStatus))
+		{
+			return false;
+		}
+
+		if (X_M_HU.HUSTATUS_Shipped.equals(huStatus))
+		{
+			return false;
+		}
+
+		// we consider the rest of the statuses to be physical
+		// (active, picked and issued)
+		return true;
+	}
+
+	@Override
+	public boolean isStatusActive(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Active.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusIssued(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Issued.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusDestroyed(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Destroyed.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public boolean isStatusShipped(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Shipped.equals(huRecord.getHUStatus());
+	}
+
+	@Override
+	public void setHUStatus(final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String huStatus)
+	{
+		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
+		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
+	}
+
+	@Override
+	public void setHUStatus(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String huStatus,
+			final boolean forceFetchPackingMaterial)
+	{
+		// keep this so we can compare it with the new one and make sure the moving to/from empties is done only when needed
+		final String initialHUStatus = hu.getHUStatus();
+
+		if (Objects.equals(huStatus, initialHUStatus))
+		{
+			// do nothing
+			return;
+		}
+
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final boolean isExchangeGebindelagerWhenEmpty = huStatusBL.isMovePackagingToEmptiesWarehouse(huStatus);
+
+		//
+		// 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
+		if (forceFetchPackingMaterial)
+		{
+			if (isPhysicalHU(hu))
+			{
+				// collect the "destroyed" HUs in case they were already physical (active)
+				huContext
+						.getHUPackingMaterialsCollector()
+						.releasePackingMaterialForHURecursively(hu, null);
+			}
+			else
+			{
+				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
+				huContext
+						.getHUPackingMaterialsCollector()
+						.requirePackingMaterialForHURecursively(hu);
+			}
+		}
+		else if (!isExchangeGebindelagerWhenEmpty)
+		{
+			// do nothing
+		}
+		else
+		{
+			// remove the HUs from the collector (decrement qty) just in case of new HU (no initial status)
+			if (initialHUStatus == null)
+			{
+				// TODO i can't see why we make this invocation. it results in a material movement from empties warehouse.
+				// when to we need that?
+				// huContext
+				// .getHUPackingMaterialsCollector()
+				// .removeHURecursively(hu);
+			}
+			// only collect the destroyed HUs in case they were already physical (active)
+			else if (isPhysicalHU(hu))
+			{
+				huContext
+						.getHUPackingMaterialsCollector()
+						.releasePackingMaterialForHURecursively(hu, null);
+			}
+			else
+			{
+				// do nothing
+
+				// TODO: evaluate the logic from here and the logic of the method at all
+				// This could be the case when the HUStatus is changed from Planning to Active.
+				// Theoretically we shall "fetch" the packing materials from gebinde lager in this case,
+				// but by coincidence we don't want to do this because mainly this case happens when we are receving new HUs
+				// from Wareneingang POS (and generate the material receipt)
+				// And there we don't want to do this because those packing materials are fetched from Vendor and not from our lager.
+			}
+		}
+
+		hu.setHUStatus(huStatus);
+
+		// Do not save the HU because, at this point, we don't know what's to be done with it in future
+	}
+
+	@Override
+	public void setHUStatusActive(final Collection<I_M_HU> hus)
+	{
+		if (hus == null || hus.isEmpty())
+		{
+			return;
+		}
+
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		huTrxBL.process(huContext -> {
+			for (final I_M_HU hu : hus)
+			{
+				final boolean isPhysicalHU = isPhysicalHU(hu);
+				if (isPhysicalHU)
+				{
+					// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
+					// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
+					// ... but when you get to verteilung the boxes are already there
+					return;
+				}
+
+				setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+				InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
+
+				//
+				// Ask the API to get the packing materials needed to the HU which we just activate it
+				// TODO: i think we can remove this part because it's done automatically ?! (NOTE: this one was copied from swing UI, de.metas.handlingunits.client.terminal.pporder.receipt.view.HUPPOrderReceiptHUEditorPanel.onDialogOkBeforeSave(ITerminalDialog))
+				huContext.getHUPackingMaterialsCollector().requirePackingMaterialForHURecursively(hu);
+			}
+		});
 	}
 }

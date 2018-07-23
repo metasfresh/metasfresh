@@ -33,12 +33,13 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 
 public interface IADProcessDAO extends ISingletonService
 {
+	I_AD_Process getById(int processId);
+	
 	/**
 	 * Retrieves {@link I_AD_Process}es which are assigned to given <code>tableName</code> and have <code>IsReport=true</code>
 	 *
@@ -110,41 +111,20 @@ public interface IADProcessDAO extends ISingletonService
 	 */
 	int retrieveProcessIdByClass(Class<?> processClass);
 
-
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Classname Classname} column matches the given class.
 	 *
-	 * @param ctx
 	 * @param processClass
 	 * @return the <code>AD_Process_ID</code> of the matching process, or <code>-1</code> if there is no matching process or more than one of them
 	 */
-	int retriveProcessIdByClassIfUnique(Properties ctx, Class<?> processClass);
-
-	default int retriveProcessIdByClassIfUnique(final Class<?> processClass)
-	{
-		return retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
-	}
+	int retriveProcessIdByClassIfUnique(Class<?> processClass);
 
 	/**
 	 * @see #retriveProcessIdByClassIfUnique(Properties, Class)
 	 */
-	int retriveProcessIdByClassIfUnique(Properties ctx, String processClassname);
+	int retriveProcessIdByClassIfUnique(String processClassname);
 
 	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
-
-	/**
-	 * Retrieves {@link I_AD_Process} by given ID.
-	 *
-	 * @param ctx
-	 * @param adProcessId
-	 * @return process; never returns null
-	 */
-	I_AD_Process retrieveProcessById(Properties ctx, int adProcessId);
-
-	default I_AD_Process retrieveProcessById(final int adProcessId)
-	{
-		return retrieveProcessById(Env.getCtx(), adProcessId);
-	}
 
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Value} is equal to the given <code>processValue</code>. Assumes that <code>AD_Process.Value</code> is unique.
@@ -153,7 +133,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param processValue
 	 * @return
 	 */
-	int retriveProcessIdByValue(Properties ctx, String processValue);
+	int retriveProcessIdByValue(String processValue);
 
 	/**
 	 * Retrieves {@link I_AD_Process} by {@link I_AD_Process#COLUMN_Value}.
@@ -169,12 +149,7 @@ public interface IADProcessDAO extends ISingletonService
 
 	Collection<I_AD_Process_Para> retrieveProcessParameters(I_AD_Process process);
 
-	I_AD_Process_Para retriveProcessParameter(Properties ctx, int adProcessId, String parameterName);
-
-	default I_AD_Process_Para retriveProcessParameter(final int adProcessId, final String parameterName)
-	{
-		return retriveProcessParameter(Env.getCtx(), adProcessId, parameterName);
-	}
+	I_AD_Process_Para retriveProcessParameter(int adProcessId, String parameterName);
 
 	/**
 	 * Add process execution statistics.
@@ -195,8 +170,10 @@ public interface IADProcessDAO extends ISingletonService
 	 * and saves.
 	 * Not overwritten: name, value, entitytype
 	 *
-	 * @param targetProcess
-	 * @param sourceProcess
+	 * @param targetProcessId
+	 * @param sourceProcessId
 	 */
-	void copyAD_Process(I_AD_Process targetProcess, I_AD_Process sourceProcess);
+	void copyProcess(int targetProcessId, int sourceProcessId);
+
+	void copyProcessParameters(int targetProcessId, int sourceProcessId);
 }

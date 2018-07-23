@@ -36,6 +36,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
@@ -54,19 +55,14 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	private static final int ANY_S_Resource_ID = -100;
 
 	@Override
-	public I_PP_Product_Planning find(
-			final int orgId,
-			final int warehouseId,
-			final int resourceId,
-			final int productId,
-			final int attributeSetInstanceId)
+	public I_PP_Product_Planning find(@NonNull final ProductPlanningQuery productPlanningQuery)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
-				orgId,
-				warehouseId,
-				resourceId,
-				productId,
-				attributeSetInstanceId);
+				productPlanningQuery.getOrgId(),
+				WarehouseId.toRepoId(productPlanningQuery.getWarehouseId()),
+				productPlanningQuery.getPlantId(),
+				productPlanningQuery.getProductId().getRepoId(),
+				productPlanningQuery.getAttributeSetInstanceId().getRepoId());
 
 		//
 		// Fetch first matching product planning data

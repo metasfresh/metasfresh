@@ -13,7 +13,7 @@
  * For the text or an alternative of this public license, you may reach us *
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
  * or via info@compiere.org or http://www.compiere.org/license.html *
- * 
+ *
  * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ] *
  *****************************************************************************/
 package org.compiere.apps;
@@ -121,6 +121,7 @@ import org.compiere.print.AReport;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
@@ -141,7 +142,7 @@ import de.metas.process.ui.ProcessDialog;
 
 /**
  * Main Panel of application window.
- * 
+ *
  * <pre>
  *  Structure:
  *      (MenuBar) -> to be added to owning window
@@ -152,7 +153,7 @@ import de.metas.process.ui.ProcessDialog;
  *
  * @author Jorg Janke
  * @version $Id: APanel.java,v 1.4 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  *          Colin Rooney 2007/03/20 RFE#1670185 & related BUG#1684142 - Extend Sec to Info Queries
  * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ]
  * @contributor fer_luck@centuryon.com , FR [ 1757088 ]
@@ -172,7 +173,7 @@ import de.metas.process.ui.ProcessDialog;
  *        <li>BF [ 2799362 ] You can press New button a lot of times
  * @author Cristina Ghita, www.arhipac.ro
  * @see FR [ 2877111 ] See identifiers columns when delete records https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2877111&group_id=176962
- * 
+ *
  * @author hengsin, hengsin.low@idalica.com
  * @see FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
  * @sponsor www.metas.de
@@ -182,7 +183,7 @@ public class APanel extends CPanel
 		implements DataStatusListener, ChangeListener, ActionListener, IProcessExecutionListener, IProcessEventListener // metas
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6066778919781303581L;
 
@@ -191,7 +192,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Included tab constructor.
-	 * 
+	 *
 	 * Need to call initPanel for dynamic initialization
 	 */
 	// FR [ 1757088 ]
@@ -331,7 +332,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Initializes the state of this instance.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private final void jbInit() throws Exception
@@ -398,7 +399,7 @@ public class APanel extends CPanel
 	public AppsAction aLock;
 	// Local (added to toolbar)
 	@SuppressWarnings("unused")
-	private AppsAction aReport, aEnd, aHome, aHelp, aLogout,
+	private AppsAction aReport, aEnd, aHome, aHelp,
 			aPreference,
 			aOnline, aMailSupport, aAbout, aExit,
 			aDeleteSelection;
@@ -437,7 +438,6 @@ public class APanel extends CPanel
 		}
 		mFile.addSeparator();
 		aEnd = addAction("End", mFile, KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.ALT_MASK), false, false);
-		aLogout = addAction("Logout", mFile, KeyStroke.getKeyStroke(KeyEvent.VK_L, Event.SHIFT_MASK + Event.ALT_MASK), false, false);
 		aExit = addAction("Exit", mFile, KeyStroke.getKeyStroke(KeyEvent.VK_X, Event.SHIFT_MASK + Event.ALT_MASK), false, false);
 		// Edit
 		final JMenu mEdit = AEnv.getMenu("Edit");
@@ -632,7 +632,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Add (Toggle) Action to Toolbar and Menu
-	 * 
+	 *
 	 * @param actionName action name
 	 * @param menu manu
 	 * @param accelerator accelerator
@@ -681,7 +681,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Return MenuBar
-	 * 
+	 *
 	 * @return JMenuBar
 	 */
 	public JMenuBar getMenuBar()
@@ -691,7 +691,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get Title of Window
-	 * 
+	 *
 	 * @return String with Title
 	 */
 	public String getTitle()
@@ -747,7 +747,7 @@ public class APanel extends CPanel
 
 	/**************************************************************************
 	 * Dynamic Panel Initialization - either single window or workbench.
-	 * 
+	 *
 	 * <pre>
 	 *  either
 	 *  - Workbench tabPanel    (VTabbedPane)
@@ -757,9 +757,9 @@ public class APanel extends CPanel
 	 *      - Window            (VTabbedPane)
 	 *          - Tab           (GridController)
 	 * </pre>
-	 * 
+	 *
 	 * tabPanel
-	 * 
+	 *
 	 * @param AD_Workbench_ID if > 0 this is a workbench, AD_Window_ID ignored
 	 * @param AD_Window_ID if not a workbench, Window ID
 	 * @param query if not a Workbench, Zoom Query - additional SQL where clause
@@ -1216,7 +1216,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get Current Window No
-	 * 
+	 *
 	 * @return win no
 	 */
 	public int getWindowNo()
@@ -1226,7 +1226,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get current TabNo
-	 * 
+	 *
 	 * @return TabNo or {@link Env#TAB_None}
 	 */
 	public int getTabNo()
@@ -1240,7 +1240,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Initial Query
-	 * 
+	 *
 	 * @param query initial query
 	 * @param mTab tab
 	 * @return query or null
@@ -1323,7 +1323,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get Window Index
-	 * 
+	 *
 	 * @return Window Index
 	 */
 	private int getWindowIndex()
@@ -1337,7 +1337,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Is first Tab (on Window)
-	 * 
+	 *
 	 * @return true if the panel displays the first tab
 	 */
 	private boolean isFirstTab()
@@ -1347,7 +1347,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get Window Image
-	 * 
+	 *
 	 * @return image or null
 	 */
 	public Image getImage()
@@ -1357,7 +1357,7 @@ public class APanel extends CPanel
 
 	/**************************************************************************
 	 * Data Status Listener (row change) ^ | v
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -1500,7 +1500,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Set Status Line to text
-	 * 
+	 *
 	 * @param text clear text
 	 * @param error error flag
 	 */
@@ -1512,7 +1512,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Indicate Busy
-	 * 
+	 *
 	 * @param busy busy
 	 * @param focus request focus (only if <code>busy</code> is <code>false</code>)
 	 */
@@ -1548,7 +1548,7 @@ public class APanel extends CPanel
 
 	/**************************************************************************
 	 * Change Listener - (tab change) <->
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -1769,20 +1769,20 @@ public class APanel extends CPanel
 			 * //not sure why, the following lines is needed to make dynamic resize work
 			 * //tested on jdk1.5, 1.6 using jgoodies look and feel
 			 * frame.getPreferredSize();
-			 * 
+			 *
 			 * if (frame.getExtendedState() != JFrame.MAXIMIZED_BOTH)
 			 * {
 			 * frame.setMinimumSize(frame.getSize());
 			 * revalidate();
 			 * SwingUtilities.invokeLater(new Runnable() {
-			 * 
+			 *
 			 * public void run() {
 			 * JFrame frame = Env.getFrame(APanel.this);
 			 * frame.validate();
 			 * AEnv.showCenterScreen(frame);
 			 * frame.setMinimumSize(null);
 			 * }
-			 * 
+			 *
 			 * });
 			 * }
 			 * }
@@ -1917,7 +1917,7 @@ public class APanel extends CPanel
 
 	/**************************************************************************
 	 * Action Listener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -2078,8 +2078,6 @@ public class APanel extends CPanel
 			else if (cmd.equals(aHelp.getName()))
 				cmd_help();
 			// General Commands (Environment)
-			else if (cmd.equals(aLogout.getName()))
-				cmd_logout();
 			else if (WindowMenu.ShowAllWindows_ActionName.equals(cmd))
 				m_WindowMenu.expose();
 			else if (!AEnv.actionPerformed(e.getActionCommand(), m_curWindowNo, this))
@@ -2103,15 +2101,6 @@ public class APanel extends CPanel
 			setBusy(false, requestFocus);
 		}
 	}	// actionPerformed
-
-	private void cmd_logout()
-	{
-		JFrame top = Env.getWindow(Env.WINDOW_MAIN);
-		if (top instanceof AMenu)
-		{
-			((AMenu)top).logout();
-		}
-	}
 
 	/**************************************************************************
 	 * Process Callout(s).
@@ -2146,7 +2135,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Create (or copy to) a new record.
-	 * 
+	 *
 	 * @param copyMode
 	 */
 	private void cmd_new(final DataNewCopyMode copyMode)
@@ -2325,10 +2314,10 @@ public class APanel extends CPanel
 			int[] indices = list.getSelectedIndices();
 			Arrays.sort(indices);
 			int offset = 0;
-			for (int i = 0; i < indices.length; i++)
+			for (int indice : indices)
 			{
 				// m_curTab.setCurrentRow(indices[i]-offset);
-				m_curTab.navigate(indices[i] - offset);
+				m_curTab.navigate(indice - offset);
 				int keyID = m_curTab.getRecord_ID();
 				if (m_curTab.dataDelete())
 				{
@@ -2346,7 +2335,7 @@ public class APanel extends CPanel
 
 	/**
 	 * If required ask if you want to save and save it
-	 * 
+	 *
 	 * @param manualCmd true if invoked manually (i.e. force)
 	 * @return true if saved
 	 */
@@ -2355,7 +2344,7 @@ public class APanel extends CPanel
 		if (m_curAPanelTab != null)
 			manualCmd = false;
 		log.debug("cmd_save: Manual={}", manualCmd);
-		
+
 		m_errorDisplayed = false;
 		m_curGC.stopEditor(true);
 		m_curGC.acceptEditorChanges();
@@ -2545,7 +2534,7 @@ public class APanel extends CPanel
 		}
 
 		cmd_save(false);
-		
+
 		ProcessDialog.builder()
 				.setAD_Process_ID(AD_Process_ID)
 				.setFromGridTab(m_curTab)
@@ -2619,16 +2608,16 @@ public class APanel extends CPanel
 			{
 				va.requestFocus();
 			}
-			
+
 			@Override
 			public void windowClosed(final WindowEvent e)
 			{
 				m_curTab.loadAttachments();				// reload
-				
+
 				aAttachment.setPressed(m_curTab.hasAttachment());
 			}
 		});
-		
+
 		AEnv.showCenterScreen(va);
 	}	// attachment
 
@@ -2674,7 +2663,7 @@ public class APanel extends CPanel
 	private void cmd_lock()
 	{
 		log.debug("cmd_lock: lastModifiers={}", m_lastModifiers);
-		
+
 		if (!m_isPersonalLock)
 			return;
 		int record_ID = m_curTab.getRecord_ID();
@@ -2742,7 +2731,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Close this screen - after save
-	 * 
+	 *
 	 * @param doExitApplication true if the entire application shall be closed
 	 */
 	private void cmd_end(final boolean doExitApplication)
@@ -2794,20 +2783,12 @@ public class APanel extends CPanel
 	private void cmd_home()
 	{
 		// Actually show the window in another event to make sure it's the last one (see 07315)
-		EventQueue.invokeLater(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				AEnv.showWindow(Env.getWindow(Env.WINDOW_MAIN));
-			}
-		});
+		EventQueue.invokeLater(() -> AEnv.showWindow(Env.getWindow(Env.WINDOW_MAIN)));
 	}
 
 	/**************************************************************************
 	 * Start Button Process
-	 * 
+	 *
 	 * @param vButton button
 	 */
 	public void actionButton(final VButton vButton)
@@ -2843,7 +2824,7 @@ public class APanel extends CPanel
 			AEnv.zoom(AD_Table_ID, Record_ID);
 			return;
 		}    // Zoom
-		
+
 		// save first ---------------
 		if (m_curTab.needSave(true, false))
 			if (!cmd_save(true))
@@ -3015,7 +2996,7 @@ public class APanel extends CPanel
 		// Start Process ----
 		// or invoke user form
 		//
-		
+
 		if (vButton.getProcess_ID() <= 0)
 		{
 			if (isProcessMandatory)
@@ -3109,13 +3090,13 @@ public class APanel extends CPanel
 
 	private JFrame getCurrentFrame()
 	{
-		return Env.getFrame(this);
+		return SwingUtils.getFrame(this);
 	}
 
 	/**************************************************************************
 	 * Lock User Interface.
 	 * Called from the Worker before processing
-	 * 
+	 *
 	 * @param pi process info
 	 */
 	@Override
@@ -3127,7 +3108,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Unlock User Interface. Called from the Worker when processing is done
-	 * 
+	 *
 	 * @param pi of execute ASync call
 	 */
 	@Override
@@ -3189,7 +3170,7 @@ public class APanel extends CPanel
 	private final void updateStatusLine(final ProcessInfo pi)
 	{
 		final ProcessExecutionResult result = pi.getResult();
-		
+
 		// Update Status Line
 		setStatusLine(result.getSummary(), result.isError());
 
@@ -3218,7 +3199,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Is the UI locked (Internal method)
-	 * 
+	 *
 	 * @return true, if UI is locked
 	 */
 	private boolean isUILocked()
@@ -3228,7 +3209,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get Current Tab
-	 * 
+	 *
 	 * @return current tab
 	 */
 	public GridTab getCurrentTab()
@@ -3238,7 +3219,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get the number of tabs in the panels JTabbedPane.
-	 * 
+	 *
 	 * @return no of tabs in the JTabbedPane of the panel
 	 */
 	public int noOfTabs()
@@ -3248,7 +3229,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get the selected tab index of the panels JTabbedPane.
-	 * 
+	 *
 	 * @return selected index of JTabbedPane
 	 */
 	public int getSelectedTabIndex()
@@ -3266,7 +3247,7 @@ public class APanel extends CPanel
 
 	/**
 	 * Get the name of the selected tab in the panels JTabbedPane.
-	 * 
+	 *
 	 * @return name of selected tab
 	 */
 	public String getSelectedTabName()
@@ -3279,7 +3260,7 @@ public class APanel extends CPanel
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return String representation
 	 */
 	@Override
@@ -3299,14 +3280,14 @@ public class APanel extends CPanel
 	/**
 	 * Simple action class for the resort of tablelines (switch line no). Delegates actionPerformed
 	 * to APanel.
-	 * 
+	 *
 	 * @author Karsten Thiemann, kthiemann@adempiere.org
-	 * 
+	 *
 	 */
 	class SwitchAction extends AbstractAction
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 3837712049468116744L;
 
@@ -3318,7 +3299,7 @@ public class APanel extends CPanel
 
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param name
 		 * @param accelerator
 		 * @param al
@@ -3436,10 +3417,10 @@ public class APanel extends CPanel
 		final Properties ctx = m_ctx;
 		final String tableName = m_curTab.getTableName();
 		final int recordId = m_curTab.getRecord_ID();
-		
+
 		final PO po = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
 		final List<CopyRecordSupportTableInfo> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
-		
+
 		//
 		final String adLanguage = Env.getAD_Language(ctx);
 		final JList<String> list = new JList<>();
@@ -3459,9 +3440,9 @@ public class APanel extends CPanel
 			final int[] indices = list.getSelectedIndices();
 			Arrays.sort(indices);
 			final ImmutableList.Builder<CopyRecordSupportTableInfo> suggestedList = ImmutableList.builder();
-			for (int i = 0; i < indices.length; i++)
+			for (int indice : indices)
 			{
-				suggestedList.add(tiList.get(indices[i]));
+				suggestedList.add(tiList.get(indice));
 			}
 
 			return suggestedList.build();
@@ -3489,10 +3470,10 @@ public class APanel extends CPanel
 
 	/**
 	 * For a given component, it removes component's key bindings (defined in ancestor's map) that this panel also have defined.
-	 * 
+	 *
 	 * The main purpose of doing this is to make sure menu/toolbar key bindings will not be intercepted by given component, so panel's key bindings will work when given component is embedded in our
 	 * panel.
-	 * 
+	 *
 	 * @param comp component or <code>null</code>
 	 */
 	public final void removeAncestorKeyBindingsOf(final JComponent comp, final Predicate<KeyStroke> isRemoveKeyStrokePredicate)

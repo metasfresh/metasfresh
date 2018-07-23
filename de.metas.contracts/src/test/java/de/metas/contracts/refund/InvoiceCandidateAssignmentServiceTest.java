@@ -13,7 +13,7 @@ import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
-import de.metas.money.MoneyFactory;
+import de.metas.money.MoneyService;
 
 /*
  * #%L
@@ -57,12 +57,12 @@ public class InvoiceCandidateAssignmentServiceTest
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				new RefundContractRepository(refundConfigRepository),
-				new MoneyFactory(new CurrencyRepository()));
+				new RefundContractRepository(refundConfigRepository));
 
 		invoiceCandidateAssignmentService = new InvoiceCandidateAssignmentService(
 				new RefundContractRepository(refundConfigRepository),
-				invoiceCandidateRepository);
+				invoiceCandidateRepository,
+				new MoneyService(new CurrencyRepository()));
 
 		refundTestTools = new RefundTestTools();
 	}

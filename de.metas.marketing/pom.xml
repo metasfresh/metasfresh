@@ -17,6 +17,7 @@
 	<modules>
 		<module>base</module>
 		<module>cleverreach</module>
+		<module>serialletter</module>
 	</modules>
 	
 </project>

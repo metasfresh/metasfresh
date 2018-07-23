@@ -28,12 +28,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ import lombok.experimental.UtilityClass;
  * Contains methods used to support
  * {@link HUPickingSlotBL#retrieveAvailableHUsToPick(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)} and
  * {@link HUPickingSlotBL#retrieveAvailableSourceHUs(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -62,9 +62,6 @@ public class RetrieveAvailableHUsToPickFilters
 
 	/**
 	 * Excludes HU that are already picked or already selected as fine picking source HUs.
-	 * 
-	 * @param vhus
-	 * @return
 	 */
 	public List<I_M_HU> retrieveFullTreeAndExcludePickingHUs(@NonNull final List<I_M_HU> vhus)
 	{
@@ -76,7 +73,7 @@ public class RetrieveAvailableHUsToPickFilters
 
 	/**
 	 * Gets the the top level HUs from for our VHUs.
-	 * 
+	 *
 	 * @param vhus
 	 * @return
 	 */
@@ -96,7 +93,7 @@ public class RetrieveAvailableHUsToPickFilters
 	 * We still need to iterate the HUs trees from the top level HUs.
 	 * Even if we had called handlingUnitsBL.getTopLevelHUs with includeAll(true),
 	 * There might be a VHU with a picked TU. Because the TU is picked, also its un-picked VHU may not be in the result we return
-	 * 
+	 *
 	 * @param husTopLevel
 	 * @return
 	 */

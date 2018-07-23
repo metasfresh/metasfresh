@@ -4,15 +4,19 @@
 package de.metas.pricing.conditions.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -54,6 +58,7 @@ import lombok.NonNull;
  */
 /* package */ class CalculatePricingConditionsCommand
 {
+	// services
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
@@ -65,17 +70,17 @@ import lombok.NonNull;
 		this.request = request;
 	}
 
-	public PricingConditionsResult calculate()
+	public Optional<PricingConditionsResult> calculate()
 	{
 		final PricingConditionsDiscountType discountType = getDiscountType();
 		if (discountType == PricingConditionsDiscountType.FLAT_PERCENT)
 		{
-			return computeFlatDiscount();
+			return Optional.of(computeFlatDiscount());
 		}
 		else if (discountType == PricingConditionsDiscountType.FORMULA
 				|| discountType == PricingConditionsDiscountType.PRICE_LIST)
 		{
-			return PricingConditionsResult.ZERO;
+			return Optional.of(PricingConditionsResult.ZERO);
 		}
 		else if (discountType == PricingConditionsDiscountType.BREAKS)
 		{
@@ -134,25 +139,27 @@ import lombok.NonNull;
 
 	}
 
-	private PricingConditionsResult computeBreaksDiscount()
+	private Optional<PricingConditionsResult> computeBreaksDiscount()
 	{
-		final PricingConditionsBreak breakApplied = findMatchingPricingConditionBreak();
-		if (breakApplied == null)
+		final PricingConditionsBreak breakToApply = findMatchingPricingConditionBreak();
+		if (breakToApply == null)
 		{
-			return PricingConditionsResult.ZERO;
+			return Optional.empty();
 		}
 
 		final PricingConditionsResultBuilder result = PricingConditionsResult.builder()
-				.pricingConditionsBreak(breakApplied)
-				.paymentTermId(breakApplied.getPaymentTermId());
+				.pricingConditionsBreak(breakToApply)
+				.paymentTermId(breakToApply.getDerivedPaymentTermIdOrNull());
 
-		computePriceForPricingConditionsBreak(result, breakApplied.getPriceOverride());
-		computeDiscountForPricingConditionsBreak(result, breakApplied);
+		computePriceForPricingConditionsBreak(result, breakToApply.getPriceOverride());
+		computeDiscountForPricingConditionsBreak(result, breakToApply);
 
-		return result.build();
+		return Optional.of(result.build());
 	}
 
-	private void computePriceForPricingConditionsBreak(final PricingConditionsResultBuilder result, final PriceOverride priceOverride)
+	private void computePriceForPricingConditionsBreak(
+			final PricingConditionsResultBuilder result,
+			@NonNull final PriceOverride priceOverride)
 	{
 		final PriceOverrideType priceOverrideType = priceOverride.getType();
 		if (priceOverrideType == PriceOverrideType.NONE)
@@ -161,15 +168,17 @@ import lombok.NonNull;
 		}
 		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
 		{
-			final int basePricingSystemId = priceOverride.getBasePricingSystemId();
+			final PricingSystemId basePricingSystemId = priceOverride.getBasePricingSystemId();
 
 			final IPricingResult productPrices = computePricesForBasePricingSystem(basePricingSystemId);
+			final CurrencyId currencyId = productPrices.getCurrencyId();
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
 			final BigDecimal priceStdAddAmt = priceOverride.getBasePriceAddAmt();
 
+			result.currencyId(currencyId);
 			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
@@ -177,7 +186,10 @@ import lombok.NonNull;
 		}
 		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
 		{
-			result.priceStdOverride(priceOverride.getFixedPrice());
+			final Money fixedPrice = priceOverride.getFixedPrice();
+
+			result.currencyId(fixedPrice.getCurrencyId());
+			result.priceStdOverride(fixedPrice.getValue());
 		}
 		else
 		{
@@ -186,7 +198,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private IPricingResult computePricesForBasePricingSystem(final int basePricingSystemId)
+	private IPricingResult computePricesForBasePricingSystem(final PricingSystemId basePricingSystemId)
 	{
 		final IPricingContext pricingCtx = request.getPricingCtx();
 		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
@@ -197,13 +209,11 @@ import lombok.NonNull;
 		return pricingResult;
 	}
 
-	private static IPricingContext createBasePricingSystemPricingCtx(final IPricingContext pricingCtx, final int basePricingSystemId)
+	private static IPricingContext createBasePricingSystemPricingCtx(@NonNull final IPricingContext pricingCtx, @NonNull final PricingSystemId basePricingSystemId)
 	{
-		Check.assumeGreaterThanZero(basePricingSystemId, "basePricingSystemId");
-
 		final IEditablePricingContext newPricingCtx = pricingCtx.copy();
-		newPricingCtx.setM_PricingSystem_ID(basePricingSystemId);
-		newPricingCtx.setM_PriceList_ID(-1); // will be recomputed
+		newPricingCtx.setPricingSystemId(basePricingSystemId);
+		newPricingCtx.setPriceListId(null); // will be recomputed
 		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
 		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);

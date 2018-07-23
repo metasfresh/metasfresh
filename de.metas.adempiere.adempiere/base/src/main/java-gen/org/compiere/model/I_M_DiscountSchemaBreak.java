@@ -146,10 +146,39 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_BreakValue = "BreakValue";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_Currency>(I_M_DiscountSchemaBreak.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -159,7 +188,7 @@ public interface I_M_DiscountSchemaBreak
 	 * Get Zahlungsbedingung.
 	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -255,29 +284,6 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_IsBPartnerFlatDiscount = "IsBPartnerFlatDiscount";
 
 	/**
-	 * Set IsPriceOverride.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsPriceOverride (boolean IsPriceOverride);
-
-	/**
-	 * Get IsPriceOverride.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isPriceOverride();
-
-    /** Column definition for IsPriceOverride */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_IsPriceOverride = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "IsPriceOverride", null);
-    /** Column name IsPriceOverride */
-    public static final String COLUMNNAME_IsPriceOverride = "IsPriceOverride";
-
-	/**
 	 * Set Gültig.
 	 * Element ist gültig
 	 *
@@ -301,6 +307,35 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_IsValid = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "IsValid", null);
     /** Column name IsValid */
     public static final String COLUMNNAME_IsValid = "IsValid";
+
+	/**
+	 * Set Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getManufacturer_ID();
+
+	public org.compiere.model.I_C_BPartner getManufacturer();
+
+	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer);
+
+    /** Column definition for Manufacturer_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_BPartner> COLUMN_Manufacturer_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_BPartner>(I_M_DiscountSchemaBreak.class, "Manufacturer_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
 
 	/**
 	 * Set Merkmal.
@@ -361,6 +396,31 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_M_AttributeValue_ID = "M_AttributeValue_ID";
 
 	/**
+	 * Set Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
+
+	/**
+	 * Get Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_DiscountSchemaBreak_ID();
+
+    /** Column definition for M_DiscountSchemaBreak_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "M_DiscountSchemaBreak_ID", null);
+    /** Column name M_DiscountSchemaBreak_ID */
+    public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
+
+	/**
 	 * Set Rabatt Schema.
 	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
@@ -388,31 +448,6 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_DiscountSchema>(I_M_DiscountSchemaBreak.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
     /** Column name M_DiscountSchema_ID */
     public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
-
-	/**
-	 * Set Discount Schema Break.
-	 * Trade Discount Break
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
-
-	/**
-	 * Get Discount Schema Break.
-	 * Trade Discount Break
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_DiscountSchemaBreak_ID();
-
-    /** Column definition for M_DiscountSchemaBreak_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "M_DiscountSchemaBreak_ID", null);
-    /** Column name M_DiscountSchemaBreak_ID */
-    public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
 
 	/**
 	 * Set Produkt Kategorie.
@@ -494,6 +529,29 @@ public interface I_M_DiscountSchemaBreak
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_NotValidReason = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "NotValidReason", null);
     /** Column name NotValidReason */
     public static final String COLUMNNAME_NotValidReason = "NotValidReason";
+
+	/**
+	 * Set Skonto %.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentDiscount (java.math.BigDecimal PaymentDiscount);
+
+	/**
+	 * Get Skonto %.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPaymentDiscount();
+
+    /** Column definition for PaymentDiscount */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PaymentDiscount = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PaymentDiscount", null);
+    /** Column name PaymentDiscount */
+    public static final String COLUMNNAME_PaymentDiscount = "PaymentDiscount";
 
 	/**
 	 * Set PriceBase.

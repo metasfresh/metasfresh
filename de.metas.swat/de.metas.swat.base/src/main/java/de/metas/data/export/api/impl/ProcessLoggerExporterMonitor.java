@@ -36,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInstance;
@@ -102,7 +103,7 @@ public class ProcessLoggerExporterMonitor implements IExporterMonitor
 			
 			if (clientUIInstance != null)
 			{
-				clientUIInstance.error(0, "Error", error.getLocalizedMessage());
+				clientUIInstance.error(Env.WINDOW_MAIN, "Error", error.getLocalizedMessage());
 			}
 		}
 

@@ -63,6 +63,11 @@ node('agent && linux')
 		)
 		echo "mvnConf=${mvnConf}"
 
+		def scmVars = checkout scm; // i hope this to do all the magic we need
+		def gitCommitHash = scmVars.GIT_COMMIT
+
+		sh 'git clean -d --force -x' // clean the workspace
+
 		// we need to provide MF_VERSION because otherwise  the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
 		// and therefore, the jenkins information would not be added to the build.properties info file.
 		withEnv(["MF_VERSION=${MF_VERSION}"])
@@ -78,75 +83,63 @@ node('agent && linux')
 				}
 				else
 				{
-        nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-				checkout scm; // i hope this to do all the magic we need
-				sh 'git clean -d --force -x' // clean the workspace
+					// update the parent pom version
+					mvnUpdateParentPomVersion mvnConf
 
-				// update the parent pom version
- 				mvnUpdateParentPomVersion mvnConf
+					// set the artifact version of everything below ${mvnConf.pomFile}
+					// processAllModules=true: also update those modules that have a parent version range!
+					sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 
-				// set the artifact version of everything below ${mvnConf.pomFile}
-				// processAllModules=true: also update those modules that have a parent version range!
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
+					// Set the metasfresh.version property from [1,10.0.0] to our current build version
+					// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
+					sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
-				// Set the metasfresh.version property from [1,10.0.0] to our current build version
-				// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+					// build and deploy
+					// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+					// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+					sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-				// build and deploy
-				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+					publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 				} // if(params.MF_SKIP_TO_DIST)
-			}
-			stage('Build metasfresh docker image(s)')
-			{
-
-				if(params.MF_SKIP_TO_DIST)
-				{
-					echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
-				}
-				else
-				{
-					final DockerConf materialDispoDockerConf = new DockerConf(
-						'metasfresh-material-dispo', // artifactName
-						MF_UPSTREAM_BRANCH, // branchName
-						MF_VERSION, // versionSuffix
-						'de.metas.material/dispo-service/target/docker' // workDir
-					);
-					dockerBuildAndPush(materialDispoDockerConf)
-				
-					final DockerConf reportDockerConf = materialDispoDockerConf
-						.withArtifactName('metasfresh-report')
-						.withWorkDir('de.metas.report/report-service/target/docker');
-					dockerBuildAndPush(reportDockerConf)
-
-					final DockerConf printDockerConf = materialDispoDockerConf
-						.withArtifactName('metasfresh-print')
-						.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
-					dockerBuildAndPush(printDockerConf)
-
-					final DockerConf msv3ServerDockerConf = materialDispoDockerConf
-						.withArtifactName('de.metas.vertical.pharma.msv3.server')
-						.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
-					dockerBuildAndPush(msv3ServerDockerConf)
-
-				} // if(params.MF_SKIP_TO_DIST)
-      } // stage
-
-			if(!params.MF_SKIP_TO_DIST)
-			{
-        final MvnConf mvnJacocoConf = mvnConf.withPomFile('pom_for_jacoco_aggregate_coverage_report.xml');
-        mvnUpdateParentPomVersion mvnJacocoConf
-        collectTestResultsAndReportCoverage()
-
-        // creating one aggregated jacoco.xml and uploading it to codacy doesn't work right now :-(
-        // sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
-        // uploadCoverageResultsForCodacy('./target/site/jacoco-aggregate', 'jacoco.xml')
 			}
 		} // withMaven
-    } // withEnv
+	} // withEnv
+
+	stage('Build metasfresh docker image(s)')
+	{
+		if(params.MF_SKIP_TO_DIST)
+		{
+			echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
+		}
+		else
+		{
+			final DockerConf materialDispoDockerConf = new DockerConf(
+				'metasfresh-material-dispo', // artifactName
+				MF_UPSTREAM_BRANCH, // branchName
+				MF_VERSION, // versionSuffix
+				'de.metas.material/dispo-service/target/docker' // workDir
+			);
+			dockerBuildAndPush(materialDispoDockerConf)
+		
+			final DockerConf reportDockerConf = materialDispoDockerConf
+				.withArtifactName('metasfresh-report')
+				.withWorkDir('de.metas.report/report-service/target/docker');
+			dockerBuildAndPush(reportDockerConf)
+
+			final DockerConf printDockerConf = materialDispoDockerConf
+				.withArtifactName('metasfresh-print')
+				.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
+			dockerBuildAndPush(printDockerConf)
+
+				final DockerConf msv3ServerDockerConf = materialDispoDockerConf
+				.withArtifactName('de.metas.vertical.pharma.msv3.server')
+				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
+			dockerBuildAndPush(msv3ServerDockerConf)
+
+		} // if(params.MF_SKIP_TO_DIST)
+	} // stage
 	} // configFileProvider
 
 	// clean up the workspace after (successfull) builds
@@ -288,34 +281,6 @@ stage('Invoke downstream jobs')
     }
   }
   throw all
-}
-
-/**
-  *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
-  */
-void collectTestResultsAndReportCoverage()
-{
-	// after upgrading the "Pipeline Maven Integration Plugin" from 0.7 to 3.1.0, collecting the tests is now done by that plugin.
-	// comment it out to avoid all tests being counted twice
-  // junit '**/target/surefire-reports/*.xml'
-
-  jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
-}
-
-void uploadCoverageResultsForCodacy(final String aggregatedJacocoFilePath, final String aggregatedJacocoFilename)
-{
-  withCredentials([string(credentialsId: 'codacy_project_token_for_metasfresh_repo', variable: 'CODACY_PROJECT_TOKEN')])
-  {
-    withEnv(['CODACY_PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}'])
-    {
-      final String version='2.0.1'
-      final String classpathParam = "-cp codacy-coverage-reporter-${version}-assembly.jar"
-      final String reportFileParam = "-r ${aggregatedJacocoFilePath}/${aggregatedJacocoFilename}"
-      final String prefixParam = "--prefix ${aggregatedJacocoFilePath}" // thx to https://github.com/codacy/codacy-coverage-reporter#failed-to-upload-report-not-found
-      sh "wget --quiet https://repo.metasfresh.com/service/local/repositories/mvn-3rdparty/content/com/codacy/codacy-coverage-reporter/${version}/codacy-coverage-reporter-${version}-assembly.jar"
-      sh "java ${classpathParam} com.codacy.CodacyCoverageReporter -l Java ${reportFileParam} ${prefixParam}"
-    }
-  }
 }
 
 /**

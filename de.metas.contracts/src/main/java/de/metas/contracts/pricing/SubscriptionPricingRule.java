@@ -10,6 +10,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
@@ -105,7 +106,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		subscriptionPricingCtx.setReferencedObject(null);
 
 		// set the price list from subscription's M_Pricing_Systen
-		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
+		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
 		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
 		
 		return subscriptionPricingCtx;
@@ -133,7 +134,7 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult subscriptionPricingResult,
 			@NonNull final IPricingResult result)
 	{
-		result.setC_Currency_ID(subscriptionPricingResult.getC_Currency_ID());
+		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
 		result.setPrice_UOM_ID(subscriptionPricingResult.getPrice_UOM_ID());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
@@ -142,7 +143,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setPricingConditions(subscriptionPricingResult.getPricingConditions());
 		
 		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
-		result.setM_PricingSystem_ID(subscriptionPricingResult.getM_PricingSystem_ID());
+		result.setPricingSystemId(subscriptionPricingResult.getPricingSystemId());
 		result.setM_PriceList_Version_ID(subscriptionPricingResult.getM_PriceList_Version_ID());
 		result.setM_Product_Category_ID(subscriptionPricingResult.getM_Product_Category_ID());
 		result.setPrecision(subscriptionPricingResult.getPrecision());

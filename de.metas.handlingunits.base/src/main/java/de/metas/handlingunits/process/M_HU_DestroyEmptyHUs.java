@@ -10,12 +10,12 @@ package de.metas.handlingunits.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.util.Iterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -110,7 +111,7 @@ public class M_HU_DestroyEmptyHUs extends JavaProcess
 
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setContext(getCtx(), ITrx.TRXNAME_None)
-				.addOnlyInWarehouseId(p_M_Warehouse_ID)
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(p_M_Warehouse_ID))
 
 				// we don't want to deal with e.g. Shipped HUs
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)

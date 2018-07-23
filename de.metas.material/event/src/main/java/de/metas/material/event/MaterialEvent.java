@@ -18,6 +18,10 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
@@ -82,6 +86,11 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = PPOrderChangedEvent.TYPE, value = PPOrderChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
 
+		@JsonSubTypes.Type(name = PurchaseCandidateAdvisedEvent.TYPE, value = PurchaseCandidateAdvisedEvent.class),
+		@JsonSubTypes.Type(name = PurchaseCandidateCreatedEvent.TYPE, value = PurchaseCandidateCreatedEvent.class),
+		@JsonSubTypes.Type(name = PurchaseCandidateUpdatedEvent.TYPE, value = PurchaseCandidateUpdatedEvent.class),
+		@JsonSubTypes.Type(name = PurchaseCandidateRequestedEvent.TYPE, value = PurchaseCandidateRequestedEvent.class),
+
 		@JsonSubTypes.Type(name = PurchaseOfferCreatedEvent.TYPE, value = PurchaseOfferCreatedEvent.class),
 		@JsonSubTypes.Type(name = PurchaseOfferUpdatedEvent.TYPE, value = PurchaseOfferUpdatedEvent.class),
 		@JsonSubTypes.Type(name = PurchaseOfferDeletedEvent.TYPE, value = PurchaseOfferDeletedEvent.class),
@@ -101,7 +110,6 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 		@JsonSubTypes.Type(name = TransactionCreatedEvent.TYPE, value = TransactionCreatedEvent.class),
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class)
-
 })
 public interface MaterialEvent
 {

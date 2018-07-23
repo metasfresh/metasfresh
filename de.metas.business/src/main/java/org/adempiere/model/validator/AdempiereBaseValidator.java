@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.bpartner.product.callout.C_BPartner_Product;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -81,6 +80,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
+import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
@@ -193,7 +193,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		//
 		// BPartner
-		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
+		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner(), client);
 		//
 		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
 		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);

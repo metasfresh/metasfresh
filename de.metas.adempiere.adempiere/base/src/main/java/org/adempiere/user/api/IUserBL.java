@@ -30,20 +30,20 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
+import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
 
 public interface IUserBL extends ISingletonService
 {
-	String PARAM_ACTION = "action";
-	String ACTION_ResetPassword = "ResetPassword";
-	String ACTION_CreateNewUser = "CreateNewUser";
-	String PARAM_AccountPasswordResetCode = "AccountPasswordResetCode";
+	HashableString getUserPassword(I_AD_User user);
+
+	boolean isPasswordMatching(I_AD_User user, HashableString password);
 
 	void createResetPasswordByEMailRequest(I_AD_User user);
 
 	void createResetPasswordByEMailRequest(String userId);
 
-	I_AD_User resetPassword(Properties ctx, int adUserId, String passwordResetCode, String newPassword);
+	I_AD_User resetPassword(String passwordResetCode, String newPassword);
 
 	/**
 	 * Change given user's password.
@@ -54,7 +54,9 @@ public interface IUserBL extends ISingletonService
 	 * @param newPassword new password
 	 * @param newPasswordRetype new password again
 	 */
-	void changePassword(final Properties ctx, final int adUserId, final String oldPassword, final String newPassword, final String newPasswordRetype);
+	void changePassword(final Properties ctx, final int adUserId, final HashableString oldPassword, final String newPassword, final String newPasswordRetype);
+
+	void changePasswordAndSave(I_AD_User user, String newPassword);
 
 	/**
 	 * Generates and sets a new password for given user. The user will be also saved.
@@ -67,7 +69,7 @@ public interface IUserBL extends ISingletonService
 	/**
 	 * Asserts given user password is valid according to our security settings.
 	 */
-	void assertValidPassword(String password);
+	void assertValidPassword(String passwordPlain);
 
 	/**
 	 * create a new user in specified org with the specified name

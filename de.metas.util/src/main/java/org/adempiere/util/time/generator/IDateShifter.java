@@ -1,6 +1,6 @@
 package org.adempiere.util.time.generator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface IDateShifter
 {
@@ -15,7 +15,7 @@ public interface IDateShifter
 	 *         <li>null in case given date shall be excluded
 	 *         </ul>
 	 */
-	public LocalDate shiftForward(LocalDate date);
+	public LocalDateTime shiftForward(LocalDateTime date);
 
 	/**
 	 * Shift backward (in the past) given date.
@@ -28,5 +28,5 @@ public interface IDateShifter
 	 *         <li>null in case given date shall be excluded
 	 *         </ul>
 	 */
-	public LocalDate shiftBackward(LocalDate date);
+	public LocalDateTime shiftBackward(LocalDateTime date);
 }

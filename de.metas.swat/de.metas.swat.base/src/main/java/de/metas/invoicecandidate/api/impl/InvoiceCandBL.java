@@ -47,8 +47,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -87,6 +85,8 @@ import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -116,8 +116,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
@@ -125,7 +127,8 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -890,16 +893,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		// take the precision from the bpartner price list
 		final Timestamp date = ic.getDateOrdered();
-		final boolean isSOTrx = ic.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
 		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
 		if (partnerLocation != null)
 		{
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-							ic.getM_PricingSystem_ID(),
+							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 							partnerLocation.getC_Location().getC_Country_ID(),
 							date,
-							isSOTrx);
+							soTrx);
 
 			if (pricelist != null)
 			{
@@ -1945,7 +1948,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), ic.isSOTrx());
+		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
 		if (discountSchemaId <= 0)
 		{
 			// do nothing
@@ -1967,13 +1970,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final BigDecimal priceActual = ic.getPriceActual();
-		final int productId = ic.getM_Product_ID();
-		final int productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
 		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
 				.attributeInstances(instances)
-				.productAndCategoryId(ProductAndCategoryId.of(productId, productCategoryId))
+				.product(product)
 				.qty(qty)
 				.price(priceActual)
 				.build());

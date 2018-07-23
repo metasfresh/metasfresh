@@ -31,7 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.QuantityExpectation;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -42,6 +41,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.UOMConstants;
 
 public class UOMConversionBLTest extends UOMTestBase

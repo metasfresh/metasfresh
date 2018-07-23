@@ -28,9 +28,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -38,6 +38,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
+import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -193,7 +194,6 @@ public class DDOrderAdvisedHandlerTests
 		assertThat(allRecords).allSatisfy(r -> {
 			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID);
 			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
-			assertThat(r.getC_BPartner_ID()).as("all four records shall have the same bPartner").isEqualTo(BPARTNER_ID);
 		});
 
 		// one parent of the supply in toWarehouseId and one child of the demand in fromWarehouseId
@@ -288,8 +288,9 @@ public class DDOrderAdvisedHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(2); // one supply record per event
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // one demand record per event
 
-		// the supply record from the first DDOrder and the demand record from the second both have intermediateWarehouseId and t2 and shall *share* one stock record!
-		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3);
+		// the supply record from the first DDOrder and the demand record from the second both have intermediateWarehouseId and t2;
+		// yet, they both have their own stock record
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(4);
 
 		//
 		// we will now verify the records in their chronological (new->old) and child->parent order
@@ -309,14 +310,16 @@ public class DDOrderAdvisedHandlerTests
 		assertThat(t2Demand.getMD_Candidate_GroupId()).isEqualTo(t3Supply.getMD_Candidate_GroupId()); // t2Demand and t3Suppy belong to the same group
 		assertThat(t2Demand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
-		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t2)).hasSize(1);
-		final I_MD_Candidate t2Stock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0); // this is the one that is shared!
-		assertThat(t2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t2Demand.getMD_Candidate_ID()); // t2Stock => t2Demand
-		assertThat(t2Stock.getQty()).isEqualByComparingTo(BigDecimal.ZERO); // it's balanced between t2Demand and t2Supply
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK, t2)).hasSize(2);
+		final I_MD_Candidate t2DemandStock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(0);
+		assertThat(t2DemandStock.getMD_Candidate_Parent_ID()).isEqualTo(t2Demand.getMD_Candidate_ID()); // t2DemandStock => t2Demand
+		assertThat(t2DemandStock.getQty()).isEqualByComparingTo(BigDecimal.TEN.negate());
+		final I_MD_Candidate t2SupplyStock = DispoTestUtils.filter(CandidateType.STOCK, t2).get(1);
+		assertThat(t2SupplyStock.getQty()).isZero();
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY, t2)).hasSize(1);
 		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, t2).get(0);
-		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2Stock.getMD_Candidate_ID());  // t2Supply => t2Stock
+		assertThat(t2Supply.getMD_Candidate_Parent_ID()).isEqualTo(t2SupplyStock.getMD_Candidate_ID()); // t2Supply => t2SupplyStock
 		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
 
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND, t1)).hasSize(1);
@@ -337,7 +340,8 @@ public class DDOrderAdvisedHandlerTests
 						t3Stock.getSeqNo(),
 						t3Supply.getSeqNo(),
 						t2Demand.getSeqNo(),
-						t2Stock.getSeqNo(),
+						t2DemandStock.getSeqNo(),
+						t2SupplyStock.getSeqNo(),
 						t2Supply.getSeqNo(),
 						t1Demand.getSeqNo(),
 						t1Stock.getSeqNo());
@@ -381,6 +385,7 @@ public class DDOrderAdvisedHandlerTests
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = SupplyRequiredDescriptor.builder()
 				.demandCandidateId(demandCandidateId)
+				.shipmentScheduleId(EventTestHelper.SHIPMENT_SCHEDULE_ID) // in order to avoid cycles, we need a demand info this info
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(PRODUCT_ID))
 				.build();

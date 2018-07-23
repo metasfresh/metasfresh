@@ -40,11 +40,13 @@ package org.eevolution.process;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.model.engines.CostDimension;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
@@ -56,10 +58,10 @@ import org.compiere.model.MCostElement;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -79,6 +81,10 @@ import de.metas.process.ProcessInfoParameter;
 @SuppressWarnings("deprecation") // hide those to not polute our Warnings
 public class RollupBillOfMaterial extends JavaProcess
 {
+	// services
+	private final transient IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
+	
 	/* Organization 		*/
 	private int		 		p_AD_Org_ID = 0;
 	/* Account Schema 		*/
@@ -135,7 +141,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	{
 		resetCostsLLForLLC0();
 		//
-		int maxLowLevel = Services.get(IMRPDAO.class).getMaxLowLevel(this);
+		int maxLowLevel = mrpDAO.getMaxLowLevel(this);
 		// Cost Roll-up for all levels
 		for (int lowLevel = maxLowLevel; lowLevel >= 0; lowLevel--)
 		{
@@ -158,9 +164,9 @@ public class RollupBillOfMaterial extends JavaProcess
 				}
 				if (PP_Product_BOM_ID <= 0)
 				{
-					PP_Product_BOM_ID = Services.get(IProductBOMDAO.class).retrieveDefaultBOMId(product);
+					PP_Product_BOM_ID = productBOMsRepo.retrieveDefaultBOMId(product);
 				}
-				MPPProductBOM bom = MPPProductBOM.get(getCtx(), PP_Product_BOM_ID);
+				final I_PP_Product_BOM bom = productBOMsRepo.retrieveBOMById(getCtx(), PP_Product_BOM_ID);
 				if (bom == null)
 				{
 					createNotice(product, "@NotFound@ @PP_Product_BOM_ID@");
@@ -171,7 +177,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		return "@OK@";
 	}
 
-	protected void rollup(MProduct product, MPPProductBOM bom)
+	protected void rollup(MProduct product, I_PP_Product_BOM bom)
 	{
 		for (I_M_CostElement element : getCostElements())
 		{
@@ -193,20 +199,22 @@ public class RollupBillOfMaterial extends JavaProcess
 	 * @param element cost element
 	 * @param baseCost base product cost (BOM Cost)
 	 */
-	private void updateCoProductCosts(MPPProductBOM bom, MCost baseCost)
+	private void updateCoProductCosts(I_PP_Product_BOM bom, MCost baseCost)
 	{
 		// Skip if not BOM found
 		if (bom == null)
 			return;
 
-		BigDecimal costPriceTotal = Env.ZERO;
-		for (MPPProductBOMLine bomline : bom.getLines())
+		BigDecimal costPriceTotal = BigDecimal.ZERO;
+		for (I_PP_Product_BOMLine bomline : productBOMsRepo.retrieveLines(bom))
 		{
-			if (!bomline.isCoProduct())
+			final MPPProductBOMLine bomLinePO = LegacyAdapters.convertToPO(bomline);
+			
+			if (!bomLinePO.isCoProduct())
 			{
 				continue;
 			}
-			final BigDecimal costPrice = baseCost.getCurrentCostPriceLL().multiply(bomline.getCostAllocationPerc());
+			final BigDecimal costPrice = baseCost.getCurrentCostPriceLL().multiply(getCostAllocationPerc(bomLinePO));
 			//
 			// Get/Create Cost
 			MCost cost = MCost.get(baseCost.getCtx(), baseCost.getAD_Client_ID(), baseCost.getAD_Org_ID(),
@@ -238,22 +246,38 @@ public class RollupBillOfMaterial extends JavaProcess
 	}
 
 	/**
+	 * @return co-product cost allocation percent (i.e. -1/qty)
+	 */
+	private BigDecimal getCostAllocationPerc(final MPPProductBOMLine bomLine)
+	{
+		final BigDecimal qty = bomLine.getQty(false).negate();
+		BigDecimal allocationPercent = BigDecimal.ZERO;
+		if (qty.signum() != 0)
+		{
+			allocationPercent = BigDecimal.ONE.divide(qty, 4, RoundingMode.HALF_UP);
+		}
+		return allocationPercent;
+	}
+
+	/**
 	 * Get the sum Current Cost Price Level Low for this Cost Element
 	 * @param bom MPPProductBOM
 	 * @param element MCostElement
 	 * @return Cost Price Lower Level
 	 */
-	private BigDecimal getCurrentCostPriceLL(MPPProductBOM bom, I_M_CostElement element)
+	private BigDecimal getCurrentCostPriceLL(I_PP_Product_BOM bom, I_M_CostElement element)
 	{
 		log.info("Element: "+ element);
-		BigDecimal costPriceLL = Env.ZERO;
+		BigDecimal costPriceLL = BigDecimal.ZERO;
 		if(bom == null)
 			return costPriceLL;
 
-		for (MPPProductBOMLine bomline : bom.getLines())
+		for (I_PP_Product_BOMLine bomline : productBOMsRepo.retrieveLines(bom))
 		{
+			final MPPProductBOMLine bomLinePO = LegacyAdapters.convertToPO(bomline);
+			
 			// Skip co-product
-			if (bomline.isCoProduct())
+			if (bomLinePO.isCoProduct())
 			{
 				continue;
 			}
@@ -267,12 +291,12 @@ public class RollupBillOfMaterial extends JavaProcess
 			// get the rate for this resource
 			for (MCost cost : getCosts(component, element.getM_CostElement_ID()))
 			{
-				BigDecimal qty = bomline.getQty(true);
+				BigDecimal qty = bomLinePO.getQty(true);
 
 				// ByProducts
-				if (bomline.isByProduct())
+				if (bomLinePO.isByProduct())
 				{
-					cost.setCurrentCostPriceLL(Env.ZERO);
+					cost.setCurrentCostPriceLL(BigDecimal.ZERO);
 				}
 
 				BigDecimal costPrice = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());

@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ package org.adempiere.ad.dao.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -41,7 +42,7 @@ import org.adempiere.util.Check;
 	public CoalesceEqualsQueryFilter(final Object value, final String... columnNames)
 	{
 		super();
-		
+
 		Check.assumeNotNull(columnNames, "columnNames not null");
 		Check.assumeNotNull(columnNames.length > 1, "columnNames.length > 1");
 		this.columnNames = Arrays.asList(columnNames);
@@ -58,12 +59,12 @@ import org.adempiere.util.Check;
 			{
 				sb.append(",");
 			}
-			sb.append(columnName); 
+			sb.append(columnName);
 		}
 		sb.insert(0, "COALESCE(").append(")");
-		
+
 		sb.append("==").append(value);
-		
+
 		return sb.toString();
 	}
 
@@ -71,7 +72,7 @@ import org.adempiere.util.Check;
 	public boolean accept(final T model)
 	{
 		Object modelValue = null;
-		
+
 		//
 		// Get first not null value
 		for (final String columnName : columnNames)
@@ -80,11 +81,11 @@ import org.adempiere.util.Check;
 			{
 				continue;
 			}
-			
-			modelValue = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+
+			modelValue = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 		}
-		
-		final boolean accepted = Check.equals(modelValue, value);
+
+		final boolean accepted = Objects.equals(modelValue, value);
 		return accepted;
 	}
 
@@ -122,17 +123,17 @@ import org.adempiere.util.Check;
 		{
 			return;
 		}
-		
+
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		final List<Object> sqlParams;
-		
+
 		for (final String columnName : columnNames)
 		{
 			if (sqlWhereClause.length() > 0)
 			{
 				sqlWhereClause.append(",");
 			}
-			sqlWhereClause.append(columnName); 
+			sqlWhereClause.append(columnName);
 		}
 		sqlWhereClause.insert(0, "COALESCE(").append(")");
 

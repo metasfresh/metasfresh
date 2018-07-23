@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
@@ -35,13 +34,18 @@ import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
@@ -96,13 +100,13 @@ public class OLCandPIIPValidator implements IOLCandValidator
 
 	private void checkForPrice(final I_C_OLCand olCand, final int packingMaterialProductId)
 	{
-		final int pricingSystemId = olCand.getM_PricingSystem_ID();
+		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(olCand.getM_PricingSystem_ID());
 
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
 		final I_C_BPartner_Location billBPLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
 
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, true);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, SOTrx.SALES);
 		if (pl == null)
 		{
 			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocation);
@@ -114,11 +118,11 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		pricingCtx.setSOTrx(true);
 		pricingCtx.setQty(BigDecimal.ONE); // we don't care for the actual quantity we just want to verify that there is a price
 
-		pricingCtx.setM_PricingSystem_ID(pricingSystemId);
-		pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
+		pricingCtx.setPricingSystemId(pricingSystemId);
+		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
 		pricingCtx.setM_Product_ID(packingMaterialProductId);
 		pricingCtx.setPriceDate(datePromisedEffective);
-		pricingCtx.setC_Currency_ID(olCand.getC_Currency_ID());
+		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(olCand.getC_Currency_ID()));
 
 		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
 		if (pricingResult == null || !pricingResult.isCalculated())

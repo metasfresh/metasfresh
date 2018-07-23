@@ -31,15 +31,19 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.lang.SOTrx;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import lombok.NonNull;
 
 public class PriceListBL implements IPriceListBL
 {
 	@Override
-	public int getPricePrecision(final int priceListId)
+	public int getPricePrecision(final PriceListId priceListId)
 	{
-		if(priceListId <= 0)
+		if(priceListId == null)
 		{
 			return 2; // default
 		}
@@ -50,13 +54,13 @@ public class PriceListBL implements IPriceListBL
 
 	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(
-			final int pricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final int countryId,
 			final Timestamp date,
-			final boolean isSOTrx)
+			@NonNull final SOTrx soTrx)
 	{
 		final Boolean processedPLVFiltering = null;
-		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, isSOTrx, processedPLVFiltering);
+		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, soTrx, processedPLVFiltering);
 		if (currentVersion == null)
 		{
 			return null;
@@ -68,26 +72,26 @@ public class PriceListBL implements IPriceListBL
 
 	@Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
-			final int pricingSystemId,
+			final PricingSystemId pricingSystemId,
 			final int countryId,
 			final Timestamp date,
-			final Boolean isSOTrx,
+			final SOTrx soTrx,
 			final Boolean processedPLVFiltering)
 	{
-		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, isSoTrx={}, processedPLVFiltering={}", countryId, isSOTrx, processedPLVFiltering);
+		Check.assumeNotNull(date, "Param 'date' is not null; other params: country={}, soTrx={}, processedPLVFiltering={}", countryId, soTrx, processedPLVFiltering);
 
 		if (countryId <= 0)
 		{
 			return null;
 		}
 
-		if (pricingSystemId <= 0)
+		if (pricingSystemId == null)
 		{
 			return null;
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, isSOTrx);
+		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx);
 		if (!pricelists.hasNext())
 		{
 			return null;

@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2087579086L;
+	private static final long serialVersionUID = 738571444L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -25,16 +25,12 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 			setC_BPartner_ID (0);
 			setC_BPartner_Location_ID (0);
 			setC_Location_ID (0);
-			setIsBillTo (true);
-// Y
-			setIsPayFrom (true);
-// Y
-			setIsRemitTo (true);
-// Y
-			setIsShipTo (true);
-// Y
-			setName (null);
-// .
+			setIsBillTo (true); // Y
+			setIsHandOverLocation (true); // Y
+			setIsPayFrom (true); // Y
+			setIsRemitTo (false); // N
+			setIsShipTo (true); // Y
+			setName (null); // .
         } */
     }
 
@@ -344,6 +340,29 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_ISDN);
 	}
 
+	/** Set Abladeort.
+		@param IsHandOverLocation Abladeort	  */
+	@Override
+	public void setIsHandOverLocation (boolean IsHandOverLocation)
+	{
+		set_Value (COLUMNNAME_IsHandOverLocation, Boolean.valueOf(IsHandOverLocation));
+	}
+
+	/** Get Abladeort.
+		@return Abladeort	  */
+	@Override
+	public boolean isHandOverLocation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsHandOverLocation);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Zahlungs-Adresse.
 		@param IsPayFrom 
 		Business Partner pays from that address and we'll send dunning letters there
@@ -513,9 +532,9 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Phone.
+	/** Set Telefon.
 		@param Phone 
-		Identifies a telephone number
+		Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public void setPhone (java.lang.String Phone)
@@ -523,8 +542,8 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_Phone, Phone);
 	}
 
-	/** Get Phone.
-		@return Identifies a telephone number
+	/** Get Telefon.
+		@return Beschreibt eine Telefon Nummer
 	  */
 	@Override
 	public java.lang.String getPhone () 
@@ -532,9 +551,9 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_Phone);
 	}
 
-	/** Set Telefon (alternativ).
+	/** Set Mobil.
 		@param Phone2 
-		Identifies an alternate telephone number.
+		Alternative Mobile Telefonnummer
 	  */
 	@Override
 	public void setPhone2 (java.lang.String Phone2)
@@ -542,8 +561,8 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_Phone2, Phone2);
 	}
 
-	/** Get Telefon (alternativ).
-		@return Identifies an alternate telephone number.
+	/** Get Mobil.
+		@return Alternative Mobile Telefonnummer
 	  */
 	@Override
 	public java.lang.String getPhone2 () 

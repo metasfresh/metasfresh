@@ -47,6 +47,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Helper class for massive generation of HUs for receipt schedule(s).
@@ -56,9 +57,8 @@ import lombok.NonNull;
  * <li>This class can also be configured to go with pre existing HUs (if they are still valid) instead of creating new ones,
  * see {@link ILUTUProducerAllocationDestination#setExistingHUs(IHUAllocations)} which is called from this class.
  *
- * @author tsa
- *
  */
+@ToString(doNotUseGetters = true)
 public class ReceiptScheduleHUGenerator
 {
 	/**
@@ -157,10 +157,7 @@ public class ReceiptScheduleHUGenerator
 
 	private final Quantity getQtyToAllocateTarget()
 	{
-		if (_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0)
-		{
-			throw new AdempiereException("Quantity to receive shall be greather than zero");
-		}
+		Check.errorIf(_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0, "QtyToAllocateTarget needs to be > 0; this={}", this);
 		return _qtyToAllocateTarget;
 	}
 
@@ -357,7 +354,6 @@ public class ReceiptScheduleHUGenerator
 					.setOnRunnableSuccess(OnRunnableSuccess.DONT_COMMIT)
 					.build();
 		}
-
 
 		trxManager.run(trxNamePrefix, trxRunConfig, new TrxRunnableAdapter()
 		{

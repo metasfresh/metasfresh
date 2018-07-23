@@ -46,7 +46,6 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -70,7 +69,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Splash;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
@@ -167,33 +166,22 @@ public final class AEnv
 		if (window instanceof Frame)
 		{
 			final Frame frame = (Frame)window;
-			EventQueue.invokeLater(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					frame.pack();
-					frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-					frame.setVisible(true);
-					frame.toFront();
-				}
+			EventQueue.invokeLater(() -> {
+				frame.pack();
+				frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+				frame.setVisible(true);
+				frame.toFront();
 			});
 		}
 		else if (window instanceof Dialog)
 		{
 			final Dialog dialog = (Dialog)window;
-			EventQueue.invokeLater(new Runnable()
-			{
-
-				@Override
-				public void run()
-				{
-					dialog.setLocation(0, 0);
-					final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-					dialog.setSize(screenSize.width, screenSize.height);
-					dialog.setVisible(true);
-					dialog.toFront();
-				}
+			EventQueue.invokeLater(() -> {
+				dialog.setLocation(0, 0);
+				final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				dialog.setSize(screenSize.width, screenSize.height);
+				dialog.setVisible(true);
+				dialog.toFront();
 			});
 		}
 	}
@@ -500,11 +488,6 @@ public final class AEnv
 				aMenu.dispose();
 			}
 		}
-		else if (actionCommand.equals("Logout"))
-		{
-			final AMenu aMenu = (AMenu)Env.getWindow(Env.WINDOW_MAIN);
-			aMenu.logout();
-		}
 
 		// Go Menu ------------------------
 		else if (actionCommand.equals("WorkFlow"))
@@ -519,7 +502,7 @@ public final class AEnv
 		// Tools Menu ------------------------
 		else if (actionCommand.equals("Calculator"))
 		{
-			final Calculator calc = new org.compiere.grid.ed.Calculator(Env.getFrame(c));
+			final Calculator calc = new org.compiere.grid.ed.Calculator(SwingUtils.getFrame(c));
 			calc.setDisposeOnEqual(false);
 			showCenterScreen(calc);
 		}
@@ -529,14 +512,14 @@ public final class AEnv
 		}
 		else if (actionCommand.equals("Editor"))
 		{
-			showCenterScreen(new org.compiere.grid.ed.Editor(Env.getFrame(c)));
+			showCenterScreen(new org.compiere.grid.ed.Editor(SwingUtils.getFrame(c)));
 		}
 		else if (actionCommand.equals("Preference"))
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions();
 			if (role.isShowPreference())
 			{
-				showCenterScreen(new Preference(Env.getFrame(c), WindowNo));
+				showCenterScreen(new Preference(SwingUtils.getFrame(c), WindowNo));
 			}
 		}
 
@@ -547,11 +530,11 @@ public final class AEnv
 		}
 		else if (actionCommand.equals("EMailSupport"))
 		{
-			ADialog.createSupportEMail(Env.getFrame(c), Env.getFrame(c).getTitle(), "\n\n");
+			ADialog.createSupportEMail(SwingUtils.getFrame(c), SwingUtils.getFrame(c).getTitle(), "\n\n");
 		}
 		else if (actionCommand.equals("About"))
 		{
-			showCenterScreen(new AboutBox(Env.getFrame(c)));
+			showCenterScreen(new AboutBox(SwingUtils.getFrame(c)));
 		}
 		else
 		{
@@ -678,7 +661,7 @@ public final class AEnv
 
 	/**
 	 * Zoom into a given window based on a query
-	 * 
+	 *
 	 * @param query
 	 * @param adWindowId
 	 */
@@ -694,7 +677,7 @@ public final class AEnv
 			log.warn("No AD_Window_ID found for ID {}", adWindowId);
 			return;
 		}
-		
+
 		zoom(RecordZoomWindowFinder.newInstance(query, adWindowId));
 
 	}
@@ -751,16 +734,6 @@ public final class AEnv
 	{
 		Env.exitEnv(status);
 	}	// exit
-
-	public static void logout()
-	{
-		Env.logout();
-
-		Splash.getSplash().setVisible(true);
-
-		// reload
-		new AMenu();
-	}
 
 	/**
 	 * Is Workflow Process view enabled.
@@ -970,8 +943,7 @@ public final class AEnv
 	}   // getWindow
 
 	/**
-	 * Post Immediate. This method is usually triggered from the UI. However, the posting might still be executed on the server,
-	 * depending on the {@link ClientAccountingStatus} which can be configured via <code>AD_SysConfig</code> or startup parameter.
+	 * Post Immediate. This method is usually triggered from the UI.
 	 *
 	 * If there is any error, an error dialog will be displayed to user.
 	 *
@@ -986,10 +958,6 @@ public final class AEnv
 	public static void postImmediate(final int WindowNo, final int AD_Client_ID,
 			final int AD_Table_ID, final int Record_ID, final boolean force)
 	{
-		log.info("Window=" + WindowNo
-				+ ", AD_Table_ID=" + AD_Table_ID + "/" + Record_ID
-				+ ", Force=" + force);
-
 		Services.get(IPostingService.class)
 				.newPostingRequest()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
@@ -1185,18 +1153,13 @@ public final class AEnv
 			@Override
 			public void windowGainedFocus(final WindowEvent e)
 			{
-				EventQueue.invokeLater(new Runnable()
-				{
-					@Override
-					public void run()
+				EventQueue.invokeLater(() -> {
+					if (modalFrame == null || !modalFrame.isVisible() || !modalFrame.isShowing())
 					{
-						if (modalFrame == null || !modalFrame.isVisible() || !modalFrame.isShowing())
-						{
-							return;
-						}
-						modalFrame.toFront();
-						modalFrame.repaint();
+						return;
 					}
+					modalFrame.toFront();
+					modalFrame.repaint();
 				});
 			}
 

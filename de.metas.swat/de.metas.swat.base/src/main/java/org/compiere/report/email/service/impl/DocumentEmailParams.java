@@ -26,7 +26,6 @@ package org.compiere.report.email.service.impl;
 import java.util.ArrayList;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
@@ -42,6 +41,7 @@ import org.compiere.model.MOrder;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;

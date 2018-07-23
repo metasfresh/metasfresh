@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -58,8 +59,6 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;

@@ -9,11 +9,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer;
@@ -35,12 +36,12 @@ import de.metas.process.RunOutOfTrx;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +50,7 @@ import de.metas.process.RunOutOfTrx;
 
 /**
  * Process used to generate DD_Orders to move the HUs flagged as "scheduled from Quality Inspection" from a given warehouse to a given warehouse.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task 08639
  */
@@ -120,7 +121,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		return handlingUnitsDAO.createHUQueryBuilder()
 				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setOnlyTopLevelHUs()
-				.addOnlyInWarehouseId(warehouseFrom.getM_Warehouse_ID())
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(warehouseFrom.getM_Warehouse_ID()))
 				.addOnlyWithAttribute(IHUMaterialTrackingBL.ATTRIBUTENAME_IsQualityInspection, IHUMaterialTrackingBL.ATTRIBUTEVALUE_IsQualityInspection_Yes)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.addFilter(huDDOrderDAO.getHUsNotAlreadyScheduledToMoveFilter())

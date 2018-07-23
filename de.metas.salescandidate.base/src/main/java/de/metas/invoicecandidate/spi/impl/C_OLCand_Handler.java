@@ -51,6 +51,7 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -208,16 +209,12 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				, ic
 				, taxCategoryId
 				, productId
-				, chargeId
 				, olc.getDatePromised()
 				, olc.getDatePromised()
 				, orgId
 				, warehouse
-				, billLocationId
-				, olCandEffectiveValuesBL.getC_BP_Location_Effective_ID(olc)
-				, isSOTrx
-				, trxName
-				);
+				, olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc)
+				, isSOTrx);
 		ic.setC_Tax_ID(taxId);
 
 		return ic;
@@ -291,7 +288,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
-		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(olc, null, 0, olc.getDateCandidate());
+		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(olc, null, PricingSystemId.NULL, olc.getDateCandidate());
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPrice_UOM_ID())

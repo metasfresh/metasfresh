@@ -5,7 +5,12 @@ package de.metas.pricing.conditions.service;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -44,8 +49,9 @@ public class PricingConditionsResult
 	public static final PricingConditionsResult ZERO = builder().build();
 
 	Percent discount;
-	int paymentTermId;
+	PaymentTermId paymentTermId;
 
+	CurrencyId currencyId;
 	BigDecimal priceListOverride;
 	BigDecimal priceStdOverride;
 	BigDecimal priceLimitOverride;
@@ -53,22 +59,24 @@ public class PricingConditionsResult
 	PricingConditionsId pricingConditionsId;
 	PricingConditionsBreak pricingConditionsBreak;
 
-	int basePricingSystemId;
+	PricingSystemId basePricingSystemId;
 
 	@Builder
 	public PricingConditionsResult(
-			final Percent discount,
-			final int paymentTermId,
+			@Nullable final Percent discount,
+			final PaymentTermId paymentTermId,
+			final CurrencyId currencyId,
 			final BigDecimal priceListOverride,
 			final BigDecimal priceStdOverride,
 			final BigDecimal priceLimitOverride,
 			final PricingConditionsId pricingConditionsId,
 			final PricingConditionsBreak pricingConditionsBreak,
-			final int basePricingSystemId)
+			final PricingSystemId basePricingSystemId)
 	{
 		this.discount = discount != null ? discount : Percent.ZERO;
 		this.paymentTermId = paymentTermId;
 
+		this.currencyId = currencyId;
 		this.priceListOverride = priceListOverride;
 		this.priceStdOverride = priceStdOverride;
 		this.priceLimitOverride = priceLimitOverride;

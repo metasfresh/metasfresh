@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 
 /*
@@ -55,5 +56,5 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 		return retrieveOrderQtys(ppOrderId).stream();
 	}
 
-	boolean isHuIdIssued(int huId);
+	boolean isHuIdIssued(HuId huId);
 }

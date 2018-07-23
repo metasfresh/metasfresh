@@ -192,7 +192,7 @@ public class GridField
 			return null;
 		}
 
-		log.info("Loading lookup for {}", m_vo.getColumnName());
+		log.debug("Loading lookup for {}", m_vo.getColumnName());
 
 		// If the field it's not displayed, there is no point to create the lookup
 		if (!isDisplayable())
@@ -1198,11 +1198,17 @@ public class GridField
 	public boolean isEncrypted()
 	{
 		if (m_vo.isEncryptedField())
+		{
 			return true;
-		String ob = getObscureType();
+		}
+		
+		final String ob = getObscureType();
 		if (ob != null && ob.length() > 0)
+		{
 			return true;
-		return m_vo.getColumnName().equals("Password");
+		}
+
+		return DisplayType.isPassword(m_vo.getColumnName(), m_vo.getDisplayType());
 	}
 
 	/**

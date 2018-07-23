@@ -86,7 +86,7 @@ public class AdempiereException extends RuntimeException
 		}
 
 		// default
-		return new AdempiereException(extractMessage(cause), cause);
+		return new AdempiereException(throwable.getClass().getSimpleName() + ": " + extractMessage(cause), cause);
 	}
 
 	/**

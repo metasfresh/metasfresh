@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -50,10 +49,12 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.CompositePriceLimitRule;
@@ -112,7 +113,7 @@ public class PricingBL implements IPricingBL
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
 		final IPricingContext pricingCtxToUse = setupPricingContext(pricingCtx);
-		final IPricingResult result = createInitialResult(pricingCtxToUse);
+		final PricingResult result = createInitialResult(pricingCtxToUse);
 
 		//
 		// Do not change anything if the price is manual (task 08908)
@@ -147,7 +148,8 @@ public class PricingBL implements IPricingBL
 
 		// Convert prices to price UOM if required
 		convertResultToContextUOMIfNeeded(result, pricingCtxToUse);
-		setPrecision(pricingCtxToUse, result);
+
+		setPrecisionAndPriceScales(pricingCtxToUse, result);
 
 		if (logger.isDebugEnabled())
 		{
@@ -206,30 +208,29 @@ public class PricingBL implements IPricingBL
 		//
 		// Set M_PriceList_ID and M_PriceList_Version_ID from pricingSystem, date and country, if necessary;
 		// if set and there is one in the pricingCtx, also check if it is consistent.
-		if (pricingCtx.getM_PricingSystem_ID() > 0
+		if (pricingCtx.getPricingSystemId() != null
 				&& priceDate != null
 				&& pricingCtx.getM_Product_ID() > 0
 				&& pricingCtx.getC_Country_ID() > 0)
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
-					pricingCtx.getM_PricingSystem_ID(),
+					pricingCtx.getPricingSystemId(),
 					pricingCtx.getC_Country_ID(),
 					pricingCtx.getPriceDate(),
-					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.isSOTrx(),
+					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
 
 			if (computedPLV != null)
 			{
-				final int priceListId = computedPLV.getM_PriceList_ID();
-				pricingCtx.setM_PriceList_ID(priceListId);
+				pricingCtx.setPriceListId(PriceListId.ofRepoId(computedPLV.getM_PriceList_ID()));
 
 				// while we are at it, do a little sanity check and also set the PLV-ID
 				Check.assume(pricingCtx.getM_PriceList_Version_ID() <= 0 || pricingCtx.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
 						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtx,  // 0
 						pricingCtx.getM_PriceList_Version(),  // 1
-						pricingCtx.getM_PricingSystem_ID(),  // 2
+						pricingCtx.getPricingSystemId(),  // 2
 						pricingCtx.getM_Product_ID(),  // 3
 						pricingCtx.getC_Country_ID(),  // 4
 						pricingCtx.isSOTrx(),  // 5
@@ -241,10 +242,10 @@ public class PricingBL implements IPricingBL
 		//
 		// Set M_PriceList_Version_ID from PL and date, if necessary.
 		if (pricingCtx.getM_PriceList_Version_ID() <= 0
-				&& pricingCtx.getM_PriceList_ID() > 0
+				&& pricingCtx.getPriceListId() != null
 				&& priceDate != null)
 		{
-			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getM_PriceList_ID());
+			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
 			try
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
@@ -266,13 +267,13 @@ public class PricingBL implements IPricingBL
 
 		//
 		// set PL from PLV
-		if (pricingCtx.getM_PriceList_ID() <= 0
+		if (pricingCtx.getPriceListId() == null
 				&& pricingCtx.getM_PriceList_Version_ID() > 0)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
 			logger.info("Setting to context: M_PriceList_ID={} from M_PriceList_Version={}", priceListVersion.getM_PriceList_ID(), priceListVersion);
-			pricingCtx.setM_PriceList_ID(priceListVersion.getM_PriceList_ID());
+			pricingCtx.setPriceListId(PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID()));
 		}
 
 		//
@@ -287,19 +288,24 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private void setPrecision(IPricingContext pricingCtx, IPricingResult result)
+	private void setPrecisionAndPriceScales(
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final PricingResult result)
 	{
-		if (pricingCtx.getM_PriceList_ID() > 0 && result.getPrecision() == IPricingResult.NO_PRECISION)
+		if (pricingCtx.getPriceListId() != null && result.getPrecision() == IPricingResult.NO_PRECISION)
 		{
-			final int precision = getPricePrecision(pricingCtx.getM_PriceList_ID());
+			final int precision = getPricePrecision(pricingCtx.getPriceListId());
 			if (precision >= 0)
 			{
 				result.setPrecision(precision);
 			}
 		}
+		result.updatePriceScales();
 	}
 
-	private void convertResultToContextUOMIfNeeded(final IPricingResult result, final IPricingContext pricingCtx)
+	private void convertResultToContextUOMIfNeeded(
+			@NonNull final IPricingResult result,
+			@NonNull final IPricingContext pricingCtx)
 	{
 		// We are asked to keep the prices in context's UOM, so do nothing
 		if (!pricingCtx.isConvertPriceToContextUOM())
@@ -353,14 +359,14 @@ public class PricingBL implements IPricingBL
 	}
 
 	@Override
-	public IPricingResult createInitialResult(final IPricingContext pricingCtx)
+	public PricingResult createInitialResult(@NonNull final IPricingContext pricingCtx)
 	{
-		final IPricingResult result = new PricingResult();
-		result.setM_PricingSystem_ID(pricingCtx.getM_PricingSystem_ID());
-		result.setM_PriceList_ID(pricingCtx.getM_PriceList_ID());
+		final PricingResult result = new PricingResult();
+		result.setPricingSystemId(pricingCtx.getPricingSystemId());
+		result.setPriceListId(pricingCtx.getPriceListId());
 		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());
 		result.setM_Product_ID(pricingCtx.getM_Product_ID());
-		result.setC_Currency_ID(pricingCtx.getC_Currency_ID());
+		result.setCurrencyId(pricingCtx.getCurrencyId());
 		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
 		result.setPriceDate(pricingCtx.getPriceDate());
 
@@ -428,9 +434,8 @@ public class PricingBL implements IPricingBL
 		return null;
 	}
 
-	private final int getPricePrecision(final int priceListId)
+	private final int getPricePrecision(@NonNull final PriceListId priceListId)
 	{
-		Check.assume(priceListId > 0, "priceListId > 0");
 		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}
 

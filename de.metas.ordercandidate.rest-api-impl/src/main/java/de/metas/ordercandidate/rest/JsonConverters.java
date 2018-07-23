@@ -12,8 +12,10 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -43,7 +45,7 @@ public class JsonConverters
 {
 	public final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
-		final int productId = Services.get(IProductDAO.class).retrieveProductIdByValue(request.getProductCode());
+		final ProductId productId = Services.get(IProductDAO.class).retrieveProductIdByValue(request.getProductCode());
 		final int uomId = request.getUomId() > 0 ? request.getUomId() : Services.get(IProductBL.class).getStockingUOM(productId).getC_UOM_ID();
 
 		return OLCandCreateRequest.builder()
@@ -116,7 +118,7 @@ public class JsonConverters
 				.uomId(olCand.getC_UOM_ID())
 				.huPIItemProductId(olCand.getHUPIProductItemId())
 				//
-				.pricingSystemId(olCand.getPricingSystemId())
+				.pricingSystemId(PricingSystemId.getRepoId(olCand.getPricingSystemId()))
 				.price(olCand.getPriceActual())
 				.discount(olCand.getDiscount())
 				//

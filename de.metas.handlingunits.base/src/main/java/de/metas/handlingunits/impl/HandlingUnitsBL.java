@@ -7,11 +7,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,7 +35,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -154,27 +151,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// Try to destroy given HU (or some of it's children)
 		final IMutable<Boolean> destroyed = new Mutable<>(false);
 		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
+				.run((IHUContextProcessor)huContext -> {
+					if (destroyIfEmptyStorage(huContext, huToDestroy))
 					{
-						if (destroyIfEmptyStorage(huContext, huToDestroy))
-						{
-							destroyed.setValue(true);
-						}
-						return null;
+						destroyed.setValue(true);
 					}
+					return null;
 				});
 
 		return destroyed.getValue();
 	}
 
 	@Override
-	public boolean destroyIfEmptyStorage(final IHUContext huContext, final I_M_HU huToDestroy)
+	public boolean destroyIfEmptyStorage(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU huToDestroy)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
-		Check.assumeNotNull(huToDestroy, "hu not null");
 		Services.get(ITrxManager.class).assertTrxNotNull(huContext);
 
 		// Service(s)
@@ -225,9 +217,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(final IHUContext huContext, final I_M_HU hu)
 	{
-		setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
-		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
+		handlingUnitsDAO.saveHU(hu);
 	}
 
 	@Override
@@ -236,24 +231,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// services
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor(huContext)
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
+				.run((IHUContextProcessor)huContext1 -> {
+					for (final I_M_HU hu : hus)
 					{
-						for (final I_M_HU hu : hus)
+						if (isDestroyedRefreshFirst(hu))
 						{
-							if (isDestroyedRefreshFirst(hu))
-							{
-								continue;
-							}
-
-							markDestroyed(huContext, hu);
+							continue;
 						}
-
-						return NULL_RESULT;
+						markDestroyed(huContext1, hu);
 					}
+
+					return IHUContextProcessor.NULL_RESULT;
 				});
 	}
 
@@ -401,9 +389,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return false;
 		}
-		
+
 		final String huUnitType = getHU_UnitType(hu);
-		if(huUnitType == null)
+		if (huUnitType == null)
 		{
 			return false;
 		}
@@ -447,11 +435,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public String getHU_UnitType(@NonNull final I_M_HU hu)
 	{
 		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
-		if(piVersion == null) // could happen while the HU is building
+		if (piVersion == null) // could happen while the HU is building
 		{
 			return null;
 		}
-		
+
 		final String huUnitType = piVersion.getHU_UnitType();
 		return huUnitType;
 	}
@@ -717,33 +705,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isPhysicalHU(final String huStatus)
-	{
-		if (huStatus == null)
-		{
-			return false;
-		}
-		if (X_M_HU.HUSTATUS_Destroyed.equals(huStatus))
-		{
-			return false;
-		}
-
-		if (X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return false;
-		}
-
-		if (X_M_HU.HUSTATUS_Shipped.equals(huStatus))
-		{
-			return false;
-		}
-
-		// we consider the rest of the statuses to be physical
-		// (active, picked and issued)
-		return true;
-	}
-
-	@Override
 	public boolean isAggregateHU(final I_M_HU hu)
 	{
 		if (hu == null)
@@ -826,127 +787,5 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
 		return included_HU_PI;
-	}
-
-	@Override
-	public void setHUStatus(final IHUContext huContext,
-			@NonNull final I_M_HU hu,
-			@NonNull final String huStatus)
-	{
-		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
-		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
-	}
-
-	@Override
-	public void setHUStatus(
-			@NonNull final IHUContext huContext,
-			@NonNull final I_M_HU hu,
-			@NonNull final String huStatus,
-			final boolean forceFetchPackingMaterial)
-	{
-		// keep this so we can compare it with the new one and make sure the moving to/from
-		// gebindelager is done only when needed
-		final String initialHUStatus = hu.getHUStatus();
-
-		if (Objects.equals(huStatus, initialHUStatus))
-		{
-			// do nothing
-			return;
-		}
-
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final boolean isExchangeGebindelagerWhenEmpty = huStatusBL.isMovePackagingToEmptiesWarehouse(huStatus);
-
-		//
-		// 08157: If forced packing material fetching is enabled, then make sure to pull packing material from Gebinde warehouse (i.e when bringing a blank LU)
-		if (forceFetchPackingMaterial)
-		{
-			if (isPhysicalHU(initialHUStatus))
-			{
-				// collect the "destroyed" HUs in case they were already physical (active)
-				huContext
-						.getHUPackingMaterialsCollector()
-						.addHURecursively(hu, null);
-			}
-			else
-			{
-				// remove the HUs from the destroying collector (decrement qty) just in case of new HU
-				huContext
-						.getHUPackingMaterialsCollector()
-						.removeHURecursively(hu);
-			}
-		}
-		else if (!isExchangeGebindelagerWhenEmpty)
-		{
-			// do nothing
-		}
-		else
-		{
-			// TODO: use statusEntry to determine if we need to add/remove packing materials
-
-			// remove the HUs from the destroying collector (decrement qty) just in case of new HU (no initial status)
-			if (initialHUStatus == null)
-			{
-				huContext
-						.getHUPackingMaterialsCollector()
-						.removeHURecursively(hu);
-			}
-			// only collect the destroyed HUs in case they were already physical (active)
-			else if (isPhysicalHU(initialHUStatus))
-			{
-				huContext
-						.getHUPackingMaterialsCollector()
-						.addHURecursively(hu, null);
-			}
-			else
-			{
-				// do nothing
-
-				// TODO: evaluate the logic from here and the logic of the method at all
-				// This could be the case when the HUStatus is changed from Planning to Active.
-				// Teoretically we shall "fetch" the packing materials from gebinde lager in this case,
-				// but by coincidence we don't want to do this because mainly this case happens when we are receving new HUs
-				// from Wareneingang POS (and generate the material receipt)
-				// And there we don't want to do this because those packing materials are fetched from Vendor and not from our lager.
-			}
-		}
-
-		hu.setHUStatus(huStatus);
-
-		// Do not save the HU because, at this point, we don't know what's to be done with it in future
-	}
-
-	@Override
-	public void setHUStatusActive(final Collection<I_M_HU> hus)
-	{
-		if (hus == null || hus.isEmpty())
-		{
-			return;
-		}
-
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-
-		huTrxBL.process(huContext -> {
-			for (final I_M_HU hu : hus)
-			{
-				final boolean isPhysicalHU = isPhysicalHU(hu.getHUStatus());
-				if (isPhysicalHU)
-				{
-					// in case of a physical HU, we don't need to activate and collect it for the empties movements, because that was already done.
-					// concrete case: in both empfang and verteilung the boxes were coming from gebindelager to our current warehouse
-					// ... but when you get to verteilung the boxes are already there
-					return;
-				}
-
-				setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-				InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
-
-				//
-				// Ask the API to get the packing materials needed to the HU which we just activate it
-				// TODO: i think we can remove this part because it's done automatically ?! (NOTE: this one was copied from swing UI, de.metas.handlingunits.client.terminal.pporder.receipt.view.HUPPOrderReceiptHUEditorPanel.onDialogOkBeforeSave(ITerminalDialog))
-				huContext.getHUPackingMaterialsCollector().removeHURecursively(hu);
-			}
-		});
-
 	}
 }

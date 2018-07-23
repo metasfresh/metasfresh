@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -19,12 +20,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,18 +36,18 @@ import lombok.Value;
 @Builder
 public class PurchaseCandidateAggregateKey
 {
-	public static PurchaseCandidateAggregateKey cast(Object obj)
+	public static PurchaseCandidateAggregateKey cast(@NonNull final Object obj)
 	{
 		return (PurchaseCandidateAggregateKey)obj;
 	}
 
-	public static PurchaseCandidateAggregateKey fromPurchaseCandidate(PurchaseCandidate purchaseCandidate)
+	public static PurchaseCandidateAggregateKey fromPurchaseCandidate(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
 		return builder()
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.productId(purchaseCandidate.getProductId())
-				.uomId(purchaseCandidate.getUomId())
+				.attributeSetInstanceId(purchaseCandidate.getAttributeSetInstanceId())
 				.build();
 	}
 
@@ -56,5 +57,6 @@ public class PurchaseCandidateAggregateKey
 	WarehouseId warehouseId;
 	@NonNull
 	ProductId productId;
-	int uomId;
+	@NonNull
+	AttributeSetInstanceId attributeSetInstanceId;
 }

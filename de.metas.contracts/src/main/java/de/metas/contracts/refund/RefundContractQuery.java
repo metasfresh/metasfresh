@@ -2,9 +2,8 @@ package de.metas.contracts.refund;
 
 import java.time.LocalDate;
 
-import org.adempiere.bpartner.BPartnerId;
-
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +42,7 @@ public class RefundContractQuery
 				invoiceCandidate.getInvoiceableFrom());
 	}
 
-	public static RefundContractQuery of(@NonNull final GrossProfitComputeRequest request)
+	public static RefundContractQuery of(@NonNull final CalculateProfitPriceActualRequest request)
 	{
 		return new RefundContractQuery(
 				request.getBPartnerId(),

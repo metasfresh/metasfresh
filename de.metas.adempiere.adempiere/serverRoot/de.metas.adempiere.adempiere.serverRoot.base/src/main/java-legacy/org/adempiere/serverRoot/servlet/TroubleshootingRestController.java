@@ -6,6 +6,7 @@ import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.logging.LogManager;
@@ -43,8 +44,9 @@ public class TroubleshootingRestController
 
 	private final AtomicLong nextNotificationId = new AtomicLong(1);
 
+	/* when adding additional parameters, please also update https://github.com/metasfresh/metasfresh/issues/1577#issue-229774302 */
 	@GetMapping("/ping/notifications")
-	public String pingNotifications()
+	public String pingNotifications(@RequestParam(value="noEmail", defaultValue="false") String noEmail)
 	{
 		final long id = nextNotificationId.getAndIncrement();
 
@@ -52,6 +54,7 @@ public class TroubleshootingRestController
 				.recipient(Recipient.allUsers())
 				.subjectPlain("Notifications system test")
 				.contentPlain("Please ignore this message. It was issued by server to check the notifications system (#" + id + ").")
+				.noEmail(Boolean.parseBoolean(noEmail))
 				.build();
 		Services.get(INotificationBL.class).send(request);
 

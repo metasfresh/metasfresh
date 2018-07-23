@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.process;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
@@ -34,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -50,7 +52,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.Query;
+import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -141,10 +143,25 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		// in case we were called from the window, then only process the current selection
 		final IQueryFilter<I_M_ReceiptSchedule> processInfoFilter = getProcessInfo().getQueryFilter();
 
+		// only process records with an effective qty > 0
+		final ICompositeQueryFilter<I_M_ReceiptSchedule> overrideQtyFilter = queryBL
+				.createCompositeQueryFilter(I_M_ReceiptSchedule.class)
+				.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override, Operator.GREATER, ZERO);
+		final ICompositeQueryFilter<I_M_ReceiptSchedule> qtyFilter = queryBL
+				.createCompositeQueryFilter(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override, null)
+				.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, Operator.GREATER, ZERO);
+		final ICompositeQueryFilter<I_M_ReceiptSchedule> effectiveQtyFilter = queryBL
+				.createCompositeQueryFilter(I_M_ReceiptSchedule.class)
+				.setJoinOr()
+				.addFilter(overrideQtyFilter)
+				.addFilter(qtyFilter);
+
 		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class, getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()
-				.filter(processInfoFilter);
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.filter(processInfoFilter)
+				.filter(effectiveQtyFilter);
 		if (warehouseId > 0)
 		{
 			queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
@@ -165,8 +182,8 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 
 		return queryBuilder
 				.create()
-				.setOption(Query.OPTION_GuaranteedIteratorRequired, true) // just to be sure
-				.setOption(Query.OPTION_IteratorBufferSize, 1000)
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // just to be sure
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_M_ReceiptSchedule.class);
 	}
 

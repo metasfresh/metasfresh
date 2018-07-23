@@ -12,22 +12,23 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -78,7 +79,9 @@ public class MultiCustomerHUReturnsInOutProducer
 	// services
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -106,6 +109,7 @@ public class MultiCustomerHUReturnsInOutProducer
 		// and create one vendor returns producer for each group.
 		final Map<ArrayKey, CustomerReturnsInOutProducer> customerReturnProducers = new HashMap<>();
 		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class); // The M_InOutLine's table id
+
 		for (final I_M_HU hu : getHUsToReturn())
 		{
 			// activate hu's children
@@ -175,7 +179,7 @@ public class MultiCustomerHUReturnsInOutProducer
 					continue;
 				}
 
-				if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+				if (huInOutBL.isCustomerReturn(inout))
 				{
 					continue;
 				}
@@ -215,9 +219,9 @@ public class MultiCustomerHUReturnsInOutProducer
 			}
 			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
 			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			Services.get(IHUInOutBL.class).moveHUsForCustomerReturn(ctx, getHUsToReturn());
+			huInOutBL.moveHUsForCustomerReturn(ctx, getHUsToReturn());
 
-			handlingUnitsBL.setHUStatusActive(_husToReturn);
+			huStatusBL.setHUStatusActive(_husToReturn);
 		}
 
 		// return the created vendor returns

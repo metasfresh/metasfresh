@@ -28,9 +28,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.exceptions.BPartnerNoBillToAddressException;
-import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -42,19 +39,22 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
+import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.documentNo.IDocumentNoBL;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -940,11 +940,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setC_DocType_ID(0);
 		}
 
-		// Default Warehouse
-		if (getM_Warehouse_ID() <= 0)
-		{
-			setM_Warehouse_ID(warehouseAdvisor.getDefaulWarehouseId(getCtx()));
-		}
 		// Warehouse Org
 		if (newRecord
 				|| is_ValueChanged("AD_Org_ID") || is_ValueChanged("M_Warehouse_ID"))
@@ -1860,7 +1855,6 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();

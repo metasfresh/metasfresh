@@ -27,7 +27,6 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
@@ -38,7 +37,9 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.tax.api.ITaxBL;
 
@@ -86,7 +87,7 @@ public class CalloutInvoice extends CalloutEngine
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted, "
-				+ " stats."	+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
+				+ " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
 				+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
 				+ "FROM C_BPartner p"
@@ -133,24 +134,28 @@ public class CalloutInvoice extends CalloutEngine
 				// PaymentRule
 				String paymentRule = rs.getString(isSOTrx ? "PaymentRule" : "PaymentRulePO");
 
-				if (!Check.isEmpty(paymentRule)) {
+				if (!Check.isEmpty(paymentRule))
+				{
 
 					final I_C_DocType invoiceDocType = invoice.getC_DocType() == null ? invoice.getC_DocTypeTarget()
 							: invoice.getC_DocType();
 
-					if (invoiceDocType != null) {
+					if (invoiceDocType != null)
+					{
 
 						final String docBaseType = invoiceDocType.getDocBaseType();
 
 						// Credits are Payment Term
-						if (invoiceBL.isCreditMemo(docBaseType)) {
+						if (invoiceBL.isCreditMemo(docBaseType))
+						{
 							paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit;
 						}
 
 						// No Check/Transfer for SO_Trx
-						else if (isSOTrx && (X_C_Invoice.PAYMENTRULE_Check.equals(paymentRule))) {
+						else if (isSOTrx && (X_C_Invoice.PAYMENTRULE_Check.equals(paymentRule)))
+						{
 							paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit; // Payment
-																			// Term
+																			 // Term
 						}
 
 						invoice.setPaymentRule(paymentRule);
@@ -190,19 +195,19 @@ public class CalloutInvoice extends CalloutEngine
 				// CreditAvailable
 				if (isSOTrx)
 				{
-						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-						final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerID, invoice.getDateInvoiced());
-						if (CreditLimit.signum() > 0)
+					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+					final BigDecimal CreditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerID, invoice.getDateInvoiced());
+					if (CreditLimit.signum() > 0)
+					{
+						final double creditUsed = rs.getDouble("SO_CreditUsed");
+						final BigDecimal CreditAvailable = CreditLimit.subtract(BigDecimal.valueOf(creditUsed));
+						if (!rs.wasNull() && CreditAvailable.signum() < 0)
 						{
-							final double creditUsed = rs.getDouble("SO_CreditUsed");
-							final BigDecimal CreditAvailable = CreditLimit.subtract(BigDecimal.valueOf(creditUsed));
-							if (!rs.wasNull() && CreditAvailable.signum() < 0)
-							{
-								calloutField.fireDataStatusEEvent("CreditLimitOver",
-										DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
-										false);
-							}
+							calloutField.fireDataStatusEEvent("CreditLimitOver",
+									DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
+									false);
 						}
+					}
 				}
 
 				// PO Reference
@@ -215,12 +220,8 @@ public class CalloutInvoice extends CalloutEngine
 					invoice.setPOReference(poReference);
 				}
 
-				// SO Description
-				final String soDescription = rs.getString("SO_Description");
-				if (!Check.isEmpty(soDescription))
-				{
-					invoice.setDescription(soDescription);
-				}
+				// #4185: take description from doctype, if exists
+				invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, rs.getString("SO_Description"), null);
 
 				// IsDiscountPrinted
 				final boolean isDiscountPrinted = DisplayType.toBoolean(rs.getString("IsDiscountPrinted"));
@@ -560,8 +561,8 @@ public class CalloutInvoice extends CalloutEngine
 		// log.warn("amt - init");
 		final int uomToID = invoiceLine.getPrice_UOM_ID(); // 07216 : We convert to the price UOM.
 		final int productID = invoiceLine.getM_Product_ID();
-		final int priceListID = invoice.getM_PriceList_ID();
-		//final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
+		final PriceListId priceListID = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		// final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
 		final int stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListID);
 
 		// get values
@@ -615,7 +616,7 @@ public class CalloutInvoice extends CalloutEngine
 
 				// TODO: PricingBL
 				final MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
-				pp.setM_PriceList_ID(priceListID);
+				pp.setPriceListId(priceListID);
 				pp.setReferencedObject(invoiceLine); // task 08908: we need to give the pricing context our referenced object, so it can extract the ASI
 				final Timestamp date = invoiceLine.getC_Invoice().getDateInvoiced(); // task 08908: we do not have a PLV-ID in C_Invoice or C_InvoiceLine, so we need to get the invoice's date to
 				// enable the pricing engine to find the PLV

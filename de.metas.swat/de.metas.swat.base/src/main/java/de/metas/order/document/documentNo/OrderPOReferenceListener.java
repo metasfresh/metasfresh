@@ -5,8 +5,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_Order;
 
-import de.metas.document.documentNo.spi.IDocumentNoAware;
-import de.metas.document.documentNo.spi.IDocumentNoListener;
+import de.metas.document.sequence.spi.IDocumentNoAware;
+import de.metas.document.sequence.spi.IDocumentNoListener;
 
 /*
  * #%L

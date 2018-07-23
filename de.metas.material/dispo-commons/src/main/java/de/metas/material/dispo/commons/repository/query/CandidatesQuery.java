@@ -7,13 +7,14 @@ import org.adempiere.util.Check;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -53,25 +54,15 @@ import lombok.experimental.Wither;
 public final class CandidatesQuery
 {
 	/**
-	 * Use this constant as parent-ID to indicate that the parent-ID shall not be considered in the query.
-	 */
-	public static final int UNSPECIFIED_PARENT_ID = -1;
-
-	/**
-	 * Use this constant as ID to indicate that the ID shall not be considered in the query.
-	 */
-	public static final int UNSPECIFIED_ID = -1;
-
-	/**
 	 * This query matches no candidate
 	 */
-	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(-99);
+	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(CandidateId.ofRepoId(Integer.MAX_VALUE - 3));
 
 	public static CandidatesQuery fromCandidate(
 			@NonNull final Candidate candidate,
 			final boolean includeParentId)
 	{
-		if (candidate.getId() > 0)
+		if (!candidate.getId().isNull())
 		{
 			return CandidatesQuery.fromId(candidate.getId());
 		}
@@ -82,15 +73,22 @@ public final class CandidatesQuery
 		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
 				.ofDistributionDetailOrNull(DistributionDetail.castOrNull(candidate.getBusinessCaseDetail()));
 
+		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery
+				.ofPurchaseDetailOrNull(PurchaseDetail.castOrNull(candidate.getBusinessCaseDetail()));
+
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery
+				.ofDemandDetailOrNull(DemandDetail.castOrNull(candidate.getBusinessCaseDetail()));
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)
-				.demandDetail(candidate.getDemandDetail())
+				.demandDetailsQuery(demandDetailsQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
+				.productionDetailsQuery(productionDetailsQuery)
+				.purchaseDetailsQuery(purchaseDetailsQuery)
 				.transactionDetails(candidate.getTransactionDetails())
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
-				.productionDetailsQuery(productionDetailsQuery)
 				.status(candidate.getStatus())
 				.businessCase(candidate.getBusinessCase())
 				.type(candidate.getType());
@@ -101,14 +99,17 @@ public final class CandidatesQuery
 		}
 		else
 		{
-			builder.parentId(UNSPECIFIED_PARENT_ID);
+			builder.parentId(CandidateId.UNSPECIFIED);
 		}
 		return builder.build();
 	}
 
-	public static CandidatesQuery fromId(final int id)
+	public static CandidatesQuery fromId(final CandidateId id)
 	{
-		return CandidatesQuery.builder().id(id).parentId(UNSPECIFIED_PARENT_ID).build();
+		return CandidatesQuery.builder()
+				.id(id)
+				.parentId(CandidateId.UNSPECIFIED)
+				.build();
 	}
 
 	/**
@@ -116,7 +117,7 @@ public final class CandidatesQuery
 	 */
 	MaterialDescriptorQuery parentMaterialDescriptorQuery;
 
-	DemandDetail parentDemandDetail;
+	DemandDetailsQuery parentDemandDetailsQuery;
 
 	int orgId;
 
@@ -129,13 +130,13 @@ public final class CandidatesQuery
 
 	CandidateStatus status;
 
-	int id;
+	CandidateId id;
 
 	/**
 	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.<br>
-	 * -1 means {@link #UNSPECIFIED_PARENT_ID}
+	 * -1 means {@link #PARENT_ID_UNSPECIFIED}
 	 */
-	int parentId;
+	CandidateId parentId;
 
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
@@ -147,19 +148,21 @@ public final class CandidatesQuery
 	boolean matchExactStorageAttributesKey;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
+	 * Used for additional infos if this candidate has the business case {@link CandidateBusinessCase#PRODUCTION}.
 	 */
 	ProductionDetailsQuery productionDetailsQuery;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the business case {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
 	DistributionDetailsQuery distributionDetailsQuery;
+
+	PurchaseDetailsQuery purchaseDetailsQuery;
 
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
 	 */
-	DemandDetail demandDetail;
+	DemandDetailsQuery demandDetailsQuery;
 
 	/**
 	 * If multiple transactionDetails are specified here, then a matching candidate needs to have matching transactionDetails for all of them.
@@ -169,37 +172,40 @@ public final class CandidatesQuery
 	@Builder
 	public CandidatesQuery(
 			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
-			final DemandDetail parentDemandDetail,
+			final DemandDetailsQuery parentDemandDetailsQuery,
 			final int orgId,
 			final CandidateType type,
 			final CandidateBusinessCase businessCase,
 			final CandidateStatus status,
-			final Integer id,
-			final Integer parentId,
+			final CandidateId id,
+			final CandidateId parentId,
 			final int groupId,
 			final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
 			final ProductionDetailsQuery productionDetailsQuery,
 			final DistributionDetailsQuery distributionDetailsQuery,
-			final DemandDetail demandDetail,
+			final PurchaseDetailsQuery purchaseDetailsQuery,
+			final DemandDetailsQuery demandDetailsQuery,
 			@Singular final List<TransactionDetail> transactionDetails)
 	{
 		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
-		this.parentDemandDetail = parentDemandDetail;
+		this.parentDemandDetailsQuery = parentDemandDetailsQuery;
 
 		this.matchExactStorageAttributesKey = matchExactStorageAttributesKey;
 		this.orgId = orgId;
 		this.type = type;
 		this.businessCase = businessCase;
 		this.status = status;
-		this.id = id == null ? UNSPECIFIED_ID : id;
-		this.parentId = parentId == null ? UNSPECIFIED_PARENT_ID : parentId;
+		this.id = id == null ? CandidateId.UNSPECIFIED : id;
+		this.parentId = parentId == null ? CandidateId.UNSPECIFIED : parentId;
 		this.groupId = groupId;
 
 		this.materialDescriptorQuery = materialDescriptorQuery;
 		this.productionDetailsQuery = productionDetailsQuery;
 		this.distributionDetailsQuery = distributionDetailsQuery;
-		this.demandDetail = demandDetail;
+		this.purchaseDetailsQuery = purchaseDetailsQuery;
+
+		this.demandDetailsQuery = demandDetailsQuery;
 		this.transactionDetails = transactionDetails;
 	}
 

@@ -2,7 +2,11 @@
 
 -- DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(numeric, text, numeric, numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(org_id numeric, doctype text, bp_loc_id numeric, record_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(
+    org_id numeric,
+    doctype text,
+    bp_loc_id numeric,
+    record_id numeric)
   RETURNS SETOF de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report AS
 $BODY$
 SELECT
@@ -31,6 +35,7 @@ SELECT
 		WHEN $2 = 'freshio' THEN freshio.BPartnerAddress
 		WHEN $2 = 'i' THEN i.BPartnerAddress
 		WHEN $2 = 'l' THEN tl.BPartnerAddress
+		WHEN $2 = 'lt' THEN COALESCE(bpg.name||' ', '' ) || COALESCE(bp.name||' ', '') || COALESCE(bp.name2||E'\n', E'\n') || COALESCE( letter.BPartnerAddress, '' )
 		WHEN $2 = 'd' THEN d.BPartnerAddress
 		WHEN $2 = 'rfqr' THEN COALESCE(bprfqr.name||E'\n', '') || COALESCE( bplrfqr.address, '' )
 		WHEN $2 = 'ft' THEN COALESCE(bpft.name||E'\n', '') || COALESCE( bplft.address, '' )
@@ -50,6 +55,7 @@ FROM
 	LEFT JOIN C_Order o ON o.C_Order_id = $4 AND o.isActive = 'Y'
 	LEFT JOIN C_Invoice i ON i.C_Invoice_id = $4 AND i.isActive = 'Y'
 	LEFT JOIN T_Letter_Spool tl ON tl.AD_Pinstance_ID = $4 AND tl.isActive = 'Y'
+	LEFT JOIN C_Letter letter ON letter.C_Letter_ID = $4 AND letter.isActive = 'Y'
 	LEFT JOIN M_InOut io ON io.M_InOut_ID = $4 AND io.isActive = 'Y'
 
 	LEFT JOIN C_Flatrate_Term ft ON ft.C_Flatrate_Term_ID = $4 AND ft.isActive = 'Y'
@@ -78,4 +84,3 @@ $BODY$
   LANGUAGE sql STABLE
   COST 100
   ROWS 1000;
-

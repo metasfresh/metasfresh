@@ -1,5 +1,7 @@
 package org.compiere.db;
 
+import org.adempiere.util.Check;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +12,12 @@ package org.compiere.db;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,13 +25,14 @@ package org.compiere.db;
  */
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.util.Check;
+import de.metas.logging.LogManager;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * {@link CConnection}'s attributes.
- * 
+ *
  * @author tsa
  *
  */
@@ -37,9 +40,9 @@ public final class CConnectionAttributes
 {
 	/**
 	 * Creates connection attributes object based on given attributes string.
-	 * 
+	 *
 	 * NOTE: it is assumed that the connection attributes string was produced by {@link #toString()} method.
-	 * 
+	 *
 	 * @param attributesStr
 	 */
 	public static CConnectionAttributes of(final String attributesStr)
@@ -55,7 +58,7 @@ public final class CConnectionAttributes
 
 		attrs.setAppsUserName(getSubString(attributesStr, "AppsUserName=", ","));
 		attrs.setAppsPassword(getSubString(attributesStr, "AppsPassword=", ","));
-		
+
 		String dbType = attributesStr.substring(attributesStr.indexOf("type=") + 5, attributesStr.indexOf(",DBhost="));
 		if (Check.isEmpty(dbType, true))
 		{
@@ -83,7 +86,7 @@ public final class CConnectionAttributes
 		}
 		return null;
 	}
-	
+
 	private static final transient Logger logger = LogManager.getLogger(CConnectionAttributes.class);
 
 	/** Marker used to indicate that we go without an application server */
@@ -106,16 +109,24 @@ public final class CConnectionAttributes
 	private String dbUid;
 	private String dbPwd;
 
-	public CConnectionAttributes()
-	{
-		super();
-	}
+	@Getter
+	@Setter
+	private String rabbitmqHost;
+	@Getter
+	@Setter
+	private String rabbitmqPort;
+	@Getter
+	@Setter
+	private String rabbitmqUsername;
+	@Getter
+	@Setter
+	private String rabbitmqPassword;
 
 	/**
 	 * Builds connection attributes string representation.
-	 * 
+	 *
 	 * This string can be parsed back by using {@link #of(String)}.
-	 * 
+	 *
 	 * @return connection attributes string representation
 	 */
 	@Override
@@ -292,5 +303,4 @@ public final class CConnectionAttributes
 	{
 		this.appsPassword = appsPassword;
 	}
-
 }

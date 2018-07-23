@@ -24,6 +24,7 @@ package de.metas.product.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -51,6 +52,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -95,7 +97,7 @@ public final class ProductBL implements IProductBL
 	public I_C_UOM getStockingUOM(final int productId)
 	{
 		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		return getStockingUOM(product);
+		return Check.assumeNotNull(getStockingUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
 	/**
@@ -338,15 +340,15 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isProductInCategory(final int productId, final int expectedProductCategoryId)
+	public boolean isProductInCategory(final ProductId productId, final ProductCategoryId expectedProductCategoryId)
 	{
-		if (productId <= 0 || expectedProductCategoryId <= 0)
+		if (productId == null || expectedProductCategoryId == null)
 		{
 			return false;
 		}
 
-		final int productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
-		return productCategoryId == expectedProductCategoryId;
+		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		return Objects.equals(productCategoryId, expectedProductCategoryId);
 	}
 
 	@Override

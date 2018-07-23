@@ -47,6 +47,7 @@ import org.compiere.model.GridTab;
 import org.compiere.model.MPAttributeLookup;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
@@ -476,7 +477,7 @@ public class VPAttribute extends JComponent
 		}
 
 		final VPAttributeDialog vad = new VPAttributeDialog( //
-				Env.getFrame(this) //
+				SwingUtils.getFrame(this) //
 				, asiInfo //
 				, attributeContext //
 		);

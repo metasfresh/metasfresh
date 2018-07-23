@@ -38,7 +38,7 @@ import de.metas.pricing.service.IPriceListDAO;
 public class MProject extends X_C_Project
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1781787100948563589L;
 
@@ -81,7 +81,7 @@ public class MProject extends X_C_Project
 		return to;
 	}	//	copyFrom
 
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -127,39 +127,6 @@ public class MProject extends X_C_Project
 
 	/**	Cached PL			*/
 	private int		m_M_PriceList_ID = 0;
-
-	/**
-	 * 	Get Project Type as Int (is Button).
-	 *	@return C_ProjectType_ID id
-	 */
-	public int getC_ProjectType_ID_Int()
-	{
-		String pj = super.getC_ProjectType_ID();
-		if (pj == null)
-			return 0;
-		int C_ProjectType_ID = 0;
-		try
-		{
-			C_ProjectType_ID = Integer.parseInt (pj);
-		}
-		catch (Exception ex)
-		{
-			log.error(pj, ex);
-		}
-		return C_ProjectType_ID;
-	}	//	getC_ProjectType_ID_Int
-
-	/**
-	 * 	Set Project Type (overwrite r/o)
-	 *	@param C_ProjectType_ID id
-	 */
-	public void setC_ProjectType_ID (int C_ProjectType_ID)
-	{
-		if (C_ProjectType_ID == 0)
-			super.setC_ProjectType_ID (null);
-		else
-			super.set_Value("C_ProjectType_ID", C_ProjectType_ID);
-	}	//	setC_ProjectType_ID
 
 	/**
 	 *	String Representation
@@ -319,7 +286,7 @@ public class MProject extends X_C_Project
 		return retValue;
 	}	//	getPhases
 
-	
+
 	/**************************************************************************
 	 * 	Copy Lines/Phase/Task from other Project
 	 *	@param project project
@@ -345,10 +312,10 @@ public class MProject extends X_C_Project
 			return 0;
 		int count = 0;
 		MProjectLine[] fromLines = project.getLines();
-		for (int i = 0; i < fromLines.length; i++)
+		for (MProjectLine fromLine : fromLines)
 		{
 			MProjectLine line = new MProjectLine (getCtx(), 0, project.get_TrxName());
-			PO.copyValues(fromLines[i], line, getAD_Client_ID(), getAD_Org_ID());
+			PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
 			line.setC_Project_ID(getC_Project_ID());
 			line.setInvoicedAmt(Env.ZERO);
 			line.setInvoicedQty(Env.ZERO);
@@ -379,18 +346,18 @@ public class MProject extends X_C_Project
 		MProjectPhase[] myPhases = getPhases();
 		MProjectPhase[] fromPhases = fromProject.getPhases();
 		//	Copy Phases
-		for (int i = 0; i < fromPhases.length; i++)
+		for (MProjectPhase fromPhase : fromPhases)
 		{
 			//	Check if Phase already exists
-			int C_Phase_ID = fromPhases[i].getC_Phase_ID();
+			int C_Phase_ID = fromPhase.getC_Phase_ID();
 			boolean exists = false;
 			if (C_Phase_ID == 0)
 				exists = false;
 			else
 			{
-				for (int ii = 0; ii < myPhases.length; ii++)
+				for (MProjectPhase myPhase : myPhases)
 				{
-					if (myPhases[ii].getC_Phase_ID() == C_Phase_ID)
+					if (myPhase.getC_Phase_ID() == C_Phase_ID)
 					{
 						exists = true;
 						break;
@@ -399,18 +366,18 @@ public class MProject extends X_C_Project
 			}
 			//	Phase exist
 			if (exists)
-				log.info("Phase already exists here, ignored - " + fromPhases[i]);
+				log.info("Phase already exists here, ignored - " + fromPhase);
 			else
 			{
 				MProjectPhase toPhase = new MProjectPhase (getCtx (), 0, get_TrxName());
-				PO.copyValues (fromPhases[i], toPhase, getAD_Client_ID (), getAD_Org_ID ());
+				PO.copyValues (fromPhase, toPhase, getAD_Client_ID (), getAD_Org_ID ());
 				toPhase.setC_Project_ID (getC_Project_ID ());
 				toPhase.setC_Order_ID (0);
 				toPhase.setIsComplete (false);
 				if (toPhase.save ())
 				{
 					count++;
-					taskCount += toPhase.copyTasksFrom (fromPhases[i]);
+					taskCount += toPhase.copyTasksFrom (fromPhase);
 				}
 			}
 		}
@@ -447,16 +414,16 @@ public class MProject extends X_C_Project
 		int count = 0;
 		int taskCount = 0;
 		MProjectTypePhase[] typePhases = type.getPhases();
-		for (int i = 0; i < typePhases.length; i++)
+		for (MProjectTypePhase typePhase : typePhases)
 		{
-			MProjectPhase toPhase = new MProjectPhase (this, typePhases[i]);
+			MProjectPhase toPhase = new MProjectPhase (this, typePhase);
 			if (toPhase.save())
 			{
 				count++;
-				taskCount += toPhase.copyTasksFrom(typePhases[i]);
+				taskCount += toPhase.copyTasksFrom(typePhase);
 			}
 		}
-		log.debug("#" + count + "/" + taskCount 
+		log.debug("#" + count + "/" + taskCount
 			+ " - " + type);
 		if (typePhases.length != count)
 			log.error("Count difference - Type=" + typePhases.length + " <> Saved=" + count);
@@ -473,7 +440,7 @@ public class MProject extends X_C_Project
 	{
 		if (getAD_User_ID() == -1)	//	Summary Project in Dimensions
 			setAD_User_ID(0);
-		
+
 		//	Set Currency
 		if (is_ValueChanged("M_PriceList_Version_ID") && getM_PriceList_Version_ID() != 0)
 		{
@@ -481,10 +448,10 @@ public class MProject extends X_C_Project
 			if (pl != null && pl.getM_PriceList_ID() > 0)
 				setC_Currency_ID(pl.getC_Currency_ID());
 		}
-		
+
 		return true;
 	}	//	beforeSave
-	
+
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -501,7 +468,7 @@ public class MProject extends X_C_Project
 		}
 
 		//	Value/Name change
-		if (success && !newRecord 
+		if (success && !newRecord
 			&& (is_ValueChanged("Value") || is_ValueChanged("Name")))
 			MAccount.updateValueDescription(getCtx(), "C_Project_ID=" + getC_Project_ID(), get_TrxName());
 
@@ -515,7 +482,7 @@ public class MProject extends X_C_Project
 	@Override
 	protected boolean beforeDelete ()
 	{
-		return delete_Accounting("C_Project_Acct"); 
+		return delete_Accounting("C_Project_Acct");
 	}	//	beforeDelete
 
 	/**

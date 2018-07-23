@@ -23,25 +23,31 @@ package org.eevolution.api.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.Query;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Product_BOM;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -92,23 +98,6 @@ public class ProductBOMDAO implements IProductBOMDAO
 		}
 		//
 		return linesValid;
-	}
-
-	@Override
-	public I_PP_Product_BOM retrieveMakeToOrderProductBOM(final Properties ctx, final int productId, final String trxName)
-	{
-		final String whereClause = I_PP_Product_BOM.COLUMNNAME_BOMType + " IN (?,?)"
-				+ " AND " + I_PP_Product_BOM.COLUMNNAME_BOMUse + "=?"
-				+ " AND " + I_PP_Product_BOM.COLUMNNAME_M_Product_ID + "=?";
-		final I_PP_Product_BOM bom = new Query(ctx, I_PP_Product_BOM.Table_Name, whereClause, trxName)
-				.setParameters(new Object[] {
-						X_PP_Product_BOM.BOMTYPE_Make_To_Order,
-						X_PP_Product_BOM.BOMTYPE_Make_To_Kit,
-						X_PP_Product_BOM.BOMUSE_Manufacturing,
-						productId })
-				.firstOnly(I_PP_Product_BOM.class);
-
-		return bom;
 	}
 
 	@Override
@@ -189,5 +178,71 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create();
+	}
+
+	@Override
+	public List<I_PP_Product_BOM> retrieveBOMsContainingExactProducts(final Collection<Integer> productIds)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(MatchBOMProductsFilter.exactProducts(productIds))
+				.create()
+				.listImmutable(I_PP_Product_BOM.class);
+	}
+
+	@lombok.ToString
+	@lombok.EqualsAndHashCode
+	private static final class MatchBOMProductsFilter implements IQueryFilter<I_PP_Product_BOM>, ISqlQueryFilter
+	{
+		public static MatchBOMProductsFilter exactProducts(final Collection<Integer> productIds)
+		{
+			return new MatchBOMProductsFilter(productIds);
+		}
+
+		private static final String SQL = "("
+				+ " select array_agg(distinct bl.M_Product_ID order by bl.M_Product_ID)"
+				+ " from " + I_PP_Product_BOMLine.Table_Name + " bl"
+				+ " where bl.PP_Product_BOM_ID=PP_Product_BOM.PP_Product_BOM_ID"
+				+ " and bl.IsActive='Y'"
+				+ ") = ?";
+
+		private final ImmutableList<Object> sqlParams;
+
+		public MatchBOMProductsFilter(final Collection<Integer> productIds)
+		{
+			Check.assumeNotEmpty(productIds, "productIds is not empty");
+
+			final TreeSet<Integer> productIdsSortedSet = new TreeSet<>(productIds);
+			final String sqlProductIdsArray = toSqlArrayString(productIdsSortedSet);
+			sqlParams = ImmutableList.<Object> of(sqlProductIdsArray);
+		}
+
+		@Override
+		public boolean accept(final I_PP_Product_BOM model)
+		{
+			throw new UnsupportedOperationException("not implemented");
+		}
+
+		@Override
+		public String getSql()
+		{
+			return SQL;
+		}
+
+		@Override
+		public List<Object> getSqlParams(final Properties ctx_NOTUSED)
+		{
+			return sqlParams;
+		}
+
+		private static final String toSqlArrayString(final Collection<Integer> ids)
+		{
+			final StringBuilder sql = new StringBuilder();
+			sql.append("{");
+			Joiner.on(",").appendTo(sql, ids);
+			sql.append("}");
+			return sql.toString();
+		}
 	}
 }

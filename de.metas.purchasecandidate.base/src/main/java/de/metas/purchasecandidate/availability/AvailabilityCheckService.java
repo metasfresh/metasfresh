@@ -1,8 +1,26 @@
 package de.metas.purchasecandidate.availability;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import org.adempiere.util.GuavaCollectors;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderAndLineId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
+import de.metas.quantity.Quantity;
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
+import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.NonNull;
 
 /*
@@ -51,8 +69,58 @@ public class AvailabilityCheckService
 	{
 		return AvailabilityCheckCommand.builder()
 				.vendorGatewayRegistry(vendorGatewayRegistry)
-				.request(request)
+				.requests(createAvailabilityRequests(request.getPurchaseCandidatesGroups()))
 				.build();
 	}
 
+	private static Set<AvailabilityRequest> createAvailabilityRequests(@NonNull final Map<TrackingId, PurchaseCandidatesGroup> purchaseCandidatesGroupsByTrackingId)
+	{
+		final ListMultimap<BPartnerId, AvailabilityRequestItem> requestItemsByVendorId = purchaseCandidatesGroupsByTrackingId
+				.entrySet()
+				.stream()
+				.map(entry -> toVendorAndRequestItem(entry))
+				.collect(GuavaCollectors.toImmutableListMultimap());
+
+		final Set<BPartnerId> vendorIds = requestItemsByVendorId.keySet();
+
+		return vendorIds.stream()
+				.map(vendorId -> createAvailabilityRequestOrNull(vendorId, requestItemsByVendorId.get(vendorId)))
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static Map.Entry<BPartnerId, AvailabilityRequestItem> toVendorAndRequestItem(final Map.Entry<TrackingId, PurchaseCandidatesGroup> entry)
+	{
+		final TrackingId trackingId = entry.getKey();
+		final PurchaseCandidatesGroup purchaseCandidatesGroup = entry.getValue();
+		final BPartnerId vendorId = purchaseCandidatesGroup.getVendorId();
+		final AvailabilityRequestItem requestItem = createAvailabilityRequestItem(trackingId, purchaseCandidatesGroup);
+		return GuavaCollectors.entry(vendorId, requestItem);
+	}
+
+	private static AvailabilityRequestItem createAvailabilityRequestItem(final TrackingId trackingId, final PurchaseCandidatesGroup purchaseCandidatesGroup)
+	{
+		final Quantity qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidatesGroup.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
+
+		return AvailabilityRequestItem.builder()
+				.trackingId(trackingId)
+				.productAndQuantity(productAndQuantity)
+				.purchaseCandidateId(PurchaseCandidateId.getRepoIdOr(purchaseCandidatesGroup.getSinglePurchaseCandidateIdOrNull(), -1))
+				.salesOrderLineId(OrderAndLineId.getOrderLineRepoIdOr(purchaseCandidatesGroup.getSingleSalesOrderAndLineIdOrNull(), -1))
+				.build();
+	}
+
+	private static AvailabilityRequest createAvailabilityRequestOrNull(final BPartnerId vendorId, final Collection<AvailabilityRequestItem> requestItems)
+	{
+		if (requestItems.isEmpty())
+		{
+			return null;
+		}
+
+		return AvailabilityRequest.builder()
+				.vendorId(vendorId.getRepoId())
+				.availabilityRequestItems(requestItems)
+				.build();
+	}
 }

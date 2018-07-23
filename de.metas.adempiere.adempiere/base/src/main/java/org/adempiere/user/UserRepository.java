@@ -1,12 +1,14 @@
 package org.adempiere.user;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 
 /*
@@ -34,12 +36,20 @@ import lombok.NonNull;
 @Repository
 public class UserRepository
 {
+	public User getById(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = loadOutOfTrx(userId.getRepoId(), I_AD_User.class);
+		return ofRecord(userRecord);
+	}
+
 	public User ofRecord(@NonNull final I_AD_User userRecord)
 	{
-		return new User(
-				UserId.ofRepoId(userRecord.getAD_User_ID()),
-				userRecord.getName(),
-				userRecord.getEMail());
+		return User.builder()
+				.bpartnerId(BPartnerId.ofRepoId(userRecord.getC_BPartner_ID()))
+				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
+				.name(userRecord.getName())
+				.emailAddress(userRecord.getEMail())
+				.build();
 	}
 
 	public User save(@NonNull final User user)

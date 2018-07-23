@@ -62,13 +62,13 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 	/**
 	 * Connection Dialog
-	 * 
+	 *
 	 * @param cc metasfresh connection
 	 */
 	public CConnectionDialog(final CConnection cc)
 	{
 		super((Frame)null, true);
-		
+
 		try
 		{
 			jbInit();
@@ -116,7 +116,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private CButton bTestDB = new CButton();
 	private CLabel dbTypeLabel = new CLabel();
 	private CComboBox<String> dbTypeField = new CComboBox<>(ImmutableList.of(Database.DB_POSTGRESQL));
-	
+
 	private CLabel appsHostLabel = new CLabel();
 	private CTextField appsHostField = new CTextField();
 	private CLabel appsPortLabel = new CLabel();
@@ -154,7 +154,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		bTestDB.setHorizontalAlignment(JLabel.LEFT);
 		dbTypeLabel.setText(res.getString("Type"));
 		sidField.setColumns(30);
-		
+
 		appsHostLabel.setText(res.getString("AppsHost"));
 		appsHostField.setColumns(30);
 		appsPortLabel.setText(res.getString("AppsPort"));
@@ -193,7 +193,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
 		centerPanel.add(dbTypeField, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 0), 0, 0));
-		
+
 		centerPanel.add(hostLabel, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0
 			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
 		centerPanel.add(hostField,  new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0
@@ -212,7 +212,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
 		centerPanel.add(dbPwdField, new GridBagConstraints(2, 8, 1, 1, 1.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 5, 12), 0, 0));
-		
+
 		centerPanel.add(bTestDB,  new GridBagConstraints(1, 12, 1, 1, 0.0, 0.0
 			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
 		//
@@ -226,7 +226,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		hostField.addActionListener(this);
 		dbPortField.addActionListener(this);
 		sidField.addActionListener(this);
-		
+
 		bTestDB.addActionListener(this);
 		bOK.addActionListener(this);
 		bCancel.addActionListener(this);
@@ -263,7 +263,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	{
 		Check.assumeNotNull(cc, "cc not null");
 		m_cc = cc;
-		
+
 		//	Should copy values
 		try
 		{
@@ -310,18 +310,18 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			showError("Error", ex);
 		}
 	}
-	
+
 	private void actionPerformed0(final ActionEvent e)
 	{
 		if (m_updating)
 			return;
-		
+
 		final Object src = e.getSource();
 
 		if (src == bOK)
 		{
 			updateCConnection();
-			
+
 			// Make sure the database connection is OK.
 			// Else, there is no point to continue because it will fail a bit later.
 			if(!m_cc.isDatabaseOK())
@@ -331,10 +331,10 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			}
 			if(!m_cc.isDatabaseOK())
 			{
-				// NOTE: we assume an error popup was already displayed to user. 
+				// NOTE: we assume an error popup was already displayed to user.
 				return;
 			}
-			
+
 			m_ccResult = m_cc;
 			dispose();
 			isCancel = false;
@@ -405,7 +405,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		m_cc.setDbName(sidField.getText());
 		m_cc.setDbUid(dbUidField.getText());
 		m_cc.setDbPwd(String.valueOf(dbPwdField.getPassword()));
-		
+
 		m_cc.setName();
 	}
 
@@ -419,19 +419,18 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		{
 			nameField.setText(m_cc.getName());
 
-			final boolean appsEnabled = !CConnection.isServerEmbedded(); // editing those fields makes no sense when we run in embedded-server-mode
-			appsHostField.setReadWrite(appsEnabled);
+			appsHostField.setReadWrite(true);
 			appsHostField.setText(m_cc.getAppsHost());
 
-			appsPortField.setReadWrite(appsEnabled);
+			appsPortField.setReadWrite(true);
 			appsPortField.setText(String.valueOf(m_cc.getAppsPort()));
 
-			bTestApps.setReadWrite(appsEnabled);
+			bTestApps.setReadWrite(true);
 			bTestApps.setIcon(getStatusIcon(m_cc.isAppsServerOK(false)));
 			// bTestApps.setToolTipText(m_cc.getRmiUri());
 
 			// cbOverwrite.setVisible(m_cc.isAppsServerOK(false));
-			boolean rw = CConnection.isServerEmbedded() ? true : !m_cc.isAppsServerOK(false);
+			boolean rw = !m_cc.isAppsServerOK(false);
 			//
 			dbTypeLabel.setReadWrite(rw);
 			dbTypeField.setReadWrite(rw);
@@ -475,7 +474,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		else
 			return bCancel.getIcon();
 	}   //  getStatusIcon
-	
+
 	private void showError(final String title, final Object messageObj)
 	{
 		JOptionPane.showMessageDialog(this,
@@ -486,7 +485,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 	/**
 	 * Test Database connection.
-	 * 
+	 *
 	 * If the database connection is not OK, an error popup will be displayed to user.
 	 */
 	private void cmd_testDB()

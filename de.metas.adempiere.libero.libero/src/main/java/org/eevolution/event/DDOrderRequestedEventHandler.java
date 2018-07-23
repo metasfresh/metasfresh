@@ -65,7 +65,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	@Override
 	public void validateEvent(@NonNull final DDOrderRequestedEvent event)
 	{
-		event.validate();
+		// nothing to do: the event was already validated on construction
 	}
 
 	@Override

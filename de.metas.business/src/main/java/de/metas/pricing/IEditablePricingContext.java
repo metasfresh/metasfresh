@@ -25,8 +25,8 @@ package de.metas.pricing;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 
 /**
@@ -53,17 +53,17 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setBPartnerId(final BPartnerId bpartnerId);
 
-	IEditablePricingContext setC_Currency_ID(final int c_Currency_ID);
+	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
 
 	IEditablePricingContext setC_UOM_ID(final int c_UOM_ID);
 
 	IEditablePricingContext setPriceDate(final Timestamp priceDate);
 
-	IEditablePricingContext setM_PricingSystem_ID(final int pricingSystemId);
+	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
+
+	IEditablePricingContext setPriceListId(PriceListId priceListId);
 
 	IEditablePricingContext setM_PriceList_Version_ID(final int m_PriceList_Version_ID);
-
-	IEditablePricingContext setM_PriceList_ID(final int M_PriceList_ID);
 
 	IEditablePricingContext setM_Product_ID(final int m_Product_ID);
 

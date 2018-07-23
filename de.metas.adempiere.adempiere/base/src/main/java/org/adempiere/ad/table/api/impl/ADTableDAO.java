@@ -50,11 +50,19 @@ import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.document.DocumentConstants;
 import lombok.NonNull;
 
 public class ADTableDAO implements IADTableDAO
 {
+	private static final ImmutableSet<String> STANDARD_COLUMN_NAMES = ImmutableSet.of(
+			"AD_Client_ID", "AD_Org_ID",
+			"IsActive",
+			"Created", "CreatedBy",
+			"Updated", "UpdatedBy");
+
 	@Override
 	public I_AD_Column retrieveColumn(final String tableName, final String columnName)
 	{
@@ -243,13 +251,12 @@ public class ADTableDAO implements IADTableDAO
 		return loadOutOfTrx(tableID, I_AD_Table.class); // load out of trx to benefit from caching
 	}
 
-
 	@Override
 	public I_AD_Table retrieveTableOrNull(@Nullable final String tableName)
 	{
 		@SuppressWarnings("deprecation")
 		final int tableID = MTable.getTable_ID(tableName);
-		if(tableID <= 0)
+		if (tableID <= 0)
 		{
 			return null;
 		}
@@ -276,5 +283,11 @@ public class ADTableDAO implements IADTableDAO
 	public I_AD_Table retrieveDocumentTableTemplate(final I_AD_Table targetTable)
 	{
 		return retrieveTable(DocumentConstants.AD_TABLE_Document_Template_TableName);
+	}
+
+	@Override
+	public boolean isStandardColumn(final String columnName)
+	{
+		return STANDARD_COLUMN_NAMES.contains(columnName);
 	}
 }

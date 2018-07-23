@@ -1,0 +1,5 @@
+-- 2018-05-31T15:35:57.088
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE M_Shipper SET C_BPartner_ID=2155894,Updated=TO_TIMESTAMP('2018-05-31 15:35:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Shipper_ID=540003
+;
+

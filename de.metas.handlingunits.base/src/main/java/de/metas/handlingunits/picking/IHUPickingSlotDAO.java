@@ -12,12 +12,12 @@ import java.util.Collection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,6 +34,7 @@ import org.compiere.model.I_M_Locator;
 
 import com.google.common.collect.SetMultimap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
@@ -96,7 +97,7 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 */
 	List<I_M_PickingSlot> retrievePickingSlots(I_C_BPartner partner, I_M_Locator locator);
 
-	SetMultimap<Integer, Integer> retrieveAllHUIdsIndexedByPickingSlotId(Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots);
+	SetMultimap<Integer, HuId> retrieveAllHUIdsIndexedByPickingSlotId(Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots);
 
 	/**
 	 * Creates an {@link I_M_HU} query filter which will select only those HUs which are currently on a picking slot or are in a picking slot queue.
@@ -109,12 +110,17 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	/**
 	 * Return {@code true} if the given {@code M_HU_ID} is referenced by an active {@link I_M_Picking_Candidate}.<br>
 	 * Note that we use the ID for performance reasons.
-	 * 
+	 *
 	 * @param huId
 	 * @return
 	 */
 	boolean isHuIdPicked(int huId);
-	
+
+	default boolean isHuIdPicked(final HuId huId)
+	{
+		return isHuIdPicked(huId.getRepoId());
+	}
+
 	boolean isPickingRackSystem(final int pickingSlotId);
 
 	Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems();

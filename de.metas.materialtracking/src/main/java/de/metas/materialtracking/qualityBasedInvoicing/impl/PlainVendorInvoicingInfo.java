@@ -1,7 +1,5 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import org.adempiere.bpartner.BPartnerId;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -25,10 +23,11 @@ import org.adempiere.bpartner.BPartnerId;
  */
 
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
+import de.metas.pricing.PricingSystemId;
 
 public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 {
@@ -38,8 +37,7 @@ public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 	private int currencyId = -1;
 	private I_C_Flatrate_Term flatrateTerm;
 	private String invoiceRule;
-	private int pricingSystemId = -1;
-	private I_M_PricingSystem pricingSystem = null;
+	private PricingSystemId pricingSystemId;
 	private I_M_PriceList_Version priceListVersion;
 
 	@Override
@@ -123,15 +121,14 @@ public class PlainVendorInvoicingInfo implements IVendorInvoicingInfo
 	}
 
 	@Override
-	public I_M_PricingSystem getM_PricingSystem()
+	public PricingSystemId getPricingSystemId()
 	{
-		return pricingSystem;
+		return pricingSystemId;
 	}
 
-	public void setM_PricingSystem(final I_M_PricingSystem m_PricingSystem)
+	public void setPricingSystemId(final PricingSystemId pricingSystemId)
 	{
-		this.pricingSystemId = m_PricingSystem.getM_PricingSystem_ID();
-		this.pricingSystem = m_PricingSystem;
+		this.pricingSystemId = pricingSystemId;
 	}
 
 	@Override

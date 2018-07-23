@@ -77,7 +77,7 @@ import javax.annotation.concurrent.Immutable;
 	}
 
 	@Override
-	public void throwExceceptionIfAnyFailure()
+	public void throwExceptionIfAnyFailure()
 	{
 		// nothing
 	}

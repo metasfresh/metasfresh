@@ -28,21 +28,21 @@ import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;
+import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
@@ -159,7 +159,9 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryRetrieval,
 				postMaterialEventService);
 
-		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
+		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(
+				candidateChangeHandler,
+				candidateRepositoryRetrieval);
 
 		@SuppressWarnings("rawtypes")
 		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
@@ -240,7 +242,7 @@ public class MaterialEventHandlerRegistryTests
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
 								.productDescriptor(orderedMaterial)
-								.bPartnerId(orderedMaterial.getBPartnerId())
+								.bPartnerId(orderedMaterial.getCustomerId())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
 								.networkDistributionLineId(900)
@@ -250,9 +252,14 @@ public class MaterialEventHandlerRegistryTests
 		ddOrderAdvisedEvent.validate();
 		materialEventListener.onEvent(ddOrderAdvisedEvent);
 
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
+		// verify
+		// one for the shipment-schedule demand, two for the distribution demand + supply and 3 stocks (!!one for each, stock candidates are not shared anymore!!)
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(6);
+
 		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);
-		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseDemandStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
+
+		final I_MD_Candidate toWarehouseSupplyStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(1);
 		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
 
 		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).get(0);
@@ -261,13 +268,15 @@ public class MaterialEventHandlerRegistryTests
 		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
 		assertThat(allRecordsBySeqNo).containsExactly(
 				toWarehouseDemand,
-				toWarehouseSharedStock,
+				toWarehouseDemandStock,
+				toWarehouseSupplyStock,
 				toWarehouseSupply,
 				fromWarehouseDemand,
 				toWarehouseStock);
 
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
-		assertThat(toWarehouseSharedStock.getQty()).isZero();
+		assertThat(toWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");
+		assertThat(toWarehouseSupplyStock.getQty()).isEqualByComparingTo("0");
 		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo("10");
 		assertThat(fromWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseStock.getQty()).isEqualByComparingTo("-10");

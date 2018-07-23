@@ -27,16 +27,15 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
 
 import org.compiere.model.MAssignmentSlot;
 import org.compiere.plaf.CompiereUtils;
+import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
-import org.compiere.util.Env;
 
 /**
  *	Schedule Time Panel.
@@ -88,7 +87,7 @@ public class VScheduleTimePanel extends JComponent
 		FontMetrics fm = null;
 		Graphics g = getGraphics();
 		if (g == null)
-			g = Env.getGraphics(this);
+			g = SwingUtils.getGraphics(this);
 		if (g != null)
 			fm = g.getFontMetrics(m_font);		//	the "correct" way
 		else

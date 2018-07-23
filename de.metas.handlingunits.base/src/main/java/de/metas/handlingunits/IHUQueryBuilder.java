@@ -30,14 +30,19 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
+import lombok.NonNull;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
@@ -130,6 +135,8 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder setContext(final Object contextProvider);
 
+	IHUQueryBuilder onlyContextClient(boolean onlyContextClient);
+
 	/**
 	 * Filter only those HUs which have any of the given product(s) in their storages.
 	 *
@@ -152,6 +159,11 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder addOnlyWithProductId(int productId);
 
+	default IHUQueryBuilder addOnlyWithProductId(@NonNull final ProductId productId)
+	{
+		return addOnlyWithProductId(productId.getRepoId());
+	}
+
 	/**
 	 * See {@link #addOnlyWithProductIds(Collection)}.
 	 *
@@ -162,7 +174,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * This is only relevant {@link #addOnlyWithProductIds(Collection)} or one of its siblings is used. The default is {@code false}.
-	 * 
+	 *
 	 * @return
 	 */
 	IHUQueryBuilder setAllowEmptyStorage();
@@ -172,10 +184,9 @@ public interface IHUQueryBuilder
 	 *
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
 	 *
-	 * @param warehouseIds
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyInWarehouseIds(final Collection<Integer> warehouseIds);
+	IHUQueryBuilder addOnlyInWarehouseIds(final Collection<WarehouseId> warehouseIds);
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
@@ -185,7 +196,7 @@ public interface IHUQueryBuilder
 	 * @param warehouseId
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyInWarehouseId(final int warehouseId);
+	IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId);
 
 	/**
 	 * Filter only those HUs which are in any of the given warehouse(s).
@@ -202,7 +213,7 @@ public interface IHUQueryBuilder
 	 * @return an unmodifiable set containing the <code>M_Warehouse_ID</code>s that were previously specified by invocations of {@link #addOnlyInWarehouseId(int)},
 	 *         {@link #addOnlyInWarehouses(Collection)} and {@link #addOnlyInWarehouseIds(Collection)}.
 	 */
-	Set<Integer> getOnlyInWarehouseIds();
+	Set<WarehouseId> getOnlyInWarehouseIds();
 
 	IHUQueryBuilder addOnlyInLocatorId(int locatorId);
 
@@ -285,7 +296,7 @@ public interface IHUQueryBuilder
 	/**
 	 * If <code>true</code> then only active HUs will be matched (i.e. IsActive='Y').
 	 * By default this is true.
-	 * 
+	 *
 	 * @param onlyActiveHUs
 	 */
 	IHUQueryBuilder setOnlyActiveHUs(boolean onlyActiveHUs);
@@ -311,7 +322,7 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addHUStatusToInclude(String huStatus);
 
 	IHUQueryBuilder addHUStatusesToInclude(Collection<String> huStatuses);
-	
+
 	/**
 	 * Adds an HU Status that shall be excluded. So all HUs which have that status will be excluded.
 	 * <p>
@@ -333,6 +344,9 @@ public interface IHUQueryBuilder
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyWithAttribute(I_M_Attribute attribute, Object value);
+
+	/** Convenience method that works {@link #addOnlyWithAttribute(I_M_Attribute, Object)} for all attributes from the given {@code attributeSet}. */
+	IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet);
 
 	/**
 	 * Filter only those HUs which have attribute with given <code>value</code>.
@@ -372,14 +386,14 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Filter only those HUs which have <code>attributeName</code> and it's value is not null.
-	 * 
+	 *
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeNotNull(String attributeName);
 
 	/**
 	 * Filter only those HUs which does not have <code>attributeName</code> or it's value is null.
-	 * 
+	 *
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
@@ -496,31 +510,31 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Sets if the HUs which are currently open or are in a picking slot queue, shall be excluded.
-	 *
-	 * @param excludeHUsOnPickingSlot
-	 * @return this
 	 */
 	IHUQueryBuilder setExcludeHUsOnPickingSlot(boolean excludeHUsOnPickingSlot);
 
 	/**
 	 * Set if the Locator of the HU shall be AfterPicking
-	 *
-	 * @param includeAfterPickingLocator
-	 * @return
 	 */
 	IHUQueryBuilder setIncludeAfterPickingLocator(boolean includeAfterPickingLocator);
 
 	/**
 	 * Entries with empty storage will be the only ones retrieved
-	 *
-	 * @return
 	 */
 	IHUQueryBuilder setEmptyStorageOnly();
 
 	/**
 	 * Entries with not-empty storage will be the only ones retrieved.
-	 *
-	 * @return
 	 */
 	IHUQueryBuilder setNotEmptyStorageOnly();
+
+	/**
+	 * Entries that are reserved to the given order line or are not reserved at all will be the only ones retrieved.
+	 */
+	IHUQueryBuilder setExcludeReservedToOtherThan(OrderLineId orderLineId);
+
+	/**
+	 * Ignored if also {@link #setExcludeReservedToOtherThan(OrderLineId)} was called.
+	 */
+	IHUQueryBuilder setExcludeReserved();
 }

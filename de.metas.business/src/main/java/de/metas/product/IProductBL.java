@@ -123,7 +123,12 @@ public interface IProductBL extends ISingletonService
 
 	default int getStockingUOMId(@NonNull final ProductId productId)
 	{
-		return getStockingUOM(productId.getRepoId()).getC_UOM_ID();
+		return getStockingUOMId(productId.getRepoId());
+	}
+
+	default int getStockingUOMId(final int productId)
+	{
+		return getStockingUOM(productId).getC_UOM_ID();
 	}
 
 	/**
@@ -152,7 +157,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isInstanceAttribute(I_M_Product product);
 
-	boolean isProductInCategory(int productId, int expectedProductCategoryId);
+	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
 	String getProductValueAndName(int productId);
 

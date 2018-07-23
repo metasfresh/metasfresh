@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.CommunicationException;
@@ -33,6 +34,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
@@ -53,6 +55,8 @@ public final class CConnection implements Serializable, Cloneable
 {
 	private static final String MSG_APPSERVER_CONNECTION_PROBLEM = "CConnection.AppserverConnectionProblem";
 
+	private static final String MSG_RABBITMQ_CONNECTION_PROBLEM = "CConnection.RabbitmqConnectionProblem";
+
 	/**
 	 *
 	 */
@@ -65,11 +69,6 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		LogManager.skipIssueReportingForLoggerName(log);
 	}
-
-	/** System property flag to embed server bean in process **/
-	public final static String SERVER_EMBEDDED_PROPERTY = "de.metas.server.embedded";
-
-	public final static String SERVER_EMBEDDED_APPSERVER_HOSTNAME = "localhost";
 
 	public final static int SERVER_DEFAULT_APPSERVER_PORT = 61616;
 
@@ -176,11 +175,10 @@ public final class CConnection implements Serializable, Cloneable
 
 	private CConnection()
 	{
-		super();
 	} 	// CConnection
 
 	/** Connection attributes */
-	private final CConnectionAttributes attrs = new CConnectionAttributes();
+	private transient final CConnectionAttributes attrs = new CConnectionAttributes();
 	/** Database */
 	private volatile AdempiereDatabase _database = null;
 	private Exception m_appsException = null;
@@ -248,11 +246,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public String getAppsHost()
 	{
-		if (isServerEmbedded())
-		{
-			return SERVER_EMBEDDED_APPSERVER_HOSTNAME;
-		}
-
 		return attrs.getAppsHost();
 	}
 
@@ -295,10 +288,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public int getAppsPort()
 	{
-		if (isServerEmbedded())
-		{
-			return SERVER_DEFAULT_APPSERVER_PORT;
-		}
 		final int appsPort = attrs.getAppsPort();
 		if (appsPort > 0)
 		{
@@ -397,7 +386,7 @@ public final class CConnection implements Serializable, Cloneable
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
 			log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
-			Services.get(IClientUI.class).error(0, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
 		return m_okApps;
@@ -423,10 +412,6 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public synchronized Exception testAppsServer()
 	{
-		if (CConnection.isServerEmbedded())
-		{
-			return null; // there is nothing to do
-		}
 		queryAppsServerInfo();
 		return getAppsServerException();
 	} 	// testAppsServer
@@ -652,7 +637,7 @@ public final class CConnection implements Serializable, Cloneable
 	} // supportsBLOB
 
 	/**
-	 * 
+	 *
 	 * Is PostgreSQL DB
 	 *
 	 * @return true if PostgreSQL
@@ -1272,9 +1257,58 @@ public final class CConnection implements Serializable, Cloneable
 		setDbUid(status.getDbUid());
 		setDbPwd(status.getDbPwd());
 
+		final String rabbitmqHost = status.getRabbitmqHost();
+		if (StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME.equals(rabbitmqHost))
+		{
+			setRabbitmqHost(getAppsHost());
+		}
+		else
+		{
+			setRabbitmqHost(rabbitmqHost);
+		}
+		setRabbitmqPort(status.getRabbitmqPort());
+		setRabbitmqUsername(status.getRabbitmqUsername());
+		setRabbitmqPassword(status.getRabbitmqPassword());
+
 		m_version = status.getDateVersion();
 		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
+
+	private void setRabbitmqHost(String rabbitmqHost)
+	{
+		if (Objects.equals(rabbitmqHost, attrs.getRabbitmqHost()))
+		{
+			return;
+		}
+		attrs.setRabbitmqHost(rabbitmqHost);
+	}
+
+	private void setRabbitmqPort(String rabbitmqPort)
+	{
+		if (Objects.equals(rabbitmqPort, attrs.getRabbitmqPort()))
+		{
+			return;
+		}
+		attrs.setRabbitmqPort(rabbitmqPort);
+	}
+
+	private void setRabbitmqUsername(String rabbitmqUsername)
+	{
+		if (Objects.equals(rabbitmqUsername, attrs.getRabbitmqUsername()))
+		{
+			return;
+		}
+		attrs.setRabbitmqUsername(rabbitmqUsername);
+	}
+
+	private void setRabbitmqPassword(String rabbitmqPassword)
+	{
+		if (Objects.equals(rabbitmqPassword, attrs.getRabbitmqPassword()))
+		{
+			return;
+		}
+		attrs.setRabbitmqPassword(rabbitmqPassword);
+	}
 
 	/**
 	 * Get Status Info
@@ -1314,14 +1348,6 @@ public final class CConnection implements Serializable, Cloneable
 		return "<?" + transactionIsolation + "?>";
 	}	// getTransactionIsolationInfo
 
-	/**
-	 * @return true if server is embedded in process
-	 */
-	public static boolean isServerEmbedded()
-	{
-		return Boolean.getBoolean(SERVER_EMBEDDED_PROPERTY); // return the system property
-	}
-
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -1347,6 +1373,29 @@ public final class CConnection implements Serializable, Cloneable
 				m_statusServiceEndpointProvider);
 
 		m_statusServiceEndpointProvider = provider;
+	}
+
+	public Properties createRabbitmqSpringProperties()
+	{
+		final Properties rabbitMqProperties = new Properties();
+
+		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
+		{
+			queryAppsServerInfo();
+		}
+
+		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
+		{
+			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_RABBITMQ_CONNECTION_PROBLEM);
+			return rabbitMqProperties;
+		}
+
+		rabbitMqProperties.setProperty("spring.rabbitmq.host", attrs.getRabbitmqHost());
+		rabbitMqProperties.setProperty("spring.rabbitmq.port", attrs.getRabbitmqPort());
+		rabbitMqProperties.setProperty("spring.rabbitmq.username", attrs.getRabbitmqUsername());
+		rabbitMqProperties.setProperty("spring.rabbitmq.password", attrs.getRabbitmqPassword());
+
+		return rabbitMqProperties;
 	}
 
 }	// CConnection

@@ -1,14 +1,13 @@
 package de.metas.purchasecandidate;
 
-import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.money.Currency;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -16,6 +15,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -43,34 +43,30 @@ public final class PurchaseCandidateTestTool
 {
 	public static final OrderLineId SALES_ORDER_LINE_ID = OrderLineId.ofRepoId(2);
 
-	public static final Currency CURRENCY = Currency.builder()
-			.id(CurrencyId.ofRepoId(40))
-			.precision(20)
-			.build();
+	public static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(40);
 
 	private PurchaseCandidateTestTool()
 	{
 	}
 
-	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
+	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId, final Quantity qtyToPurchase)
 	{
+		final ProductId productId = ProductId.ofRepoId(5);
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoId(6);
+
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
-				.salesOrderAndLineId(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
+				.groupReference(DemandGroupReference.EMPTY)
+				.salesOrderAndLineIdOrNull(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
-				.productId(ProductId.ofRepoId(5))
-				.uomId(6)
-				.profitInfo(createPurchaseProfitInfo())
-				.vendorProductInfo(VendorProductInfo.builder()
-						.id(VendorProductInfoId.ofRepoId(10))
-						.vendorId(BPartnerId.ofRepoId(7))
-						.productId(ProductId.ofRepoId(20))
-						.productNo("productNo")
-						.productName("productName")
-						.build())
-				.qtyToPurchase(BigDecimal.ONE)
-				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.vendorProductNo(String.valueOf(productId.getRepoId()))
+				.profitInfoOrNull(createPurchaseProfitInfo())
+				.vendorId(BPartnerId.ofRepoId(7))
+				.qtyToPurchase(qtyToPurchase)
+				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();
@@ -79,9 +75,9 @@ public final class PurchaseCandidateTestTool
 	public static PurchaseProfitInfo createPurchaseProfitInfo()
 	{
 		return PurchaseProfitInfo.builder()
-				.salesNetPrice(Money.of(10, CURRENCY))
-				.purchaseNetPrice(Money.of(10, CURRENCY))
-				.purchaseGrossPrice(Money.of(10, CURRENCY))
+				.profitSalesPriceActual(Money.of(10, CURRENCY_ID))
+				.profitPurchasePriceActual(Money.of(10, CURRENCY_ID))
+				.purchasePriceActual(Money.of(10, CURRENCY_ID))
 				.build();
 	}
 }

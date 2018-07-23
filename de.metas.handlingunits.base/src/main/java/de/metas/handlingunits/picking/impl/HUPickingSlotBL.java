@@ -13,12 +13,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,6 +51,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
@@ -113,7 +114,7 @@ public class HUPickingSlotBL
 	public IQueueActionResult createCurrentHU(final I_M_PickingSlot pickingSlot, final I_M_HU_PI_Item_Product itemProduct)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		
+
 		//
 		// Check: there is no current HU in this picking slot
 		if (pickingSlot.getM_HU_ID() > 0)
@@ -319,7 +320,7 @@ public class HUPickingSlotBL
 	{
 		// services
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
@@ -349,7 +350,7 @@ public class HUPickingSlotBL
 		//
 		// Change HU status to Picked
 		// (the HU will be saved a couple of lines below)
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
 
 		// Take it out from it's parent, if any
 		huTrxBL.setParentHU(huContext,
@@ -579,7 +580,7 @@ public class HUPickingSlotBL
 		pickingSlot.setC_BPartner_Location(null);
 		InterfaceWrapperHelper.save(pickingSlot);
 	}
-	
+
 	@Override
 	public void releasePickingSlotIfPossible(final int pickingSlotId)
 	{
@@ -601,15 +602,16 @@ public class HUPickingSlotBL
 	@Override
 	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery query)
 	{
-		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
+		final Function<List<I_M_HU>, List<I_M_HU>> //
+		vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
 
 		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
 	}
 
 	@Override
-	public List<Integer> retrieveAvailableHUIdsToPick(@NonNull final PickingHUsQuery request)
+	public List<Integer> retrieveAvailableHUIdsToPick(@NonNull final PickingHUsQuery query)
 	{
-		return retrieveAvailableHUsToPick(request)
+		return retrieveAvailableHUsToPick(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.collect(ImmutableList.toImmutableList());

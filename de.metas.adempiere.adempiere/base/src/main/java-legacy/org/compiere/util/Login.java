@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -44,15 +43,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
@@ -62,6 +60,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.hash.HashableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -95,19 +94,14 @@ public class Login
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_FG_Color = "UI_WindowHeader_Notice_FG_Color";
 
-	/**
-	 * see http://dewiki908/mediawiki/index.php/06009_Login_Lager_weg_%28106922640136%29
-	 */
-	private static final String SYSCONFIG_ShowWarehouseOnLogin = "ShowWarehouseOnLogin";
-
 	// services
 	private static final transient Logger log = LogManager.getLogger(Login.class);
 
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final transient IUserBL userBL = Services.get(IUserBL.class);
 	private final transient IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	//
@@ -199,7 +193,7 @@ public class Login
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public Set<KeyNamePair> authenticate(final String username, final String password)
+	public Set<KeyNamePair> authenticate(final String username, final HashableString password)
 	{
 		log.debug("User={}", username);
 
@@ -207,10 +201,7 @@ public class Login
 		{
 			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
-
-		//
-		// Authentification
-		if (Check.isEmpty(password, false))
+		if (HashableString.isEmpty(password))
 		{
 			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
@@ -255,12 +246,11 @@ public class Login
 			}
 		}
 
-		final boolean isPasswordValid = Objects.equals(password, user.getPassword());
-		if (!isPasswordValid)
+		if (!userBL.isPasswordMatching(user, password))
 		{
 			loginFailureCount++;
 			user.setLoginFailureCount(loginFailureCount);
-			user.setLoginFailureDate(new Timestamp(System.currentTimeMillis()));
+			user.setLoginFailureDate(SystemTime.asTimestamp());
 			if (user.getLoginFailureCount() >= maxLoginFailure)
 			{
 				user.setIsAccountLocked(true);
@@ -292,11 +282,20 @@ public class Login
 			final ISystemBL systemBL = Services.get(ISystemBL.class);
 
 			if (systemBL.isRememberUserAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
+			{
 				Ini.setProperty(Ini.P_UID, username);
+			}
 			else
+			{
 				Ini.setProperty(Ini.P_UID, "");
-			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
-				Ini.setProperty(Ini.P_PWD, password);
+			}
+			
+			if (Ini.isPropertyBool(Ini.P_STORE_PWD)
+					&& systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME")
+					&& password.isPlain())
+			{
+				Ini.setProperty(Ini.P_PWD, password.getValue());
+			}
 		}
 
 		//
@@ -333,7 +332,7 @@ public class Login
 			throw new AdempiereException("No roles"); // TODO: specific exception
 		}
 
-		log.debug("User={} - roles #{}", username, roles);
+		log.debug("User={}, roles={}", username, roles);
 		return roles;
 	}
 
@@ -467,43 +466,6 @@ public class Login
 	}
 
 	/**
-	 * Load Warehouses
-	 *
-	 * @param org organization
-	 * @return Array of Warehouse Info
-	 */
-	public Set<KeyNamePair> getWarehouses(final KeyNamePair org)
-	{
-		if (org == null)
-			throw new IllegalArgumentException("Org missing");
-
-		if (!isShowWarehouseOnLogin())
-		{
-			return ImmutableSet.of();
-		}
-
-		final LoginContext ctx = getCtx();
-
-		//
-		// Get login warehouses
-		final int adOrgId = org.getKey();
-		final Set<KeyNamePair> warehouses = new TreeSet<>();
-		for (final I_M_Warehouse warehouse : Services.get(IWarehouseDAO.class).retrieveForOrg(ctx.getSessionContext(), adOrgId))
-		{
-			// do not show in tranzit warehouses - teo_sarca [ 2867246 ]
-			if (warehouse.isInTransit())
-			{
-				continue;
-			}
-
-			final KeyNamePair warehouseKNP = new KeyNamePair(warehouse.getM_Warehouse_ID(), warehouse.getName());
-			warehouses.add(warehouseKNP);
-		}
-
-		return warehouses;
-	}
-
-	/**
 	 * Validate Login
 	 *
 	 * @param org log-in org
@@ -564,14 +526,12 @@ public class Login
 	 * Assumes that the context is set for #AD_Client_ID, #AD_User_ID, #AD_Role_ID
 	 *
 	 * @param org org information
-	 * @param warehouse optional warehouse information
 	 * @param timestamp optional date
 	 * @param printerName optional printer info
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(
 			final KeyNamePair org,
-			final KeyNamePair warehouse,
 			final java.sql.Timestamp timestamp)
 	{
 		Check.assumeNotNull(org, "Parameter org is not null");
@@ -584,7 +544,6 @@ public class Login
 		//
 		// Org Info - assumes that it is valid
 		ctx.setOrg(org.getKey(), org.getName());
-		final int AD_Org_ID = ctx.getAD_Org_ID();
 
 		//
 		// Date (default today)
@@ -604,25 +563,6 @@ public class Login
 		final IUserRolePermissions userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
 		ctx.setUserOrgs(userRolePermissions.getAD_Org_IDs_AsString());
 
-		//
-		// Warehouse
-		// task 06009 if ShowWarehouseOnLogin is N pick the warehouse of the orgInfo (if it has one)
-		if (isShowWarehouseOnLogin())
-		{
-			// Warehouse Info
-			if (warehouse != null)
-			{
-				ctx.setWarehouse(warehouse.getKey(), warehouse.getName());
-			}
-		}
-		else
-		{
-			final I_M_Warehouse orgWarehouse = warehouseDAO.retrieveOrgWarehouse(ctx.getSessionContext(), AD_Org_ID);
-			if (orgWarehouse != null)
-			{
-				ctx.setWarehouse(orgWarehouse.getM_Warehouse_ID(), orgWarehouse.getName());
-			}
-		}
 
 		// Other
 		ctx.setPrinterName(Services.get(IPrinterRoutingBL.class).getDefaultPrinterName()); // Optional Printer
@@ -951,13 +891,6 @@ public class Login
 	{
 		return getCtx().getWebSession();
 	}	// WebSession
-
-	public boolean isShowWarehouseOnLogin()
-	{
-		final boolean defaultValue = true;
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowWarehouseOnLogin, defaultValue, Env.CTXVALUE_AD_Client_ID_System, Env.CTXVALUE_AD_Org_ID_System);
-	}
 
 	public boolean isAllowLoginDateOverride()
 	{

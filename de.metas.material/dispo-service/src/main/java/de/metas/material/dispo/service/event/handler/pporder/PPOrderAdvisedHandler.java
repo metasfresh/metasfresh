@@ -12,10 +12,11 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
@@ -102,6 +103,8 @@ public final class PPOrderAdvisedHandler
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
+
 		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
@@ -110,7 +113,7 @@ public final class PPOrderAdvisedHandler
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.demandDetail(demandDetail)
+				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
@@ -128,6 +131,8 @@ public final class PPOrderAdvisedHandler
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
+
 		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
@@ -137,7 +142,7 @@ public final class PPOrderAdvisedHandler
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.demandDetail(demandDetail)
+				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 

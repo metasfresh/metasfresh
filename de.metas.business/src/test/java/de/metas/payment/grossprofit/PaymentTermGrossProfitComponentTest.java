@@ -3,19 +3,22 @@ package de.metas.payment.grossprofit;
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
+import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.money.MoneyService;
+import de.metas.payment.paymentterm.PaymentTermId;
 
 /*
  * #%L
@@ -41,41 +44,45 @@ import de.metas.payment.api.PaymentTermId;
 
 public class PaymentTermGrossProfitComponentTest
 {
-	private Currency currency;
+	private CurrencyId currencyId;
+	private MoneyService moneyService;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		currency = Currency
-				.builder()
-				.id(CurrencyId.ofRepoId(10))
-				.precision(2)
-				.build();
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setStdPrecision(2); // the precision is crucial for the rounding, when we subtract the contract's discount
+		saveRecord(currencyRecord);
+		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+
+		moneyService = new MoneyService(new CurrencyRepository());
 	}
 
 	@Test
-	public void applyToInput()
+	public void applyToInput_subtract_3percent()
 	{
 		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
 		paymentTermRecord.setDiscount(new BigDecimal("3"));
 		save(paymentTermRecord);
 
-		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID()));
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
+
+		final PaymentProfitPriceActualComponent component = new PaymentProfitPriceActualComponent(paymentTermId, moneyService);
 
 		// invoke the method under test
-		final Money result = component.applyToInput(Money.of(ONE, currency));
+		final Money result = component.applyToInput(Money.of(ONE, currencyId));
 		assertThat(result.getValue()).isEqualByComparingTo("0.97");
 	}
 
 	@Test
 	public void applyToInput_no_paymentterm()
 	{
-		final PaymentTermGrossProfitComponent component = new PaymentTermGrossProfitComponent(null);
+		final PaymentProfitPriceActualComponent component = new PaymentProfitPriceActualComponent(null, moneyService);
 
 		// invoke the method under test
-		final Money result = component.applyToInput(Money.of(ONE, currency));
+		final Money result = component.applyToInput(Money.of(ONE, currencyId));
 		assertThat(result.getValue()).isEqualByComparingTo("1");
 	}
 

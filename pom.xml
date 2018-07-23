@@ -118,6 +118,8 @@
 		<module>de.metas.handlingunits.base</module>
 		<module>de.metas.handlingunits.client</module>
 
+		<module>de.metas.order.rest-api</module>
+		
 		<module>de.metas.ordercandidate.rest-api</module>
 		<module>de.metas.ordercandidate.rest-api-impl</module>
 
@@ -550,7 +552,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>1.8</version>
+				<version>1.16</version>
 				<executions>
 					<execution>
 						<id>update-file-header</id>

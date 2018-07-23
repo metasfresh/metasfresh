@@ -26,11 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
-import org.adempiere.bpartner.service.BPartnerStats;
-import org.adempiere.bpartner.service.IBPartnerStatsBL;
-import org.adempiere.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
-import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -52,10 +47,15 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
@@ -2025,7 +2025,6 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();

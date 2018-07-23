@@ -37,6 +37,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -101,10 +102,8 @@ public final class CacheMgt
 	private final AtomicLong lastCacheReset = new AtomicLong();
 
 	/**
-	 * Enable caches for the given table to be invalidated by remote events. Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate the local cache to avoid it
-	 * becoming stale.
-	 *
-	 * @param tableName
+	 * Enable caches for the given table to be invalidated by remote events.<br>
+	 * Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate all the local caches to avoid it becoming stale.
 	 */
 	public final void enableRemoteCacheInvalidationForTableName(final String tableName)
 	{
@@ -371,7 +370,12 @@ public final class CacheMgt
 	public int reset(final String tableName, final int recordId)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId);
-		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
+
+		final ResetMode mode = Adempiere.isUnitTestMode()
+				? ResetMode.LOCAL
+				: ResetMode.LOCAL_AND_BROADCAST;
+
+		return reset(request, mode);
 	}
 
 	/**
@@ -530,7 +534,7 @@ public final class CacheMgt
 					final int itemsRemoved = recordsCache.resetForRecordId(tableName, recordId);
 					if (itemsRemoved > 0)
 					{
-						log.debug("Rest cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
+						log.debug("Reset cache instance for {}/{}: {}", tableName, recordId, cacheInstance);
 						total += itemsRemoved;
 						counter++;
 					}
@@ -608,36 +612,6 @@ public final class CacheMgt
 				.append("]");
 		return sb.toString();
 	}	// toString
-
-	/**
-	 * Reset cache and clear ALL registered {@link CacheInterface}s.
-	 */
-	public void clear()
-	{
-		cacheInstancesLock.lock();
-		try
-		{
-			reset();
-
-			// Make sure all cache instances are reset
-			for (final CacheInterface cacheInstance : cacheInstances)
-			{
-				if (cacheInstance == null)
-				{
-					continue;
-				}
-				resetNoFail(cacheInstance);
-			}
-
-			cacheInstances.clear();
-			tableNames.clear();
-		}
-		finally
-		{
-			cacheInstancesLock.unlock();
-		}
-
-	}
 
 	private int resetNoFail(final CacheInterface cacheInstance)
 	{

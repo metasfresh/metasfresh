@@ -4,9 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
+import de.metas.payment.paymentterm.PaymentTermId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,7 +48,14 @@ public class PricingConditionsBreak
 	// Discount%
 	boolean bpartnerFlatDiscount;
 	Percent discount;
-	int paymentTermId;
+
+	//
+	// PaymentTerm
+	PaymentTermId paymentTermIdOrNull;
+	Percent paymentDiscountOverrideOrNull;
+
+	/** created from {@link #getPaymentTermId()} plus {@link #paymentTermDiscountOverrideOrNull}. */
+	PaymentTermId derivedPaymentTermIdOrNull;
 
 	//
 	// Quality
@@ -61,7 +71,9 @@ public class PricingConditionsBreak
 			@NonNull final PriceOverride priceOverride,
 			final boolean bpartnerFlatDiscount,
 			final Percent discount,
-			final int paymentTermId,
+			@Nullable final PaymentTermId paymentTermIdOrNull,
+			@Nullable final Percent paymentDiscountOverrideOrNull,
+			@Nullable final PaymentTermId derivedPaymentTermIdOrNull,
 			final BigDecimal qualityDiscountPercentage,
 			final LocalDateTime dateCreated,
 			final boolean hasChanges)
@@ -71,8 +83,12 @@ public class PricingConditionsBreak
 		this.priceOverride = priceOverride;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;
-		this.paymentTermId = paymentTermId > 0 ? paymentTermId : -1;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
+
+		this.paymentTermIdOrNull = paymentTermIdOrNull;
+		this.paymentDiscountOverrideOrNull = paymentDiscountOverrideOrNull;
+		this.derivedPaymentTermIdOrNull = derivedPaymentTermIdOrNull;
+
 		this.dateCreated = dateCreated;
 		this.hasChanges = hasChanges;
 	}
@@ -98,7 +114,9 @@ public class PricingConditionsBreak
 		return Objects.equals(priceOverride, reference.priceOverride)
 				&& Objects.equals(discount, reference.discount)
 				&& Objects.equals(bpartnerFlatDiscount, reference.bpartnerFlatDiscount)
-				&& Objects.equals(paymentTermId, reference.paymentTermId);
+				&& Objects.equals(paymentTermIdOrNull, reference.paymentTermIdOrNull)
+				&& Objects.equals(paymentDiscountOverrideOrNull, reference.paymentDiscountOverrideOrNull)
+				&& Objects.equals(derivedPaymentTermIdOrNull, reference.derivedPaymentTermIdOrNull);
 	}
 
 	public boolean isTemporaryPricingConditionsBreak()
@@ -130,5 +148,4 @@ public class PricingConditionsBreak
 
 		return toTemporaryPricingConditionsBreak();
 	}
-
 }

@@ -13,6 +13,7 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
+import de.metas.lang.Percent;
 import lombok.NonNull;
 
 /*
@@ -40,13 +41,20 @@ import lombok.NonNull;
 @Service
 public class MoneyService
 {
+	private final CurrencyRepository currencyRepository;
+
+	public MoneyService(@NonNull final CurrencyRepository currencyRepository)
+	{
+		this.currencyRepository = currencyRepository;
+	}
+
 	public Money convertMoneyToCurrency(
 			@NonNull final Money money,
-			@NonNull final Currency targetCurrency)
+			@NonNull final CurrencyId targetCurrencyId)
 	{
 		if (Objects.equals(
-				money.getCurrency().getId(),
-				targetCurrency.getId()))
+				money.getCurrencyId(),
+				targetCurrencyId))
 		{
 			return money;
 		}
@@ -63,14 +71,47 @@ public class MoneyService
 		final ICurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,
 				money.getValue(),
-				money.getCurrency().getId().getRepoId(),
-				targetCurrency.getId().getRepoId());
+				money.getCurrencyId().getRepoId(),
+				targetCurrencyId.getRepoId());
 
 		final BigDecimal convertedAmount = Check.assumeNotNull(
 				conversionResult.getAmount(),
-				"CurrencyConversion from currency={} to currency={} needs to work; currencyConversionContext={}, currencyConversionResult={}",
-				money.getCurrency(), targetCurrency, currencyConversionContext, conversionResult);
+				"CurrencyConversion from currencyId={} to currencyId={} needs to work; currencyConversionContext={}, currencyConversionResult={}",
+				money.getCurrencyId(), targetCurrencyId, currencyConversionContext, conversionResult);
 
-		return Money.of(convertedAmount, targetCurrency);
+		return Money.of(convertedAmount, targetCurrencyId);
+	}
+
+	public Money percentage(@NonNull final Percent percent, @NonNull final Money input)
+	{
+		if (percent.isOneHundred())
+		{
+			return input;
+		}
+
+		final Currency currency = currencyRepository.getById(input.getCurrencyId());
+
+		final BigDecimal newValue = percent
+				.multiply(input.getValue(), currency.getPrecision());
+
+		return Money.of(newValue, input.getCurrencyId());
+	}
+
+	public Money subtractPercent(@NonNull final Percent percent, @NonNull final Money input)
+	{
+		if (percent.isZero())
+		{
+			return input;
+		}
+
+		if (input.isZero())
+		{
+			return input;
+		}
+
+		final Currency currency = currencyRepository.getById(input.getCurrencyId());
+
+		final BigDecimal newValue = percent.subtractFromBase(input.getValue(), currency.getPrecision());
+		return Money.of(newValue, input.getCurrencyId());
 	}
 }

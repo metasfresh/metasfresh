@@ -33,6 +33,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_R_MailText;
 
+import de.metas.i18n.ITranslatableString;
+
 /**
  * Mail configuration
  *
@@ -42,12 +44,7 @@ import org.compiere.model.I_R_MailText;
 public interface IMailBL extends ISingletonService
 {
 	/**
-	 * @param client
-	 * @param AD_Org_ID
-	 * @param AD_Process_ID
-	 * @param customType
-	 * @param user
-	 * @return mailBox
+	 * @throws MailboxNotFoundException
 	 */
 	Mailbox findMailBox(I_AD_Client client,
 			int AD_Org_ID,
@@ -56,15 +53,16 @@ public interface IMailBL extends ISingletonService
 			String customType,
 			I_AD_User user);
 
-	/**
-	 * @param client
-	 * @param mailCustomType
-	 * @param to
-	 * @param subject
-	 * @param message
-	 * @param html
-	 * @return email created
-	 */
+	public static final class MailboxNotFoundException extends AdempiereException
+	{
+		private static final long serialVersionUID = 8412719309323544757L;
+
+		public MailboxNotFoundException(ITranslatableString msg)
+		{
+			super(msg);
+		}
+	}
+
 	EMail createEMail(I_AD_Client client,
 			String mailCustomType,
 			String to,
@@ -72,16 +70,6 @@ public interface IMailBL extends ISingletonService
 			String message,
 			boolean html);
 
-	/**
-	 * @param client
-	 * @param mailCustomType
-	 * @param from
-	 * @param to
-	 * @param subject
-	 * @param message
-	 * @param html
-	 * @return email created
-	 */
 	EMail createEMail(I_AD_Client client,
 			String mailCustomType,
 			I_AD_User from,
@@ -91,13 +79,7 @@ public interface IMailBL extends ISingletonService
 			boolean html);
 
 	/**
-	 * @param ctx
-	 * @param mailbox
-	 * @param to
-	 * @param subject
-	 * @param message
 	 * @param html see the javadoc in {@link EMail}
-	 * @return email created
 	 */
 	EMail createEMail(Properties ctx,
 			Mailbox mailbox,
@@ -134,6 +116,6 @@ public interface IMailBL extends ISingletonService
 	IMailTextBuilder newMailTextBuilder(I_R_MailText mailText);
 
 	IMailTextBuilder newMailTextBuilder(Properties ctx, int R_MailText_ID);
-	
+
 	void validateEmail(String email);
 }

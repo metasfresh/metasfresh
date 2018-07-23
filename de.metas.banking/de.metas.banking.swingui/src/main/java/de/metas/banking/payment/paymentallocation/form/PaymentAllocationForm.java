@@ -90,6 +90,7 @@ import org.compiere.swing.table.AnnotatedTableFactory;
 import org.compiere.swing.table.AnnotatedTableModel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.SwingUtils;
 import org.jdesktop.swingx.JXTable;
 
 import com.jgoodies.looks.Options;
@@ -840,7 +841,7 @@ public class PaymentAllocationForm
 		//
 		// Create and show the Info window
 		final Info info = infoBuilder
-				.setParentFrame(Env.getFrame(m_frame))
+				.setParentFrame(SwingUtils.getFrame(m_frame))
 				.setWindowNo(getWindowNo())
 				.setModal(true)
 				.setMultiSelection(true)

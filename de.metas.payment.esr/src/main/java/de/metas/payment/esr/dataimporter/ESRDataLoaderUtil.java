@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -18,9 +17,10 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;

@@ -5,9 +5,10 @@ import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -19,12 +20,12 @@ import de.metas.handlingunits.model.X_M_HU;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +35,7 @@ import de.metas.handlingunits.model.X_M_HU;
 public class CustomerReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutLinesBuilder
 {
 	// services
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	public CustomerReturnsInOutLinesBuilder(IReference<I_M_InOut> inoutRef)
 	{
@@ -49,11 +50,11 @@ public class CustomerReturnsInOutLinesBuilder extends AbstractQualityReturnsInOu
 	}
 
 	@Override
-	protected void setHUStatus(IHUContext huContext, I_M_HU hu)
+	protected void setHUStatus(@NonNull final IHUContext huContext, @NonNull final I_M_HU hu)
 	{
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 	}
-	
-	
+
+
 
 }

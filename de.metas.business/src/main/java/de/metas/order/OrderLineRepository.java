@@ -2,7 +2,6 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.bpartner.BPartnerId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
@@ -11,10 +10,11 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
-import de.metas.money.Currency;
-import de.metas.money.CurrencyRepository;
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -44,13 +44,6 @@ import lombok.NonNull;
 @Repository
 public class OrderLineRepository
 {
-	private final CurrencyRepository currencyRepository;
-
-	public OrderLineRepository(@NonNull final CurrencyRepository currencyRepository)
-	{
-		this.currencyRepository = currencyRepository;
-	}
-
 	public OrderLine getById(@NonNull final OrderLineId orderLineId)
 	{
 		final I_C_OrderLine orderLineRecord = load(orderLineId.getRepoId(), I_C_OrderLine.class);
@@ -84,17 +77,18 @@ public class OrderLineRepository
 				.asiId(AttributeSetInstanceId.ofRepoId(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
 				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
+				.soTrx(SOTrx.ofBoolean(orderLineRecord.getC_Order().isSOTrx()))
 				.build();
 	}
 
 	private Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
-		final Currency currency = currencyRepository.getById(orderLineRecord.getC_Currency_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
 
 		return Money.of(
 				orderLineRecord.getPriceActual(),
-				currency);
+				currencyId);
 	}
 
 	private Quantity quantityOfRecordsQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)

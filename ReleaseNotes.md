@@ -9,11 +9,335 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.67 (2018-30)
+## Features
+* metasfresh
+  * [#4292](https://github.com/metasfresh/metasfresh/issues/4292) Make a Webui-Window for HU Reservation
+    * New Window for Handling Unit Reservation in WebUI.
+  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Fields and Filter criteria in Documentoutbound window in WebUI.
+  * [#4376](https://github.com/metasfresh/metasfresh/issues/4376) Pricing engine sets the scale of price amounts to the respective precision
+  * [#4380](https://github.com/metasfresh/metasfresh/issues/4380) consolidate profit related columns in order line and purchase candidate
+  * [#4395](https://github.com/metasfresh/metasfresh/issues/4395) Notification if automatic TU label print failed
+
+* metasfresh-webui-api
+  * [#1010](https://github.com/metasfresh/metasfresh-webui-api/issues/1010) Implement process parameters callout support
+
+* metasfresh-webui-frontend
+  * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
+    * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
+
+## Fixes
+* metasfresh
+  * [#4172](https://github.com/metasfresh/metasfresh/issues/4172) Purchase order from sales order not working as before
+  * [#4185](https://github.com/metasfresh/metasfresh/issues/4185) If C_DocType_Trl description exists, use this as description in document
+  * [#4365](https://github.com/metasfresh/metasfresh/issues/4365) Error Zooming from material receipt to HU tracing
+  * [#4371](https://github.com/metasfresh/metasfresh/issues/4371) Sales Order VAT vs. Invoice Candidate VAT
+
+* metasfresh-webui-api
+  * [#1007](https://github.com/metasfresh/metasfresh-webui-api/issues/1007) HU-Editor - Refresh after HU-changing process not working properly
+  * [#1012](https://github.com/metasfresh/metasfresh-webui-api/issues/1012) Cannot use transform on a TU without LU in HU Editor
+
+* metasfresh-webui-frontend
+  * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
+    * Improving the selection of Pricing Conditions via Keyboard.
+  * [#1831](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1831) Fields in modal window are copied to the one in the back
+    * Fixes a Bug in modals having modal field content getting copied to the underlying data structure.
+  * [#1865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1865) Patch not sent when you delete a text in grid view
+    * Fixes the editing/ patching of content in text fields in grid view editing mode.
+  * [#1867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1867) Set qty to purchase to 0 when removed
+    * Fixes the Purchase Dispo Functionality in Sales Order, now setting the Qty to 0 when removing the Puchased Qty.
+  * [#1871](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1871) alt+Enter not working as before
+    * Improvement of the shortcut [alt]+Enter in different modal views.
+  * [#1876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1876) Action confirmation without tab does not use the set Parms
+    * Fixes the usage of keyboard in process parm windows. Now the parms are also taken when using alt+enter without previous tab usage.
+  * [#1880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1880) Cannot complete documents
+    * Fixes the Docactions in Documents.
+
+
+# metasfresh 5.66 (2018-29)
+## Features
+* metasfresh
+  * [#1461](https://github.com/metasfresh/metasfresh/issues/1461) Improve User Password Hashing
+    * Improvement of the Password Hashing Feature. Nown Hashing with SHA512.
+  * [#4009](https://github.com/metasfresh/metasfresh/issues/4009) Improve callout org.compiere.model.Callout_AD_Column
+    * Improvement of Callout_AD_Column, making it WebUI friendly.
+  * [#4026](https://github.com/metasfresh/metasfresh/issues/4026) Generate and mail the CSV only when Der Kurier shipper transportation is completed
+    * Adjustment of the Shipper Transportation workflow for "Der Kurier". Now generating and mailing the csv aggregation only when the transportation order is completed.
+  * [#4299](https://github.com/metasfresh/metasfresh/issues/4299) Jasper: Translations missing in en_US version
+    * New en_US Translations added to Jasper Documents.
+  * [#4315](https://github.com/metasfresh/metasfresh/issues/4315) metasfresh-app server fails to startup on a dev-machine
+    * Internal improvement of the startup of the metasfresh-app server for development purposes.
+  * [#4345](https://github.com/metasfresh/metasfresh/issues/4345) Make accounting async
+    * Improvement of accounting, making it asynch. Needed for new Costing Engine.
+  * [#4346](https://github.com/metasfresh/metasfresh/issues/4346) Individual sequences for products and projects
+    * New Feature that allows to use Sequence No. for Projects and Products.
+  * [#4354](https://github.com/metasfresh/metasfresh/issues/4354) Notify user on error creating document PDF
+    * New Feature that informs the user via Notification when a PDF cannot be created.
+  * [#4359](https://github.com/metasfresh/metasfresh/issues/4359) Set default values for new Integer and YesNo AD_Columns
+    * Improvement in Applcation Dictionary, now setting default values for all Integer and Yes No Fields
+  * [#4367](https://github.com/metasfresh/metasfresh/issues/4367) HU Transformation for LU, Packing Item and TU Qty default
+    * Improvement of the HU Transformation Action, now setting default Parms for Transformation.
+
+* metasfresh-webui-api
+  * [#1006](https://github.com/metasfresh/metasfresh-webui-api/issues/1006) Forgot password webui api
+    * New Feature via API that allows to trigger a workflow for forgotton user passwords.
+  * [#1009](https://github.com/metasfresh/metasfresh-webui-api/issues/1009) Cleanup ADProcessDAO
+    * New internal improvement on API side that is needed for the Transformation Action improvement.
+
+## Fixes
+* metasfresh
+  * [#4356](https://github.com/metasfresh/metasfresh/issues/4356) Sales Orderline:ERROR: duplicate key value violates unique constraint "c_paymentterm_name"
+    * Fixes a Bug when creating a new Line in Sales Order.
+  * [#4370](https://github.com/metasfresh/metasfresh/issues/4370) M_ReceiptSchedule_Generate_M_InOuts error if M_ReceiptSchedule has Qty = 0
+    * Fixes a Bug in the generation Process of Receipts in case the Receipt Schedule has a quantity of 0.
+
+# metasfresh 5.65 (2018-28)
+## Features
+* metasfresh
+  * [#4217](https://github.com/metasfresh/metasfresh/issues/4217) IFA Product Fields in Pharma Product readonly
+    * Improvement of Pharma vertical in Product masterdata, now showing the fields readonly that are set by IFA Product Import.
+  * [#4219](https://github.com/metasfresh/metasfresh/issues/4219) Import Datev Primanota for Payments, Allocations
+    * New Import Feature for the German accounting Software DATEV. It's possible to import DATEV Primanota Payments now.
+  * [#4220](https://github.com/metasfresh/metasfresh/issues/4220) Lot No. Control without mandatory Product ID
+    * Improvement of the Lot No. Control Feature, now possible to record Lot No. without Mandatory Product ID. This allows to use the Feature also with Pharma Repack No.
+  * [#4285](https://github.com/metasfresh/metasfresh/issues/4285) Invoice Document Outbound eMail enqueing
+    * Improvement of the Mail enqueueing process via Document Outbound Window.
+  * [#4308](https://github.com/metasfresh/metasfresh/issues/4308) Zoom from sales order to material dispo should open all referencing records
+    * Improvement of the referenced Documents Link from Sales Order to material Disposition.
+  * [#4311](https://github.com/metasfresh/metasfresh/issues/4311) Purchase schedules date: consider vendor lead time and non business days
+    * New Feature for Purchase Candidate Calculation. Th Purchase Schedule Dates are now calculates based on vendor lead time and non business days.
+  * [#4318](https://github.com/metasfresh/metasfresh/issues/4318) Split the current M_ShipmentSchedule_Update async queue processor
+    * Performance Improvement for Shipment Schedules creation.
+  * [#4320](https://github.com/metasfresh/metasfresh/issues/4320) Improve mass print oversight
+    * Improved maintenance functionality for printing, making it much easier to support printing issue cases.
+  * [#4340](https://github.com/metasfresh/metasfresh/issues/4340) REST API for creating sales orders and attaching files to them
+    * New Endpoint for sales order creation and endpoint for file attachments so sales orders.
+
+* metasfresh-webui-frontend
+  * [#1857](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1857) Readonly next and previous page buttons
+    * Pagination Improvement. Now deactivating previous/ next buttons in pagination on fist/ last page.
+
+* metasfresh-dist
+  * [#47](https://github.com/metasfresh/metasfresh-dist/issues/47) Provide standalone metasfresh-dist-report docker image
+    * New Standalone docker image for distribution reports.
+  * [#48](https://github.com/metasfresh/metasfresh-dist/issues/48) Provide standalone metasfresh-webui-frontend k8s dev deployment
+    * New Standalone docker image for kubernetes webui frontend.
+
+## Fixes
+* metasfresh
+  * [#4271](https://github.com/metasfresh/metasfresh/issues/4271) Reactivated and completed sales order is considered as new sales order in Material Dispo
+    * Fixes the Material Dispo entry creation after reactivating and completing sales Orders.
+  * [#4276](https://github.com/metasfresh/metasfresh/issues/4276) HU Editor in picking terminal shows all HUs: not filtered for product, and HUs with status: Shipped
+    * Fixes the Filtering in the Handling Unit Editor of Picking Terminal. Now only showing Handling Units that fit to the selected Product.
+  * [#4284](https://github.com/metasfresh/metasfresh/issues/4284) Document Outbound eMail action
+    * Fixes the Document Outbound eMail Action.
+  * [#4307](https://github.com/metasfresh/metasfresh/issues/4307) Reversed material receipt not considered correctly in Material Cockpit
+    * Bugfix for the Material Receipt reversal Handling in Material Cockpit.
+  * [#4314](https://github.com/metasfresh/metasfresh/issues/4314) metasfresh-app server startup stalls if no activeMQ broker is available
+    * Fixes the startup of App Server in cases n activeMQ broker is not available.
+  * [#4342](https://github.com/metasfresh/metasfresh/issues/4342) ATP in batch entry is wrong after attributes are added
+    * Fixes the Available to Pomise Quantity after adding attribute values to a Handling Unit.
+  * [#4349](https://github.com/metasfresh/metasfresh/issues/4349) Error when creating a bpartner on the fly and not setting a name
+    * Bugfix for the Business Partner creation via Sales Order window.
+
+* metasfresh-webui-frontend
+  * [#1467](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1467) Advanced Edit shortcut not working correctly
+    * Improvement of the Handling of shortcuts.
+  * [#1850](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1850) Initial Setup Wizard window's layout is distorted
+    * Fixes the Layout of the Initial Setup Wizard
+  * [#1858](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1858) Moving to next page in modal removes filters
+    * Fixes the Pagination behavior in modal overlays.
+
+
+# metasfresh 5.64 (2018-27)
+## Features
+  * [#3210](https://github.com/metasfresh/metasfresh/issues/3210) Manufacturing Issue action take exact qty from stock
+    * New Feature in WebUI manufacturing, allowing to issue the based on planned Quantities.
+  * [#4212](https://github.com/metasfresh/metasfresh/issues/4212) ATP Stock indicator in Sales Orderline
+    * New Field in Sales Orderline that shows the ATP Stock.
+  * [#4218](https://github.com/metasfresh/metasfresh/issues/4218) Pharma: DeliveryType B disallow Sales Orderline
+    * New Feature for Pharma that restricts the Orderline creation for RX Products if the Customer does not have the permission to buy.
+  * [#4221](https://github.com/metasfresh/metasfresh/issues/4221) Recording of Payment Discount instead of Payment Term
+    * Possibility to record Payment Discounts instead of Payment Terms in Pricing Conditions.
+  * [#4222](https://github.com/metasfresh/metasfresh/issues/4222) Pricing Conditions for all Products of a Manufacturer
+    * New Feature that allows the recording or Pricing Conditions on all Products of a Manufacturer.
+  * [#4223](https://github.com/metasfresh/metasfresh/issues/4223) Ban Manufacturer Products for a Businesspartner
+    * Possibility to Ban all Products of a Manufacturer for a given Business Partner.
+  * [#4224](https://github.com/metasfresh/metasfresh/issues/4224) Pharma: Additional Document/ Certificate Fields
+    * New Certificate Fields for the Pharma Business Partner Window in WebUI.
+  * [#4248](https://github.com/metasfresh/metasfresh/issues/4248) Details about HU attributes during sales order creation
+    * New Feature that allows to see reserve Handling Units during Sales Orderline creation. The Handling Units are reserved in the needed Quanitity and provided in Picking as initial selection.
+  * [#4252](https://github.com/metasfresh/metasfresh/issues/4252) Show c_bpartner memo field of Org BP in document footer
+    * Enlarging the Business Partner Description to allow more Company Information in Document Footers.
+  * [#4270](https://github.com/metasfresh/metasfresh/issues/4270) Purchase Order Document with up to 4 digits
+    * Improveing the Purchase Order Document, allowing to use up to 4 digits for purchase prices.
+  * [#4273](https://github.com/metasfresh/metasfresh/issues/4273) Copy BOM Consumer Label Fields to PP Order BOMLine
+    * Copying the BOM Consumer Label Fields to the Manufacturing Order Bill of Material Line during Order complete.
+  * [#4286](https://github.com/metasfresh/metasfresh/issues/4286) Allow repost eventlog with forcing handler to be processed again
+    * New Feature that allows to report an event via the Window event log.
+  * [#4293](https://github.com/metasfresh/metasfresh/issues/4293) WebUI: New Window for MSV3 Customer Window
+    * New Window for Pharma MSV3 Server and Customer Configuration
+  * [#4295](https://github.com/metasfresh/metasfresh/issues/4295) Avoid polluting the console by changing log level from INFO to DEBUG
+    * Internal Housekeeping improvement, changing Info Level logging to debug level, reducing the amount of logging information in the console, when not needed.
+  
+## Fixes 
+  * [#4282](https://github.com/metasfresh/metasfresh/issues/4282) Order line is flagged as Temporary Pricing Conditions when the conditions are actually missing
+    * Fixes the setting of pricing conditions in Orderlines and introducing a new Flag for temporary pricing conditions.
+  * [#4296](https://github.com/metasfresh/metasfresh/issues/4296) Only metasfresh-app shall ever start an embedded JMS broker
+    * Internal improvement of starting embedded JMS broker, now only done by metasfresh-app.
+  * [#4297](https://github.com/metasfresh/metasfresh/issues/4297) Exit when swing application context failed to initialize
+    * Internal optimization, now exiting when the swing applicatiton fails to initialize the context.
+
+
+# metasfresh 5.63 (2018-26)
+## Features
+* metasfresh
+  * [#3772](https://github.com/metasfresh/metasfresh/issues/3772) EventBus shall use RabbitMQ instead of ActiveMQ
+    * Switches the EventBus to use RabbitMQ instead of ActiveMQ from now on
+  * [#4140](https://github.com/metasfresh/metasfresh/issues/4140) WebUI: Translation Window for Country
+    * New Window for Country Translation maintenance.
+  * [#4225](https://github.com/metasfresh/metasfresh/issues/4225) Pharma: Move Businesspartner Fields to Customer/ Vendor Tab
+    * Improvement of the Pharma Business Partnmer Window in WebUI, rearranging customer and vendor Fields in their subtabs.
+  * [#4237](https://github.com/metasfresh/metasfresh/issues/4237) Add UC constraints to C_Aggregation
+    * Improvement of the Aggregation Performance.
+  * [#4238](https://github.com/metasfresh/metasfresh/issues/4238) Implement full text search for BPartners
+    * New Fulltext Search feature using elasticsearch.
+  * [#4239](https://github.com/metasfresh/metasfresh/issues/4239) Be robust wrt priceentered with too many digits
+    * Improves the behavior of Priceentrered in documents, depending on Pricelist Price Precisions.
+  * [#4240](https://github.com/metasfresh/metasfresh/issues/4240) Translate new Repack Attributes
+    * Improved Translation for Repack No. Attributes.
+  * [#4242](https://github.com/metasfresh/metasfresh/issues/4242) WebUI: Window Event Log
+    * New Window event log added to WebUI Menu.
+  * [#4244](https://github.com/metasfresh/metasfresh/issues/4244) Purchase Candidates adjustments
+    * Window Improvements for Purchase Candidates in WebUI.
+  * [#4146](https://github.com/metasfresh/metasfresh/issues/4146) Picking: Show HU Products with not exact Attribute matching
+    * New Feature for Picking in WebUI, now also able to show Handling Units without perfect Attribute Matching.
+  * [#4260](https://github.com/metasfresh/metasfresh/issues/4260) Appserver needs to tell SwingUI where to find RabbitMQ
+    * Feature to let the App Server know where to find RabbitMQ.
+  * [#4264](https://github.com/metasfresh/metasfresh/issues/4264) Ingredients Data for Consumer Product Label
+    * New Fields for Consumer Label Ingredients in BOM Line.
+  * [#4265](https://github.com/metasfresh/metasfresh/issues/4265) New Window/ Tab for Product Nutrition facts
+    * New Windows in WebUI for Nutrition and Product Nutrition maintenance.
+
+## Fixes
+* metasfresh
+  * [#4255](https://github.com/metasfresh/metasfresh/issues/4255) Contract Person in Charge not filtered by Systemuser
+    * Fixed User in Charge Validation,. Now only showing Systemusers/ -contacts in the dropdown selection.
+  * [#4266](https://github.com/metasfresh/metasfresh/issues/4266) user notifications are stuck in the event framework
+    * Fix for User Notifications, improving the duration between Notification trigger and delivery.
+  * [#4268](https://github.com/metasfresh/metasfresh/issues/4268) contract status is set back to running after termination in some unknown cases
+    * Fixes issue in contract, having the status set back to running after termination.
+  * [#4269](https://github.com/metasfresh/metasfresh/issues/4269) Can't open custom forms in swing anymore
+    * Fixes a Bug in Custom Forms. Now possible to open them again in Swing Client.
+
+* metasfresh-webui-frontend
+  * [#1811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1811) Fields are set on null when you press tab too fast
+    * Fix for Tab Hold in Document windows. Now not blurring the Fields content anymore when values are already set.
+  * [#1837](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1837) Cancel request message disappears too fast
+    * Fixes the cancel request message. Now not dissappearing anymore when hovering.
+  * [#1843](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1843) Action button not properly displayed in Transportation Order window
+    * Fixes the Button Look&Feel in Case the Button has no data from API.
+  * [#1853](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1853) Searching in BPartner field from order is not working
+    * Improvement of new Businesspartner and search in Order Window.
+
+
+# metasfresh 5.62 (2018-25)
+## Features
+* metasfresh
+  * [#3028](https://github.com/metasfresh/metasfresh/issues/3028) WebUI: New Window for Import COA
+    * New Window Import Chart of Accounts in WebUI.
+  * [#4201](https://github.com/metasfresh/metasfresh/issues/4201) WebUI: Show DeliveryRule in Businesspartner Customer and Sales Order
+    * Improvement of Businesspartner and Sales Order Window in WebUI. Adding the Field for Delivery Rule.
+  * [#4231](https://github.com/metasfresh/metasfresh/issues/4231) Address swing-client performance problem in rechnungsdispo summary info
+    * Improving the Performance of Invoice candidates summary info.
+  * [#4230](https://github.com/metasfresh/metasfresh/issues/4230) Filter for POReference in Invoicecand
+    * Improving the filtering Performance for POReference in Invoice candidates window.
+  * [#4153](https://github.com/metasfresh/metasfresh/issues/4153) Serial Letter Feature
+    * New Feature allowing to create Serial Letters.
+
+* metasfresh-webui-frontend
+  * [#1417](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1417) Shortcuts for delete modal window
+    * Improved shortcut Handling in delete record modal overlay.
+  * [#1686](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1686) API login for cypress
+    * New Feature for Testing Framework Cypress, now allowing the API to do a login.
+
+## Fixes
+* metasfresh
+  * [#4134](https://github.com/metasfresh/metasfresh/issues/4134) Updating record to not match tab where clause leads to error when PKs are different
+    * Fixes a Bug that surfaced after using the new Virtual Tab Feature, causing an Error in where clause with different Primary Keys.
+  * [#4232](https://github.com/metasfresh/metasfresh/issues/4232) CleverReach remote group id not stored when campaign is created
+    * Bugfix for the CleverReach Feature, now storinf the Remote Group Identifier after creating a new campaign.
+  * [#4233](https://github.com/metasfresh/metasfresh/issues/4233) Attributeset as Sysadmin cannot be created
+    * Fixes the recording of Attributeset with System Client.
+
+* metasfresh-webui-frontend
+  * [#1446](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1446) Tab in purchase order batch entry not working correctly
+    * Fixes the Tab usage in Batch entry after confirming selection with mouse.
+  * [#1774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1774) Cannot stop uploading a file
+    * Extend File Upload Feature, now possible to cancel the upload.
+  * [#1840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1840) 404 error shall be centered
+    * Fixes the 404 error message. Now centered in WebUI Layout.
+
+# metasfresh 5.61 (2018-24)
+## Features
+* metasfresh
+  * [#2539](https://github.com/metasfresh/metasfresh/issues/2539) Translate report_en_US.properties for order, inout, invoice
+    * Improvement of report properties Translations for en_US language
+  * [#4107](https://github.com/metasfresh/metasfresh/issues/4107) Customer Revenue Report Excel with Credit Limit
+    * New Customer Revenue Report as Excel Sheet Download.
+  * [#4141](https://github.com/metasfresh/metasfresh/issues/4141) WebUI: Translation Window for Currencies
+    * New Window in WebUI that allows to maintain the Currency Translations.
+  * [#4142](https://github.com/metasfresh/metasfresh/issues/4142) WebUI: Translation Window for Document Types
+    * New Window in WebUI that allows to maintain the Document Type Translations.
+  * [#4143](https://github.com/metasfresh/metasfresh/issues/4143) WebUI: Translation Window for Messages
+    * New Window in WebUI that allows to maintain the message Translations.
+  * [#4151](https://github.com/metasfresh/metasfresh/issues/4151) Import: extend process of importing vendors
+    * Improved Vendor importing action, allowing to import a lot of additional infomration for a vendor.
+  * [#4167](https://github.com/metasfresh/metasfresh/issues/4167) Process C_Flatrate_Term_Extend shall continue if individual terms fail
+    * Improved Flatrate Term extension Action, now proceeding the process even if individual Terms fail.
+  * [#4169](https://github.com/metasfresh/metasfresh/issues/4169) Pricing Conditions Jasper
+    * New Report that shows the recorded Pricing Conditions per Customer/ Vendor.
+  * [#4173](https://github.com/metasfresh/metasfresh/issues/4173) Translations for Purchase Dispo modal Overlay Fields
+    * Field Translations added for Purchase Dispo modal overlay in Sales Order and Purchase Candidates.
+  * [#4178](https://github.com/metasfresh/metasfresh/issues/4178) Pricing Conditions Cockpit Translations in Material Cockpit
+    * Improving Translations for en_US and de_DE for Pricing Conditions Actions.
+
+## Fixes
+* metasfresh
+  * [#4012](https://github.com/metasfresh/metasfresh/issues/4012) Lot No control in Receipt not working
+    * Fixes the Lot No. control in Receipt.
+  * [#4168](https://github.com/metasfresh/metasfresh/issues/4168) Error when posting payment allocation with tax correction and multiple taxes
+    * Bugfix for the payment allocation posting, wen having a tx correction with multiple taxes.
+  * [#4191](https://github.com/metasfresh/metasfresh/issues/4191) Cannot add a product in order
+    * Bugfix for the product batcentry in webui, not allowing to add a product in minor cases.
+  * [#4149](https://github.com/metasfresh/metasfresh/issues/4149) User query: IUserQueryRestriction is not built properly all the time
+    * Fix for the User Query Restriction.
+
+* metasfresh-webui-frontend
+  * [#1266](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1266) Labels widget: tab and shift-tab support
+    * Improves the usage of Tab and shift-tab for Label widgets.
+  * [#1616](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1616) Reload /i18n/messages in case the language changed
+    * Improving the language loading of static messages for users with different language than default.
+  * [#1617](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1617) Label component doesn't hide after clicking tab
+    * Improvement of Tab behavior in label widget when dropdown list is openend. Now closing the Dropdown.
+  * [#1808](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1808) Shortcuts for inbox, menu and sidelist
+    * Improvement of Shortcuts for inbox, menu and sidelist. Now hiding the menus after 2nd usage of shortcut.
+  * [#1820](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1820) Make sure frontend is connecting to view's websocket endpoint BEFORE view data it's fetched
+    * Fix for the connection to the websocket endpoint.
+  * [#1828](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1828) Truncate action names with ellipsis
+    * Fixes the Layout for Quickaction Buttons with large content.
+  * [#1830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1830) Empty login page after logout
+    * Fixes the empty page after logout. Now showing the login screen again.
+  * [#1832](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1832) Labels widget: pressing enter
+    * Improvement of the Pre-Selection of Label Widget Dropdown after Label selection.
+
 
 # metasfresh 5.60 (2018-23)
 ## Features
 * metasfresh
   * [#4033](https://github.com/metasfresh/metasfresh/issues/4033) Pharma: MSV3 Purchase Functionality in purchase candidates
+    * New Feature in Purchase Candidates, now allowing to use the MSV3 Order Functionality there too.
   * [#4116](https://github.com/metasfresh/metasfresh/issues/4116) WebUI: Translation Window for Tax Rates
     * New Window in WebUI for the maintenance of Tax Rate Translations.
   * [#4117](https://github.com/metasfresh/metasfresh/issues/4117) WebUI: Add missing Translations in Product Window
@@ -23,6 +347,7 @@ Here come the actual release notes:
   * [#4119](https://github.com/metasfresh/metasfresh/issues/4119) WebUI: Translation Window for Tax Category
     * New Window in WebUI for the maintenance of Tax Category Translations.
   * [#4127](https://github.com/metasfresh/metasfresh/issues/4127) Batch entry product ID
+    * Batch Entry improvement, now integrating the Product Identifier configuration.
   * [#4135](https://github.com/metasfresh/metasfresh/issues/4135) Webui: Add Document References to all Windows with Translations
     * Improved the navigation beween master data and translation windows, adding references to the translation window & table.
   * [#4138](https://github.com/metasfresh/metasfresh/issues/4138) WebUI: Translation Window for Paymentterm
@@ -32,6 +357,7 @@ Here come the actual release notes:
   * [#4158](https://github.com/metasfresh/metasfresh/issues/4158) WebUI Sitemap: Missing Translations en_US
     * Improvement of the Translation for en_US for the WebUI menu, windows and tabs.
   * [#4161](https://github.com/metasfresh/metasfresh/issues/4161) Improve error message regarding illegal HU status changes
+    * Extended error Message for the Notification of invalid Handling Unit State changes.
   * [#4165](https://github.com/metasfresh/metasfresh/issues/4165) Extend Billing Candidates Filtering for contracts
     * New Filter criteria added to billing candidates window, allowing to filter by candidate controller.
   
@@ -41,12 +367,20 @@ Here come the actual release notes:
 
 * metasfresh-dist
   * [#45](https://github.com/metasfresh/metasfresh-dist/issues/45) publish standalone jasper/reporting files
+    * Internal housekeeping improvement for the automatic publishing of standalone Jasper Files.
 
 ## Fixes
 * metasfresh
+  * [#4122](https://github.com/metasfresh/metasfresh/issues/4122) Transform action throws error
+    * Fixes an error in certain cases of Handling Unit Transformations.
+  * [#4123](https://github.com/metasfresh/metasfresh/issues/4123) Dunning Jasper does not work
+    * Fixes the Jasper Report for Dunning Documents.
   * [#4125](https://github.com/metasfresh/metasfresh/issues/4125) Sometimes I got NPE when posting an allocation
+    * Improvement of the Payment Allocation accounting.
   * [#4147](https://github.com/metasfresh/metasfresh/issues/4147) Error when posting a zero-sum invoice
+    * Fixes the posting of Invoices with 0 Sum.
   * [#4163](https://github.com/metasfresh/metasfresh/issues/4163) "Overlapping term" error when completing subscription order
+    * Fixes an error for the contract creation that occurred when completing a subscription order.
 
 * metasfresh-frontent-webui
   * [#1813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1813) Cannot set attribute in orderline grid view

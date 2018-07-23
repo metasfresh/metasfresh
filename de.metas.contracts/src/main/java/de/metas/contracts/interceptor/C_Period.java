@@ -33,7 +33,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.service.ICalendarBL;
+import de.metas.calendar.ICalendarBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 

@@ -14,6 +14,9 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilit
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse.StockAvailabilityResponseBuilder;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionReason;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
@@ -33,12 +36,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,19 +70,48 @@ public class StockAvailabilityService
 		{
 			final PZN pzn = queryItem.getPzn();
 			final Quantity qtyRequired = queryItem.getQtyRequired();
+			final Quantity qtyOnHand = getQtyAvailable(pzn, bpartner).orElse(Quantity.ZERO);
 
-			final Optional<Quantity> qtyOnHand = getQtyAvailable(pzn, bpartner);
-			final Quantity qty = qtyOnHand
-					.map(qtyRequired::min)
-					.orElse(Quantity.ZERO);
+			final StockAvailabilityResponseItem item;
+			if (qtyRequired.compareTo(qtyOnHand) <= 0)
+			{
+				item = createStockAvailabilityResponseItem_Available(pzn, qtyRequired);
+			}
+			else
+			{
+				item = createStockAvailabilityResponseItem_NotAvailable(pzn, qtyRequired);
+			}
 
-			responseBuilder.item(StockAvailabilityResponseItem.builder()
-					.pzn(pzn)
-					.qty(qty)
-					.build());
+			responseBuilder.item(item);
 		}
 
 		return responseBuilder.build();
+	}
+
+	private StockAvailabilityResponseItem createStockAvailabilityResponseItem_Available(final PZN pzn, final Quantity qty)
+	{
+		return StockAvailabilityResponseItem.builder()
+				.pzn(pzn)
+				.qty(qty)
+				.part(StockAvailabilityResponseItemPart.builder()
+						.type(StockAvailabilityResponseItemPartType.NORMAL)
+						.reason(StockAvailabilitySubstitutionReason.NO_INFO)
+						.qty(qty)
+						.build())
+				.build();
+	}
+
+	private StockAvailabilityResponseItem createStockAvailabilityResponseItem_NotAvailable(final PZN pzn, final Quantity qty)
+	{
+		return StockAvailabilityResponseItem.builder()
+				.pzn(pzn)
+				.qty(qty)
+				.part(StockAvailabilityResponseItemPart.builder()
+						.type(StockAvailabilityResponseItemPartType.NOT_DELIVERABLE)
+						.reason(StockAvailabilitySubstitutionReason.MISSING)
+						.qty(qty)
+						.build())
+				.build();
 	}
 
 	public Optional<Quantity> getQtyAvailable(@NonNull final PZN pzn, @NonNull final BPartnerId bpartner)

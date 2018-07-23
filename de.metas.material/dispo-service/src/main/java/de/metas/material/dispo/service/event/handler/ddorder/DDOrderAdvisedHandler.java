@@ -1,11 +1,9 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +13,14 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
@@ -92,23 +91,16 @@ public class DDOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final DDOrderAdvisedEvent event)
 	{
-		final DDOrder ddOrder = event.getDdOrder();
-		for (final DDOrderLine ddOrderLine : ddOrder.getLines())
-		{
-			final Date orderLineStartDate = computeDate(event, ddOrderLine, CandidateType.DEMAND);
+		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(event.getSupplyRequiredDescriptor());
 
-			final SupplyProposal proposal = SupplyProposal.builder()
-					.date(orderLineStartDate)
-					.productDescriptor(ddOrderLine.getProductDescriptor())
-					// ignoring bpartner for now..not sure if that's good or not..
-					.destWarehouseId(event.getToWarehouseId())
-					.sourceWarehouseId(event.getFromWarehouseId())
-					.build();
-			if (!supplyProposalEvaluator.isProposalAccepted(proposal))
-			{
-				Loggables.get().addLog("proposal was rejected; returning");
-				return;
-			}
+		final SupplyProposal proposal = SupplyProposal.builder()
+				.demandWarehouseId(event.getFromWarehouseId())
+				.supplyWarehouseId(event.getToWarehouseId())
+				.demandDetail(demandDetail)
+				.build();
+		if (!supplyProposalEvaluator.isProposalAccepted(proposal))
+		{
+			return;
 		}
 
 		final Set<Integer> groupIds = handleAbstractDDOrderEvent(event);
@@ -142,11 +134,7 @@ public class DDOrderAdvisedHandler
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ddOrderAdvisedEvent);
 
-		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();
-		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery.builder()
-				.productPlanningId(ddOrder.getProductPlanningId())
-				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-				.build();
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
 
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(ddOrderLine.getProductDescriptor().getProductId())
@@ -155,10 +143,16 @@ public class DDOrderAdvisedHandler
 				.date(computeDate(ddOrderEvent, ddOrderLine, candidateType))
 				.build();
 
+		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();
+		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery.builder()
+				.productPlanningId(ddOrder.getProductPlanningId())
+				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+				.build();
+
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.demandDetail(demandDetail)
+				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.build();

@@ -18,6 +18,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.util.web.MetasfreshRestAPIConstants;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.serverRoot.base
@@ -40,9 +42,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * #L%
  */
 
-@WebFilter({ "/api/*" })
+@WebFilter({ UserAuthTokenFilter.URL_PATTERN_API })
 public class UserAuthTokenFilter implements Filter
 {
+	static final String URL_PATTERN_API = MetasfreshRestAPIConstants.ENDPOINT_API + "/*";
+
 	public static final String HEADER_Authorization = "Authorization";
 
 	@Autowired

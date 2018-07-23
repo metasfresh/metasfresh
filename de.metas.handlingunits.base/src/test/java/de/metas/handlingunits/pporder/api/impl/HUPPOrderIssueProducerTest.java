@@ -70,9 +70,9 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUAssert;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
@@ -325,7 +325,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			);
 
 			Assert.assertEquals("Invalid HUs count", 1, newHUs.size());
-			Services.get(IHandlingUnitsBL.class).setHUStatusActive(newHUs);
+
+			final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+			huStatusBL.setHUStatusActive(newHUs);
 
 			final I_M_HU newHU = newHUs.get(0);
 
@@ -361,7 +363,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Validate HU
-		HUAssert.assertStorageLevel(hu, pFolie, expectedHUQtyAfterIssue);
+		StaticHUAssert.assertStorageLevel(hu, pFolie, expectedHUQtyAfterIssue);
 		//
 		refresh(hu);
 		if (expectedHUQtyAfterIssue.signum() == 0)

@@ -1,39 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_Project
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_C_Project extends PO implements I_C_Project, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 1830699571L;
 
     /** Standard Constructor */
     public X_C_Project (Properties ctx, int C_Project_ID, String trxName)
@@ -42,24 +24,22 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
       /** if (C_Project_ID == 0)
         {
 			setC_Currency_ID (0);
-			setCommittedAmt (Env.ZERO);
-			setCommittedQty (Env.ZERO);
+			setCommittedAmt (BigDecimal.ZERO);
+			setCommittedQty (BigDecimal.ZERO);
 			setC_Project_ID (0);
-			setInvoicedAmt (Env.ZERO);
-			setInvoicedQty (Env.ZERO);
+			setInvoicedAmt (BigDecimal.ZERO);
+			setInvoicedQty (BigDecimal.ZERO);
 			setIsCommitCeiling (false);
 			setIsCommitment (false);
 			setIsSummary (false);
 			setName (null);
-			setPlannedAmt (Env.ZERO);
-			setPlannedMarginAmt (Env.ZERO);
-			setPlannedQty (Env.ZERO);
+			setPlannedAmt (BigDecimal.ZERO);
+			setPlannedMarginAmt (BigDecimal.ZERO);
+			setPlannedQty (BigDecimal.ZERO);
 			setProcessed (false);
-			setProjectBalanceAmt (Env.ZERO);
-			setProjectLineLevel (null);
-// P
-			setProjInvoiceRule (null);
-// -
+			setProjectBalanceAmt (BigDecimal.ZERO);
+			setProjectLineLevel (null); // P
+			setProjInvoiceRule (null); // -
 			setValue (null);
         } */
     }
@@ -70,48 +50,44 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Project[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+	}
 
-	public I_AD_User getAD_User() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getAD_User_ID(), get_TrxName());	}
+	@Override
+	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+	}
 
-	/** Set User/Contact.
+	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
 	  */
+	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
-	/** Get User/Contact.
+	/** Get Ansprechpartner.
 		@return User within the system - Internal or Business Partner Contact
 	  */
+	@Override
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
@@ -120,15 +96,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
 
-	/** Set Business Partner .
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -137,9 +121,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get Business Partner .
+	/** Get Geschäftspartner.
 		@return Identifies a Business Partner
 	  */
+	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -148,15 +133,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-    {
-		return (I_C_BPartner_Location)MTable.get(getCtx(), I_C_BPartner_Location.Table_Name)
-			.getPO(getC_BPartner_Location_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
 
-	/** Set Partner Location.
+	@Override
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
+	}
+
+	/** Set Standort.
 		@param C_BPartner_Location_ID 
 		Identifies the (ship to) address for this Business Partner
 	  */
+	@Override
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
@@ -165,9 +158,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
-	/** Get Partner Location.
+	/** Get Standort.
 		@return Identifies the (ship to) address for this Business Partner
 	  */
+	@Override
 	public int getC_BPartner_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
@@ -176,15 +170,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_BPartner getC_BPartnerSR() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartnerSR_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartnerSR() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartnerSR_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartnerSR(org.compiere.model.I_C_BPartner C_BPartnerSR)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartnerSR_ID, org.compiere.model.I_C_BPartner.class, C_BPartnerSR);
+	}
 
 	/** Set BPartner (Agent).
 		@param C_BPartnerSR_ID 
 		Business Partner (Agent or Sales Rep)
 	  */
+	@Override
 	public void setC_BPartnerSR_ID (int C_BPartnerSR_ID)
 	{
 		if (C_BPartnerSR_ID < 1) 
@@ -196,6 +198,7 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get BPartner (Agent).
 		@return Business Partner (Agent or Sales Rep)
 	  */
+	@Override
 	public int getC_BPartnerSR_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartnerSR_ID);
@@ -204,15 +207,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Campaign getC_Campaign() throws RuntimeException
-    {
-		return (I_C_Campaign)MTable.get(getCtx(), I_C_Campaign.Table_Name)
-			.getPO(getC_Campaign_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
 
-	/** Set Campaign.
+	@Override
+	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	/** Set Werbemassnahme.
 		@param C_Campaign_ID 
 		Marketing Campaign
 	  */
+	@Override
 	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
@@ -221,9 +232,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
-	/** Get Campaign.
+	/** Get Werbemassnahme.
 		@return Marketing Campaign
 	  */
+	@Override
 	public int getC_Campaign_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
@@ -232,15 +244,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Currency getC_Currency() throws RuntimeException
-    {
-		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
-			.getPO(getC_Currency_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
 
-	/** Set Currency.
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
 	  */
+	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
@@ -249,9 +269,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Currency.
+	/** Get Währung.
 		@return The Currency for this record
 	  */
+	@Override
 	public int getC_Currency_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
@@ -264,7 +285,8 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param CommittedAmt 
 		The (legal) commitment amount
 	  */
-	public void setCommittedAmt (BigDecimal CommittedAmt)
+	@Override
+	public void setCommittedAmt (java.math.BigDecimal CommittedAmt)
 	{
 		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
 	}
@@ -272,11 +294,12 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Committed Amount.
 		@return The (legal) commitment amount
 	  */
-	public BigDecimal getCommittedAmt () 
+	@Override
+	public java.math.BigDecimal getCommittedAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CommittedAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -284,7 +307,8 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param CommittedQty 
 		The (legal) commitment Quantity
 	  */
-	public void setCommittedQty (BigDecimal CommittedQty)
+	@Override
+	public void setCommittedQty (java.math.BigDecimal CommittedQty)
 	{
 		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
 	}
@@ -292,11 +316,12 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Committed Quantity.
 		@return The (legal) commitment Quantity
 	  */
-	public BigDecimal getCommittedQty () 
+	@Override
+	public java.math.BigDecimal getCommittedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CommittedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -304,7 +329,8 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param CopyFrom 
 		Copy From Record
 	  */
-	public void setCopyFrom (String CopyFrom)
+	@Override
+	public void setCopyFrom (java.lang.String CopyFrom)
 	{
 		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
 	}
@@ -312,20 +338,29 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Copy From.
 		@return Copy From Record
 	  */
-	public String getCopyFrom () 
+	@Override
+	public java.lang.String getCopyFrom () 
 	{
-		return (String)get_Value(COLUMNNAME_CopyFrom);
+		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
 	}
 
-	public I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
-    {
-		return (I_C_PaymentTerm)MTable.get(getCtx(), I_C_PaymentTerm.Table_Name)
-			.getPO(getC_PaymentTerm_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
 
-	/** Set Payment Term.
+	@Override
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
+	}
+
+	/** Set Zahlungsbedingung.
 		@param C_PaymentTerm_ID 
-		The terms of Payment (timing, discount)
+		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
+	@Override
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -334,9 +369,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	/** Get Payment Term.
-		@return The terms of Payment (timing, discount)
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
+	@Override
 	public int getC_PaymentTerm_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
@@ -345,15 +381,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Phase getC_Phase() throws RuntimeException
-    {
-		return (I_C_Phase)MTable.get(getCtx(), I_C_Phase.Table_Name)
-			.getPO(getC_Phase_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Phase getC_Phase() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Phase_ID, org.compiere.model.I_C_Phase.class);
+	}
 
-	/** Set Standard Phase.
+	@Override
+	public void setC_Phase(org.compiere.model.I_C_Phase C_Phase)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Phase_ID, org.compiere.model.I_C_Phase.class, C_Phase);
+	}
+
+	/** Set Standard-Phase.
 		@param C_Phase_ID 
 		Standard Phase of the Project Type
 	  */
+	@Override
 	public void setC_Phase_ID (int C_Phase_ID)
 	{
 		if (C_Phase_ID < 1) 
@@ -362,9 +406,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_C_Phase_ID, Integer.valueOf(C_Phase_ID));
 	}
 
-	/** Get Standard Phase.
+	/** Get Standard-Phase.
 		@return Standard Phase of the Project Type
 	  */
+	@Override
 	public int getC_Phase_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phase_ID);
@@ -373,10 +418,11 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Project.
+	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
 	  */
+	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -385,9 +431,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
-	/** Get Project.
+	/** Get Projekt.
 		@return Financial Project
 	  */
+	@Override
 	public int getC_Project_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
@@ -396,79 +443,103 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Project Type.
+	@Override
+	public org.compiere.model.I_C_ProjectType getC_ProjectType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ProjectType_ID, org.compiere.model.I_C_ProjectType.class);
+	}
+
+	@Override
+	public void setC_ProjectType(org.compiere.model.I_C_ProjectType C_ProjectType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ProjectType_ID, org.compiere.model.I_C_ProjectType.class, C_ProjectType);
+	}
+
+	/** Set Projektart.
 		@param C_ProjectType_ID 
 		Type of the project
 	  */
-	public void setC_ProjectType_ID (String C_ProjectType_ID)
+	@Override
+	public void setC_ProjectType_ID (int C_ProjectType_ID)
 	{
-		set_Value (COLUMNNAME_C_ProjectType_ID, C_ProjectType_ID);
+		if (C_ProjectType_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, Integer.valueOf(C_ProjectType_ID));
 	}
 
-	/** Get Project Type.
+	/** Get Projektart.
 		@return Type of the project
 	  */
-	public String getC_ProjectType_ID () 
+	@Override
+	public int getC_ProjectType_ID () 
 	{
-		return (String)get_Value(COLUMNNAME_C_ProjectType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_ProjectType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	/** Set Contract Date.
+	/** Set Datum AE.
 		@param DateContract 
 		The (planned) effective date of this document.
 	  */
-	public void setDateContract (Timestamp DateContract)
+	@Override
+	public void setDateContract (java.sql.Timestamp DateContract)
 	{
 		set_Value (COLUMNNAME_DateContract, DateContract);
 	}
 
-	/** Get Contract Date.
+	/** Get Datum AE.
 		@return The (planned) effective date of this document.
 	  */
-	public Timestamp getDateContract () 
+	@Override
+	public java.sql.Timestamp getDateContract () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateContract);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateContract);
 	}
 
-	/** Set Finish Date.
+	/** Set Projektabschluss.
 		@param DateFinish 
 		Finish or (planned) completion date
 	  */
-	public void setDateFinish (Timestamp DateFinish)
+	@Override
+	public void setDateFinish (java.sql.Timestamp DateFinish)
 	{
 		set_Value (COLUMNNAME_DateFinish, DateFinish);
 	}
 
-	/** Get Finish Date.
+	/** Get Projektabschluss.
 		@return Finish or (planned) completion date
 	  */
-	public Timestamp getDateFinish () 
+	@Override
+	public java.sql.Timestamp getDateFinish () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DateFinish);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFinish);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Generate To.
 		@param GenerateTo 
 		Generate To
 	  */
-	public void setGenerateTo (String GenerateTo)
+	@Override
+	public void setGenerateTo (java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
 	}
@@ -476,16 +547,18 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Generate To.
 		@return Generate To
 	  */
-	public String getGenerateTo () 
+	@Override
+	public java.lang.String getGenerateTo () 
 	{
-		return (String)get_Value(COLUMNNAME_GenerateTo);
+		return (java.lang.String)get_Value(COLUMNNAME_GenerateTo);
 	}
 
 	/** Set Invoiced Amount.
 		@param InvoicedAmt 
 		The amount invoiced
 	  */
-	public void setInvoicedAmt (BigDecimal InvoicedAmt)
+	@Override
+	public void setInvoicedAmt (java.math.BigDecimal InvoicedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_InvoicedAmt, InvoicedAmt);
 	}
@@ -493,46 +566,51 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Invoiced Amount.
 		@return The amount invoiced
 	  */
-	public BigDecimal getInvoicedAmt () 
+	@Override
+	public java.math.BigDecimal getInvoicedAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InvoicedAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Quantity Invoiced .
+	/** Set Berechnete Menge.
 		@param InvoicedQty 
 		The quantity invoiced
 	  */
-	public void setInvoicedQty (BigDecimal InvoicedQty)
+	@Override
+	public void setInvoicedQty (java.math.BigDecimal InvoicedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_InvoicedQty, InvoicedQty);
 	}
 
-	/** Get Quantity Invoiced .
+	/** Get Berechnete Menge.
 		@return The quantity invoiced
 	  */
-	public BigDecimal getInvoicedQty () 
+	@Override
+	public java.math.BigDecimal getInvoicedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InvoicedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Commitment is Ceiling.
+	/** Set Zusage ist Obergrenze.
 		@param IsCommitCeiling 
 		The commitment amount/quantity is the chargeable ceiling 
 	  */
+	@Override
 	public void setIsCommitCeiling (boolean IsCommitCeiling)
 	{
 		set_Value (COLUMNNAME_IsCommitCeiling, Boolean.valueOf(IsCommitCeiling));
 	}
 
-	/** Get Commitment is Ceiling.
+	/** Get Zusage ist Obergrenze.
 		@return The commitment amount/quantity is the chargeable ceiling 
 	  */
+	@Override
 	public boolean isCommitCeiling () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCommitCeiling);
@@ -549,6 +627,7 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param IsCommitment 
 		Is this document a (legal) commitment?
 	  */
+	@Override
 	public void setIsCommitment (boolean IsCommitment)
 	{
 		set_Value (COLUMNNAME_IsCommitment, Boolean.valueOf(IsCommitment));
@@ -557,6 +636,7 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Commitment.
 		@return Is this document a (legal) commitment?
 	  */
+	@Override
 	public boolean isCommitment () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCommitment);
@@ -569,18 +649,20 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return false;
 	}
 
-	/** Set Summary Level.
+	/** Set Zusammenfassungseintrag.
 		@param IsSummary 
 		This is a summary entity
 	  */
+	@Override
 	public void setIsSummary (boolean IsSummary)
 	{
 		set_Value (COLUMNNAME_IsSummary, Boolean.valueOf(IsSummary));
 	}
 
-	/** Get Summary Level.
+	/** Get Zusammenfassungseintrag.
 		@return This is a summary entity
 	  */
+	@Override
 	public boolean isSummary () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsSummary);
@@ -593,15 +675,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return false;
 	}
 
-	public I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException
-    {
-		return (I_M_PriceList_Version)MTable.get(getCtx(), I_M_PriceList_Version.Table_Name)
-			.getPO(getM_PriceList_Version_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_PriceList_Version_ID, org.compiere.model.I_M_PriceList_Version.class);
+	}
 
-	/** Set Price List Version.
+	@Override
+	public void setM_PriceList_Version(org.compiere.model.I_M_PriceList_Version M_PriceList_Version)
+	{
+		set_ValueFromPO(COLUMNNAME_M_PriceList_Version_ID, org.compiere.model.I_M_PriceList_Version.class, M_PriceList_Version);
+	}
+
+	/** Set Version Preisliste.
 		@param M_PriceList_Version_ID 
 		Identifies a unique instance of a Price List
 	  */
+	@Override
 	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID)
 	{
 		if (M_PriceList_Version_ID < 1) 
@@ -610,9 +700,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_M_PriceList_Version_ID, Integer.valueOf(M_PriceList_Version_ID));
 	}
 
-	/** Get Price List Version.
+	/** Get Version Preisliste.
 		@return Identifies a unique instance of a Price List
 	  */
+	@Override
 	public int getM_PriceList_Version_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_Version_ID);
@@ -621,15 +712,23 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_Warehouse getM_Warehouse() throws RuntimeException
-    {
-		return (I_M_Warehouse)MTable.get(getCtx(), I_M_Warehouse.Table_Name)
-			.getPO(getM_Warehouse_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
+	}
 
-	/** Set Warehouse.
+	@Override
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
+	}
+
+	/** Set Lager.
 		@param M_Warehouse_ID 
 		Storage Warehouse and Service Point
 	  */
+	@Override
 	public void setM_Warehouse_ID (int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
@@ -638,9 +737,10 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
 	}
 
-	/** Get Warehouse.
+	/** Get Lager.
 		@return Storage Warehouse and Service Point
 	  */
+	@Override
 	public int getM_Warehouse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
@@ -653,7 +753,8 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -661,117 +762,127 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Note.
+	/** Set Notiz.
 		@param Note 
 		Optional additional user defined information
 	  */
-	public void setNote (String Note)
+	@Override
+	public void setNote (java.lang.String Note)
 	{
 		set_Value (COLUMNNAME_Note, Note);
 	}
 
-	/** Get Note.
+	/** Get Notiz.
 		@return Optional additional user defined information
 	  */
-	public String getNote () 
+	@Override
+	public java.lang.String getNote () 
 	{
-		return (String)get_Value(COLUMNNAME_Note);
+		return (java.lang.String)get_Value(COLUMNNAME_Note);
 	}
 
-	/** Set Planned Amount.
+	/** Set VK Total.
 		@param PlannedAmt 
 		Planned amount for this project
 	  */
-	public void setPlannedAmt (BigDecimal PlannedAmt)
+	@Override
+	public void setPlannedAmt (java.math.BigDecimal PlannedAmt)
 	{
 		set_Value (COLUMNNAME_PlannedAmt, PlannedAmt);
 	}
 
-	/** Get Planned Amount.
+	/** Get VK Total.
 		@return Planned amount for this project
 	  */
-	public BigDecimal getPlannedAmt () 
+	@Override
+	public java.math.BigDecimal getPlannedAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Planned Margin.
+	/** Set DB1.
 		@param PlannedMarginAmt 
 		Project's planned margin amount
 	  */
-	public void setPlannedMarginAmt (BigDecimal PlannedMarginAmt)
+	@Override
+	public void setPlannedMarginAmt (java.math.BigDecimal PlannedMarginAmt)
 	{
 		set_Value (COLUMNNAME_PlannedMarginAmt, PlannedMarginAmt);
 	}
 
-	/** Get Planned Margin.
+	/** Get DB1.
 		@return Project's planned margin amount
 	  */
-	public BigDecimal getPlannedMarginAmt () 
+	@Override
+	public java.math.BigDecimal getPlannedMarginAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedMarginAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Planned Quantity.
-		@param PlannedQty 
-		Planned quantity for this project
-	  */
-	public void setPlannedQty (BigDecimal PlannedQty)
+	/** Set Geplante Menge.
+		@param PlannedQty Geplante Menge	  */
+	@Override
+	public void setPlannedQty (java.math.BigDecimal PlannedQty)
 	{
 		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
 	}
 
-	/** Get Planned Quantity.
-		@return Planned quantity for this project
-	  */
-	public BigDecimal getPlannedQty () 
+	/** Get Geplante Menge.
+		@return Geplante Menge	  */
+	@Override
+	public java.math.BigDecimal getPlannedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Order Reference.
+	/** Set Referenz.
 		@param POReference 
-		Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+		Referenz-Nummer des Kunden
 	  */
-	public void setPOReference (String POReference)
+	@Override
+	public void setPOReference (java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Order Reference.
-		@return Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	/** Get Referenz.
+		@return Referenz-Nummer des Kunden
 	  */
-	public String getPOReference () 
+	@Override
+	public java.lang.String getPOReference () 
 	{
-		return (String)get_Value(COLUMNNAME_POReference);
+		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -784,15 +895,17 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
@@ -809,7 +922,8 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param ProjectBalanceAmt 
 		Total Project Balance
 	  */
-	public void setProjectBalanceAmt (BigDecimal ProjectBalanceAmt)
+	@Override
+	public void setProjectBalanceAmt (java.math.BigDecimal ProjectBalanceAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_ProjectBalanceAmt, ProjectBalanceAmt);
 	}
@@ -817,29 +931,34 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Project Balance.
 		@return Total Project Balance
 	  */
-	public BigDecimal getProjectBalanceAmt () 
+	@Override
+	public java.math.BigDecimal getProjectBalanceAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProjectBalanceAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** ProjectCategory AD_Reference_ID=288 */
+	/** 
+	 * ProjectCategory AD_Reference_ID=288
+	 * Reference name: C_ProjectType Category
+	 */
 	public static final int PROJECTCATEGORY_AD_Reference_ID=288;
 	/** General = N */
 	public static final String PROJECTCATEGORY_General = "N";
-	/** Asset Project = A */
+	/** AssetProject = A */
 	public static final String PROJECTCATEGORY_AssetProject = "A";
-	/** Work Order (Job) = W */
+	/** WorkOrderJob = W */
 	public static final String PROJECTCATEGORY_WorkOrderJob = "W";
-	/** Service (Charge) Project = S */
+	/** ServiceChargeProject = S */
 	public static final String PROJECTCATEGORY_ServiceChargeProject = "S";
 	/** Set Project Category.
 		@param ProjectCategory 
 		Project Category
 	  */
-	public void setProjectCategory (String ProjectCategory)
+	@Override
+	public void setProjectCategory (java.lang.String ProjectCategory)
 	{
 
 		set_Value (COLUMNNAME_ProjectCategory, ProjectCategory);
@@ -848,12 +967,16 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Project Category.
 		@return Project Category
 	  */
-	public String getProjectCategory () 
+	@Override
+	public java.lang.String getProjectCategory () 
 	{
-		return (String)get_Value(COLUMNNAME_ProjectCategory);
+		return (java.lang.String)get_Value(COLUMNNAME_ProjectCategory);
 	}
 
-	/** ProjectLineLevel AD_Reference_ID=384 */
+	/** 
+	 * ProjectLineLevel AD_Reference_ID=384
+	 * Reference name: C_Project LineLevel
+	 */
 	public static final int PROJECTLINELEVEL_AD_Reference_ID=384;
 	/** Project = P */
 	public static final String PROJECTLINELEVEL_Project = "P";
@@ -865,7 +988,8 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		@param ProjectLineLevel 
 		Project Line Level
 	  */
-	public void setProjectLineLevel (String ProjectLineLevel)
+	@Override
+	public void setProjectLineLevel (java.lang.String ProjectLineLevel)
 	{
 
 		set_Value (COLUMNNAME_ProjectLineLevel, ProjectLineLevel);
@@ -874,12 +998,16 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	/** Get Line Level.
 		@return Project Line Level
 	  */
-	public String getProjectLineLevel () 
+	@Override
+	public java.lang.String getProjectLineLevel () 
 	{
-		return (String)get_Value(COLUMNNAME_ProjectLineLevel);
+		return (java.lang.String)get_Value(COLUMNNAME_ProjectLineLevel);
 	}
 
-	/** ProjInvoiceRule AD_Reference_ID=383 */
+	/** 
+	 * ProjInvoiceRule AD_Reference_ID=383
+	 * Reference name: C_Project InvoiceRule
+	 */
 	public static final int PROJINVOICERULE_AD_Reference_ID=383;
 	/** None = - */
 	public static final String PROJINVOICERULE_None = "-";
@@ -891,33 +1019,41 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 	public static final String PROJINVOICERULE_TimeMaterial = "T";
 	/** Product  Quantity = P */
 	public static final String PROJINVOICERULE_ProductQuantity = "P";
-	/** Set Invoice Rule.
+	/** Set Rechnungsstellung.
 		@param ProjInvoiceRule 
 		Invoice Rule for the project
 	  */
-	public void setProjInvoiceRule (String ProjInvoiceRule)
+	@Override
+	public void setProjInvoiceRule (java.lang.String ProjInvoiceRule)
 	{
 
 		set_Value (COLUMNNAME_ProjInvoiceRule, ProjInvoiceRule);
 	}
 
-	/** Get Invoice Rule.
+	/** Get Rechnungsstellung.
 		@return Invoice Rule for the project
 	  */
-	public String getProjInvoiceRule () 
+	@Override
+	public java.lang.String getProjInvoiceRule () 
 	{
-		return (String)get_Value(COLUMNNAME_ProjInvoiceRule);
+		return (java.lang.String)get_Value(COLUMNNAME_ProjInvoiceRule);
 	}
 
-	public I_AD_User getSalesRep() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getSalesRep_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
+	}
 
-	/** Set Sales Representative.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	@Override
+	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
+	{
+		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
+	}
+
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
+	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
@@ -926,9 +1062,9 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Sales Representative.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
+	@Override
 	public int getSalesRep_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
@@ -937,28 +1073,22 @@ public class X_C_Project extends PO implements I_C_Project, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Search Key.
+	/** Set Suchschlüssel.
 		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
-	public void setValue (String Value)
+	@Override
+	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Search Key.
+	/** Get Suchschlüssel.
 		@return Search key for the record in the format required - must be unique
 	  */
-	public String getValue () 
+	@Override
+	public java.lang.String getValue () 
 	{
-		return (String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getValue());
-    }
 }

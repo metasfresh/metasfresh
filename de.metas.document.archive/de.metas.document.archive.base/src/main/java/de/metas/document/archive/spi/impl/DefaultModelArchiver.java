@@ -11,7 +11,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -31,6 +30,7 @@ import com.google.common.base.Optional;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -310,7 +310,7 @@ public class DefaultModelArchiver
 		if (language == null)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(record);
-			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).or(-1);
+			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).orElse(-1);
 			if (adClientId != null && adClientId >= 0)
 			{
 				final MClient adClient = MClient.get(ctx, adClientId);

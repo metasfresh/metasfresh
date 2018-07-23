@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,11 +9,12 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,20 +26,21 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
-import de.metas.purchasecandidate.VendorProductInfo;
-import de.metas.purchasecandidate.VendorProductInfoId;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.quantity.Quantity;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -64,7 +68,7 @@ import mockit.Verifications;
  * #L%
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseCandidateToOrderWorkflowTest
 {
 	private static final String SOMETHING_WENT_WRONG = "something went wrong";
@@ -81,6 +85,9 @@ public class PurchaseCandidateToOrderWorkflowTest
 	@Mocked
 	PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
 
+	private I_C_UOM EACH;
+	private Quantity ONE;
+
 	private PurchaseCandidateToOrderWorkflow workflowUnderTest;
 
 	@Before
@@ -89,10 +96,22 @@ public class PurchaseCandidateToOrderWorkflowTest
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, 5);
 
+		this.EACH = createUOM("Ea");
+		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
+
 		workflowUnderTest = PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
 				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator).build();
+	}
+
+	private I_C_UOM createUOM(final String name)
+	{
+		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		save(uom);
+		return uom;
 	}
 
 	@Test
@@ -205,26 +224,24 @@ public class PurchaseCandidateToOrderWorkflowTest
 		}};	// @formatter:on
 	}
 
-	public static PurchaseCandidate createPurchaseCandidate(
+	public PurchaseCandidate createPurchaseCandidate(
 			final int purchaseCandidateId,
 			final int vendorId)
 	{
+		final ProductId productId = ProductId.ofRepoId(5);
 		return PurchaseCandidate.builder()
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
-				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(1, 2))
+				.groupReference(DemandGroupReference.EMPTY)
+				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
+				.vendorId(BPartnerId.ofRepoId(vendorId))
 				.productId(ProductId.ofRepoId(5))
-				.uomId(6)
-				.vendorProductInfo(VendorProductInfo.builder()
-						.id(VendorProductInfoId.ofRepoId(10))
-						.vendorId(BPartnerId.ofRepoId(vendorId))
-						.productId(ProductId.ofRepoId(20))
-						.productNo("productNo")
-						.productName("productName").build())
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
-				.qtyToPurchase(BigDecimal.ONE)
-				.dateRequired(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
+				.vendorProductNo(String.valueOf(productId.getRepoId()))
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.qtyToPurchase(ONE)
+				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

@@ -2,8 +2,7 @@ package de.metas.contracts.refund;
 
 import java.time.LocalDate;
 
-import org.adempiere.bpartner.BPartnerId;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -55,18 +54,4 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 
 	@NonNull
 	Money money;
-
-	public AssignmentToRefundCandidate withAddedMoneyAmount(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
-	{
-		final Money augend = assignableInvoiceCandidate
-				.getMoney()
-				.percentage(refundContract.getRefundConfig().getPercent());
-
-		final RefundInvoiceCandidate updatedRefundCandidate = toBuilder()
-				.money(money.add(augend))
-				.build();
-
-		return new AssignmentToRefundCandidate(updatedRefundCandidate, augend);
-	}
 }

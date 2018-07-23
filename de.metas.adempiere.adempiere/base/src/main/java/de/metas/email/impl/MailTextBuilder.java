@@ -69,7 +69,6 @@ class MailTextBuilder implements IMailTextBuilder
 	private TextsVO _texts = null;
 	private final Map<String, String> text2parsedText = new HashMap<>();
 
-
 	private MailTextBuilder(final I_R_MailText mailTextDef)
 	{
 		super();
@@ -95,7 +94,7 @@ class MailTextBuilder implements IMailTextBuilder
 	{
 		return html;
 	}
-	
+
 	@Override
 	public int getR_MailText_ID()
 	{
@@ -190,7 +189,7 @@ class MailTextBuilder implements IMailTextBuilder
 		{
 			return text2parsedText.get(text);
 		}
-		
+
 		String textParsed = text;
 		textParsed = parse(textParsed, getRecord()); // first parse the record values
 		textParsed = parse(textParsed, getAD_User());
@@ -301,10 +300,10 @@ class MailTextBuilder implements IMailTextBuilder
 	public IMailTextBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		_bpartner = bpartner;
-		
+
 		_texts = null; // reset texts
 		text2parsedText.clear(); // reset cache
-		
+
 		return this;
 	}
 
@@ -317,15 +316,21 @@ class MailTextBuilder implements IMailTextBuilder
 	@Override
 	public String getAD_Language()
 	{
-		if(_adLanguage != null)
+		if (_adLanguage != null)
 		{
 			return _adLanguage;
 		}
-		
+
+		final I_AD_User user = getAD_User();
+		if (user != null && !Check.isEmpty(user.getAD_Language(), true))
+		{
+			return user.getAD_Language();
+		}
+
 		final I_C_BPartner bpartner = getC_BPartner();
 		return bpartner == null ? null : bpartner.getAD_Language();
 	}
-	
+
 	@Override
 	public IMailTextBuilder setAD_Language(final String adLanguage)
 	{
@@ -346,7 +351,7 @@ class MailTextBuilder implements IMailTextBuilder
 	{
 		_record = record;
 		text2parsedText.clear(); // reset cache
-		
+
 		if (analyse)
 		{
 			final Object bpartnerIdObj = InterfaceWrapperHelper.getValueOrNull(record, "C_BPartner_ID");

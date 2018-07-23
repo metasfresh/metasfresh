@@ -30,7 +30,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +47,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -61,6 +59,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
@@ -68,9 +67,8 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;

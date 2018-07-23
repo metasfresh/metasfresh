@@ -5,8 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.bpartner.BPartnerId;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
@@ -14,8 +12,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
-import de.metas.payment.api.IPaymentTermRepository;
-import de.metas.payment.api.PaymentTermId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -177,8 +177,8 @@ class PharmaPriceLimitRuleInstance
 	{
 		final PriceLimitRestrictions priceLimitRestrictions = getPriceLimitRestrictions();
 		final IEditablePricingContext basePricingContext = context.getPricingContext().copy();
-		basePricingContext.setM_PricingSystem_ID(priceLimitRestrictions.getBasePricingSystemId());
-		basePricingContext.setM_PriceList_ID(-1); // will be recomputed
+		basePricingContext.setPricingSystemId(priceLimitRestrictions.getBasePricingSystemId());
+		basePricingContext.setPriceListId(null); // will be recomputed
 		basePricingContext.setM_PriceList_Version_ID(-1); // will be recomputed
 		basePricingContext.setDisallowDiscount(true);
 

@@ -7,6 +7,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.Env;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPriceListDAO;
@@ -41,9 +42,6 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		// !!IMPORTANT!! with this change of implementation, we loose the bomPriceList calculation.
 		// Should bomPricing be needed in future, please consider adding a dedicated pricing rule
 		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
-
-		//
-		//
 		if (productPrice == null)
 		{
 			log.trace("Not found (PLV)");
@@ -56,7 +54,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
 		result.setPriceLimit(productPrice.getPriceLimit());
-		result.setC_Currency_ID(priceList.getC_Currency_ID());
+		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
@@ -86,7 +84,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		}
 		
 		return Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(Env.getCtx(),
-				pricingCtx.getM_PriceList_ID(),
+				pricingCtx.getPriceListId(),
 				pricingCtx.getPriceDate(),
 				(Boolean)null // processed
 		);

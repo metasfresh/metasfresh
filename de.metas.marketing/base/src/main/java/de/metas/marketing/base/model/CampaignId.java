@@ -2,6 +2,7 @@ package de.metas.marketing.base.model;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -27,7 +28,7 @@ import lombok.Value;
  */
 
 @Value
-public class CampaignId
+public class CampaignId implements RepoIdAware
 {
 	int repoId;
 

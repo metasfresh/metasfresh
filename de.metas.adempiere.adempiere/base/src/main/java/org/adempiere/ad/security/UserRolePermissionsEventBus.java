@@ -48,11 +48,6 @@ public final class UserRolePermissionsEventBus
 	{
 	}
 
-	private static final IEventBus getEventBus()
-	{
-		return Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC_Permissions);
-	}
-
 	public static void install()
 	{
 		final IEventBus eventBus = getEventBus();
@@ -82,5 +77,10 @@ public final class UserRolePermissionsEventBus
 		eventBus.postEvent(event);
 
 		logger.debug("Post cache reset event: {} to {}", event, eventBus);
+	}
+
+	private static final IEventBus getEventBus()
+	{
+		return Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC_Permissions);
 	}
 }

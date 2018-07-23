@@ -10,18 +10,17 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -50,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
+import de.metas.quantity.Quantity;
 
 /**
  * Base class for quickly setting up tests with RS-HU-WeightAttribute allocations & operations
@@ -139,7 +139,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		receiptSchedule.setC_UOM(uomKg);
 		receiptSchedule.setQtyOrdered(qty);
 		receiptSchedule.setQtyMoved(BigDecimal.ZERO);
-		
+
 		//
 		// BPartner (needed for event notification)
 		{
@@ -208,10 +208,10 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 			InterfaceWrapperHelper.setTrxName(tuHU, ITrx.TRXNAME_None); // FIXME workaround
 			for (final I_M_HU vhu : handlingUnitsDAO.retrieveIncludedHUs(tuHU))
 			{
-				final BigDecimal qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages().getQty();
+				final Quantity qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
 
 				final boolean deleteOldTUAllocations = false; // don't care; there shall be none
-				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, uomKg, deleteOldTUAllocations);
+				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocations);
 			}
 
 			// Set HU_CostPrice
@@ -238,9 +238,9 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 			boolean deleteOldTUAllocationsToUse = deleteOldTUAllocations;
 			for (final I_M_HU vhu : vhus)
 			{
-				final BigDecimal qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages().getQty();
+				final Quantity qtyToAllocate = huContext.getHUStorageFactory().getStorage(vhu).getQtyForProductStorages();
 
-				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, uomKg, deleteOldTUAllocationsToUse);
+				rsAllocations.allocate(luHU, tuHU, vhu, qtyToAllocate, deleteOldTUAllocationsToUse);
 				deleteOldTUAllocationsToUse = false;
 			}
 

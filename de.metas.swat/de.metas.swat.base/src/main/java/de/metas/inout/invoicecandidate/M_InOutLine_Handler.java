@@ -41,8 +41,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -66,6 +64,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
@@ -361,9 +361,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
-				, locationId // shipC_BPartner_Location_ID
-				, isSOTrx, trxName);
+				ctx,
+				ic,
+				taxCategoryId,
+				productId,
+				billDate,
+				shipDate,
+				adOrgId,
+				inOut.getM_Warehouse(),
+				locationId, // shipC_BPartner_Location_ID
+				isSOTrx);
 		ic.setC_Tax_ID(taxId);
 
 		//
@@ -776,11 +783,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		return PriceAndTax.builder()
-				.pricingSystemId(pricingResult.getM_PricingSystem_ID())
+				.pricingSystemId(pricingResult.getPricingSystemId())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
 				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
 				.priceListVersionId(pricingResult.getM_PriceList_Version_ID())
-				.currencyId(pricingResult.getC_Currency_ID())
+				.currencyId(pricingResult.getCurrencyId())
 				.taxCategoryId(pricingResult.getC_TaxCategory_ID())
 				//
 				.priceEntered(pricingResult.getPriceStd())

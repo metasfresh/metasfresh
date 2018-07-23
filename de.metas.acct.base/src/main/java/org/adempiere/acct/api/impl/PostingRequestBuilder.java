@@ -1,5 +1,7 @@
 package org.adempiere.acct.api.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,7 +26,6 @@ package org.adempiere.acct.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.acct.api.ClientAccountingStatus;
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IPostingRequestBuilder;
 import org.adempiere.acct.api.IPostingService;
@@ -36,26 +37,23 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.Adempiere;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
-import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.MAcctSchema;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
-
+import de.metas.Profiles;
+import de.metas.acct.posting.DocumentPostRequest;
+import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
-import de.metas.session.jaxrs.IServerService;
 import lombok.NonNull;
 
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
@@ -72,15 +70,15 @@ import lombok.NonNull;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _force;
 	private Integer _adClientId = null;
-	private ITableRecordReference _documentRef = null;
+	private TableRecordReference _documentRef = null;
 	private PostImmediate _postImmediate = PostImmediate.IfConfigured;
 	private boolean _postWithoutServer = false;
 	private boolean _failOnError = DEFAULT_FailOnError;
 
 	// Status
 	private boolean _executed = false;
-	private boolean _posted = false;
 	private PostingExecutionException _postedException = null;
+	private boolean _posted = false;
 
 	@Override
 	public String toString()
@@ -93,15 +91,7 @@ import lombok.NonNull;
 	{
 		return Services.get(IClientUI.class)
 				.invoke()
-				.setRunnable(new Runnable()
-				{
-
-					@Override
-					public void run()
-					{
-						postIt();
-					}
-				});
+				.setRunnable(this::postIt);
 	}
 
 	@Override
@@ -109,20 +99,19 @@ import lombok.NonNull;
 	{
 		setExecuted();
 
-		final String trxName = getTrxName();
-
 		//
 		// Check if we shall post the document immediately by checking PostImmediate option
 		// If not, we will enqueue it.
 		if (!isPostImmediate())
 		{
 			postIt_Enqueue();
+			postingComplete();
 			return this;
 		}
 
 		if (!postingService.isEnabled())
 		{
-			setPostedError(new PostingExecutionException("Accounting module is disabled"));
+			setPostedError("Accounting module is disabled");
 			postingComplete();
 			return this;
 		}
@@ -134,59 +123,19 @@ import lombok.NonNull;
 			// NOTE: even if we need to post it directly, without contacting the server
 			// we shall do it after the transaction is commited, because some of the Doc* implementations
 			// are realying on the case that dependent objects are accessible out of transaction.
-			postAfterTrxCommit(trxName, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					postIt_Directly(ITrx.TRXNAME_None);
-				}
-			});
-			return this;
-		}
-
-		//
-		// Check if application Server is available
-		final boolean serverAvailable = CConnection.get().isAppsServerOK(true);
-		if (!serverAvailable)
-		{
-			setPostedError("Cannot Post document because server is not available: " + this);
-			postingComplete();
+			postAfterTrxCommit(this::postIt_Directly);
 			return this;
 		}
 
 		//
 		// Post it on server
-		final Properties ctxReduced = Env.getRemoteCallCtx(getCtx());
-		final int AD_Client_ID = getAD_Client_ID();
-		final ITableRecordReference documentRef = getDocumentRef();
-		final int AD_Table_ID = documentRef.getAD_Table_ID();
-		final int Record_ID = documentRef.getRecord_ID();
-		final boolean force = isForce();
 		try
 		{
-			// Should work on Client and Server
-			final IServerService server = Services.get(IServerService.class);
-			Check.assumeNotNull(server, "server not null");
-
 			//
-			// Post the document, after this transaction is commited, because
+			// Post the document, after this transaction is committed, because
 			// there is a big chance the document will not be accessible on server until the transaction is not finished,
 			// so instead of asking the server to post it immediately, we will ask the server after the transaction is completed.
-			postAfterTrxCommit(trxName, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					log.debug("Posting on server: {}", PostingRequestBuilder.this);
-					final String error = server.postImmediate(ctxReduced,
-							AD_Client_ID,
-							AD_Table_ID, Record_ID,
-							force);
-					setPostedError(error);
-					log.info("from Server: {}", error == null ? "OK" : error);
-				}
-			});
+			postAfterTrxCommit(this::postIt_Enqueue);
 		}
 		catch (final Exception e)
 		{
@@ -202,16 +151,18 @@ import lombok.NonNull;
 	 */
 	private final void postIt_Enqueue()
 	{
-		// nothing at the moment,
-		// but when we will implement a true posting queue (using de.metas.async or something else),
-		// this is the right place where the document shall be enqueued)
+		final int adClientId = getAD_Client_ID();
+		final TableRecordReference documentRef = getDocumentRef();
+		final boolean force = isForce();
 
-		// NOTE: when you will handle this part, also keep in mind:
-		// * if Client Accounting is Queue => do nothing because there is a manual process which will do the job
+		log.debug("Posting on server: {}", PostingRequestBuilder.this);
 
-		// NOTE: we are reaching this method, also when !postingService.isEnabled()
-
-		postingComplete();
+		final DocumentPostingBusService postingBusService = Adempiere.getBean(DocumentPostingBusService.class);
+		postingBusService.postRequest(DocumentPostRequest.builder()
+				.record(documentRef)
+				.adClientId(adClientId)
+				.force(force)
+				.build());
 	}
 
 	/**
@@ -219,25 +170,22 @@ import lombok.NonNull;
 	 *
 	 * @param trxName transaction to be used for posting; NOTE: it could be different from {@link #getTrxName()}.
 	 */
-	private final void postIt_Directly(final String trxName)
+	private final void postIt_Directly()
 	{
 		log.debug("Posting directly: {}", this);
 
 		final IDocFactory docFactory = Services.get(IDocFactory.class);
 
 		final Properties ctx = getCtx();
-		final int AD_Client_ID = getAD_Client_ID();
-		final ITableRecordReference documentRef = getDocumentRef();
-		final int AD_Table_ID = documentRef.getAD_Table_ID();
-		final int Record_ID = documentRef.getRecord_ID();
+		final int adClientId = getAD_Client_ID();
+		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
-		// log.info("Table=" + AD_Table_ID + ", Record=" + Record_ID);
 		try
 		{
-			final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, AD_Client_ID);
+			final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, adClientId);
 
-			final Doc doc = docFactory.getOrNull(ctx, ass, AD_Table_ID, Record_ID, trxName);
+			final Doc doc = docFactory.getOrNull(ctx, ass, documentRef);
 			if (doc == null)
 			{
 				throw new PostingExecutionException("No accountable document found: " + this);
@@ -351,19 +299,17 @@ import lombok.NonNull;
 	@Override
 	public IPostingRequestBuilder setDocument(final int adTableId, final int recordId)
 	{
-		assertNotExecuted();
-
-		final ITableRecordReference documentRef = new TableRecordReference(adTableId, recordId);
-		setDocumentRef(documentRef);
+		setDocumentRef(TableRecordReference.of(adTableId, recordId));
 		return this;
 	}
 
-	private final void setDocumentRef(final ITableRecordReference documentRef)
+	private final void setDocumentRef(final TableRecordReference documentRef)
 	{
+		assertNotExecuted();
 		_documentRef = documentRef;
 	}
 
-	private final ITableRecordReference getDocumentRef()
+	private final TableRecordReference getDocumentRef()
 	{
 		Check.assumeNotNull(_documentRef, "document is set");
 		return _documentRef;
@@ -406,8 +352,6 @@ import lombok.NonNull;
 	@Override
 	public IPostingRequestBuilder setDocument(@NonNull final IDocument document)
 	{
-		assertNotExecuted();
-
 		setContext(document.getCtx(), document.get_TrxName());
 		setAD_Client_ID(document.getAD_Client_ID());
 		setDocumentRef(document.toTableRecordReference());
@@ -454,19 +398,6 @@ import lombok.NonNull;
 			}
 
 			//
-			// Case: we are running on Client side
-			// => post immediate if ClientAccouting is saying so
-			final boolean isClient = Ini.isClient();
-			if (isClient)
-			{
-				final ClientAccountingStatus clientAccountingStatus = postingService.getClientAccountingStatus();
-				if (clientAccountingStatus == ClientAccountingStatus.Immediate)
-				{
-					return true;
-				}
-			}
-
-			//
 			// Check if PostImmediate is allowed by AD_Client configuration
 			final I_AD_Client client = getAD_Client();
 			final boolean allowPosting = client.isPostImmediate();
@@ -487,20 +418,8 @@ import lombok.NonNull;
 			return true;
 		}
 
-		//
-		// Case: we are running on Client side
-		// => post it only if ClientAccouting is enabled
-		final boolean isClient = Ini.isClient();
-		if (isClient)
-		{
-			return postingService.isClientAccountingEnabled();
-		}
-		// Case: we are running on Server side
-		// => always post without Server because we are THE server
-		else
-		{
-			return true;
-		}
+		// Post without server if we are running the accouting service/server
+		return Profiles.isProfileActive(Profiles.PROFILE_AccountingService);
 	}
 
 	@Override
@@ -520,15 +439,8 @@ import lombok.NonNull;
 
 	private final void setPostedError(final String postedErrorMessage)
 	{
-		if (postedErrorMessage == null)
-		{
-			_postedException = null;
-		}
-		else
-		{
-			_postedException = new PostingExecutionException(postedErrorMessage);
-			_posted = false;
-		}
+		final PostingExecutionException postedException = postedErrorMessage != null ? new PostingExecutionException(postedErrorMessage) : null;
+		setPostedError(postedException);
 	}
 
 	private final void setPostedError(final Exception postedException)
@@ -577,9 +489,9 @@ import lombok.NonNull;
 	 * @param trxName
 	 * @param postRunnable runnable that shall do the actual posting; it is assumed that the runnable WILL NOT throw any exceptions.
 	 */
-	private final void postAfterTrxCommit(final String trxName, final Runnable postRunnable)
+	private final void postAfterTrxCommit(@NonNull final Runnable postRunnable)
 	{
-		Check.assumeNotNull(postRunnable, "runnable not null");
+		final String trxName = getTrxName();
 
 		//
 		// Case: we are running in a transaction.

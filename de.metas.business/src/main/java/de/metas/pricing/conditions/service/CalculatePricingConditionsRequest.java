@@ -3,6 +3,7 @@
  */
 package de.metas.pricing.conditions.service;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -79,11 +80,12 @@ public class CalculatePricingConditionsRequest
 			final PricingConditionsBreak forcePricingConditionsBreak,
 			final PricingConditionsBreakQuery pricingConditionsBreakQuery)
 	{
-		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
-		{
-			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
-		}
-		else if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
+//		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
+//		{
+//			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
+//		}
+//		else
+			if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
 		{
 			throw new AdempiereException("Only forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified but not both");
 		}
@@ -93,8 +95,11 @@ public class CalculatePricingConditionsRequest
 		}
 	}
 
-	private static final PricingConditionsId extractPricingConditionsIdOrNull(final PricingConditionsId pricingConditionsId, final PricingConditionsBreak forcePricingConditionsBreak)
+	private static final PricingConditionsId extractPricingConditionsIdOrNull(
+			@Nullable final PricingConditionsId pricingConditionsId,
+			@Nullable final PricingConditionsBreak forcePricingConditionsBreak)
 	{
+		// note that in case both are given, we already asserted that they match
 		if (pricingConditionsId != null)
 		{
 			return pricingConditionsId;

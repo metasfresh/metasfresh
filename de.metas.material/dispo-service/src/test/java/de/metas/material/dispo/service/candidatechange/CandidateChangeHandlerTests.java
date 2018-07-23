@@ -38,14 +38,15 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.repository.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -308,7 +309,7 @@ public class CandidateChangeHandlerTests
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptorQuery(materialDescriptorQuery)
-				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.parentId(CandidateId.UNSPECIFIED)
 				.build();
 	}
 
@@ -320,12 +321,12 @@ public class CandidateChangeHandlerTests
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
-		createAndAddDemandWithQtyandDemandDetail(qty, 20);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 20);
 		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("-23");
 
-		createAndAddSupplyWithQtyandDemandDetail(qty, 30);
+		createAndAddSupplyWithQtyAndDemandDetail(qty, 30);
 		{
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			// we need one demand, one supply and *two* different stocks, since demand and supply are not related
@@ -353,37 +354,34 @@ public class CandidateChangeHandlerTests
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
-		createAndAddDemandWithQtyandDemandDetail(qty, 20);
-		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
+		createAndAddDemandWithQtyAndDemandDetail(qty, 20);
+
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("-23");
 
-		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
-		{
-			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-			// we need one demand, one supply and *two* different stocks, since demand and supply are not related
-			assertThat(records).hasSize(3);
+		createAndAddSupplyWithQtyAndDemandDetail(qty, 20);
 
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-			final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		// verify
+		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
+		assertThat(records).hasSize(4);
 
-			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, demandRecord.getMD_Candidate_ID());
-			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, firstStockRecord.getMD_Candidate_ID());
+		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+		final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+		final I_MD_Candidate secondStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(1);
 
-			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
-			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, firstStockRecord.getSeqNo() + 1);
+		assertThatModel(firstStockRecord).as("firstStockRecord is the child of demandRecord")
+				.hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, demandRecord.getMD_Candidate_ID());
+		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
+		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
 
-			// assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, secondStockRecord.getSeqNo() + 1); // as before
-
-			// shall be balanced between the demand and the supply
-			// assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, firstStockRecord.getDateProjected());
-			// assertThat(secondStockRecord.getQty()).isEqualByComparingTo("23");
-			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("0");
-		}
+		assertThatModel(supplyRecord).as("supplyRecord is the child of secondStockRecord")
+				.hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, secondStockRecord.getMD_Candidate_ID());
+		assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, secondStockRecord.getSeqNo() + 1);
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("0");
 	}
 
-	private void createAndAddDemandWithQtyandDemandDetail(
+	private void createAndAddDemandWithQtyAndDemandDetail(
 			@NonNull final BigDecimal qty,
 			final int shipmentScheduleIdForDemandDetail)
 	{
@@ -415,7 +413,7 @@ public class CandidateChangeHandlerTests
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
 
-	private void createAndAddSupplyWithQtyandDemandDetail(
+	private void createAndAddSupplyWithQtyAndDemandDetail(
 			@NonNull final BigDecimal qty,
 			final int shipmentScheduleIdForDemandDetail)
 	{
@@ -452,7 +450,7 @@ public class CandidateChangeHandlerTests
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
-		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
+		createAndAddSupplyWithQtyAndDemandDetail(qty, 20);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("23");
 
@@ -466,7 +464,7 @@ public class CandidateChangeHandlerTests
 			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, stockRecord.getSeqNo() + 1);
 		}
 
-		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 30);
 		{
 			assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
@@ -501,8 +499,8 @@ public class CandidateChangeHandlerTests
 		createAndAddStock(BEFORE_NOW); // has qty=10
 
 		final BigDecimal qty = new BigDecimal("23");
-		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
-		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+		createAndAddSupplyWithQtyAndDemandDetail(qty, 20);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 30);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5);
 
@@ -527,8 +525,8 @@ public class CandidateChangeHandlerTests
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
-		createAndAddDemandWithQtyandDemandDetail(qty, 20);
-		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 20);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 30);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
@@ -551,10 +549,12 @@ public class CandidateChangeHandlerTests
 	{
 		createAndAddStock(BEFORE_NOW); // has qty=10
 		createAndAddStock(BEFORE_NOW); // has qty=10
+		// note: those two account for an overall stock of 10 they are not summed!
+		// those two stock records might be the result of some unrelated increase of zero or something similarly unplausible!
 
 		final BigDecimal qty = new BigDecimal("12");
-		createAndAddDemandWithQtyandDemandDetail(qty, 20);
-		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 20);
+		createAndAddDemandWithQtyAndDemandDetail(qty, 30);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(6);
 
@@ -568,15 +568,13 @@ public class CandidateChangeHandlerTests
 		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
 		assertThat(allDemandRecords).hasSize(2);
 
-		// in sum, we now have -46 for this time, product, warehouse and storageAttributesKey
 		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 
-		// -> overall stock at BEFORE_NOW is 20
+		// -> overall stock at BEFORE_NOW is 10 !
 		assertThat(firstInitialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
 		assertThat(secondInitialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
 
-		// -> overall stock at NOW is (20 - 24) = -4 = (8 -12)
-		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("8");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-4");
+		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-2"); // 10 - 12
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-14"); // -2 - 12
 	}
 }

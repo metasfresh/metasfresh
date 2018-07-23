@@ -9,8 +9,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerBL;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -29,6 +27,8 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
@@ -195,10 +195,16 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, taxCategoryId, productId, -1, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
-				, locationId // shipC_BPartner_Location_ID
-				, false // isSOTrx same as in vendor return
-				, trxName);
+				ctx,
+				ic,
+				taxCategoryId,
+				productId,
+				billDate,
+				shipDate,
+				adOrgId,
+				inOut.getM_Warehouse(),
+				locationId, // shipC_BPartner_Location_ID
+				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId);
 
 		//

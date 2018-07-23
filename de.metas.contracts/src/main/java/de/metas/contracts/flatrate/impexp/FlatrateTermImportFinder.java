@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 
 import com.google.common.collect.Ordering;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -29,11 +30,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,7 +47,7 @@ import lombok.experimental.UtilityClass;
 /* package */ class FlatrateTermImportFinder
 {
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	
+
 	public I_AD_User findBillUser(final Properties ctx, final int bpartnerId)
 	{
 		final List<I_AD_User> users = bpartnerDAO.retrieveContacts(ctx, bpartnerId, ITrx.TRXNAME_ThreadInherited);
@@ -74,7 +75,6 @@ import lombok.experimental.UtilityClass;
 			}
 		}
 	}
-	
 
 	public I_AD_User findDropShipUser(final Properties ctx, final int bpartnerId)
 	{
@@ -103,32 +103,15 @@ import lombok.experimental.UtilityClass;
 			}
 		}
 	}
-	
+
 	public I_C_BPartner_Location findBPartnerShipToLocation(final Properties ctx, final int bpartnerId)
 	{
-		final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(ctx, bpartnerId, ITrx.TRXNAME_None);
-		if (bpLocations.isEmpty())
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.getDefaultShipToLocation(BPartnerId.ofRepoId(bpartnerId));
+		if (bpLocation != null && !bpLocation.isShipToDefault())
 		{
 			return null;
 		}
-		else if (bpLocations.size() == 1)
-		{
-			return bpLocations.get(0);
-		}
-		else
-		{
-			final I_C_BPartner_Location bpLocation = bpLocations.stream()
-					.filter(I_C_BPartner_Location::isShipTo)
-					.sorted(Ordering.natural().onResultOf(bpl -> bpl.isShipToDefault() ? 0 : 1))
-					.findFirst().get();
-			if (bpLocation.isShipToDefault())
-			{
-				return bpLocation;
-			}
-			else
-			{
-				return null;
-			}
-		}
+
+		return bpLocation;
 	}
 }

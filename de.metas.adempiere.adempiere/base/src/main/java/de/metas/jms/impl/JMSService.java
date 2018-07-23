@@ -1,21 +1,15 @@
 package de.metas.jms.impl;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Objects;
-
-import javax.jms.Connection;
+import javax.annotation.Nullable;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 
 import org.adempiere.util.StringUtils;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.slf4j.Logger;
 
+import de.metas.jms.EmbeddedActiveMQBrokerService;
 import de.metas.jms.IJMSService;
 import de.metas.jms.JmsConstants;
 
@@ -32,19 +26,17 @@ import de.metas.jms.JmsConstants;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 public class JMSService implements IJMSService
 {
 	private static final transient Logger logger = JmsConstants.getLogger(JMSService.class);
-
-	private BrokerService embeddedBroker = null;
 
 	@Override
 	public ConnectionFactory createConnectionFactory()
@@ -67,14 +59,6 @@ public class JMSService implements IJMSService
 			brokerURL = getJmsURL(null);
 		}
 
-		if (CConnection.isServerEmbedded())
-		{
-			// when running in embedded-server-mode, then we don't need usename an password for the JMS broker.
-			// also, in this case, it is case, we need the URL before we even have DB access, so we would have trouble obtaining those two.
-			final ActiveMQConnectionFactory jmsConnectionFactory = new ActiveMQConnectionFactory(brokerURL);
-			return jmsConnectionFactory;
-		}
-
 		final String user = JmsConstants.getJmsUser();
 		final String password = JmsConstants.getJmsPassword();
 		final ActiveMQConnectionFactory jmsConnectionFactory = new ActiveMQConnectionFactory(user, password, brokerURL);
@@ -82,108 +66,12 @@ public class JMSService implements IJMSService
 	}
 
 	@Override
-	public void startEmbeddedBroker()
-	{
-		synchronized (JMSService.class)
-		{
-			if (embeddedBroker != null)
-			{
-				return;
-			}
-			startEmbeddedBroker0();
-		}
-	}
-
-	private void startEmbeddedBroker0()
-	{
-		// try if there is already a broker running, by making a "fail-fast" attempt to connect to it.
-		final boolean createFailoverURL = false;
-		final ConnectionFactory connectionFactory = createConnectionFactory(createFailoverURL);
-		try
-		{
-			final Connection conn = connectionFactory.createConnection();
-			conn.close();
-			logger.warn("Found an embedded JMS broker to which we can connect. Assuming that attempting to create another one would not work. Returning.");
-			return;
-		}
-		catch (JMSException e)
-		{
-			// a broker is not yet running on this machine. Go on.
-		}
-
-		// now actually create the embedded broker
-		try
-		{
-			embeddedBroker = new BrokerService();
-			createEmbeddedBrokerConnector();
-			embeddedBroker.start();
-			logger.info("Embedded JMS broker started");
-		}
-		catch (final Exception e)
-		{
-			logger.error("Failed starting JMS broker", e);
-		}
-	}
-
-	private void createEmbeddedBrokerConnector() throws Exception
-	{
-		final URI uri = getJmsURI();
-
-		//
-		// Remove the old connector if exists and if is not up2date
-		final TransportConnector connectorOld = embeddedBroker.getConnectorByName(connectorName);
-		if (connectorOld == null)
-		{
-			// nothing
-		}
-		else if (Objects.equals(connectorOld.getUri(), uri))
-		{
-			logger.info("JMS connector has not changed. Skip updating.");
-			return;
-		}
-		else
-		{
-			logger.info("JMS connector URL has changed. Removing old connector: {}", connectorOld);
-			embeddedBroker.removeConnector(connectorOld);
-		}
-
-		//
-		// Adding the new connector
-		final TransportConnector connector = new TransportConnector();
-		connector.setName(connectorName);
-		connector.setUri(uri);
-		embeddedBroker.addConnector(connector);
-		logger.info("JMS connector mapped to URL: " + uri);
-	}
-
-	private static final String connectorName = "appsServer";
-
-	@Override
 	public void updateConfiguration()
 	{
 		synchronized (JMSService.class)
 		{
-			updateConfiguration_EmbeddedBroker();
+			EmbeddedActiveMQBrokerService.INSTANCE.updateConfiguration_EmbeddedBroker();
 			updateConfiguration_JMSConnectionFactory();
-		}
-	}
-
-	/** Updates the embedded broker configuration */
-	private final void updateConfiguration_EmbeddedBroker()
-	{
-		if (embeddedBroker == null)
-		{
-			logger.info("JMS broker not started yet. Doing nothing.");
-			return;
-		}
-
-		try
-		{
-			createEmbeddedBrokerConnector();
-		}
-		catch (Exception e)
-		{
-			logger.error("Failed updating the JMS connector", e);
 		}
 	}
 
@@ -193,25 +81,18 @@ public class JMSService implements IJMSService
 		// TODO: implement
 	}
 
-	private final URI getJmsURI() throws URISyntaxException
-	{
-		final String urlStr = getJmsURL(null);
-		return new URI(urlStr);
-	}
-
 	@Override
-	public String getJmsURL(final CConnection cConnection)
+	public String getJmsURL(@Nullable final CConnection cConnection)
 	{
-
 		final String appsHost;
 		final int appsPort;
 
-		if (CConnection.isServerEmbedded() || Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			// CConnection is not yet up, when this method is first called in embedded-server-mode,
 			// and we would run into a cyclic problem when we tried to invoke CConnection.get().
 			// Also, in unit test mode, we don't want to get in the way of CConnection.get either.
-			appsHost = CConnection.SERVER_EMBEDDED_APPSERVER_HOSTNAME;
+			appsHost = "localhost";
 			appsPort = CConnection.SERVER_DEFAULT_APPSERVER_PORT;
 		}
 		else

@@ -16,6 +16,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
@@ -31,6 +32,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailDAO;
 import de.metas.email.IMailTextBuilder;
 import de.metas.email.Mailbox;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
 
@@ -110,7 +112,12 @@ public class MailBL implements IMailBL
 		final String smtpHost = client.getSMTPHost();
 		if(Check.isEmpty(smtpHost, true))
 		{
-			throw new AdempiereException("Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost.");
+			final String messageString = StringUtils.formatMessage(
+					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
+							+ "AD_MailConfig search parameters: AD_Client_ID={}; AD_Org_ID={}; AD_Process_ID={}; C_DocType={}; CustomType={}",
+					client.getAD_Client_ID(), adOrgId, processID, docType, customType);
+
+			throw new MailboxNotFoundException(ImmutableTranslatableString.constant(messageString));
 		}
 
 		final Mailbox mailbox = Mailbox.builder()

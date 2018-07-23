@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,7 +49,7 @@ public class OLCandCreateRequest
 	private LocalDate dateRequired;
 	private int flatrateConditionsId;
 
-	private int productId;
+	private ProductId productId;
 	private String productDescription;
 	private BigDecimal qty;
 	private int uomId;
@@ -71,7 +72,7 @@ public class OLCandCreateRequest
 			final String poReference,
 			@NonNull final LocalDate dateRequired,
 			final int flatrateConditionsId,
-			final int productId,
+			@NonNull final ProductId productId,
 			final String productDescription,
 			@NonNull final BigDecimal qty,
 			final int uomId,
@@ -82,7 +83,6 @@ public class OLCandCreateRequest
 			//
 			final String adInputDataSourceInternalName)
 	{
-		Check.assume(productId > 0, "productId is set");
 		Check.assume(uomId > 0, "uomId is set");
 		// Check.assume(pricingSystemId > 0, "pricingSystemId is set");
 		Check.assume(qty.signum() > 0, "qty > 0");

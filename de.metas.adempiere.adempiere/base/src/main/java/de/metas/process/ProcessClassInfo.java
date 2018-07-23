@@ -111,7 +111,7 @@ public final class ProcessClassInfo
 			return ProcessClassInfo.NULL;
 		}
 	}
-	
+
 	public static boolean isNull(final ProcessClassInfo processClassInfo)
 	{
 		return processClassInfo == null || processClassInfo == NULL;
@@ -122,7 +122,7 @@ public final class ProcessClassInfo
 	{
 		processClassInfoCache.invalidateAll();
 	}
-	
+
 	/** "Process class" to {@link ProcessClassInfo} cache */
 	private static final LoadingCache<Class<?>, ProcessClassInfo> processClassInfoCache = CacheBuilder.newBuilder()
 			.weakKeys() // to prevent ClassLoader memory leaks nightmare
@@ -186,7 +186,7 @@ public final class ProcessClassInfo
 				.stream()
 				.map(field -> createProcessClassParamInfo(field))
 				.filter(paramInfo -> paramInfo != null)
-				.collect(GuavaCollectors.toImmutableListMultimap(ProcessClassParamInfo::getKey));
+				.collect(GuavaCollectors.toImmutableListMultimap(ProcessClassParamInfo::getParameterKey));
 	}
 
 	private static ProcessClassParamInfo createProcessClassParamInfo(final Field paramField)
@@ -199,10 +199,10 @@ public final class ProcessClassInfo
 		}
 
 		return ProcessClassParamInfo.builder()
-				.setField(paramField)
-				.setParameterName(paramAnn.parameterName())
-				.setMandatory(paramAnn.mandatory())
-				.setParameterTo(paramAnn.parameterTo())
+				.field(paramField)
+				.parameterName(paramAnn.parameterName())
+				.mandatory(paramAnn.mandatory())
+				.parameterTo(paramAnn.parameterTo())
 				.build();
 	}
 
@@ -366,12 +366,12 @@ public final class ProcessClassInfo
 	{
 		return parameterInfos.values();
 	}
-	
+
 	public List<ProcessClassParamInfo> getParameterInfos(final String parameterName, final boolean parameterTo)
 	{
 		return parameterInfos.get(ProcessClassParamInfo.createParameterUniqueKey(parameterName, parameterTo));
 	}
-	
+
 	public List<ProcessClassParamInfo> getParameterInfos(final String parameterName)
 	{
 		final List<ProcessClassParamInfo> params = new ArrayList<>();
@@ -379,7 +379,6 @@ public final class ProcessClassInfo
 		params.addAll(parameterInfos.get(ProcessClassParamInfo.createParameterUniqueKey(parameterName, true)));
 		return params;
 	}
-
 
 	/**
 	 * @return true if a current record needs to be selected when this process is called from gear/window.

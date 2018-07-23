@@ -40,6 +40,8 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
 
 public class MSV3AvailiabilityClientTests
 {
+	private static final int UOM_ID = 1;
+
 	@Before
 	public void init()
 	{
@@ -52,7 +54,7 @@ public class MSV3AvailiabilityClientTests
 	{
 		MSV3TestingTools.setDBVersion(MSV3AvailiabilityClientTests.class.getSimpleName());
 
-		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN);
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN, UOM_ID);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)
 				.build();

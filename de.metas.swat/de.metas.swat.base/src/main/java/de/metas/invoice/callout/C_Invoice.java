@@ -28,19 +28,21 @@ import java.util.Properties;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.lang.SOTrx;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 
 @Callout(I_C_Invoice.class)
@@ -63,14 +65,14 @@ public class C_Invoice
 		//
 		// TODO: Maybe replace this with Check.assume()?
 		//
-		final boolean isSOTrx = invoice.isSOTrx();
-		if (isSOTrx && !partner.isCustomer())
+		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+		if (soTrx.isSales() && !partner.isCustomer())
 		{
 			//
 			// SO => Partner must be a customer
 			return;
 		}
-		else if (!isSOTrx && !partner.isVendor())
+		else if (soTrx.isPurchase() && !partner.isVendor())
 		{
 			//
 			// PO => Partner must be a vendor
@@ -80,14 +82,14 @@ public class C_Invoice
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(invoice.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location location = invoice.getC_BPartner_Location();
 		if (location == null)
 		{
 			return;
 		}
 
-		final int pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), isSOTrx, trxName);
-		if (pricingSystemId <= 0)
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), soTrx, trxName);
+		if (pricingSystemId == null)
 		{
 			return;
 		}
@@ -105,7 +107,7 @@ public class C_Invoice
 				pricingSystemId,
 				location.getC_Location().getC_Country_ID(),
 				dateInvoiced,
-				isSOTrx);
+				soTrx);
 		if (priceListNew == null)
 		{
 			return;
@@ -114,7 +116,7 @@ public class C_Invoice
 		invoice.setM_PriceList_ID(priceListNew.getM_PriceList_ID());
 	}
 
-	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID})
+	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID })
 	public void updateFromDocType(final I_C_Invoice invoice, final ICalloutField field)
 	{
 
@@ -148,6 +150,6 @@ public class C_Invoice
 		invoice.setPaymentRule(paymentRuleToUse);
 
 		//
-		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice);
+		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice, null, null);
 	}
 }

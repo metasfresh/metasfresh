@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -49,6 +51,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
@@ -132,9 +135,12 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public I_M_ReceiptSchedule_Alloc retrieveRsaForRs(final I_M_ReceiptSchedule receiptSchedule, final I_M_InOutLine receiptLine)
+	public I_M_ReceiptSchedule_Alloc retrieveRsaForRs(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@NonNull final org.compiere.model.I_M_InOutLine receiptLine)
 	{
-		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, receiptLine)
+		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, receiptLine)
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedule.getM_ReceiptSchedule_ID()))
 				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, receiptLine.getM_InOutLine_ID()));
 
@@ -207,7 +213,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		// invoice candidate references an orderline
 		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
-			
+
 			if (candidate.getC_OrderLine_ID() > 0)
 			{
 				final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
@@ -252,7 +258,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public List<I_M_ReceiptSchedule> retrieveRsForInOutLine(final I_M_InOutLine iol)
+	public List<I_M_ReceiptSchedule> retrieveRsForInOutLine(@Nullable final org.compiere.model.I_M_InOutLine iol)
 	{
 		if (iol == null)
 		{

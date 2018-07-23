@@ -259,7 +259,7 @@ public class POTrlRepository
 
 	/**
 	 * Particularly updates the translatable column for a given recordId and adLanguage.
-	 * 
+	 *
 	 * @param trlInfo
 	 * @param recordId
 	 * @param adLanguage
@@ -409,7 +409,8 @@ public class POTrlRepository
 		final Object[] params = new Object[] { recordId };
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			// retrieve them out of trx; we might have to retrieve an error message related to an already failed trx
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 

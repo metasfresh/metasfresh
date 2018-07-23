@@ -33,13 +33,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;

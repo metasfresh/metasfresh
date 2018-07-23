@@ -4,10 +4,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.adempiere.bpartner.BPartnerId;
+import org.adempiere.util.Services;
+import org.adempiere.util.time.generator.BusinessDayShifter;
+import org.adempiere.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import org.adempiere.util.time.generator.DateSequenceGenerator;
+import org.adempiere.util.time.generator.IDateShifter;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.IBusinessDayMatcher;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.NullBusinessDayMatcher;
 import lombok.NonNull;
 
 /*
@@ -47,16 +54,33 @@ public class BPPurchaseScheduleService
 		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId, date);
 	}
 
-	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesDatePromised, @NonNull final BPPurchaseSchedule schedule)
+	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesPreparationDate, @NonNull final BPPurchaseSchedule schedule)
 	{
-		final Optional<LocalDate> purchaseDate = DateSequenceGenerator.builder()
+		final IBusinessDayMatcher businessDayMatcher;
+		if (schedule.getNonBusinessDaysCalendarId() != null)
+		{
+			final ICalendarDAO calendarRepo = Services.get(ICalendarDAO.class);
+			businessDayMatcher = calendarRepo.getCalendarNonBusinessDays(schedule.getNonBusinessDaysCalendarId());
+		}
+		else
+		{
+			businessDayMatcher = NullBusinessDayMatcher.instance;
+		}
+
+		final IDateShifter dateShifter = BusinessDayShifter.builder()
+				.businessDayMatcher(businessDayMatcher)
+				.onNonBussinessDay(OnNonBussinessDay.MoveToClosestBusinessDay)
+				.build();
+
+		final Optional<LocalDate> purchaseDatePromised = DateSequenceGenerator.builder()
 				.dateFrom(LocalDate.MIN)
 				.dateTo(LocalDate.MAX)
-				// .shifter(shifter) // TODO: non business days aware shifter
+				.shifter(dateShifter)
 				.frequency(schedule.getFrequency())
 				.build()
-				.generateCurrentPrevious(salesDatePromised.toLocalDate());
+				.calculatePrevious(salesPreparationDate.toLocalDate());
 
-		return purchaseDate.map(schedule::applyTimeTo);
+		// TODO: make sure that after applying the time, our date is BEFORE sales preparation time!
+		return purchaseDatePromised.map(schedule::applyTimeTo);
 	}
 }

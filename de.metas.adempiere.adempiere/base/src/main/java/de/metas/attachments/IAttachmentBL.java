@@ -36,14 +36,14 @@ import org.springframework.core.io.Resource;
 
 /**
  * Record attachments repository.
- * 
+ *
  * For all methods which accept <code>Object model</code> as parameter, the model can be:
  * <ul>
  * <li>some actual model (interface)
  * <li>{@link ITableRecordReference}
  * <li>{@link I_AD_Attachment}
  * </ul>
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -68,9 +68,7 @@ public interface IAttachmentBL extends ISingletonService
 	/**
 	 * Attach given byte array to attachment.
 	 *
-	 * @param model
 	 * @param name entry name
-	 * @param data
 	 */
 	AttachmentEntry addEntry(Object model, String name, byte[] data);
 
@@ -89,9 +87,9 @@ public interface IAttachmentBL extends ISingletonService
 
 	AttachmentEntry getEntryById(Object model, int attachmentEntryId);
 
-	AttachmentEntry getEntryByFilename(Object model, String filename);
+	AttachmentEntry getEntryByFilenameOrNull(Object model, String filename);
 
-	byte[] getEntryByFilenameAsBytes(Object model, String filename);
+	byte[] getEntryByFilenameAsBytesOrNull(Object model, String filename);
 
 	byte[] getEntryByIdAsBytes(Object model, int attachmentEntryId);
 
