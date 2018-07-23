@@ -12,14 +12,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.StartupListener;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_AD_User;
@@ -48,26 +43,24 @@ import de.metas.marketing.base.model.PlatformId;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ContactPersonRepository.class,
-		UserRepository.class,
-		UserService.class
-})
+
 public class UserServiceTest
 {
+	private UserService userService;
+	private ContactPersonRepository contactPersonRepository;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		userService = new UserService(new UserRepository());
+		contactPersonRepository = new ContactPersonRepository();
 	}
 
 	@Test
 	public void updateUserEmailFromContactPerson_SameOldEmail()
 	{
-
-		final UserService userService = Adempiere.getBean(UserService.class);
-
 		final String oldEmailAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 		final I_AD_User user1 = createUser("name1", oldEmailAddress);
 
@@ -90,9 +83,6 @@ public class UserServiceTest
 	@Test
 	public void updateUserEmailFromContactPerson_DifferentOldEmail()
 	{
-
-		final UserService userService = Adempiere.getBean(UserService.class);
-
 		final String oldUserAddress = "Oldtestmail@Oldtestmail.Oldtestmail";
 		final I_AD_User user1 = createUser("name1", oldUserAddress);
 
@@ -119,9 +109,6 @@ public class UserServiceTest
 	@Test
 	public void updateUserEmailFromContactPerson_NullOldEmail()
 	{
-
-		final UserService userService = Adempiere.getBean(UserService.class);
-
 		final String oldEmailAddress = null;
 		final I_AD_User user1 = createUser("name1", oldEmailAddress);
 
@@ -144,9 +131,6 @@ public class UserServiceTest
 	@Test
 	public void updateUserEmailFromContactPerson_EmptyOldEmail()
 	{
-
-		final UserService userService = Adempiere.getBean(UserService.class);
-
 		final String oldEmailAddress = "";
 		final I_AD_User user1 = createUser("name1", oldEmailAddress);
 
@@ -179,8 +163,6 @@ public class UserServiceTest
 
 	private ContactPerson createContactPerson(final int userId, final String emailAddress, final PlatformId platformId)
 	{
-		final ContactPersonRepository contactPersonRepo = Adempiere.getBean(ContactPersonRepository.class);
-
 		final I_MKTG_ContactPerson contactPersonRecord = newInstance(I_MKTG_ContactPerson.class);
 
 		contactPersonRecord.setAD_User_ID(userId);
@@ -189,7 +171,7 @@ public class UserServiceTest
 
 		save(contactPersonRecord);
 
-		return contactPersonRepo.asContactPerson(contactPersonRecord);
+		return contactPersonRepository.asContactPerson(contactPersonRecord);
 
 	}
 
