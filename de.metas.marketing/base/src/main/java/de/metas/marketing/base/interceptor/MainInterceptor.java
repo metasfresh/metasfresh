@@ -33,13 +33,12 @@ public class MainInterceptor extends AbstractModuleInterceptor
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addModelValidator(MKTG_Campaign_ContactPerson.INSTANCE, client);
-		engine.addModelValidator(MKTG_ContactPerson.INSTANCE, client);
+
 	}
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(MKTG_Campaign_ContactPerson.INSTANCE);
-//		calloutsRegistry.registerAnnotatedCallout(MKTG_ContactPerson.INSTANCE);
 	}
 }

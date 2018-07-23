@@ -4,10 +4,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
+import de.metas.marketing.base.UserService;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import lombok.NonNull;
@@ -34,13 +39,18 @@ import lombok.NonNull;
  * #L%
  */
 
+@Component("de.metas.marketing.base.interceptor.MKTG_ContactPerson")
 @Interceptor(I_MKTG_ContactPerson.class)
 public class MKTG_ContactPerson
 {
-	public static final MKTG_ContactPerson INSTANCE = new MKTG_ContactPerson();
+	private final UserService userService;
 
-	private MKTG_ContactPerson()
+	private final ContactPersonRepository contactPersonRepo;
+
+	private MKTG_ContactPerson(@NonNull final UserService userService, @NonNull final ContactPersonRepository contactPersonRepo)
 	{
+		this.userService = userService;
+		this.contactPersonRepo = contactPersonRepo;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_AD_User_ID)
@@ -74,5 +84,17 @@ public class MKTG_ContactPerson
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_ContactPerson_ID, contactPerson.getMKTG_ContactPerson_ID())
 				.create();
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = I_MKTG_ContactPerson.COLUMNNAME_EMail)
+	public void onChangeEmail(final I_MKTG_ContactPerson contactPersonRecord)
+	{
+		final I_MKTG_ContactPerson oldContactPerson = InterfaceWrapperHelper.createOld(contactPersonRecord, I_MKTG_ContactPerson.class);
+
+		final String oldContactPersonMail = oldContactPerson.getEMail();
+		final ContactPerson contactPerson = contactPersonRepo.asContactPerson(contactPersonRecord);
+		userService.updateUserEmailFromContactPerson(contactPerson, oldContactPersonMail);
 	}
 }

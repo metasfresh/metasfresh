@@ -12,22 +12,16 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.location.LocationRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.FixedTimeSource;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.DefaultAddressType;
@@ -64,29 +58,27 @@ import de.metas.marketing.base.model.PlatformRepository;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		UserRepository.class,
-		CampaignService.class,
-		CampaignRepository.class,
-		ContactPersonRepository.class,
-		LocationRepository.class,
-		PlatformRepository.class,
-		BPartnerLocationRepository.class
-})
+
 public class CampaignServiceTest
 {
+	private CampaignService campaignService;
+	private UserRepository userRepository;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		userRepository = new UserRepository();
+		campaignService = new CampaignService(
+				new ContactPersonRepository(new BPartnerLocationRepository()),
+				new CampaignRepository(),
+				new PlatformRepository());
 	}
 
 	@Test
 	public void addToNewsletter()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Platform platform = createPlatform();
@@ -99,15 +91,12 @@ public class CampaignServiceTest
 
 		assertNotNull(consentRecord);
 		assertNotNull(contactPerson);
-
 	}
 
 	@Test
 	public void removeFromNewsletter_ExistingConsent()
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 4, 4));
-
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
 
 		final User user = createUser("User1", "mail@mail.mail");
 
@@ -128,8 +117,6 @@ public class CampaignServiceTest
 	@Test
 	public void removeFromNewsletter_NoConsent()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final User user = createUser("User1", "mail@mail.mail");
 
 		final I_MKTG_Platform platform = createPlatform();
@@ -142,7 +129,6 @@ public class CampaignServiceTest
 
 		assertNull(consentRecord);
 		assertNull(contactPerson);
-
 	}
 
 	private I_MKTG_Consent getConsentRecord()
@@ -167,9 +153,6 @@ public class CampaignServiceTest
 				.name(name)
 				.emailAddress(mail)
 				.build();
-
-		final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
-
 		return userRepository.save(user);
 	}
 
@@ -195,8 +178,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_NullDefaultAddressType_ExistingBill()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
 		bpLocation.setIsBillToDefault(true);
@@ -227,8 +208,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_NullDefaultAddressType_NonExistingBill_MandatoryLocation()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		createBPartnerLocation(partner1);
 
@@ -255,8 +234,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_NullDefaultAddressType_NonExistingBill_NotMandatoryLocation()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		createBPartnerLocation(partner1);
 
@@ -283,8 +260,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_BillToDefaultAddressType_Existing()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
 		bpLocation.setIsBillToDefault(true);
@@ -314,8 +289,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_BillToDefaultAddressType_NotExisting_MandatoryLocation()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		createBPartnerLocation(partner1);
 
@@ -342,8 +315,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_BillToDefaultAddressType_NotExisting_NotMandatoryLocation()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		createBPartnerLocation(partner1);
 
@@ -370,8 +341,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_ShipToDefaultAddressType_Existing()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		final I_C_BPartner_Location bpLocation = createBPartnerLocation(partner1);
 		bpLocation.setIsShipToDefault(true);
@@ -401,8 +370,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_ShipToDefaultAddressType_NotExisting_MandatoryLocation()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		createBPartnerLocation(partner1);
 
@@ -429,8 +396,6 @@ public class CampaignServiceTest
 	@Test
 	public void addAsContactPersonsToCampaign_ShipToDefaultAddressType_NotExisting_NotMandatoryLocation()
 	{
-		final CampaignService campaignService = Adempiere.getBean(CampaignService.class);
-
 		final I_C_BPartner partner1 = createBPartner("Partner1");
 		createBPartnerLocation(partner1);
 
@@ -495,9 +460,6 @@ public class CampaignServiceTest
 				.emailAddress(mail)
 				.bpartnerId(bpartnerId)
 				.build();
-
-		final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
-
 		return userRepository.save(user);
 	}
 
