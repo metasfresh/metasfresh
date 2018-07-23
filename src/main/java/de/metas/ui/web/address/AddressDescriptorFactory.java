@@ -387,7 +387,7 @@ public class AddressDescriptorFactory
 			else if (region.getIdAsInt() <= 0)
 			{
 				toLocationRecord.setC_Region_ID(-1);
-				toLocationRecord.setCity(region.getDisplayName());
+				toLocationRecord.setRegionName(region.getDisplayName());
 			}
 			else
 			{
