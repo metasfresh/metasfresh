@@ -234,7 +234,7 @@ public class ContactPersonRepository
 		return contactPerson;
 	}
 
-	private ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
+	public ContactPerson asContactPerson(@NonNull final I_MKTG_ContactPerson contactPersonRecord)
 	{
 		final String emailDeactivated = contactPersonRecord.getDeactivatedOnRemotePlatform();
 
@@ -317,7 +317,6 @@ public class ContactPersonRepository
 		return contactPerson;
 	}
 
-
 	public Set<ContactPerson> getByBPartnerLocationId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		return Services.get(IQueryBL.class)
@@ -329,4 +328,17 @@ public class ContactPersonRepository
 				.map(this::asContactPerson)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	public Set<ContactPerson> getByUserId(@NonNull final UserId userId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MKTG_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_AD_User_ID, userId.getRepoId())
+				.create()
+				.stream()
+				.map(this::asContactPerson)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }
