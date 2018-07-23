@@ -66,7 +66,7 @@ public class OrderFastInputEasyMockTests
 
 	private void assertDoNothing(final int productId, final BigDecimal qty)
 	{
-		final Map<String, Object> mocks = new HashMap<String, Object>();
+		final Map<String, Object> mocks = new HashMap<>();
 
 		//final GridTab gridTab = setupGridTab(productId, qty, mocks);
 		final I_C_Order order = setupOrder(productId, qty, mocks);
@@ -101,24 +101,6 @@ public class OrderFastInputEasyMockTests
 		expect(field.getGridTab()).andStubReturn(gridTab);
 		
 		return field;
-	}
-
-	private GridTab setupGridTab(final Integer productId, final BigDecimal qty, final Map<String, Object> mocks)
-	{
-		final I_C_Order order = mock(I_C_Order.class, "order", mocks);
-		final ICalloutField gridFieldQty = mock(GridField.class, "gridFieldQty", mocks);
-		expect(gridFieldQty.getCtx()).andStubReturn(Env.getCtx());
-		expect(gridFieldQty.getWindowNo()).andStubReturn(2);
-		expect(gridFieldQty.getValue()).andStubReturn(qty);
-		expect(gridFieldQty.getModel(I_C_Order.class)).andStubReturn(order);
-
-		final GridTab gridTab = mock(GridTab.class, "gridTab", mocks);
-
-//		expect(gridTab.getField(I_C_Order.COLUMNNAME_Qty_FastInput)).andStubReturn(gridFieldQty);
-
-		expect(gridTab.getTableName()).andStubReturn(I_C_Order.Table_Name);
-
-		return gridTab;
 	}
 
 	private void invoke_evalProductQtyInput(final Map<String, Object> mocks, final ICalloutField calloutField)

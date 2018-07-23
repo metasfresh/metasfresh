@@ -12,16 +12,32 @@ Here come the actual release notes:
 # metasfresh 5.67 (2018-30)
 ## Features
 * metasfresh
-  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
-    * New Fields and Filter criteria in Documentoutbound window in WebUI.
   * [#4292](https://github.com/metasfresh/metasfresh/issues/4292) Make a Webui-Window for HU Reservation
     * New Window for Handling Unit Reservation in WebUI.
+  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Fields and Filter criteria in Documentoutbound window in WebUI.
+  * [#4376](https://github.com/metasfresh/metasfresh/issues/4376) Pricing engine sets the scale of price amounts to the respective precision
+  * [#4380](https://github.com/metasfresh/metasfresh/issues/4380) consolidate profit related columns in order line and purchase candidate
+  * [#4395](https://github.com/metasfresh/metasfresh/issues/4395) Notification if automatic TU label print failed
+
+* metasfresh-webui-api
+  * [#1010](https://github.com/metasfresh/metasfresh-webui-api/issues/1010) Implement process parameters callout support
 
 * metasfresh-webui-frontend
   * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
     * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
 
 ## Fixes
+* metasfresh
+  * [#4172](https://github.com/metasfresh/metasfresh/issues/4172) Purchase order from sales order not working as before
+  * [#4185](https://github.com/metasfresh/metasfresh/issues/4185) If C_DocType_Trl description exists, use this as description in document
+  * [#4365](https://github.com/metasfresh/metasfresh/issues/4365) Error Zooming from material receipt to HU tracing
+  * [#4371](https://github.com/metasfresh/metasfresh/issues/4371) Sales Order VAT vs. Invoice Candidate VAT
+
+* metasfresh-webui-api
+  * [#1007](https://github.com/metasfresh/metasfresh-webui-api/issues/1007) HU-Editor - Refresh after HU-changing process not working properly
+  * [#1012](https://github.com/metasfresh/metasfresh-webui-api/issues/1012) Cannot use transform on a TU without LU in HU Editor
+
 * metasfresh-webui-frontend
   * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
     * Improving the selection of Pricing Conditions via Keyboard.
@@ -43,24 +59,38 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#1461](https://github.com/metasfresh/metasfresh/issues/1461) Improve User Password Hashing
+    * Improvement of the Password Hashing Feature. Nown Hashing with SHA512.
   * [#4009](https://github.com/metasfresh/metasfresh/issues/4009) Improve callout org.compiere.model.Callout_AD_Column
+    * Improvement of Callout_AD_Column, making it WebUI friendly.
   * [#4026](https://github.com/metasfresh/metasfresh/issues/4026) Generate and mail the CSV only when Der Kurier shipper transportation is completed
+    * Adjustment of the Shipper Transportation workflow for "Der Kurier". Now generating and mailing the csv aggregation only when the transportation order is completed.
   * [#4299](https://github.com/metasfresh/metasfresh/issues/4299) Jasper: Translations missing in en_US version
+    * New en_US Translations added to Jasper Documents.
   * [#4315](https://github.com/metasfresh/metasfresh/issues/4315) metasfresh-app server fails to startup on a dev-machine
+    * Internal improvement of the startup of the metasfresh-app server for development purposes.
   * [#4345](https://github.com/metasfresh/metasfresh/issues/4345) Make accounting async
+    * Improvement of accounting, making it asynch. Needed for new Costing Engine.
   * [#4346](https://github.com/metasfresh/metasfresh/issues/4346) Individual sequences for products and projects
+    * New Feature that allows to use Sequence No. for Projects and Products.
   * [#4354](https://github.com/metasfresh/metasfresh/issues/4354) Notify user on error creating document PDF
+    * New Feature that informs the user via Notification when a PDF cannot be created.
   * [#4359](https://github.com/metasfresh/metasfresh/issues/4359) Set default values for new Integer and YesNo AD_Columns
+    * Improvement in Applcation Dictionary, now setting default values for all Integer and Yes No Fields
   * [#4367](https://github.com/metasfresh/metasfresh/issues/4367) HU Transformation for LU, Packing Item and TU Qty default
+    * Improvement of the HU Transformation Action, now setting default Parms for Transformation.
 
 * metasfresh-webui-api
   * [#1006](https://github.com/metasfresh/metasfresh-webui-api/issues/1006) Forgot password webui api
+    * New Feature via API that allows to trigger a workflow for forgotton user passwords.
   * [#1009](https://github.com/metasfresh/metasfresh-webui-api/issues/1009) Cleanup ADProcessDAO
+    * New internal improvement on API side that is needed for the Transformation Action improvement.
 
 ## Fixes
 * metasfresh
   * [#4356](https://github.com/metasfresh/metasfresh/issues/4356) Sales Orderline:ERROR: duplicate key value violates unique constraint "c_paymentterm_name"
+    * Fixes a Bug when creating a new Line in Sales Order.
   * [#4370](https://github.com/metasfresh/metasfresh/issues/4370) M_ReceiptSchedule_Generate_M_InOuts error if M_ReceiptSchedule has Qty = 0
+    * Fixes a Bug in the generation Process of Receipts in case the Receipt Schedule has a quantity of 0.
 
 # metasfresh 5.65 (2018-28)
 ## Features

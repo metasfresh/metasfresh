@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
@@ -41,10 +42,11 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -59,12 +61,6 @@ public abstract class AbstractDeliveryTest
 	/** Watches current test and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
-	public final static void staticInit()
-	{
-		AdempiereTestHelper.get().init();
-	}
 
 	protected final Properties ctx = Env.getCtx();
 	protected final String trxName = ITrx.TRXNAME_None;
@@ -115,6 +111,7 @@ public abstract class AbstractDeliveryTest
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		new Expectations()
 		{{
