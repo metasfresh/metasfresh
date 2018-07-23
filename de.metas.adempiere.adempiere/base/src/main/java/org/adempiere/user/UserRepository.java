@@ -45,7 +45,7 @@ public class UserRepository
 	public User ofRecord(@NonNull final I_AD_User userRecord)
 	{
 		return User.builder()
-				.bpartnerId(BPartnerId.ofRepoId(userRecord.getC_BPartner_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.name(userRecord.getName())
 				.emailAddress(userRecord.getEMail())
@@ -74,5 +74,4 @@ public class UserRepository
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.build();
 	}
-
 }

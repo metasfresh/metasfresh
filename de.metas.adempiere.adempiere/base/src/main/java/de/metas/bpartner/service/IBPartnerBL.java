@@ -1,5 +1,7 @@
 package de.metas.bpartner.service;
 
+import java.util.Comparator;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +12,12 @@ package de.metas.bpartner.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,21 +25,32 @@ package de.metas.bpartner.service;
  */
 
 import java.util.Properties;
+import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.user.User;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 
+import com.google.common.base.Predicates;
+
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
 	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
-	
+
 	/**
 	 * make full address
 	 *
@@ -62,11 +75,10 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * Retrieve user/contact assigned to default/first bill to address. If no user/contact found, the first default user contact will be returned.
 	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param trxName
 	 * @return user/contact or null
+	 * @deprecated it's not clear what this method does if there are multiple potential matches. Please use {@link #retrieveBillContactOrNull(RetrieveBillContactRequest)} instead.
 	 */
+	@Deprecated
 	I_AD_User retrieveBillContact(Properties ctx, int bPartnerId, String trxName);
 
 	/**
@@ -77,23 +89,6 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return user/contact or null
 	 */
 	I_AD_User retrieveUserForLoc(I_C_BPartner_Location loc);
-
-	//
-	// Commenting out this de.metas.terminable related code, because it assumes that the following columns exist
-	//
-	// /**
-	// * Set the default flag of a terminable location to the location that is marked as nextID.
-	// * This way, the next location will inherit the attributions of the old one.
-	// *
-	// * @param bpLocation
-	// */
-	// void updateNextLocation(I_C_BPartner_Location bpLocation);
-
-	// /**
-	// * @param bpLocation
-	// * @return true if the address is terminated in the past or in the current day
-	// */
-	// boolean isTerminatedInThePast(I_C_BPartner_Location bpLocation);
 
 	/**
 	 * Compute and set {@link I_C_BPartner_Location#COLUMNNAME_Address} field.
@@ -106,9 +101,9 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Creates a draft contact linked to given partner.
-	 * 
+	 *
 	 * It's up to the caller to set the other fields and then save it or not.
-	 * 
+	 *
 	 * @param bpartner
 	 * @return draft contact
 	 */
@@ -123,7 +118,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Use {@link IBPartnerAware} to get BPartner from given model.
-	 * 
+	 *
 	 * @param model
 	 * @return bpartner or <code>null</code>
 	 */
@@ -131,7 +126,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Gets BPartner's Language
-	 * 
+	 *
 	 * @param ctx
 	 * @param bpartnerId
 	 * @return {@link Language} or <code>null</code>
@@ -140,7 +135,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Get the language of the given model's C_BPartner, if it has a <code>C_BPartner_ID</code> column and if the BPartner is set.
-	 * 
+	 *
 	 * @param model
 	 * @return the language, if found, <code>null</code> otherwise.
 	 */
@@ -148,7 +143,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Creates BPartner, Location and contact from given template.
-	 * 
+	 *
 	 * @param template
 	 * @return created bpartner
 	 * @task https://github.com/metasfresh/metasfresh/issues/1090
@@ -168,4 +163,34 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return partner's discount schema or -1
 	 */
 	int getDiscountSchemaId(BPartnerId bpartnerId, SOTrx soTrx);
+
+	/**
+	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link RetrieveBillContactRequest}.
+	 */
+	User retrieveBillContactOrNull(RetrieveBillContactRequest request);
+
+	@Value
+	@Builder
+	public static class RetrieveBillContactRequest
+	{
+		@NonNull
+		BPartnerId bpartnerId;
+
+		/** If specified, then users with this location are preferred, even if a user ad another location is the default bill-to user. */
+		@Nullable
+		BPartnerLocationId bPartnerLocationId;
+
+		/** If specified, then only matching contacts are considered */
+		@Default
+		@NonNull
+		Predicate<User> filter = Predicates.alwaysTrue();
+
+		/**
+		 * If specified and there are multiple equally good fits, then the first fit according to this comparator is returned.
+		 * If not specified, then the contact whose name comes alphabetically first is returned.
+		 */
+		@Default
+		@NonNull
+		Comparator<User> comparator = Comparator.comparing(User::getName);
+	}
 }

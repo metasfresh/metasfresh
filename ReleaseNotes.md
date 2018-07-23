@@ -17,16 +17,32 @@ Here come the actual release notes:
 # metasfresh 5.67 (2018-30)
 ## Features
 * metasfresh
-  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
-    * New Fields and Filter criteria in Documentoutbound window in WebUI.
   * [#4292](https://github.com/metasfresh/metasfresh/issues/4292) Make a Webui-Window for HU Reservation
     * New Window for Handling Unit Reservation in WebUI.
+  * [#4336](https://github.com/metasfresh/metasfresh/issues/4336) WebUI: add email fields to C_Doc_OutBound
+    * New Fields and Filter criteria in Documentoutbound window in WebUI.
+  * [#4376](https://github.com/metasfresh/metasfresh/issues/4376) Pricing engine sets the scale of price amounts to the respective precision
+  * [#4380](https://github.com/metasfresh/metasfresh/issues/4380) consolidate profit related columns in order line and purchase candidate
+  * [#4395](https://github.com/metasfresh/metasfresh/issues/4395) Notification if automatic TU label print failed
+
+* metasfresh-webui-api
+  * [#1010](https://github.com/metasfresh/metasfresh-webui-api/issues/1010) Implement process parameters callout support
 
 * metasfresh-webui-frontend
   * [#1859](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1859) Inline rendering filter parameters
     * New Feature that allows inline rendering of Filter elements. This Feeature is used initially in the Fulltext Search Filter in Businesspartner Window.
 
 ## Fixes
+* metasfresh
+  * [#4172](https://github.com/metasfresh/metasfresh/issues/4172) Purchase order from sales order not working as before
+  * [#4185](https://github.com/metasfresh/metasfresh/issues/4185) If C_DocType_Trl description exists, use this as description in document
+  * [#4365](https://github.com/metasfresh/metasfresh/issues/4365) Error Zooming from material receipt to HU tracing
+  * [#4371](https://github.com/metasfresh/metasfresh/issues/4371) Sales Order VAT vs. Invoice Candidate VAT
+
+* metasfresh-webui-api
+  * [#1007](https://github.com/metasfresh/metasfresh-webui-api/issues/1007) HU-Editor - Refresh after HU-changing process not working properly
+  * [#1012](https://github.com/metasfresh/metasfresh-webui-api/issues/1012) Cannot use transform on a TU without LU in HU Editor
+
 * metasfresh-webui-frontend
   * [#1785](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1785) Search field in Pricing conditions - keyboard selection
     * Improving the selection of Pricing Conditions via Keyboard.

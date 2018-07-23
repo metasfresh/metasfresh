@@ -2,16 +2,16 @@ package de.metas.document.archive.spi.impl;
 
 import java.util.Optional;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.user.User;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
 import de.metas.document.archive.DocOutBoundRecipient;
 import de.metas.document.archive.DocOutBoundRecipientId;
 import de.metas.document.archive.DocOutBoundRecipientRepository;
@@ -46,11 +46,15 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		implements DocOutboundLogMailRecipientProvider
 {
 
-	private final DocOutBoundRecipientRepository userRepository;
+	private final DocOutBoundRecipientRepository recipientRepository;
+	private final IBPartnerBL bpartnerBL;
 
-	public InvoiceDocOutboundLogMailRecipientProvider(@NonNull final DocOutBoundRecipientRepository userRepository)
+	public InvoiceDocOutboundLogMailRecipientProvider(
+			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final IBPartnerBL bpartnerBL)
 	{
-		this.userRepository = userRepository;
+		this.recipientRepository = recipientRepository;
+		this.bpartnerBL = bpartnerBL;
 	}
 
 	@Override
@@ -73,22 +77,26 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 				.getModel(I_C_Invoice.class);
 		if (invoiceRecord.getAD_User_ID() > 0)
 		{
-			final DocOutBoundRecipient invoiceUser = userRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
+			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
 			if (!Check.isEmpty(invoiceUser.getEmailAddress(), true))
 			{
 				return Optional.of(invoiceUser);
 			}
 		}
 
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final I_AD_User billUserRecord = bpartnerBL.retrieveBillContact(Env.getCtx(), invoiceRecord.getC_BPartner_ID(), ITrx.TRXNAME_ThreadInherited);
-		if (billUserRecord != null && billUserRecord.getAD_User_ID() > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
+		final RetrieveBillContactRequest request = RetrieveBillContactRequest
+				.builder()
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceRecord.getC_BPartner_Location_ID()))
+				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
+				.build();
+
+		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
+		if (billContact != null)
 		{
-			final DocOutBoundRecipient billUser = userRepository.getById(DocOutBoundRecipientId.ofRepoId(billUserRecord.getAD_User_ID()));
-			if (!Check.isEmpty(billUser.getEmailAddress(), true))
-			{
-				return Optional.of(billUser);
-			}
+			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId()));
+			return Optional.of(docOutBoundRecipient);
 		}
 		return Optional.empty();
 	}
