@@ -15,6 +15,7 @@ import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_AD_User;
@@ -55,7 +56,7 @@ public class UserServiceTest
 		AdempiereTestHelper.get().init();
 
 		userService = new UserService(new UserRepository());
-		contactPersonRepository = new ContactPersonRepository();
+		contactPersonRepository = new ContactPersonRepository(new BPartnerLocationRepository());
 	}
 
 	@Test
@@ -76,7 +77,7 @@ public class UserServiceTest
 
 		final String resultEmailAddress = resultUsers.get(0).getEMail();
 
-		assertSame( newContactPersonAddress, resultEmailAddress);
+		assertSame(newContactPersonAddress, resultEmailAddress);
 
 	}
 
@@ -89,7 +90,6 @@ public class UserServiceTest
 		final PlatformId platformId = createPlatformId();
 		final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
 		ContactPerson contactPerson = createContactPerson(user1.getAD_User_ID(), newContactPersonAddress, platformId);
-
 
 		final String anotherEmailAddress = "AnotheremailAddress@AnotherEmailAddress.AnotherEmailAddress";
 
@@ -124,7 +124,7 @@ public class UserServiceTest
 
 		final String resultEmailAddress = resultUsers.get(0).getEMail();
 
-		assertSame( newContactPersonAddress, resultEmailAddress);
+		assertSame(newContactPersonAddress, resultEmailAddress);
 
 	}
 
@@ -146,7 +146,7 @@ public class UserServiceTest
 
 		final String resultEmailAddress = resultUsers.get(0).getEMail();
 
-		assertSame( newContactPersonAddress, resultEmailAddress);
+		assertSame(newContactPersonAddress, resultEmailAddress);
 
 	}
 
