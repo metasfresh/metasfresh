@@ -1,7 +1,6 @@
 package de.metas.ui.web.quickinput;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -10,11 +9,11 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory.MatchingKey;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -48,7 +47,7 @@ public class QuickInputDescriptorFactoryService
 {
 	private static final Logger logger = LogManager.getLogger(QuickInputDescriptorFactoryService.class);
 
-	private final Map<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factories;
+	private final ImmutableListMultimap<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factories;
 	private final CCache<QuickInputDescriptorKey, QuickInputDescriptor> descriptors = CCache.newCache("QuickInputDescriptors", 10, 0);
 
 	@Autowired
@@ -63,14 +62,14 @@ public class QuickInputDescriptorFactoryService
 		}
 	}
 
-	private static Map<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> createFactoriesFromContext(final List<IQuickInputDescriptorFactory> factoriesList)
+	private static ImmutableListMultimap<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> createFactoriesFromContext(final List<IQuickInputDescriptorFactory> factoriesList)
 	{
 		if (factoriesList == null || factoriesList.isEmpty())
 		{
-			return ImmutableMap.of();
+			return ImmutableListMultimap.of();
 		}
 
-		final ImmutableMap.Builder<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factoriesMap = ImmutableMap.builder();
+		final ImmutableListMultimap.Builder<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factoriesMap = ImmutableListMultimap.builder();
 		for (final IQuickInputDescriptorFactory factory : factoriesList)
 		{
 			final Set<IQuickInputDescriptorFactory.MatchingKey> matchingKeys = factory.getMatchingKeys();
@@ -164,20 +163,18 @@ public class QuickInputDescriptorFactoryService
 
 	private IQuickInputDescriptorFactory getQuickInputDescriptorFactory(final QuickInputDescriptorKey key)
 	{
-		// Find factory for included document
-		{
-			final MatchingKey matchingKey = IQuickInputDescriptorFactory.MatchingKey.includedDocument(key.getDocumentType(), key.getDocumentTypeId(), key.getTableName());
+		return getQuickInputDescriptorFactory(
+				// factory for included document:
+				IQuickInputDescriptorFactory.MatchingKey.includedDocument(key.getDocumentType(), key.getDocumentTypeId(), key.getTableName()),
+				// factory for table:
+				IQuickInputDescriptorFactory.MatchingKey.ofTableName(key.getTableName()));
+	}
 
-			final IQuickInputDescriptorFactory factory = factories.get(matchingKey);
-			if (factory != null)
-			{
-				return factory;
-			}
-		}
-
-		// Find factory for table
+	private IQuickInputDescriptorFactory getQuickInputDescriptorFactory(final IQuickInputDescriptorFactory.MatchingKey... matchingKeys)
+	{
+		for (final IQuickInputDescriptorFactory.MatchingKey matchingKey : matchingKeys)
 		{
-			final IQuickInputDescriptorFactory factory = factories.get(IQuickInputDescriptorFactory.MatchingKey.ofTableName(key.getTableName()));
+			final IQuickInputDescriptorFactory factory = getQuickInputDescriptorFactory(matchingKey);
 			if (factory != null)
 			{
 				return factory;
@@ -185,6 +182,23 @@ public class QuickInputDescriptorFactoryService
 		}
 
 		return null;
+	}
+
+	private IQuickInputDescriptorFactory getQuickInputDescriptorFactory(final IQuickInputDescriptorFactory.MatchingKey matchingKey)
+	{
+		final ImmutableList<IQuickInputDescriptorFactory> matchingFactories = factories.get(matchingKey);
+		if (matchingFactories.isEmpty())
+		{
+			return null;
+		}
+
+		if (matchingFactories.size() > 1)
+		{
+			logger.warn("More than one factory found for {}. Using the first one: {}", matchingFactories);
+		}
+
+		final IQuickInputDescriptorFactory matchingFactory = matchingFactories.get(0);
+		return matchingFactory;
 	}
 
 	@lombok.Builder
