@@ -53,12 +53,14 @@ public class MKTG_ContactPerson_ProcessBase
 
 	public void createContactPersonsForUser(final IQueryFilter<I_AD_User> currentSelectionFilter, final CampaignId campaignId, final DefaultAddressType defaultAddressType)
 	{
-		final IQuery<I_MKTG_Campaign_ContactPerson> linkTableQuery = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_MKTG_Campaign_ContactPerson> linkTableQuery = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create();
 
-		final Stream<User> usersToAdd = Services.get(IQueryBL.class)
+		final Stream<User> usersToAdd = queryBL
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(currentSelectionFilter)
@@ -77,12 +79,14 @@ public class MKTG_ContactPerson_ProcessBase
 
 	public void createContactPersonsForPartner(final IQueryFilter<I_C_BPartner> currentSelectionFilter, final CampaignId campaignId, final DefaultAddressType defaultAddressType)
 	{
-		final IQuery<I_MKTG_Campaign_ContactPerson> linkTableQuery = Services.get(IQueryBL.class).createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_MKTG_Campaign_ContactPerson> linkTableQuery = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
 				.create();
 
-		final Stream<User> usersToAdd = Services.get(IQueryBL.class)
+		final Stream<User> usersToAdd = queryBL
 				.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(currentSelectionFilter)

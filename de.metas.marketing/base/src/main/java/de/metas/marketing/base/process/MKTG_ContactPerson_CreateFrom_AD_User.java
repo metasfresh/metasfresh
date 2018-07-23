@@ -41,7 +41,8 @@ public class MKTG_ContactPerson_CreateFrom_AD_User extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_AD_User> currentSelectionFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(true));
+		// note: if the queryFilter is empty, then do not return everything
+		final IQueryFilter<I_AD_User> currentSelectionFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecordId);
 

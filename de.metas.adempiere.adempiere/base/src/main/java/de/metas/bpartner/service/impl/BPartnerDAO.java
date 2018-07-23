@@ -402,28 +402,25 @@ public class BPartnerDAO implements IBPartnerDAO
 	public boolean existsDefaultAddressInTable(final I_C_BPartner_Location address, final String trxName, final String columnName)
 	{
 
-		final int rows = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(columnName, true)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, address.getC_BPartner_ID())
 				.create()
-				.count();
-		return rows > 0; 
+				.match();
 	}
 
 	@Override
 	public boolean existsDefaultContactInTable(final de.metas.adempiere.model.I_AD_User user, final String trxName)
 	{
-		final int rows = Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
 				.addOnlyContextClient()
 				.create()
-				.count();
-
-		return rows > 0;
+				.match();
 	}
 
 	@Override
