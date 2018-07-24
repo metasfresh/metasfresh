@@ -268,29 +268,6 @@ public interface I_AD_Column
     public static final String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
-	 * Set Allow Zoom To.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAllowZoomTo (boolean AllowZoomTo);
-
-	/**
-	 * Get Allow Zoom To.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isAllowZoomTo();
-
-    /** Column definition for AllowZoomTo */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_AllowZoomTo = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "AllowZoomTo", null);
-    /** Column name AllowZoomTo */
-    public static final String COLUMNNAME_AllowZoomTo = "AllowZoomTo";
-
-	/**
 	 * Set Spaltenname.
 	 * Name of the column in the database
 	 *
