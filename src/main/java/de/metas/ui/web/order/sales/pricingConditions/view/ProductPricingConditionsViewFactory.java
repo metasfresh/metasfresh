@@ -88,7 +88,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		final ProductId productId = pricingConditionsBreak.getMatchCriteria().getProductId();
-		pricingCtx.setM_Product_ID(productId != null ? productId.getRepoId() : -1);
+		pricingCtx.setProductId(productId);
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(request.getBpartnerId());
 		pricingCtx.setSOTrx(request.isSOTrx());
