@@ -24,3 +24,44 @@ Cypress.on('uncaught:exception', (err, runnable) => {
   // failing the test
   return false
 });
+
+/**
+ * Emulates Tab key navigation.
+ */
+Cypress.Commands.add('tab', { prevSubject: 'optional' }, ($subject, direction = 'forward', options = {}) => {
+  const thenable = $subject
+    ? cy.wrap($subject, { log: false })
+    : cy.focused({ log: options.log !== false });
+  thenable
+    .then($el => nextTabbable($el, direction))
+    .then(($el) => {
+      if (options.log !== false) {
+        Cypress.log({
+          $el,
+          name: 'tab',
+          message: direction,
+        });
+      }
+    })
+    .focus({ log: false });
+});
+
+/**
+ * Queries for the active element, irrespective of document focus state, unlike cy.focused().
+ *
+ * This may not match Cypress' internal focus tracker, so you may have to .focus() the returned
+ * element to interact with it.
+ */
+Cypress.Commands.add('active', (options = {}) => {
+  cy.document({ log: false })
+    .then(document => cy.wrap(document.activeElement, { log: false }))
+    .then(($el) => {
+      if (options.log !== false) {
+        Cypress.log({
+          $el,
+          name: 'active',
+          message: '',
+        });
+      }
+    });
+});

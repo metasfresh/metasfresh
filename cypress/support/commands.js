@@ -60,7 +60,7 @@ context('Reusable "login" custom command', function() {
       return cy
         .request({
           method: 'GET',
-          url: 'http://w101.metasfresh.com:8081/rest/api/login/isLoggedIn',
+          url: (config.API_URL + '/login/isLoggedIn'),
           failOnStatusCode: false,
           followRedirect: false,
         })
@@ -84,7 +84,7 @@ context('Reusable "login" custom command', function() {
     return cy
       .request({
         method: 'POST',
-        url: 'http://w101.metasfresh.com:8081/rest/api/login/authenticate',
+        url: (config.API_URL + '/login/authenticate'),
         failOnStatusCode: false,
         followRedirect: false,
         body: {
@@ -105,7 +105,7 @@ context('Reusable "login" custom command', function() {
         return cy
           .request({
             method: 'POST',
-            url: 'http://w101.metasfresh.com:8081/rest/api/login/loginComplete',
+            url: (config.API_URL + '/login/loginComplete'),
             body: { ...roles.get(0) },
             failOnStatusCode: false,
           })
