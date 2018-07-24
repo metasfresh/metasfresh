@@ -26,13 +26,14 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.ProductId;
+import lombok.ToString;
 
 /**
  * Mocked {@link IPricingRule} implementation to be used in testing.
@@ -42,6 +43,7 @@ import de.metas.pricing.IPricingResult;
  * @author tsa
  *
  */
+@ToString
 public class MockedPricingRule implements IPricingRule
 {
 	public static final MockedPricingRule INSTANCE = new MockedPricingRule();
@@ -53,10 +55,10 @@ public class MockedPricingRule implements IPricingRule
 
 	private int precision;
 
-	private final Map<Integer, I_C_UOM> productId2priceUOM = new HashMap<>();
+	private final Map<ProductId, I_C_UOM> productId2priceUOM = new HashMap<>();
 
 	/** M_Product_ID to "price" to return" */
-	private final Map<Integer, BigDecimal> productId2price = new HashMap<>();
+	private final Map<ProductId, BigDecimal> productId2price = new HashMap<>();
 
 	/**
 	 * Reset it to inital state.
@@ -69,7 +71,7 @@ public class MockedPricingRule implements IPricingRule
 
 	public void setC_UOM(final I_M_Product product, final I_C_UOM uom)
 	{
-		productId2priceUOM.put(product.getM_Product_ID(), uom);
+		productId2priceUOM.put(ProductId.ofRepoId(product.getM_Product_ID()), uom);
 	}
 
 	public void setPrecision(int precision)
@@ -79,7 +81,7 @@ public class MockedPricingRule implements IPricingRule
 
 	public void setProductPrice(final I_M_Product product, final BigDecimal price)
 	{
-		productId2price.put(product.getM_Product_ID(), price);
+		productId2price.put(ProductId.ofRepoId(product.getM_Product_ID()), price);
 	}
 
 	@Override
@@ -93,8 +95,8 @@ public class MockedPricingRule implements IPricingRule
 	{
 		//
 		// Check product price
-		final int productID = pricingCtx.getM_Product_ID();
-		BigDecimal price = productId2price.get(productID);
+		final ProductId productId = pricingCtx.getProductId();
+		BigDecimal price = productId2price.get(productId);
 		if (price == null)
 		{
 			price = priceToReturn;
@@ -108,7 +110,7 @@ public class MockedPricingRule implements IPricingRule
 
 		result.setC_TaxCategory_ID(100);
 
-		final I_C_UOM priceUOM = productId2priceUOM.get(productID);
+		final I_C_UOM priceUOM = productId2priceUOM.get(productId);
 		if (priceUOM != null)
 		{
 			result.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
@@ -116,11 +118,4 @@ public class MockedPricingRule implements IPricingRule
 
 		result.setCalculated(true);
 	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(INSTANCE);
-	}
-
 }

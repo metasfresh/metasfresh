@@ -49,7 +49,7 @@ public class MProductPricingTests
 		final int bPArtnerId = 24;
 		final BigDecimal qty = new BigDecimal("25");
 
-		final Map<String, Object> mocks = new HashMap<String, Object>();
+		final Map<String, Object> mocks = new HashMap<>();
 
 		setupForConstructor(productId, bPArtnerId, mocks);
 
@@ -57,7 +57,7 @@ public class MProductPricingTests
 		final MProductPricing productPricing = new MProductPricing(productId, bPArtnerId, qty, true);
 		verify(mocks.values().toArray());
 
-		Assert.assertEquals(productPricing.getM_Product_ID(), productId);
+		Assert.assertEquals(productPricing.getProductId().getRepoId(), productId);
 	}
 
 	private void setupForConstructor(final int productId, final int bPArtnerId,

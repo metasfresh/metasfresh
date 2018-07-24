@@ -159,8 +159,14 @@ public interface IProductBL extends ISingletonService
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
-	String getProductValueAndName(int productId);
+	String getProductValueAndName(ProductId productId);
 
+	@Deprecated
+	default String getProductValueAndName(final int productId)
+	{
+		return getProductValueAndName(ProductId.ofRepoIdOrNull(productId));
+	}
+	
 	String getProductValue(ProductId productId);
 
 	String getProductName(ProductId productId);

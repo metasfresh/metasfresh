@@ -49,6 +49,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 
 /**
  * @task 08147: validate if the C_OLCand's PIIP is OK
@@ -84,7 +85,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 				final List<I_M_HU_PackingMaterial> packingMaterials = packingMaterialDAO.retrievePackingMaterials(huPackingWare.getM_HU_PI_Item_Product());
 				for (I_M_HU_PackingMaterial pm : packingMaterials)
 				{
-					final int packingMaterialProductId = pm.getM_Product_ID();
+					final ProductId packingMaterialProductId = ProductId.ofRepoIdOrNull(pm.getM_Product_ID());
 					checkForPrice(olCand, packingMaterialProductId);
 				}
 			}
@@ -98,7 +99,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		return true;
 	}
 
-	private void checkForPrice(final I_C_OLCand olCand, final int packingMaterialProductId)
+	private void checkForPrice(final I_C_OLCand olCand, final ProductId packingMaterialProductId)
 	{
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(olCand.getM_PricingSystem_ID());
 
@@ -120,7 +121,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
-		pricingCtx.setM_Product_ID(packingMaterialProductId);
+		pricingCtx.setProductId(packingMaterialProductId);
 		pricingCtx.setPriceDate(datePromisedEffective);
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(olCand.getC_Currency_ID()));
 

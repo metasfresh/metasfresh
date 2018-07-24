@@ -51,6 +51,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
+import de.metas.product.ProductId;
 
 /**
  * Import {@link I_I_Product} to {@link I_M_Product}.
@@ -213,8 +214,8 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 
 		//
 		// Get M_Product_ID
-		final int productId = imp.getM_Product_ID();
-		Check.assume(productId > 0, "M_Product shall be set in {}", imp);
+		final ProductId productId = ProductId.ofRepoIdOrNull(imp.getM_Product_ID());
+		Check.assumeNotNull(productId, "M_Product shall be set in {}", imp);
 
 		//
 		// Get prices
@@ -230,11 +231,10 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		// Get/Create Product Price record
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(getCtx(), priceListVersionId, I_M_PriceList_Version.class, ITrx.TRXNAME_ThreadInherited);
 		final I_M_ProductPrice pp = Optional
-				.ofNullable(
-						ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
 				.orElseGet(() -> InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited));
 		pp.setM_PriceList_Version(plv);	// FK
-		pp.setM_Product_ID(productId); // FK
+		pp.setM_Product_ID(productId.getRepoId()); // FK
 		pp.setPriceLimit(PriceLimit);
 		pp.setPriceList(PriceList);
 		pp.setPriceStd(PriceStd);

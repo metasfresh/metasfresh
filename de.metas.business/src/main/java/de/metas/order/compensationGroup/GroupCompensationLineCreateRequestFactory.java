@@ -98,7 +98,7 @@ public class GroupCompensationLineCreateRequestFactory
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setM_Product_ID(templateLine.getProductId());
+		pricingCtx.setProductId(templateLine.getProductId());
 		pricingCtx.setBPartnerId(group.getBpartnerId());
 		pricingCtx.setSOTrx(group.isSOTrx());
 		pricingCtx.setDisallowDiscount(false);// just to be sure

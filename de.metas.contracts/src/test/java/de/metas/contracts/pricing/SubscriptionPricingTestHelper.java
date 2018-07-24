@@ -15,11 +15,13 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.PriceListVersion;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -84,8 +86,8 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(getDefaultPricingSystem().getM_PricingSystem_ID()));
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
-		pricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
-		pricingCtx.setM_Product_ID(getDefaultProduct().getM_Product_ID());
+		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+		pricingCtx.setProductId(ProductId.ofRepoId(getDefaultProduct().getM_Product_ID()));
 		pricingCtx.setReferencedObject(defautlFlatrateTermConditions);
 		pricingCtx.setC_Country_ID(country.getC_Country_ID());
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(country.getC_Currency_ID()));

@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.product.ProductId;
 
 /**
  * A {@link IPricingContext} which also have setters.
@@ -63,9 +64,9 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setPriceListId(PriceListId priceListId);
 
-	IEditablePricingContext setM_PriceList_Version_ID(final int m_PriceList_Version_ID);
+	IEditablePricingContext setPriceListVersionId(PriceListVersionId priceListVersionId);
 
-	IEditablePricingContext setM_Product_ID(final int m_Product_ID);
+	IEditablePricingContext setProductId(final ProductId productId);
 
 	/**
 	 * Set this to <code>true</code> to indicate to the pricing engine that discounts shall <b>not</b> be computed and applied to the result.

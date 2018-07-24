@@ -69,6 +69,7 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 
 /**
  * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.
@@ -1129,8 +1130,8 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final IPricingContext pricingContextInitial = getPricingContext();
 		final IEditablePricingContext pricingContext = pricingContextInitial.copy();
 
-		final I_M_Product product = line.getM_Product();
-		pricingContext.setM_Product_ID(product == null ? -1 : product.getM_Product_ID());
+		final ProductId productId = line.getProductId();
+		pricingContext.setProductId(productId);
 		pricingContext.setQty(line.getQty());
 
 		final I_C_UOM uom = line.getC_UOM();

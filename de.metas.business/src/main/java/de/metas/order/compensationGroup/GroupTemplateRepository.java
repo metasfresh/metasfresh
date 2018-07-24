@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -100,7 +101,7 @@ public class GroupTemplateRepository
 		return GroupTemplateLine.builder()
 				.id(schemaLinePO.getC_CompensationGroup_SchemaLine_ID())
 				.groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
-				.productId(schemaLinePO.getM_Product_ID())
+				.productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
 				.percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
 				.build();
 	}

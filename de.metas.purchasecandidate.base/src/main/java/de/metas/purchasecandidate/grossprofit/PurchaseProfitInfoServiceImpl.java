@@ -166,7 +166,7 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		final int countryId = bpartnersRepo.getDefaultShipToLocationCountryId(vendorId);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setM_Product_ID(ProductId.toRepoId(productId));
+		pricingCtx.setProductId(productId);
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(vendorId);
 		pricingCtx.setC_Country_ID(countryId);

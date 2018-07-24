@@ -34,6 +34,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 
@@ -143,7 +144,7 @@ public class PricingContextBuilder
 		pricingCtx.setBPartnerId(billBPartnerId);
 		pricingCtx.setCurrencyId(currencyId);
 		pricingCtx.setPricingSystemId(pricingSytemId);
-		pricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
+		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
 		pricingCtx.setPriceDate(priceListVersion.getValidFrom()); // just to drive home this point
 	}
 

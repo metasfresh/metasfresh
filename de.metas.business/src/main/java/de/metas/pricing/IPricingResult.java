@@ -31,6 +31,8 @@ import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 
 /**
  * Result of a pricing calculation
@@ -109,13 +111,13 @@ public interface IPricingResult
 
 	PriceListId getPriceListId();
 
-	void setM_PriceList_Version_ID(int M_PriceList_Version_ID);
+	PriceListVersionId getPriceListVersionId();
 
-	int getM_PriceList_Version_ID();
+	void setPriceListVersionId(PriceListVersionId priceListVersionId);
 
-	void setM_Product_Category_ID(int m_Product_Category_ID);
+	void setProductCategoryId(ProductCategoryId productCategoryId);
 
-	int getM_Product_Category_ID();
+	ProductCategoryId getProductCategoryId();
 
 	List<IPricingRule> getRulesApplied();
 
@@ -123,9 +125,9 @@ public interface IPricingResult
 
 	void setC_TaxCategory_ID(int C_TaxCategory_ID);
 
-	int getM_Product_ID();
+	ProductId getProductId();
 
-	void setM_Product_ID(int m_Product_ID);
+	void setProductId(ProductId productId);
 
 	PricingConditionsResult getPricingConditions();
 

@@ -13,15 +13,14 @@ package de.metas.pricing.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -41,7 +40,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 
 public class PricingContextTest
 {
@@ -74,8 +75,8 @@ public class PricingContextTest
 		pricingCtx.setDisallowDiscount(true);
 		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(nextId++));
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(nextId++));
-		pricingCtx.setM_PriceList_Version_ID(nextId++);
-		pricingCtx.setM_Product_ID(nextId++);
+		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(nextId++));
+		pricingCtx.setProductId(ProductId.ofRepoId(nextId++));
 		pricingCtx.setManualPrice(true);
 		pricingCtx.setPP_Product_BOM_ID(nextId++);
 		pricingCtx.setPP_Product_BOMLine_ID(nextId++);
