@@ -241,7 +241,7 @@ class RawWidget extends Component {
       isOpenDatePicker,
       dateFormat,
     } = this.props;
-    const widgetValue = data != null ? data : widgetData[0].value;
+    let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
@@ -250,6 +250,10 @@ class RawWidget extends Component {
       : fields[0].field;
     const readonly = widgetData[0].readonly;
     let tabIndex = this.props.tabIndex;
+
+    if (widgetValue === null) {
+      widgetValue = '';
+    }
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {
       tabIndex = -1;
