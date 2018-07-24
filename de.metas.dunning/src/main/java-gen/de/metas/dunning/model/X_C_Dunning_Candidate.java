@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.dunning.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for C_Dunning_Candidate
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1056863003L;
+	private static final long serialVersionUID = 691912071L;
 
     /** Standard Constructor */
     public X_C_Dunning_Candidate (Properties ctx, int C_Dunning_Candidate_ID, String trxName)
@@ -49,10 +31,8 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 			setC_DunningLevel_ID (0);
 			setDueDate (new Timestamp( System.currentTimeMillis() ));
 			setDunningDate (new Timestamp( System.currentTimeMillis() ));
-			setIsWriteOff (false);
-// N
-			setProcessed (false);
-// N
+			setIsWriteOff (false); // N
+			setProcessed (false); // N
 			setRecord_ID (0);
         } */
     }
@@ -70,14 +50,6 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Dunning_Candidate[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -339,20 +311,18 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 			 return 0;
 		return ii.intValue();
 	}
-	
-	
-	
-	/** Set Beleg Nr..
-	@param DocumentNo 
-	Document sequence number of the document
-  */
+
+	/** Set Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
 	@Override
 	public void setDocumentNo (java.lang.String DocumentNo)
 	{
-		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
-	
-	/** Get Beleg Nr..
+
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -361,7 +331,6 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-	
 	/** Set Datum Fälligkeit.
 		@param DueDate 
 		Datum, zu dem Zahlung fällig wird
@@ -453,7 +422,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DunningInterestAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -475,7 +444,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FeeAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -562,7 +531,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -632,7 +601,7 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

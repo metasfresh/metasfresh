@@ -1,4 +1,4 @@
-package de.metas.contracts;
+package de.metas.invoice;
 
 import org.adempiere.util.Check;
 
@@ -7,7 +7,7 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,18 +26,27 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
-public class FlatrateTermId implements RepoIdAware
+public class InvoiceId implements RepoIdAware
 {
-	int repoId;
-
-	public static FlatrateTermId ofRepoId(final int repoId)
+	public static InvoiceId ofRepoId(final int repoId)
 	{
-		return new FlatrateTermId(repoId);
+		return new InvoiceId(repoId);
 	}
 
-	private FlatrateTermId(final int repoId)
+	public static InvoiceId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new InvoiceId(repoId) : null;
+	}
+
+	public static int getRepoIdOr(final InvoiceId invoiceId, final int defaultValue)
+	{
+		return invoiceId != null ? invoiceId.getRepoId() : defaultValue;
+	}
+
+	int repoId;
+
+	private InvoiceId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

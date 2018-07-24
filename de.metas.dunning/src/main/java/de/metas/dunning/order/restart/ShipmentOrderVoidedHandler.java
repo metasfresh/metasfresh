@@ -1,13 +1,15 @@
-package de.metas.contracts;
+package de.metas.dunning.order.restart;
 
-import org.adempiere.util.Check;
+import org.springframework.stereotype.Component;
 
-import de.metas.lang.RepoIdAware;
-import lombok.Value;
+import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.order.restart.VoidOrderWithRelatedDocsHandler;
+import de.metas.order.restart.VoidOrderWithRelatedDocsRequest;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,18 +29,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class FlatrateTermId implements RepoIdAware
+@Component
+public class ShipmentOrderVoidedHandler implements VoidOrderWithRelatedDocsHandler
 {
-	int repoId;
-
-	public static FlatrateTermId ofRepoId(final int repoId)
+	@Override
+	public void handleOrderVoided(@NonNull final VoidOrderWithRelatedDocsRequest orderWillBeVoidedRequest)
 	{
-		return new FlatrateTermId(repoId);
+		// we don't know what to do here
 	}
 
-	private FlatrateTermId(final int repoId)
+	@Override
+	public RecordsToHandleKey getRecordsToHandleKey()
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return RecordsToHandleKey.of(I_C_DunningDoc.Table_Name);
 	}
 }

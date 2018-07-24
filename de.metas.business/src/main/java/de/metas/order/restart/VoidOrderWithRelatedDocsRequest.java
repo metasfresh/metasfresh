@@ -1,13 +1,18 @@
-package de.metas.contracts;
+package de.metas.order.restart;
 
-import org.adempiere.util.Check;
+import java.util.List;
 
-import de.metas.lang.RepoIdAware;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import de.metas.order.OrderId;
+import de.metas.order.restart.VoidOrderWithRelatedDocsHandler.RecordsToHandleKey;
+import lombok.Builder;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,17 +33,16 @@ import lombok.Value;
  */
 
 @Value
-public class FlatrateTermId implements RepoIdAware
+@Builder(toBuilder = true)
+public class VoidOrderWithRelatedDocsRequest
 {
-	int repoId;
+	String voidedOrderDocumentNoPrefix;
 
-	public static FlatrateTermId ofRepoId(final int repoId)
-	{
-		return new FlatrateTermId(repoId);
-	}
+	OrderId orderId;
 
-	private FlatrateTermId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
+	/**
+	 * The record references to handle (cancel, void, reverse etc).
+	 * They pair's key is used to identify the matching {@link VoidOrderWithRelatedDocsHandler} implementation(s).
+	 */
+	IPair<RecordsToHandleKey, List<ITableRecordReference>> recordsToHandle;
 }

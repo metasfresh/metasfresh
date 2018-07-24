@@ -1,13 +1,15 @@
-package de.metas.contracts;
+package de.metas.order.restart;
 
-import org.adempiere.util.Check;
+import java.util.List;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,17 +30,9 @@ import lombok.Value;
  */
 
 @Value
-public class FlatrateTermId implements RepoIdAware
+@Builder
+public class VoidOrderWithRelatedDocsResult
 {
-	int repoId;
-
-	public static FlatrateTermId ofRepoId(final int repoId)
-	{
-		return new FlatrateTermId(repoId);
-	}
-
-	private FlatrateTermId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
+	@Singular
+	List<ITranslatableString> errorMessages;
 }
