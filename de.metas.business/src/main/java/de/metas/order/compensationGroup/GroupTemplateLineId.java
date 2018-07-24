@@ -1,20 +1,14 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
+import org.adempiere.util.Check;
 
-import org.adempiere.uom.UomId;
-
-import de.metas.lang.Percent;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,20 +27,27 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public final class GroupCompensationLineCreateRequest
+public class GroupTemplateLineId
 {
-	private final ProductId productId;
-	private final UomId uomId;
+	int repoId;
 
-	@NonNull
-	private final GroupCompensationType type;
-	@NonNull
-	private final GroupCompensationAmtType amtType;
+	public static GroupTemplateLineId ofRepoId(final int repoId)
+	{
+		return new GroupTemplateLineId(repoId);
+	}
 
-	private final Percent percentage;
-	private final BigDecimal qty;
-	private final BigDecimal price;
-	
-	private final GroupTemplateLineId groupTemplateLineId;
+	public static GroupTemplateLineId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int toRepoId(final GroupTemplateLineId groupSchemaLineId)
+	{
+		return groupSchemaLineId != null ? groupSchemaLineId.getRepoId() : -1;
+	}
+
+	private GroupTemplateLineId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

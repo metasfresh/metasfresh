@@ -45,21 +45,19 @@ public class GroupTemplateLine
 				.build();
 	}
 
-	int id;
+	GroupTemplateLineId id;
 	ProductId productId;
 	private Percent percentage;
 	private Predicate<Group> groupMatcher;
 
 	@Builder
 	private GroupTemplateLine(
-			final int id,
+			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
 			@Nullable final BigDecimal percentage,
 			@Nullable final Predicate<Group> groupMatcher)
 	{
-		// id is OK to be <= 0
-
-		this.id = id > 0 ? id : 0;
+		this.id = id;
 		this.productId = productId;
 		this.percentage = Percent.ofNullable(percentage);
 		this.groupMatcher = groupMatcher != null ? groupMatcher : Predicates.alwaysTrue();
