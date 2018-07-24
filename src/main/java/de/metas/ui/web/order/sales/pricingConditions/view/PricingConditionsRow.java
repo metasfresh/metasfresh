@@ -129,7 +129,6 @@ public class PricingConditionsRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 45),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 45)
 	})
-	@Getter
 	private final LookupValue basePriceCurrency;
 
 	static final String FIELDNAME_BasePriceAddAmt = "basePriceAddAmt";
@@ -248,8 +247,16 @@ public class PricingConditionsRow implements IViewRow
 						.bpartnerId(BPartnerId.ofRepoId(bpartner.getIdAsInt()))
 						.isSOTrx(customer)
 						.build());
-		basePrice = basePriceAsMoney.getValue();
-		basePriceCurrency = lookups.lookupCurrency(basePriceAsMoney.getCurrencyId());
+		if(basePriceAsMoney != null)
+		{
+			basePrice = basePriceAsMoney.getValue();
+			basePriceCurrency = lookups.lookupCurrency(basePriceAsMoney.getCurrencyId());
+		}
+		else
+		{
+			basePrice = null;
+			basePriceCurrency = null;
+		}
 
 		netPrice = calculateNetPrice(basePrice, pricingConditionsBreak);
 
