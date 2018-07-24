@@ -170,7 +170,7 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(vendorId);
 		pricingCtx.setC_Country_ID(countryId);
-		pricingCtx.setSOTrx(SOTrx.PURCHASE.toBoolean());
+		pricingCtx.setSOTrx(SOTrx.PURCHASE);
 
 		return pricingCtx;
 	}

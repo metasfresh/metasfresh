@@ -40,6 +40,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -228,7 +229,7 @@ public class OrderGroupRepository implements GroupRepository
 				.groupTemplateId(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID())
 				.precision(precision)
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.isSOTrx(order.isSOTrx());
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
@@ -544,7 +545,7 @@ public class OrderGroupRepository implements GroupRepository
 				.groupId(extractGroupId(compensationLinePO))
 				.precision(precision)
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.isSOTrx(order.isSOTrx())
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();

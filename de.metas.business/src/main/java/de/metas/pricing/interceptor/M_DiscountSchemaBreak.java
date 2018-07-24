@@ -14,6 +14,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.conditions.PriceOverride;
@@ -194,7 +195,7 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setProductId(productId);
 		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId));
-		pricingCtx.setSOTrx(context.getIsSOTrx());
+		pricingCtx.setSOTrx(SOTrx.ofBoolean(context.getIsSOTrx()));
 		pricingCtx.setQty(qty);
 
 		pricingCtx.setProperty(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible);

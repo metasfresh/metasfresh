@@ -65,20 +65,7 @@ public interface IPricingContext extends IContextAware
 
 	BigDecimal getQty();
 
-	boolean isSOTrx();
-
-	default SOTrx getSoTrx()
-	{
-		return SOTrx.ofBoolean(isSOTrx());
-	}
-
-	int getAD_Table_ID();
-
-	int getRecord_ID();
-
-	int getPP_Product_BOM_ID();
-
-	int getPP_Product_BOMLine_ID();
+	SOTrx getSoTrx();
 
 	boolean isDisallowDiscount();
 

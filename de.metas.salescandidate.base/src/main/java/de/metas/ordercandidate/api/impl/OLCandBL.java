@@ -177,7 +177,7 @@ public class OLCandBL implements IOLCandBL
 			pricingCtx.setBPartnerId(billBPartnerId);
 			pricingCtx.setQty(qty);
 			pricingCtx.setPriceDate(date);
-			pricingCtx.setSOTrx(true);
+			pricingCtx.setSOTrx(SOTrx.SALES);
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 

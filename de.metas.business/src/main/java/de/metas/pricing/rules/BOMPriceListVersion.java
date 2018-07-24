@@ -63,6 +63,8 @@ public class BOMPriceListVersion implements IPricingRule
 			logger.info("Not applying because PriceList is NoPriceList ({})", pricingCtx);
 			return false;
 		}
+		
+		// TODO: check the Product BOM Type
 
 		return true;
 	}
@@ -70,6 +72,7 @@ public class BOMPriceListVersion implements IPricingRule
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
+//		Services.get(IProductBOMDAO.class).retrieveLines(productBOM, date);
 		// TODO Auto-generated method stub
 
 	}

@@ -100,7 +100,7 @@ public class GroupCompensationLineCreateRequestFactory
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setProductId(templateLine.getProductId());
 		pricingCtx.setBPartnerId(group.getBpartnerId());
-		pricingCtx.setSOTrx(group.isSOTrx());
+		pricingCtx.setSOTrx(group.getSoTrx());
 		pricingCtx.setDisallowDiscount(false);// just to be sure
 		pricingCtx.setQty(BigDecimal.ONE);
 

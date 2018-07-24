@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
@@ -43,12 +44,8 @@ public interface IEditablePricingContext extends IPricingContext
 	 * @param referencedObject
 	 */
 	IEditablePricingContext setReferencedObject(final Object referencedObject);
-
-	IEditablePricingContext setRecord_ID(final int record_ID);
-
-	IEditablePricingContext setAD_Table_ID(final int aD_Table_ID);
-
-	IEditablePricingContext setSOTrx(final boolean isSOTrx);
+	
+	IEditablePricingContext setSOTrx(final SOTrx soTrx);
 
 	IEditablePricingContext setQty(final BigDecimal qty);
 
@@ -56,7 +53,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
 
-	IEditablePricingContext setC_UOM_ID(final int c_UOM_ID);
+	IEditablePricingContext setC_UOM_ID(final int uomId);
 
 	IEditablePricingContext setPriceDate(final Timestamp priceDate);
 

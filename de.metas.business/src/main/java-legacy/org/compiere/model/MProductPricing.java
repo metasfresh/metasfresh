@@ -289,26 +289,6 @@ public class MProductPricing
 				+ "]";
 	}
 
-	public int getAD_Table_ID()
-	{
-		return pricingCtx.getAD_Table_ID();
-	}
-
-	public void setAD_Table_ID(int adTableId)
-	{
-		pricingCtx.setAD_Table_ID(adTableId);
-	}
-
-	public int getRecord_ID()
-	{
-		return pricingCtx.getRecord_ID();
-	}
-
-	public void setRecord_ID(int recordId)
-	{
-		pricingCtx.setRecord_ID(recordId);
-	}
-	
 	public void setConvertPriceToContextUOM(boolean convertPriceToContextUOM)
 	{
 		pricingCtx.setConvertPriceToContextUOM(convertPriceToContextUOM);

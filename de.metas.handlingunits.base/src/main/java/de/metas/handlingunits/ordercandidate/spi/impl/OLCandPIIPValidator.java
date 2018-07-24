@@ -116,7 +116,7 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setBPartnerId(BPartnerId.ofRepoIdOrNull(olCand.getBill_BPartner_ID()));
-		pricingCtx.setSOTrx(true);
+		pricingCtx.setSOTrx(SOTrx.SALES);
 		pricingCtx.setQty(BigDecimal.ONE); // we don't care for the actual quantity we just want to verify that there is a price
 
 		pricingCtx.setPricingSystemId(pricingSystemId);

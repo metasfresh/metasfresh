@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -107,7 +108,7 @@ public class PricingBL implements IPricingBL
 		{
 			pricingCtx.setQty(BigDecimal.ONE);
 		}
-		pricingCtx.setSOTrx(isSOTrx);
+		pricingCtx.setSOTrx(SOTrx.ofBoolean(isSOTrx));
 		pricingCtx.setC_UOM_ID(C_UOM_ID);
 
 		return pricingCtx;
@@ -232,13 +233,13 @@ public class PricingBL implements IPricingBL
 				// while we are at it, do a little sanity check and also set the PLV-ID
 				Check.assume(pricingCtx.getPriceListVersionId() == null 
 						|| pricingCtx.getPriceListVersionId().getRepoId() == computedPLV.getM_PriceList_Version_ID(),
-						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
+						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and SOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtx,  // 0
 						pricingCtx.getM_PriceList_Version(),  // 1
 						pricingCtx.getPricingSystemId(),  // 2
 						pricingCtx.getProductId(),  // 3
 						pricingCtx.getC_Country_ID(),  // 4
-						pricingCtx.isSOTrx(),  // 5
+						pricingCtx.getSoTrx(),  // 5
 						computedPLV);
 				pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(computedPLV.getM_PriceList_Version_ID()));
 			}

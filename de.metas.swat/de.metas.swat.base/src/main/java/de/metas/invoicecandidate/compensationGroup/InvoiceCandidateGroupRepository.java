@@ -17,6 +17,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
@@ -103,7 +104,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.groupId(groupId)
 				.precision(precision)
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.isSOTrx(order.isSOTrx());
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{

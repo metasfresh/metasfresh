@@ -9,6 +9,7 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 
 /*
@@ -48,7 +49,7 @@ public class GroupTests
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
 				.bpartnerId(BPartnerId.ofRepoId(3))
-				.isSOTrx(true)
+				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
 				.compensationLine(percentageDiscountLine(30).build())
@@ -87,7 +88,7 @@ public class GroupTests
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
 				.bpartnerId(BPartnerId.ofRepoId(3))
-				.isSOTrx(true)
+				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
 				.build();

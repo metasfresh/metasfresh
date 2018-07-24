@@ -37,6 +37,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
@@ -46,6 +47,7 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 @ToString
@@ -78,11 +80,7 @@ class PricingContext implements IEditablePricingContext
 	private CurrencyId currencyId;
 	private BPartnerId bpartnerId;
 	private BigDecimal qty;
-	private boolean isSOTrx;
-	private int AD_Table_ID;
-	private int Record_ID;
-	private int m_PP_Product_BOM_ID;
-	private int m_PP_Product_BOMLine_ID;
+	private SOTrx soTrx = SOTrx.PURCHASE;
 	private Object referencedObject;
 	private String trxName;
 	private boolean convertPriceToContextUOM;
@@ -111,11 +109,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.C_Country_ID = C_Country_ID;
 		pricingCtxNew.bpartnerId = bpartnerId;
 		pricingCtxNew.qty = qty;
-		pricingCtxNew.isSOTrx = isSOTrx;
-		pricingCtxNew.AD_Table_ID = AD_Table_ID;
-		pricingCtxNew.Record_ID = Record_ID;
-		pricingCtxNew.m_PP_Product_BOM_ID = m_PP_Product_BOM_ID;
-		pricingCtxNew.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
+		pricingCtxNew.soTrx = soTrx;
 		pricingCtxNew.referencedObject = referencedObject;
 		pricingCtxNew.disallowDiscount = disallowDiscount;
 		pricingCtxNew.forcePricingConditionsBreak = forcePricingConditionsBreak;
@@ -269,63 +263,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public boolean isSOTrx()
+	public SOTrx getSoTrx()
 	{
-		return isSOTrx;
+		return soTrx;
 	}
 
 	@Override
-	public IEditablePricingContext setSOTrx(final boolean isSOTrx)
+	public IEditablePricingContext setSOTrx(@NonNull final SOTrx soTrx)
 	{
-		this.isSOTrx = isSOTrx;
-		return this;
-	}
-
-	@Override
-	public int getPP_Product_BOM_ID()
-	{
-		return m_PP_Product_BOM_ID;
-	}
-
-	@Override
-	public int getPP_Product_BOMLine_ID()
-	{
-		return m_PP_Product_BOMLine_ID;
-	}
-
-	public void setPP_Product_BOM_ID(final int m_PP_Product_BOM_ID)
-	{
-		this.m_PP_Product_BOM_ID = m_PP_Product_BOM_ID;
-	}
-
-	public void setPP_Product_BOMLine_ID(final int m_PP_Product_BOMLine_ID)
-	{
-		this.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
-	}
-
-	@Override
-	public int getAD_Table_ID()
-	{
-		return AD_Table_ID;
-	}
-
-	@Override
-	public IEditablePricingContext setAD_Table_ID(final int aD_Table_ID)
-	{
-		AD_Table_ID = aD_Table_ID;
-		return this;
-	}
-
-	@Override
-	public int getRecord_ID()
-	{
-		return Record_ID;
-	}
-
-	@Override
-	public IEditablePricingContext setRecord_ID(final int record_ID)
-	{
-		Record_ID = record_ID;
+		this.soTrx = soTrx;
 		return this;
 	}
 
