@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -91,7 +92,7 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 		pricingCtx.setProductId(productId);
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(request.getBpartnerId());
-		pricingCtx.setSOTrx(request.isSOTrx());
+		pricingCtx.setSOTrx(SOTrx.ofBoolean(request.isSOTrx()));
 
 		return pricingCtx;
 	}
