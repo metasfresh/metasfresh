@@ -67,8 +67,6 @@ public class VoidOrderAndRelatedDocsServiceTest
 
 	private TableRecordReference relatedReference;
 
-	private IPair<SourceRecordsKey, List<ITableRecordReference>> provideRelatedRecordsResult;
-
 	@Before
 	public void init()
 	{
@@ -84,7 +82,7 @@ public class VoidOrderAndRelatedDocsServiceTest
 
 		relatedReference = TableRecordReference.of(RELATED_TABLE_NAME, 30);
 
-		provideRelatedRecordsResult = ImmutablePair.of(
+		final IPair<SourceRecordsKey, List<ITableRecordReference>> provideRelatedRecordsResult = ImmutablePair.of(
 				SourceRecordsKey.of(RELATED_TABLE_NAME),
 				ImmutableList.of(relatedReference));
 
