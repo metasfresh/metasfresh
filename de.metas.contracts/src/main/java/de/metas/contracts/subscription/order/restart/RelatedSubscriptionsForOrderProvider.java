@@ -42,7 +42,7 @@ import lombok.NonNull;
  */
 
 @Component
-public class RelatedSubscriptionsForOrderProvider implements RelatedRecordsProvider
+public class RelatedSubscriptionsForOrdersProvider implements RelatedRecordsProvider
 {
 	@Override
 	public SourceRecordsKey getSourceRecordsKey()
