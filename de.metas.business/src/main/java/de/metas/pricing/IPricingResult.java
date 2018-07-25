@@ -119,7 +119,9 @@ public interface IPricingResult
 
 	ProductCategoryId getProductCategoryId();
 
-	List<IPricingRule> getRulesApplied();
+	void addPricingRuleApplied(IPricingRule rule);
+
+	List<IPricingRule> getPricingRulesApplied();
 
 	int getC_TaxCategory_ID();
 
