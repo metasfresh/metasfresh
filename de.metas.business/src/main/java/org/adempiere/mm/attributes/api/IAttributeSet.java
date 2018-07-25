@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
@@ -64,6 +65,11 @@ public interface IAttributeSet
 	 * @return {@link I_M_Attribute} or <code>null</code>
 	 */
 	I_M_Attribute getAttributeByIdIfExists(int attributeId);
+	
+	default I_M_Attribute getAttributeByIdIfExists(@NonNull final AttributeId attributeId)
+	{
+		return getAttributeByIdIfExists(attributeId.getRepoId());
+	}
 
 	/**
 	 * Gets attribute's value type (see X_M_Attribute.ATTRIBUTEVALUETYPE_*)

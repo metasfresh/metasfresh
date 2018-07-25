@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
@@ -44,6 +45,14 @@ import org.compiere.util.Env;
  */
 public interface IAttributeDAO extends ISingletonService
 {
+	I_M_Attribute getAttributeById(int attributeId);
+
+	I_M_Attribute getAttributeById(AttributeId attributeId);
+
+	I_M_Attribute retrieveAttributeById(Properties ctx, int attributeId);
+
+	String retrieveAttributeCodeById(AttributeId attributeId);
+
 	/**
 	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
 	 */
@@ -53,8 +62,6 @@ public interface IAttributeDAO extends ISingletonService
 	 * Retrieves the "No Attribute Set Instance" (i.e. M_AttributeSetInstance_ID = {@link AttributeConstants#M_AttributeSetInstance_ID_None}).
 	 */
 	I_M_AttributeSetInstance retrieveNoAttributeSetInstance();
-
-	I_M_Attribute retrieveAttributeById(Properties ctx, int attributeId);
 
 	List<I_M_AttributeValue> retrieveAttributeValues(I_M_Attribute attribute);
 
@@ -68,14 +75,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
 
-
-	/**
-	 * Same as {@link #retrieveAttributeInstance(I_M_AttributeSetInstance, int, String)} but <code>attributeSetInstance</code>'s trxName will be used.
-	 *
-	 * @param attributeSetInstance
-	 * @param attributeId M_Attribute_ID
-	 * @return attribute instance or null
-	 */
 	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, int attributeId);
 
 	/**
@@ -158,7 +157,6 @@ public interface IAttributeDAO extends ISingletonService
 		return retrieveAttributeByValue(Env.getCtx(), value, I_M_Attribute.class);
 	}
 
-
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
 	 *
@@ -183,7 +181,6 @@ public interface IAttributeDAO extends ISingletonService
 		return ASICopy.newInstance(fromASI).copy();
 	}
 
-
 	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI, int overrideM_AttributeSet_ID)
 	{
 		return ASICopy.newInstance(fromASI)
@@ -201,4 +198,6 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
+
+	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 }

@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,9 +37,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -65,10 +69,29 @@ import lombok.NonNull;
 public class AttributeDAO implements IAttributeDAO
 {
 	@Override
+	public I_M_Attribute getAttributeById(final int attributeId)
+	{
+		return retrieveAttributeById(Env.getCtx(), attributeId);
+	}
+
+	@Override
+	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
+	{
+		return retrieveAttributeById(Env.getCtx(), attributeId.getRepoId());
+	}
+
+	@Override
 	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_M_Attribute_ID)
 	public I_M_Attribute retrieveAttributeById(@CacheCtx final Properties ctx, final int attributeId)
 	{
 		return InterfaceWrapperHelper.create(ctx, attributeId, I_M_Attribute.class, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public String retrieveAttributeCodeById(final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return attribute.getValue();
 	}
 
 	@Override
@@ -412,5 +435,53 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeConstants.M_AttributeSetInstance_ID_None)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
+	{
+		if (asiId.isNone())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final Map<Object, Object> valuesByAttributeIdObj = new HashMap<>();
+		for (final I_M_AttributeInstance instance : retrieveAttributeInstances(asiId))
+		{
+			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
+			final Object value = extractAttributeInstanceValue(instance);
+			valuesByAttributeIdObj.put(attributeId, value);
+		}
+
+		return ImmutableAttributeSet.ofValuesIndexByAttributeId(valuesByAttributeIdObj);
+	}
+
+	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)
+	{
+		final I_M_Attribute attribute = getAttributeById(instance.getM_Attribute_ID());
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			return instance.getValueDate();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			return instance.getValue();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			return instance.getValueNumber();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			return instance.getValue();
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported attributeValueType=" + attributeValueType)
+					.setParameter("instance", instance)
+					.setParameter("attribute", attribute)
+					.appendParametersToMessage();
+		}
 	}
 }

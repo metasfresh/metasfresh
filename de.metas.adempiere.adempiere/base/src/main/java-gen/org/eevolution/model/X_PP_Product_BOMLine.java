@@ -15,7 +15,7 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1699901692L;
+	private static final long serialVersionUID = -1251507381L;
 
     /** Standard Constructor */
     public X_PP_Product_BOMLine (Properties ctx, int PP_Product_BOMLine_ID, String trxName)
@@ -602,6 +602,40 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public int getPP_Product_BOMLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOMLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Attribute getQty_Attribute() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Qty_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+	}
+
+	@Override
+	public void setQty_Attribute(org.compiere.model.I_M_Attribute Qty_Attribute)
+	{
+		set_ValueFromPO(COLUMNNAME_Qty_Attribute_ID, org.compiere.model.I_M_Attribute.class, Qty_Attribute);
+	}
+
+	/** Set Qty Attribute.
+		@param Qty_Attribute_ID Qty Attribute	  */
+	@Override
+	public void setQty_Attribute_ID (int Qty_Attribute_ID)
+	{
+		if (Qty_Attribute_ID < 1) 
+			set_Value (COLUMNNAME_Qty_Attribute_ID, null);
+		else 
+			set_Value (COLUMNNAME_Qty_Attribute_ID, Integer.valueOf(Qty_Attribute_ID));
+	}
+
+	/** Get Qty Attribute.
+		@return Qty Attribute	  */
+	@Override
+	public int getQty_Attribute_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Qty_Attribute_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

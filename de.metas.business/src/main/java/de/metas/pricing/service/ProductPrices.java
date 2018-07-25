@@ -50,11 +50,6 @@ public class ProductPrices
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
 
-	public static final ProductPriceQuery newQuery()
-	{
-		return new ProductPriceQuery();
-	}
-
 	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
 		return new ProductPriceQuery()

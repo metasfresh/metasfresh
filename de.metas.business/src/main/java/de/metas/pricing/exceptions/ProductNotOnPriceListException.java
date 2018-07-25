@@ -16,6 +16,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import lombok.Builder;
 
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException
@@ -24,20 +25,38 @@ public class ProductNotOnPriceListException extends AdempiereException
 
 	public ProductNotOnPriceListException(final IPricingContext pricingCtx)
 	{
-		this(pricingCtx, /* documentLineNo */-1);
+		this(pricingCtx,
+				-1, // documentLineNo
+				(ProductId)null);
 	}
 
 	public ProductNotOnPriceListException(final IPricingContext pricingCtx, final int documentLineNo)
 	{
-		super(buildMessage(pricingCtx, documentLineNo));
+		this(pricingCtx,
+				documentLineNo,
+				(ProductId)null);
+	}
+
+	@Builder
+	private ProductNotOnPriceListException(
+			final IPricingContext pricingCtx,
+			final int documentLineNo,
+			final ProductId productId)
+	{
+		super(buildMessage(pricingCtx, documentLineNo, productId));
+
 		setParameter("pricingCtx", pricingCtx);
+
 		if (documentLineNo > 0)
 		{
 			setParameter("documentLineNo", documentLineNo);
 		}
 	}
 
-	private static ITranslatableString buildMessage(final IPricingContext pricingCtx, final int documentLineNo)
+	private static ITranslatableString buildMessage(
+			final IPricingContext pricingCtx,
+			final int documentLineNo,
+			final ProductId productId)
 	{
 		final TranslatableStringBuilder sb = TranslatableStringBuilder.newInstance();
 
@@ -50,10 +69,10 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("Line").append(": ").append(documentLineNo);
 		}
 
-		final ProductId productId = pricingCtx.getProductId();
-		if (productId != null)
+		final ProductId productIdEffective = productId != null ? productId : pricingCtx.getProductId();
+		if (productIdEffective != null)
 		{
-			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+			final String productName = Services.get(IProductBL.class).getProductValueAndName(productIdEffective);
 			if (!sb.isEmpty())
 			{
 				sb.append(", ");
