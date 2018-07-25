@@ -124,7 +124,7 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 			throwException();
 		}
 
-		final String referenceNumber = paymentText.substring(firstGreaterSignIndex + 1, plusSignIndex);
+		String referenceNumber = paymentText.substring(firstGreaterSignIndex + 1, plusSignIndex);
 
 		final int referenceNumberLength = referenceNumber.length();
 
@@ -171,7 +171,11 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 		else
 		{
 			esrReferenceNoToMatch = referenceNumber.substring(7, 15);
+			
+			// add some leading 0, until we got length 27
+			referenceNumber = "00000000000" + referenceNumber; //  see #4392
 		}
+		
 
 		final Timestamp paymentDate = null;
 		final Timestamp accountDate = null;
