@@ -14,6 +14,13 @@ class Lookup extends Component {
   constructor(props) {
     super(props);
 
+    const dropdownLists = {};
+    if (props.properties) {
+      props.properties.forEach(item => {
+        dropdownLists[`${item.field}`] = false;
+      });
+    }
+
     this.state = {
       isInputEmpty: true,
       propertiesCopy: getItemsByProperty(props.properties, 'source', 'list'),
@@ -23,8 +30,9 @@ class Lookup extends Component {
       localClearing: false,
       fireDropdownList: false,
       autofocusDisabled: false,
-      isDropdownListOpen: false,
+      // isDropdownListOpen: false,
       isFocused: {},
+      dropdownLists,
     };
   }
 
@@ -137,11 +145,17 @@ class Lookup extends Component {
     );
   };
 
-  dropdownListToggle = value => {
+  dropdownListToggle = (value, field) => {
     const { onFocus, onBlur } = this.props;
 
+    console.log('Lookup dropdownListToggle')
+
     this.setState({
-      isDropdownListOpen: value,
+      dropdownLists: {
+        ...this.state.dropdownLists,
+        [`${field}`]: value,
+      }
+      // isDropdownListOpen: value,
     });
 
     if (value && onFocus) {
@@ -216,6 +230,9 @@ class Lookup extends Component {
         [`${fieldName}`]: false,
       },
     });
+
+    console.log('Lookup handleBlur')
+
     this.props.onBlur();
   };
 
@@ -306,7 +323,8 @@ class Lookup extends Component {
       localClearing,
       fireDropdownList,
       autofocusDisabled,
-      isDropdownListOpen,
+      // isDropdownListOpen,
+      dropdownLists,
     } = this.state;
 
     this.linkedList = [];
@@ -381,8 +399,12 @@ class Lookup extends Component {
                   enableAutofocus={this.enableAutofocus}
                   onBlur={onBlur}
                   onFocus={onFocus}
-                  isOpen={isDropdownListOpen}
-                  onDropdownListToggle={this.dropdownListToggle}
+                  _onFocus={() => this.handleFocus(item.field)}
+                  _onBlur={() => this.handleBlur(item.field)}
+                  isOpen={dropdownLists[`${item.field}`]}
+                  onDropdownListToggle={val => {
+                    this.dropdownListToggle(val, item.field);
+                  }}
                   {...{
                     placeholder,
                     readonly,
