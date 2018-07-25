@@ -24,8 +24,10 @@ package de.metas.pricing;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -38,13 +40,15 @@ import de.metas.product.ProductId;
 public interface IPricingContext extends IContextAware
 {
 	ProductId getProductId();
-	
+
+	Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware();
+
 	PricingSystemId getPricingSystemId();
 
 	PriceListId getPriceListId();
 
 	PriceListVersionId getPriceListVersionId();
-	
+
 	/** @retun price list version or null */
 	I_M_PriceList_Version getM_PriceList_Version();
 

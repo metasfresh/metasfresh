@@ -6,7 +6,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -74,7 +73,7 @@ public class AttributePricing implements IPricingRule
 			return false;
 		}
 
-		if (!getAttributeSetInstanceAware(pricingCtx).isPresent())
+		if (!pricingCtx.getAttributeSetInstanceAware().isPresent())
 		{
 			logger.debug("Not applying because not ASI aware: {}", pricingCtx);
 			return false;
@@ -121,7 +120,7 @@ public class AttributePricing implements IPricingRule
 		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
-		
+
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
 		result.setPriceLimit(productPrice.getPriceLimit());
@@ -182,12 +181,12 @@ public class AttributePricing implements IPricingRule
 		}
 
 		// 2nd fall back to viewing the referenced object as ASI and then check if someone attached a IProductPriceAware to it as dynamic attribute
-		final Optional<IAttributeSetInstanceAware> attributeSetInstanceAware = getAttributeSetInstanceAware(pricingCtx);
-		if (attributeSetInstanceAware.isPresent())
+		final IAttributeSetInstanceAware attributeSetInstanceAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
+		if (attributeSetInstanceAware != null)
 		{
 			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
-			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware.get());
+			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware);
 			return explicitProductPriceAware;
 		}
 		return Optional.empty();
@@ -285,7 +284,7 @@ public class AttributePricing implements IPricingRule
 	 */
 	protected final static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
 	{
-		final IAttributeSetInstanceAware asiAware = getAttributeSetInstanceAware(pricingCtx).orElse(null);
+		final IAttributeSetInstanceAware asiAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
 		if (asiAware == null)
 		{
 			return null;
@@ -302,23 +301,5 @@ public class AttributePricing implements IPricingRule
 
 		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
 		return attributeSetInstance;
-	}
-
-	/**
-	 * 
-	 * @param pricingCtx
-	 * @return the referenced object of the given {@code pricingCtx} as ASI-Aware. Note that the respective {@code M_AttributeSetInstance_ID} might be {@code <= 0}.
-	 */
-	private static final Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware(final IPricingContext pricingCtx)
-	{
-		final Object referencedObj = pricingCtx.getReferencedObject();
-		if (null == referencedObj)
-		{
-			return Optional.empty();
-		}
-
-		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
-		return Optional.ofNullable(asiAware);
 	}
 }
