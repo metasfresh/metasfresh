@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
@@ -84,7 +85,8 @@ public class HUReservationDocumentFilterService
 
 		if (!isIgnoreAttributes)
 		{
-			final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.ofAttributesetInstanceId(salesOrderLine.getAsiId());
+			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
 
 			huQuery.addOnlyWithAttributes(attributeSet);
 		}

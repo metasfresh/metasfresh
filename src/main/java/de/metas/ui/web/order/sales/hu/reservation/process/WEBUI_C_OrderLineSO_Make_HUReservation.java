@@ -2,7 +2,9 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -49,6 +51,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 	@Autowired
 	private HUReservationService huReservationService;
@@ -88,7 +91,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.ofAttributesetInstanceId(salesOrderLine.getAsiId());
+		final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
 
 		final HUReservationRequest reservationRequest = HUReservationRequest
 				.builder()
