@@ -30,6 +30,8 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import de.metas.product.ProductId;
+
 public interface IProductBOMBL extends ISingletonService
 {
 
@@ -69,4 +71,16 @@ public interface IProductBOMBL extends ISingletonService
 	 * @return
 	 */
 	boolean isValidVariantGroup(I_PP_Product_BOMLine bomLine);
+
+	/**
+	 * Return Unified BOM Qty Multiplier.
+	 *
+	 * i.e. how much of this component is needed for 1 item of finished good.
+	 *
+	 * @param productBomLine
+	 * @param endProductId
+	 *
+	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
+	 */
+	BigDecimal getQtyMultiplier(I_PP_Product_BOMLine productBomLine, ProductId endProductId);
 }
