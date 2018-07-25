@@ -72,7 +72,7 @@ public class VoidInvoicesRelatedToOrderHandler implements VoidOrderAndRelatedDoc
 			}
 			else
 			{
-				final ITranslatableString errorMsg = VoidOrderAndRelatedDocsHandler.createErrorMessage(
+				final ITranslatableString errorMsg = VoidOrderAndRelatedDocsHandler.createInvalidDocStatusErrorMessage(
 						request.getOrderId(),
 						I_C_Invoice.COLUMNNAME_C_Invoice_ID,
 						invoiceRecord.getDocumentNo(),

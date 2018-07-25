@@ -103,6 +103,11 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 		}
 
 		final String documentNo = orderRecord.getDocumentNo();
+
+		// try to update; retry on exception, with a different docNo;
+		// Rationale: duplicate documentNos are OK if the doc has different docTypes or bPartners(!).
+		// I don't want to make assumptions on the exact unique constraint
+		// Also, I hope that a voided order's copy is voided again is rare enough.
 		try
 		{
 			orderRecord.setDocumentNo(prefixToUse + documentNo);

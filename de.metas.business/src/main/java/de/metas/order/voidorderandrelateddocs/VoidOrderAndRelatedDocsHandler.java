@@ -11,6 +11,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
+import de.metas.util.RelatedRecordsProvider;
 import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,15 +39,15 @@ import lombok.Value;
  */
 
 /**
- * Implementors are invoked when an order is voided.
- * The advantage of this interface in comparison with a model interceptor is
- * that its implementors need to provide a seqNo such that they can be invoked in a correct order.
- *
+ * Implementors are invoked when an order shall be voided.
+ * Implementors can assume that the "most downstream" implementations are invoked first.
+ * E.g. the implementation that deals with the order's invoice is invoked prior to the implementation that deals with the order's subscriptions.
  */
 public interface VoidOrderAndRelatedDocsHandler
 {
 	String Msg_OrderDocumentCancelNotAllowed_4P = "de.metas.order.Msg_OrderDocumentCancelNotAllowed";
 
+	/** The implementors' returned keys determine which implementor is invoked for which sorts of records. */
 	RecordsToHandleKey getRecordsToHandleKey();
 
 	void handleOrderVoided(VoidOrderAndRelatedDocsRequest request);
@@ -66,18 +67,20 @@ public interface VoidOrderAndRelatedDocsHandler
 			this.tableName = tableName;
 		}
 
+		/** Needed to identify the proper {@link RelatedRecordsProvider}s for a given {@link VoidOrderAndRelatedDocsRequest}. */
 		public SourceRecordsKey toSourceRecordsKey()
 		{
 			return SourceRecordsKey.of(tableName);
 		}
 
+		/** Needed to identify the proper implementor(s) of this interface for a given {@link RelatedRecordsProvider}'s result. */
 		public static RecordsToHandleKey ofSourceRecordsKey(@NonNull final SourceRecordsKey key)
 		{
 			return RecordsToHandleKey.of(key.getTableName());
 		}
 	}
 
-	public static ITranslatableString createErrorMessage(
+	public static ITranslatableString createInvalidDocStatusErrorMessage(
 			@NonNull final OrderId orderId,
 			@NonNull final String documentTrlValue,
 			@NonNull final String documentNo,
