@@ -80,7 +80,7 @@ public class RelatedSubscriptionsForOrderProviderTest
 
 		// invoke the method under test
 		final IPair<SourceRecordsKey, List<ITableRecordReference>> //
-		result = new RelatedSubscriptionsForOrderProvider().provideRelatedRecords(ImmutableList.of(orderReference));
+		result = new RelatedSubscriptionsForOrdersProvider().provideRelatedRecords(ImmutableList.of(orderReference));
 
 		final List<ITableRecordReference> records = result.getRight();
 		assertThat(records).containsOnly(
