@@ -133,7 +133,8 @@ public class PrintingClientDaemon implements Runnable
 			}
 			catch (final LoginFailedPrintConnectionEndpointException e)
 			{
-				log.info("Login did not succeed; will retry after " + pollInterval + "ms");
+				log.info("Login did not succeed; "+e);
+				log.info("Will retry login after " + pollInterval + "ms");
 			}
 			if (sleepForPollInterval())
 			{
