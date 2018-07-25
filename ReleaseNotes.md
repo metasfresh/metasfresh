@@ -58,6 +58,8 @@ Here come the actual release notes:
     * Fixes the usage of keyboard in process parm windows. Now the parms are also taken when using alt+enter without previous tab usage.
   * [#1880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1880) Cannot complete documents
     * Fixes the Docactions in Documents.
+  * [#1891](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1891) sitemap no longer working on current master
+    * Fixes an Issue in metasfresh Sitemap.
 
 
 # metasfresh 5.66 (2018-29)

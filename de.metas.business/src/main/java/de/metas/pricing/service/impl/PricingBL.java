@@ -231,7 +231,7 @@ public class PricingBL implements IPricingBL
 				pricingCtx.setPriceListId(PriceListId.ofRepoId(computedPLV.getM_PriceList_ID()));
 
 				// while we are at it, do a little sanity check and also set the PLV-ID
-				Check.assume(pricingCtx.getPriceListVersionId() == null 
+				Check.assume(pricingCtx.getPriceListVersionId() == null
 						|| pricingCtx.getPriceListVersionId().getRepoId() == computedPLV.getM_PriceList_Version_ID(),
 						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and SOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtx,  // 0
@@ -326,8 +326,8 @@ public class PricingBL implements IPricingBL
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
 					ProductId.toRepoId(result.getProductId()),
-					BigDecimal.ONE, 
-					uomFrom, 
+					BigDecimal.ONE,
+					uomFrom,
 					uomTo);
 
 			result.setPriceLimit(factor.multiply(result.getPriceLimit()));
@@ -344,8 +344,9 @@ public class PricingBL implements IPricingBL
 		{
 			return;
 		}
-		
-		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 
 		//

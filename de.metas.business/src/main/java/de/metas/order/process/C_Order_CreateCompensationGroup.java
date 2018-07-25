@@ -9,6 +9,7 @@ import de.metas.order.compensationGroup.GroupTemplateLine;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 
 /*
@@ -72,7 +73,7 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 
 		return GroupTemplate.builder()
 				.name(groupNameEffective)
-				.productCategoryId(productCategory != null ? productCategory.getM_Product_Category_ID() : 0)
+				.productCategoryId(productCategory != null ? ProductCategoryId.ofRepoId(productCategory.getM_Product_Category_ID()) : null)
 				.line(GroupTemplateLine.builder()
 						.productId(ProductId.ofRepoId(compensationProductId))
 						.build())

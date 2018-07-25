@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.dunning.model;
 
@@ -30,7 +14,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -449185018L;
+	private static final long serialVersionUID = -1167743973L;
 
     /** Standard Constructor */
     public X_C_DunningDoc (Properties ctx, int C_DunningDoc_ID, String trxName)
@@ -44,10 +28,8 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 			setC_DunningLevel_ID (0);
 			setDocumentNo (null);
 			setDunningDate (new Timestamp( System.currentTimeMillis() ));
-			setIsUseBPartnerAddress (false);
-// N
-			setProcessed (false);
-// N
+			setIsUseBPartnerAddress (false); // N
+			setProcessed (false); // N
         } */
     }
 
@@ -64,14 +46,6 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_DunningDoc[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Anschrift-Text.
@@ -270,7 +244,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -280,7 +254,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -322,28 +296,6 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	public boolean isUseBPartnerAddress () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsUseBPartnerAddress);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Massenaustritt.
-		@param IsWriteOff Massenaustritt	  */
-	@Override
-	public void setIsWriteOff (boolean IsWriteOff)
-	{
-		throw new IllegalArgumentException ("IsWriteOff is virtual column");	}
-
-	/** Get Massenaustritt.
-		@return Massenaustritt	  */
-	@Override
-	public boolean isWriteOff () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsWriteOff);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

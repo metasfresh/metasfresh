@@ -3,6 +3,7 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -435,7 +436,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
 								}));
 
-				ic.setDiscount(BigDecimal.ZERO);
+				ic.setDiscount(ZERO);
 			}
 		}
 	}
@@ -520,8 +521,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// Also we shall set the NetAmtToInvoice to ZERO, to not affect the checksum (when invoicing).
 		if (ic.isToClear())
 		{
-			ic.setNetAmtToInvoice(BigDecimal.ZERO);
-			ic.setSplitAmt(BigDecimal.ZERO);
+			ic.setNetAmtToInvoice(ZERO);
+			ic.setSplitAmt(ZERO);
 			return;
 		}
 
@@ -530,8 +531,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
 		if (isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, NullLoggable.instance))
 		{
-			ic.setNetAmtToInvoice(BigDecimal.ZERO);
-			ic.setSplitAmt(BigDecimal.ZERO);
+			ic.setNetAmtToInvoice(ZERO);
+			ic.setSplitAmt(ZERO);
 			return;
 		}
 
@@ -648,7 +649,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// if the result is < 0, return zero instead.
 		if (qtyInvoicable.signum() <= 0)
 		{
-			return BigDecimal.ZERO;
+			return ZERO;
 		}
 		return qtyInvoicable.multiply(factor);
 	}
@@ -966,7 +967,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Charge_ID(ic.getC_Charge_ID());
 
 		splitCand.setQtyOrdered(BigDecimal.ONE);
-		splitCand.setQtyDelivered(BigDecimal.ZERO);
+		splitCand.setQtyDelivered(ZERO);
 		splitCand.setQtyToInvoice(BigDecimal.ONE);
 		splitCand.setQtyToInvoice_Override(BigDecimal.ONE);
 
@@ -976,8 +977,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setIsTaxIncluded(false);
 		splitCand.setPrice_UOM_ID(ic.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
 		splitCand.setPriceEntered(splitAmt); // cg : task 04917 -- same as price actual
-		splitCand.setDiscount(BigDecimal.ZERO);
-		splitCand.setSplitAmt(BigDecimal.ZERO);
+		splitCand.setDiscount(ZERO);
+		splitCand.setSplitAmt(ZERO);
 
 		splitCand.setDateInvoiced(ic.getDateInvoiced());
 		splitCand.setDateOrdered(ic.getDateOrdered());
@@ -1260,7 +1261,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				else if (creditMemo && !creditedInvoiceReinvoicable)
 				{
 					// the original credit memo's ila also has QtyInvoiced=0
-					qtyInvoicedForIla = BigDecimal.ZERO;
+					qtyInvoicedForIla = ZERO;
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='N'";
 				}
 				else
@@ -1312,7 +1313,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
 
-		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(BigDecimal.ZERO);
+		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
 
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
@@ -1419,7 +1420,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					}
 					else
 					{
-						qtyInvoiced = BigDecimal.ZERO;
+						qtyInvoiced = ZERO;
 					}
 				}
 				else
@@ -1494,8 +1495,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// If the IC is processed, the qtyToInvoice must turn 0
 		if (processed)
 		{
-			ic.setQtyToInvoiceInPriceUOM(BigDecimal.ZERO);
-			ic.setQtyToInvoice(BigDecimal.ZERO);
+			ic.setQtyToInvoiceInPriceUOM(ZERO);
+			ic.setQtyToInvoice(ZERO);
 		}
 	}
 
@@ -1865,7 +1866,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (null != order && !(X_C_Order.DOCSTATUS_Completed.equals(order.getDocStatus()) || X_C_Order.DOCSTATUS_Closed.equals(order.getDocStatus())))
 		{
-			newQtyToInvoice = BigDecimal.ZERO;
+			newQtyToInvoice = ZERO;
 		}
 		else
 		{
@@ -1901,7 +1902,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				else
 				{
 					amendSchedulerResult(ic, Services.get(IMsgBL.class).getMsg(ctx, "InvoiceCandBL_Status_OrderComplete"));
-					newQtyToInvoice = BigDecimal.ZERO;
+					newQtyToInvoice = ZERO;
 				}
 			}
 			else
@@ -1910,7 +1911,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						+ Services.get(IADReferenceDAO.class).retrieveListNameTrl(ctx, X_C_Invoice_Candidate.INVOICERULE_AD_Reference_ID, invoiceRule)
 						+ " (" + invoiceRule + ")";
 				amendSchedulerResult(ic, msg);
-				newQtyToInvoice = BigDecimal.ZERO;
+				newQtyToInvoice = ZERO;
 			}
 		}
 		return newQtyToInvoice;
@@ -2001,6 +2002,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.onBeforeClosed(candidate);
 		candidate.setProcessed_Override("Y");
+		candidate.setQtyToInvoice(ZERO);
 
 		if (!InterfaceWrapperHelper.hasChanges(candidate))
 		{

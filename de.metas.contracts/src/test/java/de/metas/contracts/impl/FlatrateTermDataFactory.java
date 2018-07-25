@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -16,6 +17,7 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -143,7 +145,7 @@ public class FlatrateTermDataFactory
 
 	@Builder(builderMethodName = "flatrateTransitionNew")
 	private static I_C_Flatrate_Transition createFlatrateTransition(final I_C_Flatrate_Conditions conditions, @NonNull final I_C_Calendar calendar, final int termDuration, final String termDurationUnit,
-			final int deliveryInterval, final String deliveryIntervalUnit, final boolean isAutoCompleteNewTerm , final String extensionType)
+			final int deliveryInterval, final String deliveryIntervalUnit, final boolean isAutoCompleteNewTerm, final String extensionType)
 	{
 		final I_C_Flatrate_Transition transition = newInstance(I_C_Flatrate_Transition.class);
 		transition.setC_Calendar_Contract(calendar);
@@ -185,7 +187,6 @@ public class FlatrateTermDataFactory
 		final private I_C_Tax tax;
 	}
 
-
 	@Builder(builderMethodName = "productAndPricingNew")
 	public static ProductAndPricingSystem createProductAndPricing(
 			final String productValue,
@@ -197,7 +198,7 @@ public class FlatrateTermDataFactory
 	{
 		final I_C_TaxCategory taxCategory = createTaxCategory();
 
-		final I_C_Tax tax  = taxNew()
+		final I_C_Tax tax = taxNew()
 				.country(country)
 				.taxCategory(taxCategory)
 				.validFrom(TimeUtil.addDays(validFrom, -10))
@@ -238,10 +239,9 @@ public class FlatrateTermDataFactory
 				.build();
 	}
 
-
 	private static I_C_TaxCategory createTaxCategory()
 	{
-		final I_C_TaxCategory taxCategory  = newInstance(I_C_TaxCategory.class);
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
 		taxCategory.setName("test tax category");
 		save(taxCategory);
 		return taxCategory;
@@ -250,7 +250,7 @@ public class FlatrateTermDataFactory
 	@Builder(builderMethodName = "taxNew")
 	public static I_C_Tax createTax(@NonNull final I_C_TaxCategory taxCategory, @NonNull final I_C_Country country, @NonNull final Timestamp validFrom)
 	{
-		final I_C_Tax tax  = newInstance(I_C_Tax.class);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
 		tax.setC_Country(country);
 		tax.setTo_Country(country);
 		tax.setC_TaxCategory(taxCategory);
@@ -267,10 +267,14 @@ public class FlatrateTermDataFactory
 	@Builder(builderMethodName = "productNew")
 	public static I_M_Product createProduct(final String value, final String name)
 	{
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setValue(value);
 		product.setName(name);
-
+		product.setM_Product_Category_ID(10);
+		product.setC_UOM(uomRecord);
 		save(product);
 		return product;
 	}

@@ -2,6 +2,7 @@ package de.metas.order;
 
 import org.adempiere.util.Check;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -26,7 +27,7 @@ import lombok.Value;
  * #L%
  */
 @Value
-public class OrderId
+public class OrderId implements RepoIdAware
 {
 	public static OrderId ofRepoId(final int repoId)
 	{

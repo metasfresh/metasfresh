@@ -78,6 +78,7 @@ public class OrderLineBLTest
 
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
+		product.setM_Product_Category_ID(20);
 		InterfaceWrapperHelper.save(product);
 
 		final I_C_Currency currency = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
