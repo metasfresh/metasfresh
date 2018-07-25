@@ -1,4 +1,4 @@
-package de.metas.order.restart;
+package de.metas.order.voidorderandrelateddocs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -47,7 +47,7 @@ import lombok.NonNull;
  * Note that there are other implementations to void "downstream" documents (currently C_Flatrate_Terms and C_Invoices).
  */
 @Component
-public class VoidOrderHandler implements VoidOrderWithRelatedDocsHandler
+public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 {
 
 	@Override
@@ -57,7 +57,7 @@ public class VoidOrderHandler implements VoidOrderWithRelatedDocsHandler
 	}
 
 	@Override
-	public void handleOrderVoided(@NonNull final VoidOrderWithRelatedDocsRequest request)
+	public void handleOrderVoided(@NonNull final VoidOrderAndRelatedDocsRequest request)
 	{
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 

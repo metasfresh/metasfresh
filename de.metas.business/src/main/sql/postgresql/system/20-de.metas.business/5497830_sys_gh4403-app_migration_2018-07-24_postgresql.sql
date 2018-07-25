@@ -116,3 +116,18 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-24 22:28:4
 UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-24 22:28:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Description='' WHERE AD_Process_ID=540991 AND AD_Language='en_US'
 ;
 
+-- 2018-07-25T08:51:14.201
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.order.voidorderwithrelateddocs.process.C_Order_VoidWithRelatedDocsAndRecreate',Updated=TO_TIMESTAMP('2018-07-25 08:51:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540991
+;
+
+-- 2018-07-25T08:53:21.900
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.order.voidorderandrelateddocs.process.C_Order_VoidWithRelatedDocsAndRecreate',Updated=TO_TIMESTAMP('2018-07-25 08:53:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540991
+;
+
+-- 2018-07-25T08:54:57.317
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Value='C_Order_VoidAndRelatedDocsAndRecreate',Updated=TO_TIMESTAMP('2018-07-25 08:54:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540991
+;
+

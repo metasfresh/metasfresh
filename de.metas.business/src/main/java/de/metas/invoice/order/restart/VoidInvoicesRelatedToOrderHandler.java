@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.order.restart.VoidOrderWithRelatedDocsHandler;
-import de.metas.order.restart.VoidOrderWithRelatedDocsRequest;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
 import lombok.NonNull;
 
 /*
@@ -42,7 +42,7 @@ import lombok.NonNull;
  */
 
 @Component
-public class InvoiceOrderVoidedHandler implements VoidOrderWithRelatedDocsHandler
+public class VoidInvoicesRelatedToOrderHandler implements VoidOrderAndRelatedDocsHandler
 {
 
 	@Override
@@ -52,7 +52,7 @@ public class InvoiceOrderVoidedHandler implements VoidOrderWithRelatedDocsHandle
 	}
 
 	@Override
-	public void handleOrderVoided(@NonNull final VoidOrderWithRelatedDocsRequest request)
+	public void handleOrderVoided(@NonNull final VoidOrderAndRelatedDocsRequest request)
 	{
 		final IPair<RecordsToHandleKey, List<ITableRecordReference>> recordsToHandle = request.getRecordsToHandle();
 
@@ -72,7 +72,7 @@ public class InvoiceOrderVoidedHandler implements VoidOrderWithRelatedDocsHandle
 			}
 			else
 			{
-				final ITranslatableString errorMsg = VoidOrderWithRelatedDocsHandler.createErrorMessage(
+				final ITranslatableString errorMsg = VoidOrderAndRelatedDocsHandler.createErrorMessage(
 						request.getOrderId(),
 						I_C_Invoice.COLUMNNAME_C_Invoice_ID,
 						invoiceRecord.getDocumentNo(),

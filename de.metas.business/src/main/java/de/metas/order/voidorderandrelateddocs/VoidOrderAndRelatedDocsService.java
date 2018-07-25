@@ -1,4 +1,4 @@
-package de.metas.order.restart;
+package de.metas.order.voidorderandrelateddocs;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
-import de.metas.order.restart.VoidOrderWithRelatedDocsHandler.RecordsToHandleKey;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
 import de.metas.util.RelatedRecordsProvider;
 import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import lombok.NonNull;
@@ -40,19 +40,19 @@ import lombok.NonNull;
  */
 
 @Service
-public class VoidOrderWithRelatedDocsService
+public class VoidOrderAndRelatedDocsService
 {
-	private final ImmutableListMultimap<RecordsToHandleKey, VoidOrderWithRelatedDocsHandler> key2handlers;
+	private final ImmutableListMultimap<RecordsToHandleKey, VoidOrderAndRelatedDocsHandler> key2handlers;
 	private final ImmutableListMultimap<SourceRecordsKey, RelatedRecordsProvider> key2providers;
 
-	public VoidOrderWithRelatedDocsService(
-			@NonNull final Optional<List<VoidOrderWithRelatedDocsHandler>> handlers,
+	public VoidOrderAndRelatedDocsService(
+			@NonNull final Optional<List<VoidOrderAndRelatedDocsHandler>> handlers,
 			@NonNull final Optional<List<RelatedRecordsProvider>> providers)
 	{
 
 		this.key2handlers = Multimaps.index(
 				handlers.orElse(ImmutableList.of()),
-				VoidOrderWithRelatedDocsHandler::getRecordsToHandleKey);
+				VoidOrderAndRelatedDocsHandler::getRecordsToHandleKey);
 
 		this.key2providers = Multimaps.index(
 				providers.orElse(ImmutableList.of()),
@@ -60,7 +60,7 @@ public class VoidOrderWithRelatedDocsService
 
 	}
 
-	public void invokeHandlers(@NonNull final VoidOrderWithRelatedDocsRequest request)
+	public void invokeHandlers(@NonNull final VoidOrderAndRelatedDocsRequest request)
 	{
 		final IPair<RecordsToHandleKey, List<ITableRecordReference>> recordsToHandle = request.getRecordsToHandle();
 
@@ -77,18 +77,19 @@ public class VoidOrderWithRelatedDocsService
 			{
 				continue;
 			}
-			final VoidOrderWithRelatedDocsRequest recursionRequest = createRecursionRequest(request, relatedRecords);
+			final VoidOrderAndRelatedDocsRequest recursionRequest = createRecursionRequest(request, relatedRecords);
 			invokeHandlers(recursionRequest);
 		}
 
-		for (final VoidOrderWithRelatedDocsHandler handlerForCurrentKey : key2handlers.get(currentKey))
+		final ImmutableList<VoidOrderAndRelatedDocsHandler> handlersForKey = key2handlers.get(currentKey); // returns empty list if there are no handlers
+		for (final VoidOrderAndRelatedDocsHandler handlerForCurrentKey : handlersForKey)
 		{
 			handlerForCurrentKey.handleOrderVoided(request);
 		}
 	}
 
-	private VoidOrderWithRelatedDocsRequest createRecursionRequest(
-			@NonNull final VoidOrderWithRelatedDocsRequest originalRequest,
+	private VoidOrderAndRelatedDocsRequest createRecursionRequest(
+			@NonNull final VoidOrderAndRelatedDocsRequest originalRequest,
 			@NonNull final IPair<SourceRecordsKey, List<ITableRecordReference>> relatedRecords)
 	{
 		final RecordsToHandleKey recordsToHandleKey = RecordsToHandleKey.ofSourceRecordsKey(relatedRecords.getLeft());
@@ -96,7 +97,7 @@ public class VoidOrderWithRelatedDocsService
 		final IPair<RecordsToHandleKey, List<ITableRecordReference>> //
 		recordsToHandle = ImmutablePair.of(recordsToHandleKey, relatedRecords.getRight());
 
-		final VoidOrderWithRelatedDocsRequest recursionRequest = originalRequest
+		final VoidOrderAndRelatedDocsRequest recursionRequest = originalRequest
 				.toBuilder()
 				.recordsToHandle(recordsToHandle)
 				.build();

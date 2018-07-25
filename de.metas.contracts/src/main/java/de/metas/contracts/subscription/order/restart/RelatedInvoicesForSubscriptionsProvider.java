@@ -1,4 +1,4 @@
-package de.metas.dunning.order.restart;
+package de.metas.contracts.subscription.order.restart;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
@@ -11,21 +11,21 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.dunning.model.I_C_DunningDoc_Line;
-import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
-import de.metas.invoice.InvoiceId;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.util.RelatedRecordsProvider;
 import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -46,45 +46,44 @@ import lombok.NonNull;
  */
 
 @Component
-public class RelatedDunningsProvider implements RelatedRecordsProvider
+public class RelatedInvoicesForSubscriptionsProvider implements RelatedRecordsProvider
 {
-
 	@Override
 	public SourceRecordsKey getSourceRecordsKey()
 	{
-		return SourceRecordsKey.of(I_C_Invoice.Table_Name);
+		return SourceRecordsKey.of(I_C_Flatrate_Term.Table_Name);
 	}
 
 	@Override
 	public IPair<SourceRecordsKey, List<ITableRecordReference>> provideRelatedRecords(
 			@NonNull final List<ITableRecordReference> records)
 	{
-		final ImmutableList<InvoiceId> invoiceIds = records
+		final List<FlatrateTermId> flatrateTermIds = records
 				.stream()
-				.map(ref -> InvoiceId.ofRepoId(ref.getRecord_ID()))
+				.map(ref -> FlatrateTermId.ofRepoId(ref.getRecord_ID()))
 				.collect(ImmutableList.toImmutableList());
 
-		final List<Integer> dunningDocIds = Services.get(IQueryBL.class).createQueryBuilder(I_C_Dunning_Candidate.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ImmutableList<ITableRecordReference> invoiceReferences = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Invoice.class))
-				.addInArrayFilter(I_C_Dunning_Candidate.COLUMN_Record_ID, invoiceIds)
-				.andCollectChildren(I_C_DunningDoc_Line_Source.COLUMN_C_Dunning_Candidate_ID)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Flatrate_Term.class))
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, flatrateTermIds)
+				.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
 				.addOnlyActiveRecordsFilter()
-				.andCollect(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_ID)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_ID)
-				.addOnlyActiveRecordsFilter()
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+				.andCollect(I_C_InvoiceLine.COLUMN_C_Invoice_ID)
 				.create()
-				.listIds();
-
-		final SourceRecordsKey sourceRecordsKey = SourceRecordsKey.of(I_C_DunningDoc.Table_Name);
-
-		final ImmutableList<ITableRecordReference> referenceList = dunningDocIds
+				.listIds()
 				.stream()
-				.distinct()
-				.map(dunningDocId -> TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocId))
+				.map(invoiceRepoId -> TableRecordReference.of(I_C_Invoice.Table_Name, invoiceRepoId))
 				.collect(ImmutableList.toImmutableList());
 
-		return ImmutablePair.of(sourceRecordsKey, referenceList);
+		final SourceRecordsKey resultSourceRecordsKey = SourceRecordsKey.of(I_C_Invoice.Table_Name);
+
+		final IPair<SourceRecordsKey, List<ITableRecordReference>> result = ImmutablePair.of(resultSourceRecordsKey, invoiceReferences);
+
+		return result;
 	}
+
 }

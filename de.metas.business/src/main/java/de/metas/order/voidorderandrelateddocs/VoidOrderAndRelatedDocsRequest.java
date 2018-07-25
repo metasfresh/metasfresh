@@ -1,4 +1,4 @@
-package de.metas.order.restart;
+package de.metas.order.voidorderandrelateddocs;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.order.OrderId;
-import de.metas.order.restart.VoidOrderWithRelatedDocsHandler.RecordsToHandleKey;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
 import lombok.Builder;
 import lombok.Value;
 
@@ -34,7 +34,7 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-public class VoidOrderWithRelatedDocsRequest
+public class VoidOrderAndRelatedDocsRequest
 {
 	String voidedOrderDocumentNoPrefix;
 
@@ -42,7 +42,7 @@ public class VoidOrderWithRelatedDocsRequest
 
 	/**
 	 * The record references to handle (cancel, void, reverse etc).
-	 * They pair's key is used to identify the matching {@link VoidOrderWithRelatedDocsHandler} implementation(s).
+	 * They pair's key is used to identify the matching {@link VoidOrderAndRelatedDocsHandler} implementation(s).
 	 */
 	IPair<RecordsToHandleKey, List<ITableRecordReference>> recordsToHandle;
 }

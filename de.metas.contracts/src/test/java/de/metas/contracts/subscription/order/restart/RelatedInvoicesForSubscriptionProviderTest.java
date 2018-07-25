@@ -79,7 +79,7 @@ public class RelatedInvoicesForSubscriptionProviderTest
 		final TableRecordReference input = TableRecordReference.of(flatrateTermRecord);
 
 		// invoke the method under test
-		final IPair<SourceRecordsKey, List<ITableRecordReference>> result = new RelatedInvoicesForSubscriptionProvider().provideRelatedRecords(ImmutableList.of(input));
+		final IPair<SourceRecordsKey, List<ITableRecordReference>> result = new RelatedInvoicesForSubscriptionsProvider().provideRelatedRecords(ImmutableList.of(input));
 
 		final List<ITableRecordReference> resultRecords = result.getRight();
 		assertThat(resultRecords).containsOnly(TableRecordReference.of(invoiceRecord));

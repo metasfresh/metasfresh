@@ -13,8 +13,8 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.order.restart.VoidOrderWithRelatedDocsHandler;
-import de.metas.order.restart.VoidOrderWithRelatedDocsRequest;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
 import lombok.NonNull;
 
 /*
@@ -40,7 +40,7 @@ import lombok.NonNull;
  */
 
 @Component
-public class SubscriptionOrderVoidedHandler implements VoidOrderWithRelatedDocsHandler
+public class VoidSubscriptionRelatedToOrderHandler implements VoidOrderAndRelatedDocsHandler
 {
 	@Override
 	public RecordsToHandleKey getRecordsToHandleKey()
@@ -49,7 +49,7 @@ public class SubscriptionOrderVoidedHandler implements VoidOrderWithRelatedDocsH
 	}
 
 	@Override
-	public void handleOrderVoided(@NonNull final VoidOrderWithRelatedDocsRequest request)
+	public void handleOrderVoided(@NonNull final VoidOrderAndRelatedDocsRequest request)
 	{
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(SystemTime.asTimestamp())

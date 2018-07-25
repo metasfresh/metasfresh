@@ -1,4 +1,4 @@
-package de.metas.order.restart;
+package de.metas.order.voidorderandrelateddocs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -43,13 +43,13 @@ import lombok.Value;
  * that its implementors need to provide a seqNo such that they can be invoked in a correct order.
  *
  */
-public interface VoidOrderWithRelatedDocsHandler
+public interface VoidOrderAndRelatedDocsHandler
 {
 	String Msg_OrderDocumentCancelNotAllowed_4P = "de.metas.order.Msg_OrderDocumentCancelNotAllowed";
 
 	RecordsToHandleKey getRecordsToHandleKey();
 
-	void handleOrderVoided(VoidOrderWithRelatedDocsRequest request);
+	void handleOrderVoided(VoidOrderAndRelatedDocsRequest request);
 
 	@Value
 	public class RecordsToHandleKey

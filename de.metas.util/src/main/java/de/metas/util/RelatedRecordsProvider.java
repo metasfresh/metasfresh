@@ -39,9 +39,10 @@ import lombok.Value;
  */
 public interface RelatedRecordsProvider
 {
+	/** Specifies for which sort of input records a given implementation's {@link #provideRelatedRecords(List)} shall be invoked. */
 	SourceRecordsKey getSourceRecordsKey();
 
-	/** For the given request's records, (e.g. C_Order records), return the referencing records that this handler can find (e.g. I_C_Invoice) */
+	/** For the given request's records, (e.g. I_C_Order records), return the referencing records that this handler can find (e.g. I_C_Invoices) */
 	IPair<SourceRecordsKey, List<ITableRecordReference>> provideRelatedRecords(@NonNull final List<ITableRecordReference> records);
 
 	/**

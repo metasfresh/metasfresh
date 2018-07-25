@@ -41,7 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class RelatedInvoicesForOrderProvider implements RelatedRecordsProvider
+public class RelatedInvoicesForOrdersProvider implements RelatedRecordsProvider
 {
 
 	@Override

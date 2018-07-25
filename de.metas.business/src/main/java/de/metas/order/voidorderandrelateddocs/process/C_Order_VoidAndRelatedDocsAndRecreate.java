@@ -1,4 +1,4 @@
-package de.metas.order.restart.process;
+package de.metas.order.voidorderandrelateddocs.process;
 
 import java.util.List;
 
@@ -14,9 +14,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
-import de.metas.order.restart.VoidOrderWithRelatedDocsHandler.RecordsToHandleKey;
-import de.metas.order.restart.VoidOrderWithRelatedDocsRequest;
-import de.metas.order.restart.VoidOrderWithRelatedDocsService;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsService;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -45,12 +45,12 @@ import de.metas.process.ProcessPreconditionsResolution;
  * #L%
  */
 
-public class C_Order_VoidWithRelatedDocsAndRecreate
+public class C_Order_VoidAndRelatedDocsAndRecreate
 		extends JavaProcess
 		implements IProcessPrecondition
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final VoidOrderWithRelatedDocsService orderVoidedHandlerRegistry = Adempiere.getBean(VoidOrderWithRelatedDocsService.class);
+	private final VoidOrderAndRelatedDocsService orderVoidedHandlerRegistry = Adempiere.getBean(VoidOrderAndRelatedDocsService.class);
 
 	@Param(mandatory = true, parameterName = "VoidedOrderDocumentNoPrefix")
 	private String p_VoidedOrderDocumentNoPrefix;
@@ -84,14 +84,14 @@ public class C_Order_VoidWithRelatedDocsAndRecreate
 	protected String doIt() throws Exception
 	{
 		final I_C_Order orderRecord = getRecord(I_C_Order.class);
-		final VoidOrderWithRelatedDocsRequest request = createRequest(orderRecord);
+		final VoidOrderAndRelatedDocsRequest request = createRequest(orderRecord);
 
 		orderVoidedHandlerRegistry.invokeHandlers(request);
 
 		return MSG_OK;
 	}
 
-	private VoidOrderWithRelatedDocsRequest createRequest(final I_C_Order orderRecord)
+	private VoidOrderAndRelatedDocsRequest createRequest(final I_C_Order orderRecord)
 	{
 		final OrderId requestOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
@@ -100,7 +100,7 @@ public class C_Order_VoidWithRelatedDocsAndRecreate
 				RecordsToHandleKey.of(I_C_Order.Table_Name),
 				ImmutableList.of(TableRecordReference.of(orderRecord)));
 
-		final VoidOrderWithRelatedDocsRequest request = VoidOrderWithRelatedDocsRequest
+		final VoidOrderAndRelatedDocsRequest request = VoidOrderAndRelatedDocsRequest
 				.builder()
 				.orderId(requestOrderId)
 				.recordsToHandle(requestRecordsToHandle)
