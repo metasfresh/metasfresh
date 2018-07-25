@@ -15,6 +15,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException
@@ -49,8 +50,8 @@ public class ProductNotOnPriceListException extends AdempiereException
 			sb.appendADElement("Line").append(": ").append(documentLineNo);
 		}
 
-		final int productId = pricingCtx.getM_Product_ID();
-		if (productId > 0)
+		final ProductId productId = pricingCtx.getProductId();
+		if (productId != null)
 		{
 			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
 			if (!sb.isEmpty())

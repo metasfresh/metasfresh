@@ -1,9 +1,8 @@
 package de.metas.order.compensationGroup;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 
+import org.adempiere.uom.UomId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -17,6 +16,8 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -48,8 +49,10 @@ public class GroupCompensationLineCreateRequestFactory
 	public GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(@NonNull final GroupTemplateLine templateLine, @NonNull final Group group)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final I_M_Product product = load(templateLine.getProductId(), I_M_Product.class);
+		final ProductId productId = templateLine.getProductId();
+		final I_M_Product product = productsRepo.getById(productId);
 		final I_C_UOM uom = productBL.getStockingUOM(product);
 
 		final GroupCompensationType type = extractGroupCompensationType(product);
@@ -62,8 +65,8 @@ public class GroupCompensationLineCreateRequestFactory
 		}
 
 		return GroupCompensationLineCreateRequest.builder()
-				.productId(product.getM_Product_ID())
-				.uomId(uom.getC_UOM_ID())
+				.productId(productId)
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.type(type)
 				.amtType(amtType)
 				.percentage(percentage)
@@ -98,9 +101,9 @@ public class GroupCompensationLineCreateRequestFactory
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
-		pricingCtx.setM_Product_ID(templateLine.getProductId());
+		pricingCtx.setProductId(templateLine.getProductId());
 		pricingCtx.setBPartnerId(group.getBpartnerId());
-		pricingCtx.setSOTrx(group.isSOTrx());
+		pricingCtx.setSOTrx(group.getSoTrx());
 		pricingCtx.setDisallowDiscount(false);// just to be sure
 		pricingCtx.setQty(BigDecimal.ONE);
 

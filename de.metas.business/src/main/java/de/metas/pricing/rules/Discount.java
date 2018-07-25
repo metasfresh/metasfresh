@@ -25,9 +25,9 @@ package de.metas.pricing.rules;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -92,7 +92,7 @@ public class Discount implements IPricingRule
 			return false;
 		}
 
-		if (pricingCtx.getM_Product_ID() <= 0)
+		if (pricingCtx.getProductId() == null)
 		{
 			return false;
 		}
@@ -152,7 +152,7 @@ public class Discount implements IPricingRule
 		{
 			final IProductDAO productsRepo = Services.get(IProductDAO.class);
 			
-			final ProductId productId = ProductId.ofRepoId(pricingCtx.getM_Product_ID());
+			final ProductId productId = pricingCtx.getProductId();
 			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()

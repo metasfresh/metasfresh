@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,6 +33,7 @@ import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.ProductId;
 
 public class QualityInvoiceLine implements IQualityInvoiceLine
 {
@@ -66,12 +67,13 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 				+ "]";
 	}
 
-	@Override public IQualityInvoiceLineGroup getGroup()
+	@Override
+	public IQualityInvoiceLineGroup getGroup()
 	{
 		return qualityInvoiceLineGroup;
 	}
 
-	/*package*/ void setGroup(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
+	/* package */ void setGroup(final IQualityInvoiceLineGroup qualityInvoiceLineGroup)
 	{
 		Check.errorIf(this.qualityInvoiceLineGroup != null,
 				"This instance {} was already added to qualityInvoiceLineGroup {}; can't be added to {}",
@@ -83,6 +85,13 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 	public I_M_Product getM_Product()
 	{
 		return product;
+	}
+
+	@Override
+	public ProductId getProductId()
+	{
+		final I_M_Product product = getM_Product();
+		return product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
 	}
 
 	public void setM_Product(final I_M_Product product)

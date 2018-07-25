@@ -79,12 +79,13 @@ public class C_OrderLine
 	public void add_M_HU_PI_Item_Product(final I_C_OrderLine olPO)
 	{
 		// 09445: do not recompute price if also the price entered is changed
-		if (!InterfaceWrapperHelper.isNew(olPO)
+		if ((!InterfaceWrapperHelper.isNew(olPO) || InterfaceWrapperHelper.isCopy(olPO))
 				&& InterfaceWrapperHelper.isValueChanged(olPO, I_C_OrderLine.COLUMNNAME_PriceEntered))
 		{
 			InterfaceWrapperHelper.setDynAttribute(olPO, OrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
 			return;
 		}
+
 
 		// avoid price recalculation in some specific cases (e.g. on reactivation)
 		final Boolean doNotRecalculatePrices = InterfaceWrapperHelper.getDynAttribute(olPO, OrderLineBL.DYNATTR_DoNotRecalculatePrices);

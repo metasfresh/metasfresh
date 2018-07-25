@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +30,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.ProductId;
 
 /**
  * See https://drive.google.com/file/d/0B-AaY-YNDnR5b045VGJsdVhRUGc/view
@@ -46,10 +47,10 @@ public interface IQualityInvoiceLine
 
 	/**
 	 * i.e. Artikel
-	 *
-	 * @return
 	 */
 	I_M_Product getM_Product();
+
+	ProductId getProductId();
 
 	/**
 	 * Alternative to {@link #getM_Product()}
@@ -105,4 +106,5 @@ public interface IQualityInvoiceLine
 	 * @return
 	 */
 	I_PP_Order getPP_Order();
+
 }

@@ -16,6 +16,7 @@ import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
@@ -54,7 +55,9 @@ public class ContactPersonServiceTest
 		AdempiereTestHelper.get().init();
 
 		userRepository = new UserRepository();
-		contactPersonService = new ContactPersonService(new ContactPersonRepository());
+		contactPersonService = new ContactPersonService(
+				new ContactPersonRepository(
+						new BPartnerLocationRepository()));
 	}
 
 	@Test

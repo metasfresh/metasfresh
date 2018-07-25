@@ -242,9 +242,11 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
 
-	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId);
+	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
+
+	BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
-	
+
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
 }

@@ -16,9 +16,9 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.service.ProductPriceQuery;
-import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
+import de.metas.pricing.service.ProductPrices;
 
 /**
  * Note that we invoke {@link AttributePricing#registerDefaultMatcher(IProductPriceQueryMatcher)} with {@link #HUPIItemProductMatcher_None} (in a model interceptor)
@@ -77,7 +77,7 @@ public class HUPricing extends AttributePricing
 		}
 
 		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
-				.setM_Product_ID(pricingCtx.getM_Product_ID())
+				.setProductId(pricingCtx.getProductId())
 				.matching(createHUPIItemProductMatcher(huPIItemProductId));
 
 		// Match attributes if we have attributes.
@@ -137,7 +137,7 @@ public class HUPricing extends AttributePricing
 		// Get the default product price attribute, if any
 		final boolean strictDefault = true; // backward compatible
 		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(plv)
-				.setM_Product_ID(pricingCtx.getM_Product_ID())
+				.setProductId(pricingCtx.getProductId())
 				.onlyAttributePricing()
 				.matching(HUPIItemProductMatcher_Any)
 				.retrieveDefault(strictDefault, I_M_ProductPrice.class);

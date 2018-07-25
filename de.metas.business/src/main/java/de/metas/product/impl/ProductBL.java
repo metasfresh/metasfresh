@@ -352,9 +352,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public String getProductValueAndName(final int productId)
+	public String getProductValueAndName(final ProductId productId)
 	{
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return "-";
 		}

@@ -26,8 +26,10 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -210,8 +212,8 @@ public class PricingTestHelper
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(defaultPricingSystem.getM_PricingSystem_ID()));
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(defaultPriceList.getM_PriceList_ID()));
-		pricingCtx.setM_PriceList_Version_ID(defaultPriceListVerion.getM_PriceList_Version_ID());
-		pricingCtx.setM_Product_ID(defaultProduct.getM_Product_ID());
+		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(defaultPriceListVerion.getM_PriceList_Version_ID()));
+		pricingCtx.setProductId(ProductId.ofRepoId(defaultProduct.getM_Product_ID()));
 
 		return pricingCtx;
 	}

@@ -36,6 +36,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import lombok.NonNull;
@@ -52,9 +53,9 @@ public class PriceListDAO implements IPriceListDAO
 			return null;
 		}
 
-		return loadOutOfTrx(pricingSystemId.getRepoId(), I_M_PricingSystem.class);
+		return loadOutOfTrx(pricingSystemId, I_M_PricingSystem.class);
 	}
-
+	
 	@Override
 	public I_M_PriceList getById(final int priceListId)
 	{
@@ -69,7 +70,13 @@ public class PriceListDAO implements IPriceListDAO
 			return null;
 		}
 
-		return loadOutOfTrx(priceListId.getRepoId(), I_M_PriceList.class);
+		return loadOutOfTrx(priceListId, I_M_PriceList.class);
+	}
+
+	@Override
+	public I_M_PriceList_Version getPriceListVersionById(final PriceListVersionId priceListVersionId)
+	{
+		return loadOutOfTrx(priceListVersionId, I_M_PriceList_Version.class);
 	}
 
 	@Override

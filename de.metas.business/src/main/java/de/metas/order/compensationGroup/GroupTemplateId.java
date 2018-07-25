@@ -1,8 +1,7 @@
-package org.adempiere.uom;
+package de.metas.order.compensationGroup;
 
 import org.adempiere.util.Check;
 
-import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -15,40 +14,41 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-public class UomId implements RepoIdAware
+public class GroupTemplateId
 {
 	int repoId;
 
-	public static UomId ofRepoId(final int repoId)
+	public static GroupTemplateId ofRepoId(final int repoId)
 	{
-		return new UomId(repoId);
+		return new GroupTemplateId(repoId);
 	}
 
-	public static UomId ofRepoIdOrNull(final int repoId)
+	public static GroupTemplateId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new UomId(repoId) : null;
+		return repoId > 0 ? new GroupTemplateId(repoId) : null;
 	}
 
-	public static int toRepoId(final UomId uomId)
+	public static int toRepoId(final GroupTemplateId groupTemplateId)
 	{
-		return uomId != null ? uomId.getRepoId() : -1;
+		return groupTemplateId != null ? groupTemplateId.getRepoId() : -1;
 	}
 
-	private UomId(final int repoId)
+	private GroupTemplateId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
+
 }

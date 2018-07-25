@@ -36,6 +36,7 @@ import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 
 public interface IPriceListDAO extends ISingletonService
@@ -48,6 +49,8 @@ public interface IPriceListDAO extends ISingletonService
 	I_M_PriceList getById(PriceListId priceListId);
 
 	I_M_PriceList getById(int priceListId);
+
+	I_M_PriceList_Version getPriceListVersionById(PriceListVersionId priceListVersionId);
 
 	/**
 	 * Retrieves <b>all</b> (including inactive) {@link I_M_ProductPrice} record of the given price list version
