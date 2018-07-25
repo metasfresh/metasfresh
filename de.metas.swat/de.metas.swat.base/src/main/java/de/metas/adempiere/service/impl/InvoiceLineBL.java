@@ -64,6 +64,7 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -214,11 +215,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
-		final int m_Product_ID = invoiceLine.getM_Product_ID();
-		Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
+		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
+		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
 		final I_M_ProductPrice productPrice = Optional
-				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 
 		return productPrice.getC_TaxCategory_ID();
@@ -241,11 +242,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceList, invoice.getDateInvoiced(), processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
-		final int m_Product_ID = invoiceLine.getM_Product_ID();
-		Check.assume(m_Product_ID > 0, "M_Product_ID > 0 for {}", invoiceLine);
+		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
+		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
 		final I_M_ProductPrice productPrice = Optional
-				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, m_Product_ID))
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId))
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 		return productPrice.getC_TaxCategory_ID();
 	}

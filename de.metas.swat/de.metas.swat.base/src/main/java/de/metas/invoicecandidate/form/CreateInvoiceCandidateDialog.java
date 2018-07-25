@@ -90,6 +90,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import net.miginfocom.swing.MigLayout;
@@ -415,7 +416,8 @@ public class CreateInvoiceCandidateDialog
 						, (Boolean)null // processedPLVFiltering
 				);
 
-				productPrice = ProductPrices.retrieveMainProductPriceOrNull(currentVersion, product.getM_Product_ID());
+				final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+				productPrice = ProductPrices.retrieveMainProductPriceOrNull(currentVersion, productId);
 			}
 			if (productPrice == null)
 			{

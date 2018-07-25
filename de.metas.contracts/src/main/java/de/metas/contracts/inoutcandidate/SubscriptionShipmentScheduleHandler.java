@@ -5,8 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -22,12 +22,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -45,7 +45,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
 import lombok.NonNull;
@@ -54,8 +53,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 {
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
-
-	private static final Logger logger = LogManager.getLogger(SubscriptionShipmentScheduleHandler.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
@@ -174,7 +171,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public List<Object> retrieveModelsWithMissingCandidates(
+	public Iterator<? extends Object> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
 			final String trxName)
 	{
@@ -183,7 +180,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_C_SubscriptionProgress> subscriptionLines = queryBL
+		final Iterator<I_C_SubscriptionProgress> subscriptionLines = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
@@ -193,11 +190,11 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
-				.list();
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterate(I_C_SubscriptionProgress.class);
 
-		logger.debug("Identified {} C_SubscriptionProgress that need a shipment schedule", subscriptionLines.size());
-
-		return new ArrayList<>(subscriptionLines);
+		return subscriptionLines;
 	}
 
 	@Override

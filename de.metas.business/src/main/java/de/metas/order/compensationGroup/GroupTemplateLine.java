@@ -5,12 +5,12 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Predicates;
 
 import de.metas.lang.Percent;
+import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -38,29 +38,26 @@ import lombok.Value;
 @Value
 public class GroupTemplateLine
 {
-	public static GroupTemplateLine ofProductId(final int productId)
+	public static GroupTemplateLine ofProductId(final ProductId productId)
 	{
 		return builder()
 				.productId(productId)
 				.build();
 	}
 
-	int id;
-	int productId;
+	GroupTemplateLineId id;
+	ProductId productId;
 	private Percent percentage;
 	private Predicate<Group> groupMatcher;
 
 	@Builder
 	private GroupTemplateLine(
-			final int id,
-			final int productId,
+			@Nullable final GroupTemplateLineId id,
+			@NonNull final ProductId productId,
 			@Nullable final BigDecimal percentage,
 			@Nullable final Predicate<Group> groupMatcher)
 	{
-		// id is OK to be <= 0
-		Check.assume(productId > 0, "productId > 0");
-
-		this.id = id > 0 ? id : 0;
+		this.id = id;
 		this.productId = productId;
 		this.percentage = Percent.ofNullable(percentage);
 		this.groupMatcher = groupMatcher != null ? groupMatcher : Predicates.alwaysTrue();

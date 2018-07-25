@@ -20,6 +20,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -88,7 +89,7 @@ public class ProductPriceImporter
 	private I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final I_M_PriceList_Version plv)
 	{
 		final BigDecimal price = request.getPrice();
-		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, request.getProductId());
+		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, ProductId.ofRepoId(request.getProductId()));
 		if (pp == null)
 		{
 			pp = newInstance(I_M_ProductPrice.class, plv);

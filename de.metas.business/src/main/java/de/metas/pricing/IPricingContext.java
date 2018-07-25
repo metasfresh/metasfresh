@@ -28,25 +28,23 @@ import java.util.Properties;
 
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.product.ProductId;
 
 public interface IPricingContext extends IContextAware
 {
-	int getM_Product_ID();
-
-	I_M_Product getM_Product();
-
+	ProductId getProductId();
+	
 	PricingSystemId getPricingSystemId();
 
 	PriceListId getPriceListId();
 
-	int getM_PriceList_Version_ID();
-
+	PriceListVersionId getPriceListVersionId();
+	
 	/** @retun price list version or null */
 	I_M_PriceList_Version getM_PriceList_Version();
 
@@ -67,20 +65,7 @@ public interface IPricingContext extends IContextAware
 
 	BigDecimal getQty();
 
-	boolean isSOTrx();
-
-	default SOTrx getSoTrx()
-	{
-		return SOTrx.ofBoolean(isSOTrx());
-	}
-
-	int getAD_Table_ID();
-
-	int getRecord_ID();
-
-	int getPP_Product_BOM_ID();
-
-	int getPP_Product_BOMLine_ID();
+	SOTrx getSoTrx();
 
 	boolean isDisallowDiscount();
 

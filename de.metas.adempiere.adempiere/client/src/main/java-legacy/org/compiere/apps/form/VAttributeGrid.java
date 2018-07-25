@@ -65,6 +65,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 
 
 /**
@@ -103,7 +104,7 @@ public class VAttributeGrid extends CPanel
 		tabbedPane.add(selectPanel, Msg.getMsg(Env.getCtx(), "Selection"));
 		selectPanel.add(attributeLabel1, new ALayoutConstraint(0,0));
 		m_attributes = MAttribute.getOfClient(Env.getCtx(), true, true);
-		Vector<KeyNamePair> vector = new Vector<KeyNamePair>();
+		Vector<KeyNamePair> vector = new Vector<>();
 		vector.add(new KeyNamePair(0,""));
 		for (int i = 0; i < m_attributes.length; i++)
 			vector.add(m_attributes[i].getKeyNamePair());
@@ -496,7 +497,7 @@ public class VAttributeGrid extends CPanel
 	private void addProduct(CPanel element, MProduct product)
 	{
 		Insets ii = new Insets(2,4,2,4);
-		int M_Product_ID = product.getM_Product_ID();
+		ProductId M_Product_ID = ProductId.ofRepoId(product.getM_Product_ID());
 		CPanel pe = new CPanel();
 		pe.setBorder(BorderFactory.createLineBorder(Color.BLUE, 1));
 		pe.setLayout(new GridBagLayout());
@@ -528,7 +529,7 @@ public class VAttributeGrid extends CPanel
 		formatted = "";
 		if (m_M_Warehouse_ID != 0)
 		{
-			BigDecimal qty = MStorage.getQtyAvailable(m_M_Warehouse_ID, M_Product_ID, 0, null);
+			BigDecimal qty = MStorage.getQtyAvailable(m_M_Warehouse_ID, M_Product_ID.getRepoId(), 0, null);
 			if (qty == null)
 				formatted = "-";
 			else

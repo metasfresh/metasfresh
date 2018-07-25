@@ -18,12 +18,13 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.order.PriceAndDiscount;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -125,7 +126,7 @@ class OrderLinePriceCalculator
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
 		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
-		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
+		orderLine.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
@@ -284,7 +285,7 @@ class OrderLinePriceCalculator
 			final int countryId = getCountryIdOrZero(orderLine);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
-			pricingCtx.setM_PriceList_Version_ID(-1);
+			pricingCtx.setPriceListVersionId(null);
 			pricingCtx.setC_Country_ID(countryId);
 		}
 

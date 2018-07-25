@@ -214,7 +214,7 @@ import lombok.NonNull;
 		final IEditablePricingContext newPricingCtx = pricingCtx.copy();
 		newPricingCtx.setPricingSystemId(basePricingSystemId);
 		newPricingCtx.setPriceListId(null); // will be recomputed
-		newPricingCtx.setM_PriceList_Version_ID(-1); // will be recomputed
+		newPricingCtx.setPriceListVersionId(null); // will be recomputed
 		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);
 		newPricingCtx.setFailIfNotCalculated(true);

@@ -51,6 +51,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice
@@ -104,7 +105,8 @@ public class C_Invoice
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice, trxName);
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
-			if (!ProductPrices.hasMainProductPrice(priceListVersion, invoiceLine.getM_Product_ID()))
+			final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
+			if (!ProductPrices.hasMainProductPrice(priceListVersion, productId))
 			{
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}

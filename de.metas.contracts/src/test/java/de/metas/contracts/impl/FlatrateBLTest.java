@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -39,6 +40,7 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -181,7 +183,12 @@ public class FlatrateBLTest extends ContractsTestBase
 		priceListVersion.setIsActive(true);
 		save(priceListVersion);
 
+		final I_C_UOM productUOM = newInstance(I_C_UOM.class);
+		saveRecord(productUOM);
+
 		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(20);
+		product.setC_UOM(productUOM);
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
@@ -228,7 +235,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						dataEntry.getDate_Reported(),
 						dataEntry.getAD_Org_ID(),
 						warehouse,
-						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(),currentTerm.getBill_Location_ID()),
+						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
 						isSOTrx);
 				minTimes = 0;
 				result = 3;

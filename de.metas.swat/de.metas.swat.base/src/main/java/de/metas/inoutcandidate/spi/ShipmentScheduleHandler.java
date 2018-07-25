@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.spi;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -114,12 +115,8 @@ public abstract class ShipmentScheduleHandler
 	 * <li>The framework will create a {@link I_M_IolCandHandler_Log} record for every object returned by this method.</li>
 	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link IInOutCandHandlerListener}</li>
 	 * </ul>
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
-	public abstract List<Object> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
+	public abstract Iterator<? extends Object> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
 
 	/**
 	 * Creates missing candidates for the given model.

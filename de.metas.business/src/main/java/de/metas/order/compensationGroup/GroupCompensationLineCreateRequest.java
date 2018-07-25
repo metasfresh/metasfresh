@@ -2,7 +2,10 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
+import org.adempiere.uom.UomId;
+
 import de.metas.lang.Percent;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,8 +36,8 @@ import lombok.Value;
 @Builder
 public final class GroupCompensationLineCreateRequest
 {
-	private final int productId;
-	private final int uomId;
+	private final ProductId productId;
+	private final UomId uomId;
 
 	@NonNull
 	private final GroupCompensationType type;
@@ -45,5 +48,5 @@ public final class GroupCompensationLineCreateRequest
 	private final BigDecimal qty;
 	private final BigDecimal price;
 	
-	private final int groupTemplateLineId;
+	private final GroupTemplateLineId groupTemplateLineId;
 }

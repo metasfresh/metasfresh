@@ -19,6 +19,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -68,13 +69,13 @@ public class ProductPrices
 	 * @param productId product (negative values are tolerated)
 	 * @return true if exists
 	 */
-	public static boolean hasMainProductPrice(final I_M_PriceList_Version plv, final int productId)
+	public static boolean hasMainProductPrice(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		if (plv == null)
 		{
 			return false;
 		}
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return false;
 		}
@@ -92,7 +93,7 @@ public class ProductPrices
 
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(
 				productPrice.getM_PriceList_Version(),
-				productPrice.getM_Product_ID());
+				ProductId.ofRepoId(productPrice.getM_Product_ID()));
 
 		final boolean productPriceIsMainPrice = allMainPrices.stream()
 				.anyMatch(mainPrice -> mainPrice.getM_ProductPrice_ID() == productPrice.getM_ProductPrice_ID());
@@ -104,7 +105,7 @@ public class ProductPrices
 		getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
 
-	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final int productId)
+	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId);
 		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
@@ -112,7 +113,7 @@ public class ProductPrices
 
 	private static List<I_M_ProductPrice> retrieveAllMainPrices(
 			@NonNull final I_M_PriceList_Version plv,
-			final int productId)
+			final ProductId productId)
 	{
 		final List<I_M_ProductPrice> allMainPrices = newMainProductPriceQuery(plv, productId)
 				.toQuery()
@@ -120,10 +121,10 @@ public class ProductPrices
 		return allMainPrices;
 	}
 
-	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final int productId)
+	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		return newQuery(plv)
-				.setM_Product_ID(productId)
+				.setProductId(productId)
 				.noAttributePricing()
 				//
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
@@ -148,7 +149,7 @@ public class ProductPrices
 	private static AdempiereException newDuplicateMainProductPriceException(@NonNull final I_M_ProductPrice someMainProductPrice)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final String productName = productBL.getProductValueAndName(someMainProductPrice.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(ProductId.ofRepoId(someMainProductPrice.getM_Product_ID()));
 
 		final I_M_PriceList_Version plv = someMainProductPrice.getM_PriceList_Version();
 		final I_M_PriceList pl = plv.getM_PriceList();

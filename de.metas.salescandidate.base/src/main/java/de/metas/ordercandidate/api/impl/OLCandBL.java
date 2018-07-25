@@ -61,6 +61,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
@@ -176,7 +177,7 @@ public class OLCandBL implements IOLCandBL
 			pricingCtx.setBPartnerId(billBPartnerId);
 			pricingCtx.setQty(qty);
 			pricingCtx.setPriceDate(date);
-			pricingCtx.setSOTrx(true);
+			pricingCtx.setSOTrx(SOTrx.SALES);
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
@@ -186,7 +187,7 @@ public class OLCandBL implements IOLCandBL
 				throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 			}
 			pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
-			pricingCtx.setM_Product_ID(effectiveValuesBL.getM_Product_Effective_ID(olCand));
+			pricingCtx.setProductId(ProductId.ofRepoIdOrNull(effectiveValuesBL.getM_Product_Effective_ID(olCand)));
 
 			pricingResult = pricingBL.calculatePrice(pricingCtx);
 

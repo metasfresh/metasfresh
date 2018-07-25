@@ -96,6 +96,11 @@ public class OrderGroupCompensationUtils
 		return isGeneratedCompensationLine(orderLine.getC_CompensationGroup_SchemaLine_ID());
 	}
 
+	public static boolean isGeneratedCompensationLine(final GroupTemplateLineId groupSchemaLineId)
+	{
+		return isGeneratedCompensationLine(GroupTemplateLineId.toRepoId(groupSchemaLineId));
+	}
+
 	public static boolean isGeneratedCompensationLine(final int groupSchemaLineId)
 	{
 		return groupSchemaLineId > 0;

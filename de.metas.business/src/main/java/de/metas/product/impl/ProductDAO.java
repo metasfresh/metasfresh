@@ -59,13 +59,19 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
 	{
-		return loadOutOfTrx(productId.getRepoId(), I_M_Product.class); // assume caching is configured on table level
+		return getById(productId, I_M_Product.class);
+	}
+
+	@Override
+	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
+	{
+		return loadOutOfTrx(productId, productClass); // assume caching is configured on table level
 	}
 
 	@Override
 	public I_M_Product getById(final int productId)
 	{
-		return getById(ProductId.ofRepoId(productId));
+		return getById(ProductId.ofRepoId(productId), I_M_Product.class);
 	}
 
 	@Override

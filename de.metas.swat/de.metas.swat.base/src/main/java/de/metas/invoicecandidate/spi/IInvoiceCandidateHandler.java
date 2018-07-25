@@ -36,6 +36,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 
 /**
@@ -257,7 +258,7 @@ public interface IInvoiceCandidateHandler
 		public static final PriceAndTax NONE = builder().build();
 
 		PricingSystemId pricingSystemId;
-		int priceListVersionId;
+		PriceListVersionId priceListVersionId;
 		CurrencyId currencyId;
 
 		BigDecimal priceEntered;

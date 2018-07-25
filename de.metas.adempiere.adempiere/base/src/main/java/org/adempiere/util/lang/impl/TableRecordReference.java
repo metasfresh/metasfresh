@@ -473,4 +473,14 @@ public final class TableRecordReference implements ITableRecordReference
 	{
 		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
 	}
+
+	public static <T> List<T> getModels(
+			@NonNull final Collection<ITableRecordReference> references,
+			@NonNull final Class<T> modelClass)
+	{
+		return references
+				.stream()
+				.map(ref -> ref.getModel(modelClass))
+				.collect(ImmutableList.toImmutableList());
+	}
 }
