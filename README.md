@@ -54,7 +54,10 @@ Application comes with a set of tests, both unit as well as functional.
 
 ##### Prequisites
 
-Note that you might need to first install cypress; [this documentation](https://docs.cypress.io/guides/getting-started/installing-cypress.html#npm-install) tells you how.
+Note that you might need to first install cypress; [this documentation](https://docs.cypress.io/guides/getting-started/installing-cypress.html#npm-install) tells you how:
+
+> npm install cypress --save-dev
+
 Also note that in additiona you might also need to do a full `npm install` afterwards.
 
 Also, you'll need to configure the login credentials/API endpoints. One file is responsible for this:
