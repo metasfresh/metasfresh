@@ -52,19 +52,28 @@ Application comes with a set of tests, both unit as well as functional.
 
 #### Cypress e2e tests
 
+##### Prequisites
+
 Note that you might need to first install cypress; [this documentation](https://docs.cypress.io/guides/getting-started/installing-cypress.html#npm-install) tells you how.
 Also note that in additiona you might also need to do a full `npm install` afterwards.
 
-Also, you'll need to configure the base url of the app, as well as login credentials/API endpoints. Two files are responsible for this:
+Also, you'll need to configure the login credentials/API endpoints. One file is responsible for this:
 
-- cypress.json - stores the baseUrl of the app
-- cypress/config.js - stores API endpoints and login credentials
+- `cypress/config.js` - stores API endpoints and login credentials
+
+There is a file `cypress/config.js_template` which you can copy to `cypress/config.js` and edit according to your needs.
+
+##### Running
 
 To run the tests, navigate to this repository's root folder type this in the terminal:
 
 > npm run cypress:open
 
-Then you can select particular test suites, or the whole suite to run. 
+If the webui you test against is not running on http://localhost:3000 you can start cypress like this (example):
+
+> CYPRESS_baseUrl=http://192.168.99.100:30080 npm run cypress:open
+
+When it runs, you can select particular test suites, or the whole suite to run. 
 
 ### Contribution
 
