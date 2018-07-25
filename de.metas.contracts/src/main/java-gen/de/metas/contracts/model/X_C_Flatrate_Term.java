@@ -15,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1223136421L;
+	private static final long serialVersionUID = -1063863893L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -1610,6 +1610,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TERMINATIONREASON_CanNotRead = "Cnr";
 	/** NotReachable = Nr */
 	public static final String TERMINATIONREASON_NotReachable = "Nr";
+	/** IncorrectlyRecorded = Err */
+	public static final String TERMINATIONREASON_IncorrectlyRecorded = "Err";
 	/** Set Termination Reason.
 		@param TerminationReason Termination Reason	  */
 	@Override

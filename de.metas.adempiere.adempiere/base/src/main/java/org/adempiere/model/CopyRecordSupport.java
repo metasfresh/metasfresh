@@ -36,13 +36,8 @@ import com.google.common.collect.ImmutableList;
 public interface CopyRecordSupport
 {
 	/**
-	 * Copy the persistence object with all his children
-	 *
-	 * @param po
-	 * @param parentKeyColumn
-	 * @param parent_id
-	 * @param grid
-	 *            tab
+	 * Copy the persistence object with all his children.
+	 * Note: before invoking this, invoke {@link #setParentPO(PO)}.
 	 */
 	void copyRecord(PO po, String trxName);
 
@@ -56,7 +51,7 @@ public interface CopyRecordSupport
 	 * @return a list of tables with info
 	 */
 	List<CopyRecordSupportTableInfo> getSuggestedChildren(PO po, List<CopyRecordSupportTableInfo> suggestedChildren);
-	
+
 	default List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
 	{
 		return getSuggestedChildren(po, ImmutableList.of());
@@ -73,13 +68,13 @@ public interface CopyRecordSupport
 
 	void setParentKeyColumn(String parentKeyColumn);
 
-	void setParentPO(PO parentPO);
+	CopyRecordSupport setParentPO(PO parentPO);
 
 	void setSuggestedChildrenToCopy(List<CopyRecordSupportTableInfo> suggestedChildrenToCopy);
 
 	void setFromPO_ID(int oldPO_id);
 
-	void setBase(boolean base);
+	CopyRecordSupport setBase(boolean base);
 
 	/**
 	 * Gets the value to be copied for a column which is calculated and whom value is not desirable to be copied.
@@ -102,9 +97,9 @@ public interface CopyRecordSupport
 	void setAD_Window_ID(int aDWindowID);
 
 	/**
-	 * Allows other modules to install customer code to be executed each time a record was copied.
+	 * Allows other modules to install custom code to be executed each time a record was copied.
 	 * <p>
-	 * <b>Important:</b> usually it makes sense to register a listerner not here, but by invoking {@link CopyRecordFactory#registerCopyRecordSupport(String, Class)}.
+	 * <b>Important:</b> usually it makes sense to register a listener not here, but by invoking {@link CopyRecordFactory#registerCopyRecordSupport(String, Class)}.
 	 * A listener that is registered there will be added to each CopyRecordSupport instance created by that factory.
 	 *
 	 * @param listener
