@@ -83,7 +83,8 @@ public class ContractChangeBL implements IContractChangeBL
 	public static final String MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = "de.metas.contracts.isNotAllowedToTerminateCurrentContract";
 
 	@Override
-	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
+	public void cancelContract(
+			@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
@@ -145,7 +146,8 @@ public class ContractChangeBL implements IContractChangeBL
 		private boolean isOrderCreated = false;
 	}
 
-	private void cancelContractIfNotCanceledAlready(@NonNull final I_C_Flatrate_Term currentTerm,
+	private void cancelContractIfNotCanceledAlready(
+			@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
 		if (isCanceledContract(currentTerm))

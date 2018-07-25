@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.dunning.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Dunning_Candidate_Invoice_v1
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 234799903L;
+	private static final long serialVersionUID = 1347658422L;
 
     /** Standard Constructor */
     public X_C_Dunning_Candidate_Invoice_v1 (Properties ctx, int C_Dunning_Candidate_Invoice_v1_ID, String trxName)
@@ -58,14 +41,6 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Dunning_Candidate_Invoice_v1[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	@Override
 	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
 	{
@@ -85,7 +60,7 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -271,9 +246,9 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 	public void setC_Invoice_ID (int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
 	}
 
 	/** Get Rechnung.
@@ -308,9 +283,9 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 	public void setC_InvoicePaySchedule_ID (int C_InvoicePaySchedule_ID)
 	{
 		if (C_InvoicePaySchedule_ID < 1) 
-			set_Value (COLUMNNAME_C_InvoicePaySchedule_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_InvoicePaySchedule_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_InvoicePaySchedule_ID, Integer.valueOf(C_InvoicePaySchedule_ID));
+			set_ValueNoCheck (COLUMNNAME_C_InvoicePaySchedule_ID, Integer.valueOf(C_InvoicePaySchedule_ID));
 	}
 
 	/** Get Zahlungsplan.
@@ -337,7 +312,7 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
-	/** Set Zahlungskondition.
+	/** Set Zahlungsbedingung.
 		@param C_PaymentTerm_ID 
 		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
@@ -350,7 +325,7 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	/** Get Zahlungskondition.
+	/** Get Zahlungsbedingung.
 		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
@@ -434,7 +409,7 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GrandTotal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -479,7 +454,7 @@ public class X_C_Dunning_Candidate_Invoice_v1 extends org.compiere.model.PO impl
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

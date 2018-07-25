@@ -34,12 +34,13 @@ import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere.RunMode;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.api.impl.AsyncBatchDAO;
@@ -53,7 +54,7 @@ import de.metas.event.Topic;
 /**
  * ASync module main validator. This is the entry point for all other stuff.
  *
- * NOTE: to prevent data coruption, this validator shall be started as last one because it will also start the queue processors (if running on server).
+ * NOTE: to prevent data corruption, this validator shall be started as last one because it will also start the queue processors (if running on server).
  * Also to make sure this case does not happen we are using a inital delay (see {@link #getInitDelayMillis()}).
  *
  * @author tsa
@@ -75,10 +76,10 @@ public class Main extends AbstractModuleInterceptor
 
 		// task 04585: start queue processors only if we are running on the backend server.
 		// =>why not always run them?
-		// if we have two adempiere wars/ears (one backend, one webUI), JMX names will collide
+		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
-		if (Ini.getRunMode() == RunMode.BACKEND)
+		if (Adempiere.isSpringProfileActive(Profiles.PROFILE_App))
 		{
 			final int initDelayMillis = getInitDelayMillis();
 			Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);
