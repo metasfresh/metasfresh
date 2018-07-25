@@ -10,13 +10,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 
@@ -30,12 +30,12 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -91,8 +91,8 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 	private void assertOnlyFirstRecordIsReturned()
 	{
-		final List<Object> result = new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
-		
+		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isInstanceOf(I_C_SubscriptionProgress.class);
 
@@ -102,7 +102,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 	private void assertBothRecordsAreReturned()
 	{
-		final List<Object> secondResult = new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+		final List<? extends Object> secondResult = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 		assertThat(secondResult).hasSize(2);
 
 		assertThat(secondResult).allSatisfy(r -> {
