@@ -142,3 +142,14 @@ UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2018-07-26 13:0
 
 
 
+
+-- 2018-07-26T17:37:35.448
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2018-07-26 17:37:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560689
+;
+
+-- 2018-07-26T17:37:42.606
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2018-07-26 17:37:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560690
+;
+
