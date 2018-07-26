@@ -173,7 +173,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
 		final I_C_UOM uom = productBL.getStockingUOM(productAndAttributes.getProductId());
-		huPackingAware.setM_Product_ID(productAndAttributes.getProductId());
+		huPackingAware.setM_Product_ID(productAndAttributes.getProductId().getRepoId());
 		huPackingAware.setC_UOM(uom);
 		huPackingAware.setM_AttributeSetInstance_ID(createASI(productAndAttributes));
 

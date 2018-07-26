@@ -15,7 +15,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -102,8 +101,7 @@ import lombok.NonNull;
 				.map(HUEditorRowAttributesHelper::extractAttributeName)
 				.collect(GuavaCollectors.toImmutableSet());
 
-		hiddenAttributeNames = 
-				attributesStorage.getAttributes()
+		hiddenAttributeNames = attributesStorage.getAttributes()
 				.stream()
 				.filter(attribute -> !attributesStorage.isDisplayedUI(productIDs, attribute))
 				.map(HUEditorRowAttributesHelper::extractAttributeName)
@@ -272,11 +270,12 @@ import lombok.NonNull;
 
 	public Optional<String> getSSCC18()
 	{
-		final I_M_Attribute sscc18Attribute = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18Attribute(Env.getCtx());
+		final I_M_Attribute sscc18Attribute = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18Attribute();
 		if (!attributesStorage.hasAttribute(sscc18Attribute))
 		{
 			return Optional.empty();
 		}
+
 		final String sscc18 = attributesStorage.getValueAsString(sscc18Attribute);
 		if (Check.isEmpty(sscc18, true))
 		{

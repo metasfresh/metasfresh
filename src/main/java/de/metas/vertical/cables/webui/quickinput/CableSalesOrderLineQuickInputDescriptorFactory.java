@@ -77,11 +77,16 @@ import lombok.NonNull;
 	public QuickInputDescriptor createQuickInputDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId, final Optional<Boolean> soTrx)
 	{
 		final DocumentEntityDescriptor entityDescriptor = createDescriptorBuilder(documentTypeId, detailId, soTrx)
-				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID))
-				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Cable_Product_ID))
-				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID))
-				.addField(createQuantityFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_CableLength))
-				.addField(createQuantityFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Qty))
+				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID)
+						.setMandatoryLogic(true))
+				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Cable_Product_ID)
+						.setMandatoryLogic(false))
+				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID)
+						.setMandatoryLogic(false))
+				.addField(createQuantityFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
+						.setMandatoryLogic(true))
+				.addField(createQuantityFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Qty)
+						.setMandatoryLogic(true))
 				.build();
 
 		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {

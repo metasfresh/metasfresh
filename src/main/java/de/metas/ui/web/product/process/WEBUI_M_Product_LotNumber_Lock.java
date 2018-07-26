@@ -113,7 +113,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 	{
 		final LotNumberLock lotNoLock = lotNoLockRepo.getById(lotNoLockId);
 
-		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute(getCtx());
+		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute();
 
 		if (lotNoAttribute == null)
 		{
