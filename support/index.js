@@ -25,6 +25,10 @@ Cypress.on('uncaught:exception', (err, runnable) => {
   return false
 });
 
+Cypress.on('emit:counterpartTranslations', messages => {
+  Cypress.messages = messages;
+});
+
 /**
  * Emulates Tab key navigation.
  */
