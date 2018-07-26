@@ -33,6 +33,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -345,7 +346,7 @@ public class MAttributeSet extends X_M_AttributeSet
 		return "\u00bb";
 	}	// getLotCharEnd
 
-	public KeyNamePair createLot(final int M_Product_ID)
+	public KeyNamePair createLot(@NonNull final ProductId productId)
 	{
 		int M_LotCtl_ID = getM_LotCtl_ID();
 		if (M_LotCtl_ID <= 0)
@@ -354,7 +355,7 @@ public class MAttributeSet extends X_M_AttributeSet
 		}
 
 		final MLotCtl ctl = new MLotCtl(getCtx(), M_LotCtl_ID, ITrx.TRXNAME_None);
-		final MLot lot = ctl.createLot(M_Product_ID);
+		final MLot lot = ctl.createLot(productId.getRepoId());
 		return new KeyNamePair(lot.getM_Lot_ID(), lot.getName());
 	}	// createLot
 

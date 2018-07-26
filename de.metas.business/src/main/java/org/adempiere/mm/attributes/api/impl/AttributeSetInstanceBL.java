@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -83,104 +82,79 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 
 		// services
-		final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 		//
 		// Get the M_AttributeSet
-		I_M_AttributeSet as = asi.getM_AttributeSet();
-		if (as == null && asi.getM_AttributeSet_ID() == AttributeConstants.M_AttributeSet_ID_None)
-		{
-			// FIXME: this is a workaround because our persistence engine returns NULL in case
-			// the ID=0, even if is existing in database
-			// Also see task http://dewiki908/mediawiki/index.php/08765_Introduce_AD_Table.IDRangeStart_%28107200611713%29
-			as = attributesDAO.retrieveNoAttributeSet();
-		}
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(asi.getM_AttributeSet_ID());
+		final I_M_AttributeSet attributeSet = attributesRepo.getAttributeSetById(attributeSetId);
 
-		final StringBuilder sb = new StringBuilder();
+		final StringBuilder description = new StringBuilder();
 
 		//
 		// Retrieve Attribute Instances and sort them by M_Attribute.SeqNo
-		final List<I_M_AttributeInstance> attributeInstances = attributesDAO.retrieveAttributeInstances(asi);
+		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(asi);
 		// TODO: attribute instances shall be sorted by M_AttributeUse.SeqNo
 
 		// Instance Attribute Values
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
-			String value = instance.getValue();
-			if (Check.isEmpty(value) && instance.getValueDate() != null)
+			final String value = buildDescription(instance, verboseDescription);
+			if (value == null || value.isEmpty())
 			{
-				final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
-				value = dateFormat.format(instance.getValueDate());
-			}
-			if (Check.isEmpty(value) && instance.getValueNumber() != null && verboseDescription)
-			{
-				// only try value number if verboseDescription==true.
-				// it looks like this for "empty" ASIs and currently there is no demand for "normal" users : 0_0_0_0_0
-				// after all we are just creating a description here that just contains of AI values..not even the attribute name is included.
-				value = instance.getValueNumber().toString();
+				continue;
 			}
 
-			if (!Check.isEmpty(value, false))
+			if (description.length() > 0)
 			{
-				if (sb.length() > 0)
-				{
-					sb.append("_");
-				}
-
-				final I_M_AttributeValue attributeValue = instance.getM_AttributeValue();
-				if (attributeValue != null && attributeValue.getM_AttributeValue_ID() > 0)
-				{
-					sb.append(attributeValue.getName());
-				}
-				else
-				{
-					sb.append(value);
-				}
+				description.append("_");
 			}
+			description.append(value);
 		}
 
 		// SerNo
-		if (as.isSerNo() && asi.getSerNo() != null)
+		if (attributeSet.isSerNo() && asi.getSerNo() != null)
 		{
-			if (sb.length() > 0)
+			if (description.length() > 0)
 			{
-				sb.append("_");
+				description.append("_");
 			}
-			sb.append(null == as.getSerNoCharSOverwrite() || as.getSerNoCharSOverwrite().isEmpty() ? "#" : as.getSerNoCharSOverwrite());
-			sb.append(asi.getSerNo());
-			sb.append(null == as.getSerNoCharEOverwrite() || as.getSerNoCharEOverwrite().isEmpty() ? "#" : as.getSerNoCharEOverwrite());
+			description.append(null == attributeSet.getSerNoCharSOverwrite() || attributeSet.getSerNoCharSOverwrite().isEmpty() ? "#" : attributeSet.getSerNoCharSOverwrite());
+			description.append(asi.getSerNo());
+			description.append(null == attributeSet.getSerNoCharEOverwrite() || attributeSet.getSerNoCharEOverwrite().isEmpty() ? "#" : attributeSet.getSerNoCharEOverwrite());
 		}
 
 		// Lot
-		if (as.isLot() && asi.getLot() != null)
+		if (attributeSet.isLot() && asi.getLot() != null)
 		{
-			if (sb.length() > 0)
+			if (description.length() > 0)
 			{
-				sb.append("_");
+				description.append("_");
 			}
-			sb.append(null == as.getLotCharSOverwrite() || as.getSerNoCharSOverwrite().isEmpty() ? "#" : as.getLotCharSOverwrite());
-			sb.append(asi.getLot());
-			sb.append(null == as.getLotCharEOverwrite() || as.getSerNoCharEOverwrite().isEmpty() ? "#" : as.getLotCharEOverwrite());
+			description.append(null == attributeSet.getLotCharSOverwrite() || attributeSet.getSerNoCharSOverwrite().isEmpty() ? "#" : attributeSet.getLotCharSOverwrite());
+			description.append(asi.getLot());
+			description.append(null == attributeSet.getLotCharEOverwrite() || attributeSet.getSerNoCharEOverwrite().isEmpty() ? "#" : attributeSet.getLotCharEOverwrite());
 		}
 
 		// GuaranteeDate
 		// NOTE: we are not checking if "as.isGuaranteeDate()" because it could be that GuaranteeDate was set even though in attribute set did not mention it (task #09363).
 		if (asi.getGuaranteeDate() != null)
 		{
-			if (sb.length() > 0)
+			if (description.length() > 0)
 			{
-				sb.append("_");
+				description.append("_");
 			}
-			sb.append(DisplayType.getDateFormat(DisplayType.Date).format(asi.getGuaranteeDate()));
+			description.append(DisplayType.getDateFormat(DisplayType.Date).format(asi.getGuaranteeDate()));
 		}
+
 		// Product Attribute Values
-		for (final I_M_Attribute attribute : attributesDAO.retrieveAttributes(as, false))
+		for (final I_M_Attribute attribute : attributesRepo.retrieveAttributes(attributeSet, false))
 		{
-			if (sb.length() > 0)
+			if (description.length() > 0)
 			{
-				sb.append("_");
+				description.append("_");
 			}
-			sb.append(attribute.getName());
+			description.append(attribute.getName());
 		}
 
 		// NOTE: mark: if there is nothing to show then don't show ASI ID because that number will confuse the user.
@@ -190,13 +164,41 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		// sb.append(asi.getM_AttributeSetInstance_ID());
 		// }
 
-		return sb.toString();
+		return description.toString();
+	}
+
+	private String buildDescription(final I_M_AttributeInstance instance, final boolean verboseDescription)
+	{
+		String value = instance.getValue();
+
+		if (Check.isEmpty(value) && instance.getValueDate() != null)
+		{
+			final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
+			value = dateFormat.format(instance.getValueDate());
+		}
+		if (Check.isEmpty(value) && instance.getValueNumber() != null && verboseDescription)
+		{
+			// only try value number if verboseDescription==true.
+			// it looks like this for "empty" ASIs and currently there is no demand for "normal" users : 0_0_0_0_0
+			// after all we are just creating a description here that just contains of AI values..not even the attribute name is included.
+			value = instance.getValueNumber().toString();
+		}
+
+		if (!Check.isEmpty(value, false))
+		{
+			final I_M_AttributeValue attributeValue = instance.getM_AttributeValue();
+			if (attributeValue != null && attributeValue.getM_AttributeValue_ID() > 0)
+			{
+				value = attributeValue.getName();
+			}
+		}
+
+		return value;
 	}
 
 	@Override
-	public void setDescription(final I_M_AttributeSetInstance asi)
+	public void setDescription(@NonNull final I_M_AttributeSetInstance asi)
 	{
-		Check.assumeNotNull(asi, "asi not null");
 		final String description = buildDescription(asi);
 		asi.setDescription(description);
 	}

@@ -40,6 +40,8 @@ public interface IDocTypeDAO extends ISingletonService
 {
 	I_C_DocType getById(int docTypeId);
 
+	I_C_DocType getById(DocTypeId docTypeId);
+
 	/**
 	 * @return C_DocType_ID or -1 if not found
 	 */

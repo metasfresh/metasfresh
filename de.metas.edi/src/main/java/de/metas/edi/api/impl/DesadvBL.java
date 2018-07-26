@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -142,7 +143,7 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setProductDescription(orderLine.getProductDescription());
 
 		final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
-				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product(), orderLine.getM_Product().getAD_Org_ID()),
+				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product(), OrgId.ofRepoId(orderLine.getM_Product().getAD_Org_ID())),
 				I_C_BPartner_Product.class);
 
 		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments

@@ -37,6 +37,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
+import de.metas.lang.SOTrx;
+
 /**
  * Material Attributes DAO
  *
@@ -83,10 +85,10 @@ public interface IAttributeDAO extends ISingletonService
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
 	 *
 	 * @param attribute
-	 * @param isSOTrx if NULL, retrieve all attribute values.
+	 * @param soTrx if NULL, retrieve all attribute values.
 	 * @return
 	 */
-	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, Boolean isSOTrx);
+	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes

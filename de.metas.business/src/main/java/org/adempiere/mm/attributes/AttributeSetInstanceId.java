@@ -44,6 +44,12 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return id;
 	}
 
+	public static AttributeSetInstanceId ofRepoIdOrNone(final int repoId)
+	{
+		final AttributeSetInstanceId asiId = ofRepoIdOrNull(repoId);
+		return asiId != null ? asiId : NONE;
+	}
+
 	public static AttributeSetInstanceId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == NONE.repoId)
@@ -80,5 +86,10 @@ public class AttributeSetInstanceId implements RepoIdAware
 	public boolean isNone()
 	{
 		return repoId == NONE.repoId;
+	}
+
+	public static boolean isRegular(final AttributeSetInstanceId asiId)
+	{
+		return asiId != null && !asiId.isNone();
 	}
 }
