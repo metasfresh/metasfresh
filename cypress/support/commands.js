@@ -32,130 +32,130 @@ import Auth from '../../src/services/Auth';
 import config from '../config';
 
 context('Reusable "login" custom command', function() {
-    Cypress.Commands.add('loginByForm', (username, password, redirect) => {
-        let user = username;
-        let pass = password;
+  Cypress.Commands.add('loginByForm', (username, password, redirect) => {
+    let user = username;
+    let pass = password;
 
-        if (!username || !password) {
-            user = config.username;
-            pass = config.password;
+    if (!username || !password) {
+      user = config.username;
+      pass = config.password;
+    }
+
+    Cypress.log({
+      name: 'loginByForm',
+      message: user + ' | ' + pass,
+    });
+
+    const handleSuccess = function() {
+      if (redirect) {
+        Cypress.reduxStore.dispatch(goBack());
+      } else {
+        Cypress.reduxStore.dispatch(push('/'));
+      }
+    };
+
+    const checkIfAlreadyLogged = function() {
+      const error = new Error('Error when checking if user logged in');
+
+      return cy
+        .request({
+          method: 'GET',
+          url: config.API_URL + '/login/isLoggedIn',
+          failOnStatusCode: false,
+          followRedirect: false,
+        })
+        .then(response => {
+          if (!response.body.error) {
+            return Cypress.reduxStore.dispatch(push('/'));
+          }
+
+          return Promise.reject(error);
+        });
+    };
+
+    const auth = new Auth();
+
+    cy.on('emit:reduxStore', store => {
+      Cypress.reduxStore = store;
+    });
+
+    cy.visit('/login');
+
+    return cy
+      .request({
+        method: 'POST',
+        url: config.API_URL + '/login/authenticate',
+        failOnStatusCode: false,
+        followRedirect: false,
+        body: {
+          username: user,
+          password: pass,
+        },
+      })
+      .then(response => {
+        if (!response.isOkStatusCode) {
+          return checkIfAlreadyLogged();
         }
 
-        Cypress.log({
-            name: 'loginByForm',
-            message: user + ' | ' + pass,
-        });
-
-        const handleSuccess = function() {
-            if (redirect) {
-                Cypress.reduxStore.dispatch(goBack());
-            } else {
-                Cypress.reduxStore.dispatch(push('/'));
-            }
-        };
-
-        const checkIfAlreadyLogged = function() {
-            const error = new Error('Error when checking if user logged in');
-
-            return cy
-                .request({
-                    method: 'GET',
-                    url: config.API_URL + '/login/isLoggedIn',
-                    failOnStatusCode: false,
-                    followRedirect: false,
-                })
-                .then(response => {
-                    if (!response.body.error) {
-                        return Cypress.reduxStore.dispatch(push('/'));
-                    }
-
-                    return Promise.reject(error);
-                });
-        };
-
-        const auth = new Auth();
-
-        cy.on('emit:reduxStore', store => {
-            Cypress.reduxStore = store;
-        });
-
-        cy.visit('/login');
+        if (response.body.loginComplete) {
+          return handleSuccess();
+        }
+        const roles = List(response.body.roles);
 
         return cy
-            .request({
-                method: 'POST',
-                url: config.API_URL + '/login/authenticate',
-                failOnStatusCode: false,
-                followRedirect: false,
-                body: {
-                    username: user,
-                    password: pass,
-                },
-            })
-            .then(response => {
-                if (!response.isOkStatusCode) {
-                    return checkIfAlreadyLogged();
-                }
+          .request({
+            method: 'POST',
+            url: config.API_URL + '/login/loginComplete',
+            body: roles.get(0),
+            failOnStatusCode: false,
+          })
+          .then(() => {
+            Cypress.reduxStore.dispatch(loginSuccess(auth));
 
-                if (response.body.loginComplete) {
-                    return handleSuccess();
-                }
-                const roles = List(response.body.roles);
-
-                return cy
-                    .request({
-                        method: 'POST',
-                        url: config.API_URL + '/login/loginComplete',
-                        body: { ...roles.get(0) },
-                        failOnStatusCode: false,
-                    })
-                    .then(() => {
-                        Cypress.reduxStore.dispatch(loginSuccess(auth));
-
-                        handleSuccess();
-                    });
-            });
-    });
+            handleSuccess();
+          });
+      });
+  });
 });
 
 describe('Enter value into string field', function() {
-    Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
-        cy.get(`.form-field-${fieldName}`)
-            .find('input')
-            .type(stringValue);
-    });
+  Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
+    cy.get(`.form-field-${fieldName}`)
+      .find('input')
+      .type(stringValue);
+  });
 });
 
 describe('Enter value into list field', function() {
-    Cypress.Commands.add(
-        'writeIntoListField',
-        (fieldName, partialValue, listValue) => {
-            cy.get(`.form-field-${fieldName}`)
-                .find('input')
-                .type(partialValue);
-            cy.get('.input-dropdown-list').should('exist');
-            cy.contains('.input-dropdown-list-option', listValue).click();
-            cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-        }
-    );
+  Cypress.Commands.add(
+    'writeIntoListField',
+    (fieldName, partialValue, listValue) => {
+      cy.get(`.form-field-${fieldName}`)
+        .find('input')
+        .type(partialValue);
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+    }
+  );
 });
 
 describe('Execute a doc action', function() {
-    Cypress.Commands.add('processDocument', (action, expectedStatus) => {
-        cy.get('.form-field-DocAction')
-            .find('.meta-dropdown-toggle')
-            .click();
+  Cypress.Commands.add('processDocument', (action, expectedStatus) => {
+    cy.get('.form-field-DocAction')
+      .find('.meta-dropdown-toggle')
+      .click();
 
-        cy.get('.form-field-DocAction')
-            .find('.dropdown-status-toggler')
-            .should('have.class', 'dropdown-status-open');
+    cy.get('.form-field-DocAction')
+      .find('.dropdown-status-toggler')
+      .should('have.class', 'dropdown-status-open');
 
-        cy.get('.form-field-DocAction .dropdown-status-list')
-            .find('.dropdown-status-item')
-            .contains(action)
-            .click();
+    cy.get('.form-field-DocAction .dropdown-status-list')
+      .find('.dropdown-status-item')
+      .contains(action)
+      .click();
 
-        cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-        cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
-    });
+    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
+  });
 });
