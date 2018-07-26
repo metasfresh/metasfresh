@@ -57,7 +57,7 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 	@Override
 	public DocumentId process(final QuickInput quickInput)
 	{
-		final I_M_Forecast forecast= quickInput.getRootDocumentAs(I_M_Forecast.class);
+		final I_M_Forecast forecast = quickInput.getRootDocumentAs(I_M_Forecast.class);
 		final I_M_ForecastLine forecastLine = InterfaceWrapperHelper.newInstance(I_M_ForecastLine.class, forecast);
 		forecastLine.setM_Forecast(forecast);
 		updateForecastLine(forecastLine, quickInput);

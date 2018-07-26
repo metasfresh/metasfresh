@@ -1,5 +1,6 @@
 package de.metas.vertical.cables.webui.quickinput;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -57,7 +58,11 @@ public class CableSalesOrderLineQuickInputProcessor implements IQuickInputProces
 	{
 		final ICablesOrderLineQuickInput quickInputModel = fromQuickInput.getQuickInputDocumentAs(ICablesOrderLineQuickInput.class);
 		final ProductId productId = getBOMProductId(quickInputModel);
+		
+		final BigDecimal cableLength = quickInputModel.getCableLength();
+		final BigDecimal qty = quickInputModel.getQty();
 
+		
 		// TODO
 		throw new UnsupportedOperationException("not implemented");
 	}
@@ -79,9 +84,11 @@ public class CableSalesOrderLineQuickInputProcessor implements IQuickInputProces
 			final String bomValues = boms.stream().map(I_PP_Product_BOM::getValue).collect(Collectors.joining(", "));
 			throw new AdempiereException("More than one BOMs found: " + bomValues);
 		}
-
-		final I_PP_Product_BOM bom = boms.get(0);
-		return ProductId.ofRepoId(bom.getM_Product_ID());
+		else
+		{
+			final I_PP_Product_BOM bom = boms.get(0);
+			return ProductId.ofRepoId(bom.getM_Product_ID());
+		}
 	}
 
 }

@@ -41,6 +41,7 @@ import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -590,7 +591,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final ImmutableAttributeSet attributes = ImmutableAttributeSet.ofValuesIndexByAttributeId(lookupValue.getAttribute(ATTRIBUTE_ASI));
 
 		return ProductAndAttributes.builder()
-				.productId(lookupValue.getIdAsInt())
+				.productId(ProductId.ofRepoId(lookupValue.getIdAsInt()))
 				.attributes(attributes)
 				.build();
 	}
@@ -599,7 +600,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	@Builder
 	public static class ProductAndAttributes
 	{
-		private final int productId;
+		@NonNull
+		private final ProductId productId;
 
 		@Default
 		@NonNull
