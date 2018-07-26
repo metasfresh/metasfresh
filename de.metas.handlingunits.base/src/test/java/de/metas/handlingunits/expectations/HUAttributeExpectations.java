@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
-import org.compiere.model.I_M_Attribute;
 
 import com.google.common.collect.ImmutableList;
 
@@ -62,8 +62,8 @@ public class HUAttributeExpectations<ParentExpectationType> extends AbstractHUEx
 
 		for (final HUAttributeExpectation<HUAttributeExpectations<ParentExpectationType>> expectation : expectations)
 		{
-			final I_M_Attribute attribute = expectation.getAttributeNotNull();
-			final I_M_HU_Attribute huAttribute = Services.get(IHUAttributesDAO.class).retrieveAttribute(hu, attribute);
+			final AttributeId attributeId = expectation.getAttributeIdNotNull();
+			final I_M_HU_Attribute huAttribute = Services.get(IHUAttributesDAO.class).retrieveAttribute(hu, attributeId);
 			expectation.assertExpected(messageActual.expect("attribute is matching"), huAttribute);
 		}
 

@@ -28,15 +28,16 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import lombok.NonNull;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
@@ -96,10 +97,10 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		return huAttributes;
 	}
 
-	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, final I_M_Attribute attribute)
+	private final List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
 	{
 		final List<I_M_HU_Attribute> huAttributes = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID()))
+				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId))
 				.filter(new EqualsQueryFilter<I_M_HU_Attribute>(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
@@ -115,9 +116,9 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final I_M_Attribute attribute)
+	public I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final AttributeId attributeId)
 	{
-		final List<I_M_HU_Attribute> huAttributes = retrieveAttributes(hu, attribute);
+		final List<I_M_HU_Attribute> huAttributes = retrieveAttributes(hu, attributeId);
 		if (huAttributes.isEmpty())
 		{
 			return null;
@@ -128,7 +129,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		}
 		else
 		{
-			throw new AdempiereException("More than one HU Attributes were found for " + attribute.getName() + " on " + hu.getM_HU_ID() + ": " + huAttributes);
+			throw new AdempiereException("More than one HU Attributes were found for '" + attributeId + "' on " + hu.getM_HU_ID() + ": " + huAttributes);
 		}
 	}
 
@@ -148,6 +149,5 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	{
 		// nothing because there is no internal cache
 	}
-
 
 }

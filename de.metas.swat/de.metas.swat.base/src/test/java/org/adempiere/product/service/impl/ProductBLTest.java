@@ -71,7 +71,7 @@ public class ProductBLTest
 		product1.setM_AttributeSet_ID(as1.getM_AttributeSet_ID());
 		InterfaceWrapperHelper.save(product1);
 
-		final int productAS_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product1);
+		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
 		Assert.assertEquals(as1.getM_AttributeSet_ID(), productAS_ID);
 	}
@@ -90,7 +90,7 @@ public class ProductBLTest
 		product1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		InterfaceWrapperHelper.save(product1);
 
-		final int productAS_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product1);
+		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
 		Assert.assertEquals(category1.getM_AttributeSet_ID(), productAS_ID);
 	}
@@ -114,7 +114,7 @@ public class ProductBLTest
 		product1.setM_Product_Category_ID(category1.getM_Product_Category_ID());
 		InterfaceWrapperHelper.save(product1);
 
-		final int productAS_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product1);
+		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
 		Assert.assertEquals(product1.getM_AttributeSet_ID(), productAS_ID);
 	}

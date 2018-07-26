@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
@@ -38,7 +39,7 @@ public interface IInAusLandAttributeDAO extends ISingletonService
 	 * @param adOrgId
 	 * @return M_Attribute_ID or -1
 	 */
-	int retrieveInAusLandAttributeId(final int adClientId, final int adOrgId);
+	AttributeId retrieveInAusLandAttributeId(final int adClientId, final int adOrgId);
 
 	/**
 	 * Gets the attribute value related to In/Ausland. The In/Ausland attribute is set in Sysconfig de.metas.swat.In/AuslandAttribute. If we don't find an attribute value, behavior is described by

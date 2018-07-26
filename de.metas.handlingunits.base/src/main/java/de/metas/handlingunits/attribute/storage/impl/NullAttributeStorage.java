@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
@@ -144,6 +145,12 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
+	public boolean hasAttribute(final AttributeId attributeId)
+	{
+		return false;
+	}
+
+	@Override
 	public boolean hasAttribute(final I_M_Attribute attribute)
 	{
 		return false;
@@ -209,6 +216,12 @@ public final class NullAttributeStorage implements IAttributeStorage
 	public void setValue(final String attributeKey, final Object value)
 	{
 		throw new AttributeNotFoundException(attributeKey, this);
+	}
+
+	@Override
+	public void setValue(final AttributeId attributeId, final Object value)
+	{
+		throw new AttributeNotFoundException(attributeId, this);
 	}
 
 	@Override

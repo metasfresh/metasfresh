@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -40,9 +42,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
@@ -50,11 +52,11 @@ import org.compiere.model.X_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import org.compiere.model.I_C_BPartner_Product;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class AttributesBL implements IAttributesBL
@@ -132,11 +134,11 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public I_M_Attribute getAttributeOrNull(final I_M_Product product, final int attributeId)
+	public I_M_Attribute getAttributeOrNull(final ProductId productId, final AttributeId attributeId)
 	{
 		//
 		// Check Product
-		if (product == null)
+		if (productId == null)
 		{
 			// No product. Do nothing
 			return null;
@@ -144,7 +146,7 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// Check M_Attribute_ID
-		if (attributeId <= 0)
+		if (attributeId == null)
 		{
 			// We don't have an attribute set. Do nothing.
 			return null;
@@ -152,18 +154,11 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// Check Attribute Set
-
-		// use the method from the service so if the product doesn't have an AS, it can be taken from product category
-		final I_M_AttributeSet attributeSet = Services.get(IProductBL.class).getM_AttributeSet(product);
-		if (attributeSet == null || attributeSet.getM_AttributeSet_ID() <= 0)
-		{
-			// No attribute set. Nothing to do.
-			return null;
-		}
+		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
 
 		//
 		// Get M_Attribute
-		final org.compiere.model.I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttribute(attributeSet, attributeId);
+		final org.compiere.model.I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttribute(attributeSetId, attributeId);
 		if (attribute == null)
 		{
 			// The product's attribute set doesn't contain the needed attribute. Do nothing.

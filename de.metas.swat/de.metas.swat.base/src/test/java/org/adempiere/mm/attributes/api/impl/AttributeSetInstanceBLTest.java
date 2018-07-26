@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.test.AdempiereTestHelper;
@@ -138,6 +139,12 @@ public class AttributeSetInstanceBLTest
 		}
 
 		@Override
+		public boolean hasAttribute(final AttributeId attributeId)
+		{
+			throw new UnsupportedOperationException("The method hasAttribute is expected not to be called by the method under test");
+		}
+
+		@Override
 		public I_M_Attribute getAttributeByIdIfExists(final int attributeId)
 		{
 			throw new UnsupportedOperationException("The method getAttributeByIdIfExists is expected not to be called by the method under test");
@@ -185,6 +192,12 @@ public class AttributeSetInstanceBLTest
 
 		@Override
 		public void setValue(final String attributeKey, final Object value)
+		{
+			throw new UnsupportedOperationException("The method setValue is expected not to be called by the method under test");
+		}
+
+		@Override
+		public void setValue(AttributeId attributeId, Object value)
 		{
 			throw new UnsupportedOperationException("The method setValue is expected not to be called by the method under test");
 		}

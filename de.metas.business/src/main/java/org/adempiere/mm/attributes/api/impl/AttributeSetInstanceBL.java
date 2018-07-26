@@ -1,6 +1,5 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -34,6 +33,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -49,7 +52,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -57,6 +59,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
@@ -199,14 +202,14 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public I_M_AttributeSetInstance createASI(@NonNull final I_M_Product product)
+	public I_M_AttributeSetInstance createASI(@NonNull final ProductId productId)
 	{
-		final I_M_AttributeSetInstance asiNew = newInstance(I_M_AttributeSetInstance.class, product);
+		final I_M_AttributeSetInstance asiNew = newInstance(I_M_AttributeSetInstance.class);
 
 		// use the method from the service so if the product doesn't have an AS, it can be taken from product category
-		final int productAttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
+		final AttributeSetId productAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
 
-		asiNew.setM_AttributeSet_ID(productAttributeSet_ID);
+		asiNew.setM_AttributeSet_ID(productAttributeSetId.getRepoId());
 		InterfaceWrapperHelper.save(asiNew);
 		return asiNew;
 	}
@@ -222,8 +225,8 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		//
 		// Create new ASI
-		final I_M_Product product = asiAware.getM_Product();
-		final I_M_AttributeSetInstance asiNew = createASI(product);
+		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
+		final I_M_AttributeSetInstance asiNew = createASI(productId);
 		asiAware.setM_AttributeSetInstance(asiNew);
 		return asiNew;
 	}
@@ -237,8 +240,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		// M_Attribute_ID
-		final int attributeId = attributeValue.getM_Attribute_ID();
-		Check.assume(attributeId > 0, "attributeId > 0 for {}", attributeValue);
+		final AttributeId attributeId = AttributeId.ofRepoId(attributeValue.getM_Attribute_ID());
 
 		//
 		// Get/Create/Update Attribute Instance
@@ -250,18 +252,15 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		attributeInstance.setM_AttributeSetInstance(asi);
 		attributeInstance.setM_AttributeValue(attributeValue);
 		attributeInstance.setValue(attributeValue.getValue());
-		attributeInstance.setM_Attribute_ID(attributeId);
+		attributeInstance.setM_Attribute_ID(attributeId.getRepoId());
 		save(attributeInstance);
 
 		return attributeInstance;
 	}
 
 	@Override
-	public I_M_AttributeInstance getCreateAttributeInstance(final I_M_AttributeSetInstance asi, final int attributeId)
+	public I_M_AttributeInstance getCreateAttributeInstance(@NonNull final I_M_AttributeSetInstance asi, @NonNull final AttributeId attributeId)
 	{
-		Check.assumeNotNull(asi, "asi not null");
-		Check.assume(attributeId > 0, "attributeId > 0");
-
 		// Check if already exists
 		final I_M_AttributeInstance instanceExisting = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
 		if (instanceExisting != null)
@@ -271,7 +270,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		// Create New
 		final I_M_AttributeInstance instanceNew = newInstance(I_M_AttributeInstance.class, asi);
-		instanceNew.setM_Attribute_ID(attributeId);
+		instanceNew.setM_Attribute_ID(attributeId.getRepoId());
 		instanceNew.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
 		save(instanceNew);
 		return instanceNew;
@@ -280,10 +279,11 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void setAttributeInstanceValue(@NonNull final I_M_AttributeSetInstance asi, @NonNull final I_M_Attribute attribute, @NonNull final Object value)
 	{
-		I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
 		if (attributeInstance == null)
 		{
-			attributeInstance = getCreateAttributeInstance(asi, attribute.getM_Attribute_ID());
+			attributeInstance = getCreateAttributeInstance(asi, attributeId);
 		}
 
 		final String attributeValueType = attribute.getAttributeValueType();
@@ -306,6 +306,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 
 		save(attributeInstance);
+	}
+
+	@Override
+	public void setAttributeInstanceValue(@NonNull final I_M_AttributeSetInstance asi, @NonNull final AttributeId attributeId, @NonNull final Object value)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+		setAttributeInstanceValue(asi, attribute, value);
 	}
 
 	@Override
@@ -338,20 +345,19 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
-		final int productId = -1;
+		final ProductId productId = null;
 		return createASIWithASFromProductAndInsertAttributeSet(productId, attributeSet);
 	}
 
 	@Override
 	public I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(
-			final int productId,
+			@Nullable final ProductId productId,
 			@NonNull final IAttributeSet attributeSet)
 	{
 		final I_M_AttributeSetInstance attributeSetInstance;
-		if (productId > 0)
+		if (productId != null)
 		{
-			final I_M_Product product = load(productId, I_M_Product.class);
-			attributeSetInstance = createASI(product);
+			attributeSetInstance = createASI(productId);
 		}
 		else
 		{

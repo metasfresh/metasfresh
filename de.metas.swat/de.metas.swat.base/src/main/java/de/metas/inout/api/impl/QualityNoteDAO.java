@@ -4,11 +4,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.api.IQualityNoteDAO;
@@ -51,11 +51,10 @@ public class QualityNoteDAO implements IQualityNoteDAO
 	}
 
 	@Override
-	public I_M_Attribute getQualityNoteAttribute(final Properties ctx)
+	public AttributeId getQualityNoteAttributeId()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-		return attributeDAO.retrieveAttributeByValue(ctx, QualityNoteAttribute, I_M_Attribute.class);
+		return attributeDAO.retrieveAttributeIdByValueOrNull(QualityNoteAttribute);
 	}
 
 	@Override
@@ -67,9 +66,9 @@ public class QualityNoteDAO implements IQualityNoteDAO
 
 	private IQuery<I_M_AttributeValue> createQueryForQualityNote(final I_M_QualityNote qualityNote)
 	{
-		final I_M_Attribute attribute = getQualityNoteAttribute(InterfaceWrapperHelper.getCtx(qualityNote));
+		final AttributeId attributeId = getQualityNoteAttributeId();
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class, qualityNote)
-				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
+				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeId)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, qualityNote.getValue())
 				// we want so sync QualityNote with AttributeValue completely, even for inactive records so the OnlyActive clause is not used
 				.create();

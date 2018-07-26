@@ -27,11 +27,11 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.compiere.model.I_M_Attribute;
 
 import com.google.common.base.Supplier;
 
@@ -127,10 +127,10 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final I_M_Attribute attribute)
+	public I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final AttributeId attributeId)
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate(hu);
-		return delegate.retrieveAttribute(hu, attribute);
+		return delegate.retrieveAttribute(hu, attributeId);
 	}
 
 	/**

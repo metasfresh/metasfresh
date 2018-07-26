@@ -1,9 +1,6 @@
 package de.metas.handlingunits.materialtracking.impl;
 
-import java.util.Properties;
-
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
@@ -47,11 +44,11 @@ public class HUMaterialTrackingBL implements IHUMaterialTrackingBL
 	 * @param ctx
 	 * @return {@link I_M_Attribute} for {@link #ATTRIBUTENAME_IsQualityInspection}
 	 */
-	I_M_Attribute getIsQualityInspectionAttribute(final Properties ctx)
+	I_M_Attribute getIsQualityInspectionAttribute()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(ctx, ATTRIBUTENAME_IsQualityInspection, I_M_Attribute.class);
+		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(ATTRIBUTENAME_IsQualityInspection);
 		Check.assumeNotNull(attribute, "attribute shall exist for {}", ATTRIBUTENAME_IsQualityInspection);
 
 		return attribute;
@@ -71,8 +68,7 @@ public class HUMaterialTrackingBL implements IHUMaterialTrackingBL
 		final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
 		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final I_M_Attribute materialTrackingAttribute = materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx);
+		final I_M_Attribute materialTrackingAttribute = materialTrackingAttributeBL.getMaterialTrackingAttribute();
 		final Object attributeValue = materialTracking == null ? null : materialTracking.getM_Material_Tracking_ID();
 
 		huAttributesBL.updateHUAttributeRecursive(hu,

@@ -43,6 +43,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MAttributeSet;
@@ -98,7 +99,7 @@ public class MQMSpecification extends  X_QM_Specification
 		if (m_lines != null)
 			return m_lines;
 		
-		ArrayList<MQMSpecificationLine> list = new ArrayList<MQMSpecificationLine>();
+		ArrayList<MQMSpecificationLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM QM_SpecificationLine WHERE QM_SpecificationLine_ID=? AND "+ where +" ORDER BY Line";
 		PreparedStatement pstmt = null;
 		try
@@ -138,7 +139,7 @@ public class MQMSpecification extends  X_QM_Specification
 //		Save Instance Attributes
 		  
 		MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(),M_AttributeSetInstance_ID, get_TrxName());
-		MAttributeSet 		  as = MAttributeSet.get(getCtx(),asi.getM_AttributeSet_ID());
+		MAttributeSet 		  as = MAttributeSet.get(AttributeSetId.ofRepoId(asi.getM_AttributeSet_ID()));
 		MAttribute[] attributes = as.getMAttributes(false);
 		for (int i = 0; i < attributes.length; i++)
 		{

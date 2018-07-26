@@ -13,18 +13,18 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
@@ -62,7 +62,8 @@ public class CountryAttributeGenerator extends AbstractAttributeValueGenerator
 		final I_C_Country country = InterfaceWrapperHelper.create(ctx, recordId, I_C_Country.class, trxName);
 		final I_M_AttributeValue countryValue = InterfaceWrapperHelper.create(ctx, I_M_AttributeValue.class, trxName);
 
-		countryValue.setM_Attribute_ID(Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx)));
+		final AttributeId attributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		countryValue.setM_Attribute_ID(AttributeId.toRepoId(attributeId));
 		countryValue.setName(country.getName());
 		countryValue.setValue(country.getCountryCode());
 		InterfaceWrapperHelper.save(countryValue);

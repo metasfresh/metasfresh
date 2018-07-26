@@ -1,30 +1,7 @@
 package de.metas.materialtracking.impl;
 
-/*
- * #%L
- * de.metas.materialtracking
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -44,29 +21,28 @@ import org.compiere.model.I_M_Product;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.ProductId;
 
 public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 {
 	private static final String M_Attribute_Value_MaterialTracking = "M_Material_Tracking_ID";
 
 	@Override
-	public I_M_Attribute getMaterialTrackingAttribute(final Properties ctx)
+	public AttributeId getMaterialTrackingAttributeId()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(ctx, M_Attribute_Value_MaterialTracking, I_M_Attribute.class);
-		Check.assumeNotNull(attribute, "attribute shall exist for {}", M_Attribute_Value_MaterialTracking);
-
-		return attribute;
+		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValue(M_Attribute_Value_MaterialTracking);
+		return attributeId;
 	}
 
-	/*
-	 * When changing the implementation, please make that the model interceptors' <code>ifColumnsChanged</code> are in sync.
-	 * 
-	 * (non-Javadoc)
-	 * 
-	 * @see IMaterialTrackingAttributeBL#createOrUpdateMaterialTrackingAttributeValue(I_M_Material_Tracking)
-	 */
+	@Override
+	public I_M_Attribute getMaterialTrackingAttribute()
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final AttributeId attributeId = getMaterialTrackingAttributeId();
+		return attributeDAO.getAttributeById(attributeId);
+	}
+
 	@Override
 	public void createOrUpdateMaterialTrackingAttributeValue(final I_M_Material_Tracking materialTracking)
 	{
@@ -76,12 +52,11 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		// If the attribute value was not already created, create it now
 		if (attributeValue == null || attributeValue.getM_AttributeValue_ID() <= 0)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(materialTracking);
-			final I_M_Attribute attribute = getMaterialTrackingAttribute(ctx);
+			final AttributeId attributeId = getMaterialTrackingAttributeId();
 
 			attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, materialTracking);
-			attributeValue.setAD_Org_ID(attribute.getAD_Org_ID());
-			attributeValue.setM_Attribute(attribute);
+			// attributeValue.setAD_Org_ID(attribute.getAD_Org_ID());
+			attributeValue.setM_Attribute_ID(attributeId.getRepoId());
 		}
 
 		//
@@ -182,9 +157,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 		//
 		// Get Material Tracking I_M_Attribute
-		final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
-		final I_M_Attribute materialTrackingAttribute = getMaterialTrackingAttribute(ctx);
-		final int materialTrackingAttributeId = materialTrackingAttribute.getM_Attribute_ID();
+		final AttributeId materialTrackingAttributeId = getMaterialTrackingAttributeId();
 
 		//
 		// Retrieve Material Tracking Attribute Instance (from ASI)
@@ -206,7 +179,7 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		final I_M_AttributeInstance materialTrackingAttributeInstanceNew = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 		materialTrackingAttributeInstanceNew.setAD_Org_ID(asi.getAD_Org_ID());
 		materialTrackingAttributeInstanceNew.setM_AttributeSetInstance(asi);
-		materialTrackingAttributeInstanceNew.setM_Attribute(materialTrackingAttribute);
+		materialTrackingAttributeInstanceNew.setM_Attribute_ID(materialTrackingAttributeId.getRepoId());
 		// NOTE: don't save it
 
 		return materialTrackingAttributeInstanceNew;
@@ -247,7 +220,8 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 		}
 		else
 		{
-			documentLineASI = attributeSetInstanceBL.createASI(documentLineASIAware.getM_Product());
+			final ProductId productId = ProductId.ofRepoId(documentLineASIAware.getM_Product_ID());
+			documentLineASI = attributeSetInstanceBL.createASI(productId);
 		}
 
 		setM_Material_Tracking(documentLineASI, materialTracking); // update the new ASI
@@ -334,13 +308,11 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 
 	private final int getMaterialTrackingId(final IContextAware context, final IAttributeSet attributeSet)
 	{
-		final Properties ctx = context.getCtx();
-		final I_M_Attribute materialTrackingAttribute = getMaterialTrackingAttribute(ctx);
-		if (!attributeSet.hasAttribute(materialTrackingAttribute))
+		if (!attributeSet.hasAttribute(M_Attribute_Value_MaterialTracking))
 		{
 			return -1;
 		}
-		final Object materialTrackingIdObj = attributeSet.getValue(materialTrackingAttribute);
+		final Object materialTrackingIdObj = attributeSet.getValue(M_Attribute_Value_MaterialTracking);
 		if (materialTrackingIdObj == null)
 		{
 			return -1;
@@ -354,11 +326,10 @@ public class MaterialTrackingAttributeBL implements IMaterialTrackingAttributeBL
 	@Override
 	public boolean hasMaterialTrackingAttribute(final I_M_AttributeSetInstance asi)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(asi);
-		final I_M_Attribute materialTrackingAttribute = getMaterialTrackingAttribute(ctx);
+		final AttributeId materialTrackingAttributeId = getMaterialTrackingAttributeId();
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, materialTrackingAttribute.getM_Attribute_ID());
+		final I_M_AttributeInstance materialTrackingAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, materialTrackingAttributeId);
 
 		return materialTrackingAttributeInstance != null;
 	}

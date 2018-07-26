@@ -49,6 +49,8 @@ public interface IAttributeSet
 	 * @return true if the given attribute is available for getting/setting
 	 */
 	boolean hasAttribute(String attribute);
+	
+	boolean hasAttribute(AttributeId attributeId);
 
 	/**
 	 * @return true if the given attribute is available for getting/setting
@@ -131,12 +133,14 @@ public interface IAttributeSet
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	void setValue(String attribute, Object value);
+	
+	void setValue(AttributeId attributeId, Object value);
 
 	default void setValue(final I_M_Attribute attribute, final Object value)
 	{
 		setValue(attribute.getValue(), value);
 	}
-
+	
 	/**
 	 * @return {@link IAttributeValueCallout} instance; never return null
 	 */

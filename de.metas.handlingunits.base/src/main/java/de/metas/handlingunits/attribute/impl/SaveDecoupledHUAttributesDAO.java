@@ -14,6 +14,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -68,7 +69,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	@ToStringBuilder(skip = true)
 	private final Map<Object, Map<Object, I_M_HU_Attribute>> _hu2huAttributes = new HashMap<>();
 	@ToStringBuilder(skip = true)
-	private final List<I_M_HU_Attribute> _huAttributesToRemove = new ArrayList<I_M_HU_Attribute>();
+	private final List<I_M_HU_Attribute> _huAttributesToRemove = new ArrayList<>();
 	private final Set<Integer> idsToSaveFromLastFlush = new HashSet<>();
 
 	public SaveDecoupledHUAttributesDAO(final IHUAttributesDAO db)
@@ -156,10 +157,10 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	private final Object mkHUAttributeKey(final I_M_HU_Attribute huAttribute)
 	{
-		return mkHUAttributeKey(huAttribute.getM_HU_ID(), huAttribute.getM_Attribute_ID());
+		return mkHUAttributeKey(huAttribute.getM_HU_ID(), AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()));
 	}
 
-	private final Object mkHUAttributeKey(final int huId, final int attributeId)
+	private final Object mkHUAttributeKey(final int huId, final AttributeId attributeId)
 	{
 		return Util.mkKey(huId, attributeId);
 	}
@@ -273,7 +274,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		final boolean retrieveIfNotFound = true;
 		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, retrieveIfNotFound);
 
-		final List<I_M_HU_Attribute> result = new ArrayList<I_M_HU_Attribute>(huAttributes.values());
+		final List<I_M_HU_Attribute> result = new ArrayList<>(huAttributes.values());
 		Collections.sort(result, HUAttributesBySeqNoComparator.instance);
 		return result;
 	}
@@ -313,10 +314,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public synchronized I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final I_M_Attribute attribute)
+	public synchronized I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final AttributeId attributeId)
 	{
-		final int attributeId = attribute.getM_Attribute_ID();
-
 		final boolean retrieveIfNotFound = true;
 		final Map<Object, I_M_HU_Attribute> huAttributes = getHUAttributes(hu, retrieveIfNotFound);
 
