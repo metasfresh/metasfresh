@@ -7,6 +7,7 @@ import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -33,12 +34,12 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +49,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 /**
  * #2144
  * HU editor: Move selected HUs to another warehouse
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -56,6 +57,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 {
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
 	private I_M_Warehouse warehouse;
@@ -75,6 +77,14 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
+		final boolean activeTopLevelHUsSelected = streamSelectedHUs(Select.ONLY_TOPLEVEL)
+				.filter(huRecord -> huStatusBL.isPhysicalHU(huRecord))
+				.findAny()
+				.isPresent();
+		if (!activeTopLevelHUsSelected)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no physical (etc active) hus selected");
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 

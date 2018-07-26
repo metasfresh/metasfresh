@@ -14,6 +14,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -37,7 +38,7 @@ import lombok.Singular;
  * #L%
  */
 
-@lombok.Value
+@Value
 public final class HUEditorRowFilter
 {
 	public static final HUEditorRowFilter ALL = builder().select(Select.ALL).build();

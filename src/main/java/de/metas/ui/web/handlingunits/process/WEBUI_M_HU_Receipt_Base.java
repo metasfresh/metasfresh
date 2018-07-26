@@ -12,12 +12,12 @@ import org.adempiere.util.lang.MutableInt;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,11 +33,13 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /**
  * Common base class to dedupliate code.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class WEBUI_M_HU_Receipt_Base extends ViewBasedProcessTemplate implements IProcessPrecondition
+public abstract class WEBUI_M_HU_Receipt_Base
+		extends ViewBasedProcessTemplate
+		implements IProcessPrecondition
 {
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -57,7 +59,7 @@ public abstract class WEBUI_M_HU_Receipt_Base extends ViewBasedProcessTemplate i
 		final ProcessPreconditionsResolution firstRejection = getView(HUEditorView.class)
 				.streamByIds(selectedRowIds)
 				.filter(document -> document.isPureHU())
-				//
+
 				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
 				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
 				.filter(resolution -> resolution != null) // filter out those which are not errors
@@ -78,7 +80,7 @@ public abstract class WEBUI_M_HU_Receipt_Base extends ViewBasedProcessTemplate i
 
 	/**
 	 * Check the individual given row, to find out if this process can be applied to it or not.
-	 * 
+	 *
 	 * @param document
 	 * @return
 	 */
