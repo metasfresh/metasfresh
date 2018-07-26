@@ -6,14 +6,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -148,9 +147,9 @@ public class ASIDocument
 		return data.getDocumentId();
 	}
 
-	int getM_AttributeSet_ID()
+	AttributeSetId getAttributeSetId()
 	{
-		return descriptor.getM_AttributeSet_ID();
+		return descriptor.getAttributeSetId();
 	}
 
 	void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason)
@@ -198,10 +197,10 @@ public class ASIDocument
 	{
 		//
 		// Create M_AttributeSetInstance
-		final int attributeSetId = asiDoc.getM_AttributeSet_ID();
+		final AttributeSetId attributeSetId = asiDoc.getAttributeSetId();
 
-		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.create(Env.getCtx(), I_M_AttributeSetInstance.class, ITrx.TRXNAME_ThreadInherited);
-		asiRecord.setM_AttributeSet_ID(attributeSetId);
+		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
+		asiRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		// TODO: set Lot, GuaranteeDate etc
 		InterfaceWrapperHelper.save(asiRecord);
 

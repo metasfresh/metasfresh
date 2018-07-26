@@ -271,7 +271,7 @@ public class MaterialCockpitRowFactoryTest
 		return rows.stream()
 				.filter(row -> Objects.equals(row.getProductCategoryOrSubRowName(), groupName))
 				.findFirst()
-				.orElseThrow(() -> new AdempiereException("Row row found matching: " + groupName)
+				.orElseThrow(() -> new AdempiereException("No row found matching: " + groupName)
 						.appendParametersToMessage()
 						.setParameter("dimensionspecGroup", dimensionspecGroup)
 						.setParameter("rows", rows));

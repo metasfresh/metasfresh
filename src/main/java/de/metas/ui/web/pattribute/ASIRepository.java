@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.util.Services;
@@ -18,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
@@ -118,9 +121,9 @@ public class ASIRepository
 	 * @param attributeSetInstanceId
 	 * @return ASI document
 	 */
-	public ASIDocument loadReadonly(final int attributeSetInstanceId)
+	public ASIDocument loadReadonly(final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		if (attributeSetInstanceId <= 0)
+		if (!AttributeSetInstanceId.isRegular(attributeSetInstanceId))
 		{
 			throw new EntityNotFoundException("ASI " + attributeSetInstanceId);
 		}
@@ -157,28 +160,35 @@ public class ASIRepository
 	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
 	{
 		final DocumentPath documentPath = request.getDocumentPath();
+		final AttributeSetInstanceId attributeSetInstanceId = request.getTemplateId();
 
 		if (documentPath.getDocumentType() == DocumentType.Window)
 		{
-			return documentsCollection.forDocumentReadonly(documentPath, document -> {
-				final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
-				final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
-
-				final int attributeSetInstanceId = request.getTemplateId();
-				final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
-				final int callerColumnId = -1; // FIXME implement
-				return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
-			});
+			return documentsCollection.forDocumentReadonly(
+					documentPath,
+					document -> createASIEditingInfoFromDocument(document, attributeSetInstanceId));
 		}
 		else if (documentPath.getDocumentType() == DocumentType.Process)
 		{
-			final int attributeSetInstanceId = request.getTemplateId();
 			return ASIEditingInfo.processParameterASI(attributeSetInstanceId);
 		}
 		else
 		{
 			throw new IllegalStateException("Cannot create ASI editing info from " + documentPath);
 		}
+	}
+
+	private static ASIEditingInfo createASIEditingInfoFromDocument(
+			final Document document,
+			final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1));
+		final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
+		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
+
+		final String callerTableName = document.getEntityDescriptor().getTableNameOrNull();
+		final int callerColumnId = -1; // FIXME implement
+		return ASIEditingInfo.of(productId, attributeSetInstanceId, callerTableName, callerColumnId, soTrx);
 	}
 
 	public ASILayout getLayout(final DocumentId asiDocId)
