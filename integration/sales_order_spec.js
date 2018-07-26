@@ -77,8 +77,10 @@ describe('New sales order test', function() {
     });
 
     it('Add new product', function() {
+      const addNewText = Cypress.messages.window.addNew.caption;
+
       cy.get('.tabs-wrapper .form-flex-align .btn')
-        .contains('Add new')
+        .contains(addNewText)
         .should('exist')
         .click();
 
@@ -104,22 +106,46 @@ describe('New sales order test', function() {
     });
 
     it('Change document status', function() {
-      cy.get('.form-field-DocAction')
-        .find('.meta-dropdown-toggle')
-        .click();
+      let completeActionCaption = '';
 
-      cy.get('.form-field-DocAction')
-        .find('.dropdown-status-toggler')
-        .should('have.class', 'dropdown-status-open');
+        const docId = Cypress.reduxStore.getState().windowHandler.master.docId;
 
-      cy.get('.form-field-DocAction .dropdown-status-list')
-        .find('.dropdown-status-item')
-        .contains('Complete')
-        .click();
+        cy.request('GET', config.API_URL+'/window/'+windowId+'/'+docId+'/field/DocAction/dropdown')
+          .then((response) => {
+            const resp = response.body;
 
-      cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+            expect(resp).to.have.property('values');
+            expect(resp.values.length).to.be.gt(0);
 
-      cy.get('.meta-dropdown-toggle .tag-success').contains('Completed');
+            for (let i=0; i<resp.values.length; i+= 1) {
+              if (resp.values[i].key === 'CO') {
+                completeActionCaption = resp.values[i].caption;
+
+                break;
+              }
+            }
+
+
+            cy.get('.form-field-DocAction')
+              .find('.meta-dropdown-toggle')
+              .click();
+
+            cy.get('.form-field-DocAction')
+              .find('.dropdown-status-toggler')
+              .should('have.class', 'dropdown-status-open');
+
+            cy.get('.form-field-DocAction .dropdown-status-list')
+              .find('.dropdown-status-item')
+
+              .contains(completeActionCaption)
+              .click();
+
+            cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+
+            const completedCaption = Cypress.reduxStore.getState()
+              .windowHandler.master.data.DocStatus.value.caption;
+              cy.get('.meta-dropdown-toggle .tag-success').contains(completedCaption);
+        });
     });
   });
 });
