@@ -15,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -321,9 +322,16 @@ public final class ImmutableAttributeSet implements IAttributeSet
 					ImmutableMap.copyOf(valuesByAttributeKey));
 		}
 
-		public Builder attributeValue(final int attributeId, final Object attributeValue)
+		public Builder attributeValue(@NonNull final AttributeId attributeId, final Object attributeValue)
 		{
-			final I_M_Attribute attribute = loadOutOfTrx(attributeId, I_M_Attribute.class);
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+			attributeValue(attribute, attributeValue);
+			return this;
+		}
+
+		public Builder attributeValue(@NonNull final String attributeCode, final Object attributeValue)
+		{
+			final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 			attributeValue(attribute, attributeValue);
 			return this;
 		}
