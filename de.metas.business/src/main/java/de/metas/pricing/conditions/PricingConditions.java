@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 
@@ -69,20 +70,20 @@ public class PricingConditions
 		final List<I_M_AttributeInstance> attributeInstances = query.getAttributeInstances();
 		if (hasNoAttributeValues(attributeInstances))
 		{
-			return pickApplyingBreak(query, /* attributeValueId */ -1);
+			return pickApplyingBreak(query, (AttributeValueId)null);
 		}
 		else
 		{
 			return attributeInstances.stream()
 					.filter(attributeInstance -> hasAttributeValue(attributeInstance))
-					.map(attributeInstance -> pickApplyingBreak(query, attributeInstance.getM_AttributeValue_ID()))
+					.map(attributeInstance -> pickApplyingBreak(query, AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID())))
 					.filter(Predicates.notNull())
 					.findFirst()
 					.orElse(null);
 		}
 	}
 
-	private PricingConditionsBreak pickApplyingBreak(final PricingConditionsBreakQuery query, final int attributeValueId)
+	private PricingConditionsBreak pickApplyingBreak(final PricingConditionsBreakQuery query, final AttributeValueId attributeValueId)
 	{
 		return breaks.stream()
 				.filter(schemaBreak -> schemaBreakMatches(schemaBreak, query, attributeValueId))
@@ -115,7 +116,7 @@ public class PricingConditions
 	private boolean schemaBreakMatches(
 			final PricingConditionsBreak schemaBreak,
 			final PricingConditionsBreakQuery query,
-			final int attributeValueId)
+			final AttributeValueId attributeValueId)
 	{
 		final BigDecimal breakValue = quantityBased ? query.getQty() : query.getAmt();
 

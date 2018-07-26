@@ -1,15 +1,10 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -57,34 +52,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public static final Builder builder()
 	{
 		return new Builder();
-	}
-
-	public static final ImmutableAttributeSet ofValuesIndexByAttributeId(@Nullable final Map<Object, Object> map)
-	{
-		if (map == null || map.isEmpty())
-		{
-			return EMPTY;
-		}
-
-		final ImmutableMap.Builder<AttributeId, I_M_Attribute> attributes = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, I_M_Attribute> attributesByKey = ImmutableMap.builder();
-		final ImmutableMap.Builder<String, Object> valuesByAttributeKey = ImmutableMap.builder();
-
-		map.forEach((attributeIdObj, value) -> {
-			final AttributeId attributeId = AttributeId.ofRepoIdObj(attributeIdObj);
-			final I_M_Attribute attribute = loadOutOfTrx(attributeId, I_M_Attribute.class);
-			final String attributeKey = attribute.getValue();
-
-			attributes.put(attributeId, attribute);
-			attributesByKey.put(attributeKey, attribute);
-
-			if (value != null)
-			{
-				valuesByAttributeKey.put(attributeKey, value);
-			}
-		});
-
-		return new ImmutableAttributeSet(attributes.build(), attributesByKey.build(), valuesByAttributeKey.build());
 	}
 
 	public static ImmutableAttributeSet createSubSet(

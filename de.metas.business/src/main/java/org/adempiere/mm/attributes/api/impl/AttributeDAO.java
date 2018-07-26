@@ -3,7 +3,6 @@ package org.adempiere.mm.attributes.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -174,10 +173,14 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID());
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSetInstance_ID());
+		if (asiId.isNone())
+		{
+			return ImmutableList.of();
+		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
+		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
 		return retrieveAttributeInstances(ctx, asiId, trxName);
 	}
 
@@ -462,15 +465,14 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableAttributeSet.EMPTY;
 		}
 
-		final Map<Object, Object> valuesByAttributeIdObj = new HashMap<>();
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
 		for (final I_M_AttributeInstance instance : retrieveAttributeInstances(asiId))
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 			final Object value = extractAttributeInstanceValue(instance);
-			valuesByAttributeIdObj.put(attributeId, value);
+			builder.attributeValue(attributeId, value);
 		}
-
-		return ImmutableAttributeSet.ofValuesIndexByAttributeId(valuesByAttributeIdObj);
+		return builder.build();
 	}
 
 	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)
