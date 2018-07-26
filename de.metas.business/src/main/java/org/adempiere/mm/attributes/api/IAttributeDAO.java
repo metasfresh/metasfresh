@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
@@ -35,7 +36,6 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
-import org.compiere.util.Env;
 
 /**
  * Material Attributes DAO
@@ -45,6 +45,8 @@ import org.compiere.util.Env;
  */
 public interface IAttributeDAO extends ISingletonService
 {
+	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
+
 	I_M_Attribute getAttributeById(int attributeId);
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
@@ -75,7 +77,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
 
-	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, int attributeId);
+	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
 
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
@@ -97,15 +99,10 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Check if an attribute belongs to an attribute set (via M_AttributeUse).
-	 *
-	 * @param attributeSetId
-	 * @param attributeId
-	 * @param ctxProvider
-	 * @return
 	 */
-	boolean containsAttribute(int attributeSetId, int attributeId, Object ctxProvider);
+	boolean containsAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
-	I_M_Attribute retrieveAttribute(final I_M_AttributeSet as, final int attributeId);
+	I_M_Attribute retrieveAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
 	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
 
@@ -139,6 +136,10 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	Set<String> retrieveAttributeValueSubstitutes(I_M_Attribute attribute, String value);
 
+	AttributeId retrieveAttributeIdByValue(String value);
+
+	AttributeId retrieveAttributeIdByValueOrNull(String value);
+
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
 	 *
@@ -147,14 +148,14 @@ public interface IAttributeDAO extends ISingletonService
 	 * @param clazz
 	 * @return attribute; never return null
 	 */
-	<T extends I_M_Attribute> T retrieveAttributeByValue(Properties ctx, String value, Class<T> clazz);
+	<T extends I_M_Attribute> T retrieveAttributeByValue(String value, Class<T> clazz);
 
 	/**
 	 * @return attribute; never return null
 	 */
 	default I_M_Attribute retrieveAttributeByValue(final String value)
 	{
-		return retrieveAttributeByValue(Env.getCtx(), value, I_M_Attribute.class);
+		return retrieveAttributeByValue(value, I_M_Attribute.class);
 	}
 
 	/**
@@ -168,7 +169,7 @@ public interface IAttributeDAO extends ISingletonService
 	 * @param trxName
 	 * @return
 	 */
-	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final int attributeId, final String trxName);
+	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
 
 	/**
 	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
@@ -179,13 +180,6 @@ public interface IAttributeDAO extends ISingletonService
 	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
 	{
 		return ASICopy.newInstance(fromASI).copy();
-	}
-
-	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI, int overrideM_AttributeSet_ID)
-	{
-		return ASICopy.newInstance(fromASI)
-				.overrideM_AttributeSet_ID(overrideM_AttributeSet_ID)
-				.copy();
 	}
 
 	default ASICopy prepareCopy(final I_M_AttributeSetInstance fromASI)

@@ -28,11 +28,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
@@ -52,7 +53,6 @@ import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.inout.IInOutDAO;
-import org.compiere.model.I_C_BPartner_Product;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.process.ProcessInfo;
@@ -256,8 +256,6 @@ public class DesadvBL implements IDesadvBL
 
 		inOut.setEDI_Desadv(desadv);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOut);
-
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
@@ -277,9 +275,9 @@ public class DesadvBL implements IDesadvBL
 				final I_M_HU hu = topLevelHUs.get(0);
 				desadvLine.setM_HU(hu);
 
-				final I_M_Attribute sscc18Attribute = sscc18CodeDAO.retrieveSSCC18Attribute(ctx);
+				final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
 
-				final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(hu, sscc18Attribute);
+				final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(hu, sscc18AttributeId);
 				// don't throw an error; it might prevent users from creating shipments
 				// Check.errorIf(sscc18HUAttribute == null, "M_HU {} has no SSCC18 attrbute (tried to retrieve with M_Attribute = {})", hu, sscc18Attribute);
 				if (sscc18HUAttribute != null)

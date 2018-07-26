@@ -27,12 +27,14 @@ import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
+
+import de.metas.product.ProductId;
 
 public interface IAttributesBL extends ISingletonService
 {
@@ -66,7 +68,7 @@ public interface IAttributesBL extends ISingletonService
 	 * @param attributeId
 	 * @return {@link I_M_Attribute} or null
 	 */
-	I_M_Attribute getAttributeOrNull(I_M_Product product, int attributeId);
+	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
 
 	boolean isSameTrx(I_M_AttributeValue attributeValue, boolean isSOTrx);
 

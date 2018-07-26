@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.junit.Before;
@@ -79,7 +80,9 @@ public class ShipmentScheduleHandlerTest
 	public void findMatchingAttributeConfig_attribute_precedes_wildcard()
 	{
 		final AttributeConfig emptyWildcardConfig = AttributeConfig.builder().build();
-		final AttributeConfig attributeConfig = AttributeConfig.builder().attributeId(attribute.getM_Attribute_ID()).build();
+		final AttributeConfig attributeConfig = AttributeConfig.builder()
+				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.build();
 
 		assertConfigReturnedForList(attributeConfig, ImmutableList.of(emptyWildcardConfig, attributeConfig));
 		assertConfigReturnedForList(attributeConfig, ImmutableList.of(attributeConfig, emptyWildcardConfig));
@@ -88,7 +91,8 @@ public class ShipmentScheduleHandlerTest
 	@Test
 	public void findMatchingAttributeConfig_specific_org_precedes_null_org()
 	{
-		final AttributeConfigBuilder builder = AttributeConfig.builder().attributeId(attribute.getM_Attribute_ID());
+		final AttributeConfigBuilder builder = AttributeConfig.builder()
+				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 
 		final AttributeConfig starOrgConfig = builder.orgId(0).build();
 		final AttributeConfig specificOrgConfig = builder.orgId(10).build();

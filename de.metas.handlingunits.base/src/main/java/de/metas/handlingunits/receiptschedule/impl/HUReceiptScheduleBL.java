@@ -544,14 +544,14 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			huContext.setProperty(Constants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
+		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_CostPrice);
 		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
 
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_PurchaseOrderLine_ID, I_M_Attribute.class);
+			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(Constants.ATTR_PurchaseOrderLine_ID);
 			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 

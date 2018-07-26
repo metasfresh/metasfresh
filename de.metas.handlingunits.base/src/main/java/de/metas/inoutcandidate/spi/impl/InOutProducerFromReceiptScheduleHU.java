@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -43,7 +44,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
@@ -275,16 +275,14 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptLineWithIssues);
 		final String trxName = InterfaceWrapperHelper.getTrxName(receiptLineWithIssues);
 
-		final I_M_Attribute qualityNoteAttribute = Services.get(IQualityNoteDAO.class).getQualityNoteAttribute(ctx);
-
-		if (qualityNoteAttribute == null)
+		final AttributeId qualityNoteAttributeId = Services.get(IQualityNoteDAO.class).getQualityNoteAttributeId();
+		if (qualityNoteAttributeId == null)
 		{
 			// nothing to do
 			return;
 		}
 
-		final int qualityAttrID = qualityNoteAttribute.getM_Attribute_ID();
-		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityAttrID);
+		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, qualityNoteAttributeId);
 
 		if (ai == null)
 		{
@@ -292,7 +290,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// + "\n ASI=" + asi
 			// + "\n Attribute=" + huTrxAttribute.getM_Attribute());
 
-			ai = attributeDAO.createNewAttributeInstance(ctx, asi, qualityAttrID, trxName);
+			ai = attributeDAO.createNewAttributeInstance(ctx, asi, qualityNoteAttributeId, trxName);
 		}
 
 		final I_M_QualityNote qualityNote = receiptLineCandidate.get_qualityNote();

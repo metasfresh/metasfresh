@@ -1,7 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.util.Properties;
-
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Services;
@@ -35,18 +34,25 @@ public class LotNumberDateAttributeDAO implements ILotNumberDateAttributeDAO
 	public static String LotNumberAttribute = "Lot-Nummer";
 
 	@Override
-	public I_M_Attribute getLotNumberDateAttribute(final Properties ctx)
+	public AttributeId getLotNumberDateAttributeId()
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-		return attributeDAO.retrieveAttributeByValue(ctx, LotNumberDateAttribute, I_M_Attribute.class);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		return attributesRepo.retrieveAttributeIdByValueOrNull(LotNumberDateAttribute);
 	}
-	
-	@Override
-	public I_M_Attribute getLotNumberAttribute(final Properties ctx)
-	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		return attributeDAO.retrieveAttributeByValue(ctx, LotNumberAttribute, I_M_Attribute.class);
+	@Override
+	public AttributeId getLotNumberAttributeId()
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		return attributesRepo.retrieveAttributeIdByValueOrNull(LotNumberAttribute);
+	}
+
+	@Override
+	public I_M_Attribute getLotNumberAttribute()
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
+		final AttributeId attributeId = getLotNumberAttributeId();
+		return attributesRepo.getAttributeById(attributeId);
 	}
 }

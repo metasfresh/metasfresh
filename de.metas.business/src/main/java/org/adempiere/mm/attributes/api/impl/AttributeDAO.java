@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -39,6 +41,7 @@ import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -69,6 +72,12 @@ import lombok.NonNull;
 public class AttributeDAO implements IAttributeDAO
 {
 	@Override
+	public I_M_AttributeSet getAttributeSetById(@NonNull final AttributeSetId attributeSetId)
+	{
+		return loadOutOfTrx(attributeSetId, I_M_AttributeSet.class);
+	}
+
+	@Override
 	public I_M_Attribute getAttributeById(final int attributeId)
 	{
 		return retrieveAttributeById(Env.getCtx(), attributeId);
@@ -95,23 +104,33 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_Value)
-	public <T extends I_M_Attribute> T retrieveAttributeByValue(@CacheCtx final Properties ctx, final String value, final Class<T> clazz)
+	public <T extends I_M_Attribute> T retrieveAttributeByValue(final String value, final Class<T> clazz)
 	{
-		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None);
+		final AttributeId attributeId = retrieveAttributeIdByValue(value);
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return InterfaceWrapperHelper.create(attribute, clazz);
+	}
 
-		final ICompositeQueryFilter<T> filters = queryBuilder.getCompositeFilter();
-		filters.addOnlyActiveRecordsFilter();
-		filters.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value);
+	@Override
+	public AttributeId retrieveAttributeIdByValue(final String value)
+	{
+		final AttributeId attributeId = retrieveAttributeIdByValueOrNull(value);
+		Check.assumeNotNull(attributeId, "There is no attribute defined for the value {}", value);
+		return attributeId;
+	}
 
-		final T attribute = queryBuilder
+	@Override
+	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_Value)
+	public AttributeId retrieveAttributeIdByValueOrNull(final String value)
+	{
+		final int attributeId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
 				.create()
-				.firstOnly(clazz);
+				.firstIdOnly();
 
-		Check.errorIf(attribute == null, "There is no attribute defined for the value {}", value);
-
-		return attribute;
+		return AttributeId.ofRepoIdOrNull(attributeId);
 	}
 
 	@Override
@@ -204,7 +223,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final int attributeId)
+	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final AttributeId attributeId)
 	{
 		if (attributeSetInstance == null)
 		{
@@ -378,9 +397,15 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public boolean containsAttribute(final int attributeSetId, final int attributeId, final Object ctxProvider)
+	public boolean containsAttribute(@NonNull final AttributeSetId attributeSetId, @NonNull final AttributeId attributeId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class, ctxProvider)
+		if (attributeSetId.isNone())
+		{
+			return false;
+		}
+
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -388,29 +413,27 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_Attribute retrieveAttribute(final I_M_AttributeSet as, final int attributeId)
+	public I_M_Attribute retrieveAttribute(final AttributeSetId attributeSetId, final AttributeId attributeId)
 	{
-		final I_M_AttributeUse attributeUse = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class, as)
-				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, as.getM_AttributeSet_ID())
-				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
-				.create()
-				.firstOnly(I_M_AttributeUse.class);
-		if (attributeUse == null)
+		if (!containsAttribute(attributeSetId, attributeId))
 		{
 			return null;
 		}
 
-		final I_M_Attribute attribute = attributeUse.getM_Attribute();
-		return attribute;
+		return getAttributeById(attributeId);
 	}
 
 	@Override
-	public I_M_AttributeInstance createNewAttributeInstance(final Properties ctx, final I_M_AttributeSetInstance asi, final int attributeId, final String trxName)
+	public I_M_AttributeInstance createNewAttributeInstance(
+			final Properties ctx,
+			final I_M_AttributeSetInstance asi,
+			@NonNull final AttributeId attributeId,
+			final String trxName)
 	{
 		final I_M_AttributeInstance ai = InterfaceWrapperHelper.create(ctx, I_M_AttributeInstance.class, trxName);
 		ai.setAD_Org_ID(asi.getAD_Org_ID());
 		ai.setM_AttributeSetInstance(asi);
-		ai.setM_Attribute_ID(attributeId);
+		ai.setM_Attribute_ID(attributeId.getRepoId());
 
 		return ai;
 	}

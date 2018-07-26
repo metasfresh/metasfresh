@@ -24,6 +24,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
@@ -171,7 +172,7 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 
 	public void assertAttributeValue(final String expectedAttributeValue, final I_M_AttributeSetInstance asi, final I_M_Attribute attribute)
 	{
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (expectedAttributeValue == null)
 		{
 			Assert.assertNull("No AI expected", ai);

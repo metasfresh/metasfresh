@@ -151,6 +151,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return attributesByKey.containsKey(attributeKey);
 	}
 
+	@Override
+	public boolean hasAttribute(final AttributeId attributeId)
+	{
+		return attributes.containsKey(attributeId);
+	}
+
 	private final void assertAttributeExists(final String attributeKey)
 	{
 		if (!hasAttribute(attributeKey))
@@ -266,6 +272,12 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 	@Override
 	public void setValue(final String attributeKey, final Object value)
+	{
+		throw new AdempiereException("Attribute set is immutable: " + this);
+	}
+
+	@Override
+	public void setValue(final AttributeId attributeId, final Object value)
 	{
 		throw new AdempiereException("Attribute set is immutable: " + this);
 	}

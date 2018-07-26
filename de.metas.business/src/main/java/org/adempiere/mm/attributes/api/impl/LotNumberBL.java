@@ -1,15 +1,12 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import java.util.Date;
-import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
@@ -65,19 +62,15 @@ public class LotNumberBL implements ILotNumberBL
 	@Override
 	public String getLotNumberAttributeValueOrNull(@NonNull final I_M_AttributeSetInstance asi)
 	{
-		final Properties ctx = getCtx(asi);
-
-		final I_M_Attribute lotNumberAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(ctx);
-
-		if (lotNumberAttr == null)
+		final AttributeId lotNumberAttrId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttributeId();
+		if (lotNumberAttrId == null)
 		{
 			return null;
 		}
 		
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final int lotNumberAttrID = lotNumberAttr.getM_Attribute_ID();
-		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asi, lotNumberAttrID);
+		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asi, lotNumberAttrId);
 
 		if(lotNumberAI == null)
 		{

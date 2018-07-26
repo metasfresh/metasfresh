@@ -13,20 +13,20 @@ package de.metas.handlingunits.expectations;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -34,7 +34,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 
@@ -159,7 +158,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		{
 			assertEquals(messageToUse.expect("ValueNumber"), valueNumber, attributeValueActual.getValueAsBigDecimal());
 		}
-		if(valueDateSet)
+		if (valueDateSet)
 		{
 			assertEquals(messageToUse.expect("ValueDate"), valueDate, attributeValueActual.getValueAsDate());
 		}
@@ -283,6 +282,12 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		return this;
 	}
 
+	public final AttributeId getAttributeIdNotNull()
+	{
+		final I_M_Attribute attribute = getAttributeNotNull();
+		return AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+	}
+
 	public final I_M_Attribute getAttributeNotNull()
 	{
 		final ErrorMessage messageIfNotFound = newErrorMessage("")
@@ -299,7 +304,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 		if (attributeKey != null)
 		{
-			return Services.get(IAttributeDAO.class).retrieveAttributeByValue(Env.getCtx(), attributeKey, I_M_Attribute.class);
+			return Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeKey);
 		}
 
 		// Fail
