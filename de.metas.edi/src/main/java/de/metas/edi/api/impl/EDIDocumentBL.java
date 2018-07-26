@@ -35,6 +35,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
@@ -321,7 +322,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 			final I_M_Product product = inOutLine.getM_Product();
 			
-			final int orgId = product.getAD_Org_ID();
+			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 			final I_C_BPartner_Product bPartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bPartner, product, orgId);
 			if (bPartnerProduct == null)

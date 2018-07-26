@@ -27,7 +27,6 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -40,6 +39,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
@@ -52,12 +52,15 @@ import org.compiere.model.X_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import lombok.NonNull;
 
 public class AttributesBL implements IAttributesBL
 {
@@ -214,15 +217,14 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public Date calculateBestBeforeDate(final Properties ctx, final int productId, final int vendorBPartnerId, final Date dateReceipt)
+	public Date calculateBestBeforeDate(
+			final Properties ctx,
+			final ProductId productId,
+			final BPartnerId vendorBPartnerId,
+			@NonNull final Date dateReceipt)
 	{
-		Check.assumeNotNull(dateReceipt, "dateReceipt not null");
-
-		final String trxName = ITrx.TRXNAME_None;
-
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
-
-		final int orgId = product.getAD_Org_ID();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 		//
 		// Get Best-Before days
 		final I_C_BPartner_Product bpartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(ctx, vendorBPartnerId, productId, orgId);

@@ -34,6 +34,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 
 public interface IAttributesBL extends ISingletonService
@@ -87,5 +88,5 @@ public interface IAttributesBL extends ISingletonService
 	 * @param dateReceipt
 	 * @return best-before date or <code>null</code> if it does not apply
 	 */
-	Date calculateBestBeforeDate(Properties ctx, int productId, int vendorBPartnerId, Date dateReceipt);
+	Date calculateBestBeforeDate(Properties ctx, ProductId productId, BPartnerId vendorBPartnerId, Date dateReceipt);
 }
