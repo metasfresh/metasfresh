@@ -18,6 +18,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -470,7 +471,8 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 			final Object value = extractAttributeInstanceValue(instance);
-			builder.attributeValue(attributeId, value);
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
+			builder.attributeValue(attributeId, value, attributeValueId);
 		}
 		return builder.build();
 	}

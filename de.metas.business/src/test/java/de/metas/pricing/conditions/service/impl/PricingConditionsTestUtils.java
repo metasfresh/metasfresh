@@ -4,11 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Stream;
 
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -17,8 +15,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
 import org.junit.Ignore;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
@@ -103,13 +99,11 @@ class PricingConditionsTestUtils
 
 	public static PricingConditionsBreakQuery createQueryForQtyAndAttributeValues(final I_M_Product product, final int qty, final I_M_AttributeValue... attributeValues)
 	{
-		final List<I_M_AttributeInstance> attributeInstances = Stream.of(attributeValues)
-				.map(attributeValue -> createAttributeInstance(attributeValue.getM_Attribute(), attributeValue))
-				.collect(ImmutableList.toImmutableList());
-
 		return PricingConditionsBreakQuery.builder()
 				.product(extractProductAndCategoryId(product))
-				.attributeInstances(attributeInstances)
+				.attributes(ImmutableAttributeSet.builder()
+						.attributeValues(attributeValues)
+						.build())
 				.qty(BigDecimal.valueOf(qty))
 				.price(BigDecimal.valueOf(2)) // does not matter
 				.build();
@@ -118,15 +112,6 @@ class PricingConditionsTestUtils
 	private static ProductAndCategoryAndManufacturerId extractProductAndCategoryId(final I_M_Product product)
 	{
 		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
-	}
-
-	public static I_M_AttributeInstance createAttributeInstance(final I_M_Attribute attr, final I_M_AttributeValue attrValue)
-	{
-		final I_M_AttributeInstance attrInstance = newInstance(I_M_AttributeInstance.class);
-		attrInstance.setM_Attribute(attr);
-		attrInstance.setM_AttributeValue(attrValue);
-		save(attrInstance);
-		return attrInstance;
 	}
 
 	public static I_M_AttributeValue createAttrValue(final I_M_Attribute attr, final String attrValueName)
@@ -141,6 +126,7 @@ class PricingConditionsTestUtils
 	public static I_M_Attribute createAttr(final String attrName)
 	{
 		final I_M_Attribute attr = newInstance(I_M_Attribute.class);
+		attr.setValue(attrName);
 		attr.setName(attrName);
 		save(attr);
 		return attr;

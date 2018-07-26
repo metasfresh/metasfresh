@@ -50,6 +50,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -67,7 +68,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
@@ -1943,7 +1943,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setQualityDiscountPercent_Override(final I_C_Invoice_Candidate ic, final List<I_M_AttributeInstance> instances)
+	public void setQualityDiscountPercent_Override(final I_C_Invoice_Candidate ic, final ImmutableAttributeSet attributes)
 	{
 		final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -1976,7 +1976,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
 		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-				.attributeInstances(instances)
+				.attributes(attributes)
 				.product(product)
 				.qty(qty)
 				.price(priceActual)

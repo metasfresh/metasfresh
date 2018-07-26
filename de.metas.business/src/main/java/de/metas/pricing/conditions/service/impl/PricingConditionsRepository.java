@@ -176,6 +176,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		return PricingConditionsBreak.builder()
 				.id(id)
 				.matchCriteria(toPricingConditionsBreakMatchCriteria(schemaBreakRecord))
+				.seqNo(schemaBreakRecord.getSeqNo())
 				//
 				.priceOverride(toPriceOverride(schemaBreakRecord))
 				//
