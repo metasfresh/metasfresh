@@ -44,6 +44,12 @@ public class AttributeSetId implements RepoIdAware
 		return id;
 	}
 
+	public static AttributeSetId ofRepoIdOrNone(final int repoId)
+	{
+		final AttributeSetId id = ofRepoIdOrNull(repoId);
+		return id != null ? id : NONE;
+	}
+
 	public static AttributeSetId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId == NONE.repoId)
