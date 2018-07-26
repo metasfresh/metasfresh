@@ -36,12 +36,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,7 +58,7 @@ public class DistributeAndMoveReceiptHandler
 	private final IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 	private final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
 	private final LotNumberLockRepository lotNumberLockRepository = Adempiere.getBean(LotNumberLockRepository.class);
-	
+
 	private final I_M_InOut receipt;
 
 	private List<QuarantineInOutLine> linesToQuarantine = new ArrayList<>();
@@ -70,7 +70,7 @@ public class DistributeAndMoveReceiptHandler
 	{
 		Check.assume(!receipt.isSOTrx(), "InOut shall be a receipt: {}", receipt);
 		Check.assume(!inoutBL.isReversal(receipt), "InOut shall not be a reversal", receipt);
-		
+
 		this.receipt = receipt;
 	}
 
@@ -84,16 +84,13 @@ public class DistributeAndMoveReceiptHandler
 			huDDOrderBL.createQuarantineDDOrderForReceiptLines(linesToQuarantine);
 
 			setInvoiceCandsInDispute(linesToQuarantine);
-
 		}
 
-		if (!Check.isEmpty(linesToDD_Order))
+		for (final I_M_InOutLine lineToDDOrder : linesToDD_Order)
 		{
-			for (final I_M_InOutLine lineToDDOrder : linesToDD_Order)
-			{
-				inoutDDOrderBL.createDDOrderForInOutLine(lineToDDOrder);
-			}
+			inoutDDOrderBL.createDDOrderForInOutLine(lineToDDOrder);
 		}
+
 		if (!Check.isEmpty(linesToMove))
 		{
 			inoutMovementBL.generateMovementFromReceiptLines(linesToMove);
@@ -162,8 +159,6 @@ public class DistributeAndMoveReceiptHandler
 		return lotNumberLockRepository.getByProductIdAndLot(productId, lotNumberAttributeValue);
 	}
 
-	
-
 	private boolean isCreateDDOrder(final I_M_InOutLine inOutLine)
 	{
 		final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
@@ -179,7 +174,6 @@ public class DistributeAndMoveReceiptHandler
 		return false;
 	}
 
-	
 	public static class DistributeAndMoveReceiptHandlerBuilder
 	{
 		public void process()

@@ -13,12 +13,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -55,6 +56,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.interfaces.I_M_MovementLine;
+import lombok.NonNull;
 
 public class InOutMovementBL implements IInOutMovementBL
 {
@@ -91,12 +93,14 @@ public class InOutMovementBL implements IInOutMovementBL
 		return movements;
 	}
 
-	private List<I_M_Movement> createMovementsForLinePartitions(Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines, I_M_InOut receipt)
+	private List<I_M_Movement> createMovementsForLinePartitions(
+			@NonNull final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines,
+			@NonNull final I_M_InOut receipt)
 	{
 		//
 		// Generate movements for each "warehouseDestId -> inout lines" pair
 		final List<I_M_Movement> movements = new ArrayList<>();
-		for (final Map.Entry<Integer, List<I_M_InOutLine>> movementCandidate : warehouseId2inoutLines.entrySet())
+		for (final Entry<Integer, List<I_M_InOutLine>> movementCandidate : warehouseId2inoutLines.entrySet())
 		{
 			final int warehouseTargetId = movementCandidate.getKey();
 
@@ -112,7 +116,7 @@ public class InOutMovementBL implements IInOutMovementBL
 				movements.add(movement);
 			}
 		}
-		
+
 		return movements;
 	}
 
@@ -156,9 +160,8 @@ public class InOutMovementBL implements IInOutMovementBL
 		return warehouseId2inoutLines;
 	}
 
-	private I_M_Warehouse findWarehouseTargetOrNull(final I_M_InOutLine inOutLine)
+	private I_M_Warehouse findWarehouseTargetOrNull(@NonNull final I_M_InOutLine inOutLine)
 	{
-
 		final I_M_InOut receipt = create(inOutLine.getM_InOut(), I_M_InOut.class);
 
 		final int receiptWarehouseId = receipt.getM_Warehouse_ID();
@@ -196,13 +199,13 @@ public class InOutMovementBL implements IInOutMovementBL
 	private boolean isCreateMovement(final I_M_InOutLine inOutLine)
 	{
 		final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
-		
+
 		if(Check.isEmpty(rsForInOutLine))
 		{
 			// if the inoutLine doesn't have any receipt schedules, just create a movement for it to keep the old functionality untouched.
 			return true;
 		}
-		
+
 		for (final I_M_ReceiptSchedule rs : rsForInOutLine)
 		{
 			if (isCreateMovement(rs))
@@ -213,7 +216,7 @@ public class InOutMovementBL implements IInOutMovementBL
 		return false;
 	}
 
-	private boolean isCreateMovement(final I_M_ReceiptSchedule rs)
+	private boolean isCreateMovement(@NonNull final I_M_ReceiptSchedule rs)
 	{
 		if(rs.getOnMaterialReceiptWithDestWarehouse() == null)
 		{
@@ -305,9 +308,9 @@ public class InOutMovementBL implements IInOutMovementBL
 
 	/**
 	 * Retrieve ALL movements which are linked to given shipment/receipt.
-	 * 
+	 *
 	 * NOTE: this is DAO method, but we are adding it here to keep all BL together
-	 * 
+	 *
 	 * @param inout
 	 * @return movements
 	 */
