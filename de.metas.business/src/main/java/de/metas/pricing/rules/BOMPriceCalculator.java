@@ -109,7 +109,7 @@ public class BOMPriceCalculator
 		if (bomLine.getQty_Attribute_ID() > 0)
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(bomLine.getQty_Attribute_ID());
-			final String attributeCode = attributesRepo.retrieveAttributeCodeById(attributeId);
+			final String attributeCode = attributesRepo.getAttributeCodeById(attributeId);
 
 			final BigDecimal qty = getAttributeValueAsBigDecimal(attributeCode, null);
 			if (qty != null)
