@@ -4,7 +4,7 @@ drop table if exists TEMP_C_BPartner_Product_Trl;
 
 
 
-CREATE tABLE TEMP_C_BPartner_Product_Trl
+CREATE TABLE TEMP_C_BPartner_Product_Trl
 AS
 (select * from C_BPartner_Product_Trl);
 
@@ -27,7 +27,36 @@ DROP TABLE C_BPartner_Product_Trl
 -- populate the recreated table from the temp
 
 insert into C_BPartner_Product_Trl
-( select * from TEMP_C_BPartner_Product_Trl);
+(
+  ad_client_id,
+  ad_language ,
+  ad_org_id,
+  c_bpartner_product_id ,
+  created ,
+  createdby ,
+  customerlabelname ,
+  ingredients ,
+  isactive ,
+  istranslated ,
+  updated ,
+  updatedby 
+  )
+  
+  select 
+   ad_client_id,
+  ad_language ,
+  ad_org_id,
+  c_bpartner_product_id ,
+  created ,
+  createdby ,
+  customerlabelname ,
+ '' as ingredients ,
+  isactive ,
+  istranslated ,
+  updated ,
+  updatedby 
+  
+ from TEMP_C_BPartner_Product_Trl;
 
 -- delete the temp table since it's not needed anymore
 
