@@ -25,6 +25,8 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.vertical.cables.CablesConstants;
 import lombok.NonNull;
@@ -90,11 +92,18 @@ import lombok.NonNull;
 						.setMandatoryLogic(true))
 				.build();
 
-		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
-				{ ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID, ICablesOrderLineQuickInput.COLUMNNAME_Cable_Product_ID, ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID },
-				{ ICablesOrderLineQuickInput.COLUMNNAME_CableLength },
-				{ ICablesOrderLineQuickInput.COLUMNNAME_Qty }
-		});
+		final QuickInputLayoutDescriptor layout = QuickInputLayoutDescriptor.builder()
+				.addElement(DocumentLayoutElementDescriptor.builder(
+						entityDescriptor,
+						ICablesOrderLineQuickInput.COLUMNNAME_Plug1_Product_ID,
+						ICablesOrderLineQuickInput.COLUMNNAME_Cable_Product_ID,
+						ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID)
+						.setWidgetSize(WidgetSize.Large))
+				.addElement(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
+						.setWidgetSize(WidgetSize.Small))
+				.addElement(DocumentLayoutElementDescriptor.builder(entityDescriptor, ICablesOrderLineQuickInput.COLUMNNAME_Qty)
+						.setWidgetSize(WidgetSize.Small))
+				.build();
 
 		return QuickInputDescriptor.of(entityDescriptor, layout, CableSalesOrderLineQuickInputProcessor.class);
 	}
