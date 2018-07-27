@@ -14,6 +14,18 @@ class Lookup extends Component {
   constructor(props) {
     super(props);
 
+    const lookupWidgets = {};
+    if (props.properties) {
+      props.properties.forEach(item => {
+        lookupWidgets[`${item.field}`] = {
+          dropdownOpen: false,
+          fireClickOutside: false,
+          fireDropdownList: false,
+          isFocused: false,
+        };
+      });
+    }
+
     this.state = {
       isInputEmpty: true,
       propertiesCopy: getItemsByProperty(props.properties, 'source', 'list'),
@@ -21,10 +33,9 @@ class Lookup extends Component {
       fireClickOutside: false,
       initialFocus: false,
       localClearing: false,
-      fireDropdownList: false,
       autofocusDisabled: false,
-      isDropdownListOpen: false,
       isFocused: {},
+      lookupWidgets,
     };
   }
 
@@ -50,6 +61,10 @@ class Lookup extends Component {
       });
     }
   }
+
+  getLookupWidget = name => {
+    return this.state.lookupWidgets[`${name}`];
+  };
 
   checkIfDefaultValue = () => {
     const { defaultValue } = this.props;
@@ -137,11 +152,17 @@ class Lookup extends Component {
     );
   };
 
-  dropdownListToggle = value => {
+  dropdownListToggle = (value, field) => {
     const { onFocus, onBlur } = this.props;
 
     this.setState({
-      isDropdownListOpen: value,
+      lookupWidgets: {
+        ...this.state.lookupWidgets,
+        [`${field}`]: {
+          ...this.state.lookupWidgets[`${field}`],
+          dropdownOpen: value,
+        },
+      },
     });
 
     if (value && onFocus) {
@@ -216,6 +237,7 @@ class Lookup extends Component {
         [`${fieldName}`]: false,
       },
     });
+
     this.props.onBlur();
   };
 
@@ -306,10 +328,7 @@ class Lookup extends Component {
       localClearing,
       fireDropdownList,
       autofocusDisabled,
-      isDropdownListOpen,
     } = this.state;
-
-    this.linkedList = [];
 
     const mandatoryInputCondition =
       mandatory &&
@@ -319,6 +338,8 @@ class Lookup extends Component {
       validStatus && (!validStatus.valid && !validStatus.initialValue);
     const classRank = rank || 'primary';
     let showBarcodeScannerBtn = false;
+
+    this.linkedList = [];
 
     if (scanning) {
       return (
@@ -348,6 +369,7 @@ class Lookup extends Component {
             // us info which fields are usable with barcode scanner
             showBarcodeScannerBtn = item.field === 'M_LocatorTo_ID';
 
+            const lookupWidget = this.getLookupWidget(item.field);
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
               defaultValue,
@@ -381,8 +403,10 @@ class Lookup extends Component {
                   enableAutofocus={this.enableAutofocus}
                   onBlur={onBlur}
                   onFocus={onFocus}
-                  isOpen={isDropdownListOpen}
-                  onDropdownListToggle={this.dropdownListToggle}
+                  isOpen={lookupWidget.dropdownOpen}
+                  onDropdownListToggle={val => {
+                    this.dropdownListToggle(val, item.field);
+                  }}
                   {...{
                     placeholder,
                     readonly,
