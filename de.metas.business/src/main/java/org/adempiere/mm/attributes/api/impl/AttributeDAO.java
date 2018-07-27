@@ -63,29 +63,23 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_Attribute getAttributeById(final int attributeId)
 	{
-		return retrieveAttributeById(Env.getCtx(), attributeId);
+		// assume table level caching is enabled
+		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, I_M_Attribute.class);
 	}
 
 	@Override
 	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
 	{
-		return retrieveAttributeById(Env.getCtx(), attributeId.getRepoId());
+		return getAttributeById(attributeId.getRepoId());
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-	public I_M_Attribute retrieveAttributeById(@CacheCtx final Properties ctx, final int attributeId)
-	{
-		return InterfaceWrapperHelper.create(ctx, attributeId, I_M_Attribute.class, ITrx.TRXNAME_None);
-	}
-
-	@Override
-	public String retrieveAttributeCodeById(final AttributeId attributeId)
+	public String getAttributeCodeById(final AttributeId attributeId)
 	{
 		final I_M_Attribute attribute = getAttributeById(attributeId);
 		return attribute.getValue();
 	}
-
+	
 	@Override
 	public <T extends I_M_Attribute> T retrieveAttributeByValue(final String value, final Class<T> clazz)
 	{
