@@ -11,6 +11,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
@@ -153,6 +154,14 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
+	private final void assertAttributeExists(final AttributeId attributeId)
+	{
+		if (!hasAttribute(attributeId))
+		{
+			throw new AdempiereException("Attribute does not exist: " + attributeId);
+		}
+	}
+
 	@Override
 	public I_M_Attribute getAttributeByIdIfExists(final int attributeId)
 	{
@@ -179,28 +188,39 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return valuesByAttributeKey.get(attributeKey);
 	}
 
+	public Object getValue(@NonNull final AttributeId attributeId)
+	{
+		assertAttributeExists(attributeId);
+		final I_M_Attribute attribute = getAttributeByIdIfExists(attributeId);
+		return getValue(attribute);
+	}
+
 	@Override
 	public BigDecimal getValueAsBigDecimal(final String attributeKey)
 	{
 		final Object valueObj = getValue(attributeKey);
+		return toBigDecimal(valueObj);
+	}
+
+	public BigDecimal getValueAsBigDecimal(final AttributeId attributeId)
+	{
+		final Object valueObj = getValue(attributeId);
+		return toBigDecimal(valueObj);
+	}
+
+	private static BigDecimal toBigDecimal(final Object valueObj)
+	{
 		if (valueObj == null)
 		{
 			return null;
 		}
-		else if (valueObj instanceof BigDecimal)
-		{
-			return (BigDecimal)valueObj;
-		}
-		else
-		{
-			final String valueStr = valueObj.toString().trim();
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
 
-			return new BigDecimal(valueStr);
+		final BigDecimal valueBD = NumberUtils.asBigDecimal(valueObj, null);
+		if (valueBD == null)
+		{
+			throw new AdempiereException("Cannot convert '" + valueObj + "' (" + valueObj.getClass() + ") to BigDecimal");
 		}
+		return valueBD;
 	}
 
 	@Override
