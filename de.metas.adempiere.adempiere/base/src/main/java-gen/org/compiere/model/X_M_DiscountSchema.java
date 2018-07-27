@@ -15,7 +15,7 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1059044603L;
+	private static final long serialVersionUID = -336442302L;
 
     /** Standard Constructor */
     public X_M_DiscountSchema (Properties ctx, int M_DiscountSchema_ID, String trxName)
@@ -23,9 +23,9 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
       super (ctx, M_DiscountSchema_ID, trxName);
       /** if (M_DiscountSchema_ID == 0)
         {
+			setBreakValueType (null); // Q
 			setDiscountType (null);
 			setIsBPartnerFlatDiscount (false);
-			setIsQuantityBased (true); // Y
 			setM_DiscountSchema_ID (0);
 			setName (null);
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
@@ -46,6 +46,68 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_M_Attribute getBreakValue_Attribute() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_BreakValue_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+	}
+
+	@Override
+	public void setBreakValue_Attribute(org.compiere.model.I_M_Attribute BreakValue_Attribute)
+	{
+		set_ValueFromPO(COLUMNNAME_BreakValue_Attribute_ID, org.compiere.model.I_M_Attribute.class, BreakValue_Attribute);
+	}
+
+	/** Set Merkmal.
+		@param BreakValue_Attribute_ID Merkmal	  */
+	@Override
+	public void setBreakValue_Attribute_ID (int BreakValue_Attribute_ID)
+	{
+		if (BreakValue_Attribute_ID < 1) 
+			set_Value (COLUMNNAME_BreakValue_Attribute_ID, null);
+		else 
+			set_Value (COLUMNNAME_BreakValue_Attribute_ID, Integer.valueOf(BreakValue_Attribute_ID));
+	}
+
+	/** Get Merkmal.
+		@return Merkmal	  */
+	@Override
+	public int getBreakValue_Attribute_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_BreakValue_Attribute_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * BreakValueType AD_Reference_ID=540886
+	 * Reference name: M_DiscountSchema_BreakValueType
+	 */
+	public static final int BREAKVALUETYPE_AD_Reference_ID=540886;
+	/** Quantity = Q */
+	public static final String BREAKVALUETYPE_Quantity = "Q";
+	/** Amount = A */
+	public static final String BREAKVALUETYPE_Amount = "A";
+	/** Attribute = T */
+	public static final String BREAKVALUETYPE_Attribute = "T";
+	/** Set Break Value Type.
+		@param BreakValueType Break Value Type	  */
+	@Override
+	public void setBreakValueType (java.lang.String BreakValueType)
+	{
+
+		set_Value (COLUMNNAME_BreakValueType, BreakValueType);
+	}
+
+	/** Get Break Value Type.
+		@return Break Value Type	  */
+	@Override
+	public java.lang.String getBreakValueType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BreakValueType);
+	}
 
 	/** 
 	 * CumulativeLevel AD_Reference_ID=246
@@ -162,32 +224,6 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	public boolean isBPartnerFlatDiscount () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsBPartnerFlatDiscount);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Mengen Rabatt.
-		@param IsQuantityBased 
-		Trade discount break level based on Quantity (not value)
-	  */
-	@Override
-	public void setIsQuantityBased (boolean IsQuantityBased)
-	{
-		set_Value (COLUMNNAME_IsQuantityBased, Boolean.valueOf(IsQuantityBased));
-	}
-
-	/** Get Mengen Rabatt.
-		@return Trade discount break level based on Quantity (not value)
-	  */
-	@Override
-	public boolean isQuantityBased () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsQuantityBased);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

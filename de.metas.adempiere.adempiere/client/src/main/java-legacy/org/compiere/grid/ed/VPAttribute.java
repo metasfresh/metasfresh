@@ -26,6 +26,7 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.swing.JComponent;
@@ -35,6 +36,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.plaf.AdempierePLAF;
@@ -363,23 +365,24 @@ public class VPAttribute extends JComponent
 		return m_value;
 	}	// getValue
 
-	private int getM_AttributeSetInstance_ID()
+	private AttributeSetInstanceId getAttributeSetInstanceId()
 	{
 		final Object valueObj = getValue();
 		if (valueObj == null
 				|| (valueObj.getClass().equals(Object.class)) // initial value
 		)
 		{
-			return AttributeConstants.M_AttributeSetInstance_ID_None;
+			return AttributeSetInstanceId.NONE;
 		}
 
 		if (valueObj instanceof Number)
 		{
-			return ((Number)valueObj).intValue();
+			final int asiId = ((Number)valueObj).intValue();
+			return AttributeSetInstanceId.ofRepoIdOrNone(asiId);
 		}
 
 		log.warn("Invalid M_AttributeSetInstance_ID value '{}'. Returning {}.", valueObj, AttributeConstants.M_AttributeSetInstance_ID_None);
-		return AttributeConstants.M_AttributeSetInstance_ID_None;
+		return AttributeSetInstanceId.NONE;
 	}
 
 	@Override
@@ -417,7 +420,7 @@ public class VPAttribute extends JComponent
 	{
 		return m_mField;
 	}
-	
+
 	private String getTableName()
 	{
 		final GridField gridField = getField();
@@ -466,11 +469,10 @@ public class VPAttribute extends JComponent
 	private void actionButton0()
 	{
 		final ASIEditingInfo asiInfo = ASIEditingInfo.of(
-				attributeContext.getM_Product_ID() // product
-				, getM_AttributeSetInstance_ID() // ASI
-				, getTableName(), getAD_Column_ID() // caller TableName/AD_Column_ID
-				, attributeContext.isSOTrx() //
-		);
+				attributeContext.getProductId(), // product
+				getAttributeSetInstanceId(), // ASI
+				getTableName(), getAD_Column_ID(), // caller TableName/AD_Column_ID
+				attributeContext.getSoTrx());
 		if (asiInfo.isExcludedAttributeSet())
 		{
 			return;
@@ -486,21 +488,21 @@ public class VPAttribute extends JComponent
 			return;
 		}
 
-		final int previousM_AttributeSetInstance_ID = asiInfo.getM_AttributeSetInstance_ID();
-		final int newM_AttributeSetInstance_ID = vad.getM_AttributeSetInstance_ID();
+		final AttributeSetInstanceId previousAttributeSetInstanceId = asiInfo.getAttributeSetInstanceId();
+		final AttributeSetInstanceId newAttributeSetInstanceId = vad.getAttributeSetInstanceId();
 		final int M_Locator_ID = vad.getM_Locator_ID();
 
 		//
 		// Actually set the value
 		m_text.setText(vad.getM_AttributeSetInstanceName());
 		m_value = new Object();				// force re-query display
-		if (newM_AttributeSetInstance_ID <= 0)
+		if (newAttributeSetInstanceId == null || newAttributeSetInstanceId.isNone())
 		{
 			setValue(null);
 		}
 		else
 		{
-			setValue(newM_AttributeSetInstance_ID);
+			setValue(newAttributeSetInstanceId.getRepoId());
 		}
 		// Change Locator
 		if (m_GridTab != null && M_Locator_ID > 0)
@@ -523,7 +525,8 @@ public class VPAttribute extends JComponent
 		{
 			log.error("", pve);
 		}
-		if (newM_AttributeSetInstance_ID == previousM_AttributeSetInstance_ID && m_GridTab != null && m_GridField != null)
+		if (Objects.equals(newAttributeSetInstanceId, previousAttributeSetInstanceId)
+				&& m_GridTab != null && m_GridField != null)
 		{
 			// force Change - user does not realize that embedded object is already saved.
 			m_GridTab.processFieldChange(m_GridField);

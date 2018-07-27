@@ -14,9 +14,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsService;
-import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -45,7 +45,7 @@ import de.metas.process.ProcessPreconditionsResolution;
  * #L%
  */
 
-public class C_Order_VoidAndRelatedDocsAndRecreate
+public class C_Order_VoidWithRelatedDocsAndRecreate
 		extends JavaProcess
 		implements IProcessPrecondition
 {

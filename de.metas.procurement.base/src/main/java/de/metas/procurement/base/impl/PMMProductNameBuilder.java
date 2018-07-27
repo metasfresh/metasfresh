@@ -1,16 +1,17 @@
 package de.metas.procurement.base.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
-import org.compiere.model.I_C_BPartner_Product;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
@@ -97,7 +98,7 @@ public class PMMProductNameBuilder
 
 				final I_C_BPartner bpartner = pmmProduct.getC_BPartner();
 				final I_M_Product product = pmmProduct.getM_Product();
-				final int orgId = product.getAD_Org_ID();
+				final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 				bpartnerProduct = InterfaceWrapperHelper.create(bpartnerProductDAO.retrieveBPartnerProductAssociation(bpartner, product, orgId), I_C_BPartner_Product.class);
 				if (bpartnerProduct != null && !Check.isEmpty(bpartnerProduct.getProductName(), true))

@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
@@ -49,11 +50,11 @@ public class ADRAttributeBL implements IADRAttributeBL
 	private static final String MSG_NoARDAttribute = "de.metas.fresh.ADRAttribute.error";
 
 	@Override
-	public int getM_Attribute_ID(final IBPartnerAware bpartnerAware)
+	public AttributeId getAttributeId(final IBPartnerAware bpartnerAware)
 	{
 		final int adClientId = bpartnerAware.getAD_Client_ID();
 		final int adOrgId = bpartnerAware.getAD_Org_ID();
-		final int adrAttributeId = Services.get(IADRAttributeDAO.class).retrieveADRAttributeId(adClientId, adOrgId);
+		final AttributeId adrAttributeId = Services.get(IADRAttributeDAO.class).retrieveADRAttributeId(adClientId, adOrgId);
 		return adrAttributeId;
 	}
 

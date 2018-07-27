@@ -31,13 +31,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_AttributeInstance;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -393,14 +393,12 @@ public interface IInvoiceCandBL extends ISingletonService
 	BigDecimal getQtyToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema If the value does not exist, leave the field on null
+	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema.
+	 * If the value does not exist, leave the field on null.
 	 *
 	 * Note: ic not saved
-	 *
-	 * @param ic
-	 * @param instances
 	 */
-	void setQualityDiscountPercent_Override(I_C_Invoice_Candidate ic, List<I_M_AttributeInstance> instances);
+	void setQualityDiscountPercent_Override(I_C_Invoice_Candidate ic, ImmutableAttributeSet attributes);
 
 	/**
 	 * Precision is take from the current pricelist of the partner. If it is not found, it is taken from the currency as fallback

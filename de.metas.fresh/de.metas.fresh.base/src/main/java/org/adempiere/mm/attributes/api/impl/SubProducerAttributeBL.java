@@ -13,20 +13,20 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -38,6 +38,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -66,7 +67,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 		}
 
 		final IAttributeStorage attributeStorage = (IAttributeStorage)attributeSet;
-		if(!attributeStorage.hasAttribute(attr_MarkeADR))
+		if (!attributeStorage.hasAttribute(attr_MarkeADR))
 		{
 			return; // skip if the attribute storage does not have the ADR attribute
 		}
@@ -108,19 +109,20 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final I_M_Attribute attr_SubProducer = attributeDAO.retrieveAttributeByValue(ctx, Constants.ATTR_SubProducerBPartner_Value, I_M_Attribute.class);
-		if (attr_SubProducer == null)
+		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(Constants.ATTR_SubProducerBPartner_Value);
+		if (subProducerAttributeId == null)
 		{
 			return null;
 		}
 
-		final BigDecimal subProducerIdBD = attributeStorage.getValueAsBigDecimal(attr_SubProducer);
+		final I_M_Attribute subProducerAttribute = attributeDAO.getAttributeById(subProducerAttributeId);
+		final BigDecimal subProducerIdBD = attributeStorage.getValueAsBigDecimal(subProducerAttribute);
 		final int subProducerID = subProducerIdBD.intValueExact();
 		if (subProducerID <= 0)
 		{
 			return null;
 		}
-		final I_C_BPartner subProducer = InterfaceWrapperHelper.create(ctx, subProducerID, I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner subProducer = Services.get(IBPartnerDAO.class).getById(subProducerID, I_C_BPartner.class);
 		return subProducer;
 	}
 }

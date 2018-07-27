@@ -47,6 +47,7 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -241,9 +242,15 @@ class PricingResult implements IPricingResult
 	{
 		priceDateTS = priceDate;
 	}
+	
+	@Override
+	public void addPricingRuleApplied(@NonNull IPricingRule rule)
+	{
+		rulesApplied.add(rule);
+	}
 
 	@Override
-	public List<IPricingRule> getRulesApplied()
+	public List<IPricingRule> getPricingRulesApplied()
 	{
 		return rulesApplied;
 	}

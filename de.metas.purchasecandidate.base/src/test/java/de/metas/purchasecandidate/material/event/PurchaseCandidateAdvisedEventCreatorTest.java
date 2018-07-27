@@ -27,6 +27,7 @@ import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 
 /*
@@ -70,6 +71,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	{
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
 		save(discountSchemaRecord);
 
 		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);

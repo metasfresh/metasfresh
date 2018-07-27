@@ -25,9 +25,9 @@ package de.metas.fresh.picking.form;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
@@ -67,8 +67,8 @@ public class SSCC18HUTableRowSearchSelectionMatcher extends AbstractHUTableRowSe
 	@Override
 	protected IHUQueryBuilder createHUQueryBuilder(IHUQueryBuilder huQueryBuilderInitial)
 	{
-		final I_M_Attribute attr_sscc18 = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18Attribute(getCtx());
-		if (attr_sscc18 == null)
+		final AttributeId sscc18AttributeId = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18AttributeId();
+		if (sscc18AttributeId == null)
 		{
 			// SSCC18 attribute was not defined => invalid matcher
 			return null;
@@ -76,7 +76,7 @@ public class SSCC18HUTableRowSearchSelectionMatcher extends AbstractHUTableRowSe
 
 		return huQueryBuilderInitial
 				// match SSCC18 attribute
-				.addOnlyWithAttribute(attr_sscc18, sscc18)
+				.addOnlyWithAttribute(sscc18AttributeId, sscc18)
 				// only HU's with BPartner set shall be considered (06821)
 				.setOnlyIfAssignedToBPartner(true);
 	}

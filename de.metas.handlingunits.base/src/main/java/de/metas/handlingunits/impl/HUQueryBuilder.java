@@ -41,10 +41,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -782,11 +782,6 @@ import lombok.NonNull;
 		Check.assumeNotNull(_contextProvider, "contextProvider not null");
 		return _contextProvider;
 	}
-
-	private final Properties getCtx()
-	{
-		return InterfaceWrapperHelper.getCtx(getContextProvider());
-	}
 	
 	@Override
 	public IHUQueryBuilder onlyContextClient(final boolean onlyContextClient)
@@ -1092,7 +1087,14 @@ import lombok.NonNull;
 	@Override
 	public IHUQueryBuilder addOnlyWithAttribute(final String attributeName, final Object value)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName, I_M_Attribute.class);
+		return addOnlyWithAttribute(attribute, value);
+	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyWithAttribute(final AttributeId attributeId, final Object value)
+	{
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
 		return addOnlyWithAttribute(attribute, value);
 	}
 
@@ -1109,7 +1111,7 @@ import lombok.NonNull;
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeInList(final String attributeName, final Object... values)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
 		final List<Object> valuesAsList = Arrays.asList(values);
 		addOnlyWithAttributeInList(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown, valuesAsList);
 		return this;
@@ -1118,7 +1120,7 @@ import lombok.NonNull;
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeNotNull(final String attributeName)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
 		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
 				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull);
 		return this;
@@ -1127,7 +1129,7 @@ import lombok.NonNull;
 	@Override
 	public IHUQueryBuilder addOnlyWithAttributeMissingOrNull(final String attributeName)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(getCtx(), attributeName, I_M_Attribute.class);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
 		getAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
 				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull);
 		return this;

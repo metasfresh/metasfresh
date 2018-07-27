@@ -48,6 +48,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
@@ -59,12 +60,14 @@ import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.PAttributeInstance;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -95,8 +98,13 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -131,7 +139,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 	private I_M_AttributeSetInstance asiEdited = null;
 	private int _locatorId;
-	private final int _productId;
+	private final ProductId _productId;
 	private final int _callerColumnId;
 
 	/** Row Counter */
@@ -181,7 +189,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		_availableAttributes = asiInfo.getAvailableAttributes();
 		_allowSelectExistingASI = asiInfo.isAllowSelectExistingASI();
 
-		_productId = attributeContext.getM_Product_ID();
+		_productId = attributeContext.getProductId();
 		_callerColumnId = asiInfo.getCallerColumnId();
 
 		this.isLotEnabled = asiInfo.isLotEnabled();
@@ -254,7 +262,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return attribute.getMAttributeInstance(asiTemplate.getM_AttributeSetInstance_ID());
 	}
 
-	private int getM_Product_ID()
+	private ProductId getProductId()
 	{
 		return _productId;
 	}
@@ -398,8 +406,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				if (guaranteeDate == null)
 				{
 					guaranteeDate = attributesBL.calculateBestBeforeDate(ctx,
-							getM_Product_ID(), // product
-							attributeContext.getC_BPartner_ID(), // vendor bpartner
+							getProductId(), // product
+							attributeContext.getBpartnerId(), // vendor bpartner
 							Env.getDate(ctx) // dateReceipt
 					);
 				}
@@ -589,9 +597,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		editorAttributes.add(attribute);
 	}	// addAttributeLine
 
-	private Boolean getSOTrx()
+	private SOTrx getSOTrx()
 	{
-		return attributeContext.getSOTrx();
+		return attributeContext.getSoTrx();
 	}
 
 	/**
@@ -667,7 +675,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		// Create New Lot
 		else if (event.getSource() == bLot)
 		{
-			KeyNamePair pp = getM_AttributeSet().createLot(getM_Product_ID());
+			KeyNamePair pp = getM_AttributeSet().createLot(getProductId());
 			if (pp != null)
 			{
 				fieldLot.addItem(pp);
@@ -715,15 +723,17 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	{
 		log.info("");
 
-		int M_Warehouse_ID = attributeContext.getM_Warehouse_ID();
+		WarehouseId warehouseId = attributeContext.getWarehouseId();
 
-		final int C_DocType_ID = attributeContext.getC_DocType_ID();
-		if (C_DocType_ID > 0)
+		final DocTypeId docTypeId = attributeContext.getDocTypeId();
+		if (docTypeId != null)
 		{
-			final MDocType doctype = new MDocType(getCtx(), C_DocType_ID, ITrx.TRXNAME_None);
-			String docbase = doctype.getDocBaseType();
-			if (docbase.equals(MDocType.DOCBASETYPE_MaterialReceipt))
-				M_Warehouse_ID = 0;
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+			String docBaseType = docType.getDocBaseType();
+			if (MDocType.DOCBASETYPE_MaterialReceipt.equals(docBaseType))
+			{
+				warehouseId = null;
+			}
 		}
 
 		// teo_sarca [ 1564520 ] Inventory Move: can't select existing attributes
@@ -743,13 +753,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, getM_Product_ID());
-			pstmt.setInt(2, M_Locator_ID <= 0 ? M_Warehouse_ID : M_Locator_ID);
+			pstmt.setInt(1, getProductId().getRepoId());
+			pstmt.setInt(2, M_Locator_ID <= 0 ? WarehouseId.toRepoId(warehouseId) : M_Locator_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				title = rs.getString(1) + " - " + rs.getString(2);
-				M_Warehouse_ID = rs.getInt(3); // fetch the actual warehouse - teo_sarca [ 1564520 ]
+				warehouseId = WarehouseId.ofRepoIdOrNull(rs.getInt(3)); // fetch the actual warehouse - teo_sarca [ 1564520 ]
 			}
 		}
 		catch (Exception e)
@@ -765,8 +775,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 		//
 		// Open ASI selection window and wait for result
-		final int bpartnerId = attributeContext.getC_BPartner_ID();
-		final PAttributeInstance pai = new PAttributeInstance(this, title, M_Warehouse_ID, M_Locator_ID, getM_Product_ID(), bpartnerId);
+		final BPartnerId bpartnerId = attributeContext.getBpartnerId();
+		final PAttributeInstance pai = new PAttributeInstance(this, title, warehouseId, M_Locator_ID, getProductId(), bpartnerId);
 		final MAttributeSetInstance selectedASI = pai.getM_AttributeSetInstance();
 		if (selectedASI == null)
 		{
@@ -1036,9 +1046,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 *
 	 * @return Instance ID
 	 */
-	public int getM_AttributeSetInstance_ID()
+	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return asiEdited == null ? -1 : asiEdited.getM_AttributeSetInstance_ID();
+		return AttributeSetInstanceId.ofRepoIdOrNull(asiEdited == null ? -1 : asiEdited.getM_AttributeSetInstance_ID());
 	} // getM_AttributeSetInstance_ID
 
 	/**

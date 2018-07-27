@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.countryattribute;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_AttributeValue;
 
@@ -19,9 +20,9 @@ public interface ICountryAwareAttributeService
 	 * Gets the M_Attribute_ID to use for given {@link ICountryAware}.
 	 * 
 	 * @param countryAware
-	 * @return M_Attribute_ID or <code>-1</code>.
+	 * @return AttributeId or null
 	 */
-	int getM_Attribute_ID(ICountryAware countryAware);
+	AttributeId getAttributeId(ICountryAware countryAware);
 
 	/**
 	 * Gets/creates the coresponsing {@link I_M_AttributeValue} for given {@link ICountryAware}.

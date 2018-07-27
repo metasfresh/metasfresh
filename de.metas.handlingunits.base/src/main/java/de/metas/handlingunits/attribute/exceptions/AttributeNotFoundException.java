@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.exceptions;
 
+import org.adempiere.mm.attributes.AttributeId;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -49,6 +51,11 @@ public class AttributeNotFoundException extends org.adempiere.mm.attributes.exce
 	public AttributeNotFoundException(final String attributeValueKey, final IAttributeStorage attributeStorage)
 	{
 		super(attributeValueKey, attributeStorage);
+	}
+
+	public AttributeNotFoundException(final AttributeId attributeId, final IAttributeStorage attributeStorage)
+	{
+		super(attributeId, attributeStorage);
 	}
 
 	public IAttributeStorage getAttributeStorage()

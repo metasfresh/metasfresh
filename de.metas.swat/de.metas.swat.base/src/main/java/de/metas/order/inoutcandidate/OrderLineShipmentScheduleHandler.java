@@ -27,11 +27,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteOrder;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,9 +41,8 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.Query;
+import org.compiere.model.IQuery;
 import org.compiere.util.DB;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -49,7 +50,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -62,8 +62,6 @@ import lombok.NonNull;
  */
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
-	private static final Logger logger = LogManager.getLogger(OrderLineShipmentScheduleHandler.class);
-
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
@@ -223,25 +221,29 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public List<Object> retrieveModelsWithMissingCandidates(
+	public Iterator<? extends Object> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
 			final String trxName)
 	{
 		// task 08896: don't use the where clause with all those INs.
-		// It's performance can turn catastrophic for large numbers or orderlines and orders.
+		// Its performance can turn catastrophic for large numbers or orderlines and orders.
 		// Instead use an efficient view (i.e. C_OrderLine_ID_With_Missing_ShipmentSchedule) and (bad enough) use an in because we still need to select from *one* table.
 		// Note: still, this polling sucks, but that's a bigger task
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
+		final TypedSqlQueryFilter<I_C_OrderLine> orderLinesFilter = TypedSqlQueryFilter.of(wc);
 
-		final List<I_C_OrderLine> ols = new Query(ctx, getSourceTable(), wc, trxName)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.setOrderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
-				.list(I_C_OrderLine.class);
+		final Iterator<I_C_OrderLine> orderLines = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(orderLinesFilter)
+				.addOnlyContextClient(ctx)
+				.orderBy().addColumn(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).endOrderBy()
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterate(I_C_OrderLine.class);
 
-		logger.debug("Identified {} C_OrderLines that need a shipment schedule", ols.size());
-
-		return new ArrayList<>(ols);
+		return orderLines;
 	}
 
 	/**

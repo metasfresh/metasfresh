@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -459,8 +458,7 @@ public class MStorage extends X_M_Storage
 		}
 
 		// CarlosRuiz - globalqss - Fix [ 1725383 ] QtyOrdered wrongly updated
-		final I_M_Product prd = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, trxName);
-		if (Services.get(IProductBL.class).getM_AttributeSet_ID(prd) <= 0)
+		if (Services.get(IProductBL.class).getAttributeSetId(M_Product_ID).isNone())
 		{
 			// Product doesn't manage attribute set, always reserved with 0
 			reservationAttributeSetInstance_ID = 0;

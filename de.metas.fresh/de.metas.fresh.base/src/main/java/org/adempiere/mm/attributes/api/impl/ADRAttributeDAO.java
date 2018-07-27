@@ -25,10 +25,10 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IADRAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -44,7 +44,7 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 	public static final String SYSCONFIG_ADRAttribute = "de.metas.fresh.ADRAttribute";
 
 	@Override
-	public int retrieveADRAttributeId(final int adClientId, final int adOrgId)
+	public AttributeId retrieveADRAttributeId(final int adClientId, final int adOrgId)
 	{
 		final int adrAttributeId = Services.get(ISysConfigBL.class)
 				.getIntValue(SYSCONFIG_ADRAttribute,
@@ -52,17 +52,16 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 						adClientId,
 						adOrgId);
 		
-		return adrAttributeId;
+		return AttributeId.ofRepoIdOrNull(adrAttributeId);
 	}
 
 	@Override
 	public I_M_Attribute retrieveADRAttribute(final org.compiere.model.I_C_BPartner bpartner)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner);
 		final int adClientId = bpartner.getAD_Client_ID();
 		final int adOrgId = bpartner.getAD_Org_ID();
 
-		return retrieveADRAttribute(ctx, adClientId, adOrgId);
+		return retrieveADRAttribute(adClientId, adOrgId);
 	}
 
 	@Override
@@ -70,18 +69,18 @@ public class ADRAttributeDAO implements IADRAttributeDAO
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
-		return retrieveADRAttribute(ctx, adClientId, adOrgId);
+		return retrieveADRAttribute(adClientId, adOrgId);
 	}
 
-	private I_M_Attribute retrieveADRAttribute(Properties ctx, int adClientId, int adOrgId)
+	private I_M_Attribute retrieveADRAttribute(int adClientId, int adOrgId)
 	{
-		final int adrAttributeId = retrieveADRAttributeId(adClientId, adOrgId);
-		if (adrAttributeId <= 0)
+		final AttributeId adrAttributeId = retrieveADRAttributeId(adClientId, adOrgId);
+		if (adrAttributeId == null)
 		{
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).retrieveAttributeById(ctx, adrAttributeId);
+		return Services.get(IAttributeDAO.class).getAttributeById(adrAttributeId);
 	}
 
 	@Override

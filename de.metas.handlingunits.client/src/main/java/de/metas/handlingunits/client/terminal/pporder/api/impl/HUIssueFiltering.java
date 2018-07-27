@@ -153,10 +153,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 		if (materialTrackingAware != null && materialTrackingAware.getM_Material_Tracking_ID() > 0)
 		{
 			final IMaterialTrackingAttributeBL materialTrackingAttributeBL = Services.get(IMaterialTrackingAttributeBL.class);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
 
 			huQueryBuilder.addOnlyWithAttribute(
-					materialTrackingAttributeBL.getMaterialTrackingAttribute(ctx),
+					materialTrackingAttributeBL.getMaterialTrackingAttribute(),
 					Integer.toString(materialTrackingAware.getM_Material_Tracking_ID()));
 		}
 

@@ -32,9 +32,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 public class AttributeSetCalloutExecutor
@@ -80,7 +78,7 @@ public class AttributeSetCalloutExecutor
 		executeCallout(attributeValueContext, callout, attributeSet, attributeCurrent, valueNew, valueOld);
 	}
 
-	private final List<IAttributeValueCallout> calloutsActive = new ArrayList<IAttributeValueCallout>();
+	private final List<IAttributeValueCallout> calloutsActive = new ArrayList<>();
 
 	private void executeCallout(
 			final IAttributeValueContext attributeValueContext,

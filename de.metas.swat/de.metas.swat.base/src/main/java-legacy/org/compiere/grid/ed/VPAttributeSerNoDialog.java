@@ -24,13 +24,10 @@ import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Collection;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -48,8 +45,13 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
+import de.metas.product.ProductId;
 import de.metas.product.impl.ProductPA;
 
 /**
@@ -338,8 +340,13 @@ public class VPAttributeSerNoDialog extends CDialog
 			rs = null; pstmt = null;
 		}
 		//		
-		PAttributeInstance pai = new PAttributeInstance(this, title, 
-			M_Warehouse_ID, M_Locator_ID, m_M_Product_ID, m_C_BPartner_ID);
+		PAttributeInstance pai = new PAttributeInstance(
+				this,
+				title,
+				WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
+				M_Locator_ID,
+				ProductId.ofRepoIdOrNull(m_M_Product_ID),
+				BPartnerId.ofRepoIdOrNull(m_C_BPartner_ID));
 		if (pai.getM_AttributeSetInstance_ID() != -1)
 		{
 			m_M_AttributeSetInstance_ID = pai.getM_AttributeSetInstance_ID();

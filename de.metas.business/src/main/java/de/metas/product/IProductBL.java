@@ -25,7 +25,7 @@ package de.metas.product;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
@@ -68,20 +68,22 @@ public interface IProductBL extends ISingletonService
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
-	 *
-	 * @param product
-	 * @return M_AttributeSet_ID or {@link IAttributeDAO#M_AttributeSet_ID_None}
+	 * 
+	 * @return {@link AttributeSetId}; never returns null
 	 */
-	int getM_AttributeSet_ID(I_M_Product product);
+	AttributeSetId getAttributeSetId(I_M_Product product);
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
 	 *
-	 * @param ctx
-	 * @param productId
-	 * @return M_AttributeSet_ID or {@link IAttributeDAO#M_AttributeSet_ID_None}
+	 * @return {@link AttributeSetId}; never returns null
 	 */
-	int getM_AttributeSet_ID(Properties ctx, int productId);
+	AttributeSetId getAttributeSetId(ProductId productId);
+
+	default AttributeSetId getAttributeSetId(final int productId)
+	{
+		return getAttributeSetId(ProductId.ofRepoId(productId));
+	}
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
@@ -155,7 +157,7 @@ public interface IProductBL extends ISingletonService
 	 *
 	 * @return true if instance attributes
 	 */
-	boolean isInstanceAttribute(I_M_Product product);
+	boolean isInstanceAttribute(ProductId productId);
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
@@ -166,7 +168,7 @@ public interface IProductBL extends ISingletonService
 	{
 		return getProductValueAndName(ProductId.ofRepoIdOrNull(productId));
 	}
-	
+
 	String getProductValue(ProductId productId);
 
 	String getProductName(ProductId productId);

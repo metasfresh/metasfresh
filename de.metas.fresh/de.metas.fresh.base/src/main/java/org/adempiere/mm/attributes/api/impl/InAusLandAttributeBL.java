@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.api.impl;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
@@ -59,13 +60,13 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 	public static final String ATTRIBUTEVALUE_AUSLAND = "Ausland";
 	
 	@Override
-	public int getM_Attribute_ID(final ICountryAware countryAware)
+	public AttributeId getAttributeId(final ICountryAware countryAware)
 	{
 		final IInAusLandAttributeDAO inAusLandAttributeDAO = Services.get(IInAusLandAttributeDAO.class);
 		
 		final int adClientId = countryAware.getAD_Client_ID();
 		final int adOrgId = countryAware.getAD_Org_ID();
-		final int inAusLandAttributeId = inAusLandAttributeDAO.retrieveInAusLandAttributeId(adClientId, adOrgId);
+		final AttributeId inAusLandAttributeId = inAusLandAttributeDAO.retrieveInAusLandAttributeId(adClientId, adOrgId);
 		return inAusLandAttributeId;
 	}
 

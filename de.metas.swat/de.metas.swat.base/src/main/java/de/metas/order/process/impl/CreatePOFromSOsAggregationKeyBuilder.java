@@ -2,6 +2,7 @@ package de.metas.order.process.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -84,7 +85,7 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 		final I_M_Product product = salesOrderLine.getM_Product();
 
 		//FRESH-334 the bp product should be of the products' organization or of the org 0
-		final int orgId = product.getAD_Org_ID();
+		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 		final I_C_BPartner_Product bpProduct = bpProductDAO.retrieveBPProductForCustomer(soPartner, product, orgId);
 

@@ -86,7 +86,7 @@ public class Participant
 		this.country = Check.assumeNotEmpty(country, "Parameter country may not be empty");
 		this.zipCode = Check.assumeNotEmpty(zipCode, "Parameter zipCode may not be empty");
 		this.zone = Check.assumeNotEmpty(zone, "Parameter zone may not be empty");
-		this.sector = Check.assumeNotEmpty(sector, "Parameter sector may not be empty");
+		this.sector = Check.assumeNotNull(sector, "Parameter sector may not be null"); // https://github.com/metasfresh/metasfresh/issues/4415
 		this.dayType = Check.assumeNotEmpty(dayType, "Parameter dayType may not be empty");
 		this.island = Check.assumeNotNull(island, "Parameter island may not be null");
 		this.term = Check.assumeNotNull(term, "Parameter term may not be null");

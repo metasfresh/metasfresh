@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
@@ -41,7 +42,7 @@ public interface IADRAttributeDAO extends ISingletonService
 	 * 
 	 * @return M_Attribute_ID or -1
 	 */
-	int retrieveADRAttributeId(final int adClientId, final int adOrgId);
+	AttributeId retrieveADRAttributeId(final int adClientId, final int adOrgId);
 
 	I_M_Attribute retrieveADRAttribute(org.compiere.model.I_C_BPartner bpartner);
 	I_M_Attribute retrieveADRAttribute(Properties ctx);

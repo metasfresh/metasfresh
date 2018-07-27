@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.X_M_DiscountSchemaBreak;
@@ -84,7 +85,7 @@ public class PricingConditionsRepositoryTest
 				.productId(ProductId.ofRepoId(10))
 				.productCategoryId(ProductCategoryId.ofRepoId(20))
 				.productManufacturerId(BPartnerId.ofRepoId(30))
-				.attributeValueId(40)
+				.attributeValueId(AttributeValueId.ofRepoId(40))
 				.build();
 
 		final I_M_DiscountSchemaBreak schemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
@@ -99,7 +100,7 @@ public class PricingConditionsRepositoryTest
 		assertThat(matchingCriteria.getProductId()).isEqualTo(ProductId.ofRepoIdOrNull(schemaBreakRecord.getM_Product_ID()));
 		assertThat(matchingCriteria.getProductCategoryId()).isEqualTo(ProductCategoryId.ofRepoIdOrNull(schemaBreakRecord.getM_Product_Category_ID()));
 		assertThat(matchingCriteria.getProductManufacturerId()).isEqualTo(BPartnerId.ofRepoIdOrNull(schemaBreakRecord.getManufacturer_ID()));
-		assertThat(matchingCriteria.getAttributeValueId()).isEqualTo(schemaBreakRecord.getM_AttributeValue_ID());
+		assertThat(matchingCriteria.getAttributeValueId()).isEqualTo(AttributeValueId.ofRepoIdOrNull(schemaBreakRecord.getM_AttributeValue_ID()));
 	}
 
 	/** Tests with a schemaBreakRecord that has a fixed base price. */

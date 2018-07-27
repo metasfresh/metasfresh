@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.spi.impl;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
@@ -67,14 +68,13 @@ public class HULotNumberAttributeHandler
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
-		final I_M_Attribute lotNumber = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(ctx);
-
-		if (lotNumber == null)
+		final AttributeId lotNumberId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttributeId();
+		if (lotNumberId == null)
 		{
 			return;
 		}
 
-		final IAttributeStorage attributeStorage = (IAttributeStorage)attributeSet;
+		final IAttributeStorage attributeStorage = IAttributeStorage.cast(attributeSet);
 
 		final String lotNumberValue;
 
@@ -88,7 +88,7 @@ public class HULotNumberAttributeHandler
 			lotNumberValue = Services.get(ILotNumberBL.class).calculateLotNumber(newDate);
 		}
 		
-		attributeStorage.setValue(lotNumber, lotNumberValue);
+		attributeStorage.setValue(lotNumberId, lotNumberValue);
 
 	}
 
