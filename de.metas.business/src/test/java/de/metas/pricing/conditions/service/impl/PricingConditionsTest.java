@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -51,6 +52,7 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Rule;
@@ -437,6 +439,55 @@ public class PricingConditionsTest
 
 		final BigDecimal priceAfterConditions2 = calculatePrice(price, request);
 		assertThat(priceAfterConditions2).isEqualByComparingTo(new BigDecimal("0.500000"));
+	}
+
+	@Test
+	public void test_BreakValueType_Attibute()
+	{
+		final I_M_Product product1 = createM_Product("Product1", createM_ProductCategory("Category1"));
+		final I_M_Attribute attribute = createAttr("BreakAttribute");
+
+		final I_M_DiscountSchema schema1 = createSchema();
+		schema1.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		schema1.setBreakValueType(X_M_DiscountSchema.BREAKVALUETYPE_Attribute);
+		schema1.setBreakValue_Attribute_ID(attribute.getM_Attribute_ID());
+
+		final I_M_DiscountSchemaBreak schemaBreak1 = createBreak(schema1, 10);
+		schemaBreak1.setBreakValue(new BigDecimal(10));
+		schemaBreak1.setM_Product_Category_ID(product1.getM_Product_Category_ID());
+		schemaBreak1.setM_Product_ID(product1.getM_Product_ID());
+		schemaBreak1.setBreakDiscount(new BigDecimal(50));
+		save(schemaBreak1);
+
+		final I_M_DiscountSchemaBreak schemaBreak2 = createBreak(schema1, 20);
+		schemaBreak2.setBreakValue(new BigDecimal(20));
+		schemaBreak2.setM_Product_Category_ID(product1.getM_Product_Category_ID());
+		schemaBreak2.setM_Product_ID(product1.getM_Product_ID());
+		schemaBreak2.setBreakDiscount(new BigDecimal(25));
+		save(schemaBreak2);
+
+		final PricingConditions pricingConditions = repo.getPricingConditionsById(schema1.getM_DiscountSchema_ID());
+
+		//
+		final Function<Integer, PricingConditionsBreakQuery> createQueryWithAttributeValue = attributeValueInt -> PricingConditionsBreakQuery.builder()
+				.product(productAndCategoryId(product1))
+				.qty(new BigDecimal(100))
+				.price(new BigDecimal(1))
+				.attributes(ImmutableAttributeSet.builder()
+						.attributeValue(attribute, BigDecimal.valueOf(attributeValueInt))
+						.build())
+				.build();
+
+		assertThat(pricingConditions.pickApplyingBreak(createQueryWithAttributeValue.apply(5)))
+				.isNull();
+
+		assertThat(pricingConditions.pickApplyingBreak(createQueryWithAttributeValue.apply(15)))
+				.isNotNull()
+				.returns(schemaBreak1.getM_DiscountSchemaBreak_ID(), pricingConditionsBreak -> pricingConditionsBreak.getId().getDiscountSchemaBreakId());
+
+		assertThat(pricingConditions.pickApplyingBreak(createQueryWithAttributeValue.apply(25)))
+				.isNotNull()
+				.returns(schemaBreak2.getM_DiscountSchemaBreak_ID(), pricingConditionsBreak -> pricingConditionsBreak.getId().getDiscountSchemaBreakId());
 	}
 
 	private static PricingConditionsId id(final I_M_DiscountSchema record)

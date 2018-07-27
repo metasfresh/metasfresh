@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
@@ -38,7 +40,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class PricingConditions
 {
 	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE = Comparator.<PricingConditionsBreak, BigDecimal> comparing(b -> b.getMatchCriteria().getBreakValue())
@@ -52,9 +53,29 @@ public class PricingConditions
 	boolean bpartnerFlatDiscount;
 	Percent flatDiscount;
 
-	boolean quantityBased;
+	BreakValueType breakValueType;
+	AttributeId breakAttributeId;
 
 	List<PricingConditionsBreak> breaks;
+
+	@Builder
+	private PricingConditions(
+			PricingConditionsId id,
+			PricingConditionsDiscountType discountType,
+			boolean bpartnerFlatDiscount,
+			Percent flatDiscount,
+			BreakValueType breakValueType,
+			AttributeId breakAttributeId,
+			List<PricingConditionsBreak> breaks)
+	{
+		this.id = id;
+		this.discountType = discountType;
+		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
+		this.flatDiscount = flatDiscount;
+		this.breakValueType = breakValueType;
+		this.breakAttributeId = breakAttributeId;
+		this.breaks = breaks;
+	}
 
 	/**
 	 * Pick the first break that applies based on product, category and attribute instance
@@ -63,19 +84,24 @@ public class PricingConditions
 	 */
 	public PricingConditionsBreak pickApplyingBreak(final @NonNull PricingConditionsBreakQuery query)
 	{
+		final BigDecimal breakValue = extractBreakValue(query);
+		if (breakValue == null)
+		{
+			return null;
+		}
+
 		return breaks.stream()
 				.sorted(SORT_BY_BREAK_VALUE_DESC)
-				.filter(schemaBreak -> schemaBreakMatches(schemaBreak, query))
+				.filter(schemaBreak -> schemaBreakMatches(schemaBreak, breakValue, query))
 				.findFirst()
 				.orElse(null);
 	}
 
 	private boolean schemaBreakMatches(
 			final PricingConditionsBreak schemaBreak,
+			final BigDecimal breakValue,
 			final PricingConditionsBreakQuery query)
 	{
-		final BigDecimal breakValue = extractBreakValue(query);
-
 		final PricingConditionsBreakMatchCriteria matchCriteria = schemaBreak.getMatchCriteria();
 		return matchCriteria.breakValueMatches(breakValue)
 				&& matchCriteria.productMatches(query.getProduct())
@@ -84,7 +110,30 @@ public class PricingConditions
 
 	private BigDecimal extractBreakValue(final PricingConditionsBreakQuery query)
 	{
-		return quantityBased ? query.getQty() : query.getAmt();
+		if (breakValueType == BreakValueType.QUANTITY)
+		{
+			return query.getQty();
+		}
+		else if (breakValueType == BreakValueType.AMOUNT)
+		{
+			return query.getAmt();
+		}
+		else if (breakValueType == BreakValueType.ATTRIBUTE)
+		{
+			final ImmutableAttributeSet attributes = query.getAttributes();
+			if (attributes.hasAttribute(breakAttributeId))
+			{
+				return attributes.getValueAsBigDecimal(breakAttributeId);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		else
+		{
+			throw new AdempiereException("Unknown break value type: " + breakValueType);
+		}
 	}
 
 	public Stream<PricingConditionsBreak> streamBreaksMatchingAnyOfProducts(final Set<ProductAndCategoryAndManufacturerId> products)

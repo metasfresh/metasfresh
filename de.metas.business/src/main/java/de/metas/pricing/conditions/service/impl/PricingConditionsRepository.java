@@ -40,6 +40,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -69,6 +70,7 @@ import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.conditions.BreakValueType;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -136,8 +138,16 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		final PricingConditionsDiscountType discountType = PricingConditionsDiscountType.forCode(discountSchemaRecord.getDiscountType());
 		final List<PricingConditionsBreak> breaks;
+		final BreakValueType breakValueType;
+		AttributeId breakAttributeId = null;
 		if (discountType == PricingConditionsDiscountType.BREAKS)
 		{
+			breakValueType = BreakValueType.forCode(discountSchemaRecord.getBreakValueType());
+			if (breakValueType == BreakValueType.ATTRIBUTE)
+			{
+				breakAttributeId = AttributeId.ofRepoId(discountSchemaRecord.getBreakValue_Attribute_ID());
+			}
+
 			breaks = schemaBreakRecords.stream()
 					.filter(I_M_DiscountSchemaBreak::isActive)
 					.filter(I_M_DiscountSchemaBreak::isValid)
@@ -146,6 +156,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 		else
 		{
+			breakValueType = null;
 			breaks = ImmutableList.of();
 		}
 
@@ -154,7 +165,8 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.discountType(discountType)
 				.bpartnerFlatDiscount(discountSchemaRecord.isBPartnerFlatDiscount())
 				.flatDiscount(Percent.of(discountSchemaRecord.getFlatDiscount()))
-				.quantityBased(discountSchemaRecord.isQuantityBased())
+				.breakValueType(breakValueType)
+				.breakAttributeId(breakAttributeId)
 				.breaks(breaks)
 				.build();
 	}

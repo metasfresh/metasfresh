@@ -70,7 +70,7 @@ class PricingConditionsTestUtils
 	public static I_M_DiscountSchema createSchema()
 	{
 		final I_M_DiscountSchema schema = newInstance(I_M_DiscountSchema.class);
-		schema.setIsQuantityBased(true);
+		schema.setBreakValueType(X_M_DiscountSchema.BREAKVALUETYPE_Quantity);
 		save(schema);
 		return schema;
 	}
