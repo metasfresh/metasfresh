@@ -1,18 +1,17 @@
 package de.metas.ui.web.order.sales.pricingConditions.view;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeInstance;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
@@ -118,14 +117,14 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
 		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(salesOrderLine.getM_AttributeSetInstance_ID());
-		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(asiId);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(salesOrderLine.getM_AttributeSetInstance_ID());
+		final ImmutableAttributeSet attributes = attributesRepo.getImmutableAttributeSetById(asiId);
 		final BigDecimal qty = salesOrderLine.getQtyOrdered();
 		final BigDecimal price = salesOrderLine.getPriceActual();
 
 		return PricingConditionsBreakQuery.builder()
 				.product(product)
-				.attributeInstances(attributeInstances)
+				.attributes(attributes)
 				.qty(qty)
 				.price(price)
 				.build();

@@ -2,6 +2,8 @@ package de.metas.ui.web.pattribute.json;
 
 import java.io.Serializable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -68,9 +70,9 @@ public final class JSONCreateASIRequest implements Serializable
 				.toString();
 	}
 
-	public int getTemplateId()
+	public AttributeSetInstanceId getTemplateId()
 	{
-		return templateId;
+		return AttributeSetInstanceId.ofRepoIdOrNull(templateId);
 	}
 
 	public DocumentPath getDocumentPath()

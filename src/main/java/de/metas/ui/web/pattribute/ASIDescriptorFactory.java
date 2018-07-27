@@ -91,14 +91,14 @@ public class ASIDescriptorFactory
 	{
 		return ArrayKey.builder()
 				.append(info.getWindowType())
-				.append(info.getM_AttributeSet_ID())
+				.append(info.getAttributeSetId())
 				.append(info.getAvailableAttributeIds())
 				.build();
 	}
 
 	private ASIDescriptor createASIDescriptor(final ASIEditingInfo info)
 	{
-		final DocumentId asiDescriptorId = DocumentId.ofString(info.getWindowType() + "_" + info.getM_AttributeSet_ID());
+		final DocumentId asiDescriptorId = DocumentId.ofString(info.getWindowType() + "_" + info.getAttributeSetId().getRepoId());
 		final DocumentEntityDescriptor entityDescriptor = createDocumentEntityDescriptor( //
 				asiDescriptorId //
 				, info.getM_AttributeSet_Name() // name
@@ -109,9 +109,9 @@ public class ASIDescriptorFactory
 		final ASILayout layout = createLayout(asiDescriptorId, entityDescriptor);
 
 		return ASIDescriptor.builder()
-				.setM_AttributeSet_ID(info.getM_AttributeSet_ID())
-				.setEntityDescriptor(entityDescriptor)
-				.setLayout(layout)
+				.attributeSetId(info.getAttributeSetId())
+				.entityDescriptor(entityDescriptor)
+				.layout(layout)
 				.build();
 	}
 

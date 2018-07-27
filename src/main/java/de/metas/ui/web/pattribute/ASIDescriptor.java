@@ -1,12 +1,11 @@
 package de.metas.ui.web.pattribute;
 
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.util.Check;
-
-import com.google.common.base.MoreObjects;
+import org.adempiere.mm.attributes.AttributeSetId;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,89 +29,21 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * #L%
  */
 
-@Immutable
+@Value
 public final class ASIDescriptor
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
-	private final int attributeSetId;
+	private final AttributeSetId attributeSetId;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final ASILayout layout;
 
-	private ASIDescriptor(final Builder builder)
+	@Builder
+	private ASIDescriptor(
+			@NonNull final AttributeSetId attributeSetId,
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final ASILayout layout)
 	{
-		super();
-
-		attributeSetId = builder.attributeSetId;
-
-		entityDescriptor = builder.entityDescriptor;
-		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
-
-		layout = builder.layout;
-		Check.assumeNotNull(layout, "Parameter layout is not null");
+		this.attributeSetId = attributeSetId;
+		this.entityDescriptor = entityDescriptor;
+		this.layout = layout;
 	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("M_AttributeSet_ID", attributeSetId)
-				.add("entityDescriptor", entityDescriptor)
-				.toString();
-	}
-
-	public int getM_AttributeSet_ID()
-	{
-		return attributeSetId;
-	}
-
-	public DocumentEntityDescriptor getEntityDescriptor()
-	{
-		return entityDescriptor;
-	}
-
-	public ASILayout getLayout()
-	{
-		return layout;
-	}
-
-	public static final class Builder
-	{
-		private DocumentEntityDescriptor entityDescriptor;
-		private ASILayout layout;
-		private int attributeSetId = 0;
-
-		private Builder()
-		{
-			super();
-		}
-
-		public ASIDescriptor build()
-		{
-			return new ASIDescriptor(this);
-		}
-
-		public Builder setEntityDescriptor(final DocumentEntityDescriptor entityDescriptor)
-		{
-			this.entityDescriptor = entityDescriptor;
-			return this;
-		}
-
-		public Builder setLayout(final ASILayout layout)
-		{
-			this.layout = layout;
-			return this;
-		}
-
-		public Builder setM_AttributeSet_ID(final int attributeSetId)
-		{
-			this.attributeSetId = attributeSetId;
-			return this;
-		}
-
-	}
-
 }

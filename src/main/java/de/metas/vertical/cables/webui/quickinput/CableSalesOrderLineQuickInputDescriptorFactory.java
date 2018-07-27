@@ -55,6 +55,8 @@ import lombok.NonNull;
 @Profile(CablesConstants.PROFILE)
 /* package */ class CableSalesOrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	private static final int WINDOW_ID_SalesOrder = 143; // FIXME: hardcoded sales order window id = 143
+
 	private ProductLookupDescriptor productLookupDescriptor;
 
 	public CableSalesOrderLineQuickInputDescriptorFactory()
@@ -69,8 +71,7 @@ import lombok.NonNull;
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
-		// FIXME: hardcoded 143
-		return ImmutableSet.of(MatchingKey.includedDocument(DocumentType.Window, 143, org.compiere.model.I_C_OrderLine.Table_Name));
+		return ImmutableSet.of(MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_SalesOrder, org.compiere.model.I_C_OrderLine.Table_Name));
 	}
 
 	@Override
@@ -84,7 +85,7 @@ import lombok.NonNull;
 				.addField(createProductFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Plug2_Product_ID)
 						.setMandatoryLogic(false))
 				.addField(createQuantityFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_CableLength)
-						.setMandatoryLogic(true))
+						.setMandatoryLogic(false))
 				.addField(createQuantityFieldBuilder(ICablesOrderLineQuickInput.COLUMNNAME_Qty)
 						.setMandatoryLogic(true))
 				.build();
