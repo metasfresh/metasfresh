@@ -91,7 +91,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				.commitEachReceiptIndividually(false)
 				.createReceiptWithDatePromised(false)
 				.ctx(getCtx())
-				.destinationLocatorId(null) // use receipt schedules' destination-warehouse settings
+				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)
 				.receiptSchedules(receiptSchedules)
 				.selectedHuIds(selectedHuIds);

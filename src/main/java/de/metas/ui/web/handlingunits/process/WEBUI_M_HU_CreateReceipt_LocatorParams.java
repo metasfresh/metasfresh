@@ -1,17 +1,15 @@
 package de.metas.ui.web.handlingunits.process;
 
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Locator;
 import org.springframework.context.annotation.Profile;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -47,9 +45,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		extends WEBUI_M_HU_CreateReceipt_Base
-		implements IProcessPrecondition,
-		IProcessParametersCallout,
-		IProcessDefaultParametersProvider
+		implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
 
 	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -57,36 +53,35 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 
 	private final static String WAREHOUSE_PARAM_NAME = I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Dest_ID;
 	@Param(mandatory = false, parameterName = WAREHOUSE_PARAM_NAME)
-	private I_M_Warehouse destinationWarehouse;
+	private int warehouseRepoId;
 
 	private final static String LOCATOR_PARAM_NAME = "M_Locator_Dest_ID";
 	@Param(mandatory = false, parameterName = LOCATOR_PARAM_NAME)
-	private I_M_Locator destinationLocator;
+	private int locatorRepoId;
 
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		if (WAREHOUSE_PARAM_NAME.equals(parameter.getColumnName()))
 		{
-			final ImmutableList<Integer> distinctWarehouseIds = getM_ReceiptSchedules()
-					.stream()
-					.map(I_M_ReceiptSchedule::getM_Warehouse_Dest_ID)
-					.distinct()
-					.collect(ImmutableList.toImmutableList());
-			if (distinctWarehouseIds.size() == 1)
+			final int singleWarehouseId = ListUtils.extractSingleElementOrDefault(
+					getM_ReceiptSchedules(),
+					I_M_ReceiptSchedule::getM_Warehouse_Dest_ID,
+					-1);
+			if (warehouseIds > 0)
 			{
-				return distinctWarehouseIds.get(0);
+				return singleWarehouseId;
 			}
 		}
 
 		else if (LOCATOR_PARAM_NAME.equals(parameter.getColumnName()))
 		{
-			if (destinationWarehouse != null)
+			if (warehouseIdOrNull() != null)
 			{
-				final I_M_Locator defaultLocator = warehouseBL.getDefaultLocator(destinationWarehouse);
+				final LocatorId defaultLocator = warehouseBL.getDefaultLocatorId(warehouseId());
 				if (defaultLocator != null)
 				{
-					return defaultLocator.getM_Locator_ID();
+					return defaultLocator.getRepoId();
 				}
 			}
 		}
@@ -100,25 +95,25 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		{
 			return;
 		}
-		if (destinationWarehouse == null)
+		if (warehouseIdOrNull() == null)
 		{
-			destinationLocator = null;
+			locatorRepoId = 0;
 			return;
 		}
 
-		destinationLocator = warehouseBL.getDefaultLocator(destinationWarehouse);
+		locatorRepoId = warehouseBL.getDefaultLocatorId(warehouseId()).getRepoId();
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = LOCATOR_PARAM_NAME, dependsOn = WAREHOUSE_PARAM_NAME, numericKey = true)
 	public LookupValuesList getLocators()
 	{
-		if (destinationWarehouse == null)
+		if (warehouseRepoId <= 0)
 		{
 			return LookupValuesList.EMPTY;
 		}
 
 		return warehouseDAO
-				.retrieveLocators(destinationWarehouse)
+				.retrieveLocators(warehouseId())
 				.stream()
 				.map(locator -> IntegerLookupValue.of(locator.getM_Locator_ID(), locator.getValue()))
 				.collect(LookupValuesList.collect());
@@ -127,7 +122,17 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	@Override
 	protected void customizeParametersBuilder(@NonNull final CreateReceiptsParametersBuilder parametersBuilder)
 	{
-		final LocatorId locatorId = LocatorId.ofRecordOrNull(destinationLocator);
-		parametersBuilder.destinationLocatorId(locatorId);
+		final LocatorId locatorId = LocatorId.ofRepoIdOrNull(warehouseIdOrNull(), locatorRepoId);
+		parametersBuilder.destinationLocatorIdOrNull(locatorId);
+	}
+
+	private WarehouseId warehouseId()
+	{
+		return WarehouseId.ofRepoId(warehouseRepoId);
+	}
+
+	private WarehouseId warehouseIdOrNull()
+	{
+		return WarehouseId.ofRepoIdOrNull(warehouseRepoId);
 	}
 }
