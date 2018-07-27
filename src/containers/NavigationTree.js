@@ -347,11 +347,11 @@ class NavigationTree extends Component {
   };
 
   render() {
-    const { rawModal, modal } = this.props;
+    const { rawModal, modal, pluginModal } = this.props;
     const { rootResults } = this.state;
 
     return (
-      <Container siteName="Sitemap" {...{ modal, rawModal }}>
+      <Container siteName="Sitemap" {...{ modal, rawModal, pluginModal }}>
         {this.renderTree(rootResults)}
       </Container>
     );
@@ -361,14 +361,16 @@ class NavigationTree extends Component {
 function mapStateToProps(state) {
   const { windowHandler } = state;
 
-  const { modal, rawModal } = windowHandler || {
+  const { modal, rawModal, pluginModal } = windowHandler || {
     modal: {},
     rawModal: {},
+    pluginModal: {},
   };
 
   return {
     modal,
     rawModal,
+    pluginModal,
   };
 }
 
@@ -376,6 +378,7 @@ NavigationTree.propTypes = {
   dispatch: PropTypes.func.isRequired,
   modal: PropTypes.object.isRequired,
   rawModal: PropTypes.object.isRequired,
+  pluginModal: PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps)(NavigationTree);

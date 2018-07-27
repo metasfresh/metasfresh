@@ -60,7 +60,7 @@ context('Reusable "login" custom command', function() {
       return cy
         .request({
           method: 'GET',
-          url: (config.API_URL + '/login/isLoggedIn'),
+          url: config.API_URL + '/login/isLoggedIn',
           failOnStatusCode: false,
           followRedirect: false,
         })
@@ -84,7 +84,7 @@ context('Reusable "login" custom command', function() {
     return cy
       .request({
         method: 'POST',
-        url: (config.API_URL + '/login/authenticate'),
+        url: config.API_URL + '/login/authenticate',
         failOnStatusCode: false,
         followRedirect: false,
         body: {
@@ -105,8 +105,8 @@ context('Reusable "login" custom command', function() {
         return cy
           .request({
             method: 'POST',
-            url: (config.API_URL + '/login/loginComplete'),
-            body: { ...roles.get(0) },
+            url: config.API_URL + '/login/loginComplete',
+            body: roles.get(0),
             failOnStatusCode: false,
           })
           .then(() => {
@@ -115,5 +115,47 @@ context('Reusable "login" custom command', function() {
             handleSuccess();
           });
       });
+  });
+});
+
+describe('Enter value into string field', function() {
+  Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
+    cy.get(`.form-field-${fieldName}`)
+      .find('input')
+      .type(stringValue);
+  });
+});
+
+describe('Enter value into list field', function() {
+  Cypress.Commands.add(
+    'writeIntoListField',
+    (fieldName, partialValue, listValue) => {
+      cy.get(`.form-field-${fieldName}`)
+        .find('input')
+        .type(partialValue);
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+    }
+  );
+});
+
+describe('Execute a doc action', function() {
+  Cypress.Commands.add('processDocument', (action, expectedStatus) => {
+    cy.get('.form-field-DocAction')
+      .find('.meta-dropdown-toggle')
+      .click();
+
+    cy.get('.form-field-DocAction')
+      .find('.dropdown-status-toggler')
+      .should('have.class', 'dropdown-status-open');
+
+    cy.get('.form-field-DocAction .dropdown-status-list')
+      .find('.dropdown-status-item')
+      .contains(action)
+      .click();
+
+    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+    cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
   });
 });
