@@ -29,6 +29,7 @@ import java.util.Set;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -53,6 +54,12 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
 
+	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
+	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
+
+	/** @return attributes, ordered by M_AttributeUse.SeqNo */
+	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
+
 	String getAttributeCodeById(AttributeId attributeId);
 
 	/**
@@ -71,10 +78,15 @@ public interface IAttributeDAO extends ISingletonService
 	 * Retrieves all attribute instances associated with an attribute instance set.
 	 *
 	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
-	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by {@code M_Attribute_ID}. Never {@code null}
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
+	/**
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_Attribute_ID.
+	 *         If you want the instances to be ordered by M_AttributeUse.SeqNo,
+	 *         please use {@link #retrieveAttributeInstances(I_M_AttributeSetInstance)}
+	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
 
 	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
@@ -90,12 +102,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
-	 *
-	 * @param attributeSet
-	 * @param isInstanceAttribute
-	 * @return
 	 */
-	List<I_M_Attribute> retrieveAttributes(I_M_AttributeSet attributeSet, boolean isInstanceAttribute);
+	List<I_M_Attribute> retrieveAttributes(AttributeSetId attributeSetId, boolean isInstanceAttribute);
 
 	/**
 	 * Check if an attribute belongs to an attribute set (via M_AttributeUse).
@@ -105,6 +113,8 @@ public interface IAttributeDAO extends ISingletonService
 	I_M_Attribute retrieveAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
 	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
+
+	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
