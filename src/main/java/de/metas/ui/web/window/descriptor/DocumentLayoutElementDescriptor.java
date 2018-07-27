@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
@@ -73,6 +75,20 @@ public final class DocumentLayoutElementDescriptor
 		}
 
 		return elementBuilder;
+	}
+
+	public static final Builder builder(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final String... fieldNames)
+	{
+		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+
+		final DocumentFieldDescriptor[] elementFields = Stream.of(fieldNames)
+				.map(fieldName -> entityDescriptor.getFieldOrNull(fieldName))
+				.filter(Predicates.notNull())
+				.toArray(size -> new DocumentFieldDescriptor[size]);
+
+		return builder(elementFields);
 	}
 
 	private final String internalName;

@@ -2,17 +2,14 @@ package de.metas.ui.web.quickinput;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 
 /*
@@ -49,8 +46,8 @@ public class QuickInputLayoutDescriptor
 		Check.assumeNotNull(entityDescriptor, "Parameter entityDescriptor is not null");
 		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
 
-		final Builder layoutBuilder = new Builder();
-		
+		final Builder layoutBuilder = builder();
+
 		for (final String[] elementFieldNames : fieldNames)
 		{
 			if (elementFieldNames == null || elementFieldNames.length == 0)
@@ -58,14 +55,9 @@ public class QuickInputLayoutDescriptor
 				continue;
 			}
 
-			final DocumentFieldDescriptor[] elementFields = Stream.of(elementFieldNames)
-					.map(fieldName -> entityDescriptor.getFieldOrNull(fieldName))
-					.filter(Predicates.notNull())
-					.toArray(size -> new DocumentFieldDescriptor[size]);
-			
-			layoutBuilder.addElement(DocumentLayoutElementDescriptor.builder(elementFields));
+			layoutBuilder.addElement(DocumentLayoutElementDescriptor.builder(entityDescriptor, elementFieldNames));
 		}
-		
+
 		return layoutBuilder.build();
 	}
 
