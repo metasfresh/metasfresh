@@ -2,33 +2,8 @@ package org.adempiere.mm.attributes.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,7 +18,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,6 +42,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.lang.SOTrx;
 import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
@@ -74,7 +50,14 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_AttributeSet getAttributeSetById(@NonNull final AttributeSetId attributeSetId)
 	{
-		return loadOutOfTrx(attributeSetId, I_M_AttributeSet.class);
+		if (attributeSetId.isNone())
+		{
+			return retrieveNoAttributeSet();
+		}
+		else
+		{
+			return loadOutOfTrx(attributeSetId, I_M_AttributeSet.class);
+		}
 	}
 
 	@Override
@@ -137,7 +120,7 @@ public class AttributeDAO implements IAttributeDAO
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
 		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
-		return new ArrayList<>(map.values());
+		return ImmutableList.copyOf(map.values());
 	}
 
 	@Override
@@ -191,10 +174,14 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID());
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSetInstance_ID());
+		if (asiId.isNone())
+		{
+			return ImmutableList.of();
+		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
+		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
 		return retrieveAttributeInstances(ctx, asiId, trxName);
 	}
 
@@ -238,34 +225,45 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final Boolean isSOTrx)
+	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
 	{
-		final List<I_M_AttributeValue> values = retrieveAttributeValues(attribute);
-		if (null == isSOTrx)
+		return retrieveAttributeValuesMap(attribute)
+				.values()
+				.stream()
+				.filter(av -> isAttributeValueMatchingSOTrx(av, soTrx))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static boolean isAttributeValueMatchingSOTrx(final I_M_AttributeValue av, final SOTrx expectedSOTrx)
+	{
+		if (expectedSOTrx == null)
 		{
-			// No isSOTrx. Retrieve all.
-			return values;
+			return true;
 		}
 
-		final String availableTrxExpected = isSOTrx ? X_M_AttributeValue.AVAILABLETRX_SO : X_M_AttributeValue.AVAILABLETRX_PO;
-		for (final Iterator<I_M_AttributeValue> it = values.iterator(); it.hasNext();)
+		final SOTrx soTrx = extractAvailableSOTrx(av);
+		return expectedSOTrx.equals(soTrx);
+	}
+
+	private static SOTrx extractAvailableSOTrx(final I_M_AttributeValue av)
+	{
+		final String availableTrx = av.getAvailableTrx();
+		if (availableTrx == null)
 		{
-			final I_M_AttributeValue av = it.next();
-			final String availableTrx = av.getAvailableTrx();
-
-			if (availableTrx == null)
-			{
-				continue;
-			}
-			if (availableTrx.equals(availableTrxExpected))
-			{
-				continue;
-			}
-
-			it.remove();
+			return null;
 		}
-
-		return values;
+		else if (X_M_AttributeValue.AVAILABLETRX_SO.equals(availableTrx))
+		{
+			return SOTrx.SALES;
+		}
+		else if (X_M_AttributeValue.AVAILABLETRX_PO.equals(availableTrx))
+		{
+			return SOTrx.PURCHASE;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown AvailableTrx: " + availableTrx);
+		}
 	}
 
 	/**
@@ -444,7 +442,7 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeSet.class)
-				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeConstants.M_AttributeSet_ID_None)
+				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeSetId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSet.class);
 	}
@@ -455,7 +453,7 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeSetInstance.class)
-				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeConstants.M_AttributeSetInstance_ID_None)
+				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
 	}
@@ -468,15 +466,15 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableAttributeSet.EMPTY;
 		}
 
-		final Map<Object, Object> valuesByAttributeIdObj = new HashMap<>();
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
 		for (final I_M_AttributeInstance instance : retrieveAttributeInstances(asiId))
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 			final Object value = extractAttributeInstanceValue(instance);
-			valuesByAttributeIdObj.put(attributeId, value);
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
+			builder.attributeValue(attributeId, value, attributeValueId);
 		}
-
-		return ImmutableAttributeSet.ofValuesIndexByAttributeId(valuesByAttributeIdObj);
+		return builder.build();
 	}
 
 	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)

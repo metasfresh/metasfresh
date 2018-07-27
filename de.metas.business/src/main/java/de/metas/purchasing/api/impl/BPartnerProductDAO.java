@@ -42,7 +42,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -79,7 +78,11 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(final Properties ctx, final int Vendor_ID, final int productId, final int orgId)
+	public List<I_C_BPartner_Product> retrieveBPartnerForProduct(
+			final Properties ctx, 
+			final BPartnerId Vendor_ID, 
+			final ProductId productId, 
+			final OrgId orgId)
 	{
 		// the original was using table M_Product_PO instead of C_BPartner_Product
 
@@ -91,7 +94,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		queryFilters.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
 
-		if (Vendor_ID > 0)
+		if (Vendor_ID != null)
 		{
 			queryFilters.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, Vendor_ID);
 		}
@@ -171,27 +174,36 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final I_C_BPartner partner, final I_M_Product product, final int orgId)
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(
+			@NonNull final I_C_BPartner partner,
+			@NonNull final I_M_Product product,
+			final OrgId orgId)
 	{
-		Check.assumeNotNull(partner, "partner not null");
-		Check.assumeNotNull(product, "product not null");
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(partner);
-		final int bpartnerId = partner.getC_BPartner_ID();
-		final int productId = product.getM_Product_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, orgId);
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final Properties ctx, final int bpartnerId, final int productId, final int orgId)
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(
+			final Properties ctx,
+			final BPartnerId bpartnerId,
+			final ProductId productId,
+			final OrgId orgId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, orgId, trxName);
 	}
 
 	@Cached(cacheName = I_C_BPartner_Product.Table_Name + "#By#C_BPartner_ID#M_Product_ID", expireMinutes = 10)
-	public I_C_BPartner_Product retrieveBPartnerProductAssociation(@CacheCtx final Properties ctx, final int bpartnerId, final int productId, final int orgId, @CacheTrx final String trxName)
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(
+			@CacheCtx final Properties ctx,
+			final BPartnerId bpartnerId,
+			final ProductId productId,
+			final OrgId orgId,
+			@CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Product.class, ctx, trxName)
@@ -200,7 +212,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				// FRESH-334 support the case when BP PRoduct is for org 0
-				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0)
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				// order by ord_id desc
 				.orderBy()
 				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
@@ -210,7 +222,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPProductForCustomer(final I_C_BPartner partner, final I_M_Product product, final int orgId)
+	public I_C_BPartner_Product retrieveBPProductForCustomer(final I_C_BPartner partner, final I_M_Product product, final OrgId orgId)
 	{
 		// query BL
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -218,7 +230,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		// make sure we only pick from the BP product entries for the product given as parameter
 		final ICompositeQueryFilter<I_C_BPartner_Product> productQueryFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, 0);
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 
 		final ICompositeQueryFilter<I_C_BPartner_Product> customerQueryFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
@@ -276,7 +288,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.build();
 	}
 
-
 	@Override
 	public Optional<ProductExclude> getExcludedFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
@@ -305,7 +316,6 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		return Optional.empty();
 	}
 
-
 	private Optional<ProductExclude> getExcludedProductFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -320,7 +330,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.create()
 				.firstOnly(I_C_BPartner_Product.class);
 
-		if (bpartnerProduct == null )
+		if (bpartnerProduct == null)
 		{
 			return Optional.empty();
 		}
@@ -334,11 +344,9 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		return Optional.of(productExclude);
 	}
 
-
 	private Optional<ProductExclude> getBannedManufacturerFromSaleToCustomer(@NonNull final ProductId productId, @NonNull final BPartnerId partnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 
 		final ProductRepository productRepo = Adempiere.getBean(ProductRepository.class);
 		final Product product = productRepo.getById(productId);
@@ -353,8 +361,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.create()
 				.firstOnly(I_M_BannedManufacturer.class);
 
-
-		if (bannedManufacturer == null )
+		if (bannedManufacturer == null)
 		{
 			return Optional.empty();
 		}

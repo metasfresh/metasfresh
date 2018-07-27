@@ -17,7 +17,6 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -33,9 +32,8 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import de.metas.lang.SOTrx;
 
 /**
  * Product Attribute
@@ -50,126 +48,47 @@ public class MAttribute extends X_M_Attribute
 	 */
 	private static final long serialVersionUID = 7869800574413317999L;
 
-	/**
-	 * Get Attributes Of Client
-	 *
-	 * @param ctx Properties
-	 * @param onlyProductAttributes only Product Attributes
-	 * @param onlyListAttributes only List Attributes
-	 * @return array of attributes
-	 */
-	public static MAttribute[] getOfClient(Properties ctx,
-			boolean onlyProductAttributes, boolean onlyListAttributes)
-	{
-		ArrayList<MAttribute> list = new ArrayList<>();
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		String sql = "SELECT * FROM M_Attribute "
-				+ "WHERE AD_Client_ID=? AND IsActive='Y'";
-		if (onlyProductAttributes)
-			sql += " AND IsInstanceAttribute='N'";
-		if (onlyListAttributes)
-			sql += " AND AttributeValueType='L'";
-		sql += " ORDER BY Name";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MAttribute(ctx, rs, null));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			s_log.error(sql, e);
-		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
-
-		MAttribute[] retValue = new MAttribute[list.size()];
-		list.toArray(retValue);
-		s_log.debug("AD_Client_ID=" + AD_Client_ID + " - #" + retValue.length);
-		return retValue;
-	}	// getOfClient
-
-	/** Logger */
-	private static Logger s_log = LogManager.getLogger(MAttribute.class);
-
-	/**
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param M_Attribute_ID id
-	 * @param trxName transaction
-	 */
-	public MAttribute(Properties ctx, int M_Attribute_ID, String trxName)
+	public MAttribute(final Properties ctx, final int M_Attribute_ID, final String trxName)
 	{
 		super(ctx, M_Attribute_ID, trxName);
-		if (M_Attribute_ID == 0)
+		if (is_new())
 		{
 			setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
 			setIsInstanceAttribute(false);
 			setIsMandatory(false);
 		}
-	}	// MAttribute
+	}
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
-	public MAttribute(Properties ctx, ResultSet rs, String trxName)
+	public MAttribute(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MAttribute
-
-	/** Values */
-	private I_M_AttributeValue[] m_values = null;
-
-	/**
-	 * Get Values if List
-	 *
-	 * @return Values or null if not list
-	 */
-	public I_M_AttributeValue[] getMAttributeValues()
-	{
-		return getMAttributeValues(null);
 	}
 
 	/**
 	 * Get Values if List
 	 *
-	 * @param isSOTrx may be null; if set, then only return values with <code>AvailableTrx = SO</code> (for <code>true</code>) or <code>AvailableTrx = PO</code> (for <code>false</code>).
+	 * @param soTrx may be null; if set, then only return values with <code>AvailableTrx = SO</code> (for <code>true</code>) or <code>AvailableTrx = PO</code> (for <code>false</code>).
 	 * @return Values or null if not list
 	 */
-	public I_M_AttributeValue[] getMAttributeValues(Boolean isSOTrx)
+	public I_M_AttributeValue[] getMAttributeValues(final SOTrx soTrx)
 	{
-		if (m_values == null && ATTRIBUTEVALUETYPE_List.equals(getAttributeValueType()))
+		if (ATTRIBUTEVALUETYPE_List.equals(getAttributeValueType()))
 		{
 			final List<I_M_AttributeValue> list = new ArrayList<>();
 			if (!isMandatory())
+			{
 				list.add(null);
+			}
 			//
-			list.addAll(Services.get(IAttributeDAO.class).retrieveFilteredAttributeValues(this, isSOTrx));
+			list.addAll(Services.get(IAttributeDAO.class).retrieveFilteredAttributeValues(this, soTrx));
 
-			m_values = new I_M_AttributeValue[list.size()];
-			list.toArray(m_values);
+			return list.toArray(new I_M_AttributeValue[list.size()]);
 		}
-		return m_values;
-	}	// getValues
+		else
+		{
+			return null;
+		}
+	}
 
 	/**
 	 * Get Attribute Instance.
@@ -293,7 +212,7 @@ public class MAttribute extends X_M_Attribute
 	 * @param M_AttributeSetInstance_ID id
 	 * @param value number value
 	 */
-	public void setMAttributeInstance(int M_AttributeSetInstance_ID, BigDecimal value)
+	public void setMAttributeInstance(final int M_AttributeSetInstance_ID, final BigDecimal value)
 	{
 		// task 07948
 		// note: in fact there is an asi with ID = null (created in 2000), but we want to ignore it;
@@ -302,10 +221,14 @@ public class MAttribute extends X_M_Attribute
 
 		MAttributeInstance instance = getMAttributeInstance(M_AttributeSetInstance_ID);
 		if (instance == null)
+		{
 			instance = new MAttributeInstance(getCtx(), getM_Attribute_ID(),
 					M_AttributeSetInstance_ID, value, ITrx.TRXNAME_ThreadInherited);
+		}
 		else
+		{
 			instance.setValueNumber(value);
+		}
 
 		InterfaceWrapperHelper.save(instance);
 	}	// setAttributeInstance
@@ -318,7 +241,7 @@ public class MAttribute extends X_M_Attribute
 	 * @param M_AttributeSetInstance_ID id
 	 * @param value date value
 	 */
-	public void setMAttributeInstance(int M_AttributeSetInstance_ID, Timestamp value)
+	public void setMAttributeInstance(final int M_AttributeSetInstance_ID, final Timestamp value)
 	{
 		// task 07948
 		// note: in fact there is an asi with ID = null (created in 2000), but we want to ignore it;
@@ -346,7 +269,7 @@ public class MAttribute extends X_M_Attribute
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("MAttribute[");
+		final StringBuilder sb = new StringBuilder("MAttribute[");
 		sb.append(get_ID()).append("-").append(getName())
 				.append(",Type=").append(getAttributeValueType())
 				.append(",Instance=").append(isInstanceAttribute())
@@ -354,38 +277,24 @@ public class MAttribute extends X_M_Attribute
 		return sb.toString();
 	}	// toString
 
-	/**
-	 * AfterSave
-	 *
-	 * @param newRecord new
-	 * @param success success
-	 * @return success
-	 */
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		// Changed to Instance Attribute
-		if (!newRecord && is_ValueChanged("IsInstanceAttribute") && isInstanceAttribute())
+		if (!newRecord
+				&& is_ValueChanged(COLUMNNAME_IsInstanceAttribute)
+				&& isInstanceAttribute())
 		{
-			String sql = "UPDATE M_AttributeSet mas "
+			final String sql = "UPDATE M_AttributeSet mas "
 					+ "SET IsInstanceAttribute='Y' "
 					+ "WHERE IsInstanceAttribute='N'"
 					+ " AND EXISTS (SELECT * FROM M_AttributeUse mau "
 					+ "WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID"
 					+ " AND mau.M_Attribute_ID=" + getM_Attribute_ID() + ")";
-			int no = DB.executeUpdate(sql, get_TrxName());
-			log.debug("AttributeSet Instance set #" + no);
+			final int no = DB.executeUpdateEx(sql, get_TrxName());
+			log.debug("AttributeSet Instance set #{}", no);
 		}
 		return success;
-	}	// afterSave
-
-	/**
-	 * Get Record ID/ColumnName
-	 *
-	 * @return ID/ColumnName pair
-	 */
-	public org.compiere.util.KeyNamePair getKeyNamePair()
-	{
-		return new org.compiere.util.KeyNamePair(get_ID(), getName());
 	}
-}	// MAttribute
+
+}

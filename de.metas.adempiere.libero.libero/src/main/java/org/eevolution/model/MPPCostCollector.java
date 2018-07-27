@@ -53,9 +53,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.model.engines.IDocumentLine;
 import org.adempiere.model.engines.StorageEngine;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -78,14 +80,15 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.exceptions.ActivityProcessedException;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
-import org.compiere.model.I_C_BPartner_Product;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.order.IOrderBL;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**
@@ -956,10 +959,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 
 
 			//FRESH-334: Make sure the BP_Product if of the product's org or org *
-			final int orgId = product.getAD_Org_ID();
-			final int productId = product.getM_Product_ID();
+			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
+			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(
+					getCtx(),
+					(BPartnerId)null,
+					productId,
+					orgId);
 
 			I_C_BPartner_Product partnerProduct = null;
 			for (final I_C_BPartner_Product bpp : partnerProducts)

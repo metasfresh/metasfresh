@@ -1,16 +1,12 @@
 package de.metas.pricing.conditions;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import org.compiere.model.I_M_AttributeInstance;
-
-import com.google.common.collect.ImmutableList;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -39,7 +35,7 @@ import lombok.Value;
 public class PricingConditionsBreakQuery
 {
 	ProductAndCategoryAndManufacturerId product;
-	List<I_M_AttributeInstance> attributeInstances;
+	ImmutableAttributeSet attributes;
 	BigDecimal qty;
 	BigDecimal price;
 	BigDecimal amt;
@@ -47,12 +43,12 @@ public class PricingConditionsBreakQuery
 	@Builder
 	private PricingConditionsBreakQuery(
 			@NonNull final ProductAndCategoryAndManufacturerId product,
-			@Singular final List<I_M_AttributeInstance> attributeInstances,
+			ImmutableAttributeSet attributes,
 			@NonNull final BigDecimal qty,
 			@NonNull final BigDecimal price)
 	{
 		this.product = product;
-		this.attributeInstances = attributeInstances != null ? ImmutableList.copyOf(attributeInstances) : ImmutableList.of();
+		this.attributes = attributes != null ? attributes : ImmutableAttributeSet.EMPTY;
 		this.qty = qty;
 		this.price = price;
 		this.amt = qty.multiply(price);

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 
 import de.metas.bpartner.BPartnerId;
@@ -45,7 +47,7 @@ public class PricingConditionsBreakMatchCriteria
 	ProductId productId;
 	ProductCategoryId productCategoryId;
 	BPartnerId productManufacturerId;
-	int attributeValueId;
+	AttributeValueId attributeValueId;
 
 	public boolean breakValueMatches(final BigDecimal value)
 	{
@@ -102,10 +104,15 @@ public class PricingConditionsBreakMatchCriteria
 		return Objects.equals(this.productManufacturerId, productManufacturerId);
 	}
 
-	public boolean attributeMatches(final int attributeValueId)
+	public boolean attributeMatches(@NonNull final ImmutableAttributeSet attributes)
 	{
-		final int breakAttributeValueId = this.attributeValueId;
-		return breakAttributeValueId <= 0 || breakAttributeValueId == attributeValueId;
+		final AttributeValueId breakAttributeValueId = this.attributeValueId;
+		if (breakAttributeValueId == null)
+		{
+			return true;
+		}
+
+		return attributes.hasAttributeValueId(breakAttributeValueId);
 	}
 
 }

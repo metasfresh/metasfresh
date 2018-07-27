@@ -1,8 +1,13 @@
-package de.metas.lang;
+package org.adempiere.mm.attributes;
+
+import org.adempiere.util.Check;
+
+import de.metas.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,45 +27,28 @@ package de.metas.lang;
  * #L%
  */
 
-public enum SOTrx
+@Value
+public class AttributeValueId implements RepoIdAware
 {
-	SALES, PURCHASE;
+	int repoId;
 
-	public static SOTrx ofBoolean(final Boolean isSOTrx)
+	public static AttributeValueId ofRepoId(final int repoId)
 	{
-		if (isSOTrx == null)
-		{
-			return null;
-		}
-		return isSOTrx ? SALES : PURCHASE;
+		return new AttributeValueId(repoId);
 	}
 
-	public boolean toBoolean()
+	public static AttributeValueId ofRepoIdOrNull(final int repoId)
 	{
-		return isSales();
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static boolean toBoolean(final SOTrx soTrx)
+	public static int toRepoId(final AttributeValueId attributeValueId)
 	{
-		if(soTrx == null)
-		{
-			return false;
-		}
-		return soTrx.toBoolean();
+		return attributeValueId != null ? attributeValueId.getRepoId() : -1;
 	}
 
-	public boolean isSales()
+	private AttributeValueId(final int repoId)
 	{
-		return this == SALES;
-	}
-
-	public boolean isPurchase()
-	{
-		return this == PURCHASE;
-	}
-
-	public SOTrx invert()
-	{
-		return isSales() ? PURCHASE : SALES;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 }

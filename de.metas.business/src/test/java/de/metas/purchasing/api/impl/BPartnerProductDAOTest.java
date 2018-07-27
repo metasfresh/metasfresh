@@ -3,17 +3,23 @@ package de.metas.purchasing.api.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
-import org.compiere.model.I_C_BPartner_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /*
@@ -40,6 +46,9 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
 
 public class BPartnerProductDAOTest
 {
+	@Rule
+	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+
 	private I_AD_Org org0;
 
 	private I_AD_Org org1;
@@ -88,12 +97,12 @@ public class BPartnerProductDAOTest
 		test_BPartnerForProduct(bpProduct1, partner1, product1, org1);
 
 	}
-	
+
 	@Test
 	public void BPProductForCustomer_Test()
 	{
 		createData();
-		
+
 		test_BPProductForCustomer(bpProduct0, partner1, product1, org0);
 
 		test_BPProductForCustomer(bpProduct1, partner1, product1, org1);
@@ -127,7 +136,7 @@ public class BPartnerProductDAOTest
 		bpProduct.setM_Product(product);
 		bpProduct.setAD_Org_ID(adOrgID);
 		bpProduct.setUsedForVendor(true);
-		
+
 		bpProduct.setUsedForCustomer(true);
 		bpProduct.setC_BPartner_Vendor(partner);
 
@@ -176,8 +185,8 @@ public class BPartnerProductDAOTest
 			final I_M_Product productInput,
 			final I_AD_Org orgInput)
 	{
-		
-		final int orgId = orgInput.getAD_Org_ID();
+
+		final OrgId orgId = OrgId.ofRepoId(orgInput.getAD_Org_ID());
 		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partnerInput, productInput, orgId);
 
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
@@ -196,10 +205,9 @@ public class BPartnerProductDAOTest
 	{
 		final List<I_C_BPartner_Product> bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(
 				Env.getCtx(),
-				partnerInput.getC_BPartner_ID(),
-
-		productInput.getM_Product_ID(),
-				orgInput.getAD_Org_ID());
+				BPartnerId.ofRepoId(partnerInput.getC_BPartner_ID()),
+				ProductId.ofRepoId(productInput.getM_Product_ID()),
+				OrgId.ofRepoId(orgInput.getAD_Org_ID()));
 
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()
@@ -208,7 +216,7 @@ public class BPartnerProductDAOTest
 
 		Assert.assertTrue(errmsg, bpProductActual.contains(bpProductexpected));
 	}
-	
+
 	private void test_BPProductForCustomer(final I_C_BPartner_Product bpProductexpected,
 			// input :
 			final I_C_BPartner partnerInput,
@@ -216,20 +224,20 @@ public class BPartnerProductDAOTest
 			final I_AD_Org orgInput)
 	{
 
-		final int orgId = orgInput.getAD_Org_ID();
-		
+		final OrgId orgId = OrgId.ofRepoId(orgInput.getAD_Org_ID());
+
 		final I_C_BPartner_Product bpProductActual = Services.get(IBPartnerProductDAO.class).retrieveBPProductForCustomer(
-				partnerInput, 
-				productInput, 
+				partnerInput,
+				productInput,
 				orgId);
-		
+
 		final String errmsg = "Invalid C_BPartner_product entry retrieved for"
 				+ "\n Partner " + partnerInput.getName()
 				+ "\n Product " + productInput.getName()
 				+ "\n Org " + orgInput.getName();
 
 		Assert.assertEquals(errmsg, bpProductexpected.getC_BPartner_Product_ID(), bpProductActual.getC_BPartner_Product_ID());
-		
+
 	}
 
 }
