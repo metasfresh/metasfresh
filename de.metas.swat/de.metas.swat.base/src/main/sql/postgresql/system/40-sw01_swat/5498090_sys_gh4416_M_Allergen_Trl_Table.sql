@@ -159,8 +159,4 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2018-07-26 17:42:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560709
 ;
 
--- 2018-07-26T17:42:40.525
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE M_Allergen_Trl SET IsTranslated='N' WHERE IsTranslated IS NULL
-;
 
