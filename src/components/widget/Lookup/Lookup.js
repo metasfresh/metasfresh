@@ -14,10 +14,15 @@ class Lookup extends Component {
   constructor(props) {
     super(props);
 
-    const dropdownLists = {};
+    const lookupWidgets = {};
     if (props.properties) {
       props.properties.forEach(item => {
-        dropdownLists[`${item.field}`] = false;
+        lookupWidgets[`${item.field}`] = {
+          dropdownOpen: false,
+          fireClickOutside: false,
+          fireDropdownList: false,
+          isFocused: false,
+        };
       });
     }
 
@@ -28,11 +33,9 @@ class Lookup extends Component {
       fireClickOutside: false,
       initialFocus: false,
       localClearing: false,
-      fireDropdownList: false,
       autofocusDisabled: false,
-      // isDropdownListOpen: false,
       isFocused: {},
-      dropdownLists,
+      lookupWidgets,
     };
   }
 
@@ -58,6 +61,10 @@ class Lookup extends Component {
       });
     }
   }
+
+  getLookupWidget = name => {
+    return this.state.lookupWidgets[`${name}`];
+  };
 
   checkIfDefaultValue = () => {
     const { defaultValue } = this.props;
@@ -148,14 +155,14 @@ class Lookup extends Component {
   dropdownListToggle = (value, field) => {
     const { onFocus, onBlur } = this.props;
 
-    console.log('Lookup dropdownListToggle')
-
     this.setState({
-      dropdownLists: {
-        ...this.state.dropdownLists,
-        [`${field}`]: value,
-      }
-      // isDropdownListOpen: value,
+      lookupWidgets: {
+        ...this.state.lookupWidgets,
+        [`${field}`]: {
+          ...this.state.lookupWidgets[`${field}`],
+          dropdownOpen: value,
+        },
+      },
     });
 
     if (value && onFocus) {
@@ -230,8 +237,6 @@ class Lookup extends Component {
         [`${fieldName}`]: false,
       },
     });
-
-    console.log('Lookup handleBlur')
 
     this.props.onBlur();
   };
@@ -323,11 +328,7 @@ class Lookup extends Component {
       localClearing,
       fireDropdownList,
       autofocusDisabled,
-      // isDropdownListOpen,
-      dropdownLists,
     } = this.state;
-
-    this.linkedList = [];
 
     const mandatoryInputCondition =
       mandatory &&
@@ -337,6 +338,8 @@ class Lookup extends Component {
       validStatus && (!validStatus.valid && !validStatus.initialValue);
     const classRank = rank || 'primary';
     let showBarcodeScannerBtn = false;
+
+    this.linkedList = [];
 
     if (scanning) {
       return (
@@ -366,6 +369,7 @@ class Lookup extends Component {
             // us info which fields are usable with barcode scanner
             showBarcodeScannerBtn = item.field === 'M_LocatorTo_ID';
 
+            const lookupWidget = this.getLookupWidget(item.field);
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
               defaultValue,
@@ -399,9 +403,7 @@ class Lookup extends Component {
                   enableAutofocus={this.enableAutofocus}
                   onBlur={onBlur}
                   onFocus={onFocus}
-                  _onFocus={() => this.handleFocus(item.field)}
-                  _onBlur={() => this.handleBlur(item.field)}
-                  isOpen={dropdownLists[`${item.field}`]}
+                  isOpen={lookupWidget.dropdownOpen}
                   onDropdownListToggle={val => {
                     this.dropdownListToggle(val, item.field);
                   }}
