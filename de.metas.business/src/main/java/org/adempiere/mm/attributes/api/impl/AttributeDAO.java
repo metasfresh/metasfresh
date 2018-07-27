@@ -18,6 +18,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -62,29 +63,23 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public I_M_Attribute getAttributeById(final int attributeId)
 	{
-		return retrieveAttributeById(Env.getCtx(), attributeId);
+		// assume table level caching is enabled
+		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, I_M_Attribute.class);
 	}
 
 	@Override
 	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
 	{
-		return retrieveAttributeById(Env.getCtx(), attributeId.getRepoId());
+		return getAttributeById(attributeId.getRepoId());
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-	public I_M_Attribute retrieveAttributeById(@CacheCtx final Properties ctx, final int attributeId)
-	{
-		return InterfaceWrapperHelper.create(ctx, attributeId, I_M_Attribute.class, ITrx.TRXNAME_None);
-	}
-
-	@Override
-	public String retrieveAttributeCodeById(final AttributeId attributeId)
+	public String getAttributeCodeById(final AttributeId attributeId)
 	{
 		final I_M_Attribute attribute = getAttributeById(attributeId);
 		return attribute.getValue();
 	}
-
+	
 	@Override
 	public <T extends I_M_Attribute> T retrieveAttributeByValue(final String value, final Class<T> clazz)
 	{
@@ -470,7 +465,8 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 			final Object value = extractAttributeInstanceValue(instance);
-			builder.attributeValue(attributeId, value);
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
+			builder.attributeValue(attributeId, value, attributeValueId);
 		}
 		return builder.build();
 	}

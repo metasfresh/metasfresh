@@ -53,9 +53,7 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
 
-	I_M_Attribute retrieveAttributeById(Properties ctx, int attributeId);
-
-	String retrieveAttributeCodeById(AttributeId attributeId);
+	String getAttributeCodeById(AttributeId attributeId);
 
 	/**
 	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
