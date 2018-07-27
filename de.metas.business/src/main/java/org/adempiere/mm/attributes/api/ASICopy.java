@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,13 +52,12 @@ public class ASICopy
 	private final transient IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
 
 	private final I_M_AttributeSetInstance _fromASI;
-	private int _overrideM_AttributeSet_ID = -1;
+	private AttributeSetId _overrideAttributeSetId;
 
 	private List<Predicate<I_M_AttributeInstance>> attributeInstanceFilters = null;
 
-	private ASICopy(final I_M_AttributeSetInstance fromASI)
+	private ASICopy(@NonNull final I_M_AttributeSetInstance fromASI)
 	{
-		Preconditions.checkNotNull(fromASI, "fromASI is null");
 		_fromASI = fromASI;
 	}
 
@@ -69,17 +71,17 @@ public class ASICopy
 	 * 
 	 * If the parameter is zero or negative the it will be ignored, so the attribute set from "fromASI" will be used.
 	 * 
-	 * @param overrideM_AttributeSet_ID
+	 * @param overrideAttributeSetId
 	 */
-	public ASICopy overrideM_AttributeSet_ID(final int overrideM_AttributeSet_ID)
+	public ASICopy overrideAttributeSetId(final AttributeSetId overrideAttributeSetId)
 	{
-		_overrideM_AttributeSet_ID = overrideM_AttributeSet_ID;
+		_overrideAttributeSetId = overrideAttributeSetId;
 		return this;
 	}
 
-	private int getOverrideM_AttributeSet_ID()
+	private AttributeSetId getOverrideAttributeSetId()
 	{
-		return _overrideM_AttributeSet_ID;
+		return _overrideAttributeSetId;
 	}
 
 	/**
@@ -113,10 +115,10 @@ public class ASICopy
 			toASI = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class, fromASI);
 			InterfaceWrapperHelper.copyValues(fromASI, toASI, true); // honorIsCalculated=true
 
-			final int overrideM_AttributeSet_ID = getOverrideM_AttributeSet_ID();
-			if (overrideM_AttributeSet_ID > 0)
+			final AttributeSetId overrideAttributeSetId = getOverrideAttributeSetId();
+			if (overrideAttributeSetId != null)
 			{
-				toASI.setM_AttributeSet_ID(overrideM_AttributeSet_ID);
+				toASI.setM_AttributeSet_ID(overrideAttributeSetId.getRepoId());
 			}
 
 			InterfaceWrapperHelper.save(toASI);

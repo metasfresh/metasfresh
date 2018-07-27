@@ -48,7 +48,11 @@ public interface IBPartnerDAO extends ISingletonService
 {
 	I_C_BPartner getById(final int bpartnerId);
 
+	<T extends I_C_BPartner> T getById(int bpartnerId, Class<T> modelClass);
+
 	I_C_BPartner getById(final BPartnerId bpartnerId);
+
+	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization

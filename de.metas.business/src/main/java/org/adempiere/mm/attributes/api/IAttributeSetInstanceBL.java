@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
+import org.adempiere.mm.attributes.AttributeId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,9 +29,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 
-import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.
@@ -63,10 +64,8 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 *
 	 * @param product
 	 * @return newly created and saved ASI; never return null
-	 *
-	 * @see IProductBL#getM_AttributeSet_ID(I_M_Product)
 	 */
-	I_M_AttributeSetInstance createASI(I_M_Product product);
+	I_M_AttributeSetInstance createASI(ProductId productId);
 
 	/**
 	 * Get an existing Attribute Set Instance, create a new one if none exists yet.
@@ -85,7 +84,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * @param attributeId
 	 * @return attribute instance; never return null
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, int attributeId);
+	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeId attributeId);
 
 	/**
 	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link I_M_AttributeValue}.
@@ -110,7 +109,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet);
 
-	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(int productId, IAttributeSet attributeSet);
+	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
 
 	/**
 	 * set in {@link I_M_AttributeInstance} the correct value for given <code>asi</code> and given <code>attribute</code>
@@ -121,4 +120,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * @return
 	 */
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
+	
+	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
 }

@@ -23,10 +23,6 @@ import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
@@ -35,6 +31,7 @@ import javax.swing.event.ListSelectionListener;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.minigrid.ColumnInfo;
@@ -45,11 +42,15 @@ import org.compiere.model.MAttributeSetInstance;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 
 
 /**
@@ -70,42 +71,32 @@ public class PAttributeInstance extends CDialog
 	 * 	Constructor
 	 * 	@param parent dialog parent
 	 * 	@param title title
-	 * 	@param M_Warehouse_ID warehouse key name pair
+	 * 	@param warehouseId warehouse key name pair
 	 * 	@param M_Locator_ID locator
-	 * 	@param M_Product_ID product key name pair
-	 * 	@param C_BPartner_ID bp
+	 * 	@param productId product key name pair
+	 * 	@param bpartnerId bp
 	 */
 	public PAttributeInstance(final Window parent,
 			final String title,
-			final int M_Warehouse_ID,
+			final WarehouseId warehouseId,
 			final int M_Locator_ID,
-			final int M_Product_ID,
-			final int C_BPartner_ID)
+			final ProductId productId,
+			final BPartnerId bpartnerId)
 	{
 		super (parent, Msg.getMsg(Env.getCtx(), "PAttributeInstance") + title, true);
-		init (M_Warehouse_ID, M_Locator_ID, M_Product_ID, C_BPartner_ID);
+		init (warehouseId, M_Locator_ID, productId, bpartnerId);
 		AEnv.showCenterWindow(parent, this);
 	}	//	PAttributeInstance
 
-	/**
-	 * 	Initialization
-	 *	@param M_Warehouse_ID wh
-	 *	@param M_Locator_ID loc
-	 *	@param M_Product_ID product
-	 *	@param C_BPartner_ID partner
-	 */
-	private void init (int M_Warehouse_ID, int M_Locator_ID, int M_Product_ID, int C_BPartner_ID)
+	private void init (WarehouseId warehouseId, int M_Locator_ID, ProductId productId, BPartnerId bpartnerId)
 	{
-		log.info("M_Warehouse_ID=" + M_Warehouse_ID 
-			+ ", M_Locator_ID=" + M_Locator_ID
-			+ ", M_Product_ID=" + M_Product_ID);
-		m_M_Warehouse_ID = M_Warehouse_ID;
+		m_M_Warehouse_ID = WarehouseId.toRepoId(warehouseId);
 		m_M_Locator_ID = M_Locator_ID;
-		m_M_Product_ID = M_Product_ID;
+		m_M_Product_ID = ProductId.toRepoId(productId);
 		try
 		{
 			jbInit();
-			dynInit(C_BPartner_ID);
+			dynInit(BPartnerId.toRepoIdOr(bpartnerId, -1));
 		}
 		catch (Exception e)
 		{

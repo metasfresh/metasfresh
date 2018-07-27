@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -536,10 +537,10 @@ public class MProduct extends X_M_Product
 		}
 		//
 		// Check Attribute Set settings
-		final int M_AttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(this);
-		if (M_AttributeSet_ID > 0)
+		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(this);
+		if (!attributeSetId.isNone())
 		{
-			final MAttributeSet mas = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
+			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
 			if (mas == null || !mas.isInstanceAttribute())
 			{
 				return false;

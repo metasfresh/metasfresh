@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -123,7 +124,8 @@ public class DimensionSpec
 
 		for (final KeyNamePair attrToValue : attrToValues)
 		{
-			final I_M_AttributeInstance ai = asiBL.getCreateAttributeInstance(newASI, attrToValue.getKey());
+			final AttributeId attributeId = AttributeId.ofRepoId(attrToValue.getKey());
+			final I_M_AttributeInstance ai = asiBL.getCreateAttributeInstance(newASI, attributeId);
 
 			String attrValue = attrToValue.getName();
 
@@ -215,7 +217,8 @@ public class DimensionSpec
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asi, attributeId);
 		if (attributeInstance == null)
 		{
 			return DimensionConstants.DIM_EMPTY;

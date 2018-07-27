@@ -1,31 +1,9 @@
 package org.adempiere.mm.attributes.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -36,9 +14,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -60,42 +42,79 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.lang.SOTrx;
 import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
 	@Override
-	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-	public I_M_Attribute retrieveAttributeById(@CacheCtx final Properties ctx, final int attributeId)
+	public I_M_AttributeSet getAttributeSetById(@NonNull final AttributeSetId attributeSetId)
 	{
-		return InterfaceWrapperHelper.create(ctx, attributeId, I_M_Attribute.class, ITrx.TRXNAME_None);
+		if (attributeSetId.isNone())
+		{
+			return retrieveNoAttributeSet();
+		}
+		else
+		{
+			return loadOutOfTrx(attributeSetId, I_M_AttributeSet.class);
+		}
+	}
+
+	@Override
+	public I_M_Attribute getAttributeById(final int attributeId)
+	{
+		// assume table level caching is enabled
+		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, I_M_Attribute.class);
+	}
+
+	@Override
+	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
+	{
+		return getAttributeById(attributeId.getRepoId());
+	}
+
+	@Override
+	public String getAttributeCodeById(final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return attribute.getValue();
+	}
+	
+	@Override
+	public <T extends I_M_Attribute> T retrieveAttributeByValue(final String value, final Class<T> clazz)
+	{
+		final AttributeId attributeId = retrieveAttributeIdByValue(value);
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return InterfaceWrapperHelper.create(attribute, clazz);
+	}
+
+	@Override
+	public AttributeId retrieveAttributeIdByValue(final String value)
+	{
+		final AttributeId attributeId = retrieveAttributeIdByValueOrNull(value);
+		Check.assumeNotNull(attributeId, "There is no attribute defined for the value {}", value);
+		return attributeId;
 	}
 
 	@Override
 	@Cached(cacheName = I_M_Attribute.Table_Name + "#by#" + I_M_Attribute.COLUMNNAME_Value)
-	public <T extends I_M_Attribute> T retrieveAttributeByValue(@CacheCtx final Properties ctx, final String value, final Class<T> clazz)
+	public AttributeId retrieveAttributeIdByValueOrNull(final String value)
 	{
-		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None);
-
-		final ICompositeQueryFilter<T> filters = queryBuilder.getCompositeFilter();
-		filters.addOnlyActiveRecordsFilter();
-		filters.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value);
-
-		final T attribute = queryBuilder
+		final int attributeId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value)
 				.create()
-				.firstOnly(clazz);
+				.firstIdOnly();
 
-		Check.errorIf(attribute == null, "There is no attribute defined for the value {}", value);
-
-		return attribute;
+		return AttributeId.ofRepoIdOrNull(attributeId);
 	}
 
 	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
 		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
-		return new ArrayList<>(map.values());
+		return ImmutableList.copyOf(map.values());
 	}
 
 	@Override
@@ -149,10 +168,14 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID());
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstance.getM_AttributeSetInstance_ID());
+		if (asiId.isNone())
+		{
+			return ImmutableList.of();
+		}
 
+		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSetInstance);
+		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSetInstance);
 		return retrieveAttributeInstances(ctx, asiId, trxName);
 	}
 
@@ -181,7 +204,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final int attributeId)
+	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final AttributeId attributeId)
 	{
 		if (attributeSetInstance == null)
 		{
@@ -196,34 +219,45 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final Boolean isSOTrx)
+	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
 	{
-		final List<I_M_AttributeValue> values = retrieveAttributeValues(attribute);
-		if (null == isSOTrx)
+		return retrieveAttributeValuesMap(attribute)
+				.values()
+				.stream()
+				.filter(av -> isAttributeValueMatchingSOTrx(av, soTrx))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static boolean isAttributeValueMatchingSOTrx(final I_M_AttributeValue av, final SOTrx expectedSOTrx)
+	{
+		if (expectedSOTrx == null)
 		{
-			// No isSOTrx. Retrieve all.
-			return values;
+			return true;
 		}
 
-		final String availableTrxExpected = isSOTrx ? X_M_AttributeValue.AVAILABLETRX_SO : X_M_AttributeValue.AVAILABLETRX_PO;
-		for (final Iterator<I_M_AttributeValue> it = values.iterator(); it.hasNext();)
+		final SOTrx soTrx = extractAvailableSOTrx(av);
+		return expectedSOTrx.equals(soTrx);
+	}
+
+	private static SOTrx extractAvailableSOTrx(final I_M_AttributeValue av)
+	{
+		final String availableTrx = av.getAvailableTrx();
+		if (availableTrx == null)
 		{
-			final I_M_AttributeValue av = it.next();
-			final String availableTrx = av.getAvailableTrx();
-
-			if (availableTrx == null)
-			{
-				continue;
-			}
-			if (availableTrx.equals(availableTrxExpected))
-			{
-				continue;
-			}
-
-			it.remove();
+			return null;
 		}
-
-		return values;
+		else if (X_M_AttributeValue.AVAILABLETRX_SO.equals(availableTrx))
+		{
+			return SOTrx.SALES;
+		}
+		else if (X_M_AttributeValue.AVAILABLETRX_PO.equals(availableTrx))
+		{
+			return SOTrx.PURCHASE;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown AvailableTrx: " + availableTrx);
+		}
 	}
 
 	/**
@@ -355,9 +389,15 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public boolean containsAttribute(final int attributeSetId, final int attributeId, final Object ctxProvider)
+	public boolean containsAttribute(@NonNull final AttributeSetId attributeSetId, @NonNull final AttributeId attributeId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class, ctxProvider)
+		if (attributeSetId.isNone())
+		{
+			return false;
+		}
+
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
@@ -365,29 +405,27 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_Attribute retrieveAttribute(final I_M_AttributeSet as, final int attributeId)
+	public I_M_Attribute retrieveAttribute(final AttributeSetId attributeSetId, final AttributeId attributeId)
 	{
-		final I_M_AttributeUse attributeUse = Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeUse.class, as)
-				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, as.getM_AttributeSet_ID())
-				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeId)
-				.create()
-				.firstOnly(I_M_AttributeUse.class);
-		if (attributeUse == null)
+		if (!containsAttribute(attributeSetId, attributeId))
 		{
 			return null;
 		}
 
-		final I_M_Attribute attribute = attributeUse.getM_Attribute();
-		return attribute;
+		return getAttributeById(attributeId);
 	}
 
 	@Override
-	public I_M_AttributeInstance createNewAttributeInstance(final Properties ctx, final I_M_AttributeSetInstance asi, final int attributeId, final String trxName)
+	public I_M_AttributeInstance createNewAttributeInstance(
+			final Properties ctx,
+			final I_M_AttributeSetInstance asi,
+			@NonNull final AttributeId attributeId,
+			final String trxName)
 	{
 		final I_M_AttributeInstance ai = InterfaceWrapperHelper.create(ctx, I_M_AttributeInstance.class, trxName);
 		ai.setAD_Org_ID(asi.getAD_Org_ID());
 		ai.setM_AttributeSetInstance(asi);
-		ai.setM_Attribute_ID(attributeId);
+		ai.setM_Attribute_ID(attributeId.getRepoId());
 
 		return ai;
 	}
@@ -398,7 +436,7 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeSet.class)
-				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeConstants.M_AttributeSet_ID_None)
+				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, AttributeSetId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSet.class);
 	}
@@ -409,8 +447,56 @@ public class AttributeDAO implements IAttributeDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeSetInstance.class)
-				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeConstants.M_AttributeSetInstance_ID_None)
+				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSetById(@NonNull final AttributeSetInstanceId asiId)
+	{
+		if (asiId.isNone())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
+		for (final I_M_AttributeInstance instance : retrieveAttributeInstances(asiId))
+		{
+			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
+			final Object value = extractAttributeInstanceValue(instance);
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
+			builder.attributeValue(attributeId, value, attributeValueId);
+		}
+		return builder.build();
+	}
+
+	private Object extractAttributeInstanceValue(final I_M_AttributeInstance instance)
+	{
+		final I_M_Attribute attribute = getAttributeById(instance.getM_Attribute_ID());
+		final String attributeValueType = attribute.getAttributeValueType();
+		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		{
+			return instance.getValueDate();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		{
+			return instance.getValue();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		{
+			return instance.getValueNumber();
+		}
+		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		{
+			return instance.getValue();
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported attributeValueType=" + attributeValueType)
+					.setParameter("instance", instance)
+					.setParameter("attribute", attribute)
+					.appendParametersToMessage();
+		}
 	}
 }

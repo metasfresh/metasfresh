@@ -55,6 +55,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.InfoSimple;
 import org.compiere.apps.search.PAttributeInstance;
@@ -64,6 +65,9 @@ import org.compiere.model.Query;
 import org.compiere.swing.CButton;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 
 public final class InfoProduct extends InfoSimple implements ActionListener
 {
@@ -154,19 +158,19 @@ public final class InfoProduct extends InfoSimple implements ActionListener
 		final int row = p_table.getSelectedRow();
 		if (e.getSource().equals(m_PAttributeButton) && row != -1)
 		{
-			final int productId = getM_Product_ID();
-			if (productId <= 0)
+			final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+			if (productId == null)
 			{
 				return;
 			}
 
-			final int warehouseId = getContextVariableAsInt("M_Warehouse_ID");
-			if (warehouseId <= 0)
+			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(getContextVariableAsInt("M_Warehouse_ID"));
+			if (warehouseId == null)
 			{
 				return;
 			}
 			final int p_WindowNo = getWindowNo();
-			final int bpartnerId = Env.getContextAsInt(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(Env.getContextAsInt(Env.getCtx(), p_WindowNo, "C_BPartner_ID"));
 			final String productName = getProductName();
 			final String title = productName;
 			final PAttributeInstance pai = new PAttributeInstance(getWindow(), title,

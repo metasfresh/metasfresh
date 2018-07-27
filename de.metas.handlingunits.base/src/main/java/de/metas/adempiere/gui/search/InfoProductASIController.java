@@ -13,15 +13,14 @@ package de.metas.adempiere.gui.search;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoQueryCriteria;
@@ -49,7 +49,11 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 
 /**
  * Controller to be used for setting ASI in InfoProduct quick input.
@@ -60,8 +64,8 @@ import de.metas.logging.LogManager;
 public class InfoProductASIController extends InfoColumnControllerAdapter implements IInfoQueryCriteria
 {
 	private static final transient Logger logger = LogManager.getLogger(InfoProductASIController.class);
-	
-	private final Map<Integer, Integer> recordId2asi = new HashMap<Integer, Integer>();
+
+	private final Map<Integer, Integer> recordId2asi = new HashMap<>();
 
 	private IInfoSimple parent;
 	private I_AD_InfoColumn infoColumnDef;
@@ -95,15 +99,15 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		}
 
 		@Override
-		public int getM_Warehouse_ID()
+		public WarehouseId getWarehouseId()
 		{
-			return -1;
+			return null;
 		}
 
 		@Override
-		public int getM_Product_ID()
+		public ProductId getProductId()
 		{
-			return parent.getRecordId(rowIndexModel);
+			return ProductId.ofRepoIdOrNull(parent.getRecordId(rowIndexModel));
 		}
 
 		@Override
@@ -113,19 +117,19 @@ public class InfoProductASIController extends InfoColumnControllerAdapter implem
 		}
 
 		@Override
-		public int getC_DocType_ID()
+		public DocTypeId getDocTypeId()
 		{
-			return -1;
+			return null;
 		}
 
 		@Override
-		public int getC_BPartner_ID()
+		public BPartnerId getBpartnerId()
 		{
-			return -1;
+			return null;
 		}
 
 		@Override
-		public Boolean getSOTrx()
+		public SOTrx getSoTrx()
 		{
 			return null;
 		}

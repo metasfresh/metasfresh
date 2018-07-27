@@ -100,9 +100,9 @@ import de.metas.inout.model.I_M_QualityNote;
 		id = String.valueOf(tuHU.getM_HU_ID());
 
 		//
-		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_QualityDiscountPercent_Value, I_M_Attribute.class);
-		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_QualityNotice_Value, I_M_Attribute.class);
-		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_SubProducerBPartner_Value, I_M_Attribute.class);
+		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(Constants.ATTR_QualityDiscountPercent_Value);
+		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_QualityNotice_Value);
+		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(Constants.ATTR_SubProducerBPartner_Value);
 	}
 
 	@Override

@@ -27,8 +27,11 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -423,5 +426,19 @@ class PricingContext implements IEditablePricingContext
 	{
 		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		return this;
+	}
+
+	@Override
+	public Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware()
+	{
+		final Object referencedObj = getReferencedObject();
+		if (referencedObj == null)
+		{
+			return Optional.empty();
+		}
+
+		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
+		return Optional.ofNullable(asiAware);
 	}
 }

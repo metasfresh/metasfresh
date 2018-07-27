@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.test.AbstractExpectation;
@@ -10,7 +11,6 @@ import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
 import org.junit.Assert;
 
 /*
@@ -71,7 +71,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 
 	public AttributeInstanceExpectation<ParentExpectationType> assertExpected(final ErrorMessage message, final I_M_AttributeSetInstance asi)
 	{
-		final int attributeId = getAttributeNotNull().getM_Attribute_ID();
+		final AttributeId attributeId = AttributeId.ofRepoId(getAttributeNotNull().getM_Attribute_ID());
 		final I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
 		return assertExpected(message, attributeInstance);
 	}
@@ -168,7 +168,7 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 
 		if (attributeKey != null)
 		{
-			return Services.get(IAttributeDAO.class).retrieveAttributeByValue(Env.getCtx(), attributeKey, I_M_Attribute.class);
+			return Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeKey);
 		}
 
 		// Fail

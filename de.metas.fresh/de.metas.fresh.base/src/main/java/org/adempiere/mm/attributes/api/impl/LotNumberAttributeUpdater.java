@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -11,8 +12,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
+
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -60,19 +61,14 @@ public class LotNumberAttributeUpdater
 			return;
 		}
 
-		final I_M_Attribute lotNoAttribute = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(Env.getCtx());
-		
-		if(lotNoAttribute == null)
+		final AttributeId lotNoAttributeId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttributeId();
+		if(lotNoAttributeId == null)
 		{
 			return;
 		}
 		
-		final int attributeId  = lotNoAttribute.getM_Attribute_ID();
-
-		final I_M_Product product = asiAware.getM_Product();
-		Check.assumeNotNull(product, "Product is not null");
-		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(product, attributeId);
-		
+		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
+		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, lotNoAttributeId);
 		if (attribute == null)
 		{
 			return;
@@ -80,7 +76,7 @@ public class LotNumberAttributeUpdater
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
 
-		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
+		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, lotNoAttributeId);
 	
 		if (ai != null)
 		{
@@ -88,7 +84,7 @@ public class LotNumberAttributeUpdater
 			return;
 		}
 
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeId);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi, lotNoAttributeId);
 	}
 
 	public LotNumberAttributeUpdater setSourceModel(final Object sourceModel)

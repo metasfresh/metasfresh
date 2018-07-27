@@ -69,6 +69,56 @@ public interface I_M_DiscountSchema
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Merkmal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBreakValue_Attribute_ID (int BreakValue_Attribute_ID);
+
+	/**
+	 * Get Merkmal.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBreakValue_Attribute_ID();
+
+	public org.compiere.model.I_M_Attribute getBreakValue_Attribute();
+
+	public void setBreakValue_Attribute(org.compiere.model.I_M_Attribute BreakValue_Attribute);
+
+    /** Column definition for BreakValue_Attribute_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchema, org.compiere.model.I_M_Attribute> COLUMN_BreakValue_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchema, org.compiere.model.I_M_Attribute>(I_M_DiscountSchema.class, "BreakValue_Attribute_ID", org.compiere.model.I_M_Attribute.class);
+    /** Column name BreakValue_Attribute_ID */
+    public static final String COLUMNNAME_BreakValue_Attribute_ID = "BreakValue_Attribute_ID";
+
+	/**
+	 * Set Break Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setBreakValueType (java.lang.String BreakValueType);
+
+	/**
+	 * Get Break Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBreakValueType();
+
+    /** Column definition for BreakValueType */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchema, Object> COLUMN_BreakValueType = new org.adempiere.model.ModelColumn<I_M_DiscountSchema, Object>(I_M_DiscountSchema.class, "BreakValueType", null);
+    /** Column name BreakValueType */
+    public static final String COLUMNNAME_BreakValueType = "BreakValueType";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -245,31 +295,6 @@ public interface I_M_DiscountSchema
     public static final org.adempiere.model.ModelColumn<I_M_DiscountSchema, Object> COLUMN_IsBPartnerFlatDiscount = new org.adempiere.model.ModelColumn<I_M_DiscountSchema, Object>(I_M_DiscountSchema.class, "IsBPartnerFlatDiscount", null);
     /** Column name IsBPartnerFlatDiscount */
     public static final String COLUMNNAME_IsBPartnerFlatDiscount = "IsBPartnerFlatDiscount";
-
-	/**
-	 * Set Mengen Rabatt.
-	 * Trade discount break level based on Quantity (not value)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsQuantityBased (boolean IsQuantityBased);
-
-	/**
-	 * Get Mengen Rabatt.
-	 * Trade discount break level based on Quantity (not value)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isQuantityBased();
-
-    /** Column definition for IsQuantityBased */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchema, Object> COLUMN_IsQuantityBased = new org.adempiere.model.ModelColumn<I_M_DiscountSchema, Object>(I_M_DiscountSchema.class, "IsQuantityBased", null);
-    /** Column name IsQuantityBased */
-    public static final String COLUMNNAME_IsQuantityBased = "IsQuantityBased";
 
 	/**
 	 * Set Rabatt Schema.

@@ -41,6 +41,7 @@ public class PricingConditionsBreak
 {
 	PricingConditionsBreakId id;
 	PricingConditionsBreakMatchCriteria matchCriteria;
+	int seqNo;
 
 	PriceOverride priceOverride;
 
@@ -68,6 +69,7 @@ public class PricingConditionsBreak
 	public PricingConditionsBreak(
 			final PricingConditionsBreakId id,
 			@NonNull final PricingConditionsBreakMatchCriteria matchCriteria,
+			final int seqNo,
 			@NonNull final PriceOverride priceOverride,
 			final boolean bpartnerFlatDiscount,
 			final Percent discount,
@@ -80,6 +82,7 @@ public class PricingConditionsBreak
 	{
 		this.id = id;
 		this.matchCriteria = matchCriteria;
+		this.seqNo = seqNo;
 		this.priceOverride = priceOverride;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;

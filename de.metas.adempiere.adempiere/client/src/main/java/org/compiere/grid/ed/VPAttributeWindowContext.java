@@ -26,8 +26,14 @@ package org.compiere.grid.ed;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.GridField;
 import org.compiere.util.Env;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
 
 /**
  * Implementation of {@link IVPAttributeContext} which resolves all values by using window's context.
@@ -85,33 +91,34 @@ import org.compiere.util.Env;
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public BPartnerId getBpartnerId()
 	{
-		return getContextAsInt("C_BPartner_ID");
+		return BPartnerId.ofRepoIdOrNull(getContextAsInt("C_BPartner_ID"));
 	}
 
 	@Override
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return getContextAsInt("M_Product_ID");
+		return ProductId.ofRepoIdOrNull(getContextAsInt("M_Product_ID"));
 	}
 
 	@Override
 	public boolean isSOTrx()
 	{
-		return Env.isSOTrx(ctx, windowNo);
+		return SOTrx.toBoolean(getSoTrx());
 	}
 
 	@Override
-	public Boolean getSOTrx()
+	public SOTrx getSoTrx()
 	{
-		return Env.getSOTrxOrNull(ctx, windowNo);
+		final Boolean soTrx = Env.getSOTrxOrNull(ctx, windowNo);
+		return SOTrx.ofBoolean(soTrx);
 	}
 
 	@Override
-	public int getM_Warehouse_ID()
+	public WarehouseId getWarehouseId()
 	{
-		return getContextAsInt("M_Warehouse_ID");
+		return WarehouseId.ofRepoIdOrNull(getContextAsInt("M_Warehouse_ID"));
 	}
 
 	@Override
@@ -121,8 +128,8 @@ import org.compiere.util.Env;
 	}
 
 	@Override
-	public int getC_DocType_ID()
+	public DocTypeId getDocTypeId()
 	{
-		return getContextAsInt("C_DocType_ID");
+		return DocTypeId.ofRepoIdOrNull(getContextAsInt("C_DocType_ID"));
 	}
 }

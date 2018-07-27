@@ -41,6 +41,7 @@ import javax.swing.table.DefaultTableModel;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -68,9 +69,10 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.jdesktop.swingx.JXTaskPane;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 
 /**
  * Search Product and return selection
@@ -975,9 +977,12 @@ public final class InfoProduct extends Info implements ActionListener,
 					|| warehouse == null)
 				return;
 			String title = warehouse.getName() + " - " + productName;
-			PAttributeInstance pai = new PAttributeInstance(getWindow(), title,
-					warehouse.getKey(), 0, productInteger.intValue(),
-					m_C_BPartner_ID);
+			PAttributeInstance pai = new PAttributeInstance(getWindow(),
+					title,
+					WarehouseId.ofRepoIdOrNull(warehouse.getKey()),
+					0,
+					ProductId.ofRepoIdOrNull(productInteger.intValue()),
+					BPartnerId.ofRepoIdOrNull(m_C_BPartner_ID));
 			m_M_AttributeSetInstance_ID = pai.getM_AttributeSetInstance_ID();
 			m_M_Locator_ID = pai.getM_Locator_ID();
 			if (m_M_AttributeSetInstance_ID != -1)
@@ -1176,7 +1181,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		//
 		if (s_productLayout == null)
 		{
-			ArrayList<Info_Column> list = new ArrayList<Info_Column>();
+			ArrayList<Info_Column> list = new ArrayList<>();
 			list.add(new Info_Column(" ", "p.M_Product_ID", IDColumn.class,
 					!isMultiSelection()));
 			list.add(new Info_Column(Msg
@@ -1314,7 +1319,7 @@ public final class InfoProduct extends Info implements ActionListener,
 	{
 
 		// Header
-		Vector<String> columnNames = new Vector<String>();
+		Vector<String> columnNames = new Vector<>();
 		columnNames.add(Msg.translate(Env.getCtx(), "Date"));
 		columnNames.add(Msg.translate(Env.getCtx(), "QtyOnHand"));
 		columnNames.add(Msg.translate(Env.getCtx(), "C_BPartner_ID"));
@@ -1347,7 +1352,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			sql += " GROUP BY productAttribute(s.M_AttributeSetInstance_ID), w.Name, l.Value";
 		sql += " ORDER BY l.Value";
 
-		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		Vector<Vector<Object>> data = new Vector<>();
 		double qty = 0;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1362,7 +1367,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				Vector<Object> line = new Vector<Object>(9);
+				Vector<Object> line = new Vector<>(9);
 				line.add(null); // Date
 				double qtyOnHand = rs.getDouble(1);
 				qty += qtyOnHand;
@@ -1418,7 +1423,7 @@ public final class InfoProduct extends Info implements ActionListener,
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				Vector<Object> line = new Vector<Object>(9);
+				Vector<Object> line = new Vector<>(9);
 				line.add(rs.getTimestamp(1)); // Date
 				double oq = rs.getDouble(2);
 				String DocBaseType = rs.getString(5);

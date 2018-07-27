@@ -1,6 +1,7 @@
 package de.metas.handlingunits.materialtracking.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -11,7 +12,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
-import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 
 /*
@@ -63,13 +63,12 @@ public final class QualityInspectionWarehouseDestProvider implements IReceiptSch
 		}
 
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute qualityInspectionCycleAttribute = attributeDAO.retrieveAttributeByValue(context.getCtx(), IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle, I_M_Attribute.class);
-		if(qualityInspectionCycleAttribute == null)
+		final AttributeId qualityInspectionCycleAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(IHUMaterialTrackingBL.ATTRIBUTENAME_QualityInspectionCycle);
+		if(qualityInspectionCycleAttributeId == null)
 		{
 			return null;
 		}
 		
-		final int qualityInspectionCycleAttributeId = qualityInspectionCycleAttribute.getM_Attribute_ID();
 		final I_M_AttributeInstance qualityInspectionCycleAttributeInstance = attributeDAO.retrieveAttributeInstance(asi, qualityInspectionCycleAttributeId);
 		if (qualityInspectionCycleAttributeInstance == null)
 		{

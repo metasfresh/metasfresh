@@ -129,7 +129,7 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
 
-		final I_M_Attribute attr_QualityDiscountPercent = Services.get(IAttributeDAO.class).retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_QualityDiscountPercent_Value, I_M_Attribute.class);
+		final I_M_Attribute attr_QualityDiscountPercent = Services.get(IAttributeDAO.class).retrieveAttributeByValue(Constants.ATTR_QualityDiscountPercent_Value);
 
 		if (!attributeStorage.hasAttribute(attr_QualityDiscountPercent))
 		{

@@ -24,12 +24,12 @@ import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MInventory;
 import org.compiere.model.MInventoryLine;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -219,10 +219,10 @@ public class InventoryCountCreate extends JavaProcess
 				int M_AttributeSetInstance_ID = rs.getInt(3);
 				BigDecimal QtyOnHand = rs.getBigDecimal(4);
 				if (QtyOnHand == null)
-					QtyOnHand = Env.ZERO;
-				int M_AttributeSet_ID = rs.getInt(5);
+					QtyOnHand = BigDecimal.ZERO;
+				AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNull(rs.getInt(5));
 				//
-				int compare = QtyOnHand.compareTo(Env.ZERO);
+				int compare = QtyOnHand.compareTo(BigDecimal.ZERO);
 				if (p_QtyRange == null
 						|| (p_QtyRange.equals(">") && compare > 0)
 						|| (p_QtyRange.equals("<") && compare < 0)
@@ -230,7 +230,7 @@ public class InventoryCountCreate extends JavaProcess
 						|| (p_QtyRange.equals("N") && compare != 0))
 				{
 					count += createInventoryLine(M_Locator_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, QtyOnHand, M_AttributeSet_ID);
+							M_AttributeSetInstance_ID, QtyOnHand, attributeSetId);
 				}
 			}
 			rs.close();
@@ -273,16 +273,20 @@ public class InventoryCountCreate extends JavaProcess
 	 * @param M_Locator_ID locator
 	 * @param M_AttributeSetInstance_ID asi
 	 * @param QtyOnHand qty
-	 * @param M_AttributeSet_ID as
+	 * @param attributeSetId
 	 * @return lines added
 	 */
-	private int createInventoryLine(int M_Locator_ID, int M_Product_ID,
-			int M_AttributeSetInstance_ID, BigDecimal QtyOnHand, int M_AttributeSet_ID)
+	private int createInventoryLine(
+			int M_Locator_ID,
+			int M_Product_ID,
+			int M_AttributeSetInstance_ID,
+			BigDecimal QtyOnHand,
+			AttributeSetId attributeSetId)
 	{
 		boolean oneLinePerASI = false;
-		if (M_AttributeSet_ID != 0)
+		if (!attributeSetId.isNone())
 		{
-			MAttributeSet mas = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
+			final MAttributeSet mas = MAttributeSet.get(attributeSetId);
 			oneLinePerASI = mas.isInstanceAttribute();
 		}
 		if (oneLinePerASI)
@@ -321,7 +325,7 @@ public class InventoryCountCreate extends JavaProcess
 
 			if (qtyCount.signum() < 0)
 			{
-				qtyCount = Env.ZERO;
+				qtyCount = BigDecimal.ZERO;
 			}
 			m_line.setQtyCount(qtyCount);
 			m_line.save();
@@ -386,10 +390,10 @@ public class InventoryCountCreate extends JavaProcess
 	private String getSubCategoriesString(int productCategoryId, Vector<SimpleTreeNode> categories, int loopIndicatorId) throws AdempiereSystemError
 	{
 		String ret = "";
-		final Iterator iter = categories.iterator();
+		final Iterator<SimpleTreeNode> iter = categories.iterator();
 		while (iter.hasNext())
 		{
-			SimpleTreeNode node = (SimpleTreeNode)iter.next();
+			SimpleTreeNode node = iter.next();
 			if (node.getParentId() == productCategoryId)
 			{
 				if (node.getNodeId() == loopIndicatorId)

@@ -86,15 +86,29 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner getById(final int bpartnerId)
 	{
-		return getById(BPartnerId.ofRepoId(bpartnerId));
+		return getById(BPartnerId.ofRepoId(bpartnerId), I_C_BPartner.class);
 	}
+	
+	@Override
+	public <T extends I_C_BPartner> T getById(final int bpartnerId, final Class<T> modelClass)
+	{
+		return getById(BPartnerId.ofRepoId(bpartnerId), modelClass);
+	}
+
 
 	@Override
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
+		return getById(bpartnerId, I_C_BPartner.class);
+	}
+	
+	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
+	{
+		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
 	}
+
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)

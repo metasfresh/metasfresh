@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import org.adempiere.mm.attributes.AttributeId;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -38,9 +40,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.product.ProductId;
 
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link IBPartnerAware}.
@@ -96,8 +98,8 @@ public class BPartnerAwareAttributeUpdater
 		//
 		// Get M_Attribute_ID
 		final IBPartnerAwareAttributeService partnerAwareAttributeService = getBPartnerAwareAttributeService();
-		final int attributeId = partnerAwareAttributeService.getM_Attribute_ID(bpartnerAware);
-		if (attributeId <= 0)
+		final AttributeId attributeId = partnerAwareAttributeService.getAttributeId(bpartnerAware);
+		if (attributeId == null)
 		{
 			// Attribute was not configured
 			return;
@@ -105,9 +107,8 @@ public class BPartnerAwareAttributeUpdater
 
 		//
 		// Get M_Attribute, if applies to our product
-		final I_M_Product product = asiAware.getM_Product();
-		Check.assumeNotNull(product, "Product is not null");
-		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(product, attributeId);
+		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
+		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, attributeId);
 		if (attribute == null)
 		{
 			// The product's attribute set doesn't contain the attribute. Do nothing.
