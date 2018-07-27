@@ -202,7 +202,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 				.selectedHuIds(null) // null means to assign all planned HUs which are assigned to the receipt schedule's
 				.createReceiptWithDatePromised(true) // when creating M_InOuts, use the respective C_Orders' DatePromised values
 				.commitEachReceiptIndividually(true)
-				.destinationLocatorId(null) // use receipt schedules' destination-warehouse settings
+				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.receiptSchedules(ImmutableList.of(receiptSchedule))
 				.printReceiptLabels(false)
 				.build();

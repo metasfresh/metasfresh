@@ -56,6 +56,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
@@ -85,7 +86,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptHandler;
+import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -330,7 +331,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		{
 			printReceiptLabels(result);
 		}
-		createMovementsOrDistributionOrders(result);
+		createMovementsOrDistributionOrders(result, parameters.getDestinationLocatorIdOrNull());
 
 		return result;
 	}
@@ -435,14 +436,16 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		}
 	}
 
-	private void createMovementsOrDistributionOrders(final InOutGenerateResult result)
+	private void createMovementsOrDistributionOrders(
+			@NonNull final InOutGenerateResult result,
+			@Nullable final LocatorId destinationLocatorId)
 	{
+		final DistributeAndMoveReceiptCreator distributeAndMoveReceiptCreator = Adempiere.getBean(DistributeAndMoveReceiptCreator.class);
+
 		final List<I_M_InOut> receipts = createList(result.getInOuts(), I_M_InOut.class);
 		for (final I_M_InOut receipt : receipts)
 		{
-			DistributeAndMoveReceiptHandler.builder()
-					.receipt(receipt)
-					.process();
+			distributeAndMoveReceiptCreator.createDocumentsFor(receipt, destinationLocatorId);
 		}
 	}
 

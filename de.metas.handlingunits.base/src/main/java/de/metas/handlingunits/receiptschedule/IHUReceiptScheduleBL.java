@@ -121,7 +121,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		 * If {@code null}, then the respective receipt schedules', {@link I_M_ReceiptSchedule#getM_Warehouse_Dest_ID()}s' default locators will be used.
 		 */
 		@Nullable
-		LocatorId destinationLocatorId;
+		LocatorId destinationLocatorIdOrNull;
 	}
 
 	/**

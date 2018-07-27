@@ -38,7 +38,7 @@ import org.compiere.model.I_M_Warehouse;
 public interface IWarehouseDAO extends ISingletonService
 {
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
-	
+
 	/**
 	 * Checks if the warehouse is covered in M_Warehouse_Routing as specific to one or more doc types
 	 *
@@ -60,7 +60,7 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	boolean isDocTypeAllowed(final Properties ctx, final int warehouseId, final I_C_DocType docType, final String trxName);
 
-	List<I_M_Locator> retrieveLocators(I_M_Warehouse warehouse);
+	List<I_M_Locator> retrieveLocators(WarehouseId warehouseId);
 
 	/**
 	 * retrieve warehouses for a specific docBaseType

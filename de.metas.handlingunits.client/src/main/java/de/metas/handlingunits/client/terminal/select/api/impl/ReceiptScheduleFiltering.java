@@ -245,7 +245,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.commitEachReceiptIndividually(false)
 				.createReceiptWithDatePromised(false)
 				.ctx(ctx)
-				.destinationLocatorId(null) // use receipt schedules' destination-warehouse settings
+				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)
 				.receiptSchedules(receiptSchedules)
 				.selectedHuIds(selectedHuIds)

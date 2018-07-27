@@ -1,7 +1,8 @@
 package de.metas.inout.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -27,12 +28,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -40,17 +42,21 @@ import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
@@ -60,57 +66,47 @@ import lombok.NonNull;
 
 public class InOutMovementBL implements IInOutMovementBL
 {
-
 	@Override
-	public I_M_Movement generateMovementToInOutWarehouse(final I_M_InOut inout, final I_M_Warehouse warehouseFrom, final List<I_M_InOutLine> inOutLines)
-	{
-		Check.assumeNotNull(inout, "inOut not null");
-
-		return generateMovement(inout, true, warehouseFrom, inOutLines);
-	}
-
-	@Override
-	public List<I_M_Movement> generateMovementFromReceiptLines(final List<I_M_InOutLine> receiptLines)
+	public List<I_M_Movement> generateMovementFromReceiptLines(
+			@NonNull final List<I_M_InOutLine> receiptLines,
+			@Nullable final LocatorId destinationLocatorId)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 		if (Check.isEmpty(receiptLines))
 		{
 			// nothing to do
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
-		final I_M_InOut receipt = load(receiptLines.get(0).getM_InOut_ID(), I_M_InOut.class);
+		final I_M_InOut receipt = inOutDAO.retrieveInOut(receiptLines);
 
 		trxManager.assertTrxNameNotNull(InterfaceWrapperHelper.getTrxName(receipt));
 
-		//
 		// Iterate all receipt lines and group them by target warehouse
-		final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines = partitionLinesByWarehouseTargetId(receiptLines);
+		final Map<LocatorId, List<I_M_InOutLine>> destLocatorId2InoutLines = partitionLinesByWarehouseTargetId(receiptLines, destinationLocatorId);
 
-		final List<I_M_Movement> movements = createMovementsForLinePartitions(warehouseId2inoutLines, receipt);
-
-		return movements;
+		return createMovementsForLinePartitions(destLocatorId2InoutLines, receipt);
 	}
 
 	private List<I_M_Movement> createMovementsForLinePartitions(
-			@NonNull final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines,
+			@NonNull final Map<LocatorId, List<I_M_InOutLine>> destLocatorId2InoutLines,
 			@NonNull final I_M_InOut receipt)
 	{
 		//
 		// Generate movements for each "warehouseDestId -> inout lines" pair
 		final List<I_M_Movement> movements = new ArrayList<>();
-		for (final Entry<Integer, List<I_M_InOutLine>> movementCandidate : warehouseId2inoutLines.entrySet())
+		for (final Entry<LocatorId, List<I_M_InOutLine>> movementCandidate : destLocatorId2InoutLines.entrySet())
 		{
-			final int warehouseTargetId = movementCandidate.getKey();
+			final LocatorId locatorToId = movementCandidate.getKey();
 
-			final I_M_Warehouse warehouseTarget = load(warehouseTargetId, I_M_Warehouse.class);
-			Check.assumeNotNull(warehouseTarget, "warehouseTarget not null"); // shall not happen
+			final I_M_Locator locatorToRecord = loadOutOfTrx(locatorToId, I_M_Locator.class);
 
 			final List<I_M_InOutLine> linesForWarehouse = movementCandidate.getValue();
 			Check.assumeNotEmpty(linesForWarehouse, "linesForWarehouse not empty");
 
-			final I_M_Movement movement = generateMovement(receipt, false, warehouseTarget, linesForWarehouse);
+			final I_M_Movement movement = generateMovement(receipt, locatorToRecord, linesForWarehouse);
 			if (movement != null)
 			{
 				movements.add(movement);
@@ -120,87 +116,60 @@ public class InOutMovementBL implements IInOutMovementBL
 		return movements;
 	}
 
-	private Map<Integer, List<I_M_InOutLine>> partitionLinesByWarehouseTargetId(final List<I_M_InOutLine> receiptLines)
+	private Map<LocatorId, List<I_M_InOutLine>> partitionLinesByWarehouseTargetId(
+			@NonNull final List<I_M_InOutLine> receiptLines,
+			@Nullable final LocatorId locatorToId)
 	{
-		final Map<Integer, List<I_M_InOutLine>> warehouseId2inoutLines = new HashMap<>();
+		final Map<LocatorId, List<I_M_InOutLine>> warehouseId2inoutLines = new HashMap<>();
 
 		for (final I_M_InOutLine receiptLine : receiptLines)
 		{
 			// #3409 make sure the line is to be moved
 			final boolean isForMovement = isCreateMovement(receiptLine);
-
 			if (!isForMovement)
 			{
 				// skip the line because it is not supposed to be moved after receipt.
 				continue;
 			}
 
-			final I_M_Warehouse warehouseTarget = findWarehouseTargetOrNull(receiptLine);
-
-			if (warehouseTarget == null)
+			final LocatorId locatorTo = ReceiptLineFindForwardToLocatorTool.findLocatorIdOrNull(receiptLine, locatorToId);
+			if (locatorTo == null)
 			{
 				continue;
 			}
 
-			final int warehouseTargetId = warehouseTarget.getM_Warehouse_ID();
+			// Check: if receipt's warehouse is same as destination warehouse, we already got materials in destination warehouse
+			// so it's pointless to do a movement
+			if (locatorTo.getRepoId() == receiptLine.getM_Locator_ID())
+			{
+				continue;
+			}
 
-			//
-			// Aggregate to warehouseTargetId -> inoutLines map
+			// Aggregate to locatorTo -> inoutLines map
 			// warehouses.put(warehouseTargetId, warehouseTarget);
-			List<I_M_InOutLine> linesForWarehouse = warehouseId2inoutLines.get(warehouseTargetId);
+			List<I_M_InOutLine> linesForWarehouse = warehouseId2inoutLines.get(locatorTo);
 			if (linesForWarehouse == null)
 			{
 				linesForWarehouse = new ArrayList<>();
-				warehouseId2inoutLines.put(warehouseTargetId, linesForWarehouse);
+				warehouseId2inoutLines.put(locatorTo, linesForWarehouse);
 			}
-
 			linesForWarehouse.add(receiptLine);
 		}
 
-		return warehouseId2inoutLines;
+		return ImmutableMap.copyOf(warehouseId2inoutLines);
 	}
 
-	private I_M_Warehouse findWarehouseTargetOrNull(@NonNull final I_M_InOutLine inOutLine)
+	private boolean isCreateMovement(@NonNull final I_M_InOutLine inOutLine)
 	{
-		final I_M_InOut receipt = create(inOutLine.getM_InOut(), I_M_InOut.class);
-
-		final int receiptWarehouseId = receipt.getM_Warehouse_ID();
-
-		//
-		// Fetch the target warehouse
-		final I_M_Warehouse warehouseTarget;
-		if (inOutLine.getM_Warehouse_Dest_ID() > 0)
+		if (inOutLine.getM_InOut().isDropShip())
 		{
-			warehouseTarget = inOutLine.getM_Warehouse_Dest();
-		}
-		else
-		{
-			warehouseTarget = receipt.getM_Warehouse_Dest();
+			return false;
 		}
 
-		// Skip if we don't have a target warehouse
-		if (warehouseTarget == null)
-		{
-			return null;
-		}
+		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+		final List<I_M_ReceiptSchedule> rsForInOutLine = receiptScheduleDAO.retrieveRsForInOutLine(inOutLine);
 
-		//
-		// Check: if receipt's warehouse is same as destination warehouse, we already got materials in destination warehouse
-		// so it's pointless to do a movement
-		final int warehouseTargetId = warehouseTarget.getM_Warehouse_ID();
-		if (warehouseTargetId == receiptWarehouseId)
-		{
-			return null;
-		}
-
-		return warehouseTarget;
-	}
-
-	private boolean isCreateMovement(final I_M_InOutLine inOutLine)
-	{
-		final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
-
-		if(Check.isEmpty(rsForInOutLine))
+		if (Check.isEmpty(rsForInOutLine))
 		{
 			// if the inoutLine doesn't have any receipt schedules, just create a movement for it to keep the old functionality untouched.
 			return true;
@@ -218,7 +187,7 @@ public class InOutMovementBL implements IInOutMovementBL
 
 	private boolean isCreateMovement(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		if(rs.getOnMaterialReceiptWithDestWarehouse() == null)
+		if (rs.getOnMaterialReceiptWithDestWarehouse() == null)
 		{
 			// if nothing is set in this field, create movements. This way we keep the old functionality untouched.
 			return true;
@@ -226,13 +195,16 @@ public class InOutMovementBL implements IInOutMovementBL
 		return X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement.equals(rs.getOnMaterialReceiptWithDestWarehouse());
 	}
 
-	private I_M_Movement generateMovement(final I_M_InOut inOut, final boolean moveToInOutWarehouse, final I_M_Warehouse warehouse, final List<I_M_InOutLine> lines)
+	private I_M_Movement generateMovement(
+			@NonNull final I_M_InOut inOut,
+			@NonNull final I_M_Locator locator,
+			@NonNull final List<I_M_InOutLine> lines)
 	{
 		Check.assume(!lines.isEmpty(), "lines not empty");
 
 		final I_M_Movement movement = generateMovementHeader(inOut);
 
-		generateMovementLines(movement, moveToInOutWarehouse, warehouse, lines);
+		generateMovementLines(movement, locator, lines);
 
 		Services.get(IDocumentBL.class).processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -259,24 +231,25 @@ public class InOutMovementBL implements IInOutMovementBL
 		return movement;
 	}
 
-	private void generateMovementLines(final I_M_Movement movement, final boolean moveToInOutWarehouse, final I_M_Warehouse warehouse, final List<I_M_InOutLine> inoutLines)
+	private void generateMovementLines(
+			@NonNull final I_M_Movement movement,
+			@NonNull final I_M_Locator locator,
+			@NonNull final List<I_M_InOutLine> inoutLines)
 	{
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-		Check.assumeNotNull(locator, "Destination warehouse {} has a default locator", warehouse);
-
 		for (final I_M_InOutLine inoutLine : inoutLines)
 		{
-			generateMovementLine(movement, moveToInOutWarehouse, locator, inoutLine);
+			generateMovementLine(movement, locator, inoutLine);
 		}
 	}
 
 	private I_M_MovementLine generateMovementLine(
-			final I_M_Movement movement,
-			final boolean moveToInOutWarehouse,
-			final I_M_Locator locator,
-			final I_M_InOutLine inoutLineFrom)
+			@NonNull final I_M_Movement movement,
+			@NonNull final I_M_Locator locator,
+			@NonNull final I_M_InOutLine inoutLineFrom)
 	{
-		final I_M_MovementLine movementLine = InterfaceWrapperHelper.newInstance(I_M_MovementLine.class, movement);
+		final IMovementBL movementBL = Services.get(IMovementBL.class);
+
+		final I_M_MovementLine movementLine = newInstance(I_M_MovementLine.class, movement);
 		movementLine.setAD_Org_ID(movement.getAD_Org_ID());
 		movementLine.setM_Movement_ID(movement.getM_Movement_ID());
 		movementLine.setM_InOutLine(inoutLineFrom);
@@ -288,21 +261,13 @@ public class InOutMovementBL implements IInOutMovementBL
 
 		movementLine.setMovementQty(inoutLineFrom.getMovementQty());
 
-		if (moveToInOutWarehouse)
-		{
-			movementLine.setM_Locator_ID(locator.getM_Locator_ID());
-			movementLine.setM_LocatorTo(inoutLineFrom.getM_Locator());
-		}
-		else
-		// move from inout warehouse
-		{
-			movementLine.setM_Locator_ID(inoutLineFrom.getM_Locator_ID());
-			movementLine.setM_LocatorTo(locator);
-		}
+		// move out of inout warehouse
+		movementLine.setM_Locator_ID(inoutLineFrom.getM_Locator_ID());
+		movementLine.setM_LocatorTo(locator);
 
-		InterfaceWrapperHelper.save(movementLine);
+		saveRecord(movementLine);
 
-		Services.get(IMovementBL.class).setC_Activities(movementLine);
+		movementBL.setC_Activities(movementLine);
 		return movementLine;
 	}
 

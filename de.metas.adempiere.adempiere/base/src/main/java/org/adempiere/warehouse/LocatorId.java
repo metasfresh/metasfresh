@@ -21,11 +21,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,16 +35,25 @@ public class LocatorId implements RepoIdAware
 {
 	int repoId;
 
-	 WarehouseId warehouseId;
+	WarehouseId warehouseId;
 
 	public static LocatorId ofRepoId(@NonNull final WarehouseId warehouseId, final int repoId)
 	{
 		return new LocatorId(repoId, warehouseId);
 	}
 
+	public static LocatorId ofRepoIdOrNull(@Nullable final WarehouseId warehouseId, final int repoId)
+	{
+		if (repoId <= 0)
+		{
+			return null;
+		}
+		return ofRepoId(warehouseId, repoId);
+	}
+
 	public static LocatorId ofRecordOrNull(@Nullable final I_M_Locator locator)
 	{
-		if(locator == null)
+		if (locator == null)
 		{
 			return null;
 		}
@@ -52,4 +61,5 @@ public class LocatorId implements RepoIdAware
 				WarehouseId.ofRepoId(locator.getM_Warehouse_ID()),
 				locator.getM_Locator_ID());
 	}
+
 }

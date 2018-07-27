@@ -46,10 +46,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
-import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
@@ -86,9 +84,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
  * Generates material receipt from {@link I_M_ReceiptSchedule_Alloc} (with HUs).
- *
- * @author tsa
- *
  */
 public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.api.impl.InOutProducer
 {
@@ -447,16 +442,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		receiptLine.setQualityDiscountPercent(qualityDiscountPercent);
 		receiptLine.setQualityNote(qualityNote);
 		receiptLine.setIsInDispute(isInDispute);
-
-		//
-		// In case the line is in dispute, use the Warehouse for Issues as destination warehouse (see 06365)
-		// NOTE: we apply this rule only where and not in general, because general we don't want to do this for every warehouse.
-		if (isInDispute)
-		{
-			final I_M_Warehouse warehouseForIssues = Services.get(IWarehouseDAO.class).retrieveWarehouseForIssuesOrNull(getCtx());
-			Check.assumeNotNull(warehouseForIssues, "Warehouse for issues shall be defined");
-			receiptLine.setM_Warehouse_Dest(warehouseForIssues);
-		}
 
 		//
 		// Save and return

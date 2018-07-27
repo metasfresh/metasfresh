@@ -546,19 +546,6 @@ public class InOutProducer implements IInOutProducer
 		}
 
 		//
-		// Line Destination Warehouse (where materials are moved automatically after receipt is completed)
-		if (inout.isDropShip())
-		{
-			// In case of drop shipment there shall be no destination warehouse (08402)
-			line.setM_Warehouse_Dest(null);
-		}
-		else
-		{
-			final int warehouseDestId = rs.getM_Warehouse_Dest_ID();
-			line.setM_Warehouse_Dest_ID(warehouseDestId);
-		}
-
-		//
 		// Quantities
 		final BigDecimal qtyToMove = receiptScheduleBL.getQtyToMove(rs);
 		line.setQtyEntered(qtyToMove);

@@ -1,5 +1,7 @@
 package de.metas.inout.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -37,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -238,5 +241,14 @@ public class InOutDAO implements IInOutDAO
 				.addEqualsFilter(I_M_InOut.COLUMN_IsSOTrx, soTrx.toBoolean())
 				.create()
 				.aggregate(I_M_InOut.COLUMN_MovementDate, Aggregate.MAX, LocalDate.class);
+	}
+
+	@Override
+	public I_M_InOut retrieveInOut(@NonNull final List<I_M_InOutLine> receiptLines)
+	{
+		final int inOutId = ListUtils.extractSingleElement(receiptLines, I_M_InOutLine::getM_InOut_ID);
+		final I_M_InOut receipt = load(inOutId, I_M_InOut.class);
+
+		return receipt;
 	}
 }
