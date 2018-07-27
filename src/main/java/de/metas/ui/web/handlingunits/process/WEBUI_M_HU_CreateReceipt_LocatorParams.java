@@ -68,7 +68,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 					getM_ReceiptSchedules(),
 					I_M_ReceiptSchedule::getM_Warehouse_Dest_ID,
 					-1);
-			if (warehouseIds > 0)
+			if (singleWarehouseId > 0)
 			{
 				return singleWarehouseId;
 			}
