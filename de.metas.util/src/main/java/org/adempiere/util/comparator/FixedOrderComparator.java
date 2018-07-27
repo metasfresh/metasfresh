@@ -66,6 +66,7 @@ public class FixedOrderComparator<T> implements Comparator<T>
 		Check.assume(notMatchedMarkerIndex >= 0, "notMatchedMarker '{}' shall be present in fixed order list: {}", notMatchedMarker, fixedOrderList);
 	}
 
+	@SafeVarargs
 	public FixedOrderComparator(final T notMatchedMarker, final T... fixedOrderElements)
 	{
 		this(notMatchedMarker, Arrays.asList(fixedOrderElements));
