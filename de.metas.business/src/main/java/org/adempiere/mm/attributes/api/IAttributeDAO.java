@@ -145,9 +145,9 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
 	 *
-	 * @param ctx
 	 * @param value
 	 * @param clazz
+	 *
 	 * @return attribute; never return null
 	 */
 	<T extends I_M_Attribute> T retrieveAttributeByValue(String value, Class<T> clazz);

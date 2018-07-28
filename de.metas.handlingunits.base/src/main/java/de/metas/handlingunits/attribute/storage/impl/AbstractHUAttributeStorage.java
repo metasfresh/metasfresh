@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -49,6 +51,7 @@ import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -57,19 +60,31 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import lombok.NonNull;
 
 public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
 {
+	public static AbstractHUAttributeStorage castOrNull(@Nullable final IAttributeStorage storage)
+	{
+		if (storage == null)
+		{
+			return null;
+		}
+		if (storage instanceof AbstractHUAttributeStorage)
+		{
+			return (AbstractHUAttributeStorage)storage;
+		}
+		return null;
+	}
+
 	// Services
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private boolean saveOnChange = false;
 
-	public AbstractHUAttributeStorage(@NonNull final IAttributeStorageFactory storageFactory)
+	public AbstractHUAttributeStorage(final IAttributeStorageFactory storageFactory)
 	{
-		super(storageFactory);
+		super(Check.assumeNotNull(storageFactory, "storageFactory"));
 	}
 
 	/**
@@ -379,7 +394,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	{
 		final IHUStorageFactory huStorageFactory = getAttributeStorageFactory().getHUStorageFactory();
 		final IHUStorage storage = huStorageFactory.getStorage(getM_HU());
-		final BigDecimal fullStorageQty = storage.getQtyForProductStorages().getQty();
+		final BigDecimal fullStorageQty = storage.getQtyForProductStorages().getAsBigDecimal();
 		return fullStorageQty;
 	}
 
@@ -399,12 +414,11 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		}
 
 		final I_M_Locator locator = hu.getM_Locator();
-		if(locator == null)
+		if (locator == null)
 		{
 			return -1;
 		}
 
 		return locator.getM_Warehouse_ID();
 	}
-
 }
