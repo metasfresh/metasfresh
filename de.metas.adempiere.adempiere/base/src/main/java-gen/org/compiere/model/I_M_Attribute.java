@@ -228,6 +228,29 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Description Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescriptionPattern (java.lang.String DescriptionPattern);
+
+	/**
+	 * Get Description Pattern.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescriptionPattern();
+
+    /** Column definition for DescriptionPattern */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_DescriptionPattern = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "DescriptionPattern", null);
+    /** Column name DescriptionPattern */
+    public static final String COLUMNNAME_DescriptionPattern = "DescriptionPattern";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *

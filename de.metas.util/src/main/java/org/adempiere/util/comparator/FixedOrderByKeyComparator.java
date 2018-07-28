@@ -3,8 +3,6 @@ package org.adempiere.util.comparator;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Function;
 
 import lombok.Builder;
