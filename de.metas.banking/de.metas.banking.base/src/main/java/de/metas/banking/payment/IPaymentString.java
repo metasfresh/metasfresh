@@ -59,8 +59,6 @@ public interface IPaymentString
 
 	String getReferenceNoComplete();
 
-	String getReferenceNoToMatch();
-
 	Timestamp getPaymentDate();
 
 	Timestamp getAccountDate();
