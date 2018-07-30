@@ -48,6 +48,8 @@ describe('Sales order window widgets test', function() {
 
       // this should hide the attributes panel
       cy.get('.row-selected .ProductAttributes').click();
+
+      //this command doesn't really work right now, but hopefuly will work soon :)
       cy.get('body').type('{esc}');
       cy.get('.input-dropdown-list').should('not.exist');
 
@@ -70,7 +72,6 @@ describe('Sales order window widgets test', function() {
         .contains('No')
         .click()
 
-      // this should hide the attributes panel
       cy.get('.row-selected .Integer').click();
     });
   });
