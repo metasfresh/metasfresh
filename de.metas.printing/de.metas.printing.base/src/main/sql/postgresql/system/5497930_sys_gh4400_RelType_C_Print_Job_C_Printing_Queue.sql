@@ -38,3 +38,8 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Display,AD_Key,AD_Org_ID,AD_Reference_
 UPDATE AD_RelationType SET AD_Reference_Target_ID=540879, EntityType='de.metas.printing',Updated=TO_TIMESTAMP('2018-07-24 18:55:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540207
 ;
 
+-- 2018-07-30T17:59:00.212
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_RelationType SET AD_Reference_Target_ID=540879,Updated=TO_TIMESTAMP('2018-07-30 17:59:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540207
+;
+
