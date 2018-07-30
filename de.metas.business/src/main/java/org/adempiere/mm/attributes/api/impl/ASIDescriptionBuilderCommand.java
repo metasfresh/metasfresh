@@ -64,7 +64,7 @@ final class ASIDescriptionBuilderCommand
 	private final AttributeSetId attributeSetId;
 	private I_M_AttributeSet _attributeSet;
 
-	public ASIDescriptionBuilderCommand(final I_M_AttributeSetInstance asi, final boolean verboseDescription)
+	public ASIDescriptionBuilderCommand(@NonNull final I_M_AttributeSetInstance asi, final boolean verboseDescription)
 	{
 		this.asi = asi;
 		this.verboseDescription = verboseDescription;
