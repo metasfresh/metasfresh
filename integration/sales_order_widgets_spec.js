@@ -1,13 +1,12 @@
 describe('Sales order window widgets test', function() {
   before(function() {
-    // login before each test
     cy.loginByForm();
     cy.visit('/window/143/1000489');
     cy.get('.header-breadcrumb-sitename').should('contain', '0359');
   });
 
   // This is tested in sales_order_spec.js
-  context('Toggle widgets', function() {
+  // context('Toggle widgets', function() {
     // beforeEach(function() {
     //   cy.visit('/window/143/1000489');
     //   cy.get('.header-breadcrumb-sitename').should('contain', '0359');
@@ -27,7 +26,7 @@ describe('Sales order window widgets test', function() {
     //     .get('.input-dropdown-list .input-dropdown-list-header')
     //     .should('not.exist');
     // });
-  });
+  // });
 
   context('Edit product in list', function() {
     it('Change product attributes', function() {
@@ -44,12 +43,35 @@ describe('Sales order window widgets test', function() {
 
       cy.get('.input-dropdown-list').should('exist')
         .find('.input-dropdown-list-option')
+        .contains('Yes')
+        .click()
+
+      // this should hide the attributes panel
+      cy.get('.row-selected .ProductAttributes').click();
+      cy.get('body').type('{esc}');
+      cy.get('.input-dropdown-list').should('not.exist');
+
+      cy.get('.form-field-M_AttributeSetInstance_ID').contains('Yes');
+    });
+
+    // cleanup
+    after(function() {
+      cy.get('.ProductAttributes').find('.productattributes-cell').last().click();
+
+      cy.get('.form-field-M_AttributeSetInstance_ID')
+        .find('button').click();
+
+      cy.get('.form-field-IsRepackNumberRequired')
+        .find('.input-dropdown-container')
+        .click();
+
+      cy.get('.input-dropdown-list').should('exist')
+        .find('.input-dropdown-list-option')
         .contains('No')
         .click()
 
       // this should hide the attributes panel
       cy.get('.row-selected .Integer').click();
-      cy.get('.input-dropdown-list').should('not.exist')
     });
   });
 });
