@@ -12,8 +12,11 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.service.ISysConfigBL;
@@ -41,6 +44,7 @@ import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -496,7 +500,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return productLookupValues;
 		}
-//Services.get(IWarehouseDAO.class).
+		// Services.get(IWarehouseDAO.class).
 		final AvailableToPromiseResultForWebui availableStock = availableToPromiseAdapter.retrieveAvailableStock(AvailableToPromiseQuery.builder()
 				.productIds(productLookupValues.getKeysAsInt())
 				.storageAttributesKeys(availableToPromiseAdapter.getPredefinedStorageAttributeKeys())
@@ -587,19 +591,37 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	public static ProductAndAttributes toProductAndAttributes(@NonNull final LookupValue lookupValue)
 	{
-		final ImmutableAttributeSet attributes = ImmutableAttributeSet.ofValuesIndexByAttributeId(lookupValue.getAttribute(ATTRIBUTE_ASI));
+		final ImmutableAttributeSet attributes = createImmutableAttributeSet(lookupValue.getAttribute(ATTRIBUTE_ASI));
 
 		return ProductAndAttributes.builder()
-				.productId(lookupValue.getIdAsInt())
+				.productId(ProductId.ofRepoId(lookupValue.getIdAsInt()))
 				.attributes(attributes)
 				.build();
+	}
+
+	public static final ImmutableAttributeSet createImmutableAttributeSet(@Nullable final Map<Object, Object> map)
+	{
+		if (map == null || map.isEmpty())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
+
+		map.forEach((attributeIdObj, value) -> {
+			final AttributeId attributeId = AttributeId.ofRepoIdObj(attributeIdObj);
+			builder.attributeValue(attributeId, value);
+		});
+
+		return builder.build();
 	}
 
 	@Value
 	@Builder
 	public static class ProductAndAttributes
 	{
-		private final int productId;
+		@NonNull
+		private final ProductId productId;
 
 		@Default
 		@NonNull

@@ -371,7 +371,7 @@ public class HuTraceQueryCreator
 			final LookupValue lookupValue = (LookupValue)value;
 			return lookupValue.getIdAsString();
 		}
-		else if (value instanceof Integer)
+		else if (value instanceof String)
 		{
 			return (String)value;
 		}
