@@ -90,10 +90,6 @@ Also remember to respect our code-schema rules. All of them are listed in __esli
 
 (first one is also autofixing when possible)
 
-### Notice: CI/CD legacy
-
-Submodule meta-frontend-ansible.git and .gitlab-ci.yml file are legacy of CI/CD.
-
 ### Dictionary
 
 Project has a generic structure. Name of components and their containers should be strictly defined and keep for better understanding.
@@ -153,9 +149,4 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
 
 If you are developing against the [metasfresh-webui-api](https://github.com/metasfresh/metasfresh-webui-api), 
 you might want to run the webui-frontend without locally installing node and npm.
-If you have a docker host, you can do so by checking out this repository and then following the instructions in the docker file `docker/Dockerfile-env`.
-
-Thanks to issue [#1013](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1013) and [Seweryn Zeman](https://github.com/cadavre).
-
-
-
+If you have a docker host, you can do so by checking out this repository and then following the instructions in the docker file `docker/nginx/Dockerfile`.
