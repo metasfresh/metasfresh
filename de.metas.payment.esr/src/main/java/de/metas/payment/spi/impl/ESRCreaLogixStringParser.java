@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.Check;
+import org.apache.commons.lang.StringUtils;
 
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
@@ -163,17 +164,11 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 		}
 
 		final String innerAccountNo = referenceNumber.substring(0, 7);
-		final String esrReferenceNoToMatch;
-		if (referenceNumberLength == 27)
+		if (referenceNumberLength != 27)
 		{
-			esrReferenceNoToMatch = referenceNumber.substring(7, 26);
-		}
-		else
-		{
-			esrReferenceNoToMatch = referenceNumber.substring(7, 15);
-			
 			// add some leading 0, until we got length 27
-			referenceNumber = "00000000000" + referenceNumber; //  see #4392
+			final String missingZeros = StringUtils.repeat("0", 27-referenceNumberLength);
+			referenceNumber = missingZeros + referenceNumber; //  see #4392
 		}
 		
 
@@ -190,7 +185,6 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 				innerAccountNo,
 				amount,
 				referenceNumber,
-				esrReferenceNoToMatch,
 				paymentDate,
 				accountDate,
 				orgValue,
