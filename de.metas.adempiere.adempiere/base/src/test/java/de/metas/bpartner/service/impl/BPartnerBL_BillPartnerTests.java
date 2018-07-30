@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.function.Predicate;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -14,6 +16,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Predicates;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -75,6 +79,19 @@ public class BPartnerBL_BillPartnerTests
 	}
 
 	@Test
+	public void retrieveBillContacts_no_users_that_match_filter()
+	{
+		userRecordCreator()
+				.name("A")
+				.createAndSave();
+
+		final Predicate<User> filter = u -> !u.getName().equals("A");
+		final User result = invokeMethodUnderTestWithPredicate(filter);
+
+		assertThat(result).isNull();
+	}
+
+	@Test
 	public void retrieveBillContacts_prefer_BillToContact_Default()
 	{
 		userRecordCreator()
@@ -116,10 +133,16 @@ public class BPartnerBL_BillPartnerTests
 
 	private User invokeMethodUnderTest()
 	{
+		return invokeMethodUnderTestWithPredicate(Predicates.alwaysTrue());
+	}
+
+	private User invokeMethodUnderTestWithPredicate(@NonNull final Predicate<User> predicate)
+	{
 		final RetrieveBillContactRequest request = RetrieveBillContactRequest
 				.builder()
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bpartnerLocationId)
+				.filter(predicate)
 				.build();
 		final User result = bPartnerBL.retrieveBillContactOrNull(request);
 		return result;
