@@ -64,7 +64,7 @@ class RawWidget extends Component {
     }
 
     // don't disable onclickoutside for the attributes widget
-    if (entity !== 'pattribute') {
+    if (entity !== 'pattribute' && entity !== 'address') {
       disableOnClickOutside && disableOnClickOutside();
     }
     handleFocus && handleFocus();
