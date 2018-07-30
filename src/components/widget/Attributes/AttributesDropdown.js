@@ -85,6 +85,7 @@ class AttributesDropdown extends Component {
             enableOnClickOutside={enableOnClickOutside}
             tabIndex={tabIndex}
             isModal={isModal}
+            attributeWidget={true}
           />
         );
       });
