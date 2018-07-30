@@ -37,22 +37,31 @@ import lombok.NonNull;
 public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 {
 	@Override
-	public String buildDescription(final I_M_AttributeSetInstance asi)
+	public String buildDescription(@Nullable final I_M_AttributeSetInstance asi)
 	{
 		final boolean verboseDescription = false;
 		return buildDescription(asi, verboseDescription);
 	}
 
 	@Override
-	public String buildDescription(final I_M_AttributeSetInstance asi, final boolean verboseDescription)
+	public String buildDescription(@Nullable final I_M_AttributeSetInstance asi, final boolean verboseDescription)
 	{
+		if (asi == null)
+		{
+			return "";
+		}
+
 		return new ASIDescriptionBuilderCommand(asi, verboseDescription)
 				.buildDescription();
 	}
 
 	@Override
-	public void setDescription(@NonNull final I_M_AttributeSetInstance asi)
+	public void setDescription(@Nullable final I_M_AttributeSetInstance asi)
 	{
+		if (asi == null)
+		{
+			return;
+		}
 		final String description = buildDescription(asi);
 		asi.setDescription(description);
 	}
@@ -133,7 +142,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public void setAttributeInstanceValue(@NonNull final I_M_AttributeSetInstance asi, @NonNull final I_M_Attribute attribute, @NonNull final Object value)
+	public void setAttributeInstanceValue(
+			@NonNull final I_M_AttributeSetInstance asi,
+			@NonNull final I_M_Attribute attribute,
+			@NonNull final Object value)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		I_M_AttributeInstance attributeInstance = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attributeId);
