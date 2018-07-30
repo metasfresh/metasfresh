@@ -205,7 +205,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				+ " from " + I_PP_Product_BOMLine.Table_Name + " bl"
 				+ " where bl.PP_Product_BOM_ID=PP_Product_BOM.PP_Product_BOM_ID"
 				+ " and bl.IsActive='Y'"
-				+ ") = ?";
+				+ ") = ?::numeric[]";
 
 		private final ImmutableList<Object> sqlParams;
 
