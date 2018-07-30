@@ -34,8 +34,16 @@ UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from  MSV3_Verfuegbarkeit
 UPDATE AD_Ref_Table SET AD_Display=558807, AD_Key=558807, AD_Table_ID=540919, WhereClause='exists ( select 1 from  MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel vea join C_OrderLine sol on vea.C_OrderLineSO_ID = sol.C_OrderLine_ID where sol.C_Order_ID = @C_Order_ID@ and  MSV3_VerfuegbarkeitsanfrageEinzelne.MSV3_VerfuegbarkeitsanfrageEinzelnel_ID =  vea.MSV3_VerfuegbarkeitsanfrageEinzelne_ID  )',Updated=TO_TIMESTAMP('2018-07-30 14:44:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540887
 ;
 
--- 2018-07-30T14:46:50.746
+
+
+-- 2018-07-30T15:03:22.385
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from  MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel vea join C_OrderLine sol on vea.C_OrderLineSO_ID = sol.C_OrderLine_ID where sol.C_Order_ID = 1000024 and   msv3_verfuegbarkeitsanfrageeinzelne.msv3_verfuegbarkeitsanfrageeinzelne_id =  vea.MSV3_VerfuegbarkeitsanfrageEinzelne_ID  )',Updated=TO_TIMESTAMP('2018-07-30 14:46:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540887
+UPDATE AD_Reference SET EntityType='de.metas.vertical.pharma.vendor.gateway.msv3',Updated=TO_TIMESTAMP('2018-07-30 15:03:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540887
+;
+
+
+-- 2018-07-30T15:31:48.795
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='exists ( select 1 from  MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel vea join C_OrderLine sol on vea.C_OrderLineSO_ID = sol.C_OrderLine_ID where sol.C_Order_ID = @C_Order_ID@ and   msv3_verfuegbarkeitsanfrageeinzelne.msv3_verfuegbarkeitsanfrageeinzelne_id =  vea.MSV3_VerfuegbarkeitsanfrageEinzelne_ID  )',Updated=TO_TIMESTAMP('2018-07-30 15:31:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540887
 ;
 
