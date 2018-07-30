@@ -19,8 +19,7 @@ coverage
 
 package-lock.json
 
-test_setup 
-src/__tests__  
-cypress
+cypress/config.js
+cypress.json
 yarn-error.log
 /cypress.json

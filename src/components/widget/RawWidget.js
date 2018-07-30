@@ -122,7 +122,7 @@ class RawWidget extends Component {
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
-    const willPatch = this.willPatch(value, valueTo);
+    const willPatch = this.willPatch(property, value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -159,7 +159,7 @@ class RawWidget extends Component {
     });
   };
 
-  willPatch = (value, valueTo) => {
+  willPatch = (property, value, valueTo) => {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
 
@@ -167,12 +167,16 @@ class RawWidget extends Component {
     // it's a widget for actions (think ActionButton)
     const isValue =
       widgetData[0].value !== undefined ||
-      (widgetData[0].action && widgetData[0].action.value !== undefined);
+      (widgetData[0].status && widgetData[0].status.value !== undefined);
+    let fieldData = widgetData.find(widget => widget.field === property);
+    if (!fieldData) {
+      fieldData = widgetData[0];
+    }
 
     return (
       (isValue &&
-        (JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
-          JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo))) ||
+        (JSON.stringify(fieldData.value) !== JSON.stringify(value) ||
+          JSON.stringify(fieldData.valueTo) !== JSON.stringify(valueTo))) ||
       (cachedValue !== undefined &&
         JSON.stringify(cachedValue) !== JSON.stringify(value))
     );
@@ -241,7 +245,7 @@ class RawWidget extends Component {
       isOpenDatePicker,
       dateFormat,
     } = this.props;
-    const widgetValue = data != null ? data : widgetData[0].value;
+    let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
@@ -250,6 +254,10 @@ class RawWidget extends Component {
       : fields[0].field;
     const readonly = widgetData[0].readonly;
     let tabIndex = this.props.tabIndex;
+
+    if (widgetValue === null) {
+      widgetValue = '';
+    }
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {
       tabIndex = -1;
