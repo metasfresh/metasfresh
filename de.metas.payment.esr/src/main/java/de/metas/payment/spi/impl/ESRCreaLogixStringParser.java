@@ -129,13 +129,6 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 
 		final int referenceNumberLength = referenceNumber.length();
 
-		// Checking if the reference number has one of the allowed lengths
-
-		if (referenceNumberLength != 27 && referenceNumberLength != 16)
-		{
-			throwException();
-		}
-
 		final String postAccountNo = paymentText.substring(plusSignIndex + 1, lastGreaterSignIndex);
 
 		// Checking if the suffix String has the correct length
