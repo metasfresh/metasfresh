@@ -56,7 +56,7 @@ class RawWidget extends Component {
    * DOM element outside of it's parent's tree.
    */
   focus = () => {
-    const { handleFocus, disableOnClickOutside, entity } = this.props;
+    const { handleFocus, disableOnClickOutside, attributeWidget } = this.props;
     const { rawWidget } = this;
 
     if (rawWidget && rawWidget.focus) {
@@ -64,7 +64,7 @@ class RawWidget extends Component {
     }
 
     // don't disable onclickoutside for the attributes widget
-    if (entity !== 'pattribute') {
+    if (!attributeWidget) {
       disableOnClickOutside && disableOnClickOutside();
     }
     handleFocus && handleFocus();
