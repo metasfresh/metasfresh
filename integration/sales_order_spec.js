@@ -22,7 +22,7 @@ describe('New sales order test', function() {
             expect(resp.length).to.be.gt(0);
 
             for (let i=0; i<resp.length; i+= 1) {
-              if (resp[i].nodeId === '1000040-new') {
+              if (resp[i].nodeId.includes('-new')) {
                 menuOption = resp[i].caption;
 
                 break;
