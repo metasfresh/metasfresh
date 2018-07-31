@@ -156,7 +156,7 @@ class TablePrimaryKeyGenerator
 		final I_AD_Element adElement = getCreateAD_Element(table);
 		final String elementColumnName = adElement.getColumnName ();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
-		
+
 		columnPK.setAD_Element(adElement);
 		columnPK.setColumnName(adElement.getColumnName());
 		columnPK.setName(elementColumnName);
@@ -187,8 +187,6 @@ class TablePrimaryKeyGenerator
 		// columnPK.setIsAlwaysUpdateable();
 		// columnPK.setColumnSQL(null);
 		columnPK.setIsAllowLogging(true);
-
-		columnPK.setAllowZoomTo(false);
 
 		InterfaceWrapperHelper.save(columnPK);
 		addLog("@Created@ @AD_Column_ID@ " + table.getTableName() + "." + columnPK.getColumnName());
