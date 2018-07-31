@@ -1,5 +1,3 @@
-import config from '../config';
-
 describe('Business partner window widgets test', function() {
   before(function() {
     // login before each test
