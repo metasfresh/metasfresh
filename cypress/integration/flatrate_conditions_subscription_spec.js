@@ -6,7 +6,7 @@ describe('New subscription flatrate conditions Test', function() {
 
     const flatrateTransitionName = `Cypress Test ${new Date().getTime()}`;
 
-    specify('Create and complete a new flatrate transition record', function() {
+    it('Create and complete a new flatrate transition record', function() {
         describe('Create a new flatrate transition record', function() {
             cy.visit('/window/540120/NEW');
 
@@ -25,7 +25,7 @@ describe('New subscription flatrate conditions Test', function() {
         });
     });
 
-    specify('Create a new flatrate conditions record', function() {
+    it('Create a new flatrate conditions record', function() {
         cy.visit('/window/540113/NEW');
 
         cy.writeIntoStringField('Name', `Cypress Test ${new Date().getTime()}`);

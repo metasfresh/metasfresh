@@ -13,6 +13,10 @@ class Translation extends Component {
 
   _getMessages = () => {
     getMessages().then(response => {
+      if (window.Cypress) {
+        window.Cypress.emit('emit:counterpartTranslations', response.data);
+      }
+
       counterpart.registerTranslations('lang', response.data);
       counterpart.setLocale('lang');
       counterpart.setMissingEntryGenerator(function(key) {
