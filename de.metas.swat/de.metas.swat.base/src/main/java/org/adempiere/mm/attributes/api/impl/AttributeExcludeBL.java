@@ -13,18 +13,18 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.mm.attributes.api.IAttributeExcludeDAO;
@@ -48,15 +48,16 @@ public class AttributeExcludeBL implements IAttributeExcludeBL
 		final List<I_M_AttributeSetExcludeLine> list = Services.get(IAttributeExcludeDAO.class).retrieveLines(attributeSetExclude);
 		if ((null != list) && (!list.isEmpty()))
 		{
-			final List<I_M_Attribute> attributeList = Services.get(IAttributeDAO.class).retrieveAttributes(attributeSetExclude.getM_AttributeSet(), true);
-			
+			final AttributeSetId attributeSetId = AttributeSetId.ofRepoId(attributeSetExclude.getM_AttributeSet_ID());
+			final List<I_M_Attribute> attributeList = Services.get(IAttributeDAO.class).retrieveAttributes(attributeSetId, true);
+
 			Check.assumeNotNull(attributeList, "We shouldn't have attribute exclude lines on attribute sets without attributes; attributeSetExclude=" + attributeSetExclude);
 			if (list.size() == attributeList.size())
 			{
 				// Every attribute is marked to be excluded.
 				return true;
 			}
-			
+
 			// Only some attributes are excluded. Not full exclude.
 			return false;
 		}

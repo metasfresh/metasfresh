@@ -30,7 +30,6 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.MQuery;
@@ -147,7 +146,6 @@ import lombok.NonNull;
 
 				+ " AND t.IsActive='Y'" // gh #1489 : only consider active tables
 
-				// Consider first window tab or any tab if our column has AllowZoomTo set
 				+ " AND EXISTS ("
 					+ "SELECT 1 FROM AD_Tab tt "
 						+ "WHERE (tt.AD_Window_ID=t.AD_Window_ID OR tt.AD_Window_ID=t.PO_Window_ID)"
@@ -155,25 +153,17 @@ import lombok.NonNull;
 						+ " AND ("
 							// First Tab
 							+ " tt.SeqNo=10"
-							// Or tab contains our column and AllowZoomTo=Y
-							+ " OR EXISTS (SELECT 1 FROM AD_Column c where c.AD_Table_ID=t.AD_Table_ID AND ColumnName=? AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')" // #1
 						+ ")"
 				+ ")"
 
 				// Consider tables which have an AD_Table_ID/Record_ID reference to our column
 				+ " AND ("
 					+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName=? AND IsKey='N') " // #2
-					// metas: begin: support for "Zoomable Record_IDs" (03921)
-					+ " OR ("
-						+ " t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='AD_Table_ID' AND IsKey='N')"
-						+ " AND t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='Record_ID' AND IsKey='N' AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')"
-					+ ") "
 				+ ") "
 
 				//
 				+ "ORDER BY 2"; // FIXME ORDER BY!
 		//@formatter:on
-		sqlParams.add(sourceKeyColumnName);
 		sqlParams.add(sourceKeyColumnName);
 
 		PreparedStatement pstmt = null;

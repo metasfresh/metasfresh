@@ -41,7 +41,6 @@ public class PaymentString implements IPaymentString
 	private final String innerAccountNo;
 	private final BigDecimal amount;
 	private final String referenceNoComplete;
-	private final String referenceNoToMatch;
 	private final Timestamp paymentDate;
 	private final Timestamp accountDate;
 	private final String orgValue;
@@ -56,7 +55,6 @@ public class PaymentString implements IPaymentString
 			final String innerAccountNo,
 			final BigDecimal amount,
 			final String referenceNoComplete,
-			final String referenceNoToMatch,
 			final Timestamp paymentDate,
 			final Timestamp accountDate,
 			final String orgValue,
@@ -72,7 +70,6 @@ public class PaymentString implements IPaymentString
 		this.innerAccountNo = innerAccountNo;
 		this.amount = amount;
 		this.referenceNoComplete = referenceNoComplete;
-		this.referenceNoToMatch = referenceNoToMatch;
 		this.paymentDate = paymentDate;
 		this.accountDate = accountDate;
 		this.orgValue = orgValue;
@@ -120,12 +117,6 @@ public class PaymentString implements IPaymentString
 	public String getReferenceNoComplete()
 	{
 		return referenceNoComplete;
-	}
-
-	@Override
-	public String getReferenceNoToMatch()
-	{
-		return referenceNoToMatch;
 	}
 
 	@Override
