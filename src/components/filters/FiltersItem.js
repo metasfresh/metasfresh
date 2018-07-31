@@ -177,8 +177,8 @@ class FiltersItem extends Component {
       viewId,
       outsideClick,
       captionValue,
+      openedFilter,
     } = this.props;
-
     const { filter, isTooltipShow } = this.state;
 
     return (
@@ -284,7 +284,10 @@ class FiltersItem extends Component {
             </div>
           </div>
         )}
-        <ModalContextShortcuts apply={this.handleApply} />
+        <ModalContextShortcuts
+          apply={this.handleApply}
+          visibleFilter={openedFilter}
+        />
       </div>
     );
   }

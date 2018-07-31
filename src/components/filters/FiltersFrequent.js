@@ -138,6 +138,7 @@ class FiltersFrequent extends PureComponent {
                     onHide={() => handleShow(false)}
                     viewId={viewId}
                     outsideClick={this.outsideClick}
+                    openedFilter={true}
                   />
                 )}
               </div>
