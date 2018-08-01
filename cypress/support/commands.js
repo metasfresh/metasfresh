@@ -126,12 +126,43 @@ describe('Enter value into string field', function() {
   });
 });
 
-describe('Enter value into list field', function() {
+describe('Enter value into lookup list field', function() {
   Cypress.Commands.add(
-    'writeIntoListField',
+    'writeIntoLookupListField',
     (fieldName, partialValue, listValue) => {
       cy.get(`.form-field-${fieldName}`)
         .find('input')
+        .type(partialValue);
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+    }
+  );
+});
+
+describe('Select value in list field', function() {
+  Cypress.Commands.add(
+    'selectInListField',
+    (fieldName, listValue) => {
+      cy.get(`.form-field-${fieldName}`)
+        .find('.input-dropdown')
+        .click();
+
+      cy
+        .contains('.input-dropdown-list-option', listValue)
+        .click();
+    }
+  );
+});
+
+/** !!not working!! */
+describe('Enter value into list field within a "fieldgroup" (field with additional fields, e.g sales order bPartner with lcoation and user)', function() {
+  Cypress.Commands.add(
+    'writeIntoMultiListField',
+    (fieldName, index, partialValue, listValue) => {
+      cy.get(`.form-field-${fieldName}`)
+        .find('input')
+        .find(`:nth.child(${index})`)
         .type(partialValue);
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', listValue).click();
