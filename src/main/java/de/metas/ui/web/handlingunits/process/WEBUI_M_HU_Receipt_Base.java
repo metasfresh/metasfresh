@@ -2,6 +2,8 @@ package de.metas.ui.web.handlingunits.process;
 
 import org.adempiere.util.lang.MutableInt;
 
+import com.google.common.base.Predicates;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -62,7 +64,7 @@ public abstract class WEBUI_M_HU_Receipt_Base
 
 				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents
 				.map(document -> rejectResolutionOrNull(document)) // create reject resolution if any
-				.filter(resolution -> resolution != null) // filter out those which are not errors
+				.filter(Predicates.notNull()) // filter out those which are not errors
 				.findFirst()
 				.orElse(null);
 		if (firstRejection != null)
@@ -81,8 +83,7 @@ public abstract class WEBUI_M_HU_Receipt_Base
 	/**
 	 * Check the individual given row, to find out if this process can be applied to it or not.
 	 *
-	 * @param document
-	 * @return
+	 * @return {@code null} if there is no reason to reject the given {@code document}.
 	 */
 	abstract ProcessPreconditionsResolution rejectResolutionOrNull(HUEditorRow document);
 

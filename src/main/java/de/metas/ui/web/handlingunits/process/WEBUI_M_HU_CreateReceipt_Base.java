@@ -7,10 +7,14 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
@@ -21,10 +25,12 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowAttributes;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -64,7 +70,8 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	/**
 	 * Only allows rows whose HU is in the "planning" status.
@@ -75,6 +82,19 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		if (!document.isHUStatusPlanning())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only planning HUs can be received");
+		}
+
+		final HUEditorRowAttributes attributes = document.getAttributes();
+		for (final String mandatoryAttributeName : attributes.getMandatoryAttributeNames())
+		{
+			final Object value = attributes.getValue(mandatoryAttributeName);
+			if (Check.isEmpty(value))
+			{
+				final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(mandatoryAttributeName);
+				final I_M_Attribute translatedAttribute = InterfaceWrapperHelper.translate(attribute, I_M_Attribute.class);
+				final ITranslatableString msg = msgBL.getTranslatableMsgText("WEBUI_Receipt_Missing_Mandatory_HU_Attribute", translatedAttribute.getName());
+				return ProcessPreconditionsResolution.reject(msg);
+			}
 		}
 		return null;
 	}
