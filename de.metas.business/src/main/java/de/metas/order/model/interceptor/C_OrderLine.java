@@ -281,26 +281,15 @@ public class C_OrderLine
 		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
 	}
 
-//	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-//			ignoreColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyEntered)
-//	public void updatePrices(final I_C_OrderLine orderLine)
-//	{
-//		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = true;
-//		updatePriceandTax(orderLine, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
-//	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyEntered)
 	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
 	{
 		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false;
-		updatePriceandTax(orderLine, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
-	}
 
-	private void updatePriceandTax(
-			final I_C_OrderLine orderLine,
-			final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
-	{
+		// make the BL revalidates the discounts..the new QtyEntered might also mean a new discount schema break
+		orderLine.setM_DiscountSchemaBreak(null);
+
 		if (orderLine.isProcessed())
 		{
 			return;
