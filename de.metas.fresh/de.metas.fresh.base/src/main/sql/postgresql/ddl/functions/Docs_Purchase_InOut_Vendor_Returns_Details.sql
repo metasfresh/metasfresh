@@ -102,7 +102,7 @@ LEFT OUTER JOIN LATERAL
 
 
 WHERE
-		COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID) AND io.M_InOut_ID = $1
+		pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID) AND io.M_InOut_ID = $1
 )iol
 
 

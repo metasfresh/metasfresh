@@ -49,7 +49,7 @@ SELECT
 	to_char( io.DateTo, 'DD.MM.YYYY' )	AS InOuts_DateTo,
 	DateFrom::date = DateTo::Date		AS InOuts_IsSameDate,
 	DocNo IS NOT NULL			AS InOuts_IsDataComplete,
-	COALESCE(pc.IsHU, false) AS IsHU,
+	pc.IsHU,
 	il.line,
 	COALESCE(pt.name, p.name) AS Name,
 	COALESCE(
@@ -211,9 +211,9 @@ WHERE
 ORDER BY
 	io.DateFrom,
 	io.DocNo,
-	COALESCE(pc.IsHU, false),
-	CASE WHEN COALESCE(pc.IsHU, false) ='t' AND dlsi.SeqNo IS NOT NULL THEN dlsi.SeqNo  END,
-	CASE WHEN COALESCE(pc.IsHU, false) ='t' AND dlsi.SeqNo IS NULL THEN p.name END,
+	pc.isHU,
+	CASE WHEN pc.isHU ='t' AND dlsi.SeqNo IS NOT NULL THEN dlsi.SeqNo  END,
+	CASE WHEN pc.isHU ='t' AND dlsi.SeqNo IS NULL THEN p.name END,
 	miol.line,
 	line
 

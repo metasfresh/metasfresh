@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-05-29T15:08:34 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -129,7 +130,7 @@ WHERE
 	il.C_Invoice_ID = $P{c_invoice_id} AND il.isActive = 'Y'
 	-- the lines for withhold will be displayed in a different subreport
 	AND (il.M_Product_ID != M_Product_Witholding_ID OR M_Product_Witholding_ID IS NULL)
-	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
+	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
 ) i
 	--Invoice Detail Override
 	LEFT OUTER JOIN C_Invoice_Detail ido ON i.C_InvoiceLine_ID = ido.C_InvoiceLine_ID AND ido.IsDetailOverridesLine = 'Y' AND ido.isActive = 'Y'
@@ -146,69 +147,27 @@ ORDER BY
 	InOut_Date, line
 ;]]>
 	</queryString>
-	<field name="c_invoiceline_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_invoiceline_id"/>
-	</field>
-	<field name="line" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="line"/>
-	</field>
-	<field name="attributes" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
-	</field>
-	<field name="name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="name"/>
-	</field>
-	<field name="huqty" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
-	</field>
-	<field name="huname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="huname"/>
-	</field>
-	<field name="qtyinvoicedinpriceuom" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="qtyinvoicedinpriceuom"/>
-	</field>
-	<field name="priceuomprecision" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="priceuomprecision"/>
-	</field>
-	<field name="priceentered" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="priceentered"/>
-	</field>
-	<field name="uom" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="uom"/>
-	</field>
-	<field name="priceuom" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="priceuom"/>
-	</field>
-	<field name="discount" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="discount"/>
-	</field>
-	<field name="displayhuqty" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="displayhuqty"/>
-	</field>
-	<field name="linenetamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
-	</field>
-	<field name="inout_docno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="inout_docno"/>
-	</field>
-	<field name="inout_date" class="java.sql.Timestamp">
-		<property name="com.jaspersoft.studio.field.label" value="inout_date"/>
-	</field>
-	<field name="isdropship" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="isdropship"/>
-	</field>
-	<field name="rate" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="rate"/>
-	</field>
-	<field name="hasleadingdetails" class="java.lang.Boolean">
-		<property name="com.jaspersoft.studio.field.label" value="hasleadingdetails"/>
-	</field>
-	<field name="hastrailingdetails" class="java.lang.Boolean">
-		<property name="com.jaspersoft.studio.field.label" value="hastrailingdetails"/>
-	</field>
-	<field name="description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="description"/>
-	</field>
+	<field name="c_invoiceline_id" class="java.math.BigDecimal"/>
+	<field name="line" class="java.math.BigDecimal"/>
+	<field name="attributes" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="huqty" class="java.math.BigDecimal"/>
+	<field name="huname" class="java.lang.String"/>
+	<field name="qtyinvoicedinpriceuom" class="java.math.BigDecimal"/>
+	<field name="priceuomprecision" class="java.math.BigDecimal"/>
+	<field name="priceentered" class="java.math.BigDecimal"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="priceuom" class="java.lang.String"/>
+	<field name="discount" class="java.math.BigDecimal"/>
+	<field name="displayhuqty" class="java.lang.String"/>
+	<field name="linenetamt" class="java.math.BigDecimal"/>
+	<field name="inout_docno" class="java.lang.String"/>
+	<field name="inout_date" class="java.sql.Timestamp"/>
+	<field name="isdropship" class="java.lang.String"/>
+	<field name="rate" class="java.math.BigDecimal"/>
+	<field name="hasleadingdetails" class="java.lang.Boolean"/>
+	<field name="hastrailingdetails" class="java.lang.Boolean"/>
+	<field name="description" class="java.lang.String"/>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>

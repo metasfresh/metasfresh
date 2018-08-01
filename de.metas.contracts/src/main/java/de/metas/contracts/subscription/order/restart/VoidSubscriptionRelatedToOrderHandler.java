@@ -5,6 +5,7 @@ import java.util.List;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.springframework.stereotype.Component;
 
@@ -55,18 +56,16 @@ public class VoidSubscriptionRelatedToOrderHandler implements VoidOrderAndRelate
 				.isCloseInvoiceCandidate(true)
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_IncorrectlyRecorded)
 				.isCreditOpenInvoices(false) // leave all existing invoices alone! there is another handler to deal with them, open or not
-				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
+				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.build();
 
 		final IPair<RecordsToHandleKey, List<ITableRecordReference>> recordsToHandle = request.getRecordsToHandle();
 
-		final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
-		for (final ITableRecordReference currentRecordToHandle : recordsToHandle.getRight())
-		{
-			// note: that we need to (re)load the flatrate term that we void before their respective successor was voided.
-			// if we loaded them all at once before voiding their successor,, they still had C_FlatrateTerm_Next_ID > 0
-			final I_C_Flatrate_Term currentTerm = currentRecordToHandle.getModel(I_C_Flatrate_Term.class);
+		final List<I_C_Flatrate_Term> flatrateTermRecordsToHandle = TableRecordReference.getModels(recordsToHandle.getRight(), I_C_Flatrate_Term.class);
 
+		final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+		for (final I_C_Flatrate_Term currentTerm : flatrateTermRecordsToHandle)
+		{
 			contractChangeBL.cancelContract(currentTerm, contractChangeParameters);
 		}
 	}

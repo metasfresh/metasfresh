@@ -40,8 +40,10 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inout.model.I_M_InOutLine;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -94,6 +96,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * term to extend
 	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
 	 * forceComplete - will complete a new term (if one has been created), even if it has <code>IsAutoComplete='N'</code>
+	 * ol - if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
 	@Builder(toBuilder = true)
 	@Getter
@@ -103,6 +106,7 @@ public interface IFlatrateBL extends ISingletonService
 		private final boolean forceExtend;
 		private final Boolean forceComplete;
 		private final Timestamp nextTermStartDate;
+		private @Default I_C_OrderLine orderLine = null;
 		private final int AD_PInstance_ID;
 	}
 

@@ -106,7 +106,7 @@ FROM
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
-	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 ORDER BY
 	line

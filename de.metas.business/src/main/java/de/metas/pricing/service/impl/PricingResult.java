@@ -242,7 +242,7 @@ class PricingResult implements IPricingResult
 	{
 		priceDateTS = priceDate;
 	}
-
+	
 	@Override
 	public void addPricingRuleApplied(@NonNull IPricingRule rule)
 	{
@@ -327,9 +327,9 @@ class PricingResult implements IPricingResult
 	 */
 	public void updatePriceScales()
 	{
-		priceStd = scaleToPrecision(priceStd);
-		priceLimit = scaleToPrecision(priceLimit);
-		priceList = scaleToPrecision(priceList);
+		scaleToPrecision(priceStd);
+		scaleToPrecision(priceLimit);
+		scaleToPrecision(priceList);
 	}
 
 	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)

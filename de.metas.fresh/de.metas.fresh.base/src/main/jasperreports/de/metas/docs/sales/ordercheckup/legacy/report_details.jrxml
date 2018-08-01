@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-05-08T15:03:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -94,7 +95,7 @@ WHERE
 		ELSE false -- not important. shall never happen
 	END
 
-	AND COALESCE(pc.M_Product_Category_ID, -1) !=
+	AND pc.M_Product_Category_ID !=
 		getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
@@ -110,42 +111,18 @@ ORDER BY
 	ip.qty
 ;]]>
 	</queryString>
-	<field name="line" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="line"/>
-	</field>
-	<field name="displaytext" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="displaytext"/>
-	</field>
-	<field name="value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="value"/>
-	</field>
-	<field name="name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="name"/>
-	</field>
-	<field name="ean" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ean"/>
-	</field>
-	<field name="pricelist" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="pricelist"/>
-	</field>
-	<field name="capacity" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="capacity"/>
-	</field>
-	<field name="priceactual" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
-	</field>
-	<field name="qtyenteredtu" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="qtyenteredtu"/>
-	</field>
-	<field name="qtyentered" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="qtyentered"/>
-	</field>
-	<field name="container" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="container"/>
-	</field>
-	<field name="uomsymbol" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
-	</field>
+	<field name="line" class="java.math.BigDecimal"/>
+	<field name="displaytext" class="java.lang.String"/>
+	<field name="value" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="ean" class="java.lang.String"/>
+	<field name="pricelist" class="java.math.BigDecimal"/>
+	<field name="capacity" class="java.math.BigDecimal"/>
+	<field name="priceactual" class="java.math.BigDecimal"/>
+	<field name="qtyenteredtu" class="java.math.BigDecimal"/>
+	<field name="qtyentered" class="java.math.BigDecimal"/>
+	<field name="container" class="java.lang.String"/>
+	<field name="uomsymbol" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>

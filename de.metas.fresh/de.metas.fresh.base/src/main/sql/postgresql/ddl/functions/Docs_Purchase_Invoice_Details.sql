@@ -40,7 +40,7 @@ SELECT
 	COALESCE( io1.DocType, io2.DocType ) AS DocType,
 	to_char( COALESCE( io1.DateFrom, io2.DateFrom ), 'DD.MM.YYYY' ) AS InOuts_DateFrom,
 	COALESCE( io1.DocNo, io2.DocNo ) IS NOT NULL AS InOuts_IsDataComplete,
-	COALESCE(pc.IsHU, false) as IsHU,
+	pc.IsHU,
 	MAX(il.line) AS line,
 	-- ts: QnD: appending the invoice line description to the product name.
 	-- TODO: create a dedicated field for it etc
@@ -222,7 +222,7 @@ GROUP BY
 	COALESCE( io1.DocType, io2.DocType ),
 	to_char( COALESCE( io1.DateFrom, io2.DateFrom ), 'DD.MM.YYYY' ),
 	COALESCE( io1.DocNo, io2.DocNo ) IS NOT NULL,
-	COALESCE(pc.IsHU, false),
+	pc.IsHU,
 	-- ts: QnD: appending the invoice line description to the product name.
 	-- TODO: create a dedicated field for it etc
 	il.Description,
@@ -257,7 +257,7 @@ GROUP BY
 ORDER BY
 	COALESCE( io1.DateFrom, io2.DateFrom ),
 	COALESCE( io1.DocNo, io2.DocNo ),
-	COALESCE(pc.IsHU, false),
+	pc.isHU,
 	Name,
 	MAX(line)
 $$
