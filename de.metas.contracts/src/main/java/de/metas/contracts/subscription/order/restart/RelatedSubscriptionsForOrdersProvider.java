@@ -61,38 +61,30 @@ public class RelatedSubscriptionsForOrdersProvider implements RelatedRecordsProv
 				.collect(ImmutableList.toImmutableList());
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ImmutableList<I_C_Flatrate_Term> flatrateTermRecords = queryBL
+
+		final List<Integer> flatrateTermRecords = queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.addOnlyActiveRecordsFilter()
 				.andCollectChildren(I_C_OrderLine.COLUMN_C_Order_ID)
 				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID) // as of now, extended terms inherit their predecessor's order line ID
 				.addOnlyActiveRecordsFilter()
+
+				// order latest first, because we need to void them in that order
+				.orderBy().addColumnDescending(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
 				.create()
-				.listImmutable(I_C_Flatrate_Term.class);
+				.listIds();
 
-		// now, get *all* C_Flatrate_Term_ID including the successors of the terms we got until now
-		// note: we need them because in another provider we are going to load their invoices.
-		// note II: we iterate because right now that's be simples and most stable way (and we assume that there aren't a lot of terms to iterate)
-		final ImmutableList.Builder<ITableRecordReference> resultReferences = ImmutableList.builder();
-
-		for (final I_C_Flatrate_Term flatrateTermRecord : flatrateTermRecords)
-		{
-			I_C_Flatrate_Term nextFlatrateTermRecord = flatrateTermRecord;
-			resultReferences.add(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, nextFlatrateTermRecord.getC_Flatrate_Term_ID()));
-
-			while (nextFlatrateTermRecord.getC_FlatrateTerm_Next_ID() > 0)
-			{
-				nextFlatrateTermRecord = nextFlatrateTermRecord.getC_FlatrateTerm_Next();
-				resultReferences.add(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, nextFlatrateTermRecord.getC_Flatrate_Term_ID()));
-			}
-		}
+		final ImmutableList<ITableRecordReference> resultReferences = flatrateTermRecords
+				.stream()
+				.map(termId -> TableRecordReference.of(I_C_Flatrate_Term.Table_Name, termId))
+				.collect(ImmutableList.toImmutableList());
 
 		// construct the result and be done
 		final SourceRecordsKey resultSourceRecordsKey = SourceRecordsKey.of(I_C_Flatrate_Term.Table_Name);
 
-		final IPair<SourceRecordsKey, List<ITableRecordReference>> result = ImmutablePair.of(resultSourceRecordsKey, resultReferences.build());
+		final IPair<SourceRecordsKey, List<ITableRecordReference>> result = ImmutablePair.of(resultSourceRecordsKey, resultReferences);
 		return result;
 	}
 
