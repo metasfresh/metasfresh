@@ -8,6 +8,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -107,15 +108,38 @@ public abstract class DocumentId implements Serializable
 
 		return new IntDocumentId(idInt);
 	}
-	
+
 	public static final DocumentId of(@NonNull final RepoIdAware id)
 	{
 		return of(id.getRepoId());
 	}
 
+	public static final DocumentId ofStringOrEmpty(@Nullable final String idStr)
+	{
+		if (Check.isEmpty(idStr, true))
+		{
+			return null;
+		}
+		return of(idStr.trim());
+	}
+
 	public static DocumentId ofString(final String idStr)
 	{
 		return new StringDocumentId(idStr);
+	}
+
+	/** @return {@code null} if the given {@code idObj} is null or an empty string */
+	public static DocumentId ofObjectOrNull(@Nullable final Object idObj)
+	{
+		if (idObj == null)
+		{
+			return null;
+		}
+		if (idObj instanceof String)
+		{
+			return ofStringOrEmpty((String)idObj);
+		}
+		return ofObject(idObj);
 	}
 
 	public static DocumentId ofObject(@NonNull final Object idObj)
@@ -143,15 +167,6 @@ public abstract class DocumentId implements Serializable
 		{
 			throw new AdempiereException("Cannot convert '" + idObj + "' (" + idObj.getClass() + ") to " + DocumentId.class);
 		}
-	}
-
-	public static final DocumentId fromNullable(final String idStr)
-	{
-		if (Check.isEmpty(idStr, true))
-		{
-			return null;
-		}
-		return of(idStr.trim());
 	}
 
 	public static final Supplier<DocumentId> supplier(final IntSupplier intSupplier)

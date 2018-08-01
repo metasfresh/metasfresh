@@ -541,7 +541,7 @@ public final class DocumentPath
 
 		public Builder setDocumentId(final String documentIdStr)
 		{
-			setDocumentId(DocumentId.fromNullable(documentIdStr));
+			setDocumentId(DocumentId.ofStringOrEmpty(documentIdStr));
 			return this;
 		}
 
@@ -571,7 +571,7 @@ public final class DocumentPath
 
 		public Builder setRowId(final String rowIdStr)
 		{
-			final DocumentId rowId = DocumentId.fromNullable(rowIdStr);
+			final DocumentId rowId = DocumentId.ofStringOrEmpty(rowIdStr);
 			setRowId(rowId);
 			return this;
 		}
