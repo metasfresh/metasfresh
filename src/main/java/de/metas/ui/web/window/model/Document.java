@@ -158,7 +158,7 @@ public final class Document
 
 	public static interface DocumentValuesSupplier
 	{
-		Object NO_VALUE = new Object();
+		Object NO_VALUE = new String("NO_VALUE");
 
 		DocumentId getDocumentId();
 
@@ -173,7 +173,6 @@ public final class Document
 
 	private Document(final Builder builder)
 	{
-		super();
 		entityDescriptor = builder.getEntityDescriptor();
 		_parentDocument = builder.getParentDocument();
 		documentPath = builder.getDocumentPath();
@@ -803,7 +802,7 @@ public final class Document
 				.omitNullValues()
 				.add("tableName", entityDescriptor.getTableNameOrNull())
 				.add("parentId", parentDocument == null ? null : parentDocument.getDocumentId())
-				.add("id", getDocumentId())
+				.add("id", getDocumentIdOrNull()) // avoid NPE
 				.add("NEW", _new ? Boolean.TRUE : null)
 				.add("windowNo", windowNo)
 				.add("writable", _writable)
@@ -983,6 +982,12 @@ public final class Document
 
 	public DocumentId getDocumentId()
 	{
+		final DocumentId documentIdOrNull = getDocumentIdOrNull();
+		return Check.assumeNotNull(documentIdOrNull, "This instance needs to have a DocumentId; this={}", this);
+	}
+
+	private DocumentId getDocumentIdOrNull()
+	{
 		// TODO handle NO ID field or composed PK
 		if (idFields.size() != 1)
 		{
@@ -998,7 +1003,7 @@ public final class Document
 			}
 		}
 		final Object idObj = idFields.get(0).getValue();
-		return DocumentId.ofObject(idObj);
+		return DocumentId.ofObjectOrNull(idObj);
 	}
 
 	public Object getDocumentIdAsJson()
