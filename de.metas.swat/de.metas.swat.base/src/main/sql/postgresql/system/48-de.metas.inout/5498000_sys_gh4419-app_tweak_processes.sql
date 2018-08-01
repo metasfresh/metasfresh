@@ -8,11 +8,6 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-26 10:06:4
 UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-07-26 10:06:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Process_ID=540750 AND AD_Language='en_US'
 ;
 
--- 2018-07-26T10:07:52.865
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
-
 -- 2018-07-26T10:07:52.869
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540992,'N','de.metas.ui.web.handlingunits.process.WEBUI_M_HU_CreateMaterialReceipt','N',TO_TIMESTAMP('2018-07-26 10:07:52','YYYY-MM-DD HH24:MI:SS'),100,'','U','Y','N','N','N','N','N','N','Y',0,'Wareneingang mit Einlagerung erst.','N','Y','Java',TO_TIMESTAMP('2018-07-26 10:07:52','YYYY-MM-DD HH24:MI:SS'),100,'10000000')
