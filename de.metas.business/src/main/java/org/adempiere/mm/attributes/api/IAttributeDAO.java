@@ -40,12 +40,6 @@ import org.compiere.model.I_M_AttributeValue_Mapping;
 
 import de.metas.lang.SOTrx;
 
-/**
- * Material Attributes DAO
- *
- * @author tsa
- *
- */
 public interface IAttributeDAO extends ISingletonService
 {
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
@@ -94,9 +88,7 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
 	 *
-	 * @param attribute
 	 * @param soTrx if NULL, retrieve all attribute values.
-	 * @return
 	 */
 	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
 
@@ -140,8 +132,6 @@ public interface IAttributeDAO extends ISingletonService
 	 * Now, when we call {@link #retrieveAttributeValueSubstitutes(I_M_Attribute, String)} with value="A" we will get a set of {"A&B", "A&C"}.
 	 * </pre>
 	 *
-	 * @param attribute
-	 * @param value
 	 * @return substitutes (M_AttributeValue.Value).
 	 */
 	Set<String> retrieveAttributeValueSubstitutes(I_M_Attribute attribute, String value);
@@ -152,9 +142,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
-	 *
-	 * @param value
-	 * @param clazz
 	 *
 	 * @return attribute; never return null
 	 */
@@ -172,19 +159,12 @@ public interface IAttributeDAO extends ISingletonService
 	 * Creates a new {@link I_M_AttributeInstance}.
 	 *
 	 * NOTE: it is not saving it
-	 *
-	 * @param ctx
-	 * @param asi
-	 * @param attributeId
-	 * @param trxName
-	 * @return
 	 */
 	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
 
 	/**
 	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
 	 *
-	 * @param fromASI
 	 * @return asi copy
 	 */
 	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
@@ -198,7 +178,6 @@ public interface IAttributeDAO extends ISingletonService
 	}
 
 	/**
-	 * @param attribute
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);

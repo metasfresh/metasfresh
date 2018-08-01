@@ -7,10 +7,6 @@ import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 
-/**
- * @author tsa
- *
- */
 public interface I_M_InOut extends org.compiere.model.I_M_InOut, IDocumentLocation, IDocumentDeliveryLocation
 {
 	// @formatter:off
@@ -19,13 +15,6 @@ public interface I_M_InOut extends org.compiere.model.I_M_InOut, IDocumentLocati
 	String getBPartnerAddress();
 	@Override
 	void setBPartnerAddress(String BPartnerAddress);
-	// @formatter:on
-
-	// @formatter:off
-//	String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
-//	I_M_Warehouse getM_Warehouse_Dest();
-//	void setM_Warehouse_Dest_ID(int M_Warehouse_Dest_ID);
-//	int getM_Warehouse_Dest_ID();
 	// @formatter:on
 
 	// @formatter:off

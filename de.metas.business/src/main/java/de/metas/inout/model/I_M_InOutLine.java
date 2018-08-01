@@ -70,14 +70,6 @@ public interface I_M_InOutLine extends org.compiere.model.I_M_InOutLine
 	public String getQualityNote();
 	// @formatter:on
 
-	// @formatter:off
-//	public String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
-//	public I_M_Warehouse getM_Warehouse_Dest();
-//	public void setM_Warehouse_Dest(I_M_Warehouse M_Warehouse_Dest);
-//	public void setM_Warehouse_Dest_ID(int M_Warehouse_Dest_ID);
-//	public int getM_Warehouse_Dest_ID();
-	// @formatter:on
-
 	//
 	// SubProducer_BPartner_ID
 	// @formatter:off
