@@ -60,9 +60,9 @@ public class C_Order
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {I_C_Order.COLUMNNAME_DateOrdered} )
+	@ModelChange( //
+			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+			ifColumnsChanged = I_C_Order.COLUMNNAME_DateOrdered)
 	public void updateDataEntry(final I_C_Order order)
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -127,16 +127,18 @@ public class C_Order
 	{
 		final I_C_Flatrate_Conditions conditions = term.getC_Flatrate_Conditions();
 		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
+
 		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(transition.getExtensionType())
 				&& transition.getC_Flatrate_Conditions_Next_ID() > 0)
 		{
-			final ContractExtendingRequest nextContext = ContractExtendingRequest.builder()
+			final ContractExtendingRequest request = ContractExtendingRequest.builder()
 					.contract(term)
 					.forceExtend(true)
 					.forceComplete(true)
 					.nextTermStartDate(null)
 					.build();
-			Services.get(IFlatrateBL.class).extendContract(nextContext);
+
+			Services.get(IFlatrateBL.class).extendContract(request);
 		}
 	}
 

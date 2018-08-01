@@ -1,40 +1,12 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric);
-
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric)
-RETURNS TABLE 
-	(
-	line numeric,
-	attributes text,
-	value character varying,
-	name character varying(255),
-	ean character varying,
-	pricelist numeric,
-	capacity numeric,
-	priceactual numeric,
-	qtyenteredtu numeric,
-	qtyentered numeric,
-	container character varying(60),
-	uomsymbol character varying(10),
-	c_order_mfgwarehouse_report_id numeric,
-	reportdocumenttype character varying(2),
-	C_Order_MFGWarehouse_ReportLine_ID numeric,
-	c_order_id numeric,
-	c_orderline_id numeric,
-	m_warehouse_id numeric,
-	pp_plant_id numeric,
-	c_bpartner_id numeric,
-	datepromised timestamp with time zone,
-	barcode character varying(255)
-	)
+﻿drop view if exists report.RV_C_Order_MFGWarehouse_Report_Details;
+create or replace view report.RV_C_Order_MFGWarehouse_Report_Details
 AS
-$$	
-
 SELECT
 	ol.line,
 	att.Attributes,
-	COALESCE(bpp.ProductNo, p.value) AS Value,
-	p.Name AS Name,
-	COALESCE(bpp.UPC, p.UPC) AS EAN,
+	COALESCE(NULLIF(trim(bpp.ProductNo),''), p.value) AS ProductValue,
+	COALESCE(NULLIF(trim(bpp.ProductName),''), p.Name) AS ProductName,
+	COALESCE(NULLIF(trim(bpp.UPC),''), p.UPC) AS EAN,
 	-- Rounding these columns is important to have them in one group
 	-- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
 	round(ol.pricelist, 3) AS PriceList,
@@ -90,9 +62,19 @@ WHERE
 	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
-	AND report.C_Order_MFGWarehouse_Report_ID =  $1
-	
-ORDER BY ol.line
 
-$$
-LANGUAGE sql STABLE;
+/*
+ORDER BY
+	CASE WHEN $P{c_order_id} IS NOT NULL THEN ol.line ELSE 0 END,
+	-- When no order document is given, sort to aggregate
+	p.name,
+	att.Attributes,
+	uom.UOMSymbol,
+	ol.Pricelist,
+	ol.PriceActual,
+	pm.name,
+	ip.qty
+*/
+;
+
+
