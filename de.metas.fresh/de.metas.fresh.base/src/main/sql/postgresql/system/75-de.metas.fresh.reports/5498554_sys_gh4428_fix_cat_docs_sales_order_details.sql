@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details(IN record_id numeric, IN ad_language Character Varying (6));
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN record_id numeric, IN ad_language Character Varying (6));
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details(IN record_id numeric, IN ad_language Character Varying (6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN record_id numeric, IN ad_language Character Varying (6))
 
 RETURNS TABLE
 (
@@ -18,15 +18,19 @@ RETURNS TABLE
 	isDiscountPrinted character(1), 
 	rate character varying, 
 	isPrintTax character(1),
-	Description Character Varying,
+	description character varying,
+	documentnote character varying,
+	productdescription character varying, 
 	bp_product_no character varying(30),
 	bp_product_name character varying(100),
 	cursymbol character varying(10),
 	p_value character varying(40),
 	p_description character varying(255),
-	p_documentnote character varying,
 	order_description character varying(1024),
-	price_pattern text
+	c_order_compensationgroup_id numeric,
+	isgroupcompensationline character(1),
+	groupname  character varying(255),
+	iso_code character(3)  	
 )
 AS
 $$
@@ -38,7 +42,7 @@ SELECT
 		ELSE Attributes
 	END AS Attributes,
 	ol.QtyEnteredTU			AS HUQty,
-	CASE WHEN piit.M_HU_PI_Version_ID = 101 OR ol.QtyEnteredTU IS NULL 
+	CASE WHEN piit.M_HU_PI_Version_ID = 101 OR ol.QtyEnteredTU IS NULL
 	THEN NULL ELSE ip.name END 		AS HUName,
 	ol.QtyEnteredInPriceUOM		AS QtyEnteredInPriceUOM,
 	ol.PriceEntered 			AS PriceEntered,
@@ -57,22 +61,25 @@ SELECT
 		ELSE round(rate, 2)
 	END::character varying AS rate,
 	isPrintTax,
-	ol.Description,
+	ol.description,
+	p.documentnote,
+	ol.productdescription,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
 	c.cursymbol, 
 	p.value AS p_value,
 	p.description AS p_description,
-	p.documentnote AS p_documentnote,
 	o.description AS order_description,
-	COALESCE('###,###.' || (repeat('#', (length(substring(ol.PriceEntered::text,'(\.[0-9]*)'))-1))), '###,###') AS price_pattern
-
+	ol.c_order_compensationgroup_id,
+	ol.isgroupcompensationline,
+	cg.name,
+	c.iso_code
 FROM
 	C_OrderLine ol
 	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
-	LEFT OUTER JOIN C_BPartner bp			ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN C_BP_Group bpg 			ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
+	INNER JOIN C_BPartner bp			ON o.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
+	LEFT OUTER JOIN C_BP_Group bpg 		ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip 		ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item piit ON ip.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y'
 	-- Product and its translation
@@ -84,24 +91,27 @@ FROM
 		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y' AND uomt.isActive = 'Y'
 	-- Tax
 	LEFT OUTER JOIN C_Tax t			ON ol.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
+
 	-- Get Attributes
 	LEFT OUTER JOIN	(
 		SELECT 	String_agg ( att.ai_value, ', ' ORDER BY length(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
-		FROM Report.fresh_Attributes att
+		FROM 	Report.fresh_Attributes att
 		JOIN C_OrderLine ol ON att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
-		WHERE	att.at_Value IN ('1000002', '1000001', '1000030', '1000015', 'M_Material_Tracking_ID') AND ol.C_Order_ID = $1
-			-- att.at_IsAttrDocumentRelevant = 'Y' currently those flags are set to be correct for purchase invoices. we need something more flexible for all kinds of documents
+		WHERE	att.at_Value IN ('1000002', '1000001', '1000030', '1000015') AND ol.C_Order_ID = $1
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 
+	-- compensation group
+	LEFT JOIN c_order_compensationgroup cg ON ol.c_order_compensationgroup_id = cg.c_order_compensationgroup_id 
+	
 	LEFT JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
 
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
-	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+	AND (COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID))
 ORDER BY
 	ol.line
 
