@@ -64,22 +64,8 @@ public class C_OrderLine
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 
-	private C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
+	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
 	{
-
-
-//		// NOTE: in unit test mode and while running tools like model generators,
-//		// the groupsRepo is not Autowired because there is no spring context,
-//		// so we have to instantiate it directly
-//		if (groupChangesHandler == null && Adempiere.isUnitTestMode())
-//		{
-//			this.groupChangesHandler = new OrderGroupCompensationChangesHandler(
-//					new OrderGroupRepository(
-//							new GroupCompensationLineCreateRequestFactory(),
-//							Optional.empty()),
-//					new GroupTemplateRepository(Optional.empty()));
-//		}
-
 		this.groupChangesHandler = groupChangesHandler;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
