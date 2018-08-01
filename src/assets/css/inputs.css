@@ -835,7 +835,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     }
 
      > *:first-of-type {
-        flex:4;
+        flex:8;
     }
 }
 
