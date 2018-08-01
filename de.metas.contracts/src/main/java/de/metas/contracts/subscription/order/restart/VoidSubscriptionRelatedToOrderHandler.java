@@ -56,7 +56,7 @@ public class VoidSubscriptionRelatedToOrderHandler implements VoidOrderAndRelate
 				.isCloseInvoiceCandidate(true)
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_IncorrectlyRecorded)
 				.isCreditOpenInvoices(false) // leave all existing invoices alone! there is another handler to deal with them, open or not
-				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
+				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
 		final IPair<RecordsToHandleKey, List<ITableRecordReference>> recordsToHandle = request.getRecordsToHandle();

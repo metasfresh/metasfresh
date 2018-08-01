@@ -118,7 +118,9 @@ public class Discount implements IPricingRule
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
 	}
 
-	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(final IPricingContext pricingCtx, final IPricingResult result)
+	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final IPricingResult result)
 	{
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 		final SOTrx soTrx = pricingCtx.getSoTrx();
