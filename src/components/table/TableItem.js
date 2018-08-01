@@ -233,7 +233,6 @@ class TableItem extends PureComponent {
                     ...cellWidget,
                     widgetType: item.widgetType,
                     displayed: true,
-                    mandatory: true,
                     readonly: false,
                   };
                 }
