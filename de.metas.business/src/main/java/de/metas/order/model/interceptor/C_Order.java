@@ -206,4 +206,22 @@ public class C_Order
 	{
 		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
 	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_DropShip_Location_ID
+	})
+	public void onDropShipLocation(final I_C_Order order)
+	{
+		if (order.getDropShip_Location_ID() <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		Services.get(IOrderBL.class).setPriceList(order);
+	}
+
 }
