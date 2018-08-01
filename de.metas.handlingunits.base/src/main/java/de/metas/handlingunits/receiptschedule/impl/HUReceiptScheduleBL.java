@@ -306,7 +306,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 *
 	 * At this point we assume that we have a thread inherited transaction.
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(final CreateReceiptsParameters parameters)
+	private final InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds();
 		validateHuIds(selectedHuIds);
@@ -358,7 +358,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	/** Generate receipt from selected receipt schedules and return the result */
-	private InOutGenerateResult createReceipts(@NonNull CreateReceiptsParameters parameters)
+	private InOutGenerateResult createReceipts(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);

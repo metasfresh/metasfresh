@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -36,10 +37,10 @@ public class ASIAttributeStorage extends AbstractAttributeStorage
 	private final I_M_AttributeSetInstance asi;
 
 	private ASIAttributeStorage(
-			@NonNull final IAttributeStorageFactory storageFactory,
+			final IAttributeStorageFactory storageFactory,
 			@NonNull final I_M_AttributeSetInstance asi)
 	{
-		super(storageFactory);
+		super(Check.assumeNotNull(storageFactory, "storageFactory"));
 
 		this.asi = asi;
 		this.id = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + asi.getM_AttributeSetInstance_ID();
@@ -71,9 +72,7 @@ public class ASIAttributeStorage extends AbstractAttributeStorage
 	{
 		stringHelper
 				.add("id", id)
-				.add("asi", asi)
-		// .add("huDisplayName", Services.get(IHandlingUnitsBL.class).getDisplayName(getM_HU())) // used only for debugging)
-		;
+				.add("asi", asi);
 	}
 
 	@Override

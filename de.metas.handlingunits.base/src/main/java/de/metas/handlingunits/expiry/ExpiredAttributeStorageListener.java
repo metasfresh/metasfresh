@@ -86,12 +86,14 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 				.asLocalDate(bestBefore)
 				.minusDays(warnInterval)
 				.atStartOfDay();
-		if (!warnDate.isBefore(LocalDateTime.now()))
+		if (warnDate.isBefore(LocalDateTime.now()))
 		{
-			return; // nothing to warn about
+			storage.setValue(Constants.ATTR_Expired, Constants.ATTR_Expired_Value_Expired);
 		}
-
-		storage.setValue(Constants.ATTR_Expired, Constants.ATTR_Expired_Value_Expired);
+		else
+		{
+			storage.setValue(Constants.ATTR_Expired, null);
+		}
 	}
 
 	/** get the minimal value from the product(s) included in the storage's HU. */
