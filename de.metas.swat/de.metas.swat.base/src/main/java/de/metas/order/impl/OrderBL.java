@@ -270,10 +270,11 @@ public class OrderBL implements IOrderBL
 
 	private BillBPartnerAndShipToLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
 	{
-
 		final org.compiere.model.I_C_BPartner_Location shipToLocation = getShipToLocation(order);
 		final int shipBPLocationId = shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1;
+
 		final int bpartnerId =  shipToLocation != null ? shipToLocation.getC_BPartner_ID() : order.getC_BPartner_ID();
+
 		return new BillBPartnerAndShipToLocation(bpartnerId, shipBPLocationId);
 	}
 
