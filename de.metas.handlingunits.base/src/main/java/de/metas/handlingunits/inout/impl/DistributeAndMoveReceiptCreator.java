@@ -113,8 +113,8 @@ public class DistributeAndMoveReceiptCreator
 		return result.build();
 	}
 
-	@Value
-	@Builder
+	@lombok.Value
+	@lombok.Builder
 	public static class Result
 	{
 		@Singular
