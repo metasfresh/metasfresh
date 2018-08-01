@@ -74,8 +74,12 @@ public class C_OrderLine
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void validatePrescriptionProduct(final I_C_OrderLine orderLineRecord)
 	{
-		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
+		if(orderLineRecord.getM_Product_ID()<=0)
+		{
+			return; // in case of "before_new" there might not be a product yet
+		}
 
+		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
 		if (SOTrx.PURCHASE.equals(orderLine.getSoTrx()))
 		{
 			// nothing to do, only applies to sales orders
