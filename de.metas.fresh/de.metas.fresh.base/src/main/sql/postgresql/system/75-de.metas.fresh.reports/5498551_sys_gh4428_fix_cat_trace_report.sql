@@ -1,4 +1,4 @@
--- Function: de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric)
+﻿-- Function: de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric)
 
  DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.trace_report(numeric, numeric, numeric, numeric, numeric, numeric, character varying, numeric);
  
