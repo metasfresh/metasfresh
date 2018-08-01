@@ -16,11 +16,6 @@ UPDATE AD_Column SET DefaultValue='@IsEdiRecipient/N@', ReadOnlyLogic='@IsEdiRec
 UPDATE AD_Column SET TechnicalNote='@IsEdiRecipient/N@ is based on an SQL column that is "null" at the time a new document is initialized. that''s why the "/N" in the logic expressions is very impartant',Updated=TO_TIMESTAMP('2018-08-01 08:47:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552598
 ;
 
--- 2018-08-01T08:50:30.144
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnSQL='COALESCE(SELECT IsEdiRecipient from C_BPartner where C_BPartner_ID = C_Order.Bill_BPartner_ID)',Updated=TO_TIMESTAMP('2018-08-01 08:50:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552603
-;
-
 -- 2018-08-01T08:50:52.370
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET TechnicalNote='This field''s value is null durinig document initialization; if you use it in a logic expression, please be sure to provide a default value, e.g. use "@IsEdiRecipient/N@"',Updated=TO_TIMESTAMP('2018-08-01 08:50:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552603
