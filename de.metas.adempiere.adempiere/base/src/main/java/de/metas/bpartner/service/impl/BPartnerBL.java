@@ -146,22 +146,18 @@ public class BPartnerBL implements IBPartnerBL
 
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(
+		final List<I_AD_User> contactRecords = bPartnerDAO.retrieveContacts(
 				Env.getCtx(),
 				request.getBpartnerId().getRepoId(),
 				ITrx.TRXNAME_None);
-		if (contacts.isEmpty())
-		{
-			return null;
-		}
 
+		// we will collect the candidates for our return value into these variables
 		final Set<User> contactsAtLocation = new TreeSet<>(request.getComparator());
 		final Set<User> contactsAtOtherLocations = new TreeSet<>(request.getComparator());
-
 		User defaultBillContact = null;
 		User defaultContact = null;
 
-		for (final I_AD_User contactRecord : contacts)
+		for (final I_AD_User contactRecord : contactRecords)
 		{
 			final User contact = userRepository.ofRecord(contactRecord);
 			if (!request.getFilter().test(contact))
@@ -194,8 +190,11 @@ public class BPartnerBL implements IBPartnerBL
 		{
 			return findBestMatch(contactsAtLocation, defaultBillContact, defaultContact);
 		}
-
-		return findBestMatch(contactsAtOtherLocations, defaultBillContact, defaultContact);
+		else if (!contactsAtOtherLocations.isEmpty())
+		{
+			return findBestMatch(contactsAtOtherLocations, defaultBillContact, defaultContact);
+		}
+		return null;
 	}
 
 	private User findBestMatch(

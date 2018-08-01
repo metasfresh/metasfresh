@@ -7,6 +7,7 @@ import org.adempiere.util.StringUtils;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
+import org.compiere.db.CConnectionAttributes;
 import org.slf4j.Logger;
 
 import de.metas.jms.EmbeddedActiveMQBrokerService;
@@ -98,7 +99,15 @@ public class JMSService implements IJMSService
 		else
 		{
 			final CConnection cConnectionToUse = cConnection == null ? CConnection.get() : cConnection;
-			appsHost = cConnectionToUse.getAppsHost();
+			if (CConnectionAttributes.APPS_HOST_None.equals(cConnectionToUse.getAppsHost()))
+			{
+				// case: app is running in a local dev-environment, thus the "MyAppsServer" appsHost value
+				appsHost = "localhost"; // https://github.com/metasfresh/metasfresh/issues/4436
+			}
+			else
+			{
+				appsHost = cConnectionToUse.getAppsHost();
+			}
 			appsPort = cConnectionToUse.getAppsPort();
 		}
 

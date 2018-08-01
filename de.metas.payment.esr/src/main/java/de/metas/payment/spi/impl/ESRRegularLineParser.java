@@ -70,7 +70,6 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 
 		final String esrReferenceNoComplete = paymentText.substring(12, 39);
 		final String innerPaymentString = esrReferenceNoComplete.substring(0, 7);
-		final String esrReferenceNoToMatch = esrReferenceNoComplete.substring(7, 26);
 
 		final String paymentDateStr = paymentText.substring(59, 65);
 		final Timestamp paymentDate = extractTimestampFromString(ctx, paymentDateStr, ERR_WRONG_PAYMENT_DATE, collectedErrors);
@@ -88,7 +87,6 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 				innerPaymentString,
 				amount,
 				esrReferenceNoComplete,
-				esrReferenceNoToMatch,
 				paymentDate,
 				accountDate,
 				orgValue,

@@ -57,7 +57,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
@@ -1202,7 +1201,6 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Term currentTerm = context.getContract();
 		final Timestamp nextTermStartDate = context.getNextTermStartDate();
-		final I_C_OrderLine ol = context.getOrderLine();
 
 		Check.errorIf(currentTerm.getC_FlatrateTerm_Next_ID() > 0,
 				"{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
@@ -1239,9 +1237,9 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setStartDate(firstDayOfNewTerm);
 		nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
 
-		if (ol != null)
+		if (currentTerm.getC_OrderLine_Term_ID() > 0)
 		{
-			nextTerm.setC_OrderLine_Term(ol);
+			nextTerm.setC_OrderLine_Term(currentTerm.getC_OrderLine_Term());
 		}
 		updateEndDate(nextTransition, nextTerm);
 		updateNoticeDate(nextTransition, nextTerm);

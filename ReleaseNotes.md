@@ -31,6 +31,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1889](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1889) Order line batch entry not working for current experimental cables/pipes batch entry
+  * [#1895](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1895) closing address editor after entering only the country is not possible
 
 # metasfresh 5.67 (2018-30)
 ## Features

@@ -15,11 +15,11 @@ import org.adempiere.mm.attributes.AttributeId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,22 +40,22 @@ import de.metas.product.ProductId;
  */
 public interface IAttributeSetInstanceBL extends ISingletonService
 {
+	/** Call {@link #buildDescription(I_M_AttributeSetInstance, boolean)} with verbose = false. */
+	String buildDescription(I_M_AttributeSetInstance asi);
+
 	/**
-	 * Builds ASI Description
+	 * Build ASI Description
 	 *
 	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
 	 *
-	 * @param asi
-	 * @return description
+	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */
-	String buildDescription(I_M_AttributeSetInstance asi);
-
 	String buildDescription(I_M_AttributeSetInstance asi, boolean verboseDescription);
 
 	/**
 	 * Builds and set {@link I_M_AttributeSetInstance#COLUMNNAME_Description}.
 	 *
-	 * @param asi
+	 * @param asi may be {@code null}; in that case, nothing is done;
 	 */
 	void setDescription(I_M_AttributeSetInstance asi);
 
@@ -113,13 +113,15 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	/**
 	 * set in {@link I_M_AttributeInstance} the correct value for given <code>asi</code> and given <code>attribute</code>
-	 * <br> the ai is also saved.
+	 * <br>
+	 * the ai is also saved.
+	 *
 	 * @param asi
 	 * @param attribute
 	 * @param value
 	 * @return
 	 */
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
-	
+
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
 }

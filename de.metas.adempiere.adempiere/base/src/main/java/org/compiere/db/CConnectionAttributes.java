@@ -90,7 +90,7 @@ public final class CConnectionAttributes
 	private static final transient Logger logger = LogManager.getLogger(CConnectionAttributes.class);
 
 	/** Marker used to indicate that we go without an application server */
-	private static final String APPS_HOST_None = "MyAppsServer";
+	public static final String APPS_HOST_None = "MyAppsServer";
 	private static final String DEFAULT_DbType = Database.DB_POSTGRESQL;
 
 	/** Name of Connection */

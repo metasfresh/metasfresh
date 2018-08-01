@@ -64,7 +64,7 @@ final class ASIDescriptionBuilderCommand
 	private final AttributeSetId attributeSetId;
 	private I_M_AttributeSet _attributeSet;
 
-	public ASIDescriptionBuilderCommand(final I_M_AttributeSetInstance asi, final boolean verboseDescription)
+	public ASIDescriptionBuilderCommand(@NonNull final I_M_AttributeSetInstance asi, final boolean verboseDescription)
 	{
 		this.asi = asi;
 		this.verboseDescription = verboseDescription;
@@ -111,7 +111,7 @@ final class ASIDescriptionBuilderCommand
 	private void appendInstanceAttribute(final StringBuilder description, final I_M_AttributeInstance ai)
 	{
 		final String aiDescription = buildInstanceAttributeDescription(ai);
-		if (aiDescription == null || aiDescription.isEmpty())
+		if (Check.isEmpty(aiDescription, true))
 		{
 			return;
 		}
@@ -122,7 +122,7 @@ final class ASIDescriptionBuilderCommand
 
 	// @Label@ @Value@ @UOM@
 
-	private String buildInstanceAttributeDescription(final I_M_AttributeInstance ai)
+	private String buildInstanceAttributeDescription(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
@@ -153,7 +153,7 @@ final class ASIDescriptionBuilderCommand
 		return StringExpressionCompiler.instance.compileOrDefault(descriptionPatternStr, null);
 	}
 
-	private String getInstanceAttributeValueAsString(final I_M_AttributeInstance ai)
+	private String getInstanceAttributeValueAsString(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
@@ -179,6 +179,10 @@ final class ASIDescriptionBuilderCommand
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
+			if (ai.getValueDate() == null)
+			{
+				return verboseDescription ? "-" : null;
+			}
 			final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
 			return dateFormat.format(ai.getValueDate());
 		}
