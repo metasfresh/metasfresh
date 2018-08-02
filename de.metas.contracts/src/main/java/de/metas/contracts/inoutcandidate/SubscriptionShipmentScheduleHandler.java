@@ -1,11 +1,11 @@
 package de.metas.contracts.inoutcandidate;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -16,6 +16,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -30,6 +31,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.IFlatrateBL;
@@ -60,8 +62,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 		final I_C_SubscriptionProgress subscriptionLine = create(model, I_C_SubscriptionProgress.class);
 
-		Check.assume(subscriptionLine.getQty().signum() > 0, subscriptionLine + " has Qty>0");
-
+		if (subscriptionLine.getQty().signum() <= 0)
+		{
+			Loggables.get().addLog(
+					"Skip C_SubscriptionProgress_ID={} with Qty={}",
+					subscriptionLine.getC_SubscriptionProgress_ID(), subscriptionLine.getQty());
+			return ImmutableList.of();
+		}
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class, model);
 
 		final int tableId = InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class);
@@ -122,7 +129,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		invalidateCandidatesFor(subscriptionLine);
 
 		// Note: AllowConsolidateInOut is set on the first update of this schedule
-		return Collections.singletonList(newSched);
+		return ImmutableList.of(newSched);
 	}
 
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
@@ -186,6 +193,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
