@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.select.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,9 +33,9 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.client.terminal.inventory.model.IDummyPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
-import de.metas.handlingunits.model.I_M_HU;
 
 /**
  * Filter for warehouses that shall appear in POS now used in de.metas.handlingunits.client.terminal.warehouse.view.WarehouseHandlingUnitsSelectFrame (Handling Units (POS)) and filters for all
@@ -76,10 +76,9 @@ public class InventoryHUFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public void processRows(final Properties ctx, final Set<IPOSTableRow> rows, final Set<I_M_HU> selectedHUs)
+	public void processRows(final Properties ctx, final Set<IPOSTableRow> rows, final Set<HuId> selectedHUs)
 	{
 		// Nothing to do on this level.
-
 	}
 
 	@Override

@@ -46,10 +46,9 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
-import de.metas.adempiere.service.IWarehouseDAO;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
@@ -69,6 +68,7 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
@@ -84,9 +84,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 
 /**
  * Generates material receipt from {@link I_M_ReceiptSchedule_Alloc} (with HUs).
- *
- * @author tsa
- *
  */
 public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.api.impl.InOutProducer
 {
@@ -108,32 +105,26 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 *
 	 * If the set is null, it means no restriction will be applied, so any HU will be considered.
 	 */
-	private final Set<Integer> selectedHUIds;
+	private final Set<HuId> selectedHUIds;
 
 	/** Collects packing materials in order to generate Packing Material receipt lines */
 	private final HUPackingMaterialsCollector packingMaterialsCollector;
 
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
 
-	/**
-	 *
-	 * @param ctx
-	 * @param result
-	 * @param selectedHUIds
-	 * @param createReceiptWithDatePromised see {@link de.metas.inoutcandidate.api.impl.InOutProducer#InOutProducer(InOutGenerateResult, boolean, boolean)}
-	 */
-	public InOutProducerFromReceiptScheduleHU(final Properties ctx, final InOutGenerateResult result, final Set<Integer> selectedHUIds, final boolean createReceiptWithDatePromised)
+	public InOutProducerFromReceiptScheduleHU(
+			final CreateReceiptsParameters parameters,
+			final InOutGenerateResult result)
 	{
 		super(result,
-				true,                  // complete=true
-				createReceiptWithDatePromised);
+				true, // complete=true
+				parameters.isCreateReceiptWithDatePromised());
 
+		this.selectedHUIds = parameters.getSelectedHuIds();
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
-		this.selectedHUIds = selectedHUIds;
 
 		// the HU-context shall use the tread-inherited trx because it is executed by ITrxItemProcessorExecutorService and instantiated before the executor-services internal trxName is known.
-		_huContext = handlingUnitsBL.createMutableHUContext(trxManager.createThreadContextAware(ctx));
-
+		_huContext = handlingUnitsBL.createMutableHUContext(trxManager.createThreadContextAware(parameters.getCtx()));
 
 		packingMaterialsCollector = new HUPackingMaterialsCollector(_huContext);
 
@@ -453,16 +444,6 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		receiptLine.setIsInDispute(isInDispute);
 
 		//
-		// In case the line is in dispute, use the Warehouse for Issues as destination warehouse (see 06365)
-		// NOTE: we apply this rule only where and not in general, because general we don't want to do this for every warehouse.
-		if (isInDispute)
-		{
-			final I_M_Warehouse warehouseForIssues = Services.get(IWarehouseDAO.class).retrieveWarehouseForIssuesOrNull(getCtx());
-			Check.assumeNotNull(warehouseForIssues, "Warehouse for issues shall be defined");
-			receiptLine.setM_Warehouse_Dest(warehouseForIssues);
-		}
-
-		//
 		// Save and return
 		InterfaceWrapperHelper.save(receiptLine);
 		return receiptLine;
@@ -509,9 +490,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		//
 		// We don't have LU or TU on this allocation line => don't accept it because it's not Handling Units related
-		final int tuHUId = rsa.getM_TU_HU_ID();
-		final int luHUId = rsa.getM_LU_HU_ID();
-		if (tuHUId <= 0 && luHUId <= 0)
+		final HuId tuHUId = HuId.ofRepoIdOrNull(rsa.getM_TU_HU_ID());
+		final HuId luHUId = HuId.ofRepoIdOrNull(rsa.getM_LU_HU_ID());
+		if (tuHUId == null && luHUId == null)
 		{
 			return false;
 		}
@@ -525,14 +506,14 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// Check if TU is in our scope
-		if (tuHUId > 0 && selectedHUIds.contains(tuHUId))
+		if (tuHUId != null && selectedHUIds.contains(tuHUId))
 		{
 			return true;
 		}
 
 		//
 		// Check if LU is in our scope
-		if (luHUId > 0 && selectedHUIds.contains(luHUId))
+		if (luHUId != null && selectedHUIds.contains(luHUId))
 		{
 			return true;
 		}

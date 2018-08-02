@@ -31,6 +31,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 
 import lombok.NonNull;
@@ -570,6 +572,33 @@ public final class Check
 		};
 	}
 
+	public static boolean isEmpty(@Nullable final Object value)
+	{
+		if (value == null)
+		{
+			return true;
+		}
+
+		if (value instanceof String)
+		{
+			return isEmpty((String)value, true);
+		}
+		if (value instanceof Object[])
+		{
+			return isEmpty((Object[])value);
+		}
+		if (value instanceof BigDecimal)
+		{
+			return isEmpty((BigDecimal)value);
+		}
+		if (value instanceof Collection<?>)
+		{
+			return isEmpty((Collection<?>)value);
+		}
+
+		return false;
+	}
+
 	public static boolean isEmpty(final String str)
 	{
 		return isEmpty(str, false);
@@ -604,8 +633,6 @@ public final class Check
 	}	// isEmpty
 
 	/**
-	 *
-	 * @param bd
 	 * @return true if bd is null or bd.signum() is zero
 	 */
 	public static boolean isEmpty(final BigDecimal bd)
@@ -622,8 +649,6 @@ public final class Check
 	}
 
 	/**
-	 *
-	 * @param collection
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
 	public static boolean isEmpty(final Collection<?> collection)

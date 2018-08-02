@@ -23,10 +23,10 @@ package de.metas.order.model.interceptor;
  */
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -35,11 +35,10 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -47,40 +46,29 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
+import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
+@Component("de.metas.order.model.interceptor.C_OrderLine")
 public class C_OrderLine
 {
-	public static final C_OrderLine INSTANCE = new C_OrderLine();
-
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
-	@Autowired
-	private OrderGroupCompensationChangesHandler groupChangesHandler;
+
+	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 
-	private C_OrderLine()
+	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
 	{
-		Adempiere.autowire(this);
+		this.groupChangesHandler = groupChangesHandler;
 
-		// NOTE: in unit test mode and while running tools like model generators,
-		// the groupsRepo is not Autowired because there is no spring context,
-		// so we have to instantiate it directly
-		if (groupChangesHandler == null && Adempiere.isUnitTestMode())
-		{
-			groupChangesHandler = new OrderGroupCompensationChangesHandler(
-					new OrderGroupRepository(
-							new GroupCompensationLineCreateRequestFactory(),
-							Optional.empty()),
-					new GroupTemplateRepository(Optional.empty()));
-		}
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	};
 
 	/**
@@ -265,7 +253,8 @@ public class C_OrderLine
 		Services.get(IOrderLinePricingConditions.class).updateNoPriceConditionsColor(orderLine);
 	}
 
-	@ModelChange(timings ={ ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID, I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID, I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void checkExcludedProducts(final I_C_OrderLine orderLine)
 	{
 		if (orderLine.getM_Product_ID() <= 0 || orderLine.getC_BPartner_ID() <= 0)
@@ -276,5 +265,43 @@ public class C_OrderLine
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
 		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyEntered)
+	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
+	{
+		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false;
+
+		// make the BL revalidates the discounts..the new QtyEntered might also mean a new discount schema break
+		orderLine.setM_DiscountSchemaBreak(null);
+
+		if (orderLine.isProcessed())
+		{
+			return;
+		}
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(orderLine)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+				.updateLineNetAmt(true)
+				.build());
+
+		logger.debug("Setting TaxAmtInfo for {}", orderLine);
+		orderLineBL.setTaxAmtInfo(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void ensureOrderLineHasShipper(final I_C_OrderLine orderLine)
+	{
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		if (orderLine.getM_Shipper_ID() <= 0)
+		{
+			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
+			orderLineBL.setShipper(orderLine);
+		}
 	}
 }

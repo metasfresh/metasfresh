@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,7 +25,6 @@ package de.metas.inoutcandidate.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -65,9 +64,9 @@ import lombok.NonNull;
 
 /**
  * Class responsible for converting {@link I_M_ReceiptSchedule}s to {@link I_M_InOut} receipts.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class InOutProducer implements IInOutProducer
 {
@@ -77,6 +76,8 @@ public class InOutProducer implements IInOutProducer
 	protected final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	protected final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	protected final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
+
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
 
@@ -88,7 +89,7 @@ public class InOutProducer implements IInOutProducer
 	/**
 	 * If <code>false</code> (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}. Otherwise it is created with the DatePromised value of the receipt
 	 * schedule's C_Order. To be used e.g. when doing migration work.
-	 * 
+	 *
 	 * @task 08648
 	 */
 	private final boolean createReceiptWithDatePromised;
@@ -100,13 +101,8 @@ public class InOutProducer implements IInOutProducer
 	private final Set<Integer> _currentOrderIds = new HashSet<>();
 
 	/**
-	 * List of {@link Runnable}s to be executed after current receipt is processed
-	 */
-	private final List<Runnable> afterProcessRunnables = new ArrayList<>();
-
-	/**
 	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, boolean)} with <code>createReceiptWithDatePromised == false</code>.
-	 * 
+	 *
 	 * @param result
 	 * @param complete
 	 */
@@ -116,7 +112,7 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param result
 	 * @param complete
 	 * @param createReceiptWithDatePromised if <code>false</code> (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}. Otherwise it is created with
@@ -145,14 +141,14 @@ public class InOutProducer implements IInOutProducer
 	{
 		return processorCtx.getCtx();
 	}
-	
+
 	protected final String getTrxName()
 	{
 		return processorCtx.getTrxName();
 	}
 
 	@Override
-	public final void process(final I_M_ReceiptSchedule rs) throws Exception
+	public final void process(@NonNull final I_M_ReceiptSchedule rs) throws Exception
 	{
 		Check.assumeNull(currentReceiptSchedule, "currentReceiptSchedule shall be null");
 		currentReceiptSchedule = rs;
@@ -166,13 +162,13 @@ public class InOutProducer implements IInOutProducer
 			// NOTE: usually the item to process is out of transaction
 			InterfaceWrapperHelper.setTrxName(rs, ITrx.TRXNAME_ThreadInherited);
 
-			final List<? extends I_M_InOutLine> lines = createCurrentReceiptLines();
-			for (final I_M_InOutLine line : lines)
+			final List<? extends I_M_InOutLine> receiptLines = createCurrentReceiptLines();
+			for (final I_M_InOutLine receiptLine : receiptLines)
 			{
-				receiptScheduleBL.createRsaIfNotExists(rs, line);
+				receiptScheduleBL.createRsaIfNotExists(rs, receiptLine);
 			}
 
-			addToCurrentReceiptLines(lines);
+			addToCurrentReceiptLines(receiptLines);
 
 			//
 			// Collect C_Order_ID
@@ -184,15 +180,12 @@ public class InOutProducer implements IInOutProducer
 		}
 		finally
 		{
-			//
 			// Restore receipt schedule's old transaction
 			InterfaceWrapperHelper.setTrxName(rs, rsTrxNameOld);
 
-			//
 			// Clear current receipt schedule
 			currentReceiptSchedule = null;
 		}
-
 		previousReceiptSchedule = rs;
 	}
 
@@ -209,7 +202,7 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param previousReceiptSchedule
 	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
@@ -298,9 +291,9 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Create bottom receipt lines, right before completing the receipt.
-	 * 
+	 *
 	 * NOTE: at this level this method does nothing but you are free to implement your functionality.
-	 * 
+	 *
 	 * @return created lines
 	 */
 	protected List<? extends I_M_InOutLine> createBottomReceiptLines()
@@ -311,7 +304,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Sets current receipt on which next lines will be added
-	 * 
+	 *
 	 * @param currentReceipt
 	 */
 	private void setCurrentReceipt(final I_M_InOut currentReceipt)
@@ -320,9 +313,6 @@ public class InOutProducer implements IInOutProducer
 
 		resetCurrentReceipt();
 		this._currentReceipt = currentReceipt;
-
-		// Make sure the after-process list of runnables is empty
-		afterProcessRunnables.clear();
 	}
 
 	private void processReceipt(final I_M_InOut currentReceipt)
@@ -345,17 +335,8 @@ public class InOutProducer implements IInOutProducer
 			return;
 		}
 
-		//
 		// Process current receipt
-		Services.get(IDocumentBL.class).processEx(currentReceipt, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
-		//
-		// Invoke all after-process runnables
-		for (final Runnable runnable : afterProcessRunnables)
-		{
-			runnable.run();
-		}
-		afterProcessRunnables.clear();
+		documentBL.processEx(currentReceipt, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	private void resetCurrentReceipt()
@@ -374,9 +355,9 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Gets current receipt.
-	 * 
+	 *
 	 * If there is no current receipt, an exception will be thrown.
-	 * 
+	 *
 	 * @return current receipt; never return null.
 	 */
 	protected final I_M_InOut getCurrentReceipt()
@@ -387,7 +368,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Same as {@link #getCurrentReceipt()} but it will wrapped to given model interface.
-	 * 
+	 *
 	 * @param inoutType
 	 * @return current receipt; never returns null
 	 * @see #getCurrentReceipt()
@@ -399,7 +380,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Gets current HeaderAggregationKey used to aggregate current chunk.
-	 * 
+	 *
 	 * @return header aggregation key
 	 */
 	protected final String getCurrentHeaderAggregationKey()
@@ -412,7 +393,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Gets current receipt schedule (i.e. the receipt schedule which is currently processing, see {@link #process(I_M_ReceiptSchedule)})
-	 * 
+	 *
 	 * @return current receipt schedule; never return null
 	 */
 	protected final I_M_ReceiptSchedule getCurrentReceiptSchedule()
@@ -521,7 +502,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Helper method to create a new receipt line, linked to current receipt.
-	 * 
+	 *
 	 * @return newly created receipt line
 	 */
 	protected final I_M_InOutLine newReceiptLine()
@@ -533,7 +514,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Helper method to update receipt line with values from given {@link I_M_ReceiptSchedule}.
-	 * 
+	 *
 	 * @param line
 	 * @param rs
 	 */
@@ -565,19 +546,6 @@ public class InOutProducer implements IInOutProducer
 		}
 
 		//
-		// Line Destination Warehouse (where materials are moved automatically after receipt is completed)
-		if (inout.isDropShip())
-		{
-			// In case of drop shipment there shall be no destination warehouse (08402)
-			line.setM_Warehouse_Dest(null);
-		}
-		else
-		{
-			final int warehouseDestId = rs.getM_Warehouse_Dest_ID();
-			line.setM_Warehouse_Dest_ID(warehouseDestId);
-		}
-
-		//
 		// Quantities
 		final BigDecimal qtyToMove = receiptScheduleBL.getQtyToMove(rs);
 		line.setQtyEntered(qtyToMove);
@@ -591,9 +559,9 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Create receipt line(s) from current receipt schedule (see {@link #getCurrentReceiptSchedule()}).
-	 * 
+	 *
 	 * NOTE: this method can be overriden by extending classes.
-	 * 
+	 *
 	 * @return created receipt lines
 	 */
 	protected List<? extends I_M_InOutLine> createCurrentReceiptLines()
@@ -605,11 +573,5 @@ public class InOutProducer implements IInOutProducer
 		InterfaceWrapperHelper.save(line);
 
 		return Collections.singletonList(line);
-	}
-
-	protected final void addAfterProcessRunnable(final Runnable runnable)
-	{
-		Check.assumeNotNull(runnable, "runnable not null");
-		afterProcessRunnables.add(runnable);
 	}
 }

@@ -20,13 +20,14 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for M_InOutLine
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
+public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -65,7 +66,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
     }
 
     /** AccessLevel
-      * @return 1 - Org 
+      * @return 1 - Org
       */
     @Override
     protected int get_AccessLevel()
@@ -102,15 +103,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Buchende Organisation.
-		@param AD_OrgTrx_ID 
+		@param AD_OrgTrx_ID
 		Performing or initiating organization
 	  */
 	@Override
 	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
 	{
-		if (AD_OrgTrx_ID < 1) 
+		if (AD_OrgTrx_ID < 1)
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
 	}
 
@@ -118,7 +119,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Performing or initiating organization
 	  */
 	@Override
-	public int getAD_OrgTrx_ID () 
+	public int getAD_OrgTrx_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
 		if (ii == null)
@@ -139,15 +140,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Kostenstelle.
-		@param C_Activity_ID 
+		@param C_Activity_ID
 		Kostenstelle
 	  */
 	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
-		if (C_Activity_ID < 1) 
+		if (C_Activity_ID < 1)
 			set_Value (COLUMNNAME_C_Activity_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
@@ -155,7 +156,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Kostenstelle
 	  */
 	@Override
-	public int getC_Activity_ID () 
+	public int getC_Activity_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
 		if (ii == null)
@@ -176,15 +177,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Werbemassnahme.
-		@param C_Campaign_ID 
+		@param C_Campaign_ID
 		Marketing Campaign
 	  */
 	@Override
 	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
-		if (C_Campaign_ID < 1) 
+		if (C_Campaign_ID < 1)
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
@@ -192,7 +193,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Marketing Campaign
 	  */
 	@Override
-	public int getC_Campaign_ID () 
+	public int getC_Campaign_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
 		if (ii == null)
@@ -213,15 +214,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Kosten.
-		@param C_Charge_ID 
+		@param C_Charge_ID
 		Additional document charges
 	  */
 	@Override
 	public void setC_Charge_ID (int C_Charge_ID)
 	{
-		if (C_Charge_ID < 1) 
+		if (C_Charge_ID < 1)
 			set_Value (COLUMNNAME_C_Charge_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
 	}
 
@@ -229,7 +230,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Additional document charges
 	  */
 	@Override
-	public int getC_Charge_ID () 
+	public int getC_Charge_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
 		if (ii == null)
@@ -250,15 +251,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Auftragsposition.
-		@param C_OrderLine_ID 
+		@param C_OrderLine_ID
 		Sales Order Line
 	  */
 	@Override
 	public void setC_OrderLine_ID (int C_OrderLine_ID)
 	{
-		if (C_OrderLine_ID < 1) 
+		if (C_OrderLine_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
 	}
 
@@ -266,7 +267,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Sales Order Line
 	  */
 	@Override
-	public int getC_OrderLine_ID () 
+	public int getC_OrderLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
 		if (ii == null)
@@ -287,15 +288,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Projekt.
-		@param C_Project_ID 
+		@param C_Project_ID
 		Financial Project
 	  */
 	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
-		if (C_Project_ID < 1) 
+		if (C_Project_ID < 1)
 			set_Value (COLUMNNAME_C_Project_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
@@ -303,7 +304,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Financial Project
 	  */
 	@Override
-	public int getC_Project_ID () 
+	public int getC_Project_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
 		if (ii == null)
@@ -324,15 +325,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Projekt-Phase.
-		@param C_ProjectPhase_ID 
+		@param C_ProjectPhase_ID
 		Phase of a Project
 	  */
 	@Override
 	public void setC_ProjectPhase_ID (int C_ProjectPhase_ID)
 	{
-		if (C_ProjectPhase_ID < 1) 
+		if (C_ProjectPhase_ID < 1)
 			set_Value (COLUMNNAME_C_ProjectPhase_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_ProjectPhase_ID, Integer.valueOf(C_ProjectPhase_ID));
 	}
 
@@ -340,7 +341,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Phase of a Project
 	  */
 	@Override
-	public int getC_ProjectPhase_ID () 
+	public int getC_ProjectPhase_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ProjectPhase_ID);
 		if (ii == null)
@@ -361,15 +362,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Projekt-Aufgabe.
-		@param C_ProjectTask_ID 
+		@param C_ProjectTask_ID
 		Actual Project Task in a Phase
 	  */
 	@Override
 	public void setC_ProjectTask_ID (int C_ProjectTask_ID)
 	{
-		if (C_ProjectTask_ID < 1) 
+		if (C_ProjectTask_ID < 1)
 			set_Value (COLUMNNAME_C_ProjectTask_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_ProjectTask_ID, Integer.valueOf(C_ProjectTask_ID));
 	}
 
@@ -377,7 +378,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Actual Project Task in a Phase
 	  */
 	@Override
-	public int getC_ProjectTask_ID () 
+	public int getC_ProjectTask_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ProjectTask_ID);
 		if (ii == null)
@@ -398,15 +399,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Maßeinheit.
-		@param C_UOM_ID 
+		@param C_UOM_ID
 		Unit of Measure
 	  */
 	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
-		if (C_UOM_ID < 1) 
+		if (C_UOM_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
@@ -414,7 +415,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Unit of Measure
 	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
@@ -423,7 +424,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Bestätigte Menge.
-		@param ConfirmedQty 
+		@param ConfirmedQty
 		Confirmation of a received quantity
 	  */
 	@Override
@@ -436,7 +437,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Confirmation of a received quantity
 	  */
 	@Override
-	public java.math.BigDecimal getConfirmedQty () 
+	public java.math.BigDecimal getConfirmedQty ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
 		if (bd == null)
@@ -455,13 +456,13 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Description Only.
-		@param IsDescription 
+		@param IsDescription
 		if true, the line is just description and no transaction
 	  */
 	@Override
@@ -474,20 +475,20 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return if true, the line is just description and no transaction
 	  */
 	@Override
-	public boolean isDescription () 
+	public boolean isDescription ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDescription);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Berechnete Menge.
-		@param IsInvoiced 
+		@param IsInvoiced
 		Is this invoiced?
 	  */
 	@Override
@@ -500,20 +501,20 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Is this invoiced?
 	  */
 	@Override
-	public boolean isInvoiced () 
+	public boolean isInvoiced ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsInvoiced);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Zeile Nr..
-		@param Line 
+		@param Line
 		Unique line for this document
 	  */
 	@Override
@@ -526,7 +527,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Unique line for this document
 	  */
 	@Override
-	public int getLine () 
+	public int getLine ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Line);
 		if (ii == null)
@@ -537,7 +538,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
     /** Get Record ID/ColumnName
         @return ID/ColumnName pair
       */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
+    public org.compiere.util.KeyNamePair getKeyNamePair()
     {
         return new org.compiere.util.KeyNamePair(get_ID(), String.valueOf(getLine()));
     }
@@ -555,15 +556,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Ausprägung Merkmals-Satz.
-		@param M_AttributeSetInstance_ID 
+		@param M_AttributeSetInstance_ID
 		Product Attribute Set Instance
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeSetInstance_ID < 0) 
+		if (M_AttributeSetInstance_ID < 0)
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
@@ -571,7 +572,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Product Attribute Set Instance
 	  */
 	@Override
-	public int getM_AttributeSetInstance_ID () 
+	public int getM_AttributeSetInstance_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
 		if (ii == null)
@@ -592,15 +593,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Versand/Wareneingang.
-		@param M_InOut_ID 
+		@param M_InOut_ID
 		Material Shipment Document
 	  */
 	@Override
 	public void setM_InOut_ID (int M_InOut_ID)
 	{
-		if (M_InOut_ID < 1) 
+		if (M_InOut_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
 	}
 
@@ -608,7 +609,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Material Shipment Document
 	  */
 	@Override
-	public int getM_InOut_ID () 
+	public int getM_InOut_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
 		if (ii == null)
@@ -617,15 +618,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Versand-/Wareneingangsposition.
-		@param M_InOutLine_ID 
+		@param M_InOutLine_ID
 		Line on Shipment or Receipt document
 	  */
 	@Override
 	public void setM_InOutLine_ID (int M_InOutLine_ID)
 	{
-		if (M_InOutLine_ID < 1) 
+		if (M_InOutLine_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
 	}
 
@@ -633,7 +634,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Line on Shipment or Receipt document
 	  */
 	@Override
-	public int getM_InOutLine_ID () 
+	public int getM_InOutLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
 		if (ii == null)
@@ -654,15 +655,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Lagerort.
-		@param M_Locator_ID 
+		@param M_Locator_ID
 		Warehouse Locator
 	  */
 	@Override
 	public void setM_Locator_ID (int M_Locator_ID)
 	{
-		if (M_Locator_ID < 1) 
+		if (M_Locator_ID < 1)
 			set_Value (COLUMNNAME_M_Locator_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
 	}
 
@@ -670,7 +671,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Warehouse Locator
 	  */
 	@Override
-	public int getM_Locator_ID () 
+	public int getM_Locator_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
 		if (ii == null)
@@ -691,15 +692,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Produkt.
-		@param M_Product_ID 
+		@param M_Product_ID
 		Produkt, Leistung, Artikel
 	  */
 	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
-		if (M_Product_ID < 1) 
+		if (M_Product_ID < 1)
 			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
@@ -707,7 +708,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Produkt, Leistung, Artikel
 	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
@@ -728,15 +729,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set RMA-Position.
-		@param M_RMALine_ID 
+		@param M_RMALine_ID
 		Return Material Authorization Line
 	  */
 	@Override
 	public void setM_RMALine_ID (int M_RMALine_ID)
 	{
-		if (M_RMALine_ID < 1) 
+		if (M_RMALine_ID < 1)
 			set_Value (COLUMNNAME_M_RMALine_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_RMALine_ID, Integer.valueOf(M_RMALine_ID));
 	}
 
@@ -744,7 +745,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Return Material Authorization Line
 	  */
 	@Override
-	public int getM_RMALine_ID () 
+	public int getM_RMALine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_RMALine_ID);
 		if (ii == null)
@@ -753,7 +754,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Bewegungs-Menge.
-		@param MovementQty 
+		@param MovementQty
 		Quantity of a product moved.
 	  */
 	@Override
@@ -766,7 +767,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Quantity of a product moved.
 	  */
 	@Override
-	public java.math.BigDecimal getMovementQty () 
+	public java.math.BigDecimal getMovementQty ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
 		if (bd == null)
@@ -785,7 +786,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/** Get Picked Quantity.
 		@return Picked Quantity	  */
 	@Override
-	public java.math.BigDecimal getPickedQty () 
+	public java.math.BigDecimal getPickedQty ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PickedQty);
 		if (bd == null)
@@ -794,8 +795,8 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -804,23 +805,23 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Produktbeschreibung.
-		@param ProductDescription 
+		@param ProductDescription
 		Produktbeschreibung
 	  */
 	@Override
@@ -833,13 +834,13 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Produktbeschreibung
 	  */
 	@Override
-	public java.lang.String getProductDescription () 
+	public java.lang.String getProductDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
 	/** Set Menge.
-		@param QtyEntered 
+		@param QtyEntered
 		The Quantity Entered is based on the selected UoM
 	  */
 	@Override
@@ -852,7 +853,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return The Quantity Entered is based on the selected UoM
 	  */
 	@Override
-	public java.math.BigDecimal getQtyEntered () 
+	public java.math.BigDecimal getQtyEntered ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
@@ -865,16 +866,16 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setRef_InOutLine_ID (int Ref_InOutLine_ID)
 	{
-		if (Ref_InOutLine_ID < 1) 
+		if (Ref_InOutLine_ID < 1)
 			set_Value (COLUMNNAME_Ref_InOutLine_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Ref_InOutLine_ID, Integer.valueOf(Ref_InOutLine_ID));
 	}
 
 	/** Get Referenced Shipment Line.
 		@return Referenced Shipment Line	  */
 	@Override
-	public int getRef_InOutLine_ID () 
+	public int getRef_InOutLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_InOutLine_ID);
 		if (ii == null)
@@ -895,15 +896,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Reversal Line.
-		@param ReversalLine_ID 
+		@param ReversalLine_ID
 		Use to keep the reversal line ID for reversing costing purpose
 	  */
 	@Override
 	public void setReversalLine_ID (int ReversalLine_ID)
 	{
-		if (ReversalLine_ID < 1) 
+		if (ReversalLine_ID < 1)
 			set_Value (COLUMNNAME_ReversalLine_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_ReversalLine_ID, Integer.valueOf(ReversalLine_ID));
 	}
 
@@ -911,7 +912,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Use to keep the reversal line ID for reversing costing purpose
 	  */
 	@Override
-	public int getReversalLine_ID () 
+	public int getReversalLine_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_ReversalLine_ID);
 		if (ii == null)
@@ -920,7 +921,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Verworfene Menge.
-		@param ScrappedQty 
+		@param ScrappedQty
 		The Quantity scrapped due to QA issues
 	  */
 	@Override
@@ -933,7 +934,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return The Quantity scrapped due to QA issues
 	  */
 	@Override
-	public java.math.BigDecimal getScrappedQty () 
+	public java.math.BigDecimal getScrappedQty ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ScrappedQty);
 		if (bd == null)
@@ -942,7 +943,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Zielmenge.
-		@param TargetQty 
+		@param TargetQty
 		Target Movement Quantity
 	  */
 	@Override
@@ -955,7 +956,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return Target Movement Quantity
 	  */
 	@Override
-	public java.math.BigDecimal getTargetQty () 
+	public java.math.BigDecimal getTargetQty ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TargetQty);
 		if (bd == null)
@@ -976,15 +977,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Nutzer 1.
-		@param User1_ID 
+		@param User1_ID
 		User defined list element #1
 	  */
 	@Override
 	public void setUser1_ID (int User1_ID)
 	{
-		if (User1_ID < 1) 
+		if (User1_ID < 1)
 			set_Value (COLUMNNAME_User1_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
 	}
 
@@ -992,7 +993,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return User defined list element #1
 	  */
 	@Override
-	public int getUser1_ID () 
+	public int getUser1_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
 		if (ii == null)
@@ -1013,15 +1014,15 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	/** Set Nutzer 2.
-		@param User2_ID 
+		@param User2_ID
 		User defined list element #2
 	  */
 	@Override
 	public void setUser2_ID (int User2_ID)
 	{
-		if (User2_ID < 1) 
+		if (User2_ID < 1)
 			set_Value (COLUMNNAME_User2_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
 	}
 
@@ -1029,7 +1030,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		@return User defined list element #2
 	  */
 	@Override
-	public int getUser2_ID () 
+	public int getUser2_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);
 		if (ii == null)

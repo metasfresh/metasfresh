@@ -98,7 +98,7 @@ public class C_OrderLine
 		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		// We call with null because we get the changed values from the object.
+		// We call with changedColumnName = null because we get the changed values from the object.
 		huOrderBL.updateOrderLine(olPO, null);
 
 		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(org.compiere.model.I_C_OrderLine.Table_Name);

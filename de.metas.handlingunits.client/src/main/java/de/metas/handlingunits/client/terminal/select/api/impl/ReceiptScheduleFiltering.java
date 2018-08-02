@@ -47,12 +47,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Product;
 import org.eevolution.model.X_M_Warehouse_Routing;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.client.terminal.receiptschedule.model.IReceiptScheduleTableRow;
 import de.metas.handlingunits.client.terminal.receiptschedule.model.ReceiptScheduleTableRow;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 
 /**
@@ -228,7 +229,7 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public void processRows(final Properties ctx, final Set<IPOSTableRow> rows, final Set<I_M_HU> selectedHUs)
+	public void processRows(final Properties ctx, final Set<IPOSTableRow> rows, final Set<HuId> selectedHuIds)
 	{
 		//
 		// No rows => nothing to do
@@ -237,10 +238,20 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 			return;
 		}
 
-		//
 		// Get receipt schedules from rows
 		final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules(rows);
-		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(ctx, receiptSchedules, selectedHUs);
+
+		final CreateReceiptsParameters parameters = CreateReceiptsParameters.builder()
+				.commitEachReceiptIndividually(false)
+				.createReceiptWithDatePromised(false)
+				.ctx(ctx)
+				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
+				.printReceiptLabels(true)
+				.receiptSchedules(receiptSchedules)
+				.selectedHuIds(selectedHuIds)
+				.build();
+
+		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(parameters);
 	}
 
 	/**

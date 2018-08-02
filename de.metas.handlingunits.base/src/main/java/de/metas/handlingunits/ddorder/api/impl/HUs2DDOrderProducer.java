@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,7 +21,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -28,6 +28,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.ArrayKeyBuilder;
@@ -55,7 +56,7 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_Warehouse;
+//import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -107,7 +108,6 @@ public class HUs2DDOrderProducer
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -116,7 +116,7 @@ public class HUs2DDOrderProducer
 	//
 	// Parameters
 	private Properties _ctx;
-	private I_M_Warehouse _warehouseTo;
+	//private I_M_Warehouse _warehouseTo;
 	private I_M_Locator _locatorTo;
 	private Iterator<HUToDistribute> _hus;
 	private final Timestamp date = SystemTime.asDayTimestamp();
@@ -134,26 +134,29 @@ public class HUs2DDOrderProducer
 
 	private HUs2DDOrderProducer()
 	{
-		super();
 	}
 
-	public void process()
+	public Optional<I_DD_Order> process()
 	{
 		markAsProcessed();
 
 		// Make sure we are running out of transaction.
 		// NOTE: it won't be a big harm to run in transaction too, but in most of the cases this is not the intention because this could be a long running process
-		// NOTE2: we still have cases where we cannot avoid being in transaction, so we commented it out. 
+		// NOTE2: we still have cases where we cannot avoid being in transaction, so we commented it out.
 		// trxManager.assertThreadInheritedTrxNotExists();
 
 		prepareProcessing();
 
-		final Properties ctx = getCtx();
-		huTrxBL.createHUContextProcessorExecutor(PlainContextAware.newWithThreadInheritedTrx(ctx))
-				.run(this::processInTrx);
+		final PlainContextAware ctx = PlainContextAware.newWithThreadInheritedTrx(getCtx());
+
+		final I_DD_Order ddOrderOrNull  = huTrxBL
+				.createHUContextProcessorExecutor(ctx)
+				.call(this::processInTrx);
+
+		return Optional.ofNullable(ddOrderOrNull);
 	}
 
-	protected void processInTrx(IHUContext huContext)
+	protected I_DD_Order processInTrx(IHUContext huContext)
 	{
 		//
 		// Iterate all HUs and create DD_OrderLine candidates
@@ -181,14 +184,14 @@ public class HUs2DDOrderProducer
 
 		//
 		// Process DD_OrderLine candidates
-		processDDOrderLineCandidates(huContext);
+		return processDDOrderLineCandidates(huContext);
 	}
 
-	private final void processDDOrderLineCandidates(final IHUContext huContext)
+	private final I_DD_Order processDDOrderLineCandidates(@NonNull final IHUContext huContext)
 	{
 		if (ddOrderLineCandidates.isEmpty())
 		{
-			return;
+			return null;
 		}
 
 		final I_DD_Order ddOrder = createDD_OrderHeader(huContext);
@@ -202,6 +205,8 @@ public class HUs2DDOrderProducer
 		// Process the DD order if needed
 		docActionBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		getLoggable().addLog("@Created@ @DD_Order_ID@ " + ddOrder.getDocumentNo());
+
+		return ddOrder;
 	}
 
 	/** Loads common master data which will be used */
@@ -256,13 +261,11 @@ public class HUs2DDOrderProducer
 		return _ctx;
 	}
 
-	public final HUs2DDOrderProducer setM_Warehouse_To(final org.compiere.model.I_M_Warehouse warehouseTo)
+	public HUs2DDOrderProducer setM_Locator_To(@NonNull final I_M_Locator locatorTo)
 	{
 		assertNotProcessed();
 
-		Check.assumeNotNull(warehouseTo, "warehouseTo not null");
-		_warehouseTo = InterfaceWrapperHelper.create(warehouseTo, I_M_Warehouse.class);
-		_locatorTo = warehouseBL.getDefaultLocator(_warehouseTo);
+		_locatorTo = locatorTo;
 		return this;
 	}
 
@@ -295,8 +298,7 @@ public class HUs2DDOrderProducer
 
 	private final I_M_Warehouse getM_Warehouse_To()
 	{
-		Check.assumeNotNull(_warehouseTo, "_warehouseTo not null");
-		return _warehouseTo;
+		return Check.assumeNotNull(_locatorTo, "_warehouseTo not null").getM_Warehouse();
 	}
 
 	private final I_M_Locator getM_Locator_To()
@@ -679,7 +681,7 @@ public class HUs2DDOrderProducer
 		{
 			return builder().hu(hu).build();
 		}
-		
+
 		I_M_HU hu;
 		LotNumberLock lockLotNo;
 		int bpartnerId;

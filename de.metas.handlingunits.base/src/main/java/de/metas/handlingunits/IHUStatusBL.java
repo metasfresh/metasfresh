@@ -73,6 +73,8 @@ public interface IHUStatusBL extends ISingletonService
 	 */
 	void assertLocatorChangeIsAllowed(I_M_HU huRecord, String huStatus);
 
+	boolean isStatusPlanned(I_M_HU huRecord);
+
 	boolean isStatusActive(I_M_HU huRecord);
 
 	boolean isStatusIssued(I_M_HU huRecord);

@@ -10,7 +10,8 @@ RETURNS TABLE
 	ishuline boolean,
 	taxbaseamt numeric,
 	taxrate numeric,
-	taxamt numeric
+	taxamt numeric,
+	vattaxid character varying(60)
 )
 AS
 $$
@@ -31,7 +32,8 @@ SELECT
 		WHEN round(sum.TaxRate,2) = sum.TaxRate THEN round(sum.TaxRate,2)
 	ELSE round(sum.TaxRate,2)
 	END AS TaxRate,
-	sum.TaxAmt
+	sum.TaxAmt,
+	COALESCE(bp.VATaxID, '') as VATaxID
 FROM
 	C_Order o
 	INNER JOIN
@@ -47,7 +49,7 @@ FROM
 		GROUP BY o.C_Order_ID, ot.IsPackagingTax = 'Y', t.rate
 	) sum ON o.C_Order_ID = sum.C_Order_ID 
 	INNER JOIN C_Currency cur ON o.C_Currency_ID = cur.C_Currency_ID AND cur.isActive = 'Y'
-	INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	INNER JOIN C_BPartner bp ON o.Bill_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 WHERE
 	o.C_Order_ID = $1 AND o.isActive = 'Y'

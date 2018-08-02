@@ -62,7 +62,7 @@ public interface IAttributeStorage extends IAttributeSet
 	{
 		return (IAttributeStorage)attributeSet;
 	}
-	
+
 	/**
 	 * Get's storage unique identifier.
 	 *
@@ -383,5 +383,10 @@ public interface IAttributeStorage extends IAttributeSet
 	default int getM_Warehouse_ID()
 	{
 		return -1;
+	}
+
+	default boolean isMandatory(I_M_Attribute attribute)
+	{
+		return false;
 	}
 }

@@ -31,9 +31,6 @@ import lombok.experimental.UtilityClass;
 
 /**
  * HU Attributes constants
- *
- * @author tsa
- *
  */
 @UtilityClass
 public final class Constants

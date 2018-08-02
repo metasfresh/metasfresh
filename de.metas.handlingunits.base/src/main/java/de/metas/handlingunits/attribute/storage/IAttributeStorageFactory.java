@@ -29,16 +29,11 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /**
  * Attribute Storage Factory. Hint: use {@link IAttributeStorageFactoryService} to get an instance.
- *
- * @author tsa
- *
  */
 public interface IAttributeStorageFactory
 {
 	/**
-	 * Add {@link IAttributeStorageListener} to be added to all {@link IAttributeStorage}s that are factored by this factory.
-	 *
-	 * @param listener
+	 * Add {@link IAttributeStorageListener} to be added to all {@link IAttributeStorage}s that are created by this instance.
 	 */
 	void addAttributeStorageListener(IAttributeStorageListener listener);
 
@@ -59,8 +54,6 @@ public interface IAttributeStorageFactory
 	boolean isHandled(Object model);
 
 	/**
-	 *
-	 * @param model
 	 * @return attribute storage; never return null
 	 */
 	IAttributeStorage getAttributeStorage(Object model);
