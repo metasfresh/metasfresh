@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -45,17 +44,22 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.product.LotNumberLockRepository;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -63,7 +67,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  * @author al
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class })
+@SpringBootTest(classes = { StartupListener.class, LotNumberLockRepository.class, ShutdownListener.class })
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {
 	@Override
@@ -450,10 +454,19 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final Properties ctx = huContext.getCtx();
 		final List<I_M_ReceiptSchedule> receiptSchedules = Collections.singletonList(receiptSchedule);
-		final Set<I_M_HU> selectedHUsSet = new HashSet<>(selectedHUsToReceive);
-		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(ctx,
-				receiptSchedules,
-				selectedHUsSet);
+		final Set<HuId> selectedHuIds = selectedHUsToReceive.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final CreateReceiptsParameters parameters = CreateReceiptsParameters
+				.builder()
+				.ctx(ctx)
+				.receiptSchedules(receiptSchedules)
+				.selectedHuIds(selectedHuIds)
+				.build();
+
+		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);
 		final I_M_InOut receipt = result.getInOuts().get(0);
 		return receipt;
 	}

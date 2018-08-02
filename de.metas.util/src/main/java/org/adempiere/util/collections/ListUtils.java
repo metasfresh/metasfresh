@@ -29,10 +29,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -316,6 +320,31 @@ public final class ListUtils
 			return defaultValue;
 		}
 		return element;
+	}
+
+	public final static <T, R> R extractSingleElement(
+			@NonNull final Collection<T> collection,
+			@NonNull final Function<T, R> extractFuntion)
+	{
+		final ImmutableList<R> extractedElements = collection
+				.stream().map(extractFuntion)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		return singleElement(extractedElements);
+	}
+
+	public final static <T, R> R extractSingleElementOrDefault(
+			@NonNull final Collection<T> collection,
+			@NonNull final Function<T, R> extractFuntion,
+			@Nullable final R defaultValue)
+	{
+		final ImmutableList<R> extractedElements = collection
+				.stream().map(extractFuntion)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		return singleElementOrDefault(extractedElements, defaultValue);
 	}
 
 	/**

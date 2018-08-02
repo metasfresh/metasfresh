@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.ddorder.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,12 +47,12 @@ import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_DD_OrderLine;
 import org.eevolution.model.X_M_Warehouse_Routing;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.client.terminal.ddorder.model.IDDOrderTableRow;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.api.impl.AbstractFiltering;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 
 public class DDOrderFiltering extends AbstractFiltering
@@ -207,7 +207,7 @@ public class DDOrderFiltering extends AbstractFiltering
 
 	/**
 	 * Gets all DD_OrderLine_IDs from given rows.
-	 * 
+	 *
 	 * @param rows
 	 * @return DD_OrderLine_IDs
 	 */
@@ -332,7 +332,7 @@ public class DDOrderFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public void processRows(final Properties ctx, final Set<IPOSTableRow> rows, final Set<I_M_HU> selectedHUs)
+	public void processRows(final Properties ctx, final Set<IPOSTableRow> rows, final Set<HuId> selectedHUs)
 	{
 		throw new UnsupportedOperationException("Please use de.metas.handlingunits.client.terminal.select.api.impl.DDOrderFiltering.processRows(Properties, IPOSTableRow, Set<IHUProductStorage>)");
 	}

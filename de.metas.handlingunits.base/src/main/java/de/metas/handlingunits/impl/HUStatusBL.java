@@ -191,6 +191,17 @@ public class HUStatusBL implements IHUStatusBL
 		return true;
 	}
 
+
+	@Override
+	public boolean isStatusPlanned(@Nullable final I_M_HU huRecord)
+	{
+		if (huRecord == null)
+		{
+			return false;
+		}
+		return X_M_HU.HUSTATUS_Planning.equals(huRecord.getHUStatus());
+	}
+
 	@Override
 	public boolean isStatusActive(@Nullable final I_M_HU huRecord)
 	{

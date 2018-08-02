@@ -56,6 +56,7 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.BreadcrumbKeyLayout;
 import de.metas.adempiere.form.terminal.CompositePropertiesPanelModel;
@@ -68,6 +69,7 @@ import de.metas.adempiere.form.terminal.PropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
@@ -945,14 +947,15 @@ public class HUEditorModel implements IDisposable
 
 	/**
 	 *
-	 * @return the <code>M_HU_ID</code> for each selected {@link IHUKey}. See {@link #getSelectedHUKeys()} for details about which keys' HU-IDs are returned.
+	 * @return the <code>HuId</code> for each selected {@link IHUKey}. See {@link #getSelectedHUKeys()} for details about which keys' HU-IDs are returned.
 	 */
-	public Set<Integer> getSelectedHUIds()
+	public Set<HuId> getSelectedHUIds()
 	{
-		final Set<Integer> huIds = getSelectedHUKeys()
+		final Set<HuId> huIds = getSelectedHUKeys()
 				.stream()
-				.map(key -> key.getM_HU().getM_HU_ID())
-				.collect(Collectors.toSet());
+				.map(HUKey::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		return huIds;
 	}
 
@@ -1283,7 +1286,7 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * Move products from the warehouse to garbage (waste disposal)
 	 * After this process an internal use inventory is created.
-	 * 
+	 *
 	 * @param warehouseFrom
 	 */
 	public void doMoveToGarbage(final I_M_Warehouse warehouseFrom)
@@ -1358,7 +1361,7 @@ public class HUEditorModel implements IDisposable
 	}
 
 	/**
-	 * 
+	 *
 	 * Create vendor returns based on the selected hus
 	 */
 	public List<I_M_InOut> createVendorReturn0()

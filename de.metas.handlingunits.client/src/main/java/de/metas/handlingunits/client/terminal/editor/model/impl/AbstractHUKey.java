@@ -47,7 +47,6 @@ import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
-import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyChildrenFilter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -70,7 +69,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	 */
 	private final transient IdentityHashSet<IHUKey> _childrenToRemove = new IdentityHashSet<>();
 
-	private final Map<String, Object> properties = new HashMap<String, Object>();
+	private final Map<String, Object> properties = new HashMap<>();
 
 	private IHUKeyNameBuilder _nameBuilder;
 
@@ -104,7 +103,7 @@ import de.metas.handlingunits.model.I_M_HU;
 	 * <li>mark current display name as stale (the UI will react and it will reload it)
 	 * </ul>
 	 */
-	private final IAttributeStorageListener attributeStorageListener = new AttributeStorageListenerAdapter()
+	private final IAttributeStorageListener attributeStorageListener = new IAttributeStorageListener()
 	{
 		@Override
 		public void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue, final Object valueOld)
@@ -614,7 +613,7 @@ import de.metas.handlingunits.model.I_M_HU;
 		// Visit children
 		if (!skipChildren)
 		{
-			final List<IHUKey> children = new ArrayList<IHUKey>(getChildren());
+			final List<IHUKey> children = new ArrayList<>(getChildren());
 			for (final IHUKey child : children)
 			{
 				final VisitResult childIterateResult = child.iterate(visitor);
