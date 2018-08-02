@@ -1,5 +1,6 @@
 package de.metas.inout.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -10,7 +11,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
@@ -83,7 +83,7 @@ public class InOutMovementBLTest
 		final I_M_Locator receiptLocator = createLocator(receiptWarehouse);
 
 		final I_M_InOut receipt = createReceipt(receiptLocator);
-		InterfaceWrapperHelper.save(receipt);
+		save(receipt);
 
 		final BigDecimal qty1 = THREEHUNDRED;
 		createReceiptLine("Product1", receiptLocator, receipt, qty1, false);
@@ -226,11 +226,11 @@ public class InOutMovementBLTest
 		// NOTE: we need to use some dummy transaction, else movement generation will fail
 		final String trxName = Services.get(ITrxManager.class).createTrxName("DummyTrx", true);
 
-		final I_M_InOut receipt = InterfaceWrapperHelper.create(Env.getCtx(), I_M_InOut.class, trxName);
+		final I_M_InOut receipt = create(Env.getCtx(), I_M_InOut.class, trxName);
 		receipt.setAD_Org_ID(receiptLocator.getAD_Org_ID());
 		receipt.setM_Warehouse_ID(receiptLocator.getM_Warehouse_ID());
 		receipt.setC_BPartner_ID(receiptPartner.getC_BPartner_ID());
-		InterfaceWrapperHelper.save(receipt);
+		save(receipt);
 
 		return receipt;
 	}
@@ -262,7 +262,7 @@ public class InOutMovementBLTest
 		wh.setValue(name);
 		wh.setName(name);
 		// wh.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(wh);
+		save(wh);
 		return wh;
 	}
 

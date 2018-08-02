@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -204,16 +203,16 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		// NOTE: we need to use some dummy transaction, else movement generation will fail
 		final String trxName = Services.get(ITrxManager.class).createTrxName("DummyTrx", true);
 
-		final I_M_InOut receipt = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
+		final I_M_InOut receipt = create(ctx, I_M_InOut.class, trxName);
 		receipt.setAD_Org_ID(receiptLocator.getAD_Org_ID());
 		receipt.setM_Warehouse_ID(receiptLocator.getM_Warehouse_ID());
 		receipt.setC_BPartner_ID(receiptPartner.getC_BPartner_ID());
-		InterfaceWrapperHelper.save(receipt);
+		save(receipt);
 
 		return receipt;
 	}
 
-	private de.metas.inout.model.I_M_InOutLine createReceiptLine(final String productName,
+	private I_M_InOutLine createReceiptLine(final String productName,
 			final I_M_Locator locator,
 			final I_M_InOut receipt,
 			final BigDecimal qty,
@@ -221,7 +220,7 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 	{
 		final I_M_Product product = createProduct(productName, locator);
 
-		final de.metas.inout.model.I_M_InOutLine line = newInstance(de.metas.inout.model.I_M_InOutLine.class);
+		final I_M_InOutLine line = newInstance(I_M_InOutLine.class);
 
 		line.setAD_Org_ID(receipt.getAD_Org_ID());
 		line.setM_Product_ID(product.getM_Product_ID());
