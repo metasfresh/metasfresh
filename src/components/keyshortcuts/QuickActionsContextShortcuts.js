@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { Shortcut } from '../keyshortcuts';
 
@@ -41,3 +42,9 @@ export default class QuickActionsContextShortcuts extends Component {
     ];
   }
 }
+
+QuickActionsContextShortcuts.propTypes = {
+  handleClick: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
+  stopPropagation: PropTypes.bool,
+};

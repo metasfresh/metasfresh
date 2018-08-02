@@ -517,6 +517,7 @@ class Lookup extends Component {
 Lookup.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
+  forceFullWidth: PropTypes.bool,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

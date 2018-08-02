@@ -34,15 +34,6 @@ class RawLookup extends Component {
   componentDidMount() {
     const { selected, defaultValue, initialFocus, parentElement } = this.props;
 
-    if (parentElement) {
-      // eslint-disable-next-line react/no-find-dom-node
-      let parentEl = ReactDOM.findDOMNode(parentElement);
-
-      this.setState({
-        parentElement: parentEl,
-      });
-    }
-
     this.handleValueChanged();
 
     if (selected) {
@@ -72,9 +63,18 @@ class RawLookup extends Component {
       lookupEmpty,
       localClearing,
       fireDropdownList,
+      parentElement,
     } = this.props;
-
     const { shouldBeFocused } = this.state;
+
+    if (parentElement && !prevProps.parentElement) {
+      // eslint-disable-next-line react/no-find-dom-node
+      let parentEl = ReactDOM.findDOMNode(parentElement);
+
+      this.setState({
+        parentElement: parentEl,
+      });
+    }
 
     if (localClearing && !defaultValue) {
       this.inputSearch.value = '';
@@ -407,7 +407,6 @@ class RawLookup extends Component {
       tabIndex,
       isOpen,
     } = this.props;
-
     const {
       isInputEmpty,
       list,
@@ -417,8 +416,8 @@ class RawLookup extends Component {
       isFocused,
       parentElement,
     } = this.state;
-
     const tetherProps = {};
+
     if (parentElement) {
       tetherProps.target = parentElement;
     }
@@ -490,6 +489,8 @@ const mapStateToProps = state => ({
 });
 
 RawLookup.propTypes = {
+  selected: PropTypes.object,
+  forcedWidth: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
