@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Sum ( IN c_order_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Sum ( IN c_order_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Sum ( IN c_order_id numeric)
 RETURNS TABLE 
@@ -49,7 +49,7 @@ FROM
 		GROUP BY o.C_Order_ID, ot.IsPackagingTax = 'Y', t.rate
 	) sum ON o.C_Order_ID = sum.C_Order_ID 
 	INNER JOIN C_Currency cur ON o.C_Currency_ID = cur.C_Currency_ID AND cur.isActive = 'Y'
-	INNER JOIN C_BPartner bp ON o.Bill_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 WHERE
 	o.C_Order_ID = $1 AND o.isActive = 'Y'
