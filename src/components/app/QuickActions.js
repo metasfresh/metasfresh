@@ -248,6 +248,7 @@ class QuickActions extends Component {
             handleClick={() =>
               shouldNotUpdate ? null : this.handleClick(actions[0])
             }
+            stopPropagation={this.props.stopShortcutPropagation}
             onClick={() => this.toggleDropdown(!isDropdownOpen)}
           />
         </div>
