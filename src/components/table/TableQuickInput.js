@@ -183,6 +183,7 @@ class TableQuickInput extends Component {
             dataId={dataId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
+            forceFullWidth={widgetData.length > 1}
             key={id}
             caption={item.caption}
             handlePatch={(prop, value, callback) =>
