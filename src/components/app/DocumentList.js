@@ -864,7 +864,7 @@ class DocumentList extends Component {
                   shouldNotUpdate={inBackground && !hasIncluded}
                   inBackground={disablePaginationShortcuts}
                   inModal={inModal}
-                  stopShortcutPropagation={isIncluded && selected}
+                  stopShortcutPropagation={isIncluded && !!selected}
                   childView={
                     hasIncluded
                       ? {

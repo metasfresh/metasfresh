@@ -121,6 +121,7 @@ class FiltersNotFrequent extends Component {
                 onHide={() => handleShow(false)}
                 viewId={viewId}
                 outsideClick={this.outsideClick}
+                openedFilter={true}
               />
             )}
           </div>
