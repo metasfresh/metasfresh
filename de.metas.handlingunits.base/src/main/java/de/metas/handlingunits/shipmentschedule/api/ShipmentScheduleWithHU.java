@@ -241,13 +241,14 @@ public class ShipmentScheduleWithHU
 
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
+			/// add all values from the ASI
 			final I_M_AttributeSetInstance attributeSetInstance = load(getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
 			final IAttributeStorage asiAttributeStorage = ASIAttributeStorage.createNew(attributeStorageFactory, attributeSetInstance);
 			allAttributeValues.addAll(asiAttributeStorage.getAttributeValues());
-			
-			
-			final IAttributeStorage huasiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
-			allAttributeValues.addAll(huasiAttributeStorage.getAttributeValues());
+
+			// additionally add whatever the attributeStorageFactory's storage implementation has to offer.
+			final IAttributeStorage huAsiAttributeStorage = attributeStorageFactory.getAttributeStorage(attributeSetInstance);
+			allAttributeValues.addAll(huAsiAttributeStorage.getAttributeValues());
 		}
 
 		final ShipmentScheduleHandler handler = Services.get(IShipmentScheduleHandlerBL.class).getHandlerFor(shipmentSchedule);
@@ -457,7 +458,7 @@ public class ShipmentScheduleWithHU
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 		final I_M_HU_PI_Item huPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(huMaterialItem);
-		if(huPIItem == null)
+		if (huPIItem == null)
 		{
 			return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 		}
