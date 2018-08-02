@@ -69,7 +69,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_Transform
 		extends HUEditorProcessTemplate
-		implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
+		implements IProcessPrecondition,
+		IProcessParametersCallout,
+		IProcessDefaultParametersProvider
 {
 	// Services
 	@Autowired

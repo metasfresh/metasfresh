@@ -53,14 +53,18 @@ public class WEBUI_M_ReceiptSchedule_SelectHUsToReverse extends ReceiptScheduleB
 		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
 		if(receiptScheduleBL.isClosed(receiptSchedule))
 		{
-			return ProcessPreconditionsResolution.reject("already closed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("already closed");
 		}
-
 
 		// Receipt schedule shall not be about packing materials
 		if (receiptSchedule.isPackagingMaterial())
 		{
-			return ProcessPreconditionsResolution.reject("not applying for packing materials");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not applying for packing materials");
+		}
+
+		if(receiptSchedule.getQtyMoved().signum()<=0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no receipts to be reversed");
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
@@ -46,6 +46,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -70,7 +71,7 @@ import lombok.NonNull;
  * #L%
  */
 
-/* package */ class HUEditorRowAttributes implements IViewRowAttributes
+public class HUEditorRowAttributes implements IViewRowAttributes
 {
 	public static final HUEditorRowAttributes cast(final IViewRowAttributes attributes)
 	{
@@ -85,29 +86,51 @@ import lombok.NonNull;
 	private final ImmutableSet<String> readonlyAttributeNames;
 	private final ImmutableSet<String> hiddenAttributeNames;
 
-	/* package */ HUEditorRowAttributes(@NonNull final DocumentPath documentPath, @NonNull final IAttributeStorage attributesStorage, @NonNull ImmutableSet<ProductId> productIDs, final boolean readonly)
+	@Getter
+	private final ImmutableSet<String> mandatoryAttributeNames;
+
+	/* package */ HUEditorRowAttributes(
+			@NonNull final DocumentPath documentPath,
+			@NonNull final IAttributeStorage attributesStorage,
+			@NonNull ImmutableSet<ProductId> productIDs,
+			final boolean readonly)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
 
 		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
-		//
+
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
 		final boolean readonlyEffective = readonly || extractIsReadonly(attributesStorage);
-		readonlyAttributeNames = attributesStorage.getAttributes()
-				.stream()
-				.filter(attribute -> readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
-				.map(HUEditorRowAttributesHelper::extractAttributeName)
-				.collect(GuavaCollectors.toImmutableSet());
 
-		hiddenAttributeNames = attributesStorage.getAttributes()
-				.stream()
-				.filter(attribute -> !attributesStorage.isDisplayedUI(productIDs, attribute))
-				.map(HUEditorRowAttributesHelper::extractAttributeName)
-				.collect(GuavaCollectors.toImmutableSet());
+		final ImmutableSet.Builder<String> readonlyAttributeNames = ImmutableSet.builder();
+		final ImmutableSet.Builder<String> hiddenAttributeNames = ImmutableSet.builder();
+		final ImmutableSet.Builder<String> mandatoryAttributeNames = ImmutableSet.builder();
 
-		//
+		final Collection<I_M_Attribute> attributes = attributesStorage.getAttributes();
+		for (final I_M_Attribute attribute : attributes)
+		{
+			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attribute);
+
+			if (readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+			{
+				readonlyAttributeNames.add(attributeName);
+			}
+			if (!attributesStorage.isDisplayedUI(productIDs, attribute))
+			{
+				hiddenAttributeNames.add(attributeName);
+			}
+			if (attributesStorage.isMandatory(attribute))
+			{
+				mandatoryAttributeNames.add(attributeName);
+			}
+		}
+
+		this.readonlyAttributeNames = readonlyAttributeNames.build();
+		this.hiddenAttributeNames = hiddenAttributeNames.build();
+		this.mandatoryAttributeNames = mandatoryAttributeNames.build();
+
 		// Bind attribute storage:
 		// each change on attribute storage shall be forwarded to current execution
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
@@ -178,9 +201,14 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
 				.setDisplayed(isDisplayed(fieldName))
-				.setMandatory(false)
+				.setMandatory(isMandatory(fieldName))
 				.setReadonly(isReadonly(fieldName))
 				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType));
+	}
+
+	private boolean isMandatory(final String fieldName)
+	{
+		return mandatoryAttributeNames.contains(fieldName);
 	}
 
 	private boolean isReadonly(final String attributeName)
@@ -287,14 +315,20 @@ import lombok.NonNull;
 
 	public Optional<Date> getBestBeforeDate()
 	{
-		final I_M_Attribute bestBeforeDateAttribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(Constants.ATTR_BestBeforeDate);
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final I_M_Attribute bestBeforeDateAttribute = attributeDAO.retrieveAttributeByValue(Constants.ATTR_BestBeforeDate);
 		if (!attributesStorage.hasAttribute(bestBeforeDateAttribute))
 		{
 			return Optional.empty();
 		}
 
-		Date bestBeforeDate = attributesStorage.getValueAsDate(bestBeforeDateAttribute);
+		final Date bestBeforeDate = attributesStorage.getValueAsDate(bestBeforeDateAttribute);
 		return Optional.ofNullable(bestBeforeDate);
+	}
+
+	public Object getValue(@NonNull final String attributeName)
+	{
+		return attributesStorage.getValue(attributeName);
 	}
 
 	/**
