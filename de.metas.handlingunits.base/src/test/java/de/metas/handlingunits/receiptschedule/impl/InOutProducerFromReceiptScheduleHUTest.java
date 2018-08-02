@@ -54,6 +54,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
+import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
@@ -67,7 +68,11 @@ import de.metas.product.LotNumberLockRepository;
  * @author al
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, LotNumberLockRepository.class, ShutdownListener.class })
+@SpringBootTest(classes = {
+		StartupListener.class,
+		DistributeAndMoveReceiptCreator.class,
+		LotNumberLockRepository.class,
+		ShutdownListener.class })
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {
 	@Override
