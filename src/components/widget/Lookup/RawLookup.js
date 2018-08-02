@@ -35,6 +35,7 @@ class RawLookup extends Component {
     const { selected, defaultValue, initialFocus, parentElement } = this.props;
 
     if (parentElement) {
+      // eslint-disable-next-line react/no-find-dom-node
       let parentEl = ReactDOM.findDOMNode(parentElement);
 
       this.setState({
@@ -469,7 +470,11 @@ class RawLookup extends Component {
               empty="No results found"
               forceEmpty={forceEmpty}
               selected={selected}
-              width={this.props.forcedWidth ? this.props.forcedWidth : (this.wrapper && this.wrapper.offsetWidth)}
+              width={
+                this.props.forcedWidth
+                  ? this.props.forcedWidth
+                  : this.wrapper && this.wrapper.offsetWidth
+              }
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleBlur}
