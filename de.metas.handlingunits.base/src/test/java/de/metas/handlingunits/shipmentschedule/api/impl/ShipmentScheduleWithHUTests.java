@@ -10,7 +10,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.X_M_InOut;
@@ -245,7 +245,7 @@ public class ShipmentScheduleWithHUTests
 	{
 		final I_M_HU lu = testSupport.createLU(qtyTU, 5);
 		final List<I_M_HU> tus = Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(lu);
-		final I_M_HU aggregatedTU = ListUtils.singleElement(tus);
+		final I_M_HU aggregatedTU = CollectionUtils.singleElement(tus);
 
 		return ImmutablePair.of(lu, aggregatedTU);
 	}

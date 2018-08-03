@@ -41,7 +41,7 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -990,7 +990,7 @@ public class OrderBL implements IOrderBL
 		}
 		else
 		{
-			final org.compiere.model.I_C_Order queriedOrder = ListUtils.singleElement(queryiedOrders);
+			final org.compiere.model.I_C_Order queriedOrder = CollectionUtils.singleElement(queryiedOrders);
 
 			fOrder.setQtyInvoiced(DYNATTR_QtyInvoicedSum.getValue(queriedOrder));
 			fOrder.setQtyMoved(DYNATTR_QtyDeliveredSum.getValue(queriedOrder));

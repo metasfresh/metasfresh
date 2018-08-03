@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_InOutLine;
@@ -93,7 +93,7 @@ public class ReceiptLineFindForwardToLocatorTool
 	private static LocatorId findDestinationLocatorOrNullForReceiptSchedules(
 			@NonNull final List<I_M_ReceiptSchedule> receiptScheduleRecords)
 	{
-		final Integer warehouseDestRepoId = ListUtils.extractSingleElementOrDefault(receiptScheduleRecords, I_M_ReceiptSchedule::getM_Warehouse_Dest_ID, -1);
+		final Integer warehouseDestRepoId = CollectionUtils.extractSingleElementOrDefault(receiptScheduleRecords, I_M_ReceiptSchedule::getM_Warehouse_Dest_ID, -1);
 
 		if (warehouseDestRepoId <= 0)
 		{

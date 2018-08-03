@@ -46,7 +46,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -1371,7 +1371,7 @@ public class FlatrateBL implements IFlatrateBL
 				Check.errorIf(periodsContainingDay.isEmpty(), "Date {} does not exist in calendar={}", currentFirstDay, calendar);
 				Check.errorIf(periodsContainingDay.size() > 1, "Date {} is contained in more than one period of calendar={}; periodsContainingDay={}", currentFirstDay, calendar, periodsContainingDay);
 
-				final I_C_Period period = ListUtils.singleElement(periodsContainingDay);
+				final I_C_Period period = CollectionUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
 				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);

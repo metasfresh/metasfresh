@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -1207,7 +1207,7 @@ public class HUTransformServiceTests
 		Assert.assertThat(existingTUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("495.000")));
 		Assert.assertThat(existingTUXML, hasXPath("HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("4.000")));
 
-		final Node newCuXML = HUXmlConverter.toXml(ListUtils.singleElement(newCUs));
+		final Node newCuXML = HUXmlConverter.toXml(CollectionUtils.singleElement(newCUs));
 		Assert.assertThat(newCuXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
 		Assert.assertThat(newCuXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("1.000")));
 	}
