@@ -100,7 +100,8 @@ public class CampaignService
 
 		if (isRequiredLocation && addressToUse == null )
 		{
-			Loggables.get().addLog("Skip user because it has no "+ defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault + "location and the campaign requires location; user={}", user);
+			final String addressTypeForMessage = defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault.toString() ;
+			Loggables.get().addLog("Skip user because it has no {} location and the campaign requires location; user={}", addressTypeForMessage,user);
 			return;
 		}
 
