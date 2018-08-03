@@ -1,18 +1,16 @@
 package de.metas.ui.web.picking.husToPick;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.OrderLineId;
+import de.metas.inoutcandidate.api.IPackageable;
+import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -84,26 +82,18 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	public CreateViewRequest createViewRequest(
 			@NonNull final ViewId pickingSlotViewId,
 			@NonNull final PickingSlotRowId pickingSlotRowId,
-			final int shipmentScheduleId)
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		Check.assumeGreaterThanZero(shipmentScheduleId, "shipmentScheduleId");
+		final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
 		final Builder builder = CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
 				.setParentViewId(pickingSlotViewId)
 				.setParentRowId(pickingSlotRowId.toDocumentId())
 				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId);
 
-		final I_M_ShipmentSchedule shipmentScheduleRecord = loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final DocumentFilter stickyFilter;
-		if (shipmentScheduleRecord.getC_OrderLine_ID() > 0)
-		{
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(shipmentScheduleRecord.getC_OrderLine_ID());
-			stickyFilter = huReservationDocumentFilterService.createOrderLineDocumentFilter(orderLineId, true);
-		}
-		else
-		{
-			stickyFilter = huReservationDocumentFilterService.createNoReservationDocumentFilter();
-		}
+		final IPackageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
+
+		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);
 		builder.addStickyFilters(stickyFilter);
 
 		return builder.build();

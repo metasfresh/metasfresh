@@ -32,12 +32,16 @@ import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * Note: take a look at {@link ViewColumnHelper} to see how the annotation is processed.
+ */
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ViewColumn
 {
 	/**
-	 * Field name. If missing or empty, the {@link Field#getName()} will be used.
+	 * Field name. If missing or empty, the {@link Field#getName()} of the annotated field will be used.
 	 */
 	String fieldName() default "";
 
@@ -69,13 +73,31 @@ public @interface ViewColumn
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface ViewColumnLayout
 	{
+		public enum Displayed
+		{
+			/** The column shall be displayed by default. */
+			TRUE,
+
+			/**
+			 * The column will be displayed only on demand, when it was explicitly specified.
+			 * (note by ts @teosarca: I copied this line..tbh I don't understand it..might be outdated-lying)
+			 */
+			FALSE,
+
+			/**
+			 * The column shall <b>not</b> be displayed,<br>
+			 * unless the sysconfig with key = "{@link ViewColumnLayout#displayedSysConfigPrefix()}.fieldName" validates to {@code true}.
+			 * If there is no sysConfig that can be validated a boolean, then {@link #FALSE} is assumed.
+			 */
+			SYSCONFIG
+		}
+
 		JSONViewDataType when();
 
-		/**
-		 * If <code>true</code> if the column shall be displayed by default.
-		 * If <code>false</code> the column will be displayed only on demand, when it was explicitly specified.
-		 */
-		boolean displayed() default true;
+		Displayed displayed() default Displayed.TRUE;
+
+		/** See {@link Displayed#SYSCONFIG}. Null or empty strings mean {@link Displayed#FALSE}. */
+		String displayedSysConfigPrefix() default "";
 
 		/** Display sequence number */
 		int seqNo();

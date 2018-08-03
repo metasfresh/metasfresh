@@ -492,7 +492,6 @@ public class ViewLayout implements ETagAware
 
 		private Builder()
 		{
-			super();
 		}
 
 		public ViewLayout build()
@@ -565,30 +564,27 @@ public class ViewLayout implements ETagAware
 			this.emptyResultHint = emptyResultHint;
 			return this;
 		}
-		
+
 		public Builder clearElements()
 		{
 			elementBuilders.clear();
 			return this;
 		}
 
-		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
+		public Builder addElement(@NonNull final DocumentLayoutElementDescriptor.Builder elementBuilder)
 		{
-			Check.assumeNotNull(elementBuilder, "Parameter elementBuilder is not null");
 			elementBuilders.add(elementBuilder);
 			return this;
 		}
 
-		public Builder addElements(final Collection<DocumentLayoutElementDescriptor.Builder> elementBuilders)
+		public Builder addElements(@NonNull final Collection<DocumentLayoutElementDescriptor.Builder> elementBuilders)
 		{
-			Check.assumeNotNull(elementBuilders, "Parameter elementBuilders is not null");
 			elementBuilders.forEach(this::addElement);
 			return this;
 		}
 
-		public Builder addElements(final Stream<DocumentLayoutElementDescriptor.Builder> elementBuilders)
+		public Builder addElements(@NonNull final Stream<DocumentLayoutElementDescriptor.Builder> elementBuilders)
 		{
-			Check.assumeNotNull(elementBuilders, "Parameter elementBuilders is not null");
 			elementBuilders.forEach(this::addElement);
 			return this;
 		}

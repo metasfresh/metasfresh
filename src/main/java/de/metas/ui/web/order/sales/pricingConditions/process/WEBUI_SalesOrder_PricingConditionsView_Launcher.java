@@ -2,7 +2,7 @@ package de.metas.ui.web.order.sales.pricingConditions.process;
 
 import java.util.Set;
 
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 
@@ -83,7 +83,7 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 				.stream()
 				.map(recordId -> TableRecordReference.of(I_C_OrderLine.Table_Name, recordId))
 				.collect(ImmutableSet.toImmutableSet());
-		ListUtils.singleElement(salesOrderLineRefs);
+		CollectionUtils.singleElement(salesOrderLineRefs);
 
 		getResult().setRecordsToOpen(salesOrderLineRefs, OrderLinePricingConditionsViewFactory.WINDOW_ID_STRING);
 

@@ -275,7 +275,6 @@ public final class DocumentLayoutElementDescriptor
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override

@@ -37,6 +37,7 @@ import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -160,15 +161,15 @@ public final class HUEditorRow implements IViewRow
 
 	public static final String FIELDNAME_BestBeforeDate = "BestBeforeDate";
 	@ViewColumn(fieldName = FIELDNAME_BestBeforeDate, widgetType = DocumentFieldWidgetType.Date, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80, displayed = false),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = false)
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80, displayed = Displayed.FALSE),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = Displayed.FALSE)
 	})
 	private final Date bestBeforeDate;
 
 	public static final String FIELDNAME_Locator = I_M_HU.COLUMNNAME_M_Locator_ID;
 	@ViewColumn(fieldName = FIELDNAME_Locator, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90, displayed = false),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 90, displayed = false)
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90, displayed = Displayed.FALSE),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 90, displayed = Displayed.FALSE)
 	})
 	private final JSONLookupValue locator;
 
@@ -338,7 +339,7 @@ public final class HUEditorRow implements IViewRow
 	{
 		return huId;
 	}
-	
+
 	public int getHuIdAsInt()
 	{
 		return HuId.toRepoId(getHuId());
@@ -355,7 +356,7 @@ public final class HUEditorRow implements IViewRow
 		{
 			return null;
 		}
-		
+
 		return Services.get(IHandlingUnitsDAO.class).getById(huId);
 	}
 

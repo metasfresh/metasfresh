@@ -2,7 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import java.util.Set;
 
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
@@ -107,7 +107,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 
 	private ViewId createHUEditorView()
 	{
-		final Integer singleElement = ListUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class));
+		final Integer singleElement = CollectionUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class));
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(singleElement);
 

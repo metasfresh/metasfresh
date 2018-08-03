@@ -7,7 +7,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -120,7 +120,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 				.stream()
 				.filter(inoutLine -> !inoutLine.getM_InOut().isSOTrx()) // material receipt
 				.collect(ImmutableList.toImmutableList());
-		final I_M_InOutLine receiptLine = ListUtils.singleElement(receiptLines);
+		final I_M_InOutLine receiptLine = CollectionUtils.singleElement(receiptLines);
 
 		//
 		// Split out the TUs we need to return

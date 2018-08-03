@@ -189,7 +189,7 @@ public class MainRowWithSubRows
 				.qtyOnHandEstimate(mainRow.getQtyOnHandEstimate())
 				.qtyOnHandStock(mainRow.getQtyOnHand())
 				.qtyReservedPurchase(mainRow.getQtyReservedPurchase())
-				.qtyAvailableToPromise(mainRow.getQtyAvailableToPromise())
+				.qtyAvailableToPromiseEstimate(mainRow.getQtyAvailableToPromiseEstimate())
 				.qtyReservedSale(mainRow.getQtyReservedSale())
 				.pmmQtyPromised(mainRow.getPmmQtyPromised())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
