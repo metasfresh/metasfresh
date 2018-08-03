@@ -1,7 +1,10 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -17,6 +20,7 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
@@ -68,8 +72,6 @@ import lombok.NonNull;
 public class MaterialCockpitRowFactoryTest
 {
 	private static final BigDecimal TWELVE = new BigDecimal("12");
-	private static final BigDecimal TEN = BigDecimal.TEN;
-	private static final BigDecimal ONE = BigDecimal.ONE;
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private AttributesTestHelper attributesTestHelper;
 	private MaterialCockpitRowFactory materialCockpitRowFactory;
@@ -94,10 +96,14 @@ public class MaterialCockpitRowFactoryTest
 		productCategory.setName("productCategoryName");
 		save(productCategory);
 
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
+
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");
 		product.setName("productName");
 		product.setIsStocked(true);
+		product.setC_UOM(uom);
 		product.setM_Product_Category(productCategory);
 		save(product);
 
@@ -139,7 +145,7 @@ public class MaterialCockpitRowFactoryTest
 			final I_M_Attribute attr2)
 	{
 		final I_DIM_Dimension_Spec dimSpec = newInstance(I_DIM_Dimension_Spec.class);
-		dimSpec.setInternalName(MaterialCockpitRowFactory.DIM_SPEC_INTERNAL_NAME);
+		dimSpec.setInternalName(MaterialCockpitRowFactory.DEFAULT_DIM_SPEC_INTERNAL_NAME);
 		dimSpec.setIsIncludeEmpty(true);
 		save(dimSpec);
 
