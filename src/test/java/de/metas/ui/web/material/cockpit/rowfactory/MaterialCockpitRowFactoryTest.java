@@ -44,6 +44,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import lombok.NonNull;
 
@@ -145,7 +146,7 @@ public class MaterialCockpitRowFactoryTest
 			final I_M_Attribute attr2)
 	{
 		final I_DIM_Dimension_Spec dimSpec = newInstance(I_DIM_Dimension_Spec.class);
-		dimSpec.setInternalName(MaterialCockpitRowFactory.DEFAULT_DIM_SPEC_INTERNAL_NAME);
+		dimSpec.setInternalName(MaterialCockpitUtil.DEFAULT_DIM_SPEC_INTERNAL_NAME);
 		dimSpec.setIsIncludeEmpty(true);
 		save(dimSpec);
 
@@ -302,7 +303,8 @@ public class MaterialCockpitRowFactoryTest
 		// invoke method under test
 		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
 				ImmutableList.of(product),
-				today);
+				today,
+				true);
 
 		assertThat(result).hasSize(1);
 		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);

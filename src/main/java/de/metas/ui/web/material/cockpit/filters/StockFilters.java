@@ -1,10 +1,12 @@
 package de.metas.ui.web.material.cockpit.filters;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.util.List;
 
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -43,23 +45,14 @@ public class StockFilters
 
 		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL
 				.createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, Operator.GREATER, ZERO);
 
-		boolean anyRestrictionAdded = false;
-		if (augmentQueryBuilder(queryBuilder, ProductFilterUtil.extractProductFilterVO(filters)))
-		{
-			anyRestrictionAdded = true;
-		}
+		augmentQueryBuilder(queryBuilder, ProductFilterUtil.extractProductFilterVO(filters));
 
-		if (anyRestrictionAdded)
-		{
-			return queryBuilder.create();
-		}
-		else
-		{
-			// avoid memory problems in case the filters are accidentally empty
-			return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
-		}
+		// note: need to afford loading *all* MD_Stock records for the material cockpit; afaik there isn't a product-related restriction there.
+		// it's OK because they are aggregated on product, locator and attributesKey, so we won't have a million of them
+		return queryBuilder.create();
 	}
 
 	private static boolean augmentQueryBuilder(final IQueryBuilder<I_MD_Stock> queryBuilder, final ProductFilterVO productFilterVO)

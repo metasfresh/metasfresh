@@ -6,13 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -22,10 +19,10 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.dimension.IDimensionspecDAO;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -54,10 +51,6 @@ import lombok.Value;
 @Service
 public class MaterialCockpitRowFactory
 {
-	public static final String SYSCONFIG_DIM_SPEC_INTERNAL_NAME = "de.metas.ui.web.material.cockpit.DIM_Dimension_Spec.InternalName";
-
-	public static final String DEFAULT_DIM_SPEC_INTERNAL_NAME = "Material_Cockpit_Default_Spec";
-
 	@Value
 	@lombok.Builder
 	public static class CreateRowsRequest
@@ -73,15 +66,18 @@ public class MaterialCockpitRowFactory
 
 		@NonNull
 		List<I_MD_Stock> stockRecords;
+
+		boolean includePerPlantDetailRows;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
 	{
 		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 				request.getProductsToListEvenIfEmpty(),
-				request.getDate());
+				request.getDate(),
+				request.isIncludePerPlantDetailRows());
 
-		final DimensionSpec dimensionSpec = retrieveDimensionSpec();
+		final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
 		final Map<MainRowBucketId, MainRowWithSubRows> result = new HashMap<>(emptyRowBuckets);
 
@@ -97,12 +93,13 @@ public class MaterialCockpitRowFactory
 	@VisibleForTesting
 	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 			@NonNull final List<I_M_Product> products,
-			@NonNull final Timestamp timestamp)
+			@NonNull final Timestamp timestamp,
+			final boolean includePerPlantDetailRows)
 	{
-		final DimensionSpec dimensionSpec = retrieveDimensionSpec();
+		final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
 		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
-		final List<I_S_Resource> plants = retrieveCountingPlants();
+		final List<I_S_Resource> plants = retrieveCountingPlants(includePerPlantDetailRows);
 
 		final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
 		for (final I_M_Product product : products)
@@ -125,28 +122,25 @@ public class MaterialCockpitRowFactory
 		return result.build();
 	}
 
-	private DimensionSpec retrieveDimensionSpec()
+	private List<I_S_Resource> retrieveCountingPlants(final boolean includePerPlantDetailRows)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final IDimensionspecDAO dimensionspecDAO = Services.get(IDimensionspecDAO.class);
+		if (!includePerPlantDetailRows)
+		{
+			return ImmutableList.of();
+		}
 
-		final String dimSpecName = sysConfigBL.getValue(SYSCONFIG_DIM_SPEC_INTERNAL_NAME, DEFAULT_DIM_SPEC_INTERNAL_NAME, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
-		final DimensionSpec dimensionSpec = dimensionspecDAO.retrieveForInternalNameOrNull(dimSpecName);
-
-		return Check.assumeNotNull(dimensionSpec, "Unable to load DIM_Dimension_Spec record with InternalName={}", dimSpecName);
-	}
-
-	private List<I_S_Resource> retrieveCountingPlants()
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_S_Resource.class)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_S_Resource.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
-				.create().list();
+				.create()
+				.list();
 	}
 
 	private void addCockpitRowsToResult(
 			@NonNull final CreateRowsRequest request,
 			@NonNull final DimensionSpec dimensionSpec,
+
 			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 	{
 		for (final I_MD_Cockpit cockpitRecord : request.getCockpitRecords())
@@ -154,7 +148,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
-			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec);
+			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
 
@@ -168,7 +162,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
-			mainRowBucket.addStockRecord(stockRecord, dimensionSpec);
+			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
 

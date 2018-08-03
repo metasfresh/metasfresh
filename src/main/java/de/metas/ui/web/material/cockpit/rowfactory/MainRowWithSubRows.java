@@ -74,11 +74,15 @@ public class MainRowWithSubRows
 
 	public void addCockpitRecord(
 			@NonNull final I_MD_Cockpit cockpitRecord,
-			@NonNull final DimensionSpec dimensionSpec)
+			@NonNull final DimensionSpec dimensionSpec,
+			final boolean includePerPlantDetailRows)
 	{
 		if (cockpitRecord.getQtyOnHandCount().signum() != 0 || cockpitRecord.getPP_Plant_ID() > 0)
 		{
-			addCockpitRecordToCounting(cockpitRecord);
+			if (includePerPlantDetailRows)
+			{
+				addCockpitRecordToCounting(cockpitRecord);
+			}
 		}
 		else
 		{
@@ -156,10 +160,13 @@ public class MainRowWithSubRows
 
 	public void addStockRecord(
 			@NonNull final I_MD_Stock stockRecord,
-			@NonNull final DimensionSpec dimensionSpec)
+			@NonNull final DimensionSpec dimensionSpec,
+			final boolean includePerPlantDetailRows)
 	{
-		addStockRecordToCounting(stockRecord);
-
+		if (includePerPlantDetailRows)
+		{
+			addStockRecordToCounting(stockRecord);
+		}
 		addStockRecordToDimensionGroups(stockRecord, dimensionSpec);
 
 		mainRow.addStockRecord(stockRecord);

@@ -96,7 +96,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
-		super();
 		fieldName = builder.fieldName;
 
 		sqlColumnName = builder.getColumnName();

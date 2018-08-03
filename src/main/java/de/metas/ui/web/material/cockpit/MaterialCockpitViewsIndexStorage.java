@@ -66,12 +66,12 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	/**
-	 * @return {@link MaterialCockpitConstants#WINDOWID_MaterialCockpitView} since that'S what we want to store inside this service.
+	 * @return {@link MaterialCockpitUtil#WINDOWID_MaterialCockpitView} since that'S what we want to store inside this service.
 	 */
 	@Override
 	public WindowId getWindowId()
 	{
-		return MaterialCockpitConstants.WINDOWID_MaterialCockpitView;
+		return MaterialCockpitUtil.WINDOWID_MaterialCockpitView;
 	}
 
 	@Override

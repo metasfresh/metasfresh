@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -117,13 +118,26 @@ public class MaterialCockpitRowRepository
 				.createStockQueryFor(filters)
 				.list();
 
+		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
+
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(TimeUtil.asTimestamp(date))
 				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
+				.includePerPlantDetailRows(includePerPlantDetailRows)
 				.build();
 		return materialCockpitRowFactory.createRows(request);
+	}
+
+	private boolean retrieveIsIncludePerPlantDetailRows()
+	{
+		final boolean includePerPlantDetailRows = Services.get(ISysConfigBL.class).getBooleanValue(
+				MaterialCockpitUtil.SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS,
+				false,
+				Env.getAD_Client_ID(),
+				Env.getAD_Org_ID(Env.getCtx()));
+		return includePerPlantDetailRows;
 	}
 
 	private List<I_M_Product> retrieveRelevantProducts(@NonNull final List<DocumentFilter> filters)
