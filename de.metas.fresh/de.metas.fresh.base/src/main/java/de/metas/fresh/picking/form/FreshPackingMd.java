@@ -102,8 +102,7 @@ public class FreshPackingMd extends PackingMd
 		}
 
 		final String deliveryVia = item.getDeliveryVia();
-		// final String deliveryViaName = item.getDeliveryViaName();
-		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
+
 		final Timestamp deliveryDate = item.getDeliveryDate(); // customer01676
 		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
 		final String bpartnerValue = item.getBpartnerValue();
@@ -114,15 +113,9 @@ public class FreshPackingMd extends PackingMd
 		final boolean isDisplayed = item.isDisplayed();
 
 		final boolean groupByShipmentSchedule;
-		if (shipmentScheduleId <= 0)
-		{
-			groupByShipmentSchedule = false;
-		}
-		else
-		{
-			final IClientOrgAware sched = create(Env.getCtx(), I_M_ShipmentSchedule.Table_Name, shipmentScheduleId, IClientOrgAware.class, ITrx.TRXNAME_ThreadInherited);
-			groupByShipmentSchedule = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.fresh.picking.form.FreshPackingMd.groupByShipmentSchedule", false, sched.getAD_Client_ID(), sched.getAD_Org_ID());
-		}
+
+		final IClientOrgAware sched = create(Env.getCtx(), I_M_ShipmentSchedule.Table_Name, shipmentScheduleId, IClientOrgAware.class, ITrx.TRXNAME_ThreadInherited);
+		groupByShipmentSchedule = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.fresh.picking.form.FreshPackingMd.groupByShipmentSchedule", false, sched.getAD_Client_ID(), sched.getAD_Org_ID());
 
 		final TableRowKey key;
 		if (groupByShipmentSchedule)
