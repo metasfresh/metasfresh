@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -52,7 +54,9 @@ import lombok.Value;
 @Service
 public class MaterialCockpitRowFactory
 {
-	public static final String DIM_SPEC_INTERNAL_NAME = "Material_Cockpit_Default_Spec";
+	public static final String SYSCONFIG_DIM_SPEC_INTERNAL_NAME = "de.metas.ui.web.material.cockpit.DIM_Dimension_Spec.InternalName";
+
+	public static final String DEFAULT_DIM_SPEC_INTERNAL_NAME = "Material_Cockpit_Default_Spec";
 
 	@Value
 	@lombok.Builder
@@ -77,8 +81,7 @@ public class MaterialCockpitRowFactory
 				request.getProductsToListEvenIfEmpty(),
 				request.getDate());
 
-		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(DIM_SPEC_INTERNAL_NAME);
-		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", DIM_SPEC_INTERNAL_NAME);
+		final DimensionSpec dimensionSpec = retrieveDimensionSpec();
 
 		final Map<MainRowBucketId, MainRowWithSubRows> result = new HashMap<>(emptyRowBuckets);
 
@@ -96,8 +99,7 @@ public class MaterialCockpitRowFactory
 			@NonNull final List<I_M_Product> products,
 			@NonNull final Timestamp timestamp)
 	{
-		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(DIM_SPEC_INTERNAL_NAME);
-		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", DIM_SPEC_INTERNAL_NAME);
+		final DimensionSpec dimensionSpec = retrieveDimensionSpec();
 
 		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 		final List<I_S_Resource> plants = retrieveCountingPlants();
@@ -121,6 +123,17 @@ public class MaterialCockpitRowFactory
 
 		}
 		return result.build();
+	}
+
+	private DimensionSpec retrieveDimensionSpec()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final IDimensionspecDAO dimensionspecDAO = Services.get(IDimensionspecDAO.class);
+
+		final String dimSpecName = sysConfigBL.getValue(SYSCONFIG_DIM_SPEC_INTERNAL_NAME, DEFAULT_DIM_SPEC_INTERNAL_NAME, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
+		final DimensionSpec dimensionSpec = dimensionspecDAO.retrieveForInternalNameOrNull(dimSpecName);
+
+		return Check.assumeNotNull(dimensionSpec, "Unable to load DIM_Dimension_Spec record with InternalName={}", dimSpecName);
 	}
 
 	private List<I_S_Resource> retrieveCountingPlants()
