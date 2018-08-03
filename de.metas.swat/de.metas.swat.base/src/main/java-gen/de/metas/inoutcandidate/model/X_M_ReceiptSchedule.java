@@ -15,7 +15,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 183979313L;
+	private static final long serialVersionUID = -277184998L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -122,6 +122,36 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getAD_User_OrderCreatedBy() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_OrderCreatedBy_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User_OrderCreatedBy(org.compiere.model.I_AD_User AD_User_OrderCreatedBy)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_OrderCreatedBy_ID, org.compiere.model.I_AD_User.class, AD_User_OrderCreatedBy);
+	}
+
+	/** Set Bestellt von.
+		@param AD_User_OrderCreatedBy_ID Bestellt von	  */
+	@Override
+	public void setAD_User_OrderCreatedBy_ID (int AD_User_OrderCreatedBy_ID)
+	{
+		throw new IllegalArgumentException ("AD_User_OrderCreatedBy_ID is virtual column");	}
+
+	/** Get Bestellt von.
+		@return Bestellt von	  */
+	@Override
+	public int getAD_User_OrderCreatedBy_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_OrderCreatedBy_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
