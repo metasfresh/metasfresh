@@ -36,6 +36,7 @@ class Lookup extends Component {
       autofocusDisabled: false,
       isFocused: {},
       lookupWidgets,
+      isDropdownListOpen: false,
     };
   }
 
@@ -163,6 +164,7 @@ class Lookup extends Component {
           dropdownOpen: value,
         },
       },
+      isDropdownListOpen: value,
     });
 
     if (value && onFocus) {
@@ -181,7 +183,10 @@ class Lookup extends Component {
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
+    console.log('clickoutside: ', this)
+
     if (this.state.isDropdownListOpen) {
+      console.log('clickedoutside')
       this.setState(
         {
           fireClickOutside: true,
