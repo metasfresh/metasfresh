@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.impl.MutableHUTransactionAttribute;
@@ -58,7 +58,7 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-/* package */class HUTrxAttributesCollector extends AttributeStorageListenerAdapter
+/* package */class HUTrxAttributesCollector implements IAttributeStorageListener
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(HUTrxAttributesCollector.class);
@@ -190,7 +190,7 @@ import de.metas.logging.LogManager;
 		// Init our transactions list (if needed)
 		if (transactions == null)
 		{
-			transactions = new ArrayList<IHUTransactionAttribute>();
+			transactions = new ArrayList<>();
 		}
 
 		//
@@ -279,7 +279,7 @@ import de.metas.logging.LogManager;
 		// Check our transactions history and if we find a transaction which is shadowed by our newly created transaction
 		// then just remove it from list and keep only ours
 		final int size = transactions.size();
-		final Set<ArrayKey> seenTrxs = new HashSet<ArrayKey>(size);
+		final Set<ArrayKey> seenTrxs = new HashSet<>(size);
 		final ListIterator<IHUTransactionAttribute> it = transactions.listIterator(size);
 		while (it.hasPrevious())
 		{

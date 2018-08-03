@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.TimeUtil;
 
@@ -47,13 +48,12 @@ import lombok.NonNull;
 	public AIWithHUPIAttributeValue(
 			final IAttributeStorage attributeStorage,
 			@NonNull final I_M_AttributeInstance attributeInstance,
-			@NonNull final I_M_HU_PI_Attribute piAttribute,
+			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{
-		super(//
-				attributeStorage //
-				, piAttribute //
-				, Boolean.TRUE // ASI attributes are ALWAYS created from template attributes
+		super(Check.assumeNotNull(attributeStorage, "attributeStorage"),
+				Check.assumeNotNull(piAttribute, "piAttribute"),
+				Boolean.TRUE // ASI attributes are ALWAYS created from template attributes
 		);
 
 		this.attributeInstance = attributeInstance;
@@ -140,6 +140,7 @@ import lombok.NonNull;
 	{
 		return null;
 	}
+
 	@Override
 	public boolean isOnlyIfInProductAttributeSet()
 	{

@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
+import org.adempiere.mm.attributes.AttributeId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,11 +15,11 @@ package org.adempiere.mm.attributes.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,9 +29,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 
-import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.
@@ -39,22 +40,22 @@ import de.metas.product.IProductBL;
  */
 public interface IAttributeSetInstanceBL extends ISingletonService
 {
+	/** Call {@link #buildDescription(I_M_AttributeSetInstance, boolean)} with verbose = false. */
+	String buildDescription(I_M_AttributeSetInstance asi);
+
 	/**
-	 * Builds ASI Description
+	 * Build ASI Description
 	 *
 	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
 	 *
-	 * @param asi
-	 * @return description
+	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */
-	String buildDescription(I_M_AttributeSetInstance asi);
-
 	String buildDescription(I_M_AttributeSetInstance asi, boolean verboseDescription);
 
 	/**
 	 * Builds and set {@link I_M_AttributeSetInstance#COLUMNNAME_Description}.
 	 *
-	 * @param asi
+	 * @param asi may be {@code null}; in that case, nothing is done;
 	 */
 	void setDescription(I_M_AttributeSetInstance asi);
 
@@ -63,10 +64,8 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 *
 	 * @param product
 	 * @return newly created and saved ASI; never return null
-	 *
-	 * @see IProductBL#getM_AttributeSet_ID(I_M_Product)
 	 */
-	I_M_AttributeSetInstance createASI(I_M_Product product);
+	I_M_AttributeSetInstance createASI(ProductId productId);
 
 	/**
 	 * Get an existing Attribute Set Instance, create a new one if none exists yet.
@@ -85,7 +84,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * @param attributeId
 	 * @return attribute instance; never return null
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, int attributeId);
+	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeId attributeId);
 
 	/**
 	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link I_M_AttributeValue}.
@@ -110,15 +109,19 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet);
 
-	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(int productId, IAttributeSet attributeSet);
+	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
 
 	/**
 	 * set in {@link I_M_AttributeInstance} the correct value for given <code>asi</code> and given <code>attribute</code>
-	 * <br> the ai is also saved.
+	 * <br>
+	 * the ai is also saved.
+	 *
 	 * @param asi
 	 * @param attribute
 	 * @param value
 	 * @return
 	 */
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
+
+	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
 }

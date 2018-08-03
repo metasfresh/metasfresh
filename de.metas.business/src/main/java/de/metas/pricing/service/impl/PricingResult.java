@@ -47,6 +47,7 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -243,7 +244,13 @@ class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public List<IPricingRule> getRulesApplied()
+	public void addPricingRuleApplied(@NonNull IPricingRule rule)
+	{
+		rulesApplied.add(rule);
+	}
+
+	@Override
+	public List<IPricingRule> getPricingRulesApplied()
 	{
 		return rulesApplied;
 	}
@@ -320,9 +327,9 @@ class PricingResult implements IPricingResult
 	 */
 	public void updatePriceScales()
 	{
-		scaleToPrecision(priceStd);
-		scaleToPrecision(priceLimit);
-		scaleToPrecision(priceList);
+		priceStd = scaleToPrecision(priceStd);
+		priceLimit = scaleToPrecision(priceLimit);
+		priceList = scaleToPrecision(priceList);
 	}
 
 	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)

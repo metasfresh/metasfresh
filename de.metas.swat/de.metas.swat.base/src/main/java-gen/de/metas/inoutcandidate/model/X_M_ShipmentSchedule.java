@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1094694437L;
+	private static final long serialVersionUID = 1883529643L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -35,6 +35,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 			setIsDeliveryStop (false); // N
 			setIsDisplayed (true); // Y
 			setIsDropShip (false); // N
+			setM_Product_ID (0);
 			setM_ShipmentSchedule_ID (0);
 			setM_Warehouse_ID (0);
 			setProcessed (false); // N

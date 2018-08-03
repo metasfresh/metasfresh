@@ -165,7 +165,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		final BigDecimal qtyToMove = getQtyToMove(rs);
 		final BigDecimal qtyToMoveConv = Services.get(IUOMConversionBL.class)
-				.convertQty(rs.getM_Product(), qtyToMove, rs.getC_UOM(), uom);
+				.convertQty(rs.getM_Product_ID(), qtyToMove, rs.getC_UOM(), uom);
 		return qtyToMoveConv;
 	}
 
@@ -642,4 +642,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		return receiptSchedule.isProcessed();
 	}
+
+
 }

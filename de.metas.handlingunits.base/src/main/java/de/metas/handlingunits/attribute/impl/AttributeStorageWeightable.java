@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Wraps and {@link IAttributeStorage} and expose all weightable methods.
@@ -57,16 +57,14 @@ import de.metas.logging.LogManager;
 
 	private final IAttributeStorage _attributeStorage;
 
-	/* package */AttributeStorageWeightable(final WeightableFactory factory, final IAttributeStorage attributeStorage)
+	/* package */AttributeStorageWeightable(
+			@NonNull final WeightableFactory factory,
+			@NonNull final IAttributeStorage attributeStorage)
 	{
-		super();
-
-		Check.assumeNotNull(attributeStorage, "attributeStorage not null");
 		_attributeStorage = attributeStorage;
 
 		//
 		// Get weight attributes definitions from factory
-		Check.assumeNotNull(factory, "factory not null");
 		attr_WeightGross = factory.getWeightGrossAttribute();
 		attr_WeightNet = factory.getWeightNetAttribute();
 		attr_WeightTare = factory.getWeightTareAttribute();

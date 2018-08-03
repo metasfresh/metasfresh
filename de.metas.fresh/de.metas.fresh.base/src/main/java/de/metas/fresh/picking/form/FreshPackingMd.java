@@ -12,12 +12,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.util.Env;
 
@@ -64,17 +65,16 @@ public class FreshPackingMd extends PackingMd
 		final String bPartnerAddress = item.getBpartnerAddress();
 		keyBuilder.bpartnerAddress(Check.isEmpty(bPartnerAddress, true) ? null : bPartnerAddress.trim());
 
-		final int warehouseId = item.getWarehouseId();
-		keyBuilder.warehouseId(warehouseId > 0 ? warehouseId : -1);
+		final WarehouseId warehouseId = item.getWarehouseId();
+		keyBuilder.warehouseId(WarehouseId.toRepoId(warehouseId));
 		final String warehouseName = item.getWarehouseName();
 
 		final int warehouseDestId;
 		final String warehouseDestName;
 		if (isGroupByWarehouseDest())
 		{
-			warehouseDestId = item.getWarehouseDestId();
-			warehouseDestName = item.getWarehouseDestName();
-			keyBuilder.warehouseDestId(warehouseDestId);
+			throw new UnsupportedOperationException("WarehouseDest is not supported");
+			// keyBuilder.warehouseDestId(0);
 		}
 		else
 		{
@@ -87,7 +87,7 @@ public class FreshPackingMd extends PackingMd
 		final String productName;
 		if (isGroupByProduct()) // 06940: Note that this will also continue to group by product
 		{
-			productId = item.getProductId();
+			productId = item.getProductId().getRepoId();
 			productName = item.getProductName();
 
 			keyBuilder.productId(productId > 0 ? productId : -1);
@@ -102,10 +102,9 @@ public class FreshPackingMd extends PackingMd
 		}
 
 		final String deliveryVia = item.getDeliveryVia();
-		// final String deliveryViaName = item.getDeliveryViaName();
-		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
+
 		final Timestamp deliveryDate = item.getDeliveryDate(); // customer01676
-		final int shipmentScheduleId = item.getShipmentScheduleId();
+		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
 		final String bpartnerValue = item.getBpartnerValue();
 		final String bpartnerName = item.getBpartnerName();
 		final String bPartnerLocationName = item.getBpartnerLocationName();
@@ -114,15 +113,9 @@ public class FreshPackingMd extends PackingMd
 		final boolean isDisplayed = item.isDisplayed();
 
 		final boolean groupByShipmentSchedule;
-		if (shipmentScheduleId <= 0)
-		{
-			groupByShipmentSchedule = false;
-		}
-		else
-		{
-			final IClientOrgAware sched = create(Env.getCtx(), I_M_ShipmentSchedule.Table_Name, shipmentScheduleId, IClientOrgAware.class, ITrx.TRXNAME_ThreadInherited);
-			groupByShipmentSchedule = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.fresh.picking.form.FreshPackingMd.groupByShipmentSchedule", false, sched.getAD_Client_ID(), sched.getAD_Org_ID());
-		}
+
+		final IClientOrgAware sched = create(Env.getCtx(), I_M_ShipmentSchedule.Table_Name, shipmentScheduleId, IClientOrgAware.class, ITrx.TRXNAME_ThreadInherited);
+		groupByShipmentSchedule = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.fresh.picking.form.FreshPackingMd.groupByShipmentSchedule", false, sched.getAD_Client_ID(), sched.getAD_Org_ID());
 
 		final TableRowKey key;
 		if (groupByShipmentSchedule)

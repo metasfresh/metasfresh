@@ -663,6 +663,33 @@ public interface I_PP_Product_BOMLine
     public static final String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
+	 * Set Qty Attribute.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQty_Attribute_ID (int Qty_Attribute_ID);
+
+	/**
+	 * Get Qty Attribute.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getQty_Attribute_ID();
+
+	public org.compiere.model.I_M_Attribute getQty_Attribute();
+
+	public void setQty_Attribute(org.compiere.model.I_M_Attribute Qty_Attribute);
+
+    /** Column definition for Qty_Attribute_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, org.compiere.model.I_M_Attribute> COLUMN_Qty_Attribute_ID = new org.adempiere.model.ModelColumn<I_PP_Product_BOMLine, org.compiere.model.I_M_Attribute>(I_PP_Product_BOMLine.class, "Qty_Attribute_ID", org.compiere.model.I_M_Attribute.class);
+    /** Column name Qty_Attribute_ID */
+    public static final String COLUMNNAME_Qty_Attribute_ID = "Qty_Attribute_ID";
+
+	/**
 	 * Set Quantity in %.
 	 * Indicate the Quantity % use in this Formula
 	 *

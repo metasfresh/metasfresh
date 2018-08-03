@@ -47,6 +47,7 @@ import de.metas.money.MoneyService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
 import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
@@ -139,6 +140,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);

@@ -11,8 +11,27 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.68
 ## Features
+* metasfresh
+  * [#4092](https://github.com/metasfresh/metasfresh/issues/4092) sync mail address between contactperson and linked user
+  * [#4153](https://github.com/metasfresh/metasfresh/issues/4216) Follow up : #4153 Serial Letter Feature
   * [#4323](https://github.com/metasfresh/metasfresh/issues/4323) Window Payment Allocations not editable
     * Making the Window for Payment Allocation now editable in webui.
+  * [#4396](https://github.com/metasfresh/metasfresh/issues/4396) Pipes/Cabling vertical
+  * [#4403](https://github.com/metasfresh/metasfresh/issues/4403) Process to void order and revert flatrate terms, shipment schedule, invoice candidates
+  * [#4413](https://github.com/metasfresh/metasfresh/issues/4413) ShipmentScheduleHandler.retrieveModelsWithMissingCandidates() shall return an iterator
+  * [#4416](https://github.com/metasfresh/metasfresh/issues/4416) Split Product Nutrition/ Allergene in 2 Tabs
+  * [#4417](https://github.com/metasfresh/metasfresh/issues/4417) New Textfield for Product Ingredients without BOM
+
+## Fixes
+* metasfresh
+  * [#1629](https://github.com/metasfresh/metasfresh/issues/1629) Invoice data goes missing in payment after save
+  * [#4405](https://github.com/metasfresh/metasfresh/issues/4405) Action Sales Order from Quotation wrong Prices
+  * [#4412](https://github.com/metasfresh/metasfresh/issues/4412) async-processors shall only run on app
+  * [#4415](https://github.com/metasfresh/metasfresh/issues/4415) JSON Fehler "Der Kurier"
+
+* metasfresh-webui-frontend
+  * [#1889](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1889) Order line batch entry not working for current experimental cables/pipes batch entry
+  * [#1895](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1895) closing address editor after entering only the country is not possible
 
 # metasfresh 5.67 (2018-30)
 ## Features

@@ -10,8 +10,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Locator;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -60,8 +62,8 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final transient IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	//
 	// Parameters
 	private I_M_Warehouse warehouseFrom;
 	private I_M_Warehouse warehouseTo;
@@ -99,16 +101,18 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		//
+		final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
+
 		// Organization BPartner & Location
 		final I_AD_Org org = warehouseTo.getAD_Org();
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
 		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
+
 		final org.compiere.model.I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(Env.getCtx(), org.getAD_Org_ID(), ITrx.TRXNAME_None);
 
 		HUs2DDOrderProducer.newProducer()
 				.setContext(getCtx())
-				.setM_Warehouse_To(warehouseTo)
+				.setM_Locator_To(locatorTo)
 				.setBpartnerId(orgBPartner.getC_BPartner_ID())
 				.setBpartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
 				.setHUs(retriveHUs())

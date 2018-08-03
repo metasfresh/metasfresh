@@ -30,12 +30,12 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.document.engine.IDocumentBL;
@@ -136,9 +136,9 @@ public class HUInOutDAO implements IHUInOutDAO
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final I_M_Attribute attrReceiptInOutLine = attributeDAO.retrieveAttributeByValue(ctx, Constants.ATTR_ReceiptInOutLine_ID, I_M_Attribute.class);
+		final AttributeId receiptInOutLineAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_ReceiptInOutLine_ID);
 
-		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, attrReceiptInOutLine);
+		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, receiptInOutLineAttributeId);
 		if (huAttrReceiptInOutLine == null
 				|| huAttrReceiptInOutLine.getValueNumber() == null
 				|| huAttrReceiptInOutLine.getValueNumber().signum() <= 0)

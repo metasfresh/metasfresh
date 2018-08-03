@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_AttributeValue;
 
@@ -21,7 +22,7 @@ public interface IBPartnerAwareAttributeService
 	 * @param bpartnerAware
 	 * @return M_Attribute_ID or <code>-1</code>.
 	 */
-	int getM_Attribute_ID(IBPartnerAware bpartnerAware);
+	AttributeId getAttributeId(IBPartnerAware bpartnerAware);
 
 	/**
 	 * Gets/creates the coresponsing {@link I_M_AttributeValue} for given {@link IBPartnerAware}.

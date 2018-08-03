@@ -15,7 +15,7 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1361391316L;
+	private static final long serialVersionUID = -1267959849L;
 
     /** Standard Constructor */
     public X_M_Attribute (Properties ctx, int M_Attribute_ID, String trxName)
@@ -195,6 +195,22 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Description Pattern.
+		@param DescriptionPattern Description Pattern	  */
+	@Override
+	public void setDescriptionPattern (java.lang.String DescriptionPattern)
+	{
+		set_Value (COLUMNNAME_DescriptionPattern, DescriptionPattern);
+	}
+
+	/** Get Description Pattern.
+		@return Description Pattern	  */
+	@Override
+	public java.lang.String getDescriptionPattern () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DescriptionPattern);
 	}
 
 	/** Set Auf Belegen auszuweisen.

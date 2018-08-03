@@ -74,7 +74,7 @@ public class OrderLineRepository
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
 				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
 				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
-				.asiId(AttributeSetInstanceId.ofRepoId(orderLineRecord.getM_AttributeSetInstance_ID()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
 				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
 				.soTrx(SOTrx.ofBoolean(orderLineRecord.getC_Order().isSOTrx()))

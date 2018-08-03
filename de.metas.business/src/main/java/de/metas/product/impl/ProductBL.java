@@ -28,7 +28,8 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -41,7 +42,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MProductCategoryAcct;
@@ -198,56 +198,54 @@ public final class ProductBL implements IProductBL
 		}
 
 		// NOTE: we rely on table cache config
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		return isStocked(product);
 	}
 
 	@Override
-	public int getM_AttributeSet_ID(final I_M_Product product)
+	public AttributeSetId getAttributeSetId(final I_M_Product product)
 	{
-		int attributeSet_ID = product.getM_AttributeSet_ID();
-
-		if (attributeSet_ID > 0)
+		int attributeSetId = product.getM_AttributeSet_ID();
+		if (attributeSetId > 0)
 		{
-			return attributeSet_ID;
+			return AttributeSetId.ofRepoId(attributeSetId);
 		}
 		if (product.getM_Product_Category_ID() <= 0) // guard against NPE which might happen in unit tests
 		{
-			return AttributeConstants.M_AttributeSet_ID_None;
+			return AttributeSetId.NONE;
 		}
 
-		attributeSet_ID = product.getM_Product_Category().getM_AttributeSet_ID();
-		if (attributeSet_ID <= 0)
-		{
-			return AttributeConstants.M_AttributeSet_ID_None;
-		}
-		return attributeSet_ID;
+		attributeSetId = product.getM_Product_Category().getM_AttributeSet_ID();
+		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
 
 	@Override
-	public int getM_AttributeSet_ID(final Properties ctx, final int productId)
+	public AttributeSetId getAttributeSetId(@NonNull final ProductId productId)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
-		return getM_AttributeSet_ID(product);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final I_M_Product product = productsRepo.getById(productId);
+		return getAttributeSetId(product);
+	}
+
+	public I_M_AttributeSet getM_AttributeSet(@NonNull final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = getAttributeSetId(productId);
+		if (attributeSetId.isNone())
+		{
+			return null;
+		}
+		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
 	}
 
 	@Override
 	public I_M_AttributeSet getM_AttributeSet(I_M_Product product)
 	{
-		if (product.getM_AttributeSet_ID() > 0)
+		final AttributeSetId attributeSetId = getAttributeSetId(product);
+		if (attributeSetId.isNone())
 		{
-			return product.getM_AttributeSet();
+			return null;
 		}
-
-		final I_M_Product_Category productCategory = product.getM_Product_Category();
-		if (productCategory.getM_AttributeSet_ID() > 0)
-		{
-			return productCategory.getM_AttributeSet();
-		}
-
-		return null;
+		return Services.get(IAttributeDAO.class).getAttributeSetById(attributeSetId);
 	}
 
 	@Override
@@ -267,11 +265,9 @@ public final class ProductBL implements IProductBL
 			return null;
 		}
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, ITrx.TRXNAME_None);
-
-		final int attributeSetId = getM_AttributeSet_ID(product);
+		final AttributeSetId attributeSetId = getAttributeSetId(ProductId.ofRepoId(M_Product_ID));
 		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(ctx, I_M_AttributeSetInstance.class, ITrx.TRXNAME_None);
-		asi.setM_AttributeSet_ID(attributeSetId);
+		asi.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		return asi;
 	}	// get
 
@@ -329,14 +325,10 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isInstanceAttribute(@NonNull final I_M_Product product)
+	public boolean isInstanceAttribute(@NonNull final ProductId productId)
 	{
-		final I_M_AttributeSet mas = getM_AttributeSet(product);
-		if (mas == null)
-		{
-			return false;
-		}
-		return mas.isInstanceAttribute();
+		final I_M_AttributeSet mas = getM_AttributeSet(productId);
+		return mas != null && mas.isInstanceAttribute();
 	}
 
 	@Override

@@ -28,12 +28,15 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import lombok.NonNull;
 
 public class AttributeStorageFactoryService implements IAttributeStorageFactoryService
 {
 	private final CopyOnWriteArrayList<Class<? extends IAttributeStorageFactory>> attributeStorageFactories = new CopyOnWriteArrayList<>();
+
+	private final CopyOnWriteArrayList<IAttributeStorageListener> attributeStorageListeners = new CopyOnWriteArrayList<>();
 
 	public AttributeStorageFactoryService()
 	{
@@ -67,12 +70,22 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 		factory.setHUAttributesDAO(huAttributesDAO);
 		factory.addAttributeStorageFactoryClasses(attributeStorageFactories);
 
+		for (final IAttributeStorageListener attributeStorageListener : attributeStorageListeners)
+		{
+			factory.addAttributeStorageListener(attributeStorageListener);
+		}
 		return factory;
 	}
 
 	@Override
-	public void addAttributeStorageFactory(final Class<? extends IAttributeStorageFactory> attributeStorageFactoryClass)
+	public void addAttributeStorageFactory(@NonNull final Class<? extends IAttributeStorageFactory> attributeStorageFactoryClass)
 	{
 		attributeStorageFactories.addIfAbsent(attributeStorageFactoryClass);
+	}
+
+	@Override
+	public void addAttributeStorageListener(@NonNull final IAttributeStorageListener attributeStorageListener)
+	{
+		attributeStorageListeners.add(attributeStorageListener);
 	}
 }

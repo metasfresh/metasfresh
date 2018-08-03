@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -34,16 +37,25 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
-import org.compiere.util.Env;
 
-/**
- * Material Attributes DAO
- *
- * @author tsa
- *
- */
+import de.metas.lang.SOTrx;
+
 public interface IAttributeDAO extends ISingletonService
 {
+	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
+
+	I_M_Attribute getAttributeById(int attributeId);
+
+	I_M_Attribute getAttributeById(AttributeId attributeId);
+
+	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
+	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
+
+	/** @return attributes, ordered by M_AttributeUse.SeqNo */
+	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
+
+	String getAttributeCodeById(AttributeId attributeId);
+
 	/**
 	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
 	 */
@@ -54,61 +66,47 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	I_M_AttributeSetInstance retrieveNoAttributeSetInstance();
 
-	I_M_Attribute retrieveAttributeById(Properties ctx, int attributeId);
-
 	List<I_M_AttributeValue> retrieveAttributeValues(I_M_Attribute attribute);
 
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
 	 *
 	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
-	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by {@code M_Attribute_ID}. Never {@code null}
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
+	/**
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_Attribute_ID.
+	 *         If you want the instances to be ordered by M_AttributeUse.SeqNo,
+	 *         please use {@link #retrieveAttributeInstances(I_M_AttributeSetInstance)}
+	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
 
-
-	/**
-	 * Same as {@link #retrieveAttributeInstance(I_M_AttributeSetInstance, int, String)} but <code>attributeSetInstance</code>'s trxName will be used.
-	 *
-	 * @param attributeSetInstance
-	 * @param attributeId M_Attribute_ID
-	 * @return attribute instance or null
-	 */
-	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, int attributeId);
+	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
 
 	/**
 	 * Retrieve all attribute values that are defined for SO/PO transactions.
 	 *
-	 * @param attribute
-	 * @param isSOTrx if NULL, retrieve all attribute values.
-	 * @return
+	 * @param soTrx if NULL, retrieve all attribute values.
 	 */
-	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, Boolean isSOTrx);
+	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
-	 *
-	 * @param attributeSet
-	 * @param isInstanceAttribute
-	 * @return
 	 */
-	List<I_M_Attribute> retrieveAttributes(I_M_AttributeSet attributeSet, boolean isInstanceAttribute);
+	List<I_M_Attribute> retrieveAttributes(AttributeSetId attributeSetId, boolean isInstanceAttribute);
 
 	/**
 	 * Check if an attribute belongs to an attribute set (via M_AttributeUse).
-	 *
-	 * @param attributeSetId
-	 * @param attributeId
-	 * @param ctxProvider
-	 * @return
 	 */
-	boolean containsAttribute(int attributeSetId, int attributeId, Object ctxProvider);
+	boolean containsAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
-	I_M_Attribute retrieveAttribute(final I_M_AttributeSet as, final int attributeId);
+	I_M_Attribute retrieveAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
 	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
+
+	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
@@ -134,61 +132,44 @@ public interface IAttributeDAO extends ISingletonService
 	 * Now, when we call {@link #retrieveAttributeValueSubstitutes(I_M_Attribute, String)} with value="A" we will get a set of {"A&B", "A&C"}.
 	 * </pre>
 	 *
-	 * @param attribute
-	 * @param value
 	 * @return substitutes (M_AttributeValue.Value).
 	 */
 	Set<String> retrieveAttributeValueSubstitutes(I_M_Attribute attribute, String value);
 
+	AttributeId retrieveAttributeIdByValue(String value);
+
+	AttributeId retrieveAttributeIdByValueOrNull(String value);
+
 	/**
 	 * Gets {@link I_M_Attribute} by it's Value (a.k.a. Internal Name)
 	 *
-	 * @param ctx
-	 * @param value
-	 * @param clazz
 	 * @return attribute; never return null
 	 */
-	<T extends I_M_Attribute> T retrieveAttributeByValue(Properties ctx, String value, Class<T> clazz);
+	<T extends I_M_Attribute> T retrieveAttributeByValue(String value, Class<T> clazz);
 
 	/**
 	 * @return attribute; never return null
 	 */
 	default I_M_Attribute retrieveAttributeByValue(final String value)
 	{
-		return retrieveAttributeByValue(Env.getCtx(), value, I_M_Attribute.class);
+		return retrieveAttributeByValue(value, I_M_Attribute.class);
 	}
-
 
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
 	 *
 	 * NOTE: it is not saving it
-	 *
-	 * @param ctx
-	 * @param asi
-	 * @param attributeId
-	 * @param trxName
-	 * @return
 	 */
-	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final int attributeId, final String trxName);
+	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
 
 	/**
 	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
 	 *
-	 * @param fromASI
 	 * @return asi copy
 	 */
 	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
 	{
 		return ASICopy.newInstance(fromASI).copy();
-	}
-
-
-	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI, int overrideM_AttributeSet_ID)
-	{
-		return ASICopy.newInstance(fromASI)
-				.overrideM_AttributeSet_ID(overrideM_AttributeSet_ID)
-				.copy();
 	}
 
 	default ASICopy prepareCopy(final I_M_AttributeSetInstance fromASI)
@@ -197,8 +178,9 @@ public interface IAttributeDAO extends ISingletonService
 	}
 
 	/**
-	 * @param attribute
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
+
+	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 }

@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 312987307L;
+	private static final long serialVersionUID = 368112425L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -27,7 +27,6 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setAD_Element_ID (0);
 			setAD_Reference_ID (0);
 			setAD_Table_ID (0);
-			setAllowZoomTo (false); // N
 			setColumnName (null);
 			setDDL_NoForeignKey (false); // N
 			setEntityType (null); // U
@@ -313,29 +312,6 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Allow Zoom To.
-		@param AllowZoomTo Allow Zoom To	  */
-	@Override
-	public void setAllowZoomTo (boolean AllowZoomTo)
-	{
-		set_Value (COLUMNNAME_AllowZoomTo, Boolean.valueOf(AllowZoomTo));
-	}
-
-	/** Get Allow Zoom To.
-		@return Allow Zoom To	  */
-	@Override
-	public boolean isAllowZoomTo () 
-	{
-		Object oo = get_Value(COLUMNNAME_AllowZoomTo);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Spaltenname.

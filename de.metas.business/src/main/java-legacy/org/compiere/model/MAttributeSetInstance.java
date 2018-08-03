@@ -20,12 +20,14 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 /**
  * Product Attribute Set Instance
@@ -129,25 +131,25 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	 * Get Lot No
 	 * 
 	 * @param getNew if true create/set new lot
-	 * @param M_Product_ID product used if new
+	 * @param productId product used if new
 	 * @return lot
 	 */
-	public String getLot(boolean getNew, int M_Product_ID)
+	private String getLot(boolean getNew, final ProductId productId)
 	{
 		if (getNew)
-			createLot(M_Product_ID);
+			createLot(productId);
 		return getLot();
 	}	// getLot
 
 	/**
 	 * Create Lot
 	 * 
-	 * @param M_Product_ID product used if new
+	 * @param productId product used if new
 	 * @return lot info
 	 */
-	public KeyNamePair createLot(int M_Product_ID)
+	private KeyNamePair createLot(final ProductId productId)
 	{
-		final KeyNamePair retValue = getMAttributeSet().createLot(M_Product_ID);
+		final KeyNamePair retValue = getMAttributeSet().createLot(productId);
 		if(retValue != null)
 		{
 			setM_Lot_ID(retValue.getKey());
@@ -260,15 +262,15 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	 */
 	public static MAttributeSetInstance create(Properties ctx, MProduct product, String trxName)
 	{
-		final int attributeSetId = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
+		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(product);
 
 		MAttributeSetInstance asi = new MAttributeSetInstance(ctx, 0, trxName);
 		asi.setClientOrg(product.getAD_Client_ID(), 0);
-		asi.setM_AttributeSet_ID(attributeSetId);
+		asi.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		// Create new Lot, Serial# and Guarantee Date
 		if (asi.getM_AttributeSet_ID() > 0)
 		{
-			asi.getLot(true, product.getM_Product_ID());
+			asi.getLot(true, ProductId.ofRepoId(product.getM_Product_ID()));
 			asi.getSerNo(true);
 			
 			// metas-tsa: guarantee date needs to be explicitly set because for calculating it we need more info (vendor bpartner, product, receipt date).

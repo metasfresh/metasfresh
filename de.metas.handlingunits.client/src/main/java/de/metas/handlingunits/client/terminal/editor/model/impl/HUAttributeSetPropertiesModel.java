@@ -69,7 +69,6 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
-import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.logging.LogManager;
@@ -90,7 +89,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 	private static final transient Logger logger = LogManager.getLogger(HUAttributeSetPropertiesModel.class);
 
-	private final IAttributeStorageListener attributeStorageListener = new AttributeStorageListenerAdapter()
+	private final IAttributeStorageListener attributeStorageListener = new IAttributeStorageListener()
 	{
 		@Override
 		public void onAttributeValueChanged(IAttributeValueContext attributeValueContext, IAttributeStorage storage, IAttributeValue attributeValue, Object valueOld)
@@ -559,11 +558,11 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			super();
 
 			final int warehouseId = attributeStorage.getM_Warehouse_ID();
-			
+
 			final List<String> propertyNames = new ArrayList<>();
 			final Map<String, I_M_Attribute> propertyName2attribute = new HashMap<>();
 			final HashMap<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction = new HashMap<>(); // task 04966
-			
+
 
 			for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
 			{
@@ -670,8 +669,8 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return virtualHU;
 		}
 	}
-	
-	
+
+
 	private static final class DeviceAccessorAsInputMethod implements IInputMethod<Object>
 	{
 		private final AttributeDeviceAccessor deviceAccessor;
@@ -681,7 +680,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			super();
 			this.deviceAccessor = deviceAccessor;
 		}
-		
+
 		@Override
 		public String toString()
 		{
