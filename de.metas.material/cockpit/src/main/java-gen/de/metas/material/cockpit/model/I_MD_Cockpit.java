@@ -170,6 +170,29 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Materialcockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Materialcockpit.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Cockpit_ID();
+
+    /** Column definition for MD_Cockpit_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
+    /** Column name MD_Cockpit_ID */
+    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -197,29 +220,6 @@ public interface I_MD_Cockpit
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product>(I_MD_Cockpit.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Materialcockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Materialcockpit.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMD_Cockpit_ID();
-
-    /** Column definition for MD_Cockpit_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "MD_Cockpit_ID", null);
-    /** Column name MD_Cockpit_ID */
-    public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
 	 * Set Zusage Lieferant.
@@ -324,27 +324,27 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Zusagbare Menge.
+	 * Set Zusagbare Menge (Zählbestand).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyAvailableToPromise (java.math.BigDecimal QtyAvailableToPromise);
+	public void setQtyAvailableToPromiseEstimate (java.math.BigDecimal QtyAvailableToPromiseEstimate);
 
 	/**
-	 * Get Zusagbare Menge.
+	 * Get Zusagbare Menge (Zählbestand).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyAvailableToPromise();
+	public java.math.BigDecimal getQtyAvailableToPromiseEstimate();
 
-    /** Column definition for QtyAvailableToPromise */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyAvailableToPromise = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyAvailableToPromise", null);
-    /** Column name QtyAvailableToPromise */
-    public static final String COLUMNNAME_QtyAvailableToPromise = "QtyAvailableToPromise";
+    /** Column definition for QtyAvailableToPromiseEstimate */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyAvailableToPromiseEstimate = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyAvailableToPromiseEstimate", null);
+    /** Column name QtyAvailableToPromiseEstimate */
+    public static final String COLUMNNAME_QtyAvailableToPromiseEstimate = "QtyAvailableToPromiseEstimate";
 
 	/**
 	 * Set Materialentnahme.

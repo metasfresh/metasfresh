@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
@@ -201,7 +201,7 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 
 		//
 		// Get generated shipment
-		final I_M_InOut shipment = ListUtils.singleElement(generatedShipments);
+		final I_M_InOut shipment = CollectionUtils.singleElement(generatedShipments);
 
 		//
 		// Shipper Transportation: Make sure TU's M_Package is updated

@@ -37,7 +37,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_M_Product;
@@ -297,7 +297,7 @@ public class QueryBuilderTests
 		//
 		// Execute the query and check the result
 		final List<I_M_Product> result = query.list();
-		final I_M_Product productActual = ListUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
+		final I_M_Product productActual = CollectionUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
 		Assert.assertEquals("Retrieved product", product0.getM_Product_ID(), productActual.getM_Product_ID());
 	}
 
@@ -326,7 +326,7 @@ public class QueryBuilderTests
 		//
 		// Execute the query and check the result
 		final List<I_M_Product> result = query.list();
-		final I_M_Product productActual = ListUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
+		final I_M_Product productActual = CollectionUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
 		Assert.assertEquals("Retrieved product", product0.getM_Product_ID(), productActual.getM_Product_ID());
 	}
 }

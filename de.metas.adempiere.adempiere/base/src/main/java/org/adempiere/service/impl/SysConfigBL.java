@@ -30,11 +30,6 @@ public class SysConfigBL implements ISysConfigBL
 {
 	private final Logger s_log = LogManager.getLogger(getClass());
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.adempiere.service.impl.ISysConfigBL#getValue(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public String getValue(final String Name, final String defaultValue)
 	{
@@ -108,7 +103,7 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	/**
-	 * Gets the string value for the given {@code name} and uses {@link StringUtils#toBoolean(Object, Boolean)} to convert the string value to a boolean. 
+	 * Gets the string value for the given {@code name} and uses {@link StringUtils#toBoolean(Object, Boolean)} to convert the string value to a boolean.
 	 */
 	@Override
 	public boolean getBooleanValue(final String Name, final boolean defaultValue)

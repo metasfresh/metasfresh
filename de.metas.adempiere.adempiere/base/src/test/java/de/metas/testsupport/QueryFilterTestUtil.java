@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -45,7 +45,7 @@ public final class QueryFilterTestUtil
 			@NonNull final Class<T> classOfFilterToExtract)
 	{
 		final List<T> extractedFilters = extractFilters(dbFilter, classOfFilterToExtract);
-		return ListUtils.singleElement(extractedFilters);
+		return CollectionUtils.singleElement(extractedFilters);
 	}
 
 	public static <T extends IQueryFilter> List<T> extractFilters(
