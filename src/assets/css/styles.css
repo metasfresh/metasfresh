@@ -928,6 +928,12 @@ td.pulse-off input {
     color: white;
 }
 
+.filter-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .filter-clear {
     font-size: 11px;
     color: $brand-icon-color;

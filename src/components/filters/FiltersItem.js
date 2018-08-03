@@ -200,9 +200,11 @@ class FiltersItem extends Component {
             className="filter-menu filter-widget"
             ref={c => (this.widgetsContainer = c)}
           >
-            <div>
-              {counterpart.translate('window.activeFilter.caption')}:
-              <span className="filter-active">{data.caption}</span>
+            <div className="filter-controls">
+              <div>
+                {counterpart.translate('window.activeFilter.caption')}:
+                <span className="filter-active">{data.caption}</span>
+              </div>
               {isActive && (
                 <span
                   className="filter-clear"
