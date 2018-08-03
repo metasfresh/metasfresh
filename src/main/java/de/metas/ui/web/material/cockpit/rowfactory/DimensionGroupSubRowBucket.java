@@ -1,12 +1,16 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import java.math.BigDecimal;
+import static de.metas.quantity.Quantity.addToNullable;
+
 import java.util.HashSet;
 import java.util.Set;
+
+import org.compiere.model.I_C_UOM;
 
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
 import lombok.NonNull;
@@ -50,21 +54,21 @@ public class DimensionGroupSubRowBucket
 	private final DimensionSpecGroup dimensionSpecGroup;
 
 	// Zusage Lieferant
-	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
+	private Quantity pmmQtyPromised;
 
-	private BigDecimal qtyReservedSale = BigDecimal.ZERO;
+	private Quantity qtyReservedSale;
 
-	private BigDecimal qtyReservedPurchase = BigDecimal.ZERO;
+	private Quantity qtyReservedPurchase;
 
-	private BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
+	private Quantity qtyMaterialentnahme;
 
 	// MRP MEnge
-	private BigDecimal qtyRequiredForProduction = BigDecimal.ZERO;
+	private Quantity qtyRequiredForProduction;
 
 	// zusagbar Zaehlbestand
-	private BigDecimal qtyAvailableToPromise = BigDecimal.ZERO;
+	private Quantity qtyAvailableToPromiseEstimate;
 
-	private BigDecimal qtyOnHandStock = BigDecimal.ZERO;
+	private Quantity qtyOnHandStock;
 
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
@@ -77,19 +81,23 @@ public class DimensionGroupSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		pmmQtyPromised = pmmQtyPromised.add(cockpitRecord.getPMM_QtyPromised_OnDate());
-		qtyMaterialentnahme = qtyMaterialentnahme.add(cockpitRecord.getQtyMaterialentnahme());
-		qtyRequiredForProduction = qtyRequiredForProduction.add(cockpitRecord.getQtyRequiredForProduction());
-		qtyReservedPurchase = qtyReservedPurchase.add(cockpitRecord.getQtyReserved_Purchase());
-		qtyReservedSale = qtyReservedSale.add(cockpitRecord.getQtyReserved_Sale());
-		qtyAvailableToPromise = qtyAvailableToPromise.add(cockpitRecord.getQtyAvailableToPromise());
+		final I_C_UOM uom = cockpitRecord.getM_Product().getC_UOM();
+
+		pmmQtyPromised = addToNullable(pmmQtyPromised, cockpitRecord.getPMM_QtyPromised_OnDate(), uom);
+		qtyMaterialentnahme = addToNullable(qtyMaterialentnahme, cockpitRecord.getQtyMaterialentnahme(), uom);
+		qtyRequiredForProduction = addToNullable(qtyRequiredForProduction, cockpitRecord.getQtyRequiredForProduction(), uom);
+		qtyReservedPurchase = addToNullable(qtyReservedPurchase, cockpitRecord.getQtyReserved_Purchase(), uom);
+		qtyReservedSale = addToNullable(qtyReservedSale, cockpitRecord.getQtyReserved_Sale(), uom);
+		qtyAvailableToPromiseEstimate = addToNullable(qtyAvailableToPromiseEstimate, cockpitRecord.getQtyAvailableToPromiseEstimate(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		qtyOnHandStock = qtyOnHandStock.add(stockRecord.getQtyOnHand());
+		final I_C_UOM uom = stockRecord.getM_Product().getC_UOM();
+
+		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}

@@ -13,7 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -261,7 +261,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
 
-		final I_M_HU splitCU = ListUtils.singleElement(splitHUs);
+		final I_M_HU splitCU = CollectionUtils.singleElement(splitHUs);
 		addHUIdToCurrentPickingSlot(HuId.ofRepoId(splitCU.getM_HU_ID()));
 
 		return splitCU;

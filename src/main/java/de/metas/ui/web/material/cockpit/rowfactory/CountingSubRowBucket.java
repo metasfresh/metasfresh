@@ -1,11 +1,15 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import java.math.BigDecimal;
+import static de.metas.quantity.Quantity.addToNullable;
+
 import java.util.HashSet;
 import java.util.Set;
 
+import org.compiere.model.I_C_UOM;
+
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -51,9 +55,9 @@ public class CountingSubRowBucket
 	private final int plantId;
 
 	// Zaehlbestand
-	private BigDecimal qtyOnHandEstimate = BigDecimal.ZERO;
+	private Quantity qtyOnHandEstimate;
 
-	private BigDecimal qtyOnHandStock = BigDecimal.ZERO;
+	private Quantity qtyOnHandStock;
 
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
@@ -66,14 +70,16 @@ public class CountingSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		qtyOnHandEstimate = qtyOnHandEstimate.add(cockpitRecord.getQtyOnHandEstimate());
+		final I_C_UOM uom = cockpitRecord.getM_Product().getC_UOM();
+		qtyOnHandEstimate = addToNullable(qtyOnHandEstimate, cockpitRecord.getQtyOnHandEstimate(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		qtyOnHandStock = qtyOnHandStock.add(stockRecord.getQtyOnHand());
+		final I_C_UOM uom = stockRecord.getM_Product().getC_UOM();
+		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
@@ -92,5 +98,4 @@ public class CountingSubRowBucket
 				.allIncludedStockRecordIds(stockRecordIds)
 				.build();
 	}
-
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Service;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.order.OrderLineId;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -56,11 +57,6 @@ public class HUReservationDocumentFilterService
 
 	public DocumentFilter createOrderLineDocumentFilter(@NonNull final OrderLineId orderLineId)
 	{
-		return createOrderLineDocumentFilter(orderLineId, false);
-	}
-
-	public DocumentFilter createOrderLineDocumentFilter(@NonNull final OrderLineId orderLineId, final boolean isIgnoreAttributes)
-	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -75,35 +71,43 @@ public class HUReservationDocumentFilterService
 		final List<WarehouseId> //
 		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(orderLineWarehouse.getM_Warehouse_ID()));
 
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
+
 		final IHUQueryBuilder huQuery = handlingUnitsDAO
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(salesOrderLine.getProductId())
 				.addOnlyInWarehouseIds(warehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.setExcludeReservedToOtherThan(salesOrderLine.getId().getOrderLineId())
+				.addOnlyWithAttributes(attributeSet);
 
-				.setExcludeReservedToOtherThan(salesOrderLine.getId().getOrderLineId());
+		return HUIdsFilterHelper.createFilter(huQuery);
+	}
 
-		if (!isIgnoreAttributes)
+	public DocumentFilter createDocumentFilterIgnoreAttributes(@NonNull final IPackageable packageable)
+	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final List<WarehouseId> //
+		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(packageable.getWarehouseId());
+
+		final IHUQueryBuilder huQuery = handlingUnitsDAO
+				.createHUQueryBuilder()
+				.addOnlyWithProductId(packageable.getProductId())
+				.addOnlyInWarehouseIds(warehouseIds)
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
+
+		if (packageable.getOrderLineIdOrNull() == null)
 		{
-			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
-
-			huQuery.addOnlyWithAttributes(attributeSet);
+			huQuery.setExcludeReserved();
+		}
+		else
+		{
+			huQuery.setExcludeReservedToOtherThan(packageable.getOrderLineIdOrNull());
 		}
 
 		return HUIdsFilterHelper.createFilter(huQuery);
 	}
-
-	public DocumentFilter createNoReservationDocumentFilter()
-	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		final IHUQueryBuilder huQuery = handlingUnitsDAO
-				.createHUQueryBuilder()
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.setExcludeReserved();
-
-		return HUIdsFilterHelper.createFilter(huQuery);
-	}
-
 }

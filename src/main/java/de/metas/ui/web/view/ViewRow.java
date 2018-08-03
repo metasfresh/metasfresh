@@ -139,7 +139,7 @@ public final class ViewRow implements IViewRow
 	{
 		return processed;
 	}
-	
+
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
@@ -226,7 +226,7 @@ public final class ViewRow implements IViewRow
 					_rowIdEffective = rowId.toIncludedRowId();
 				}
 			}
-			
+
 			return _rowIdEffective;
 		}
 
@@ -296,7 +296,7 @@ public final class ViewRow implements IViewRow
 		{
 			return values;
 		}
-		
+
 		public Object getFieldValue(final String fieldName)
 		{
 			return values.get(fieldName);
@@ -323,6 +323,5 @@ public final class ViewRow implements IViewRow
 
 			return ImmutableList.copyOf(includedRows);
 		}
-
 	}
 }

@@ -1,7 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -64,7 +64,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	{
 		if (WAREHOUSE_PARAM_NAME.equals(parameter.getColumnName()))
 		{
-			final int singleWarehouseId = ListUtils.extractSingleElementOrDefault(
+			final int singleWarehouseId = CollectionUtils.extractSingleElementOrDefault(
 					getM_ReceiptSchedules(),
 					I_M_ReceiptSchedule::getM_Warehouse_Dest_ID,
 					-1);

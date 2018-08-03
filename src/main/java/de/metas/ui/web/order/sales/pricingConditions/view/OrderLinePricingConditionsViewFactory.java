@@ -9,7 +9,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
@@ -83,7 +83,7 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
-		final int orderLineId = ListUtils.singleElement(request.getFilterOnlyIds());
+		final int orderLineId = CollectionUtils.singleElement(request.getFilterOnlyIds());
 		Check.assumeGreaterThanZero(orderLineId, "salesOrderLineId");
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId);
 

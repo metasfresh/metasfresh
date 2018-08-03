@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -151,7 +151,7 @@ public final class CreateViewRequest
 	/**
 	 * This one is becoming kind of legacy.... it's a particular kind of sticky filter which filters by given IDs.<br>
 	 * <b>Important:</b> never null, empty means "no restriction"
-	 * 
+	 *
 	 * @deprecated please rather use {@link #getFilters()} {@link #getStickyFilters()}.
 	 */
 	@Deprecated
@@ -234,7 +234,7 @@ public final class CreateViewRequest
 
 	public int getSingleFilterOnlyId()
 	{
-		return ListUtils.singleElement(getFilterOnlyIds());
+		return CollectionUtils.singleElement(getFilterOnlyIds());
 	}
 
 	public List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)

@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
@@ -75,7 +76,11 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 		final ViewId pickingSlotViewId = pickingSlotsView.getViewId();
 		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		final CreateViewRequest createRequest = husToPickViewFactory.createViewRequest(pickingSlotViewId, pickingSlotRowId, shipmentScheduleId);
+		final CreateViewRequest createRequest = husToPickViewFactory.createViewRequest(
+				pickingSlotViewId,
+				pickingSlotRowId,
+				ShipmentScheduleId.offRepoId(shipmentScheduleId));
+
 		final IView husToPickView = viewsRepo.createView(createRequest);
 		return husToPickView;
 	}

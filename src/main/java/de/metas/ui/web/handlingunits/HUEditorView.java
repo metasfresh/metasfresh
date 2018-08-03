@@ -98,7 +98,7 @@ public class HUEditorView implements IView
 
 	private final ImmutableMap<String, Object> parameters;
 
-	/* package */ HUEditorView(final HUEditorViewBuilder builder)
+	/* package */ HUEditorView(@NonNull final HUEditorViewBuilder builder)
 	{
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();

@@ -29,7 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -157,7 +157,7 @@ public class BoardDescriptorRepository
 		{
 			throw new EntityNotFoundException("No board found for ID=" + boardId);
 		}
-		
+
 		//
 		// Board document mappings
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(boardPO.getAD_Table_ID());
@@ -335,7 +335,7 @@ public class BoardDescriptorRepository
 		Preconditions.checkArgument(cardId >= 0, "cardId >= 0"); // zero is OK because we might have recordId=0
 		final Set<Integer> onlyCardIds = ImmutableSet.of(cardId);
 
-		return ListUtils.singleElement(retrieveCards(boardId, onlyCardIds));
+		return CollectionUtils.singleElement(retrieveCards(boardId, onlyCardIds));
 	}
 
 	public List<BoardCard> getCards(final int boardId, final Collection<Integer> cardIds)

@@ -6,12 +6,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.reflect.FieldReference;
+import org.compiere.util.Env;
 import org.reflections.ReflectionUtils;
 
 import com.google.common.cache.CacheBuilder;
@@ -24,8 +29,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.Values;
@@ -157,7 +163,7 @@ public final class ViewColumnHelper
 		return columnBuilder.build();
 	}
 
-	private static ClassViewDescriptor createClassViewDescriptor(final Class<?> dataType)
+	private static ClassViewDescriptor createClassViewDescriptor(@NonNull final Class<?> dataType)
 	{
 		@SuppressWarnings("unchecked")
 		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotations(ViewColumn.class));
@@ -177,15 +183,16 @@ public final class ViewColumnHelper
 
 	}
 
-	private static ClassViewColumnDescriptor createClassViewColumnDescriptor(final Field field)
+	private static ClassViewColumnDescriptor createClassViewColumnDescriptor(@NonNull final Field field)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+		final String fieldName = extractFieldName(field);
+
 		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
-		final String fieldName = !Check.isEmpty(viewColumnAnn.fieldName(), true) ? viewColumnAnn.fieldName().trim() : field.getName();
 		final String captionKey = !Check.isEmpty(viewColumnAnn.captionKey()) ? viewColumnAnn.captionKey() : fieldName;
 
-		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = createViewColumnLayoutDescriptors(viewColumnAnn);
+		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = createViewColumnLayoutDescriptors(viewColumnAnn, fieldName);
 
 		return ClassViewColumnDescriptor.builder()
 				.fieldName(fieldName)
@@ -199,16 +206,26 @@ public final class ViewColumnHelper
 				.build();
 	}
 
-	private static ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> createViewColumnLayoutDescriptors(final ViewColumn viewColumnAnn)
+	private static String extractFieldName(@NonNull final Field field)
+	{
+		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
+		final String fieldName = !Check.isEmpty(viewColumnAnn.fieldName(), true) ? viewColumnAnn.fieldName().trim() : field.getName();
+		return fieldName;
+	}
+
+	private static ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> createViewColumnLayoutDescriptors(
+			@NonNull final ViewColumn viewColumnAnn,
+			@NonNull final String fieldName)
 	{
 		final int defaultSeqNo = viewColumnAnn.seqNo();
 
 		if (viewColumnAnn.layouts().length > 0)
 		{
 			return Stream.of(viewColumnAnn.layouts())
-					.map(layoutAnn -> ClassViewColumnLayoutDescriptor.builder()
+					.map(layoutAnn -> ClassViewColumnLayoutDescriptor
+							.builder()
 							.viewType(layoutAnn.when())
-							.displayed(layoutAnn.displayed())
+							.displayed(extractDisplayedValue(layoutAnn, fieldName))
 							.seqNo(layoutAnn.seqNo() >= 0 ? layoutAnn.seqNo() : defaultSeqNo)
 							.build())
 					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
@@ -229,6 +246,39 @@ public final class ViewColumnHelper
 		}
 	}
 
+	private static boolean extractDisplayedValue(
+			@NonNull final ViewColumnLayout viewColumnLayout,
+			@NonNull final String fieldName)
+	{
+		if (viewColumnLayout.displayed() == Displayed.FALSE)
+		{
+			return false;
+		}
+		else if (viewColumnLayout.displayed() == Displayed.TRUE)
+		{
+			return true;
+		}
+		else if (viewColumnLayout.displayed() == Displayed.SYSCONFIG)
+		{
+			final String displayedSysConfigPrefix = viewColumnLayout.displayedSysConfigPrefix();
+			if (Check.isEmpty(displayedSysConfigPrefix, true))
+			{
+				return false;
+			}
+			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
+
+			return Services.get(ISysConfigBL.class)
+					.getBooleanValue(
+							sysConfigKey,
+							false,
+							Env.getAD_Client_ID(),
+							Env.getAD_Org_ID(Env.getCtx()));
+		}
+
+		Check.fail("ViewColumnLayout.displayed value={}; viewColumnLayout={}", viewColumnLayout.displayed(), viewColumnLayout);
+		return false;
+	}
+
 	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnDescriptor column)
 	{
 		return DocumentLayoutElementDescriptor.builder()
@@ -243,11 +293,13 @@ public final class ViewColumnHelper
 
 	/**
 	 * This helper method is intended to support individual implementations of {@link IViewRow#getFieldNameAndJsonValues()}.
+	 * <b>
+	 * Note that the individual fields maybe be {@code instanceof} {@link Supplier}.
+	 * Useful because if a field is configured not to be shown at all, then the respective supplier won't be invoked.
 	 */
 	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
-
 		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		getDescriptor(rowClass)
 				.getColumns()
@@ -258,7 +310,6 @@ public final class ViewColumnHelper
 						result.put(column.getFieldName(), value);
 					}
 				});
-
 		return ImmutableMap.copyOf(result);
 	}
 
@@ -272,6 +323,11 @@ public final class ViewColumnHelper
 		try
 		{
 			final Object value = field.get(row);
+			if (value instanceof Supplier<?>)
+			{
+				final Supplier<?> supplier = (Supplier<?>)value;
+				Values.valueToJsonObject(supplier.get());
+			}
 			return Values.valueToJsonObject(value);
 		}
 		catch (final Exception e)

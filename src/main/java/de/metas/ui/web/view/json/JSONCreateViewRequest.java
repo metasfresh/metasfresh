@@ -3,7 +3,7 @@ package de.metas.ui.web.view.json;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -52,7 +52,7 @@ public final class JSONCreateViewRequest
 
 	@JsonProperty("viewType")
 	private final JSONViewDataType viewType;
-	
+
 	@JsonProperty("profileId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ViewProfileId profileId;
@@ -123,7 +123,7 @@ public final class JSONCreateViewRequest
 		}
 		else
 		{
-			final DocumentId documentId = DocumentId.of(ListUtils.singleElement(documentIds));
+			final DocumentId documentId = DocumentId.of(CollectionUtils.singleElement(documentIds));
 			final DetailId tabId = DetailId.fromJson(tabIdStr);
 			final Set<String> rowIds = referencing.getRowIds();
 			return rowIds.stream()
