@@ -122,6 +122,7 @@ class FiltersNotFrequent extends Component {
                 viewId={viewId}
                 outsideClick={this.outsideClick}
                 openedFilter={true}
+                filtersWrapper={this.props.filtersWrapper}
               />
             )}
           </div>

@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
+import ReactDOM from 'react-dom';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
@@ -22,6 +23,7 @@ class FiltersItem extends Component {
     this.state = {
       filter: props.data,
       isTooltipShow: false,
+      maxWidth: null,
     };
   }
 
@@ -40,6 +42,26 @@ class FiltersItem extends Component {
   componentDidMount() {
     if (this.widgetsContainer) {
       this.widgetsContainer.addEventListener('scroll', this.handleScroll);
+    }
+
+    if (this.props.filtersWrapper) {
+      /* eslint-disable react/no-find-dom-node */
+      const widgetElement = ReactDOM.findDOMNode(this.widgetsContainer);
+      const buttonElement = widgetElement.closest('.filter-wrapper');
+      const wrapperElement = ReactDOM.findDOMNode(this.props.filtersWrapper);
+      /* eslint-enablereact/no-find-dom-node */
+      const wrapperRight = wrapperElement.getBoundingClientRect().right;
+
+      const documentElement = wrapperElement.closest('.document-lists-wrapper');
+      const documentRight = documentElement.getBoundingClientRect().right;
+
+      if (parent) {
+        const offset = documentRight - wrapperRight + buttonElement.offsetWidth;
+
+        this.setState({
+          maxWidth: offset,
+        });
+      }
     }
   }
 
@@ -179,7 +201,12 @@ class FiltersItem extends Component {
       captionValue,
       openedFilter,
     } = this.props;
-    const { filter, isTooltipShow } = this.state;
+    const { filter, isTooltipShow, maxWidth } = this.state;
+    const style = {};
+
+    if (maxWidth) {
+      style.width = maxWidth;
+    }
 
     return (
       <div>
@@ -198,6 +225,7 @@ class FiltersItem extends Component {
         ) : (
           <div
             className="filter-menu filter-widget"
+            style={style}
             ref={c => (this.widgetsContainer = c)}
           >
             <div className="filter-controls">

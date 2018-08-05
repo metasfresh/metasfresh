@@ -139,6 +139,7 @@ class FiltersFrequent extends PureComponent {
                     viewId={viewId}
                     outsideClick={this.outsideClick}
                     openedFilter={true}
+                    filtersWrapper={this.props.filtersWrapper}
                   />
                 )}
               </div>
