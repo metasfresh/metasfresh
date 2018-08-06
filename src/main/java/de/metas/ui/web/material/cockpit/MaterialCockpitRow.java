@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -120,7 +121,8 @@ public class MaterialCockpitRow implements IViewRow
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 32, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	private final LookupValue manufacturer;
+	/** Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB. */
+	private final Supplier<LookupValue> manufacturer;
 
 	public static final String FIELDNAME_PackageSize = I_M_Product.COLUMNNAME_PackageSize;
 	@ViewColumn(fieldName = FIELDNAME_PackageSize, //
@@ -138,7 +140,8 @@ public class MaterialCockpitRow implements IViewRow
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 32, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	private final LookupValue uom;
+	/** Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB. */
+	private final Supplier<LookupValue> uom;
 
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
@@ -259,10 +262,11 @@ public class MaterialCockpitRow implements IViewRow
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		final int uomRepoId = Util.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
-		this.uom = lookupFactory
+
+		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
 				.findById(uomRepoId);
-		this.manufacturer = lookupFactory
+		this.manufacturer = () -> lookupFactory
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
@@ -353,11 +357,11 @@ public class MaterialCockpitRow implements IViewRow
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		final int uomRepoId = Util.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
-		this.uom = lookupFactory
+		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
 				.findById(uomRepoId);
 
-		this.manufacturer = lookupFactory
+		this.manufacturer = () -> lookupFactory
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 
@@ -425,11 +429,11 @@ public class MaterialCockpitRow implements IViewRow
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		final int uomRepoId = Util.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
-		this.uom = lookupFactory
+		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
 				.findById(uomRepoId);
 
-		this.manufacturer = lookupFactory
+		this.manufacturer = () -> lookupFactory
 				.searchInTableLookup(I_C_BPartner.Table_Name)
 				.findById(productRecord.getManufacturer_ID());
 

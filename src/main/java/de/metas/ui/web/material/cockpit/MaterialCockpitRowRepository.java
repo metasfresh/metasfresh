@@ -120,7 +120,8 @@ public class MaterialCockpitRowRepository
 
 		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
 
-		final CreateRowsRequest request = CreateRowsRequest.builder()
+		final CreateRowsRequest request = CreateRowsRequest
+				.builder()
 				.date(TimeUtil.asTimestamp(date))
 				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
 				.cockpitRecords(cockpitRecords)

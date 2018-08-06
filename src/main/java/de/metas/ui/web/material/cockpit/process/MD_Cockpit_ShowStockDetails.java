@@ -65,7 +65,7 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 	protected String doIt() throws Exception
 	{
 		final String viewId = createView().getViewId();
-		//getResult().setWebuiViewId(viewId);
+		// getResult().setWebuiViewId(viewId);
 		getResult().setWebuiIncludedViewIdToOpen(viewId);
 
 		return MSG_OK;
@@ -118,31 +118,30 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 					builder = newBuilder(row);
 				}
 			}
-			else
+			else if (dimensionGroup.getAttributeId().isPresent())
 			{
-				for (final AttributeId attributeId : dimensionGroup.getAttributeIds())
-				{
-					final int attributeRepoId = attributeId.getRepoId();
-					final DocumentFilterParam attributeParameter = DocumentFilterParam
-							.builder()
-							.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Attribute_ID)
-							.setValue(attributeRepoId)
-							.build();
-					builder.addParameter(attributeParameter);
+				final AttributeId attributeId = dimensionGroup.getAttributeId().get();
 
-					final DocumentFilterParam attributeValueParameter = DocumentFilterParam
-							.builder()
-							.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_AttributeValue)
-							.setValue(MaterialCockpitUtil.NON_EMPTY)
-							.build();
-					builder.addParameter(attributeValueParameter);
+				final int attributeRepoId = attributeId.getRepoId();
+				final DocumentFilterParam attributeParameter = DocumentFilterParam
+						.builder()
+						.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Attribute_ID)
+						.setValue(attributeRepoId)
+						.build();
+				builder.addParameter(attributeParameter);
 
-					final DocumentFilter filter = builder.setFilterId(row.getId().toString() + "_" + attributeRepoId).build();
+				final DocumentFilterParam attributeValueParameter = DocumentFilterParam
+						.builder()
+						.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_AttributeValue)
+						.setValue(MaterialCockpitUtil.NON_EMPTY)
+						.build();
+				builder.addParameter(attributeValueParameter);
 
-					viewRequestBuilder.addStickyFilters(filter);
-					attributeFilterAdded = true;
-					builder = newBuilder(row);
-				}
+				final DocumentFilter filter = builder.setFilterId(row.getId().toString() + "_" + attributeRepoId).build();
+
+				viewRequestBuilder.addStickyFilters(filter);
+				attributeFilterAdded = true;
+				builder = newBuilder(row);
 			}
 			if (!attributeFilterAdded)
 			{
