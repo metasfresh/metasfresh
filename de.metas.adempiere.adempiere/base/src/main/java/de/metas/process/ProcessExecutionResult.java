@@ -363,7 +363,7 @@ public class ProcessExecutionResult
 			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
 		}
 	}
-	
+
 	public void setRecordsToOpen(@NonNull final String tableName, final Collection<Integer> recordIds, final String adWindowId)
 	{
 		if (recordIds == null || recordIds.isEmpty())
