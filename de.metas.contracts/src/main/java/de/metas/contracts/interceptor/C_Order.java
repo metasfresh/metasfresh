@@ -138,7 +138,7 @@ public class C_Order
 					.nextTermStartDate(null)
 					.build();
 
-			Services.get(IFlatrateBL.class).extendContract(request);
+			Services.get(IFlatrateBL.class).extendContractAndNotifyUser(request);
 		}
 	}
 
