@@ -2,9 +2,9 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -222,22 +222,14 @@ import lombok.NonNull;
 				//
 				.setPrintAD_Process_ID(gridTabVO.getPrint_Process_ID());
 
-		final Predicate<GridFieldVO> isKeyColumn;
-		if (gridTabVO.getFields().stream().anyMatch(GridFieldVO::isKey))
-		{
-			isKeyColumn = GridFieldVO::isKey;
-		}
-		else
-		{
-			isKeyColumn = GridFieldVO::isParentLink;
-		}
-
-		//
 		// Fields descriptor
 		gridTabVO
 				.getFields()
 				.stream()
-				.forEach(gridFieldVO -> createAndAddDocumentField(entityDescriptorBuilder, gridFieldVO, isKeyColumn.test(gridFieldVO)));
+				.forEach(gridFieldVO -> createAndAddDocumentField(
+						entityDescriptorBuilder,
+						gridFieldVO,
+						isTreatFieldAsKey(gridFieldVO, gridTabVO, entityDescriptorBuilder)));
 
 		//
 		// Labels field descriptors
@@ -246,6 +238,35 @@ import lombok.NonNull;
 				.forEach(labelUIElement -> createAndAddLabelsDocumentField(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
+	}
+
+	// keyColumn==true will mean "readOnly" further down the road
+	private boolean isTreatFieldAsKey(
+			@NonNull final GridFieldVO gridFieldVO,
+			@NonNull final GridTabVO gridTabVO,
+			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
+	{
+		final boolean gridTabVOHasKeyColumns = gridTabVO.getFields().stream().anyMatch(GridFieldVO::isKey);
+
+		if (gridTabVOHasKeyColumns)
+		{
+			return gridFieldVO.isKey();
+		}
+		return isFieldTheCurrentlyUsedParentLink(gridFieldVO, entityDescriptorBuilder);
+	}
+
+	private boolean isFieldTheCurrentlyUsedParentLink(
+			@NonNull final GridFieldVO gridFieldVO,
+			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
+	{
+		if (!gridFieldVO.isParentLink())
+		{
+			return false;
+		}
+
+		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
+		final String parentLinkColumnName = entityBindings.getSqlParentLinkColumnName();
+		return Objects.equals(gridFieldVO.getColumnName(), parentLinkColumnName);
 	}
 
 	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final int adFieldId)
@@ -259,20 +280,15 @@ import lombok.NonNull;
 		return documentEntity().getFieldBuilder(fieldName);
 	}
 
-	private final void createAndAddDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final GridFieldVO gridFieldVO, final boolean keyColumn)
+	private final void createAndAddDocumentField(
+			final DocumentEntityDescriptor.Builder entityDescriptorBuilder,
+			final GridFieldVO gridFieldVO,
+			final boolean keyColumn)
 	{
 		// From entry data-binding:
-		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptor.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
+		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
 
 		// From GridFieldVO:
-		final String fieldName = gridFieldVO.getColumnName();
-		final String sqlColumnName = fieldName;
-
-		//
-		final boolean isParentLinkColumn = sqlColumnName.equals(entityBindings.getSqlLinkColumnName());
-		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
-
-		//
 		//
 		DocumentFieldWidgetType widgetType;
 		final Class<?> valueClass;
@@ -282,7 +298,10 @@ import lombok.NonNull;
 		final LookupDescriptor lookupDescriptor;
 		ILogicExpression readonlyLogic;
 
-		if (isParentLinkColumn)
+		final boolean isParentLinkColumn = isFieldTheCurrentlyUsedParentLink(gridFieldVO, entityDescriptorBuilder);
+		final String sqlColumnName = gridFieldVO.getColumnName();
+
+		if (isParentLinkColumn) // assumes that the column is not only flagged as parent link, but is also the parent link *in this particular document*
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = widgetType.getValueClass();
@@ -306,7 +325,6 @@ import lombok.NonNull;
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
 					.setCtxTableName(ctxTableName)
 					.setCtxColumnName(sqlColumnName)
-
 					.setWidgetType(widgetType)
 					.setDisplayType(displayType)
 					.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
@@ -319,7 +337,7 @@ import lombok.NonNull;
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(
 					gridFieldVO.getDefaultValue(),
-					fieldName,
+					sqlColumnName,
 					widgetType,
 					valueClass,
 					gridFieldVO.isMandatory(),
@@ -333,7 +351,10 @@ import lombok.NonNull;
 		final ButtonFieldActionDescriptor buttonAction;
 		if (!isParentLinkColumn && widgetType.isButton())
 		{
-			buttonAction = extractButtonFieldActionDescriptor(entityDescriptor.getTableNameOrNull(), fieldName, gridFieldVO.AD_Process_ID);
+			buttonAction = extractButtonFieldActionDescriptor(
+					entityDescriptorBuilder.getTableNameOrNull(),
+					sqlColumnName,
+					gridFieldVO.AD_Process_ID);
 			if (buttonAction != null)
 			{
 				final ButtonFieldActionType actionType = buttonAction.getActionType();
@@ -380,6 +401,7 @@ import lombok.NonNull;
 				.setDefaultOrderBy(orderBySortNo)
 				.build();
 
+		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
 				.setCaption(gridFieldVO.getHeaderTrls(), gridFieldVO.getHeader())
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
@@ -410,7 +432,7 @@ import lombok.NonNull;
 
 		//
 		// Add Field builder to document entity
-		entityDescriptor.addField(fieldBuilder);
+		entityDescriptorBuilder.addField(fieldBuilder);
 
 		//
 		// Add Field's data binding to entity data binding
