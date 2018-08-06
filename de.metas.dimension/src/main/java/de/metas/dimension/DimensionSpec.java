@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -379,27 +379,20 @@ public class DimensionSpec
 			@NonNull final Multimap<IPair<String, AttributeId>, Integer> groupNameToAttributeValueIds,
 			@NonNull final Builder<DimensionSpecGroup> list)
 	{
-		final Multimap<String, AttributeId> groupName2AttributeIds = ArrayListMultimap.create();
+		final Collection<Entry<IPair<String, AttributeId>, Collection<Integer>>> //
+		entrySet = groupNameToAttributeValueIds.asMap().entrySet();
 
-		final Set<IPair<String, AttributeId>> pairs = groupNameToAttributeValueIds.keySet();
-		for (final IPair<String, AttributeId> pair : pairs)
-		{
-			groupName2AttributeIds.put(pair.getLeft(), pair.getRight());
-		}
-
-		final Collection<Entry<IPair<String, AttributeId>, Integer>> entrySet = groupNameToAttributeValueIds.entries();
-		for (final Entry<IPair<String, AttributeId>, Integer> entry : entrySet)
+		for (final Entry<IPair<String, AttributeId>, Collection<Integer>> entry : entrySet)
 		{
 			final String groupName = entry.getKey().getLeft();
 			final ITranslatableString groupNameTrl = ITranslatableString.constant(groupName);
-
-			final Collection<AttributeId> attributeIds = groupName2AttributeIds.get(groupName);
+			final Optional<AttributeId> groupAttributeId = Optional.ofNullable(entry.getKey().getRight());
 			final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(entry.getValue());
 
 			final DimensionSpecGroup newGroup = new DimensionSpecGroup(
 					groupNameTrl,
 					attributesKey,
-					ImmutableList.copyOf(attributeIds));
+					groupAttributeId);
 			list.add(newGroup);
 		}
 	}
