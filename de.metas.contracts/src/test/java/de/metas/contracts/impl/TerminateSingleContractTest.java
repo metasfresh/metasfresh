@@ -126,7 +126,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContract(context);
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
@@ -155,7 +155,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContract(context);
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
