@@ -92,7 +92,7 @@ public final class DocumentFieldDescriptor
 	/** Is this the key field ? */
 	private final boolean key;
 	private final boolean calculated;
-	
+
 	@Getter
 	private final boolean parentLink;
 	@Getter
@@ -151,7 +151,6 @@ public final class DocumentFieldDescriptor
 
 	private DocumentFieldDescriptor(final Builder builder)
 	{
-		super();
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
 		description = builder.getDescription();
@@ -159,7 +158,7 @@ public final class DocumentFieldDescriptor
 
 		key = builder.isKey();
 		calculated = builder.isCalculated();
-		
+
 		parentLink = builder.parentLink;
 		parentLinkFieldName = builder.parentLinkFieldName;
 

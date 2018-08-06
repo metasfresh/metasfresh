@@ -1516,9 +1516,8 @@ public final class Document
 		getIncludedDocumentsCollection(detailId).assertNewDocumentAllowed();
 	}
 
-	/* package */IIncludedDocumentsCollection getIncludedDocumentsCollection(final DetailId detailId)
+	/* package */IIncludedDocumentsCollection getIncludedDocumentsCollection(@NonNull final DetailId detailId)
 	{
-		Check.assumeNotNull(detailId, "Parameter detailId is not null");
 		final IIncludedDocumentsCollection includedDocumentsForDetailId = includedDocuments.get(detailId);
 		if (includedDocumentsForDetailId == null)
 		{

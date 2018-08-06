@@ -91,7 +91,6 @@ import lombok.NonNull;
 	/** copy constructor */
 	protected DocumentField(final DocumentField from, final Document document, final CopyMode copyMode)
 	{
-		super();
 		descriptor = from.descriptor;
 		_document = document;
 		_lookupDataSource = from._lookupDataSource;

@@ -258,7 +258,7 @@ public class WindowRestController
 	}
 
 	/**
-	 * 
+	 *
 	 * @param windowIdStr
 	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
 	 * @param advanced
@@ -494,7 +494,10 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
+		return documentCollection
+				.forDocumentReadonly(
+						documentPath,
+						document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
