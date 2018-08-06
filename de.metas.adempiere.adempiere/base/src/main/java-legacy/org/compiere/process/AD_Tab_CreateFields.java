@@ -40,16 +40,16 @@ import de.metas.process.Param;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)
- * 
+ *
  * @author Jorg Janke
  * @version $Id: TabCreateFields.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
- * 
+ *
  * @author Teo Sarca
  *         <li>BF [ 2827782 ] TabCreateFields process not setting entity type well https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2827782&group_id=176962
  */
-public class TabCreateFields extends JavaProcess
+public class AD_Tab_CreateFields extends JavaProcess
 {
-	private static final transient Logger log = LogManager.getLogger(TabCreateFields.class);
+	private static final transient Logger log = LogManager.getLogger(AD_Tab_CreateFields.class);
 
 	private static final Set<String> COLUMNNAMES_Standard = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 
@@ -65,6 +65,9 @@ public class TabCreateFields extends JavaProcess
 	@Param(parameterName = "IsTest")
 	private boolean p_IsTest = false;
 
+	@Param(parameterName = "IsDisplayNonIDColumns")
+	private boolean p_IsDisplayNonIDColumns = false;
+
 	@Override
 	protected String doIt()
 	{
@@ -76,7 +79,7 @@ public class TabCreateFields extends JavaProcess
 		{
 			try
 			{
-				final I_AD_Field field = createADField(adTab, adColumn, p_EntityType);
+				final I_AD_Field field = createADField(adTab, adColumn, p_IsDisplayNonIDColumns, p_EntityType);
 				addLog("@Created@: " + field.getName() + " (@AD_Column_ID@: " + adColumn.getColumnName() + ")");
 				count++;
 			}
@@ -110,7 +113,7 @@ public class TabCreateFields extends JavaProcess
 				//
 				// Columns that were not already added to Tab
 				.addNotInSubQueryFilter(I_AD_Column.COLUMN_AD_Column_ID, I_AD_Field.COLUMN_AD_Column_ID, queryTabFields);
-		
+
 		//
 		// Filter by AD_Column's EntityType (if any)
 		if (!Check.isEmpty(p_EntityType, true))
@@ -131,7 +134,7 @@ public class TabCreateFields extends JavaProcess
 		// Exclude standard columns
 		if(!createStandardFields)
 		{
-			queryBuilder.addNotInArrayFilter(I_AD_Column.COLUMN_ColumnName, COLUMNNAMES_Standard);		
+			queryBuilder.addNotInArrayFilter(I_AD_Column.COLUMN_ColumnName, COLUMNNAMES_Standard);
 		}
 
 
@@ -143,7 +146,11 @@ public class TabCreateFields extends JavaProcess
 				.list(I_AD_Column.class);
 	}
 
-	public static I_AD_Field createADField(final I_AD_Tab tab, final I_AD_Column adColumn, final String p_EntityType)
+	public static I_AD_Field createADField(
+			final I_AD_Tab tab,
+			final I_AD_Column adColumn,
+			final boolean displayedIfNotIDColumn,
+			final String p_EntityType)
 	{
 		final String entityTypeToUse;
 		if (Check.isEmpty(p_EntityType, true))
@@ -159,7 +166,7 @@ public class TabCreateFields extends JavaProcess
 		field.setColumn(adColumn);
 		field.setEntityType(entityTypeToUse);
 
-		if (adColumn.isKey())
+		if (adColumn.isKey() || !displayedIfNotIDColumn)
 		{
 			field.setIsDisplayed(false);
 			field.setIsDisplayedGrid(false);

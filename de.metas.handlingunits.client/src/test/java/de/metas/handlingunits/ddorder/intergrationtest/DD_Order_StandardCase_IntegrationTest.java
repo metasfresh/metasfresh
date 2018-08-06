@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_OrderLine;
@@ -100,7 +100,7 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 		//
 		// Search and pick the Tomatoes line.
 		// There shall be one and only one
-		final IPOSTableRow row_Tomatoes = ListUtils.singleElement(rows, new Predicate<IPOSTableRow>()
+		final IPOSTableRow row_Tomatoes = CollectionUtils.singleElement(rows, new Predicate<IPOSTableRow>()
 		{
 			@Override
 			public boolean test(final IPOSTableRow row)
@@ -125,7 +125,7 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 	protected void step030_DDOrderPOS_ValidateGeneratedMovements()
 	{
 		final DDOrderTableRow rowSelected = ddOrderPOS_HUSelectModel.getRowSelected();
-		final I_DD_OrderLine ddOrderLine = ListUtils.singleElement(rowSelected.getDD_OrderLines());
+		final I_DD_OrderLine ddOrderLine = CollectionUtils.singleElement(rowSelected.getDD_OrderLines());
 		InterfaceWrapperHelper.refresh(ddOrderLine);
 		final I_M_Warehouse warehouseInTransit = ddOrderLine.getDD_Order().getM_Warehouse();
 

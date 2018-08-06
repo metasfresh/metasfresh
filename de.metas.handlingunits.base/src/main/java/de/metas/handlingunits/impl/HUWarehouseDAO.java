@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,12 +30,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_Locator;
+import lombok.NonNull;
 
 public class HUWarehouseDAO implements IHUWarehouseDAO
 {
@@ -78,11 +80,14 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	}
 
 	@Override
-	public I_M_Locator suggestAfterPickingLocator(final I_M_Warehouse warehouse)
+	public I_M_Locator suggestAfterPickingLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		for (final org.compiere.model.I_M_Locator currentLocator : Services.get(IWarehouseDAO.class).retrieveLocators(warehouse))
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+		final List<org.compiere.model.I_M_Locator> locators = warehouseDAO.retrieveLocators(warehouseId);
+
+		for (final org.compiere.model.I_M_Locator currentLocator : locators)
 		{
 			final I_M_Locator huCurrentLocator = InterfaceWrapperHelper.create(currentLocator, I_M_Locator.class);
 			if (!huCurrentLocator.isActive())

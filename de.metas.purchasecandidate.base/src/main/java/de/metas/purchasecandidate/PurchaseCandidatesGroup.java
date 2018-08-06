@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableList;
@@ -144,12 +144,12 @@ public class PurchaseCandidatesGroup
 
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
 	{
-		return ListUtils.singleElementOrNull(getPurchaseCandidateIds());
+		return CollectionUtils.singleElementOrNull(getPurchaseCandidateIds());
 	}
 
 	public OrderAndLineId getSingleSalesOrderAndLineIdOrNull()
 	{
-		return ListUtils.singleElementOrNull(getSalesOrderAndLineIds());
+		return CollectionUtils.singleElementOrNull(getSalesOrderAndLineIds());
 	}
 
 	public PurchaseCandidatesGroup withProfitInfo(@Nullable final PurchaseProfitInfo newProfitInfo)

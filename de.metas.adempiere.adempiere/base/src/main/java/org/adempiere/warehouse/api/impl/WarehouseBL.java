@@ -1,5 +1,9 @@
 package org.adempiere.warehouse.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,41 +14,52 @@ package org.adempiere.warehouse.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class WarehouseBL implements IWarehouseBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public I_M_Locator getDefaultLocator(final I_M_Warehouse warehouse)
+	public I_M_Locator getDefaultLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		final List<I_M_Locator> locators = Services.get(IWarehouseDAO.class).retrieveLocators(warehouse);
+		final LocatorId defaultLocator = getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return load(defaultLocator, I_M_Locator.class);
+	}
+
+	@Override
+	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
+	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+		final List<I_M_Locator> locators = warehouseDAO.retrieveLocators(warehouseId);
 		int activeLocatorsCount = 0;
 		if (!locators.isEmpty())
 		{
@@ -64,7 +79,7 @@ public class WarehouseBL implements IWarehouseBL
 				// Just found the default locator, return it now
 				if (locator.isDefault())
 				{
-					return locator;
+					return LocatorId.ofRecordOrNull(locator);
 				}
 
 				// Remember the first locator in case we don't find a default
@@ -81,17 +96,19 @@ public class WarehouseBL implements IWarehouseBL
 				// Log a warning, in case there are more then one active locators.
 				if (activeLocatorsCount > 1)
 				{
-					logger.warn("No default locator for " + warehouse.getName() + ". Returning the first one: " + locatorFirst);
+					logger.warn("No default locator for warehouse {}. Returning the first one: {}", loadWarehouse(warehouseId).getName(), locatorFirst);
 				}
 
-				return locatorFirst;
+				return LocatorId.ofRecordOrNull(locatorFirst);
 			}
 		}
 
 		//
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
-		final I_M_Locator locatorNew = InterfaceWrapperHelper.newInstance(I_M_Locator.class, warehouse);
+		final I_M_Warehouse warehouse = loadWarehouse(warehouseId);
+		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
+
 		locatorNew.setAD_Org_ID(warehouse.getAD_Org_ID());
 		locatorNew.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		locatorNew.setValue("Standard");
@@ -99,25 +116,30 @@ public class WarehouseBL implements IWarehouseBL
 		locatorNew.setY("0");
 		locatorNew.setZ("0");
 		locatorNew.setIsDefault(true);
-		InterfaceWrapperHelper.save(locatorNew);
+		save(locatorNew);
 		if (logger.isInfoEnabled())
 		{
 			logger.info("Created default locator for " + warehouse.getName());
 		}
-		return locatorNew;
-	}	// getLocators
+		return LocatorId.ofRecordOrNull(locatorNew);
+	}
+
+	private I_M_Warehouse loadWarehouse(@NonNull final WarehouseId warehouseId)
+	{
+		return load(warehouseId, I_M_Warehouse.class);
+	}
 
 	@Override
 	public I_C_Location getC_Location(final I_M_Warehouse warehouse)
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
-		
+
 		final I_C_BPartner_Location bpLocation = warehouse.getC_BPartner_Location();
 		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {}", warehouse);
-		
+
 		final I_C_Location location = bpLocation.getC_Location();
 		Check.assumeNotNull(location, "C_Location_ID not null for {}, {}", bpLocation, warehouse);
-		
+
 		return location;
 	}
 }

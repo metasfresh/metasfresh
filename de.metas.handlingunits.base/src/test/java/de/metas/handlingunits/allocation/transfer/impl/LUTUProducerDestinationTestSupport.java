@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
@@ -199,7 +199,7 @@ public class LUTUProducerDestinationTestSupport
 		helper.load(lutuProducer, helper.pTomato, BigDecimal.valueOf(qtyCUTotal), helper.uomKg);
 
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
-		return ListUtils.singleElement(hus);
+		return CollectionUtils.singleElement(hus);
 	}
 
 	/**

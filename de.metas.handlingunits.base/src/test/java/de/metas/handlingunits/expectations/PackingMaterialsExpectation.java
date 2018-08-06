@@ -10,12 +10,12 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +37,7 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Movement;
@@ -56,7 +56,7 @@ public class PackingMaterialsExpectation<ParentExpectationType> extends Abstract
 
 	public static final PackingMaterialsExpectation<Object> newExpectation()
 	{
-		return new PackingMaterialsExpectation<Object>();
+		return new PackingMaterialsExpectation<>();
 	}
 
 	public PackingMaterialsExpectation()
@@ -143,7 +143,7 @@ public class PackingMaterialsExpectation<ParentExpectationType> extends Abstract
 	private PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>> findPackingMaterialExpectationForProduct(final I_M_Product product)
 	{
 		Check.assumeNotNull(product, "product not null");
-		return ListUtils.singleElement(this.packingMaterialExepectations, new Predicate<PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>>>()
+		return CollectionUtils.singleElement(this.packingMaterialExepectations, new Predicate<PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>>>()
 		{
 
 			@Override

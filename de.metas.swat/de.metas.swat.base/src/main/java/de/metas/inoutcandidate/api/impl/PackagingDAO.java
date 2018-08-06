@@ -7,17 +7,23 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackageableQuery;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 public class PackagingDAO implements IPackagingDAO
 {
@@ -60,6 +66,18 @@ public class PackagingDAO implements IPackagingDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public IPackageable getByShipmentScheduleId(
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_Packageable_V record = Services.get(IQueryBL.class).createQueryBuilder(I_M_Packageable_V.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.firstOnly(I_M_Packageable_V.class);
+		return createPackageable(record);
+	}
+
 	private IPackageable createPackageable(final I_M_Packageable_V record)
 	{
 		final PackageableBuilder packageable = Packageable.builder();
@@ -72,11 +90,12 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.qtyToDeliver(record.getQtyToDeliver());
 
-		packageable.warehouseId(record.getM_Warehouse_ID());
+		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());
 
-		packageable.productId(record.getM_Product_ID());
+		packageable.productId(ProductId.ofRepoId(record.getM_Product_ID()));
 		packageable.productName(record.getProductName());
+		packageable.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()));
 
 		packageable.deliveryVia(record.getDeliveryViaRule());
 
@@ -86,12 +105,14 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.deliveryDate(record.getDeliveryDate()); // 01676
 		packageable.preparationDate(record.getPreparationDate());
 
-		packageable.shipmentScheduleId(record.getM_ShipmentSchedule_ID());
+		packageable.shipmentScheduleId(ShipmentScheduleId.offRepoId(record.getM_ShipmentSchedule_ID()));
 
 		packageable.displayed(record.isDisplayed());
 
 		packageable.orderId(record.getC_OrderSO_ID());
 		packageable.docSubType(record.getDocSubType());
+
+		packageable.orderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
 
 		packageable.freightCostRule(record.getFreightCostRule());
 
@@ -108,7 +129,7 @@ public class PackagingDAO implements IPackagingDAO
 				.create()
 				.firstOnly(I_M_Packageable_V.class);
 
-		if(packageableEntry == null)
+		if (packageableEntry == null)
 		{
 			return null;
 		}

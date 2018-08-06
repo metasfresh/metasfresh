@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
@@ -156,12 +157,12 @@ public class MWarehouse extends X_M_Warehouse
 	 *	@param reload if true reload
 	 *	@return array of locators
 	 *
-	 * @deprecated Please use {@link IWarehouseDAO#retrieveLocators(I_M_Warehouse)}
+	 * @deprecated Please use {@link IWarehouseDAO#retrieveLocators(WarehouseId)}
 	 */
 	@Deprecated
 	public MLocator[] getLocators(boolean reload)
 	{
-		final List<I_M_Locator> locators = Services.get(IWarehouseDAO.class).retrieveLocators(this);
+		final List<I_M_Locator> locators = Services.get(IWarehouseDAO.class).retrieveLocators(WarehouseId.ofRepoId(getM_Warehouse_ID()));
 		return LegacyAdapters.convertToPOArray(locators, MLocator.class);
 	}	//	getLocators
 

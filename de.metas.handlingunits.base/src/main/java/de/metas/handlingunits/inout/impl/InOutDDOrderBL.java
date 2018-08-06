@@ -3,13 +3,16 @@ package de.metas.handlingunits.inout.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -21,9 +24,11 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,28 +54,33 @@ import de.metas.product.ProductId;
 
 public class InOutDDOrderBL implements IInOutDDOrderBL
 {
-
-	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
 	@Override
-	public I_DD_Order createDDOrderForInOutLine(final I_M_InOutLine inOutLine)
+	public Optional<I_DD_Order> createDDOrderForInOutLine(
+			@NonNull final I_M_InOutLine inOutLine,
+			@Nullable final LocatorId locatorToId)
 	{
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		final LocatorId effectiveLocatorToId = ReceiptLineFindForwardToLocatorTool.findLocatorIdOrNull(inOutLine, locatorToId);
+
+		if (effectiveLocatorToId == null || effectiveLocatorToId.getRepoId() == inOutLine.getM_Locator_ID())
+		{
+			Optional.empty();
+		}
 
 		final I_DD_Order ddOrderHeader = createDDOrderHeader(inOutLine);
 
-		createDDOrderLine(ddOrderHeader, inOutLine);
+		createDDOrderLine(ddOrderHeader, inOutLine, effectiveLocatorToId);
 
 		documentBL.processEx(ddOrderHeader, X_DD_Order.DOCACTION_Complete, X_DD_Order.DOCSTATUS_Completed);
 
-		return ddOrderHeader;
+		return Optional.of(ddOrderHeader);
 
 	}
 
-	private I_DD_Order createDDOrderHeader(final I_M_InOutLine inOutLine)
+	private I_DD_Order createDDOrderHeader(@NonNull final I_M_InOutLine inOutLine)
 	{
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final int productId = inOutLine.getM_Product_ID();
 		final int orgId = inOutLine.getAD_Org_ID();
@@ -113,14 +123,12 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		return ddOrderHeader;
 	}
 
-	private I_DD_OrderLine createDDOrderLine(final I_DD_Order ddOrderHeader, final I_M_InOutLine inOutLine)
+	private I_DD_OrderLine createDDOrderLine(
+			@NonNull final I_DD_Order ddOrderHeader,
+			@NonNull final I_M_InOutLine inOutLine,
+			@Nullable final LocatorId locatorToId)
 	{
 		final I_M_Locator locator = inOutLine.getM_Locator();
-
-		final I_M_Warehouse warehouseDest = inOutLine.getM_Warehouse_Dest();
-		Check.errorIf(warehouseDest == null, "Warehouse Dest is null in the Receipt line {}. Please, set it.", inOutLine);
-
-		final I_M_Locator locatorTo = warehouseDAO.retrieveLocators(warehouseDest).get(0);
 
 		final I_M_InOut inout = inOutLine.getM_InOut();
 
@@ -133,7 +141,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderLine.setQtyEnteredTU(inOutLine.getQtyEnteredTU());
 		ddOrderLine.setM_HU_PI_Item_Product(inOutLine.getM_HU_PI_Item_Product());
 		ddOrderLine.setM_Locator(locator);
-		ddOrderLine.setM_LocatorTo(locatorTo);
+		ddOrderLine.setM_LocatorTo_ID(locatorToId.getRepoId());
 		ddOrderLine.setIsInvoiced(false);
 		ddOrderLine.setDateOrdered(inout.getDateOrdered());
 		ddOrderLine.setDatePromised(inout.getMovementDate());

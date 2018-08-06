@@ -21,7 +21,7 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.model.M_Element;
 import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Column;
-import org.compiere.process.TabCreateFields;
+import org.compiere.process.AD_Tab_CreateFields;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -64,7 +64,6 @@ class TablePrimaryKeyGenerator
 
 	public TablePrimaryKeyGenerator(final Properties ctx)
 	{
-		super();
 		this.ctx = ctx;
 	}
 
@@ -156,7 +155,7 @@ class TablePrimaryKeyGenerator
 		final I_AD_Element adElement = getCreateAD_Element(table);
 		final String elementColumnName = adElement.getColumnName ();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
-		
+
 		columnPK.setAD_Element(adElement);
 		columnPK.setColumnName(adElement.getColumnName());
 		columnPK.setName(elementColumnName);
@@ -187,8 +186,6 @@ class TablePrimaryKeyGenerator
 		// columnPK.setIsAlwaysUpdateable();
 		// columnPK.setColumnSQL(null);
 		columnPK.setIsAllowLogging(true);
-
-		columnPK.setAllowZoomTo(false);
 
 		InterfaceWrapperHelper.save(columnPK);
 		addLog("@Created@ @AD_Column_ID@ " + table.getTableName() + "." + columnPK.getColumnName());
@@ -265,7 +262,8 @@ class TablePrimaryKeyGenerator
 		I_AD_Field field = null;
 		try
 		{
-			field = TabCreateFields.createADField(tab, column, fieldEntityType);
+			final boolean displayedIfNotIDColumn = true; // actually doesn't matter because PK probably is an ID column anyways
+			field = AD_Tab_CreateFields.createADField(tab, column, displayedIfNotIDColumn, fieldEntityType);
 
 			// log
 			final I_AD_Window window = tab.getAD_Window();

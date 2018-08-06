@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
@@ -122,7 +122,7 @@ public class Money
 		Check.errorIf(currencyIds.size() > 1,
 				"at least two money instances have different currencies: {}", currency2moneys);
 
-		return ListUtils.singleElement(currencyIds.asList());
+		return CollectionUtils.singleElement(currencyIds.asList());
 	}
 
 	public static boolean isSameCurrency(@NonNull final Money... moneys)

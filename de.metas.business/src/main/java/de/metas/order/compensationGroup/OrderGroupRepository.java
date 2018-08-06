@@ -25,7 +25,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.MutableInt;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -123,7 +123,7 @@ public class OrderGroupRepository implements GroupRepository
 	public GroupId extractSingleGroupIdFromOrderLineIds(final Collection<Integer> orderLineIds)
 	{
 		final Set<GroupId> groupIds = extractGroupIdsFromOrderLineIds(orderLineIds);
-		return ListUtils.singleElement(groupIds);
+		return CollectionUtils.singleElement(groupIds);
 	}
 
 	public Set<GroupId> extractGroupIdsFromOrderLineIds(final Collection<Integer> orderLineIds)

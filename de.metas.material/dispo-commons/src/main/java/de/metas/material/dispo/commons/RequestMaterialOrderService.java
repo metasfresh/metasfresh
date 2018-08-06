@@ -3,7 +3,7 @@ package de.metas.material.dispo.commons;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -247,7 +247,7 @@ public class RequestMaterialOrderService
 
 	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final Candidate createdCandidate = ListUtils.singleElement(group);
+		final Candidate createdCandidate = CollectionUtils.singleElement(group);
 
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientId(), createdCandidate.getOrgId()))

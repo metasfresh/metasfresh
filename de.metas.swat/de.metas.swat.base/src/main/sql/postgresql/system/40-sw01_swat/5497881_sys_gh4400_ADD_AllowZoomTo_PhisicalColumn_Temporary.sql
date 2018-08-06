@@ -1,0 +1,1 @@
+  SELECT public.db_alter_table('AD_Column','ALTER TABLE public.AD_COLUMN ADD COLUMN allowzoomto CHAR(1)');
