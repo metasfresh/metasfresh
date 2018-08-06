@@ -184,7 +184,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	@Override
 	public Document getDocumentById(final DocumentId documentId)
 	{
-		// Try documents which have changes in progress, but not yet saved
+		// Try documents which are new and/or have changes in progress, but are not yet saved
 		final Document documentWithChanges = getChangedDocumentOrNull(documentId);
 		if (documentWithChanges != null)
 		{

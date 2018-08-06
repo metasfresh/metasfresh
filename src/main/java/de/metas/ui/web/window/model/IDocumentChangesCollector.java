@@ -35,9 +35,9 @@ public interface IDocumentChangesCollector
 {
 	/**
 	 * Mark the changes of given document path as primary changes.
-	 * 
+	 *
 	 * Primary changes are those changes which are on a document which was directly referenced by REST endpoint.
-	 * 
+	 *
 	 * @param documentPath
 	 */
 	void setPrimaryChange(DocumentPath documentPath);
@@ -48,6 +48,7 @@ public interface IDocumentChangesCollector
 
 	void collectValueIfChanged(IDocumentFieldView documentField, final Object valueOld, ReasonSupplier reason);
 
+	/** collect the readonly property (can be both true or false!) if it changed. */
 	void collectReadonlyIfChanged(IDocumentFieldView documentField, LogicExpressionResult valueOld, ReasonSupplier reason);
 
 	void collectMandatoryIfChanged(IDocumentFieldView documentField, LogicExpressionResult valueOld, ReasonSupplier reason);
@@ -73,7 +74,7 @@ public interface IDocumentChangesCollector
 	void collectValidStatus(IDocumentFieldView documentField);
 
 	void collectDocumentSaveStatusChanged(DocumentPath documentPath, DocumentSaveStatus documentSaveStatus);
-	
+
 	void collectDeleted(DocumentPath documentPath);
 
 	void collectStaleDetailId(DocumentPath rootDocumentPath, DetailId detailId);
@@ -88,7 +89,7 @@ public interface IDocumentChangesCollector
 	public interface ReasonSupplier
 	{
 		public static final ReasonSupplier NONE = null;
-		
+
 		/**
 		 * @return actual reason string
 		 */
