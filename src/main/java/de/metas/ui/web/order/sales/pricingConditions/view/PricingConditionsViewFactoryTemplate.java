@@ -115,7 +115,7 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 
 	protected void onViewClosedByUser(final PricingConditionsView view)
 	{
-		// nothing on tihs level
+		// nothing on this level
 	}
 
 	@Override

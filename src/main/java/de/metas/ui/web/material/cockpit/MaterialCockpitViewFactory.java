@@ -16,6 +16,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -50,7 +51,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@ViewFactory(windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String, //
+@ViewFactory(windowId = MaterialCockpitUtil.WINDOWID_MaterialCockpitView_String, //
 		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory
 		implements IViewFactory
@@ -67,7 +68,7 @@ public class MaterialCockpitViewFactory
 		this.materialCockpitRowRepository = materialCockpitRowRepository;
 		this.materialCockpitFilters = materialCockpitFilters;
 
-		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitConstants.WINDOWID_MaterialCockpitView);
+		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitUtil.WINDOWID_MaterialCockpitView);
 	}
 
 	@Override
@@ -87,6 +88,7 @@ public class MaterialCockpitViewFactory
 				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
+				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_ShowStockDetails.class))
 				.build();
 
 		return view;
@@ -97,9 +99,9 @@ public class MaterialCockpitViewFactory
 		final ViewId viewId = request.getViewId();
 		final WindowId windowId = viewId.getWindowId();
 
-		Check.errorUnless(MaterialCockpitConstants.WINDOWID_MaterialCockpitView.equals(windowId),
+		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
 				"The parameter request needs to have WindowId={}, but has {} instead; request={};",
-				MaterialCockpitConstants.WINDOWID_MaterialCockpitView, windowId, request);
+				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
 	}
 
 	@Override
@@ -108,9 +110,9 @@ public class MaterialCockpitViewFactory
 			@NonNull final JSONViewDataType viewDataType,
 			@Nullable final ViewProfileId profileId)
 	{
-		Check.errorUnless(MaterialCockpitConstants.WINDOWID_MaterialCockpitView.equals(windowId),
+		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
 				"The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
-				MaterialCockpitConstants.WINDOWID_MaterialCockpitView, windowId, viewDataType);
+				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
 		final Builder viewlayOutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)

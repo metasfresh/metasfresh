@@ -12,11 +12,13 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -44,6 +46,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import lombok.NonNull;
 
@@ -129,14 +132,27 @@ public class MaterialCockpitRowFactoryTest
 		dimensionspecGroup_empty = groups.get(0);
 		assertThat(dimensionspecGroup_empty.isEmptyGroup()).isTrue();
 
-		dimensionspecGroup_attr1_value1 = groups.get(1);
-		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getM_AttributeValue_ID()));
+		dimensionspecGroup_attr1_value1 = groups.get(2);
+		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey())
+				.as("dimensionspecGroup_attr1_value1 shall be \"test1_value1\", but is %s", getNameOf(dimensionspecGroup_attr1_value1.getAttributesKey()))
+				.isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getM_AttributeValue_ID()));
 
-		dimensionspecGroup_attr2_value1 = groups.get(2);
+		dimensionspecGroup_attr2_value1 = groups.get(3);
 		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value1.getM_AttributeValue_ID()));
 
-		final DimensionSpecGroup dimensionspecGroup_attr2_value2 = groups.get(3);
+		final DimensionSpecGroup dimensionspecGroup_attr2_value2 = groups.get(1);
 		assertThat(dimensionspecGroup_attr2_value2.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value2.getM_AttributeValue_ID()));
+	}
+
+	private String getNameOf(AttributesKey attributeValueId)
+	{
+		return attributeValueId
+				.getAttributeValueIds()
+				.stream()
+				.map(id -> InterfaceWrapperHelper.load(id, I_M_AttributeValue.class))
+				.map(I_M_AttributeValue::getName)
+				.collect(Collectors.joining("_"));
+
 	}
 
 	private DimensionSpec createDimensionSpec(
@@ -145,7 +161,7 @@ public class MaterialCockpitRowFactoryTest
 			final I_M_Attribute attr2)
 	{
 		final I_DIM_Dimension_Spec dimSpec = newInstance(I_DIM_Dimension_Spec.class);
-		dimSpec.setInternalName(MaterialCockpitRowFactory.DEFAULT_DIM_SPEC_INTERNAL_NAME);
+		dimSpec.setInternalName(MaterialCockpitUtil.DEFAULT_DIM_SPEC_INTERNAL_NAME);
 		dimSpec.setIsIncludeEmpty(true);
 		save(dimSpec);
 
@@ -182,7 +198,9 @@ public class MaterialCockpitRowFactoryTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
 
-		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID()).get();
+		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys
+				.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID())
+				.get();
 
 		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);
 		cockpitRecordWithAttributes.setM_Product(product);
@@ -223,6 +241,7 @@ public class MaterialCockpitRowFactoryTest
 				.productsToListEvenIfEmpty(ImmutableList.of())
 				.cockpitRecords(ImmutableList.of(cockpitRecordWithAttributes, cockpitRecordWithEmptyAttributesKey))
 				.stockRecords(ImmutableList.of(stockRecordWithAttributes, stockRecordWithEmptyAttributesKey))
+				.includePerPlantDetailRows(true) // without this, we would not get 4 but 3 included rows
 				.build();
 
 		// invoke method under test
@@ -302,7 +321,8 @@ public class MaterialCockpitRowFactoryTest
 		// invoke method under test
 		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
 				ImmutableList.of(product),
-				today);
+				today,
+				true);
 
 		assertThat(result).hasSize(1);
 		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);

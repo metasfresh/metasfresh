@@ -161,7 +161,7 @@ public final class DocumentFilter
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)
 		{
-			return null;
+			return defaultValue;
 		}
 
 		return param.getValueAsString();

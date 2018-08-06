@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -59,7 +60,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@lombok.Value
+@Value
 public final class CreateViewRequest
 {
 	public static final Builder builder(final WindowId windowId)

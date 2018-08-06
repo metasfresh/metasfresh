@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -19,9 +22,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.PagedIterator.Page;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -36,6 +41,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -66,7 +73,6 @@ import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValues;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -259,7 +265,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		// Locator
 		if (showLocator)
 		{
-			huEditorRow.setLocator(LookupValues.createLocatorLookupValue(hu.getM_Locator_ID()));
+			huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
 		}
 
 		//
@@ -268,8 +274,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (singleProductStorage != null)
 		{
 			huEditorRow
-					.setProduct(LookupValues.createProductLookupValue(singleProductStorage.getM_Product()))
-					.setUOM(LookupValues.createUOMLookupValue(singleProductStorage.getC_UOM()))
+					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
+					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
 					.setQtyCU(singleProductStorage.getQty());
 		}
 
@@ -391,14 +397,58 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setReservedForOrderLine(reservedForOrderLineId.orElse(null))
 				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
-				.setProduct(LookupValues.createProductLookupValue(product))
-				.setUOM(LookupValues.createUOMLookupValue(huStorage.getC_UOM()))
+				.setProduct(createProductLookupValue(product))
+				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty())
 				//
 				.build();
 
 		// System.out.println("createHUEditorRow: created " + huEditorRow + " (storage) in " + stopwatch);
 		return huEditorRow;
+	}
+
+	public JSONLookupValue createProductLookupValue(@Nullable final I_M_Product product)
+	{
+		if (product == null)
+		{
+			return null;
+		}
+
+		final String displayName = product.getValue() + "_" + product.getName();
+		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
+	}
+
+	private static JSONLookupValue createUOMLookupValue(@Nullable final I_C_UOM uom)
+	{
+		if (uom == null)
+		{
+			return null;
+		}
+
+		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
+	}
+
+	private static JSONLookupValue createLocatorLookupValue(final int locatorId)
+	{
+		if (locatorId <= 0)
+		{
+			return null;
+		}
+
+		final I_M_Locator locator = loadOutOfTrx(locatorId, I_M_Locator.class);
+		if (locator == null)
+		{
+			return JSONLookupValue.unknown(locatorId);
+		}
+
+		final I_M_Warehouse warehouse = loadOutOfTrx(locator.getM_Warehouse_ID(), I_M_Warehouse.class);
+
+		final String caption = Stream.of(warehouse.getName(), locator.getValue(), locator.getX(), locator.getX1(), locator.getY(), locator.getZ())
+				.filter(part -> !Check.isEmpty(part, true))
+				.map(String::trim)
+				.collect(Collectors.joining("_"));
+
+		return JSONLookupValue.of(locatorId, caption);
 	}
 
 	private static JSONLookupValue createHUStatusDisplayLookupValue(@NonNull final I_M_HU hu)
