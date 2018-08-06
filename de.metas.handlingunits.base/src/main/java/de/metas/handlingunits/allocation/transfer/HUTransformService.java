@@ -21,7 +21,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
@@ -1086,7 +1086,7 @@ public class HUTransformService
 
 	private List<I_M_HU> huToNewCUs(@NonNull final HUsToNewCUsRequest singleSourceHuRequest)
 	{
-		final I_M_HU sourceHU = ListUtils.singleElement(singleSourceHuRequest.getSourceHUs());
+		final I_M_HU sourceHU = CollectionUtils.singleElement(singleSourceHuRequest.getSourceHUs());
 
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
 		{
@@ -1110,7 +1110,7 @@ public class HUTransformService
 
 		Quantity qtyCUsRemaining = singleSourceLuRequest.getQtyCU(); // how many CUs we still have to extract
 
-		final I_M_HU sourceLU = ListUtils.singleElement(singleSourceLuRequest.getSourceHUs());
+		final I_M_HU sourceLU = CollectionUtils.singleElement(singleSourceLuRequest.getSourceHUs());
 
 		// in this number, aggregate HUs count according to the number of TUs that they represent.
 		final int logicalNumberOfIncludedHUs = handlingUnitsDAO
@@ -1131,7 +1131,7 @@ public class HUTransformService
 
 			final int numberOfTUsToExtract = 1; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
-			final I_M_HU extractedTU = ListUtils.singleElement(luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds));
+			final I_M_HU extractedTU = CollectionUtils.singleElement(luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds));
 
 			final HUsToNewCUsRequest singleSourceTuRequest = singleSourceLuRequest.toBuilder()
 					.clearSourceHUs()
@@ -1152,7 +1152,7 @@ public class HUTransformService
 		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
 		Quantity qtyCUsRemaining = singleSourceTuRequest.getQtyCU();
 
-		final I_M_HU sourceTU = ListUtils.singleElement(singleSourceTuRequest.getSourceHUs());
+		final I_M_HU sourceTU = CollectionUtils.singleElement(singleSourceTuRequest.getSourceHUs());
 
 		for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(sourceTU))
 		{

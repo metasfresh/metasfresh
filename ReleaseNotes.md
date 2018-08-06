@@ -9,6 +9,35 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+
+# metasfresh 5.69
+## Features
+* metasfresh
+  * [#4303](https://github.com/metasfresh/metasfresh/issues/4303) Extend webui for PaymentDiscount
+  * [#4392](https://github.com/metasfresh/metasfresh/issues/4392) ESR RefNo too short after scan in Purchase Invoice action
+  * [#4400](https://github.com/metasfresh/metasfresh/issues/4400) Fix zoom PrintingQueue=>PrintJob and others
+  * [#4419](https://github.com/metasfresh/metasfresh/issues/4419) Material Receipt Dispo Adjustment
+  * [#4423](https://github.com/metasfresh/metasfresh/issues/4423) Add vattaxid in Docs_Purchase_Order_Details_Sum function
+  * [#4437](https://github.com/metasfresh/metasfresh/issues/4437) Purchase order: Show description and description bottom
+  * [#4454](https://github.com/metasfresh/metasfresh/issues/4454) Material Cockpit - add columns and allow to hide columns via config
+  * [#4456](https://github.com/metasfresh/metasfresh/issues/4456) Material Cockpit - allow to configure the attribute detail rows' dimenstion spec
+
+* metasfresh-webui-frontend
+  * [#1899](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1899) Improve quick/batch entry layout
+  * [#1909](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1909) Vertical Cabling : Show full product name on quick order entry
+  
+## Fixes
+* metasfresh
+  * [#4426](https://github.com/metasfresh/metasfresh/issues/4426) Error on new purchase order
+  * [#4428](https://github.com/metasfresh/metasfresh/issues/4428) Missing lines in jasper documents
+  * [#4451](https://github.com/metasfresh/metasfresh/issues/4451) HU Editor in picking terminal shows all HUs: not filtered for product
+  * [#4418](https://github.com/metasfresh/metasfresh/issues/4418) Report Revenue Business Partner without Attributes
+
+* metasfresh-webui-frontend
+  * [#1887](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1887) Non mandatory blue fields in grid view
+  * [#1890](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1890) Applying filter params with [alt]+Enter not working in modal windows
+  * [#1901](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1901) Highlighted action is not the one from mouse over when calling actions with [alt]+l
+
 # metasfresh 5.68
 ## Features
 * metasfresh

@@ -39,7 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -246,7 +246,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public I_M_InOut retrieveInOut(@NonNull final List<I_M_InOutLine> receiptLines)
 	{
-		final int inOutId = ListUtils.extractSingleElement(receiptLines, I_M_InOutLine::getM_InOut_ID);
+		final int inOutId = CollectionUtils.extractSingleElement(receiptLines, I_M_InOutLine::getM_InOut_ID);
 		final I_M_InOut receipt = load(inOutId, I_M_InOut.class);
 
 		return receipt;

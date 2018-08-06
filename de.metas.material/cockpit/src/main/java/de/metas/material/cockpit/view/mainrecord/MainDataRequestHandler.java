@@ -109,7 +109,7 @@ public class MainDataRequestHandler
 								.subtract(dataRecord.getQtyMaterialentnahme())));
 
 		// was Fresh_QtyPromised
-		dataRecord.setQtyAvailableToPromise(stripTrailingDecimalZeros(
+		dataRecord.setQtyAvailableToPromiseEstimate(stripTrailingDecimalZeros(
 				dataRecord.getQtyOnHandEstimate()
 						.add(dataRecord.getQtyReserved_Purchase())
 						.subtract(dataRecord.getQtyReserved_Sale())));

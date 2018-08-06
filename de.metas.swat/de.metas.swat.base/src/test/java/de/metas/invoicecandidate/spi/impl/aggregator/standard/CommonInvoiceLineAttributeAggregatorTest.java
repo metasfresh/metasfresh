@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.Properties;
@@ -30,7 +29,7 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.Env;
@@ -43,7 +42,7 @@ import de.metas.invoicecandidate.api.impl.InvoiceLineAttribute;
 
 /**
  * Tests {@link CommonInvoiceLineAttributeAggregator}.
- * 
+ *
  * @author tsa
  *
  */
@@ -77,27 +76,21 @@ public class CommonInvoiceLineAttributeAggregatorTest
 	@Test
 	public void test_OneCommonAttribute()
 	{
-		aggregator.addAll(ListUtils.<IInvoiceLineAttribute> asSet(
-				createInvoiceLineAttribute(attribute1, "1")
-				, createInvoiceLineAttribute(attribute2, "2")
-				));
+		aggregator.addAll(CollectionUtils.<IInvoiceLineAttribute> asSet(
+				createInvoiceLineAttribute(attribute1, "1"), createInvoiceLineAttribute(attribute2, "2")));
 
-		aggregator.addAll(ListUtils.<IInvoiceLineAttribute> asSet(
-				createInvoiceLineAttribute(attribute1, "1")
-				, createInvoiceLineAttribute(attribute3, "3")
-				));
+		aggregator.addAll(CollectionUtils.asSet(
+				createInvoiceLineAttribute(attribute1, "1"), createInvoiceLineAttribute(attribute3, "3")));
 
-		final Set<IInvoiceLineAttribute> expectedResult = ListUtils.<IInvoiceLineAttribute> asSet(
-				createInvoiceLineAttribute(attribute1, "1")
-				);
+		final Set<IInvoiceLineAttribute> expectedResult = CollectionUtils.asSet(
+				createInvoiceLineAttribute(attribute1, "1"));
 		Assert.assertEquals(expectedResult, aggregator.aggregate());
 
 		// Check: adding "attribute1"="1" several times shall not affect our result
 		for (int i = 1; i <= 10; i++)
 		{
-			aggregator.addAll(ListUtils.<IInvoiceLineAttribute> asSet(
-					createInvoiceLineAttribute(attribute1, "1")
-					));
+			aggregator.addAll(CollectionUtils.asSet(
+					createInvoiceLineAttribute(attribute1, "1")));
 			Assert.assertEquals(expectedResult, aggregator.aggregate());
 		}
 	}
@@ -105,18 +98,13 @@ public class CommonInvoiceLineAttributeAggregatorTest
 	@Test
 	public void test_DifferentAttributes()
 	{
-		aggregator.addAll(ListUtils.<IInvoiceLineAttribute> asSet(
-				createInvoiceLineAttribute(attribute1, "1_1")
-				, createInvoiceLineAttribute(attribute2, "2")
-				));
+		aggregator.addAll(CollectionUtils.asSet(
+				createInvoiceLineAttribute(attribute1, "1_1"), createInvoiceLineAttribute(attribute2, "2")));
 
-		aggregator.addAll(ListUtils.<IInvoiceLineAttribute> asSet(
-				createInvoiceLineAttribute(attribute1, "1_2")
-				, createInvoiceLineAttribute(attribute3, "3")
-				));
+		aggregator.addAll(CollectionUtils.asSet(
+				createInvoiceLineAttribute(attribute1, "1_2"), createInvoiceLineAttribute(attribute3, "3")));
 
-		final Set<IInvoiceLineAttribute> expectedResult = ListUtils.<IInvoiceLineAttribute> asSet(
-				);
+		final Set<IInvoiceLineAttribute> expectedResult = CollectionUtils.asSet();
 		Assert.assertEquals(expectedResult, aggregator.aggregate());
 
 	}
@@ -124,10 +112,8 @@ public class CommonInvoiceLineAttributeAggregatorTest
 	@Test
 	public void test_AddingEmptySet()
 	{
-		final Set<IInvoiceLineAttribute> set1 = ListUtils.<IInvoiceLineAttribute> asSet(
-				createInvoiceLineAttribute(attribute1, "1")
-				, createInvoiceLineAttribute(attribute2, "2")
-				);
+		final Set<IInvoiceLineAttribute> set1 = CollectionUtils.asSet(
+				createInvoiceLineAttribute(attribute1, "1"), createInvoiceLineAttribute(attribute2, "2"));
 		aggregator.addAll(set1);
 		Assert.assertEquals(set1, aggregator.aggregate());
 

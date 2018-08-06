@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -56,7 +56,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 /* package */final class HUAttributeQueryFilterVO
 {
 	public static final String ATTRIBUTEVALUETYPE_Unknown = null;
-	
+
 	public static enum AttributeValueMatchingType
 	{
 		NotNull,
@@ -191,16 +191,16 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 	{
 		final String attributeName = getM_Attribute().getName();
 		final Set<Object> values = getValuesAndSubstitutes();
-		final String valuesStr = ListUtils.toString(values, ", ");
+		final String valuesStr = CollectionUtils.toString(values, ", ");
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append(attributeName).append(": ").append(valuesStr);
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Builds the HU attributes filter and appends it to given HU filters.
-	 * 
+	 *
 	 * NOTE: keep in sync with {@link #matches(IAttributeSet)}
 	 *
 	 * @param contextProvider
@@ -239,17 +239,17 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 	{
 		final ICompositeQueryFilter<I_M_HU> huFilterToAppend = queryBL.createCompositeQueryFilter(I_M_HU.class)
 				.setJoinOr();
-		
+
 		// Attribute Missing
 		{
 			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
 					.create();
-			
+
 			huFilterToAppend.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
 		}
-		
+
 		// Attribute value is null
 		{
 			final IQuery<I_M_HU_Attribute> attributesQuery = queryBL.createQueryBuilder(I_M_HU_Attribute.class, contextProvider)
@@ -257,7 +257,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 					.addEqualsFilter(I_M_HU_Attribute.COLUMN_M_Attribute_ID, getM_Attribute_ID())
 					.addEqualsFilter(getHUAttributeValueColumn(), null)
 					.create();
-			
+
 			huFilterToAppend.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Attribute.COLUMN_M_HU_ID, attributesQuery);
 		}
 
@@ -291,9 +291,9 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 			default:
 				throw new IllegalStateException("MatchingType not supported: " + matchingType); // shall not happen
 		}
-	
+
 	}
-	
+
 	private boolean matches_NotNull(IAttributeSet attributes)
 	{
 		//
@@ -356,7 +356,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 		// If we reach this point it means that the attribute set was matching our criterias
 		return true; // matched
 	}
-	
+
 	public HUAttributeQueryFilterVO setMatchingType(final AttributeValueMatchingType matchingType)
 	{
 		Check.assumeNotNull(matchingType, "Parameter matchingType is not null");

@@ -31,7 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -150,7 +150,7 @@ public class InvoiceHeaderImplBuilder
 
 	public String getPOReference()
 	{
-		return ListUtils.singleElementOrNull(POReferences);
+		return CollectionUtils.singleElementOrNull(POReferences);
 	}
 
 	public void setPOReference(final String poReference)
@@ -202,7 +202,7 @@ public class InvoiceHeaderImplBuilder
 
 	public int getC_Order_ID()
 	{
-		return ListUtils.singleElementOrDefault(C_Order_IDs, 0);
+		return CollectionUtils.singleElementOrDefault(C_Order_IDs, 0);
 	}
 
 	public void setC_Order_ID(final int orderId)
@@ -218,7 +218,7 @@ public class InvoiceHeaderImplBuilder
 	 */
 	public int getM_PriceList_ID()
 	{
-		return ListUtils.singleElementOrDefault(M_PriceList_IDs, IPriceListDAO.M_PriceList_ID_None);
+		return CollectionUtils.singleElementOrDefault(M_PriceList_IDs, IPriceListDAO.M_PriceList_ID_None);
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class InvoiceHeaderImplBuilder
 
 	public int getBill_User_ID()
 	{
-		return ListUtils.singleElementOrDefault(Bill_User_IDs, -1);
+		return CollectionUtils.singleElementOrDefault(Bill_User_IDs, -1);
 	}
 
 	public void setBill_User_ID(final int bill_User_ID)
@@ -304,7 +304,7 @@ public class InvoiceHeaderImplBuilder
 
 	public int getM_InOut_ID()
 	{
-		return ListUtils.singleElementOrDefault(M_InOut_IDs, -1);
+		return CollectionUtils.singleElementOrDefault(M_InOut_IDs, -1);
 	}
 
 	public void setM_InOut_ID(final int inOutId)

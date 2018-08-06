@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,7 +28,7 @@ import java.util.Set;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.junit.Assert;
@@ -38,7 +38,7 @@ import org.junit.Test;
 public class AttributeDAOTest
 {
 	private AttributesTestHelper helper;
-	
+
 	/** service under test */
 	private AttributeDAO attributeDAO;
 
@@ -94,7 +94,7 @@ public class AttributeDAOTest
 	{
 		final Set<String> actualSubstitutes = attributeDAO.retrieveAttributeValueSubstitutes(attribute, value);
 		Assert.assertEquals("Invalid substitutes for: " + value,
-				ListUtils.asSet(expectedSubstitutes),
+				CollectionUtils.asSet(expectedSubstitutes),
 				actualSubstitutes
 				);
 

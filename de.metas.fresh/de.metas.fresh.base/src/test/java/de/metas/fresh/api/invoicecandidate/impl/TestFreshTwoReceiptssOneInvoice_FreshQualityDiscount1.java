@@ -10,12 +10,12 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
@@ -52,7 +52,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
  * <li>The first invoice line aggregates both the "normal" iol11, iol21 and the in-dispute-iol22, with the qtys of <b>all</b> lines.
  * <li>The second line then has a qty of ONE and the negative net amount that goes back to iol22.
  * <ul>
- * 
+ *
  * @task 08507
  *
  */
@@ -82,7 +82,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
 		final IInvoiceHeader invoice = invoices.remove(0);
 
-		final I_C_Invoice_Candidate ic = ListUtils.singleElement(invoiceCandidates);
+		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
@@ -114,7 +114,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 
 		// also verify that 'iol12_five_disp' is associated to both invoiceLines 1 and 2
 		assertThat(getForInOutLine(invoiceLines, iol22_twenty_disp), hasItems(invoiceLine1));
-		
+
 		final IInvoiceLineRW invoiceLine2 = forIol22.get(0);
 
 		assertThat(invoiceLine2.getQtyToInvoice(), comparesEqualTo(qtyDisputed.negate()));
@@ -126,6 +126,6 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 //		assertThat("from the iol in dispute, no Qty shall be invoiced", icIol12.getQtyInvoiced(), comparesEqualTo(BigDecimal.ZERO)); // as of task 08529 we got rid of I_C_InvoiceCandidate_InOutLine.QtyInvoiced
 
 //		final I_C_InvoiceCandidate_InOutLine icIol22 = invoiceCandidateInOutLine(ic, iol22_twenty_disp);
-//		assertThat("from the iol in dispute, no Qty shall be invoiced", icIol22.getQtyInvoiced(), comparesEqualTo(BigDecimal.ZERO)); // as of task 08529 we got rid of I_C_InvoiceCandidate_InOutLine.QtyInvoiced 
+//		assertThat("from the iol in dispute, no Qty shall be invoiced", icIol22.getQtyInvoiced(), comparesEqualTo(BigDecimal.ZERO)); // as of task 08529 we got rid of I_C_InvoiceCandidate_InOutLine.QtyInvoiced
 	}
 }

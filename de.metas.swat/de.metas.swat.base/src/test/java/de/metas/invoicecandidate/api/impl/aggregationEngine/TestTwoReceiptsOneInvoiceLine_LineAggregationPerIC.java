@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -57,9 +57,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * <li>two receipts
  * <li>we use a line aggregation key builder which is aggregating on {@link I_C_Invoice_Candidate#COLUMN_C_Invoice_Candidate_ID}.
  * </ul>
- * 
+ *
  * Expectation: we expect only one invoice line to be generated (and NOT two, one for each receipt)
- * 
+ *
  * @author tsa
  * @task 08489
  */
@@ -224,7 +224,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
-		final I_C_Invoice_Candidate invoiceCandidate = ListUtils.singleElement(invoiceCandidates);
+		final I_C_Invoice_Candidate invoiceCandidate = CollectionUtils.singleElement(invoiceCandidates);
 
 		// Make sure our line aggregation builder was used
 		assertEquals(lineAggregation_PerInvoiceCandidate.getC_Aggregation_ID(), invoiceCandidate.getLineAggregationKeyBuilder_ID());
@@ -233,9 +233,9 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 	@Override
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
 	{
-		final IInvoiceHeader invoice = ListUtils.singleElement(invoices);
-		final IInvoiceCandAggregate invoiceLineAggregate = ListUtils.singleElement(invoice.getLines());
-		final IInvoiceLineRW invoiceLine = ListUtils.singleElement(invoiceLineAggregate.getAllLines());
+		final IInvoiceHeader invoice = CollectionUtils.singleElement(invoices);
+		final IInvoiceCandAggregate invoiceLineAggregate = CollectionUtils.singleElement(invoice.getLines());
+		final IInvoiceLineRW invoiceLine = CollectionUtils.singleElement(invoiceLineAggregate.getAllLines());
 
 		// Assert we invoiced all inout lines
 		final BigDecimal qtyToInvoice_Expected = partialQty1.add(partialQty2).add(partialQty3);

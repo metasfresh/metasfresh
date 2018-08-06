@@ -38,7 +38,7 @@ import javax.swing.plaf.metal.MetalTheme;
 
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.plaf.PlafRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.ColorBlind;
@@ -60,7 +60,7 @@ import de.metas.util.MFColor;
  *
  *  @author     Jorg Janke
  *  @version    $Id: AdempierePLAF.java,v 1.3 2006/07/30 00:52:23 jjanke Exp $
- *  
+ *
  *  @author Low Heng Sin
  *  @version 2006-11-27
  */
@@ -68,7 +68,7 @@ public final class AdempierePLAF
 {
 	/**	Logger			*/
 	private static final transient Logger log = LogManager.getLogger(AdempierePLAF.class.getName());
-	
+
 	/****** Background *******************************************************/
 
 	/**
@@ -89,7 +89,7 @@ public final class AdempierePLAF
 	public static Color getFieldBackground_Error()
 	{
 		Color c = UIManager.getColor(AdempiereLookAndFeel.ERROR_BG_KEY);
-		if (c == null) 
+		if (c == null)
 			c = AdempiereLookAndFeel.DEFAULT_ERROR_BG;
 		return ColorBlind.getDichromatColor(c);
 	}   //  getFieldBackground_Error
@@ -137,7 +137,7 @@ public final class AdempierePLAF
 	public static Color getInfoBackground()
 	{
 		Color c = UIManager.getColor(AdempiereLookAndFeel.INFO_BG_KEY);
-		if (c == null) 
+		if (c == null)
 			c = UIManager.getColor("info");
 		return ColorBlind.getDichromatColor(c);
 	}   //  getInfoBackground
@@ -302,24 +302,24 @@ public final class AdempierePLAF
 	{
 		final List<ValueNamePair> lafList = new ArrayList<>();
 		final List<ValueNamePair> plasticThemes = new ArrayList<>();
-		
+
 		final ValueNamePair lafAdempiere = new ValueNamePair(AdempiereLookAndFeel.class.getName(), AdempiereLookAndFeel.NAME);
 		lafList.add(lafAdempiere);
 
 		final ValueNamePair metasFreshTheme = new ValueNamePair(MetasFreshTheme.class.getName(), MetasFreshTheme.NAME);
 		plasticThemes.add(metasFreshTheme);
-		
+
 		//
 		//  Install discovered PLAFs
 		for (final ValueNamePair laf : lafList)
 		{
 			UIManager.installLookAndFeel(laf.getName(), laf.getValue());
 		}
-		
+
 		//
 		LOOKANDFEELS = ImmutableList.copyOf(lafList);
 		LOOKANDFEEL_DEFAULT = lafAdempiere;
-		
+
 		THEMES_PLASTIC = ImmutableList.copyOf(plasticThemes);
 		THEME_PLASTIC_DEFAULT = metasFreshTheme;
 	}
@@ -332,7 +332,7 @@ public final class AdempierePLAF
 	{
 		return LOOKANDFEELS;
 	}   //  getPLAFs
-	
+
 	public static ValueNamePair[] getPLAFsAsArray()
 	{
 		return LOOKANDFEELS.toArray(new ValueNamePair[LOOKANDFEELS.size()]);
@@ -349,17 +349,17 @@ public final class AdempierePLAF
 			return THEMES_PLASTIC;
 		else if ( l instanceof MetalLookAndFeel)
 			return s_metalThemes;
-		
+
 		return ImmutableList.of(); // empty
 	}   //  getThemes
-	
+
 	public static ValueNamePair[] getThemesAsArray()
 	{
 		final List<ValueNamePair> themes = getThemes();
 		return themes.toArray(new ValueNamePair[themes.size()]);
 	}
 
-	
+
 	/**************************************************************************
 	 *  Set PLAF based on Ini Properties
 	 */
@@ -382,11 +382,11 @@ public final class AdempierePLAF
 		{
 			plaf = LOOKANDFEEL_DEFAULT;
 		}
-		
+
 		//
 		// Search for plastic themes
 		ValueNamePair theme = null;
-		if (theme == null) 
+		if (theme == null)
 		{
 			for (final ValueNamePair t : THEMES_PLASTIC)
 			{
@@ -397,7 +397,7 @@ public final class AdempierePLAF
 				}
 			}
 		}
-		
+
 		//
 		// Search for metal themes
 		if (theme == null)
@@ -411,12 +411,12 @@ public final class AdempierePLAF
 				}
 			}
 		}
-		
+
 		if (theme == null)
 		{
 			theme = THEME_PLASTIC_DEFAULT;
 		}
-		
+
 		//  Set PLAF
 		setPLAF(plaf, theme, true); // updateIni=true
 	}   //  setPLAF
@@ -444,14 +444,14 @@ public final class AdempierePLAF
 			log.error("Failed loading the L&F class", e);
 			return;
 		}
-		
+
 		if (updateIni)
 		{
 			Ini.setProperty(Ini.P_UI_LOOK, plaf.getName());
 			//  Optional Theme
 			Ini.setProperty(Ini.P_UI_THEME, ""); // will be updated later in this method
 		}
-		
+
 		//  Default Theme
 		boolean metal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
 		boolean adempiere = AdempiereLookAndFeel.class.isAssignableFrom(lafClass);
@@ -470,7 +470,7 @@ public final class AdempierePLAF
 				final MetalTheme metalTheme = (MetalTheme)c.newInstance();
 				if (adempiere && metalTheme instanceof PlasticTheme)
 					AdempiereLookAndFeel.setCurrentTheme((PlasticTheme)metalTheme);
-				else 
+				else
 					MetalLookAndFeel.setCurrentTheme(metalTheme);
 				//
 				if (updateIni)
@@ -579,7 +579,7 @@ public final class AdempierePLAF
 
 	/**
 	 * Invoke the correct method to set current metal based theme.
-	 * Supported look and feel are Metal, Plastic and Compiere.  
+	 * Supported look and feel are Metal, Plastic and Compiere.
 	 * @param laf Metal based look and feel
 	 * @param theme Metal based theme
 	 */
@@ -623,9 +623,9 @@ public final class AdempierePLAF
 
 	/**
 	 * Creates an active value which actual value will always be resolved as the value of the given proxy key.
-	 * 
+	 *
 	 * If there is no value for proxy key, the given default value will be returned.
-	 * 
+	 *
 	 * @param proxyKey
 	 * @param defaultValue
 	 * @return active value which forward to the value of given given proxy key.
@@ -645,7 +645,7 @@ public final class AdempierePLAF
 
 	/**
 	 * Gets integer value of given key. If no value was found or the value is not {@link Integer} the default value will be returned.
-	 * 
+	 *
 	 * @param key
 	 * @param defaultValue
 	 * @return integer value or default value
@@ -659,7 +659,7 @@ public final class AdempierePLAF
 		}
 		return defaultValue;
 	}
-	
+
 	public static final boolean getBoolean(final String key, final boolean defaultValue)
 	{
 		final Object value = UIManager.getDefaults().get(key);
@@ -669,12 +669,12 @@ public final class AdempierePLAF
 		}
 		return defaultValue;
 	}
-	
+
 	/**
 	 * Extracts the "uiClassID" from given component class.
-	 * 
+	 *
 	 * Usually this method shall not fail, but in case it fails, the error will be logged and <code>defaultUIClassID</code> will be returned.
-	 * 
+	 *
 	 * @param componentClass
 	 * @param defaultUIClassID
 	 * @return uiClassID or <code>defaultUIClassID</code>.
@@ -695,7 +695,7 @@ public final class AdempierePLAF
 				}
 			});
 
-			final Field field = ListUtils.singleElement(fields);
+			final Field field = CollectionUtils.singleElement(fields);
 			if (!field.isAccessible())
 			{
 				field.setAccessible(true);
@@ -709,7 +709,7 @@ public final class AdempierePLAF
 			return defaultUIClassID;
 		}
 	}
-	
+
 	public static final String getString(final String key, final String defaultValue)
 	{
 		final Object value = UIManager.getDefaults().get(key);
@@ -719,7 +719,7 @@ public final class AdempierePLAF
 		}
 		return value.toString();
 	}
-	
+
 	public static void setDefaultBackground(final JComponent comp)
 	{
 		comp.putClientProperty(AdempiereLookAndFeel.BACKGROUND, MFColor.ofFlatColor(AdempierePLAF.getFormBackground()));
