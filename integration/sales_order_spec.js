@@ -1,21 +1,50 @@
+import config from '../config';
+
 describe('New sales order test', function() {
+  const windowId = 143;
+  let caption = '';
+  let nodeId = null;
+  let menuOption = '';
+
   before(function() {
-    // login before each test
     cy.loginByForm();
-    cy.visit('/window/143');
+
+    cy.request('GET', config.API_URL+'/menu/elementPath?type=window&elementId='+windowId+'&inclusive=true')
+      .then((response) => {
+        expect(response.body).to.have.property('captionBreadcrumb');
+        expect(response.body).to.have.property('nodeId');
+        caption = response.body.captionBreadcrumb;
+        nodeId = response.body.nodeId;
+
+        cy.request('GET', config.API_URL+'/menu/node/'+nodeId+'/breadcrumbMenu')
+          .then((response) => {
+            const resp = response.body;
+            expect(resp.length).to.be.gt(0);
+
+            for (let i=0; i<resp.length; i+= 1) {
+              if (resp[i].nodeId.includes('-new')) {
+                menuOption = resp[i].caption;
+
+                break;
+              }
+            }
+        });
+    });
+
+    cy.visit('/window/'+windowId);
   });
 
   context('Create a new sales order', function() {
     before(function() {
       cy.get('.header-breadcrumb')
-        .contains('.header-item', 'Sales', { timeout: 10000 })
+        .contains('.header-item', caption, { timeout: 10000 })
         .click();
 
       cy.get('.header-breadcrumb')
         .find('.menu-overlay')
         .should('exist')
         .find('.menu-overlay-link')
-        .contains('New Sales Order')
+        .contains(menuOption)
         .click();
 
       cy.get('.header-breadcrumb-sitename').should('contain', '<');
@@ -26,12 +55,12 @@ describe('New sales order test', function() {
         .first()
         .find('input')
         .clear()
-        .type('G0001');
+        .type('G0002');
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'Test Kunde 1')
-        .click();
-      cy.get('.input-dropdown-list .input-dropdown-list-header')
+      cy.contains('.input-dropdown-list-option', 'Test Lieferant 1').click();
+      cy
+        .get('.input-dropdown-list .input-dropdown-list-header')
         .should('not.exist');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
@@ -48,8 +77,10 @@ describe('New sales order test', function() {
     });
 
     it('Add new product', function() {
+      const addNewText = Cypress.messages.window.addNew.caption;
+
       cy.get('.tabs-wrapper .form-flex-align .btn')
-        .contains('Add new')
+        .contains(addNewText)
         .should('exist')
         .click();
 
@@ -75,22 +106,42 @@ describe('New sales order test', function() {
     });
 
     it('Change document status', function() {
-      cy.get('.form-field-DocAction')
-        .find('.meta-dropdown-toggle')
-        .click();
+      let completeActionCaption = '';
+      const draftedCaption = Cypress.reduxStore.getState()
+        .windowHandler.master.data.DocStatus.value.caption;
+      const docId = Cypress.reduxStore.getState().windowHandler.master.docId;
 
-      cy.get('.form-field-DocAction')
-        .find('.dropdown-status-toggler')
-        .should('have.class', 'dropdown-status-open');
+      cy.request('GET', config.API_URL+'/window/'+windowId+'/'+docId+'/field/DocAction/dropdown')
+        .then((response) => {
+          const resp = response.body;
 
-      cy.get('.form-field-DocAction .dropdown-status-list')
-        .find('.dropdown-status-item')
-        .contains('Complete')
-        .click();
+          expect(resp).to.have.property('values');
+          expect(resp.values.length).to.be.gt(0);
 
-      cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+          for (let i=0; i<resp.values.length; i+= 1) {
+            if (resp.values[i].key === 'CO') {
+              completeActionCaption = resp.values[i].caption;
 
-      cy.get('.meta-dropdown-toggle .tag-success').contains('Completed');
+              break;
+            }
+          }
+
+          cy.get('.form-field-DocAction')
+            .find('.meta-dropdown-toggle')
+            .click();
+
+          cy.get('.form-field-DocAction')
+            .find('.dropdown-status-toggler')
+            .should('have.class', 'dropdown-status-open');
+
+          cy.get('.form-field-DocAction .dropdown-status-list')
+            .find('.dropdown-status-item')
+            .contains(completeActionCaption)
+            .click();
+
+          cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+          cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
+        });
     });
   });
 });
