@@ -229,7 +229,7 @@ import lombok.NonNull;
 				.forEach(gridFieldVO -> createAndAddDocumentField(
 						entityDescriptorBuilder,
 						gridFieldVO,
-						isThreatFieldAsKey(gridFieldVO, gridTabVO, entityDescriptorBuilder)));
+						isTreatFieldAsKey(gridFieldVO, gridTabVO, entityDescriptorBuilder)));
 
 		//
 		// Labels field descriptors
@@ -241,7 +241,7 @@ import lombok.NonNull;
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
-	private boolean isThreatFieldAsKey(
+	private boolean isTreatFieldAsKey(
 			@NonNull final GridFieldVO gridFieldVO,
 			@NonNull final GridTabVO gridTabVO,
 			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
