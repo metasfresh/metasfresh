@@ -8,11 +8,21 @@ export default class QuickActionsContextShortcuts extends Component {
       event.preventDefault();
 
       this.props.handleClick();
+
+      if (this.props.stopPropagation) {
+        return true;
+      }
+      return false;
     },
     QUICK_ACTION_TOGGLE: event => {
       event.preventDefault();
 
       this.props.onClick();
+
+      if (this.props.stopPropagation) {
+        return true;
+      }
+      return false;
     },
   };
 

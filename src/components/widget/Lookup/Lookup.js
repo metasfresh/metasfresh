@@ -316,6 +316,7 @@ class Lookup extends Component {
       scanning,
       barcodeSelected,
       scannerElement,
+      forceFullWidth,
       onBlur,
       onFocus,
     } = this.props;
@@ -388,6 +389,11 @@ class Lookup extends Component {
                 defaultValue = { caption: barcodeSelected };
               }
 
+              let width = null;
+              if (forceFullWidth && this.dropdown) {
+                width = this.dropdown.offsetWidth;
+              }
+
               return (
                 <RawLookup
                   key={index}
@@ -407,6 +413,8 @@ class Lookup extends Component {
                   onDropdownListToggle={val => {
                     this.dropdownListToggle(val, item.field);
                   }}
+                  forcedWidth={width}
+                  parentElement={forceFullWidth && this.dropdown}
                   {...{
                     placeholder,
                     readonly,

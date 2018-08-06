@@ -27,11 +27,21 @@ class RawLookup extends Component {
       oldValue: '',
       shouldBeFocused: true,
       isFocused: false,
+      parentElement: undefined,
     };
   }
 
   componentDidMount() {
-    const { selected, defaultValue, initialFocus } = this.props;
+    const { selected, defaultValue, initialFocus, parentElement } = this.props;
+
+    if (parentElement) {
+      // eslint-disable-next-line react/no-find-dom-node
+      let parentEl = ReactDOM.findDOMNode(parentElement);
+
+      this.setState({
+        parentElement: parentEl,
+      });
+    }
 
     this.handleValueChanged();
 
@@ -405,11 +415,18 @@ class RawLookup extends Component {
       selected,
       forceEmpty,
       isFocused,
+      parentElement,
     } = this.state;
+
+    const tetherProps = {};
+    if (parentElement) {
+      tetherProps.target = parentElement;
+    }
 
     return (
       <TetherComponent
         attachment="top left"
+        {...tetherProps}
         targetAttachment="bottom left"
         constraints={[
           {
@@ -453,7 +470,11 @@ class RawLookup extends Component {
               empty="No results found"
               forceEmpty={forceEmpty}
               selected={selected}
-              width={this.wrapper && this.wrapper.offsetWidth}
+              width={
+                this.props.forcedWidth
+                  ? this.props.forcedWidth
+                  : this.wrapper && this.wrapper.offsetWidth
+              }
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleBlur}

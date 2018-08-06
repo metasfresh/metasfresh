@@ -469,6 +469,7 @@ class RawWidget extends Component {
             tabIndex={tabIndex}
             viewId={viewId}
             autoFocus={autoFocus}
+            forceFullWidth={this.props.forceFullWidth}
             validStatus={widgetData[0].validStatus}
             newRecordCaption={fields[0].newRecordCaption}
             newRecordWindowId={fields[0].newRecordWindowId}

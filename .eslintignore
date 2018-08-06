@@ -11,7 +11,7 @@ dist
 .history
 
 # Dynamic storybook configuration file
-.storybook/foundStories.js
+.storybook
 
 # Coverage report
 .nyc_output
@@ -19,8 +19,10 @@ coverage
 
 package-lock.json
 
+plugins
+docker
+ansible
 test_setup 
 src/__tests__
-cypress
 cypress.json
 yarn-error.log

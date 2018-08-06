@@ -7,9 +7,17 @@ export default class ModalContextShortcuts extends Component {
     APPLY: event => {
       event.preventDefault();
 
-      this.blurActiveElement();
+      const { visibleFilter, apply } = this.props;
 
-      this.props.apply && this.props.apply();
+      this.blurActiveElement();
+      apply && apply();
+
+      // if filter is displayed, apply shortcut to filter first
+      if (visibleFilter) {
+        return true;
+      }
+
+      return false;
     },
     CANCEL: event => {
       event.preventDefault();

@@ -9,26 +9,25 @@
     "extends": [
         "eslint:recommended",
         "plugin:react/recommended",
-        "prettier"
     ],
     "rules": {
-        "prettier/prettier": ["error", {
-          "singleQuote": true,
-          "trailingComma": "es5"
-        }],
         "react/prop-types": "warn",
         "react/jsx-filename-extension": "off",
         "react/prefer-stateless-function": "off",
         "react/display-name": "warn"
     },
-    "plugins": ["prettier", "react", "jest"],
+    "plugins": ["react", "jest"],
     "globals": {
         "localStorage": true,
         "Promise": true,
         "config": true,
         "PLUGINS": true,
+        "cy": true,
         "context": true,
+        "Cypress": true,
         "before": true,
+        "after": true,
         "document": true
-    }
+    },
+    "root": true
 }
