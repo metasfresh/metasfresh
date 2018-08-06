@@ -24,6 +24,7 @@ class FiltersItem extends Component {
       filter: props.data,
       isTooltipShow: false,
       maxWidth: null,
+      maxHeight: null,
     };
   }
 
@@ -48,18 +49,26 @@ class FiltersItem extends Component {
       /* eslint-disable react/no-find-dom-node */
       const widgetElement = ReactDOM.findDOMNode(this.widgetsContainer);
       const buttonElement = widgetElement.closest('.filter-wrapper');
+      const buttonClientRect = buttonElement.getBoundingClientRect();
       const wrapperElement = ReactDOM.findDOMNode(this.props.filtersWrapper);
       /* eslint-enablereact/no-find-dom-node */
       const wrapperRight = wrapperElement.getBoundingClientRect().right;
-
       const documentElement = wrapperElement.closest('.document-lists-wrapper');
-      const documentRight = documentElement.getBoundingClientRect().right;
+      const documentClientRect = documentElement.getBoundingClientRect();
 
       if (parent) {
-        const offset = documentRight - wrapperRight + buttonElement.offsetWidth;
+        const offset = ~~(
+          documentClientRect.right -
+          wrapperRight +
+          buttonClientRect.width
+        );
+        const height =
+          ~~(documentClientRect.top + documentClientRect.height) -
+          ~~(buttonClientRect.top + buttonClientRect.height);
 
         this.setState({
           maxWidth: offset,
+          maxHeight: height,
         });
       }
     }
@@ -201,11 +210,12 @@ class FiltersItem extends Component {
       captionValue,
       openedFilter,
     } = this.props;
-    const { filter, isTooltipShow, maxWidth } = this.state;
+    const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
 
     if (maxWidth) {
       style.width = maxWidth;
+      style.maxHeight = maxHeight;
     }
 
     return (
