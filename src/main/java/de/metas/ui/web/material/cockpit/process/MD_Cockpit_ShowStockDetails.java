@@ -22,6 +22,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,7 +50,6 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 {
 	@Autowired
 	private transient IViewsRepository viewsRepo;
-	// = Adempiere.getBean(IViewsRepository.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -84,15 +84,17 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 				.builder(MaterialCockpitUtil.WINDOW_MaterialCockpit_StockDetailView)
 				.setParentViewId(getView().getViewId());
 
+		// create at least one filter per row; filters will be ORed
 		for (final MaterialCockpitRow row : rows)
 		{
-			Builder builder = newBuilder(row);
+			Builder filterBuilder = newBuilder(row);
 
 			boolean attributeFilterAdded = false;
 
 			final DimensionSpecGroup dimensionGroup = row.getDimensionGroupOrNull();
 			if (dimensionGroup == null)
 			{
+				// create filters to include all attributes that belong to the material cockpit's dimenstion spec
 				final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 				for (final I_M_Attribute attributeRecord : dimensionSpec.retrieveAttributes())
 				{
@@ -102,24 +104,27 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 							.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Attribute_ID)
 							.setValue(attributeRepoId)
 							.build();
-					builder.addParameter(attributeParameter);
+					filterBuilder.addParameter(attributeParameter);
 
 					final DocumentFilterParam attributeValueParameter = DocumentFilterParam
 							.builder()
 							.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_AttributeValue)
 							.setValue(MaterialCockpitUtil.DONT_FILTER)
 							.build();
-					builder.addParameter(attributeValueParameter);
+					filterBuilder.addParameter(attributeValueParameter);
 
-					final DocumentFilter filter = builder.setFilterId(row.getId().toString() + "_" + attributeRepoId).build();
+					final DocumentFilter filter = filterBuilder
+							.setFilterId(row.getId().toString() + "_" + attributeRepoId)
+							.build();
 
 					viewRequestBuilder.addStickyFilters(filter);
 					attributeFilterAdded = true;
-					builder = newBuilder(row);
+					filterBuilder = newBuilder(row);
 				}
 			}
 			else if (dimensionGroup.getAttributeId().isPresent())
 			{
+				// recreate a filter to include the attribute of the (detail-)row.
 				final AttributeId attributeId = dimensionGroup.getAttributeId().get();
 
 				final int attributeRepoId = attributeId.getRepoId();
@@ -128,24 +133,27 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 						.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_M_Attribute_ID)
 						.setValue(attributeRepoId)
 						.build();
-				builder.addParameter(attributeParameter);
+				filterBuilder.addParameter(attributeParameter);
 
 				final DocumentFilterParam attributeValueParameter = DocumentFilterParam
 						.builder()
 						.setFieldName(I_M_HU_Stock_Detail_V.COLUMNNAME_AttributeValue)
 						.setValue(MaterialCockpitUtil.NON_EMPTY)
 						.build();
-				builder.addParameter(attributeValueParameter);
+				filterBuilder.addParameter(attributeValueParameter);
 
-				final DocumentFilter filter = builder.setFilterId(row.getId().toString() + "_" + attributeRepoId).build();
+				final DocumentFilter filter = filterBuilder
+						.setFilterId(row.getId().toString() + "_" + attributeRepoId)
+						.build();
 
 				viewRequestBuilder.addStickyFilters(filter);
 				attributeFilterAdded = true;
-				builder = newBuilder(row);
+				filterBuilder = newBuilder(row);
 			}
+
 			if (!attributeFilterAdded)
 			{
-				final DocumentFilter filter = builder.setFilterId(row.getId().toString()).build();
+				final DocumentFilter filter = filterBuilder.setFilterId(row.getId().toString()).build();
 				viewRequestBuilder.addStickyFilters(filter);
 			}
 		}
@@ -154,7 +162,7 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 		return view.getViewId();
 	}
 
-	private Builder newBuilder(final MaterialCockpitRow row)
+	private Builder newBuilder(@NonNull final MaterialCockpitRow row)
 	{
 		final Builder builder = DocumentFilter.builder();
 
