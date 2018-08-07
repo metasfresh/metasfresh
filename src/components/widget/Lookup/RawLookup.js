@@ -32,7 +32,7 @@ class RawLookup extends Component {
   }
 
   componentDidMount() {
-    const { selected, defaultValue, initialFocus, parentElement } = this.props;
+    const { selected, defaultValue, initialFocus } = this.props;
 
     this.handleValueChanged();
 
