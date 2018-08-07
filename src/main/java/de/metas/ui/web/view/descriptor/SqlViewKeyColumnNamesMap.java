@@ -84,7 +84,7 @@ public final class SqlViewKeyColumnNamesMap
 	@Builder
 	private SqlViewKeyColumnNamesMap(@NonNull @Singular final List<SqlEntityFieldBinding> keyFields)
 	{
-		this.keyFields = ImmutableList.copyOf(keyFields);
+		this.keyFields = ImmutableList.copyOf(Check.assumeNotEmpty(keyFields, "keyFields"));
 
 		webuiSelectionColumnNamesByKeyColumnName = buildWebuiSelectionColumnNamesByKeyColumnName(this.keyFields);
 		keyColumnNames = ImmutableList.copyOf(webuiSelectionColumnNamesByKeyColumnName.keySet());
@@ -93,13 +93,13 @@ public final class SqlViewKeyColumnNamesMap
 		singleWebuiSelectionColumnName = webuiSelectionColumnNames.size() == 1 ? webuiSelectionColumnNames.get(0) : null;
 	}
 
-	private static ImmutableMap<String, String> buildWebuiSelectionColumnNamesByKeyColumnName(final List<SqlEntityFieldBinding> keyFields)
+	private static ImmutableMap<String, String> buildWebuiSelectionColumnNamesByKeyColumnName(@NonNull final List<SqlEntityFieldBinding> keyFields)
 	{
 		final List<String> availableIntKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_IntKeys);
 		final List<String> availableStringKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
 
 		final ImmutableMap.Builder<String, String> keyColumnName2selectionColumnName = ImmutableMap.builder();
-		for (SqlEntityFieldBinding keyField : keyFields)
+		for (final SqlEntityFieldBinding keyField : keyFields)
 		{
 			final List<String> availableKeys;
 			final Class<?> sqlValueClass = keyField.getSqlValueClass();
@@ -205,7 +205,7 @@ public final class SqlViewKeyColumnNamesMap
 	{
 		if (webuiSelectionColumnNames.isEmpty())
 		{
-			throw new AdempiereException("No key column names defined");
+			Check.fail("No key column names defined; this={}", this);
 		}
 		return webuiSelectionColumnNames;
 	}
@@ -394,7 +394,7 @@ public final class SqlViewKeyColumnNamesMap
 		}
 	}
 
-	private Object retrieveRowIdPart(ResultSet rs, String columnName, final Class<?> sqlValueClass)
+	private Object retrieveRowIdPart(final ResultSet rs, final String columnName, final Class<?> sqlValueClass)
 	{
 		try
 		{

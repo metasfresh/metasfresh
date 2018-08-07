@@ -131,7 +131,7 @@ public class DocumentEntityDescriptor
 	private final Optional<String> tableName;
 	private final Optional<Boolean> isSOTrx;
 
-	private DocumentEntityDescriptor(final Builder builder)
+	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
 		documentTypeId = builder.getDocumentTypeId();
@@ -147,7 +147,7 @@ public class DocumentEntityDescriptor
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
 		parentLinkField = builder.getParentLinkFieldOrNull();
-		
+
 		includedEntitiesByDetailId = builder.buildIncludedEntitiesByDetailId();
 		includedDocumentsCollectionFactory = builder.getIncludedDocumentsCollectionFactory();
 		dataBinding = builder.getOrBuildDataBinding();
@@ -705,6 +705,7 @@ public class DocumentEntityDescriptor
 			else
 			{
 				throw new AdempiereException("More than one parent link fields found for " + this)
+						.appendParametersToMessage()
 						.setParameter("parentLinkFields", parentLinkFields);
 			}
 		}
