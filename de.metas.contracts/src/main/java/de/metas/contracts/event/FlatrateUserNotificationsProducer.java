@@ -2,12 +2,16 @@ package de.metas.contracts.event;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 
 /*
  * #%L
@@ -38,16 +42,13 @@ public class FlatrateUserNotificationsProducer
 		return new FlatrateUserNotificationsProducer();
 	}
 
+	private static final transient Logger logger = LogManager.getLogger(FlatrateUserNotificationsProducer.class);
+
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.contracts.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
 
-	/**
-	 * Post events about given invoice that was generated.
-	 *
-	 * @param inouts
-	 */
 	public FlatrateUserNotificationsProducer notifyUser(final I_C_Flatrate_Term contract, final int recipientUserId, final String message)
 	{
 		if (contract == null)
@@ -61,8 +62,8 @@ public class FlatrateUserNotificationsProducer
 		}
 		catch (final Exception ex)
 		{
-			 // TODO
-			//logger.get.warn("Failed creating event for invoice {}. Ignored.", contract, ex);
+
+			logger.warn("Failed creating event for contract {}. Ignored.", contract, ex);
 		}
 
 		return this;
@@ -70,7 +71,7 @@ public class FlatrateUserNotificationsProducer
 
 	private final UserNotificationRequest createFlatrateTermGeneratedEvent(final I_C_Flatrate_Term contract, final int recipientUserId, final String message)
 	{
-		Check.assumeNotNull(contract, "invoice not null");
+		Check.assumeNotNull(contract, "contract not null");
 
 		if (recipientUserId <= 0)
 		{
@@ -78,9 +79,12 @@ public class FlatrateUserNotificationsProducer
 			return null;
 		}
 
+		final TableRecordReference flatrateTermRef = TableRecordReference.of(contract);
+
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
 				.contentADMessage(message)
+				.targetAction(TargetRecordAction.of(flatrateTermRef))
 				.build();
 	}
 
