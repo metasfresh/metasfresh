@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
+import ReactDOM from 'react-dom';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
@@ -22,6 +23,8 @@ class FiltersItem extends Component {
     this.state = {
       filter: props.data,
       isTooltipShow: false,
+      maxWidth: null,
+      maxHeight: null,
     };
   }
 
@@ -40,6 +43,34 @@ class FiltersItem extends Component {
   componentDidMount() {
     if (this.widgetsContainer) {
       this.widgetsContainer.addEventListener('scroll', this.handleScroll);
+    }
+
+    if (this.props.filtersWrapper) {
+      /* eslint-disable react/no-find-dom-node */
+      const widgetElement = ReactDOM.findDOMNode(this.widgetsContainer);
+      const buttonElement = widgetElement.closest('.filter-wrapper');
+      const buttonClientRect = buttonElement.getBoundingClientRect();
+      const wrapperElement = ReactDOM.findDOMNode(this.props.filtersWrapper);
+      /* eslint-enablereact/no-find-dom-node */
+      const wrapperRight = wrapperElement.getBoundingClientRect().right;
+      const documentElement = wrapperElement.closest('.document-lists-wrapper');
+      const documentClientRect = documentElement.getBoundingClientRect();
+
+      if (parent) {
+        const offset = ~~(
+          documentClientRect.right -
+          wrapperRight +
+          buttonClientRect.width
+        );
+        const height =
+          ~~(documentClientRect.top + documentClientRect.height) -
+          ~~(buttonClientRect.top + buttonClientRect.height);
+
+        this.setState({
+          maxWidth: offset,
+          maxHeight: height,
+        });
+      }
     }
   }
 
@@ -179,7 +210,13 @@ class FiltersItem extends Component {
       captionValue,
       openedFilter,
     } = this.props;
-    const { filter, isTooltipShow } = this.state;
+    const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
+    const style = {};
+
+    if (maxWidth) {
+      style.width = maxWidth;
+      style.maxHeight = maxHeight;
+    }
 
     return (
       <div>
@@ -198,11 +235,14 @@ class FiltersItem extends Component {
         ) : (
           <div
             className="filter-menu filter-widget"
+            style={style}
             ref={c => (this.widgetsContainer = c)}
           >
-            <div>
-              {counterpart.translate('window.activeFilter.caption')}:
-              <span className="filter-active">{data.caption}</span>
+            <div className="filter-controls">
+              <div>
+                {counterpart.translate('window.activeFilter.caption')}:
+                <span className="filter-active">{data.caption}</span>
+              </div>
               {isActive && (
                 <span
                   className="filter-clear"
@@ -295,6 +335,7 @@ class FiltersItem extends Component {
 
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  filtersWrapper: PropTypes.any,
 };
 
 export default connect()(FiltersItem);

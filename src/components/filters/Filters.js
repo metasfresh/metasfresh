@@ -199,7 +199,10 @@ class Filters extends Component {
     const { notValidFields, widgetShown, filter } = this.state;
 
     return (
-      <div className="filter-wrapper js-not-unselect">
+      <div
+        className="filter-wrapper js-not-unselect"
+        ref={c => (this.filtersWrapper = c)}
+      >
         <span className="filter-caption">
           {`${counterpart.translate('window.filters.caption')}: `}
         </span>
@@ -216,6 +219,7 @@ class Filters extends Component {
               clearFilters={this.clearFilters}
               active={filter}
               dropdownToggled={this.dropdownToggled}
+              filtersWrapper={this.filtersWrapper}
             />
           )}
           {!!notFrequentFilters.length && (
@@ -230,6 +234,7 @@ class Filters extends Component {
               clearFilters={this.clearFilters}
               active={filter}
               dropdownToggled={this.dropdownToggled}
+              filtersWrapper={this.filtersWrapper}
             />
           )}
         </div>

@@ -911,7 +911,9 @@ td.pulse-off input {
 
 .filter-widget {
     padding: 8px 13px 12px 13px;
-    min-width: 480px;
+    min-width: 200px;
+    width: 200px;
+    max-width: 480px;
     max-height: 80vh;
     overflow-y: auto;
     overflow-x: hidden;
@@ -926,6 +928,12 @@ td.pulse-off input {
 .filter-menu li:hover {
     background: $brand-color-primary;
     color: white;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .filter-clear {
