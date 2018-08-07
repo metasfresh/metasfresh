@@ -94,13 +94,14 @@ class RawLookup extends Component {
           prevProps.defaultValue.caption !== defaultValue.caption)) &&
       handleInputEmptyStatus(false);
 
-    if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
-      if (defaultValue !== null && typeof defaultValue !== 'undefined') {
-        if (defaultValue.caption !== this.inputSearch.value) {
-          this.inputSearch.value = defaultValue.caption || '';
-        }
-      }
-    }
+    // TODO: Commenting this out as I think it's not needed. - Kuba
+    // if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
+    //   if (defaultValue !== null && typeof defaultValue !== 'undefined') {
+    //     if (defaultValue.caption !== this.inputSearch.value) {
+    //       this.inputSearch.value = defaultValue.caption || '';
+    //     }
+    //   }
+    // }
 
     if (filterWidget && lookupEmpty && defaultValue === null) {
       this.inputSearch.value = defaultValue;

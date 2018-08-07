@@ -11,6 +11,8 @@ import List from '../List/List';
 import RawLookup from './RawLookup';
 
 class Lookup extends Component {
+  rawLookupsState = {};
+
   constructor(props) {
     super(props);
 
@@ -24,6 +26,8 @@ class Lookup extends Component {
           isFocused: false,
         };
       });
+
+      this.rawLookupsState = { ...lookupWidgets };
     }
 
     this.state = {
@@ -140,17 +144,18 @@ class Lookup extends Component {
     }
   };
 
+  // TODO: I think it's not needed - Kuba
   openDropdownList = () => {
-    this.setState(
-      {
-        fireDropdownList: true,
-      },
-      () => {
-        this.setState({
-          fireDropdownList: false,
-        });
-      }
-    );
+    // this.setState(
+    //   {
+    //     fireDropdownList: true,
+    //   },
+    //   () => {
+    //     this.setState({
+    //       fireDropdownList: false,
+    //     });
+    //   }
+    // );
   };
 
   dropdownListToggle = (value, field) => {
@@ -175,6 +180,7 @@ class Lookup extends Component {
   };
 
   resetLocalClearing = () => {
+    // TODO: Rewrite per widget
     this.setState({
       localClearing: false,
     });
@@ -183,25 +189,29 @@ class Lookup extends Component {
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
-    console.log('clickoutside: ', this)
+    // console.log('clickoutside: ', this)
 
     if (this.state.isDropdownListOpen) {
       console.log('clickedoutside')
       this.setState(
         {
-          fireClickOutside: true,
+          // fireClickOutside: true,
+          isDropdownListOpen: false,
+          lookupWidgets: this.rawLookupsState,
           property: '',
         },
         () => {
           onClickOutside && onClickOutside();
-          this.setState({
-            fireClickOutside: false,
-          });
+          // this.setState({
+          //   fireClickOutside: false,
+          // });
         }
       );
-    } else {
-      onClickOutside && onClickOutside();
     }
+    // why we're calling this if dropdown is not visible?
+    // else {
+    //   onClickOutside && onClickOutside();
+    // }
   };
 
   handleInputEmptyStatus = isEmpty => {
@@ -395,6 +405,8 @@ class Lookup extends Component {
               }
 
               let width = null;
+              // for multiple lookup widget we want the dropdown
+              // to be full width of the widget component
               if (forceFullWidth && this.dropdown) {
                 width = this.dropdown.offsetWidth;
               }
