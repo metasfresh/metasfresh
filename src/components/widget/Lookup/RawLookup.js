@@ -47,11 +47,7 @@ class RawLookup extends Component {
 
     if (selected) {
       this.inputSearch.value = selected.caption;
-    } else {
-      this.handleBlur(this.clearState);
-    }
-
-    if (defaultValue) {
+    } else if (defaultValue) {
       this.inputSearch.value = defaultValue.caption;
     }
 
@@ -66,7 +62,7 @@ class RawLookup extends Component {
     const {
       autoFocus,
       defaultValue,
-      fireClickOutside,
+      // fireClickOutside,
       handleInputEmptyStatus,
       filterWidget,
       lookupEmpty,
@@ -200,6 +196,8 @@ class RawLookup extends Component {
       this.inputSearch.focus();
     }, 0);
 
+    console.log('RawLookup handleSelect')
+
     this.handleBlur();
   };
 
@@ -212,6 +210,8 @@ class RawLookup extends Component {
       parameterName,
       mainProperty,
     } = this.props;
+
+    console.log('RawLookup handleAddNew')
 
     this.handleBlur();
 
@@ -232,6 +232,7 @@ class RawLookup extends Component {
   };
 
   handleBlur = () => {
+    console.log('RawLookup handleBlur')
     this.setState(
       {
         isFocused: false,
@@ -244,6 +245,7 @@ class RawLookup extends Component {
 
   handleFocus = () => {
     const { onFocus } = this.props;
+    console.log('RawLookup handleFocus')
 
     this.setState(
       {
@@ -289,6 +291,8 @@ class RawLookup extends Component {
         loading: true,
         query: this.inputSearch.value,
       });
+
+      console.log('RawLookup handleChange')
 
       this.props.onDropdownListToggle(true);
 
