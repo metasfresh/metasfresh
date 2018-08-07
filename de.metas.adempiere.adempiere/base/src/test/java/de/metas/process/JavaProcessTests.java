@@ -253,7 +253,7 @@ public class JavaProcessTests
 		trxManager.assertTrxNameNull(trxManager.getThreadInheritedTrxName());
 	}
 
-	private <T extends IProcess> ProcessInfo createProcessInfo(final Class<T> processClass)
+	private <T extends JavaProcess> ProcessInfo createProcessInfo(final Class<T> processClass)
 	{
 		final Properties ctx = Env.getCtx();
 
