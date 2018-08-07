@@ -32,6 +32,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -94,8 +95,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
-		super();
-
 		documentsRepository = builder.getDocumentsRepository();
 
 		sqlTableName = builder.getTableName();
@@ -153,7 +152,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return sqlTableAlias;
 	}
-	
+
 	public boolean isSingleKey()
 	{
 		return keyFields.size() == 1;
@@ -163,7 +162,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	{
 		return keyFields;
 	}
-	
+
 	private String getSingleKeyColumnName()
 	{
 		Check.assume(keyFields.size() == 1, "Single key field: {}", this);
@@ -234,6 +233,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlSelectVersionById.isPresent();
 	}
 
+	@ToString(doNotUseGetters = true)
 	public static final class Builder implements DocumentEntityDataBindingDescriptorBuilder
 	{
 		private SqlDocumentEntityDataBindingDescriptor _built = null;
@@ -253,7 +253,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override
@@ -291,7 +290,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			final Collection<SqlDocumentFieldDataBindingDescriptor> fields = getFieldsByFieldName().values();
 			if (fields.isEmpty())
 			{
-				throw new AdempiereException("No SQL fields found");
+				Check.fail("No SQL fields found; this={}", this);
 			}
 
 			final List<String> sqlSelectValuesList = new ArrayList<>(fields.size());

@@ -252,21 +252,7 @@ import lombok.NonNull;
 		{
 			return gridFieldVO.isKey();
 		}
-		return isFieldTheCurrentlyUsedParentLink(gridFieldVO, entityDescriptorBuilder);
-	}
-
-	private boolean isFieldTheCurrentlyUsedParentLink(
-			@NonNull final GridFieldVO gridFieldVO,
-			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
-	{
-		if (!gridFieldVO.isParentLink())
-		{
-			return false;
-		}
-
-		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
-		final String parentLinkColumnName = entityBindings.getSqlParentLinkColumnName();
-		return Objects.equals(gridFieldVO.getColumnName(), parentLinkColumnName);
+		return gridFieldVO.isParentLink();
 	}
 
 	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final int adFieldId)
@@ -441,6 +427,26 @@ import lombok.NonNull;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	/**
+	 * @return true if the given {@code gridFieldVO} is flagged as parent link and also matches the parent-link columName.
+	 *         Logically there can be only one parent link field.
+	 */
+	private boolean isFieldTheCurrentlyUsedParentLink(
+			@NonNull final GridFieldVO gridFieldVO,
+			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
+	{
+		if (!gridFieldVO.isParentLink())
+		{
+			return false;
+		}
+
+		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
+		final String parentLinkColumnName = entityBindings.getSqlParentLinkColumnName();
+
+		// if there is a parent link column, only the respective gridFieldVO is a key
+		return Objects.equals(gridFieldVO.getColumnName(), parentLinkColumnName);
 	}
 
 	private LookupDescriptorProvider wrapFullTextSeachFilterDescriptorProvider(@NonNull final LookupDescriptorProvider databaseLookupDescriptorProvider)
