@@ -29,7 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Process;
 
-import de.metas.process.IProcess;
+import de.metas.process.JavaProcess;
 
 public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 {
@@ -50,7 +50,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 			return;
 		}
 
-		validateJavaClassname(process.getClassname(), IProcess.class);
+		validateJavaClassname(process.getClassname(), JavaProcess.class);
 	}
 
 	@Override
