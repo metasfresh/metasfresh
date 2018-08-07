@@ -73,7 +73,7 @@ import lombok.NonNull;
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
  * @author metas-dev <dev@metasfresh.com>
  */
-public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
+public abstract class JavaProcess implements ILoggable, IContextAware
 {
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
@@ -235,12 +235,11 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	/**
-	 * Start the process.
-	 *
+	 * Note: This method shall be called by the framework.
+	 * 
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
-	@Override
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assume(this == currentInstance(), "This process shall be the current active instance: {}", this);
