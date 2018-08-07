@@ -90,7 +90,6 @@ import org.compiere.grid.ICreateFrom;
 import org.compiere.grid.RecordAccessDialog;
 import org.compiere.grid.VCreateFromFactory;
 import org.compiere.grid.VOnlyCurrentDays;
-import org.compiere.grid.VPayment;
 import org.compiere.grid.VSortTab;
 import org.compiere.grid.VTabbedPane;
 import org.compiere.grid.ed.VButton;
@@ -2861,28 +2860,8 @@ public class APanel extends CPanel
 
 		boolean isProcessMandatory = false;
 
-		// Pop up Payment Rules
-		if (columnName.equals("PaymentRule"))
-		{
-			// Ensure it's saved
-			if (noRowFound)
-			{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-
-			final VPayment vp = new VPayment(m_curWindowNo, m_curTab, vButton);
-			if (vp.isInitOK())  		// may not be allowed
-				vp.setVisible(true);
-			vp.dispose();
-			if (vp.needSave())
-			{
-				cmd_save(false);
-				cmd_refresh();
-			}
-		}  	// PaymentRule
-
 		// Pop up Document Action (Workflow)
-		else if (columnName.equals("DocAction"))
+		if (columnName.equals("DocAction"))
 		{
 			// Ensure it's saved
 			if (noRowFound)

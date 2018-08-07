@@ -52,7 +52,7 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 
-public class C_Flatrate_Term_Extend
+public class C_Flatrate_Term_Extend_And_Notify_User
 		extends JavaProcess
 {
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -94,7 +94,7 @@ public class C_Flatrate_Term_Extend
 					.nextTermStartDate(p_startDate)
 					.build();
 
-			flatrateBL.extendContract(context);
+			flatrateBL.extendContractAndNotifyUser(context);
 
 			addLog("@Processed@: @C_Flatrate_Term_ID@ " + contractToExtend.getC_Flatrate_Term_ID());
 
@@ -153,7 +153,7 @@ public class C_Flatrate_Term_Extend
 	{
 		try
 		{
-			flatrateBL.extendContract(context);
+			flatrateBL.extendContractAndNotifyUser(context);
 			return true;
 		}
 		catch (final RuntimeException e)
