@@ -264,7 +264,10 @@ class PasswordRecovery extends Component {
         </div>
         {avatarSrc && (
           <div className="text-center">
-            <img src={`data:image/*;base64,${avatarSrc}`} className="avatar mt-2 mb-2" />
+            <img
+              src={`data:image/*;base64,${avatarSrc}`}
+              className="avatar mt-2 mb-2"
+            />
           </div>
         )}
         {form.fullname && (
@@ -295,6 +298,7 @@ PasswordRecovery.propTypes = {
   dispatch: PropTypes.func.isRequired,
   path: PropTypes.string.isRequired,
   token: PropTypes.string,
+  onResetOk: PropTypes.bool,
 };
 
 export default connect()(PasswordRecovery);

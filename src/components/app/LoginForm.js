@@ -317,6 +317,8 @@ class LoginForm extends Component {
 
 LoginForm.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  path: PropTypes.string,
+  token: PropTypes.string,
 };
 
 LoginForm.contextTypes = {

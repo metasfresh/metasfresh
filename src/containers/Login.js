@@ -88,6 +88,7 @@ class Login extends Component {
 
 Login.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  redirect: PropTypes.string,
 };
 
 export default connect()(Login);
