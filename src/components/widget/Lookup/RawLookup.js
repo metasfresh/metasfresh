@@ -196,8 +196,6 @@ class RawLookup extends Component {
       this.inputSearch.focus();
     }, 0);
 
-    console.log('RawLookup handleSelect')
-
     this.handleBlur();
   };
 
@@ -210,8 +208,6 @@ class RawLookup extends Component {
       parameterName,
       mainProperty,
     } = this.props;
-
-    console.log('RawLookup handleAddNew')
 
     this.handleBlur();
 
@@ -232,7 +228,6 @@ class RawLookup extends Component {
   };
 
   handleBlur = () => {
-    console.log('RawLookup handleBlur')
     this.setState(
       {
         isFocused: false,
@@ -245,7 +240,6 @@ class RawLookup extends Component {
 
   handleFocus = () => {
     const { onFocus } = this.props;
-    console.log('RawLookup handleFocus')
 
     this.setState(
       {
@@ -291,8 +285,6 @@ class RawLookup extends Component {
         loading: true,
         query: this.inputSearch.value,
       });
-
-      console.log('RawLookup handleChange')
 
       this.props.onDropdownListToggle(true);
 
