@@ -180,6 +180,7 @@ FiltersFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
+  filtersWrapper: PropTypes.any,
 };
 
 const mapStateToProps = state => {
