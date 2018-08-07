@@ -1185,14 +1185,14 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(currentTerm.getAD_User_InCharge_ID() > 0, conditions + " has AD_User_InCharge_ID > 0");
 			Check.assume(termToReferenceInNote != null, "");
 
-			notifyUser(currentTerm, termToReferenceInNote, msgValue);
+			createNote(currentTerm, termToReferenceInNote, msgValue);
+			notifyUser(currentTerm, msgValue);
 		}
 	}
 
-	private void notifyUser(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term termToReferenceInNote, final String msgValue)
+	// keep this old code that creates AD_Note entries so we make sure it still works the way it used to.
+	private void createNote(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term termToReferenceInNote, final String msgValue)
 	{
-
-		// keep this old code TODO: check if it's still needed
 		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 		final MNote note = new MNote(
 				ctx,
@@ -1203,12 +1203,13 @@ public class FlatrateBL implements IFlatrateBL
 		note.setRecord(adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), termToReferenceInNote.getC_Flatrate_Term_ID());
 		note.setTextMsg(msgBL.getMsg(ctx, msgValue));
 		note.saveEx();
-		// unti here TODO
+	}
 
+	private void notifyUser(final I_C_Flatrate_Term currentTerm, final String msgValue)
+	{
 		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
 
 		flatrateGeneratedEventBus.notifyUser(currentTerm, currentTerm.getAD_User_InCharge_ID(), msgValue);
-
 	}
 
 	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context)
