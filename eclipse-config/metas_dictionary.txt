@@ -96,3 +96,5 @@ enqueuer
 refundable
 updatable
 occupates
+unsupervised
+flatrate
