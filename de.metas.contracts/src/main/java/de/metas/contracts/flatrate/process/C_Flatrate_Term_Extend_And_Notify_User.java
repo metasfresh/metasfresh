@@ -52,7 +52,7 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 
-public class C_Flatrate_Term_Extend
+public class C_Flatrate_Term_Extend_And_Notify_User
 		extends JavaProcess
 {
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
