@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.IProcess;
+import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.PurchaseDemand;
 import de.metas.purchasecandidate.PurchaseDemandWithCandidates;
@@ -77,7 +77,7 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 
 	public PurchaseViewFactoryTemplate(
 			@NonNull final WindowId windowId,
-			@NonNull Class<? extends IProcess> launcherProcessClass,
+			@NonNull Class<? extends JavaProcess> launcherProcessClass,
 			// services:
 			@NonNull final PurchaseDemandWithCandidatesService purchaseDemandWithCandidatesService,
 			@NonNull final AvailabilityCheckService availabilityCheckService,
