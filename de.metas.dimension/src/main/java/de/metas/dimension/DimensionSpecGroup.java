@@ -1,5 +1,8 @@
 package de.metas.dimension;
 
+import java.util.Optional;
+
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.Services;
 
 import de.metas.i18n.IMsgBL;
@@ -35,11 +38,13 @@ public class DimensionSpecGroup
 {
 	public static DimensionSpecGroup EMPTY_GROUP = new DimensionSpecGroup(
 			Services.get(IMsgBL.class).getTranslatableMsgText(DimensionConstants.MSG_NoneOrEmpty),
-			AttributesKey.NONE);
+			AttributesKey.NONE,
+			Optional.empty());
 
 	public static DimensionSpecGroup OTHER_GROUP = new DimensionSpecGroup(
 			Services.get(IMsgBL.class).getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_OTHER),
-			AttributesKey.OTHER);
+			AttributesKey.OTHER,
+			Optional.empty());
 
 	@NonNull
 	ITranslatableString groupName;
@@ -50,6 +55,9 @@ public class DimensionSpecGroup
 	 */
 	@NonNull
 	AttributesKey attributesKey;
+
+	@NonNull
+	Optional<AttributeId> attributeId;
 
 	public boolean isEmptyGroup()
 	{

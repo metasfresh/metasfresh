@@ -51,15 +51,20 @@ public class LocatorId implements RepoIdAware
 		return ofRepoId(warehouseId, repoId);
 	}
 
-	public static LocatorId ofRecordOrNull(@Nullable final I_M_Locator locator)
+	public static LocatorId ofRecordOrNull(@Nullable final I_M_Locator locatorRecord)
 	{
-		if (locator == null)
+		if (locatorRecord == null)
 		{
 			return null;
 		}
+		return ofRecord(locatorRecord);
+	}
+
+	public static LocatorId ofRecord(@Nullable final I_M_Locator locatorRecord)
+	{
 		return ofRepoId(
-				WarehouseId.ofRepoId(locator.getM_Warehouse_ID()),
-				locator.getM_Locator_ID());
+				WarehouseId.ofRepoId(locatorRecord.getM_Warehouse_ID()),
+				locatorRecord.getM_Locator_ID());
 	}
 
 }

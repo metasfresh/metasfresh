@@ -94,13 +94,14 @@ public class CampaignService
 			return;
 		}
 
-		final boolean isRequiredLocation = platform.isRequiredLocation();
+		final boolean isRequiredLocation = platform.isRequiredLocation() || defaultAddressType != null;
 
 		final BPartnerLocationId addressToUse = computeAddressToUse(user, defaultAddressType);
 
-		if (isRequiredLocation && addressToUse == null)
+		if (isRequiredLocation && addressToUse == null )
 		{
-			Loggables.get().addLog("Skip user because it has no bill to default location or campaign does not require location; user={}", user);
+			final String addressTypeForMessage = defaultAddressType != null ? defaultAddressType.toString() : DefaultAddressType.BillToDefault.toString() ;
+			Loggables.get().addLog("Skip user because it has no {} location and the campaign requires location; user={}", addressTypeForMessage,user);
 			return;
 		}
 
@@ -133,7 +134,7 @@ public class CampaignService
 			// Keep as before, and consider Bill address as default
 			addressToUse = bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(bpartnerId);
 		}
-		
+
 		return addressToUse;
 
 	}

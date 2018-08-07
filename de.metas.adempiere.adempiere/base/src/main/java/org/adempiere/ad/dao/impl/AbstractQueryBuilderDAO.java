@@ -18,6 +18,8 @@ import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableMap;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -89,13 +91,13 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 
 	/**
 	 * Explodes SQLs like:
-	 * 
+	 *
 	 * <pre>
 	 * SELECT .. FROM MyTable WHERE Value1=1 OR Value2=2 OR Value3=3
 	 * </pre>
-	 * 
+	 *
 	 * to
-	 * 
+	 *
 	 * <pre>
 	 * SELECT .. FROM MyTable WHERE Value1=1
 	 * UNION
@@ -149,13 +151,13 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 
 	/**
 	 * Explodes SQLs like:
-	 * 
+	 *
 	 * <pre>
 	 * SELECT .. FROM MyTable WHERE AD_Client_ID=1 and IsActive=2 and (Value1=1 OR Value2=2 OR Value3=3)
 	 * </pre>
-	 * 
+	 *
 	 * to
-	 * 
+	 *
 	 * <pre>
 	 * SELECT .. FROM MyTable WHERE AD_Client_ID=1 and IsActive=2 and Value1=1
 	 * UNION
@@ -296,9 +298,8 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		//
 		private final boolean explodeORJoinsToUnions;
 
-		public QueryBuildContext(final QueryBuilder<T> builderImpl)
+		public QueryBuildContext(@NonNull final QueryBuilder<T> builderImpl)
 		{
-			super();
 			this.ctx = builderImpl.getCtx();
 			this.trxName = builderImpl.getTrxName();
 			this.modelClass = builderImpl.getModelClass();
