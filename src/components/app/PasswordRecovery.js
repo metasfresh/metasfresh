@@ -22,6 +22,7 @@ class PasswordRecovery extends Component {
       resetEmailSent: false,
       avatarSrc: '',
       form: {},
+      invalidToken: false,
     };
   }
 
@@ -31,7 +32,12 @@ class PasswordRecovery extends Component {
 
     if (resetPassword) {
       this.getAvatar();
-      this.getUserData();
+      this.getUserData().catch(({ data }) => {
+        this.setState({
+          err: data.message,
+          invalidToken: true,
+        });
+      });
     }
 
     this.focusField.focus();
@@ -40,7 +46,7 @@ class PasswordRecovery extends Component {
   getAvatar = () => {
     const { token } = this.props;
 
-    resetPasswordGetAvatar(token).then(({ data }) => {
+    return resetPasswordGetAvatar(token).then(({ data }) => {
       this.setState({
         avatarSrc: data,
       });
@@ -51,7 +57,7 @@ class PasswordRecovery extends Component {
     const { token } = this.props;
     const { form } = this.state;
 
-    getResetPasswordInfo(token).then(({ data }) => {
+    return getResetPasswordInfo(token).then(({ data }) => {
       this.setState({
         form: {
           ...form,
@@ -244,22 +250,35 @@ class PasswordRecovery extends Component {
     );
   };
 
-  render() {
+  renderInvalid = () => {
+    const { err } = this.state;
+    const buttonMessage = 'Return to login';
+
+    return (
+      <div>
+        <div>{err && <div className="input-error">{err}</div>}</div>
+        <div className="mt-2">
+          <button
+            className="btn btn-sm btn-block btn-meta-success"
+            type="button"
+          >
+            {buttonMessage}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  renderContent = () => {
     const { token } = this.props;
     const { pending, resetEmailSent, avatarSrc, form } = this.state;
     const resetPassword = token ? true : false;
-    let buttonMessage = resetPassword
+    const buttonMessage = resetPassword
       ? counterpart.translate('forgotPassword.changePassword.caption')
       : counterpart.translate('forgotPassword.sendResetCode.caption');
 
     return (
-      <div
-        className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
-        onKeyPress={this.handleKeyPress}
-      >
-        <div className="text-center">
-          <img src={logo} className="header-logo mt-2 mb-2" />
-        </div>
+      <div>
         {avatarSrc && (
           <div className="text-center">
             <img
@@ -290,6 +309,25 @@ class PasswordRecovery extends Component {
             </div>
           )}
         </form>
+      </div>
+    );
+  };
+
+  render() {
+    const { invalidToken } = this.state;
+    const elementContent = invalidToken
+      ? this.renderInvalid()
+      : this.renderContent();
+
+    return (
+      <div
+        className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
+        onKeyPress={this.handleKeyPress}
+      >
+        <div className="text-center">
+          <img src={logo} className="header-logo mt-2 mb-2" />
+        </div>
+        <div>{elementContent}</div>
       </div>
     );
   }
