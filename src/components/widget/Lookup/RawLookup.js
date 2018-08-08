@@ -38,11 +38,7 @@ class RawLookup extends Component {
 
     if (selected) {
       this.inputSearch.value = selected.caption;
-    } else {
-      this.handleBlur(this.clearState);
-    }
-
-    if (defaultValue) {
+    } else if (defaultValue) {
       this.inputSearch.value = defaultValue.caption;
     }
 
@@ -57,7 +53,7 @@ class RawLookup extends Component {
     const {
       autoFocus,
       defaultValue,
-      fireClickOutside,
+      // fireClickOutside,
       handleInputEmptyStatus,
       filterWidget,
       lookupEmpty,
@@ -94,13 +90,14 @@ class RawLookup extends Component {
           prevProps.defaultValue.caption !== defaultValue.caption)) &&
       handleInputEmptyStatus(false);
 
-    if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
-      if (defaultValue !== null && typeof defaultValue !== 'undefined') {
-        if (defaultValue.caption !== this.inputSearch.value) {
-          this.inputSearch.value = defaultValue.caption || '';
-        }
-      }
-    }
+    // TODO: Commenting this out as I think it's not needed. - Kuba
+    // if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
+    //   if (defaultValue !== null && typeof defaultValue !== 'undefined') {
+    //     if (defaultValue.caption !== this.inputSearch.value) {
+    //       this.inputSearch.value = defaultValue.caption || '';
+    //     }
+    //   }
+    // }
 
     if (filterWidget && lookupEmpty && defaultValue === null) {
       this.inputSearch.value = defaultValue;
