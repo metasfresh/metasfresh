@@ -45,7 +45,7 @@ class FiltersItem extends Component {
       this.widgetsContainer.addEventListener('scroll', this.handleScroll);
     }
 
-    if (this.props.filtersWrapper) {
+    if (this.props.filtersWrapper && this.widgetsContainer) {
       /* eslint-disable react/no-find-dom-node */
       const widgetElement = ReactDOM.findDOMNode(this.widgetsContainer);
       const buttonElement = widgetElement.closest('.filter-wrapper');
