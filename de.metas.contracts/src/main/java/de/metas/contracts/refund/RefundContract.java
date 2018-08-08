@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.adempiere.util.Check;
+
 import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,21 +38,31 @@ import lombok.Value;
 @Builder
 public class RefundContract
 {
-	@NonNull
 	FlatrateTermId id;
 
-	@NonNull
-	@Singular
 	List<RefundConfig> refundConfigs;
 
-	@NonNull
 	LocalDate startDate;
 
-	@NonNull
 	LocalDate endDate;
 
 	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
 	{
 		return null;
 	}
+
+	private RefundContract(
+			@NonNull FlatrateTermId id,
+			@Singular List<RefundConfig> refundConfigs,
+			@NonNull LocalDate startDate,
+			@NonNull LocalDate endDate)
+	{
+		this.id = id;
+		this.startDate = startDate;
+		this.endDate = endDate;
+
+		this.refundConfigs = Check.assumeNotEmpty(refundConfigs, "refundConfigs");
+	}
+
+
 }
