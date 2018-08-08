@@ -63,6 +63,26 @@ public class PercentTest
 	}
 
 	@Test
+	public void multiply_percent_scale_greater_than_precision()
+	{
+		final Percent percent = Percent.of(new BigDecimal("50.15678"));
+		final BigDecimal base = BigDecimal.valueOf(100);
+		final int precision = 2;
+		
+		assertThat(percent.multiply(base, precision)).isEqualByComparingTo(new BigDecimal("50.16"));
+	}
+	
+	@Test
+	public void multiply_base_scale_greater_than_precision()
+	{
+		final Percent percent = Percent.of(new BigDecimal("10"));
+		final BigDecimal base = new BigDecimal("50.16678");
+		final int precision = 2;
+		
+		assertThat(percent.multiply(base, precision)).isEqualByComparingTo(new BigDecimal("5.02"));
+	}
+	
+	@Test
 	public void subtractFromBase()
 	{
 		test_subtractFromBase(100, 0, 100);
