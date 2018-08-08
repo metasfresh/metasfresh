@@ -2,7 +2,9 @@ package de.metas.contracts.refund;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -10,13 +12,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -33,6 +39,7 @@ import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -62,6 +69,13 @@ public class RefundConfigRepository
 {
 	private final InvoiceScheduleRepository invoiceScheduleRepository;
 
+	private final CCache<FlatrateTermId, RefundConfig> CACHE = CCache.<FlatrateTermId, RefundConfig> newCache(
+			I_C_Flatrate_RefundConfig.Table_Name + "#by#"
+					+ I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID + "#"
+					+ I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
+			0,
+			CCache.EXPIREMINUTES_Never);
+
 	public RefundConfigRepository(@NonNull final InvoiceScheduleRepository invoiceScheduleRepository)
 	{
 		this.invoiceScheduleRepository = invoiceScheduleRepository;
@@ -73,26 +87,78 @@ public class RefundConfigRepository
 				.match();
 	}
 
-	public List<RefundConfig> getByConditionsId(
-			@NonNull final ConditionsId conditionsId)
+	// public List<RefundConfig> getByConditionsId(
+	// @NonNull final ConditionsId conditionsId)
+	// {
+	// return createRefundConfigQuery(conditionsId)
+	// .stream()
+	// .map(this::ofRecordOrNull)
+	// .collect(ImmutableList.toImmutableList());
+	// }
+	//
+	// public RefundConfig getByRefundContractId(
+	// @NonNull final FlatrateTermId flatrateTermId)
+	// {
+	// return CACHE.getOrLoad(flatrateTermId, () -> getByRefundContractIdForCache(flatrateTermId));
+	// }
+
+	public List<RefundConfig> getByQuery(RefundConfigQuery query)
 	{
-		return createRefundConfigQuery(conditionsId)
-				.stream()
-				.map(this::ofRecordOrNull)
-				.collect(ImmutableList.toImmutableList());
+		final IQueryBuilder<I_C_Flatrate_RefundConfig> builder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.isOnlyIfUsedInProfitCalculation())
+		{
+			builder.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_IsUseInProfitCalculation, true);
+		}
+
+		if (query.getConditionsId() != null)
+		{
+			builder.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, query.getConditionsId());
+		}
+
+		if (query.getProductId() != null)
+		{
+			builder.addInArrayFilter(
+					I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
+					null,
+					query.getProductId());
+		}
+
+		if (query.getMinQty() != null)
+		{
+			builder.addCompareFilter(I_C_Flatrate_RefundConfig.COLUMN_MinQty, Operator.LESS_OR_EQUAL, query.getMinQty());
+		}
+
+		final List<I_C_Flatrate_RefundConfig> recordCandidates = builder.create().list();
+
+		final ImmutableListMultimap<Boolean, I_C_Flatrate_RefundConfig> hasProduct2Records = Multimaps.index(recordCandidates, record -> record.getM_Product_ID() > 0);
+		final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithProduct = hasProduct2Records.get(true);
+
+		if (!recordsWithProduct.isEmpty())
+		{
+			return processResultRecordList(query, recordsWithProduct);
+		}
+
+		final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithoutProduct = hasProduct2Records.get(false);
+		return processResultRecordList(query, recordsWithoutProduct);
 	}
 
-	private final CCache<FlatrateTermId, RefundConfig> CACHE = CCache.<FlatrateTermId, RefundConfig> newCache(
-			I_C_Flatrate_RefundConfig.Table_Name + "#by#"
-					+ I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID + "#"
-					+ I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
-			0,
-			CCache.EXPIREMINUTES_Never);
-
-	public RefundConfig getByRefundContractId(
-			@NonNull final FlatrateTermId flatrateTermId)
+	private List<RefundConfig> processResultRecordList(RefundConfigQuery query, final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithProductId)
 	{
-		return CACHE.getOrLoad(flatrateTermId, () -> getByRefundContractIdForCache(flatrateTermId));
+		if (query.getMinQty() != null)
+		{
+			final Optional<I_C_Flatrate_RefundConfig> recordToReturn = recordsWithProductId
+					.stream()
+					.max(Comparator.comparing(I_C_Flatrate_RefundConfig::getMinQty));
+			return recordToReturn.isPresent()
+					? ImmutableList.of(ofRecordOrNull(recordToReturn.get()))
+					: ImmutableList.of();
+		}
+		return recordsWithProductId.stream()
+				.map(this::ofRecordOrNull)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private RefundConfig getByRefundContractIdForCache(
@@ -182,7 +248,7 @@ public class RefundConfigRepository
 			return RefundInvoiceType.INVOICE;
 		}
 		Check.fail(
-				"The given C_Flatrate_RefundConfig has an unsupposed refundInvoiceType={}; record={}",
+				"The given C_Flatrate_RefundConfig has an unsupported refundInvoiceType={}; record={}",
 				refundInvoiceType, record);
 		return null;
 	}

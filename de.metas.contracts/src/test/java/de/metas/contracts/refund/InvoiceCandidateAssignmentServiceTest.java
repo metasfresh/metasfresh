@@ -62,7 +62,9 @@ public class InvoiceCandidateAssignmentServiceTest
 		invoiceCandidateAssignmentService = new InvoiceCandidateAssignmentService(
 				new RefundContractRepository(refundConfigRepository),
 				invoiceCandidateRepository,
-				new MoneyService(new CurrencyRepository()));
+				new RefundInvoiceCandidateService(
+						invoiceCandidateRepository,
+						new MoneyService(new CurrencyRepository())));
 
 		refundTestTools = new RefundTestTools();
 	}
@@ -137,12 +139,13 @@ public class InvoiceCandidateAssignmentServiceTest
 		// invoke the method under test
 		final AssignableInvoiceCandidate assignedCandidate = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 
-		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate()).isNotNull();
-		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2");
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = assignedCandidate.getAssignmentToRefundCandidate();
+		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()).isNotNull();
+		assertThat(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2");
 
-		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate()).isNotNull();
-		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
-		assertThat(assignedCandidate.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
+		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate()).isNotNull();
+		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId()); // guard
+		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
 	}
 
 	@Test

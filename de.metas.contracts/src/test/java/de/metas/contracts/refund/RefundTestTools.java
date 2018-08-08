@@ -12,8 +12,9 @@ import java.time.LocalDate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
-import org.bouncycastle.crypto.paddings.ZeroBytePadding;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
 
@@ -41,6 +42,7 @@ import de.metas.money.Currency;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -77,9 +79,12 @@ public class RefundTestTools
 	public static final LocalDate CONTRACT_START_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.minusDays(2);
 	public static final LocalDate CONTRACT_END_DATE = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(2);
 
-	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(20);
+	//private static final ProductId PRODUCT_ID = ProductId.ofRepoId(20);
 
 	private final Currency currency;
+
+	private final I_C_UOM uomRecord;
+	private I_M_Product productRecord;
 
 	public RefundTestTools()
 	{
@@ -91,6 +96,13 @@ public class RefundTestTools
 				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
 				.precision(2)
 				.build();
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+
+		productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM(uomRecord);
+		saveRecord(productRecord);
 	}
 
 	public static I_C_Invoice_Candidate retrieveRecord(@NonNull final InvoiceCandidateId invoiceCandidateId)
@@ -123,13 +135,14 @@ public class RefundTestTools
 		final LocalDate invoiceableFromDate = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(1);
 
 		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidateRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		invoiceCandidateRecord.setM_Product(productRecord);
 		invoiceCandidateRecord.setPriceActual(moneyValue);
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(invoiceableFromDate));
 		invoiceCandidateRecord.setRecord_ID(refundContract.getId().getRepoId());
 		invoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+		invoiceCandidateRecord.setQtyToInvoice(ONE);
 		invoiceCandidateRecord.setProcessed(false);
 		saveRecord(invoiceCandidateRecord);
 
@@ -140,6 +153,7 @@ public class RefundTestTools
 				.bpartnerId(BPARTNER_ID)
 				.refundContract(refundContract)
 				.money(money)
+				.assignedQuantity(Quantity.of(ZERO, uomRecord))
 				.invoiceableFrom(invoiceableFromDate)
 				.build();
 	}
@@ -156,7 +170,7 @@ public class RefundTestTools
 
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfigRecord.setC_Flatrate_Conditions(conditions);
-		refundConfigRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		refundConfigRecord.setM_Product(productRecord);
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		refundConfigRecord.setC_InvoiceSchedule(invoiceScheduleRecord);
 		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
@@ -169,7 +183,7 @@ public class RefundTestTools
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		contractRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
-		contractRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		contractRecord.setM_Product(productRecord);
 		contractRecord.setStartDate(TimeUtil.asTimestamp(CONTRACT_START_DATE));
 		contractRecord.setEndDate(TimeUtil.asTimestamp(CONTRACT_END_DATE));
 		saveRecord(contractRecord);
@@ -182,7 +196,7 @@ public class RefundTestTools
 
 		final RefundConfig refundConfig = RefundConfig
 				.builder()
-				.productId(PRODUCT_ID)
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.minQty(ZERO)
 				.refundBase(RefundBase.PERCENTAGE)
 				.percent(Percent.of(TWENTY))
@@ -211,9 +225,10 @@ public class RefundTestTools
 				.builder()
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.bpartnerId(BPARTNER_ID)
-				.productId(PRODUCT_ID)
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.money(money)
 				.invoiceableFrom(ASSIGNABLE_CANDIDATE_INVOICE_DATE)
+				.quantity(Quantity.of(ONE, uomRecord))
 				.build();
 	}
 
@@ -246,7 +261,7 @@ public class RefundTestTools
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(ASSIGNABLE_CANDIDATE_INVOICE_DATE));
 		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
-		invoiceCandidateRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		invoiceCandidateRecord.setM_Product(productRecord);
 		saveRecord(invoiceCandidateRecord);
 		return invoiceCandidateRecord;
 	}

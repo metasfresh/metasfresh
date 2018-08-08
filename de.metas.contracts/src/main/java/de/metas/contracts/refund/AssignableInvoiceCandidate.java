@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,6 +35,7 @@ import lombok.Value;
  * #L%
  */
 
+/** Represents an invoice candidate that matches a refund contract and can therefore be assigned to a {@link RefundInvoiceCandidate}. */
 @Value
 public class AssignableInvoiceCandidate implements InvoiceCandidate
 {
@@ -46,7 +48,10 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 	BPartnerId bpartnerId;
 	ProductId productId;
 	LocalDate invoiceableFrom;
+
 	Money money;
+
+	Quantity quantity;
 
 	AssignmentToRefundCandidate assignmentToRefundCandidate;
 
@@ -57,6 +62,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
+			@NonNull final Quantity quantity,
 			@Nullable final AssignmentToRefundCandidate assignmentToRefundCandidate)
 	{
 		this.id = id;
@@ -64,6 +70,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;
+		this.quantity = quantity;
 
 		this.assignmentToRefundCandidate = assignmentToRefundCandidate;
 	}

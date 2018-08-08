@@ -70,7 +70,7 @@ public interface I_C_Invoice_Candidate_Assignment
 
 	/**
 	 * Set Zugeordneter Betrag.
-	 * Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	 * Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -80,7 +80,7 @@ public interface I_C_Invoice_Candidate_Assignment
 
 	/**
 	 * Get Zugeordneter Betrag.
-	 * Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	 * Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -92,6 +92,31 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedAmount", null);
     /** Column name AssignedAmount */
     public static final String COLUMNNAME_AssignedAmount = "AssignedAmount";
+
+	/**
+	 * Set Zugeordnete Menge.
+	 * Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAssignedQuantity (java.math.BigDecimal AssignedQuantity);
+
+	/**
+	 * Get Zugeordnete Menge.
+	 * Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAssignedQuantity();
+
+    /** Column definition for AssignedQuantity */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedQuantity = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedQuantity", null);
+    /** Column name AssignedQuantity */
+    public static final String COLUMNNAME_AssignedQuantity = "AssignedQuantity";
 
 	/**
 	 * Set Pauschale - Vertragsperiode.

@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1331444003L;
+	private static final long serialVersionUID = 1097265499L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment (Properties ctx, int C_Invoice_Candidate_Assignment_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
       super (ctx, C_Invoice_Candidate_Assignment_ID, trxName);
       /** if (C_Invoice_Candidate_Assignment_ID == 0)
         {
+			setAssignedQuantity (BigDecimal.ZERO); // 0
 			setC_Invoice_Candidate_Assigned_ID (0);
 			setC_Invoice_Candidate_Assignment_ID (0);
 			setC_Invoice_Candidate_Term_ID (0);
@@ -46,7 +47,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 
 	/** Set Zugeordneter Betrag.
 		@param AssignedAmount 
-		Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+		Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
 	  */
 	@Override
 	public void setAssignedAmount (java.math.BigDecimal AssignedAmount)
@@ -55,12 +56,34 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	}
 
 	/** Get Zugeordneter Betrag.
-		@return Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+		@return Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
 	  */
 	@Override
 	public java.math.BigDecimal getAssignedAmount () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedAmount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Zugeordnete Menge.
+		@param AssignedQuantity 
+		Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
+	  */
+	@Override
+	public void setAssignedQuantity (java.math.BigDecimal AssignedQuantity)
+	{
+		set_Value (COLUMNNAME_AssignedQuantity, AssignedQuantity);
+	}
+
+	/** Get Zugeordnete Menge.
+		@return Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
+	  */
+	@Override
+	public java.math.BigDecimal getAssignedQuantity () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedQuantity);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

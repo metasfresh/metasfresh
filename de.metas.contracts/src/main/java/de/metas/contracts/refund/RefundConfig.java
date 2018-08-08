@@ -55,9 +55,8 @@ public class RefundConfig
 		PER_INDIVIDUAL_SCALE, ALL_MAX_SCALE;
 	}
 
-	
 	RefundInvoiceType refundInvoiceType;
-	
+
 	RefundBase refundBase;
 
 	Percent percent;
@@ -73,11 +72,12 @@ public class RefundConfig
 
 	boolean useInProfitCalculation;
 
+	/** This config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product. */
 	BigDecimal minQty;
 
 	RefundMode refundMode;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public RefundConfig(
 			@NonNull final RefundInvoiceType refundInvoiceType,
 			@NonNull final RefundBase refundBase,

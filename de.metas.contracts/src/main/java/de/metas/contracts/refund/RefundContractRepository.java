@@ -3,6 +3,7 @@ package de.metas.contracts.refund;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -15,10 +16,12 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -125,13 +128,18 @@ public class RefundContractRepository
 
 	public RefundContract ofRecord(@NonNull final I_C_Flatrate_Term contractRecord)
 	{
+		final RefundConfigQuery query = RefundConfigQuery.builder()
+				.productId(ProductId.ofRepoId(contractRecord.getM_Product_ID()))
+				.conditionsId(ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID()))
+				.build();
+		
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
-		final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(flatrateTermId);
+		final List<RefundConfig> refundConfigs = refundConfigRepository.getByQuery(query);
 
 		return RefundContract
 				.builder()
 				.id(flatrateTermId)
-				.refundConfig(refundConfig)
+				.refundConfigs(refundConfigs)
 				.startDate(TimeUtil.asLocalDate(contractRecord.getStartDate()))
 				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()))
 				.build();

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +32,10 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Represents the invoice candidate that will end up as "refund" invoice line.
+ * Also see {@link AssignableInvoiceCandidate}.
+ */
 @Value
 @Builder(toBuilder = true)
 public class RefundInvoiceCandidate implements InvoiceCandidate
@@ -54,4 +59,13 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 
 	@NonNull
 	Money money;
+
+	/** The sum of the quantities of all assigned {@link AssignableInvoiceCandidate}s. */
+	@NonNull
+	Quantity assignedQuantity;
+
+	public RefundConfig getRefundConfig()
+	{
+		return refundContract.getRefundConfig(assignedQuantity.getAsBigDecimal());
+	}
 }

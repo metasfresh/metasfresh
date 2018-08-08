@@ -466,7 +466,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public int signum()
 	{
-		return getQty().signum();
+		return getAsBigDecimal().signum();
 	}
 
 	/**

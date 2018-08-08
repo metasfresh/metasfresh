@@ -8,8 +8,8 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import lombok.NonNull;
 
 /*
@@ -63,7 +63,7 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 
 		final Percent percent = refundContract
 				.get()
-				.getRefundConfig()
+				.getRefundConfig(request.getQuantity().getAsBigDecimal())
 				.getPercent();
 
 		return moneyService.subtractPercent(percent, input);

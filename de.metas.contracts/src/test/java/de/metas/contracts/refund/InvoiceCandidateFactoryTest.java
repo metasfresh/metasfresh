@@ -174,7 +174,7 @@ public class InvoiceCandidateFactoryTest
 		assertThat(cast.getMoney().getValue()).isEqualByComparingTo(TEN);
 		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 
-		final RefundConfig refundConfig = cast.getRefundContract().getRefundConfig();
+		final RefundConfig refundConfig = cast.getRefundConfig();
 		assertThat(refundConfig.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
 		assertThat(refundConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(THREE);
 	}

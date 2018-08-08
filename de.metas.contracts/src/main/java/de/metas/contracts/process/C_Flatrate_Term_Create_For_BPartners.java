@@ -47,6 +47,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
@@ -74,7 +75,13 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
 		{
-			final List<RefundConfig> allConfigs = refundConfigRepository.getByConditionsId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()));
+			final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
+			
+			final RefundConfigQuery query = RefundConfigQuery.builder()
+					.conditionsId(conditionsId)
+					.build();
+
+			final List<RefundConfig> allConfigs = refundConfigRepository.getByQuery(query);
 			for (final RefundConfig config : allConfigs)
 			{
 				final I_M_Product product = loadOutOfTrx(config.getProductId().getRepoId(), I_M_Product.class);
@@ -91,9 +98,9 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			}
 		}
 
-		if(p_adUserInChargeId > 0)
+		if (p_adUserInChargeId > 0)
 		{
-			final I_AD_User userInCharge= loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
+			final I_AD_User userInCharge = loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
 			setUserInCharge(userInCharge);
 		}
 		setStartDate(p_startDate);

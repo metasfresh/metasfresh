@@ -5,7 +5,6 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
@@ -16,10 +15,12 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -28,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
@@ -42,6 +44,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -130,6 +133,13 @@ class InvoiceCandidateFactory
 			return Optional.empty();
 		}
 
+		final BigDecimal assignedQuantity = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID, refundRecord.getC_Invoice_Candidate_ID())
+				.create()
+				.aggregate(I_C_Invoice_Candidate_Assignment.COLUMN_AssignedQuantity, Aggregate.SUM, BigDecimal.class);
+
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
@@ -145,6 +155,7 @@ class InvoiceCandidateFactory
 				.refundContract(refundContract.get())
 				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
+				.assignedQuantity(Quantity.of(assignedQuantity, refundRecord.getM_Product().getC_UOM()))
 				.money(money)
 				.build();
 		return Optional.of(invoiceCandidate);
@@ -165,12 +176,17 @@ class InvoiceCandidateFactory
 		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
 		final Money money = Money.of(moneyAmount, currencyId);
 
+		final Quantity quantity = Quantity.of(
+				assignableRecord.getQtyToInvoice().add(assignableRecord.getQtyInvoiced()),
+				assignableRecord.getM_Product().getC_UOM());
+
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
 				.assignmentToRefundCandidate(assignmentToRefundCandidate.orElse(null))
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
+				.quantity(quantity)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.build();
 
@@ -201,7 +217,7 @@ class InvoiceCandidateFactory
 
 	public RefundInvoiceCandidate createRefundInvoiceCandidate(
 			@NonNull final AssignableInvoiceCandidate invoiceCandidate,
-			@NonNull final FlatrateTermId contractId)
+			@NonNull final RefundContract refundContract)
 	{
 		final I_C_Invoice_Candidate assignableInvoiceCandidateRecord = load(
 				invoiceCandidate.getId().getRepoId(),
@@ -217,8 +233,7 @@ class InvoiceCandidateFactory
 		refundInvoiceCandidateRecord.setC_Order(null);
 		refundInvoiceCandidateRecord.setC_OrderLine(null);
 
-		final I_C_Flatrate_Term contractRecord = loadOutOfTrx(contractId.getRepoId(), I_C_Flatrate_Term.class);
-		refundInvoiceCandidateRecord.setRecord_ID(contractRecord.getC_Flatrate_Term_ID());
+		refundInvoiceCandidateRecord.setRecord_ID(refundContract.getId().getRepoId());
 		refundInvoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 
 		refundInvoiceCandidateRecord.setPriceActual(ZERO);
@@ -227,15 +242,13 @@ class InvoiceCandidateFactory
 		refundInvoiceCandidateRecord.setQtyOrdered(ONE);
 		refundInvoiceCandidateRecord.setQtyDelivered(ONE);
 
-		final RefundConfig refundConfig = retrieveConfig(refundInvoiceCandidateRecord);
+		// the new refund candidate has no assigned quantity (besides, in the nearest future, the qty of 'invoiceCandidate')
+		final RefundConfig refundConfig = refundContract.getRefundConfig(invoiceCandidate.getQuantity().getAsBigDecimal());
 
 		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(refundConfig.getInvoiceSchedule().getId().getRepoId());
 		refundInvoiceCandidateRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung);
 		refundInvoiceCandidateRecord.setInvoiceRule_Override(null);
 		refundInvoiceCandidateRecord.setDateToInvoice_Override(null);
-
-		final boolean soTrx = assignableInvoiceCandidateRecord.isSOTrx();
-		refundInvoiceCandidateRecord.setIsSOTrx(soTrx);
 
 		final LocalDate dateToInvoice = refundConfig
 				.getInvoiceSchedule()
@@ -261,14 +274,6 @@ class InvoiceCandidateFactory
 		invalidateNewRefundRecordIfNeeded(refundInvoiceCandidateRecord);
 
 		return ofNullableRefundRecord(refundInvoiceCandidateRecord).get();
-	}
-
-	private RefundConfig retrieveConfig(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)
-	{
-		final FlatrateTermId contractId = FlatrateTermId.ofRepoId(refundInvoiceCandidateRecord.getRecord_ID());
-		final RefundContract refundContract = refundContractRepository.getById(contractId);
-
-		return refundContract.getRefundConfig();
 	}
 
 	private int computeDocType(
