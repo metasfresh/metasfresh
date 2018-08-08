@@ -651,65 +651,11 @@ UPDATE AD_Column SET IsCalculated='N', Help='Adempiere converts the (string) fie
 UPDATE AD_Field SET Name='Merkmals-Wert', Description='Value of the Attribute', Help='Adempiere converts the (string) field values to the attribute data type.  Booleans (Yes-No) may have the values "true" and "false", the date format is YYYY-MM-DD' WHERE AD_Column_ID=560735
 ;
 
--- 2018-08-03T21:57:28.174
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE DIM_Dimension_Spec_Attribute SET IsIncludeAllAttributeValues='N',Updated=TO_TIMESTAMP('2018-08-03 21:57:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE DIM_Dimension_Spec_Attribute_ID=540017
-;
-
--- 2018-08-03T21:57:34.987
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO DIM_Dimension_Spec_AttributeValue (AD_Client_ID,AD_Org_ID,Created,CreatedBy,DIM_Dimension_Spec_Attribute_ID,DIM_Dimension_Spec_AttributeValue_ID,IsActive,M_AttributeValue_ID,Updated,UpdatedBy) VALUES (0,0,TO_TIMESTAMP('2018-08-03 21:57:34','YYYY-MM-DD HH24:MI:SS'),100,540017,540016,'Y',540016,TO_TIMESTAMP('2018-08-03 21:57:34','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2018-08-03T21:57:42.675
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE DIM_Dimension_Spec_Attribute SET IsIncludeAllAttributeValues='N',Updated=TO_TIMESTAMP('2018-08-03 21:57:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE DIM_Dimension_Spec_Attribute_ID=540016
-;
-
--- 2018-08-03T21:57:48.289
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO DIM_Dimension_Spec_AttributeValue (AD_Client_ID,AD_Org_ID,Created,CreatedBy,DIM_Dimension_Spec_Attribute_ID,DIM_Dimension_Spec_AttributeValue_ID,IsActive,M_AttributeValue_ID,Updated,UpdatedBy) VALUES (0,0,TO_TIMESTAMP('2018-08-03 21:57:48','YYYY-MM-DD HH24:MI:SS'),100,540016,540017,'Y',540014,TO_TIMESTAMP('2018-08-03 21:57:48','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2018-08-03T22:03:57.721
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM DIM_Dimension_Spec_AttributeValue WHERE DIM_Dimension_Spec_AttributeValue_ID=540017
-;
-
--- 2018-08-03T22:04:01.002
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE DIM_Dimension_Spec_Attribute SET IsIncludeAllAttributeValues='Y',Updated=TO_TIMESTAMP('2018-08-03 22:04:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE DIM_Dimension_Spec_Attribute_ID=540016
-;
-
--- 2018-08-03T22:04:05.370
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM DIM_Dimension_Spec_AttributeValue WHERE DIM_Dimension_Spec_AttributeValue_ID=540016
-;
-
 -- 2018-08-03T22:04:09.434
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE DIM_Dimension_Spec_Attribute SET IsIncludeAllAttributeValues='Y',Updated=TO_TIMESTAMP('2018-08-03 22:04:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE DIM_Dimension_Spec_Attribute_ID=540017
 ;
 
--- 2018-08-03T22:29:16.660
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-TRUNCATE TABLE MD_Stock
-;
-
--- 2018-08-03T22:29:16.968
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO MD_Stock (AD_Client_ID,AD_Org_ID,AttributesKey,Created,CreatedBy,IsActive,MD_Stock_ID,M_Product_ID,M_Warehouse_ID,QtyOnHand,Updated,UpdatedBy) VALUES (0,0,'540016',TO_TIMESTAMP('2018-08-03 22:29:16','YYYY-MM-DD HH24:MI:SS'),100,'Y',543166,2005577,540012,760,TO_TIMESTAMP('2018-08-03 22:29:16','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2018-08-03T22:29:17.089
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO MD_Stock (AD_Client_ID,AD_Org_ID,AttributesKey,Created,CreatedBy,IsActive,MD_Stock_ID,M_Product_ID,M_Warehouse_ID,QtyOnHand,Updated,UpdatedBy) VALUES (0,0,'-1002',TO_TIMESTAMP('2018-08-03 22:29:17','YYYY-MM-DD HH24:MI:SS'),100,'Y',543167,2005577,540012,2,TO_TIMESTAMP('2018-08-03 22:29:17','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2018-08-03T22:29:17.434
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO MD_Stock (AD_Client_ID,AD_Org_ID,AttributesKey,Created,CreatedBy,IsActive,MD_Stock_ID,M_Product_ID,M_Warehouse_ID,QtyOnHand,Updated,UpdatedBy) VALUES (0,0,'-1002',TO_TIMESTAMP('2018-08-03 22:29:17','YYYY-MM-DD HH24:MI:SS'),100,'Y',543168,2005577,540008,1521,TO_TIMESTAMP('2018-08-03 22:29:17','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
 -- 2018-08-03T22:47:04.480
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

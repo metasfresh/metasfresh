@@ -288,7 +288,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return new instance or null
 	 */
-	public final IProcess newProcessClassInstanceOrNull()
+	public final JavaProcess newProcessClassInstanceOrNull()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
@@ -305,7 +305,7 @@ public final class ProcessInfo implements Serializable
 		try
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
-			final IProcess processClassInstance = (IProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
 			if (processClassInstance instanceof JavaProcess)
 			{
 				((JavaProcess)processClassInstance).init(this);
