@@ -21,7 +21,6 @@ class PasswordRecovery extends Component {
       err: '',
       pending: false,
       resetEmailSent: false,
-      avatarSrc: '',
       form: {},
       invalidToken: false,
     };
@@ -32,7 +31,6 @@ class PasswordRecovery extends Component {
     const resetPassword = token ? true : false;
 
     if (resetPassword) {
-      this.getAvatar();
       this.getUserData().catch(({ data }) => {
         this.setState({
           err: data.message,
@@ -47,11 +45,7 @@ class PasswordRecovery extends Component {
   getAvatar = () => {
     const { token } = this.props;
 
-    return resetPasswordGetAvatar(token).then(({ data }) => {
-      this.setState({
-        avatarSrc: data,
-      });
-    });
+    return resetPasswordGetAvatar(token);
   };
 
   getUserData = () => {
@@ -278,20 +272,18 @@ class PasswordRecovery extends Component {
 
   renderContent = () => {
     const { token } = this.props;
-    const { pending, resetEmailSent, avatarSrc, form } = this.state;
+    const { pending, resetEmailSent, form } = this.state;
     const resetPassword = token ? true : false;
     const buttonMessage = resetPassword
       ? counterpart.translate('forgotPassword.changePassword.caption')
       : counterpart.translate('forgotPassword.sendResetCode.caption');
+    const avatarSrc = this.getAvatar();
 
     return (
       <div>
         {avatarSrc && (
           <div className="text-center">
-            <img
-              src={`data:image/*;base64,${avatarSrc}`}
-              className="avatar mt-2 mb-2"
-            />
+            <img src={avatarSrc} className="avatar mt-2 mb-2" />
           </div>
         )}
         {form.fullname && (

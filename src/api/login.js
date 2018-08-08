@@ -57,5 +57,5 @@ export function resetPasswordComplete(token, form) {
 }
 
 export function resetPasswordGetAvatar(token) {
-  return axios.get(`${config.API_URL}/login/resetPassword/${token}/avatar`);
+  return `${config.API_URL}/login/resetPassword/${token}/avatar`;
 }
