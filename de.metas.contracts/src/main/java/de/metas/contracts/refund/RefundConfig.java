@@ -1,10 +1,15 @@
 package de.metas.contracts.refund;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.lang.Percent;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +38,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class RefundConfig
 {
 	public enum RefundInvoiceType
@@ -41,19 +45,73 @@ public class RefundConfig
 		INVOICE, CREDITMEMO;
 	}
 
-	@NonNull
-	RefundInvoiceType refundInvoiceType;
+	public enum RefundBase
+	{
+		PERCENTAGE, AMOUNT_PER_UNIT;
+	}
 
-	@NonNull
+	public enum RefundMode
+	{
+		PER_INDIVIDUAL_SCALE, ALL_MAX_SCALE;
+	}
+
+	
+	RefundInvoiceType refundInvoiceType;
+	
+	RefundBase refundBase;
+
 	Percent percent;
 
+	Money amount;
+
 	/** {@code null} means that every product is matched. */
-	@Nullable
 	ProductId productId;
 
-	@NonNull
 	InvoiceSchedule invoiceSchedule;
 
-	@NonNull
 	ConditionsId conditionsId;
+
+	boolean useInProfitCalculation;
+
+	BigDecimal minQty;
+
+	RefundMode refundMode;
+
+	@Builder
+	public RefundConfig(
+			@NonNull final RefundInvoiceType refundInvoiceType,
+			@NonNull final RefundBase refundBase,
+			@Nullable final Percent percent,
+			@Nullable final Money amount,
+			@Nullable final ProductId productId,
+			@NonNull final InvoiceSchedule invoiceSchedule,
+			@NonNull final ConditionsId conditionsId,
+			boolean useInProfitCalculation,
+			@NonNull final BigDecimal minQty,
+			@NonNull final RefundMode refundMode)
+	{
+		this.refundInvoiceType = refundInvoiceType;
+		this.refundBase = refundBase;
+		this.productId = productId;
+		this.invoiceSchedule = invoiceSchedule;
+		this.conditionsId = conditionsId;
+		this.useInProfitCalculation = useInProfitCalculation;
+
+		if (RefundBase.PERCENTAGE.equals(refundBase))
+		{
+			this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null", RefundBase.PERCENTAGE);
+			this.amount = null;
+		}
+		else
+		{
+			this.amount = Check.assumeNotNull(amount, "If parameter 'refundBase'={}, then parameter 'amount' may not be null", RefundBase.AMOUNT_PER_UNIT);
+			this.percent = null;
+		}
+
+		Check.errorIf(minQty.signum() < 0, "Parameter 'minQty' may not be negative; minQty={}", minQty);
+		this.minQty = minQty;
+
+		this.refundMode = refundMode;
+	}
+
 }

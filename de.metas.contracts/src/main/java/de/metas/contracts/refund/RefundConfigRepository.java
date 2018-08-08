@@ -23,11 +23,15 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -74,7 +78,7 @@ public class RefundConfigRepository
 	{
 		return createRefundConfigQuery(conditionsId)
 				.stream()
-				.map(this::ofNullableRecord)
+				.map(this::ofRecordOrNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -123,7 +127,7 @@ public class RefundConfigRepository
 				.endOrderBy()
 				.create()
 				.first();
-		return ofNullableRecord(configRecord);
+		return ofRecordOrNull(configRecord);
 	}
 
 	private IQuery<I_C_Flatrate_RefundConfig> createRefundConfigQuery(
@@ -142,43 +146,74 @@ public class RefundConfigRepository
 				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, conditionsId.getRepoId());
 	}
 
-	private RefundConfig ofNullableRecord(
-			@Nullable final I_C_Flatrate_RefundConfig record)
+	private RefundConfig ofRecordOrNull(@Nullable final I_C_Flatrate_RefundConfig record)
 	{
 		if (record == null)
 		{
 			return null;
 		}
-
-		final RefundInvoiceType refundInvoiceType;
-		if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo.equals(record.getRefundInvoiceType()))
-		{
-			refundInvoiceType = RefundInvoiceType.CREDITMEMO;
-		}
-		else if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice.equals(record.getRefundInvoiceType()))
-		{
-			refundInvoiceType = RefundInvoiceType.INVOICE;
-		}
-		else
-		{
-			Check.fail(
-					"The given C_Flatrate_RefundConfig has an unsupposed refundInvoiceType={}; record={}",
-					record.getRefundInvoiceType(), record);
-			return null;
-		}
-
 		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
 
 		final RefundConfigBuilder builder = RefundConfig.builder()
 				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
-				.refundInvoiceType(refundInvoiceType)
+				.refundInvoiceType(extractRefundInvoiceType(record))
 				.invoiceSchedule(invoiceSchedule)
-				.percent(Percent.of(record.getPercent()));
+				.percent(Percent.of(record.getRefundPercent()))
+				.amount(Money.ofOrNull(record.getRefundAmt(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
+				.minQty(record.getMinQty())
+				.refundBase(extractRefundBase(record))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.refundMode(extractRefundMode(record))
+				.useInProfitCalculation(record.isUseInProfitCalculation());
 
-		if (record.getM_Product_ID() > 0)
-		{
-			builder.productId(ProductId.ofRepoId(record.getM_Product_ID()));
-		}
 		return builder.build();
+	}
+
+	private RefundInvoiceType extractRefundInvoiceType(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+
+		final String refundInvoiceType = record.getRefundInvoiceType();
+		if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo.equals(refundInvoiceType))
+		{
+			return RefundInvoiceType.CREDITMEMO;
+		}
+		else if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice.equals(refundInvoiceType))
+		{
+			return RefundInvoiceType.INVOICE;
+		}
+		Check.fail(
+				"The given C_Flatrate_RefundConfig has an unsupposed refundInvoiceType={}; record={}",
+				refundInvoiceType, record);
+		return null;
+	}
+
+	private RefundMode extractRefundMode(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+		final String refundMode = record.getRefundMode();
+		if (X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale.equals(refundMode))
+		{
+			return RefundMode.PER_INDIVIDUAL_SCALE;
+		}
+		else if (X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated.equals(refundMode))
+		{
+			return RefundMode.ALL_MAX_SCALE;
+		}
+		Check.fail("Unsupported C_Flatrate_RefundConfig.RefundMode={}; record={}", refundMode, record);
+		return null;
+	}
+
+	private RefundBase extractRefundBase(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+		final String refundBase = record.getRefundBase();
+		if (X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage.equals(refundBase))
+		{
+			return RefundBase.PERCENTAGE;
+		}
+		else if (X_C_Flatrate_RefundConfig.REFUNDBASE_Amount.equals(refundBase))
+		{
+			return RefundBase.AMOUNT_PER_UNIT;
+		}
+		Check.fail("Unsupported C_Flatrate_RefundConfig.RefundBase={}; record={}", refundBase, record);
+		return null;
 	}
 }

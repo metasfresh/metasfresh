@@ -2,6 +2,7 @@ package de.metas.contracts.refund;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.bouncycastle.crypto.paddings.ZeroBytePadding;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
@@ -26,7 +28,9 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
@@ -79,7 +83,6 @@ public class RefundTestTools
 
 	public RefundTestTools()
 	{
-
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setStdPrecision(2);
 		saveRecord(currencyRecord);
@@ -88,7 +91,6 @@ public class RefundTestTools
 				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
 				.precision(2)
 				.build();
-
 	}
 
 	public static I_C_Invoice_Candidate retrieveRecord(@NonNull final InvoiceCandidateId invoiceCandidateId)
@@ -157,7 +159,9 @@ public class RefundTestTools
 		refundConfigRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		refundConfigRecord.setC_InvoiceSchedule(invoiceScheduleRecord);
-		refundConfigRecord.setPercent(TWENTY);
+		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		refundConfigRecord.setRefundPercent(TWENTY);
+		refundConfigRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		saveRecord(refundConfigRecord);
 
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
@@ -179,10 +183,13 @@ public class RefundTestTools
 		final RefundConfig refundConfig = RefundConfig
 				.builder()
 				.productId(PRODUCT_ID)
+				.minQty(ZERO)
+				.refundBase(RefundBase.PERCENTAGE)
 				.percent(Percent.of(TWENTY))
 				.conditionsId(ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID()))
 				.invoiceSchedule(invoiceSchedule)
 				.refundInvoiceType(RefundInvoiceType.CREDITMEMO)
+				.refundMode(RefundMode.ALL_MAX_SCALE)
 				.build();
 
 		final RefundContract refundContract = RefundContract.builder()

@@ -108,7 +108,9 @@ public class InvoiceCandidateFactoryTest
 		refundConfigRecord.setM_Product(productRecord);
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		refundConfigRecord.setC_InvoiceSchedule(invoiceSchedule);
-		refundConfigRecord.setPercent(THREE);
+		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		refundConfigRecord.setRefundPercent(THREE);
+		refundConfigRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		saveRecord(refundConfigRecord);
 
 		refundContractRecord = newInstance(I_C_Flatrate_Term.class);
