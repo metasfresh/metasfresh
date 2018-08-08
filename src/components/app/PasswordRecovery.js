@@ -161,7 +161,17 @@ class PasswordRecovery extends Component {
   };
 
   renderForgottenPasswordForm = () => {
-    const { pending, err } = this.state;
+    const { pending, err, resetEmailSent } = this.state;
+
+    if (resetEmailSent) {
+      return (
+        <div>
+          <div className="form-control-label instruction-sent">
+            {counterpart.translate('forgotPassword.resetCodeSent.caption')}
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div>
@@ -238,21 +248,9 @@ class PasswordRecovery extends Component {
     const { token } = this.props;
     const { pending, resetEmailSent, avatarSrc, form } = this.state;
     const resetPassword = token ? true : false;
-    let buttonMessage = counterpart.translate(
-      'forgotPassword.changePassword.caption'
-    );
-
-    if (!resetPassword) {
-      if (resetEmailSent) {
-        buttonMessage = counterpart.translate(
-          'forgotPassword.resetCodeSent.caption'
-        );
-      } else {
-        buttonMessage = counterpart.translate(
-          'forgotPassword.sendResetCode.caption'
-        );
-      }
-    }
+    let buttonMessage = resetPassword
+      ? counterpart.translate('forgotPassword.changePassword.caption')
+      : counterpart.translate('forgotPassword.sendResetCode.caption');
 
     return (
       <div
@@ -279,15 +277,18 @@ class PasswordRecovery extends Component {
           {!resetEmailSent && resetPassword
             ? this.renderResetPasswordForm()
             : this.renderForgottenPasswordForm()}
-          <div className="mt-2">
-            <button
-              className="btn btn-sm btn-block btn-meta-success"
-              disabled={pending}
-              type="submit"
-            >
-              {buttonMessage}
-            </button>
-          </div>
+
+          {!resetEmailSent && (
+            <div className="mt-2">
+              <button
+                className="btn btn-sm btn-block btn-meta-success"
+                disabled={pending}
+                type="submit"
+              >
+                {buttonMessage}
+              </button>
+            </div>
+          )}
         </form>
       </div>
     );
@@ -298,7 +299,7 @@ PasswordRecovery.propTypes = {
   dispatch: PropTypes.func.isRequired,
   path: PropTypes.string.isRequired,
   token: PropTypes.string,
-  onResetOk: PropTypes.bool,
+  onResetOk: PropTypes.func,
 };
 
 export default connect()(PasswordRecovery);
