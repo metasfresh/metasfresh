@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { push } from 'react-router-redux';
 
 import {
   resetPasswordRequest,
@@ -66,6 +67,11 @@ class PasswordRecovery extends Component {
         },
       });
     });
+  };
+
+  redirectToLogin = () => {
+    const { dispatch } = this.props;
+    dispatch(push('/login'));
   };
 
   handleKeyPress = e => {
@@ -261,6 +267,7 @@ class PasswordRecovery extends Component {
           <button
             className="btn btn-sm btn-block btn-meta-success"
             type="button"
+            onClick={this.redirectToLogin}
           >
             {buttonMessage}
           </button>
