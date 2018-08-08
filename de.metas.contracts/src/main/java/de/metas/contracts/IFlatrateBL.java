@@ -112,7 +112,7 @@ public interface IFlatrateBL extends ISingletonService
 	 *
 	 * @param context
 	 */
-	void extendContract(ContractExtendingRequest context);
+	void extendContractAndNotifyUser(ContractExtendingRequest context);
 
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}

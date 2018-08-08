@@ -79,6 +79,7 @@ import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -1033,7 +1034,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public void extendContract(final @NonNull ContractExtendingRequest request)
+	public void extendContractAndNotifyUser(final @NonNull ContractExtendingRequest request)
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName_IGNORED -> {
 
@@ -1048,7 +1049,7 @@ public class FlatrateBL implements IFlatrateBL
 			contracts.add(currentRequest.getContract());
 			do
 			{
-				extendContractIfRequired(currentRequest);
+				extendContractAndNotifyUserIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
@@ -1110,7 +1111,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void extendContractIfRequired(final @NonNull ContractExtendingRequest request)
+	private void extendContractAndNotifyUserIfRequired(final @NonNull ContractExtendingRequest request)
 	{
 		final I_C_Flatrate_Term currentTerm = request.getContract();
 		final boolean forceExtend = request.isForceExtend();
@@ -1184,17 +1185,31 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(currentTerm.getAD_User_InCharge_ID() > 0, conditions + " has AD_User_InCharge_ID > 0");
 			Check.assume(termToReferenceInNote != null, "");
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
-			final MNote note = new MNote(
-					ctx,
-					msgValue,
-					currentTerm.getAD_User_InCharge_ID(),
-					ITrx.TRXNAME_ThreadInherited);
-			note.setAD_Org_ID(currentTerm.getAD_Org_ID());
-			note.setRecord(adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), termToReferenceInNote.getC_Flatrate_Term_ID());
-			note.setTextMsg(msgBL.getMsg(ctx, msgValue));
-			note.saveEx();
+			createNote(currentTerm, termToReferenceInNote, msgValue);
+			notifyUser(currentTerm, msgValue);
 		}
+	}
+
+	// keep this old code that creates AD_Note entries so we make sure it still works the way it used to.
+	private void createNote(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term termToReferenceInNote, final String msgValue)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
+		final MNote note = new MNote(
+				ctx,
+				msgValue,
+				currentTerm.getAD_User_InCharge_ID(),
+				ITrx.TRXNAME_ThreadInherited);
+		note.setAD_Org_ID(currentTerm.getAD_Org_ID());
+		note.setRecord(adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), termToReferenceInNote.getC_Flatrate_Term_ID());
+		note.setTextMsg(msgBL.getMsg(ctx, msgValue));
+		note.saveEx();
+	}
+
+	private void notifyUser(final I_C_Flatrate_Term currentTerm, final String msgValue)
+	{
+		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
+
+		flatrateGeneratedEventBus.notifyUser(currentTerm, currentTerm.getAD_User_InCharge_ID(), msgValue);
 	}
 
 	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context)
@@ -1358,7 +1373,6 @@ public class FlatrateBL implements IFlatrateBL
 
 				termDuration = transition.getTermDuration() / 12;
 			}
-
 
 			final I_C_Calendar calendar = transition.getC_Calendar_Contract();
 

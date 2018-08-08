@@ -551,7 +551,7 @@ public final class ProcessExecutor
 	{
 		final ProcessInfo pi = this.pi;
 
-		final IProcess process = pi.newProcessClassInstanceOrNull();
+		final JavaProcess process = pi.newProcessClassInstanceOrNull();
 		if(process == null)
 		{
 			throw new AdempiereException("Cannot create process class instance for " + pi); // shall not happen

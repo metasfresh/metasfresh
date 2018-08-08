@@ -3,7 +3,7 @@ package de.metas.process;
 import de.metas.logging.LogManager;
 
 /**
- * {@link IProcess} execution listener to be used by {@link ProcessExecutor}.
+ * {@link JavaProcess} execution listener to be used by {@link ProcessExecutor}.
  *
  * @author authors of earlier versions of this class are: Jorg Janke
  * @author metas-dev <dev@metasfresh.com>
