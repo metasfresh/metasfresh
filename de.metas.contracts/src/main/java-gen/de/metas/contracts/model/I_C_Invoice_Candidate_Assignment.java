@@ -119,6 +119,33 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final String COLUMNNAME_AssignedQuantity = "AssignedQuantity";
 
 	/**
+	 * Set C_Flatrate_RefundConfig.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_RefundConfig_ID (int C_Flatrate_RefundConfig_ID);
+
+	/**
+	 * Get C_Flatrate_RefundConfig.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_RefundConfig_ID();
+
+	public de.metas.contracts.model.I_C_Flatrate_RefundConfig getC_Flatrate_RefundConfig();
+
+	public void setC_Flatrate_RefundConfig(de.metas.contracts.model.I_C_Flatrate_RefundConfig C_Flatrate_RefundConfig);
+
+    /** Column definition for C_Flatrate_RefundConfig_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, de.metas.contracts.model.I_C_Flatrate_RefundConfig> COLUMN_C_Flatrate_RefundConfig_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, de.metas.contracts.model.I_C_Flatrate_RefundConfig>(I_C_Invoice_Candidate_Assignment.class, "C_Flatrate_RefundConfig_ID", de.metas.contracts.model.I_C_Flatrate_RefundConfig.class);
+    /** Column name C_Flatrate_RefundConfig_ID */
+    public static final String COLUMNNAME_C_Flatrate_RefundConfig_ID = "C_Flatrate_RefundConfig_ID";
+
+	/**
 	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search

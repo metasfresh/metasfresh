@@ -12,9 +12,11 @@ import java.time.LocalDate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
 
@@ -22,6 +24,7 @@ import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -36,6 +39,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
 import de.metas.money.Currency;
@@ -43,6 +47,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -84,10 +89,22 @@ public class RefundTestTools
 	private final Currency currency;
 
 	private final I_C_UOM uomRecord;
+
+	@Getter
 	private I_M_Product productRecord;
 
 	public RefundTestTools()
 	{
+		final I_C_ILCandHandler icHandlerRecord = newInstance(I_C_ILCandHandler.class);
+		icHandlerRecord.setClassname(FlatrateTerm_Handler.class.getName());
+		saveRecord(icHandlerRecord);
+
+		final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
+		docTypeRecord.setIsSOTrx(true); // needs to match the C_Invoice_Candidate record we will test with
+		docTypeRecord.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
+		docTypeRecord.setDocSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
+		saveRecord(docTypeRecord);
+
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setStdPrecision(2);
 		saveRecord(currencyRecord);
@@ -135,6 +152,7 @@ public class RefundTestTools
 		final LocalDate invoiceableFromDate = ASSIGNABLE_CANDIDATE_INVOICE_DATE.plusDays(1);
 
 		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this classe's constructor
 		invoiceCandidateRecord.setM_Product(productRecord);
 		invoiceCandidateRecord.setPriceActual(moneyValue);
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
@@ -152,6 +170,7 @@ public class RefundTestTools
 				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.bpartnerId(BPARTNER_ID)
 				.refundContract(refundContract)
+				.refundConfig(refundContract.getRefundConfig(ZERO))
 				.money(money)
 				.assignedQuantity(Quantity.of(ZERO, uomRecord))
 				.invoiceableFrom(invoiceableFromDate)
@@ -171,7 +190,7 @@ public class RefundTestTools
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
 		refundConfigRecord.setC_Flatrate_Conditions(conditions);
 		refundConfigRecord.setM_Product(productRecord);
-		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
+		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice); // keep in sync with the C_DocType's subType that we set up in the constructor.
 		refundConfigRecord.setC_InvoiceSchedule(invoiceScheduleRecord);
 		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
 		refundConfigRecord.setRefundPercent(TWENTY);
@@ -196,13 +215,14 @@ public class RefundTestTools
 
 		final RefundConfig refundConfig = RefundConfig
 				.builder()
+				.id(RefundConfigId.ofRepoId(refundConfigRecord.getC_Flatrate_RefundConfig_ID()))
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.minQty(ZERO)
 				.refundBase(RefundBase.PERCENTAGE)
 				.percent(Percent.of(TWENTY))
 				.conditionsId(ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID()))
 				.invoiceSchedule(invoiceSchedule)
-				.refundInvoiceType(RefundInvoiceType.CREDITMEMO)
+				.refundInvoiceType(RefundInvoiceType.INVOICE) // keep in sync with the C_DocType's subType that we set up in the constructor.
 				.refundMode(RefundMode.ALL_MAX_SCALE)
 				.build();
 
@@ -256,6 +276,7 @@ public class RefundTestTools
 	public I_C_Invoice_Candidate createAssignableInvoiceCandidateRecord()
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this class's constructor
 		invoiceCandidateRecord.setNetAmtInvoiced(ONE);
 		invoiceCandidateRecord.setNetAmtToInvoice(NINE);
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());

@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.sql.Timestamp;
@@ -20,7 +21,12 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
+import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
+import de.metas.lang.Percent;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -128,20 +134,45 @@ public class RefundContractRepository
 
 	public RefundContract ofRecord(@NonNull final I_C_Flatrate_Term contractRecord)
 	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID());
+		final ProductId productId = ProductId.ofRepoId(contractRecord.getM_Product_ID());
 		final RefundConfigQuery query = RefundConfigQuery.builder()
-				.productId(ProductId.ofRepoId(contractRecord.getM_Product_ID()))
-				.conditionsId(ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID()))
+				.conditionsId(conditionsId)
+				.productId(productId)
 				.build();
-		
+
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
 		final List<RefundConfig> refundConfigs = refundConfigRepository.getByQuery(query);
 
-		return RefundContract
+		// Check.assumeNotEmpty(refundConfigs, // otherwise we should not have been called!
+		// "C_Flatrate_Conditions_ID={} needs to have at least one config for M_Product_ID={}; C_Flatrate_Term={}",
+		// contractRecord.getC_Flatrate_Conditions_ID(), contractRecord.getM_Product_ID(), contractRecord);
+
+		final RefundContractBuilder contractBuilder = RefundContract
 				.builder()
 				.id(flatrateTermId)
-				.refundConfigs(refundConfigs)
 				.startDate(TimeUtil.asLocalDate(contractRecord.getStartDate()))
-				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()))
-				.build();
+				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()));
+
+		final boolean hasZeroQtyConfig = refundConfigs.stream().anyMatch(config -> config.getMinQty().signum() <= 0);
+		if (!hasZeroQtyConfig)
+		{
+			final RefundConfig zeroRefundConfig = RefundConfig.builder()
+					.id(null)
+					.minQty(ZERO)
+					.refundBase(RefundBase.PERCENTAGE)
+					.percent(Percent.ZERO)
+					.conditionsId(conditionsId)
+					.productId(productId)
+					.refundInvoiceType(RefundInvoiceType.INVOICE)
+					.refundMode(RefundMode.ALL_MAX_SCALE)
+					.build();
+
+			contractBuilder.refundConfig(zeroRefundConfig);
+
+		}
+		contractBuilder.refundConfigs(refundConfigs);
+
+		return contractBuilder.build();
 	}
 }

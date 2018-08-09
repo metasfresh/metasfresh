@@ -55,6 +55,8 @@ public class RefundConfig
 		PER_INDIVIDUAL_SCALE, ALL_MAX_SCALE;
 	}
 
+	RefundConfigId id;
+
 	RefundInvoiceType refundInvoiceType;
 
 	RefundBase refundBase;
@@ -79,17 +81,19 @@ public class RefundConfig
 
 	@Builder(toBuilder = true)
 	public RefundConfig(
+			@Nullable final RefundConfigId id, // may be null if not yet persisted
 			@NonNull final RefundInvoiceType refundInvoiceType,
 			@NonNull final RefundBase refundBase,
 			@Nullable final Percent percent,
 			@Nullable final Money amount,
 			@Nullable final ProductId productId,
-			@NonNull final InvoiceSchedule invoiceSchedule,
+			@Nullable final InvoiceSchedule invoiceSchedule,
 			@NonNull final ConditionsId conditionsId,
 			boolean useInProfitCalculation,
 			@NonNull final BigDecimal minQty,
 			@NonNull final RefundMode refundMode)
 	{
+		this.id = id;
 		this.refundInvoiceType = refundInvoiceType;
 		this.refundBase = refundBase;
 		this.productId = productId;
@@ -99,8 +103,8 @@ public class RefundConfig
 
 		if (RefundBase.PERCENTAGE.equals(refundBase))
 		{
-			this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null", RefundBase.PERCENTAGE);
 			this.amount = null;
+			this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null", RefundBase.PERCENTAGE);
 		}
 		else
 		{
@@ -112,6 +116,15 @@ public class RefundConfig
 		this.minQty = minQty;
 
 		this.refundMode = refundMode;
+
+		Check.errorIf(invoiceSchedule == null && !isZeroConfig(),
+				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");
 	}
 
+	public boolean isZeroConfig()
+	{
+		return minQty.signum() == 0
+				&& (amount == null || amount.isZero())
+				&& (percent == null || percent.isZero());
+	}
 }

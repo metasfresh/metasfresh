@@ -1,8 +1,7 @@
 package de.metas.contracts.refund;
 
 import java.time.LocalDate;
-
-import javax.annotation.Nullable;
+import java.util.List;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -11,6 +10,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -53,7 +53,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 
 	Quantity quantity;
 
-	AssignmentToRefundCandidate assignmentToRefundCandidate;
+	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
@@ -63,7 +63,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
 			@NonNull final Quantity quantity,
-			@Nullable final AssignmentToRefundCandidate assignmentToRefundCandidate)
+			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
@@ -72,18 +72,18 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		this.money = money;
 		this.quantity = quantity;
 
-		this.assignmentToRefundCandidate = assignmentToRefundCandidate;
+		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}
 
 	public AssignableInvoiceCandidate withoutRefundInvoiceCandidate()
 	{
 		return toBuilder()
-				.assignmentToRefundCandidate(null)
+				.clearAssignmentsToRefundCandidates()
 				.build();
 	}
 
 	public boolean isAssigned()
 	{
-		return assignmentToRefundCandidate != null;
+		return !assignmentsToRefundCandidates.isEmpty();
 	}
 }

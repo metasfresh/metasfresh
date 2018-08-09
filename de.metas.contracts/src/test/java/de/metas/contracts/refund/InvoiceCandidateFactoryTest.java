@@ -16,6 +16,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
@@ -83,7 +84,11 @@ public class InvoiceCandidateFactoryTest
 		bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
 
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+
 		productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM(uomRecord);
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
@@ -137,11 +142,13 @@ public class InvoiceCandidateFactoryTest
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		save(assignmentRecord);
 
-		invoiceCandidateFactory = new InvoiceCandidateRepository(
-				new RefundContractRepository(
-						new RefundConfigRepository(
-								new InvoiceScheduleRepository())))
-										.getInvoiceCandidateFactory();
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(
+				new RefundConfigRepository(
+						new InvoiceScheduleRepository()));
+
+		invoiceCandidateFactory = new InvoiceCandidateFactory(
+				new AssignmentToRefundCandidateRepository(
+						new RefundInvoiceCandidateRepository(refundContractRepository)));
 	}
 
 	@Test
@@ -155,7 +162,7 @@ public class InvoiceCandidateFactoryTest
 
 		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		assertThat(cast.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(cast.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
+		assertThat(cast.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		assertThat(cast.getMoney().getValue()).isEqualByComparingTo(TEN);
 		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 	}
@@ -192,7 +199,7 @@ public class InvoiceCandidateFactoryTest
 
 		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		assertThat(cast.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(cast.getAssignmentToRefundCandidate()).isNull();;
+		assertThat(cast.getAssignmentsToRefundCandidates()).isEmpty();
 		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 	}
 }

@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1097265499L;
+	private static final long serialVersionUID = 1879203372L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment (Properties ctx, int C_Invoice_Candidate_Assignment_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
       /** if (C_Invoice_Candidate_Assignment_ID == 0)
         {
 			setAssignedQuantity (BigDecimal.ZERO); // 0
+			setC_Flatrate_RefundConfig_ID (0);
 			setC_Invoice_Candidate_Assigned_ID (0);
 			setC_Invoice_Candidate_Assignment_ID (0);
 			setC_Invoice_Candidate_Term_ID (0);
@@ -87,6 +88,40 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	@Override
+	public de.metas.contracts.model.I_C_Flatrate_RefundConfig getC_Flatrate_RefundConfig() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_RefundConfig_ID, de.metas.contracts.model.I_C_Flatrate_RefundConfig.class);
+	}
+
+	@Override
+	public void setC_Flatrate_RefundConfig(de.metas.contracts.model.I_C_Flatrate_RefundConfig C_Flatrate_RefundConfig)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_RefundConfig_ID, de.metas.contracts.model.I_C_Flatrate_RefundConfig.class, C_Flatrate_RefundConfig);
+	}
+
+	/** Set C_Flatrate_RefundConfig.
+		@param C_Flatrate_RefundConfig_ID C_Flatrate_RefundConfig	  */
+	@Override
+	public void setC_Flatrate_RefundConfig_ID (int C_Flatrate_RefundConfig_ID)
+	{
+		if (C_Flatrate_RefundConfig_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_RefundConfig_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_RefundConfig_ID, Integer.valueOf(C_Flatrate_RefundConfig_ID));
+	}
+
+	/** Get C_Flatrate_RefundConfig.
+		@return C_Flatrate_RefundConfig	  */
+	@Override
+	public int getC_Flatrate_RefundConfig_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_RefundConfig_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

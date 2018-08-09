@@ -16,7 +16,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
@@ -39,7 +38,6 @@ import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -220,7 +218,9 @@ public class RefundConfigRepository
 		}
 		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
 
-		final RefundConfigBuilder builder = RefundConfig.builder()
+		final RefundConfigBuilder builder = RefundConfig
+				.builder()
+				.id(RefundConfigId.ofRepoId(record.getC_Flatrate_RefundConfig_ID()))
 				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
 				.refundInvoiceType(extractRefundInvoiceType(record))
 				.invoiceSchedule(invoiceSchedule)

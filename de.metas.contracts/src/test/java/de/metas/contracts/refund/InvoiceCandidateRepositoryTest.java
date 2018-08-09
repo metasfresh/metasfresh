@@ -20,11 +20,11 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
-import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -70,10 +70,13 @@ public class InvoiceCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(
+				new RefundConfigRepository(
+						new InvoiceScheduleRepository()));
+
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				new RefundContractRepository(
-						new RefundConfigRepository(
-								new InvoiceScheduleRepository())));
+				new AssignmentToRefundCandidateRepository(new RefundInvoiceCandidateRepository(refundContractRepository)),
+				refundContractRepository);
 
 		refundTestTools = new RefundTestTools();
 
@@ -97,7 +100,7 @@ public class InvoiceCandidateRepositoryTest
 		// invoke the method under test
 		final AssignableInvoiceCandidate result = invoiceCandidateRepository.saveCandidateAssignment(unAssignedPairOfCandidates);
 
-		assertThat(result.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId());
+		assertThat(result.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId());
 
 		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class);
 		assertThat(assignmentRecords).hasSize(1);
@@ -108,68 +111,9 @@ public class InvoiceCandidateRepositoryTest
 	}
 
 	@Test
-	public void getRefundInvoiceCandidate_same_invoicableFrom()
-	{
-		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
-
-		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
-				.refundContract(refundCandidate.getRefundContract())
-				.invoicableFrom(refundCandidate.getInvoiceableFrom())
-				.build();
-
-		// invoke the method under test
-		final List<RefundInvoiceCandidate> result = invoiceCandidateRepository.getRefundInvoiceCandidates(query);
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0)).isEqualTo(refundCandidate);
-	}
-
-	@Test
-	public void getRefundInvoiceCandidate_earlier_invoicableFrom()
-	{
-		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
-
-		final LocalDate earlierInvoiceableFrom = refundCandidate
-				.getInvoiceableFrom()
-				.minusDays(2); // the contract starts 3 days before this, so we are still within
-
-		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
-				.refundContract(refundCandidate.getRefundContract())
-				.invoicableFrom(earlierInvoiceableFrom)
-				.build();
-
-		// invoke the method under test
-		final List<RefundInvoiceCandidate> result = invoiceCandidateRepository.getRefundInvoiceCandidates(query);
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0)).isEqualTo(refundCandidate);
-	}
-
-	@Test
-	public void getRefundInvoiceCandidate_later_invoicableFrom()
-	{
-		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
-
-		final LocalDate earlierInvoiceableFrom = refundCandidate
-				.getInvoiceableFrom()
-				.plusDays(1);
-
-		final RefundInvoiceCandidateQuery query = RefundInvoiceCandidateQuery.builder()
-				.refundContract(refundCandidate.getRefundContract())
-				.invoicableFrom(earlierInvoiceableFrom)
-				.build();
-
-		// invoke the method under test
-		final List<RefundInvoiceCandidate> result = invoiceCandidateRepository.getRefundInvoiceCandidates(query);
-
-		assertThat(result)
-				.as("Expect empty result bc the query is for a time range coming after refundCandidate's date; query=%s", query)
-				.isEmpty();
-	}
-
-	@Test
 	public void getById_assignableInvoiceCandidate()
 	{
-		final I_C_Invoice_Candidate assignableCandidateRecord = createAssignableCandidateRecord();
+		final I_C_Invoice_Candidate assignableCandidateRecord = createAssignableCandidateRecord(refundTestTools.getProductRecord());
 
 		// invoke the method under test
 		final InvoiceCandidate candidate = invoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()));
@@ -184,16 +128,10 @@ public class InvoiceCandidateRepositoryTest
 		assertThat(assignableCandidate.getInvoiceableFrom()).isEqualTo(NOW);
 	}
 
-	public static I_C_Invoice_Candidate createAssignableCandidateRecord()
+	public static I_C_Invoice_Candidate createAssignableCandidateRecord(@NonNull final I_M_Product productRecord)
 	{
-		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
-		saveRecord(uomRecord);
-
-		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
-		saveRecord(productRecord);
-
 		final I_C_Invoice_Candidate assignableCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		assignableCandidateRecord.setIsSOTrx(true);
 		assignableCandidateRecord.setBill_BPartner_ID(20);
 		assignableCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(NOW));
 		assignableCandidateRecord.setNetAmtToInvoice(TWENTY);

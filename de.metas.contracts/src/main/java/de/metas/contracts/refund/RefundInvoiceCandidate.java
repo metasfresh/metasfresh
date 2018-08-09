@@ -57,15 +57,17 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 	@NonNull
 	RefundContract refundContract;
 
+	/**
+	 * Note: We need to store this property and can't delegate to {@link RefundContract#getRefundConfig(java.math.BigDecimal)},
+	 * because the when an instance of RefundInvoiceCandidate is created, {@link #getAssignedQuantity()} is not yet correct.
+	 */
+	@NonNull
+	RefundConfig refundConfig;
+
 	@NonNull
 	Money money;
 
 	/** The sum of the quantities of all assigned {@link AssignableInvoiceCandidate}s. */
 	@NonNull
 	Quantity assignedQuantity;
-
-	public RefundConfig getRefundConfig()
-	{
-		return refundContract.getRefundConfig(assignedQuantity.getAsBigDecimal());
-	}
 }

@@ -1,10 +1,17 @@
 package de.metas.contracts.refund;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -36,54 +43,105 @@ import lombok.NonNull;
 @Service
 public class RefundInvoiceCandidateService
 {
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
+	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
 	private final MoneyService moneyService;
+	private final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory;
 
 	public RefundInvoiceCandidateService(
-			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
+			@NonNull final RefundInvoiceCandidateRepository invoiceCandidateRepository,
+			@NonNull final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory,
 			@NonNull final MoneyService moneyService)
 	{
+		this.refundInvoiceCandidateFactory = refundInvoiceCandidateFactory;
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
 		this.moneyService = moneyService;
 	}
 
-	public RefundInvoiceCandidate retrieveOrCreateMatchingCandidate(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
+	/**
+	 * Queries for existing {@link RefundInvoiceCandidate}
+	 * that might not not yet be associated with the given {@code assignableInvoiceCandidate}.
+	 * If there are none yet, it creates them as needed.
+	 *
+	 * Note: in case of {@link RefundMode#PER_INDIVIDUAL_SCALE}, there can be multiple refund contracts for an assignable candidate.
+	 */
+	public List<RefundInvoiceCandidate> retrieveOrCreateMatchingCandidates(
+			@NonNull final AssignableInvoiceCandidate assignableCandidate,
 			@NonNull final RefundContract refundContract)
 	{
 		final RefundInvoiceCandidateQuery refundCandidateQuery = RefundInvoiceCandidateQuery
 				.builder()
 				.refundContract(refundContract)
-				.invoicableFrom(assignableInvoiceCandidate.getInvoiceableFrom())
+				.invoicableFrom(assignableCandidate.getInvoiceableFrom())
 				.build();
 
-		final List<RefundInvoiceCandidate> matchingCandidates = invoiceCandidateRepository.getRefundInvoiceCandidates(refundCandidateQuery);
+		final List<RefundInvoiceCandidate> existingCandidates = invoiceCandidateRepository.getRefundInvoiceCandidates(refundCandidateQuery);
+		final ImmutableMap<RefundConfig, RefundInvoiceCandidate> refundConfig2existingCandidate = Maps.uniqueIndex(existingCandidates, RefundInvoiceCandidate::getRefundConfig);
 
-		assignableInvoiceCandidate.getQuantity();
+		// the new refund candidate has no assigned quantity (besides, in the nearest future, the qty of 'invoiceCandidate')
+		final List<RefundConfig> relevantRefundConfigs = refundContract.getRelevantRefundConfigs(assignableCandidate.getQuantity().getAsBigDecimal());
 
-		final RefundInvoiceCandidate matchingCandidate = findMatchingCandidate(matchingCandidates, assignableInvoiceCandidate.getQuantity());
-		if (matchingCandidate != null)
+		final TreeSet<RefundInvoiceCandidate> result = new TreeSet<RefundInvoiceCandidate>(Comparator.comparing(c -> c.getRefundConfig().getMinQty()));
+
+		final ImmutableList.Builder<RefundConfig> refundConfigsThatNeedCandidates = ImmutableList.builder();
+		for (final RefundConfig relevantRefundConfig : relevantRefundConfigs)
 		{
-			return matchingCandidate;
+			final RefundInvoiceCandidate existingRelevantRefundCandidate = refundConfig2existingCandidate.get(relevantRefundConfig);
+			if (existingRelevantRefundCandidate != null)
+			{
+				result.add(existingRelevantRefundCandidate);
+			}
+			else
+			{
+				refundConfigsThatNeedCandidates.add(relevantRefundConfig);
+			}
 		}
 
-		return invoiceCandidateRepository.createRefundInvoiceCandidate(assignableInvoiceCandidate, refundContract);
+		final List<RefundInvoiceCandidate> newRefundCandidates = refundInvoiceCandidateFactory.createRefundInvoiceCandidates(
+				assignableCandidate,
+				refundContract,
+				refundConfigsThatNeedCandidates.build());
+		result.addAll(newRefundCandidates);
+
+		return ImmutableList.copyOf(result);
 	}
 
 	private RefundInvoiceCandidate findMatchingCandidate(
 			@NonNull final List<RefundInvoiceCandidate> matchingCandidates,
 			@NonNull final Quantity quantity)
 	{
-
-		for (final RefundInvoiceCandidate candidate : matchingCandidates)
+		if (matchingCandidates.isEmpty())
 		{
-			final Quantity qtyToMatchAgainst = candidate.getAssignedQuantity().add(quantity);
+			return null;
 		}
 
+		final RefundInvoiceCandidate existingRefundCandidate = matchingCandidates
+				.stream()
+				.max(Comparator.comparing(RefundInvoiceCandidate::getAssignedQuantity))
+				.get();
+
+		final Quantity qtyAssignedToRefundCandidate = existingRefundCandidate.getAssignedQuantity();
+		final Quantity qtyToMatchAgainst = qtyAssignedToRefundCandidate.add(quantity);
+		final RefundConfig refundConfig = existingRefundCandidate.getRefundContract().getRefundConfig(qtyToMatchAgainst.getAsBigDecimal());
+
+		if (RefundMode.ALL_MAX_SCALE.equals(refundConfig.getRefundMode()))
+		{
+			return existingRefundCandidate;
+		}
+
+		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundConfig.getRefundMode()))
+		{
+			final boolean existingCandidateIsInSameScale = qtyAssignedToRefundCandidate
+					.getAsBigDecimal()
+					.compareTo(refundConfig.getMinQty()) <= 0;
+			if (existingCandidateIsInSameScale)
+			{
+				return existingRefundCandidate;
+			}
+		}
 		return null; // nothing found
 	}
 
-	public AssignmentToRefundCandidate addPercentageOfMoney(
+	public AssignmentToRefundCandidate addAssignableMoney(
 			@NonNull final RefundInvoiceCandidate candidateToUpdate,
 			@NonNull final Money money)
 	{
