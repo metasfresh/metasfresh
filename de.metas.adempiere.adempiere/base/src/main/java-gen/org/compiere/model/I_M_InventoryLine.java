@@ -230,6 +230,31 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Calculate Count (?).
+	 * Count number of not empty elements
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCounted (boolean IsCounted);
+
+	/**
+	 * Get Calculate Count (?).
+	 * Count number of not empty elements
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCounted();
+
+    /** Column definition for IsCounted */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_IsCounted = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "IsCounted", null);
+    /** Column name IsCounted */
+    public static final String COLUMNNAME_IsCounted = "IsCounted";
+
+	/**
 	 * Set Zeile Nr..
 	 * Unique line for this document
 	 *
