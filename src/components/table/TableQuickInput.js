@@ -194,6 +194,7 @@ class TableQuickInput extends Component {
             onBlurWidget={this.handleBlurWidget}
             type="secondary"
             autoFocus={id === 0}
+            initialFocus={id === 0}
           />
         );
       });

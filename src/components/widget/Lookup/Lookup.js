@@ -36,7 +36,7 @@ class Lookup extends Component {
       propertiesCopy: getItemsByProperty(props.properties, 'source', 'list'),
       property: '',
       fireClickOutside: false,
-      initialFocus: false,
+      initialFocus: props.initialFocus,
       localClearing: false,
       autofocusDisabled: false,
       isFocused: false,
