@@ -147,6 +147,10 @@ public class ContactPersonRepository
 			final LocationId locationId = bpLocation.getLocationId();
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId.getRepoId());
 		}
+		else
+		{
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, null);
+		}
 
 		final String emailAddress = contactPerson.getEmailAddessStringOrNull();
 
