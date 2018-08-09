@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
 import org.junit.Before;
@@ -30,12 +30,12 @@ import de.metas.notification.impl.NotificationRepository;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -85,7 +85,7 @@ public class NotificationRepositoryTest
 				.build());
 
 		final List<UserNotification> userNotifications = notificationRepo.getByUserId(123, Integer.MAX_VALUE);
-		final UserNotification userNotification = ListUtils.singleElement(userNotifications);
+		final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
 		assertThat(userNotification).isEqualTo(notificationSaved);
 	}
 

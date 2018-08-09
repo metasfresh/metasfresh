@@ -15,7 +15,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 34082079L;
+	private static final long serialVersionUID = 1770782709L;
 
     /** Standard Constructor */
     public X_MD_Cockpit_DocumentDetail (Properties ctx, int MD_Cockpit_DocumentDetail_ID, String trxName)
@@ -235,50 +235,6 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
-	/** Set Wareneingangsdisposition.
-		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
-	@Override
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
-	{
-		if (M_ReceiptSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
-	}
-
-	/** Get Wareneingangsdisposition.
-		@return Wareneingangsdisposition	  */
-	@Override
-	public int getM_ReceiptSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
-	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
-	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
-	}
-
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
-	@Override
-	public int getM_ShipmentSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set DocumentDetail.
 		@param MD_Cockpit_DocumentDetail_ID DocumentDetail	  */
 	@Override
@@ -330,6 +286,50 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	public int getMD_Cockpit_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Wareneingangsdisposition.
+		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
+	@Override
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	{
+		if (M_ReceiptSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+	}
+
+	/** Get Wareneingangsdisposition.
+		@return Wareneingangsdisposition	  */
+	@Override
+	public int getM_ReceiptSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

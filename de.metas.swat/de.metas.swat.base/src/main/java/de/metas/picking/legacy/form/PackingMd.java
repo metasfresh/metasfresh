@@ -41,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
@@ -107,7 +108,7 @@ public class PackingMd extends MvcMdGenForm
 	 * @task http://dewiki908/mediawiki/index.php/05522_Picking_Terminal_extension_-_Regroup_by_product_%28104598600159%29
 	 */
 	private boolean groupByProduct = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.adempiere.form.PackingMd.groupByProduct", false);
-	
+
 	/**
 	 * Requery {@link IPackageable} items from database
 	 */
@@ -235,10 +236,10 @@ public class PackingMd extends MvcMdGenForm
 		if (rows == null || rows.length == 0)
 		{
 			// returing a new instance instead of Collection.emptyList() because maybe we want to modify
-			return new HashSet<TableRowKey>();
+			return new HashSet<>();
 		}
 
-		final Set<TableRowKey> tableRowKeys = new HashSet<TableRowKey>(rows.length);
+		final Set<TableRowKey> tableRowKeys = new HashSet<>(rows.length);
 		for (final int row : rows)
 		{
 			final TableRowKey tableRowKey = getTableRowKeyForRow(row);
@@ -268,7 +269,7 @@ public class PackingMd extends MvcMdGenForm
 			miniTable.setSelectedRows(Collections.<Integer> emptyList());
 			return;
 		}
-		final List<Integer> rowsToSelect = new ArrayList<Integer>(tableRowKeys.size());
+		final List<Integer> rowsToSelect = new ArrayList<>(tableRowKeys.size());
 
 		final int rowCount = miniTable.getRowCount();
 		for (int row = 0; row < rowCount; row++)
@@ -304,7 +305,7 @@ public class PackingMd extends MvcMdGenForm
 
 		final int rowCount = getTableRowsCount();
 
-		final List<TableRow> result = new ArrayList<TableRow>();
+		final List<TableRow> result = new ArrayList<>();
 		for (final int row : rows)
 		{
 			if (row < 0)
@@ -370,7 +371,7 @@ public class PackingMd extends MvcMdGenForm
 			return Collections.emptySet();
 		}
 
-		final Collection<TableRow> selectedRows = new ArrayList<TableRow>();
+		final Collection<TableRow> selectedRows = new ArrayList<>();
 
 		for (final int row : rows)
 		{
@@ -382,7 +383,7 @@ public class PackingMd extends MvcMdGenForm
 			selectedRows.addAll(currentSelectedRows);
 		}
 
-		final Set<Integer> selectedShipmentScheduleIds = new HashSet<Integer>();
+		final Set<Integer> selectedShipmentScheduleIds = new HashSet<>();
 		for (final TableRow currentRow : selectedRows)
 		{
 			selectedShipmentScheduleIds.add(currentRow.getShipmentScheduleId());
@@ -608,7 +609,7 @@ public class PackingMd extends MvcMdGenForm
 	protected TableRow createTableRow(final IPackageable item)
 	{
 		final int bpartnerId = item.getBpartnerId();
-		final int M_Warehouse_Dest_ID = item.getWarehouseDestId();
+		final int M_Warehouse_Dest_ID = 0; // M_Warehouse_Dest is gone for a long time by now
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
 		final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, M_Warehouse_Dest_ID, qtyToDeliver);
@@ -624,17 +625,15 @@ public class PackingMd extends MvcMdGenForm
 		final String bPartnerAddress = item.getBpartnerAddress();
 		keyBuilder.bpartnerAddress(bPartnerAddress);
 
-		final int warehouseId = item.getWarehouseId();
-		keyBuilder.warehouseId(warehouseId);
+		final WarehouseId warehouseId = item.getWarehouseId();
+		keyBuilder.warehouseId(warehouseId.getRepoId());
 		final String warehouseName = item.getWarehouseName();
 
 		final int warehouseDestId;
 		final String warehouseDestName;
 		if (groupByWarehouseDest)
 		{
-			warehouseDestId = item.getWarehouseDestId();
-			warehouseDestName = item.getWarehouseDestName();
-			keyBuilder.warehouseDestId(warehouseDestId);
+			throw new UnsupportedOperationException("WarehouseDest is not supported");
 		}
 		else
 		{
@@ -647,7 +646,7 @@ public class PackingMd extends MvcMdGenForm
 		final String productName;
 		if (isGroupByProduct())
 		{
-			productId = item.getProductId();
+			productId = item.getProductId().getRepoId();
 			productName = item.getProductName();
 
 			keyBuilder.productId(productId);
@@ -666,7 +665,7 @@ public class PackingMd extends MvcMdGenForm
 		// final String deliveryViaName = item.getDeliveryViaName();
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final Timestamp deliveryDate = item.getDeliveryDate(); // 01676
-		final int shipmentScheduleId = item.getShipmentScheduleId();
+		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
 		final String bpartnerValue = item.getBpartnerValue();
 		final String bpartnerName = item.getBpartnerName();
 		final String bPartnerLocationName = item.getBpartnerLocationName();
@@ -823,7 +822,7 @@ public class PackingMd extends MvcMdGenForm
 
 		//
 		// Get matched rows
-		final List<TableRowKey> tableRowKeysFound = new ArrayList<TableRowKey>();
+		final List<TableRowKey> tableRowKeysFound = new ArrayList<>();
 		for (final TableRowKey key : getKeys())
 		{
 			if (tableRowSearchSelectionMatcher.match(key))
@@ -976,7 +975,7 @@ public class PackingMd extends MvcMdGenForm
 
 	public List<TableRow> getAggregatedTableRows()
 	{
-		final List<TableRow> tableRowsAggregated = new ArrayList<TableRow>();
+		final List<TableRow> tableRowsAggregated = new ArrayList<>();
 
 		final List<TableRowKey> tableRowKeys = getTableRowKeys();
 		for (final TableRowKey key : tableRowKeys)

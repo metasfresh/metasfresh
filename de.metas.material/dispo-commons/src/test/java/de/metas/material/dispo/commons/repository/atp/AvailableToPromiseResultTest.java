@@ -13,19 +13,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
@@ -249,7 +243,7 @@ public class AvailableToPromiseResultTest
 		final AddToResultGroupRequest resultAddRequest = AvailableToPromiseRepository.createAddToResultGroupRequest(stockRecord);
 		result.addQtyToAllMatchingGroups(resultAddRequest);
 
-		final AvailableToPromiseResultGroup singleElement = ListUtils.singleElement(result.getResultGroups());
+		final AvailableToPromiseResultGroup singleElement = CollectionUtils.singleElement(result.getResultGroups());
 		assertThat(singleElement.getProductId()).isEqualTo(stockRecord.getM_Product_ID());
 		assertThat(singleElement.getQty()).isEqualByComparingTo(stockRecord.getQty());
 		assertThat(singleElement.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);

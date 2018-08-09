@@ -2,18 +2,24 @@ package de.metas.handlingunits.ddorder.api.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
+import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -24,6 +30,7 @@ import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribut
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 public class HUDDOrderBL implements IHUDDOrderBL
@@ -61,14 +68,14 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	}
 
 	@Override
-	public void createQuarantineDDOrderForReceiptLines(final List<QuarantineInOutLine> receiptLines)
+	public List<I_DD_Order> createQuarantineDDOrderForReceiptLines(final List<QuarantineInOutLine> receiptLines)
 	{
 
 		final List<HUToDistribute> husToQuarantine = receiptLines.stream()
 				.flatMap(receiptLine -> createHUsToQuarantine(receiptLine).stream())
 				.collect(ImmutableList.toImmutableList());
 
-		createQuarantineDDOrderForHUs(husToQuarantine);
+		return createQuarantineDDOrderForHUs(husToQuarantine);
 
 	}
 
@@ -87,9 +94,10 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	}
 
 	@Override
-	public void createQuarantineDDOrderForHUs(final List<HUToDistribute> husToDistribute)
+	public List<I_DD_Order> createQuarantineDDOrderForHUs(final List<HUToDistribute> husToDistribute)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 		final I_M_Warehouse quarantineWarehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
 		if (quarantineWarehouse == null)
@@ -97,17 +105,31 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			throw new AdempiereException("@" + MSG_M_Warehouse_NoQuarantineWarehouse + "@");
 		}
 
-		husToDistribute.stream()
+		final I_M_Locator defaultLocator = warehouseBL.getDefaultLocator(quarantineWarehouse);
+
+		final ImmutableSet<Entry<BPartnerAndLocationId, Collection<HUToDistribute>>> entries = husToDistribute
+				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(this::extractBPartnerAndLocationId, Function.identity()))
 				.asMap()
-				.forEach((bpartnerAndLocationId, hus) -> createDDOrders(bpartnerAndLocationId, quarantineWarehouse, hus));
+				.entrySet();
+
+		final ImmutableList.Builder<I_DD_Order> result = ImmutableList.builder();
+		for (final Entry<BPartnerAndLocationId, Collection<HUToDistribute>> entry : entries)
+		{
+			final Optional<I_DD_Order> ddOrder = createDDOrder(entry.getKey(), defaultLocator, entry.getValue());
+			ddOrder.ifPresent(result::add);
+		}
+		return result.build();
 	}
 
-	private void createDDOrders(final BPartnerAndLocationId bpartnerAndLocationId, final I_M_Warehouse warehouseTo, Collection<HUToDistribute> hus)
+	private Optional<I_DD_Order> createDDOrder(
+			@NonNull final BPartnerAndLocationId bpartnerAndLocationId,
+			@NonNull final I_M_Locator locatorTo,
+			@NonNull final Collection<HUToDistribute> hus)
 	{
-		HUs2DDOrderProducer.newProducer()
+		return HUs2DDOrderProducer.newProducer()
 				.setContext(Env.getCtx())
-				.setM_Warehouse_To(warehouseTo)
+				.setM_Locator_To(locatorTo)
 				.setBpartnerId(bpartnerAndLocationId.getBpartnerId())
 				.setBpartnerLocationId(bpartnerAndLocationId.getBpartnerLocationId())
 				.setHUs(hus.iterator())
@@ -124,7 +146,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 
 	@Value
 	@Builder
-	private static final class BPartnerAndLocationId
+	private static class BPartnerAndLocationId
 	{
 		int bpartnerId;
 		int bpartnerLocationId;

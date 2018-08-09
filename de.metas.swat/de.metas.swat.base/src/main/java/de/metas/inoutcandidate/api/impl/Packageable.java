@@ -25,57 +25,69 @@ package de.metas.inoutcandidate.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.api.IPackageable;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-/**
- * Plain {@link IPackageable} implementation
- *
- * @author tsa
- *
- */
 @VisibleForTesting
 @Value
 @Builder
 public class Packageable implements IPackageable
 {
-	private int bpartnerLocationId;
+	int bpartnerLocationId;
 
-	private int shipmentScheduleId;
+	@NonNull
+	ShipmentScheduleId shipmentScheduleId;
 
-	private BigDecimal qtyToDeliver;
+	BigDecimal qtyToDeliver;
 
-	private int bpartnerId;
-	private String bpartnerValue;
-	private String bpartnerName;
+	int bpartnerId;
+	String bpartnerValue;
+	String bpartnerName;
 
-	private String bpartnerLocationName;
+	String bpartnerLocationName;
 
-	private String bpartnerAddress;
+	String bpartnerAddress;
 
-	private int warehouseId;
-	private String warehouseName;
+	@NonNull
+	WarehouseId warehouseId;
+	String warehouseName;
 
-	private String deliveryVia;
+	String deliveryVia;
 
-	private int shipperId;
-	private String shipperName;
+	int shipperId;
+	String shipperName;
 
-	private boolean displayed;
+	boolean displayed;
 
-	private String documentNo;
+	String documentNo;
 
-	private Timestamp deliveryDate;
-	private Timestamp preparationDate;
+	Timestamp deliveryDate;
+	Timestamp preparationDate;
 
-	private String freightCostRule;
+	String freightCostRule;
 
-	private int productId;
-	private String productName;
+	@NonNull
+	ProductId productId;
+	String productName;
 
-	private int orderId;
-	private String docSubType;
+	@NonNull
+	AttributeSetInstanceId asiId;
+
+	int orderId;
+	String docSubType;
+
+	@Nullable
+	OrderLineId orderLineIdOrNull;
 }

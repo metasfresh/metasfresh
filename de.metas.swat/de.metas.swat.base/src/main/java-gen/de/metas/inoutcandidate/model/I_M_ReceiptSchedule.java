@@ -127,6 +127,39 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Bestellt von.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setAD_User_OrderCreatedBy_ID (int AD_User_OrderCreatedBy_ID);
+
+	/**
+	 * Get Bestellt von.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getAD_User_OrderCreatedBy_ID();
+
+	@Deprecated
+	public org.compiere.model.I_AD_User getAD_User_OrderCreatedBy();
+
+	@Deprecated
+	public void setAD_User_OrderCreatedBy(org.compiere.model.I_AD_User AD_User_OrderCreatedBy);
+
+    /** Column definition for AD_User_OrderCreatedBy_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_OrderCreatedBy_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User>(I_M_ReceiptSchedule.class, "AD_User_OrderCreatedBy_ID", org.compiere.model.I_AD_User.class);
+    /** Column name AD_User_OrderCreatedBy_ID */
+    public static final String COLUMNNAME_AD_User_OrderCreatedBy_ID = "AD_User_OrderCreatedBy_ID";
+
+	/**
 	 * Set Ansprechpartner abw..
 	 *
 	 * <br>Type: Table

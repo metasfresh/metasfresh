@@ -51,7 +51,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import lombok.NonNull;
 
 /**
- * Wraps an {@link I_M_AttributeSetInstance}, adds definitions from the packing item template's {@link I_M_HU_PI_Attribute}s.
+ * Wraps an {@link I_M_AttributeSetInstance}; returns values of the packing item template's {@link I_M_HU_PI_Attribute}s.
+ * attribute values from the wrapped ASI are <b>not</b> included, unless they are also in the packing item template.
+ * The ASI is mostly used to set {@link IAttributeValue#isNew()} (if it's not in the ASI, then it's new afaiu).
  */
 /* package */ class ASIWithPackingItemTemplateAttributeStorage extends AbstractAttributeStorage
 {
@@ -159,7 +161,8 @@ import lombok.NonNull;
 		return result;
 	}
 
-	private IAttributeValue createAttributeValue(final I_M_AttributeInstance attributeInstance,
+	private IAttributeValue createAttributeValue(
+			final I_M_AttributeInstance attributeInstance,
 			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{

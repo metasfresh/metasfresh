@@ -332,6 +332,11 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		final SOTrx soTrx = extractAvailableSOTrx(av);
+		if (soTrx == null)
+		{
+			return true;
+		}
+		
 		return expectedSOTrx.equals(soTrx);
 	}
 

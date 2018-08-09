@@ -1,5 +1,8 @@
 package de.metas.fresh.picking.form;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -27,8 +30,10 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.hamcrest.Matchers;
@@ -38,12 +43,15 @@ import org.junit.Test;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
 import de.metas.inoutcandidate.api.impl.Packageable;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
+import de.metas.product.ProductId;
 
 public class FreshPackingMdTest
 {
@@ -153,11 +161,18 @@ public class FreshPackingMdTest
 
 	private IPackageable createPackageable(int qtyToDeliver, Timestamp deliveryDate, Timestamp preparationDate)
 	{
+		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
+		save(shipmentScheduleRecord);
+
 		return Packageable.builder()
 				.qtyToDeliver(BigDecimal.valueOf(qtyToDeliver))
 				.deliveryDate(deliveryDate)
 				.preparationDate(preparationDate)
 				.displayed(true)
+				.shipmentScheduleId(ShipmentScheduleId.offRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
+				.productId(ProductId.ofRepoId(20))
+				.warehouseId(WarehouseId.ofRepoId(30))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(0))
 				.build();
 	}
 }

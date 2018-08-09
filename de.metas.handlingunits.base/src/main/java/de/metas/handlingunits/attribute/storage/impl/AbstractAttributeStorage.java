@@ -100,8 +100,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		// @formatter:off
-		@Override public String toString() { return "AbstractAttributeStorage[<anonymous IAttributeValueListener>]"; };
-		// @formatter:on
+		@Override public String toString() { return "AbstractAttributeStorage[<anonymous IAttributeValueListener>]"; }; // @formatter:on
 	};
 
 	/**
