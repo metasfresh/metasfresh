@@ -1077,3 +1077,133 @@ UPDATE AD_Tab SET WhereClause='M_InventoryLine.Processed = ''N''',Updated=TO_TIM
 UPDATE AD_Tab SET WhereClause='Processed = ''N''',Updated=TO_TIMESTAMP('2018-08-13 19:36:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541168
 ;
 
+-- 2018-08-13T19:43:15.924
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=10,Updated=TO_TIMESTAMP('2018-08-13 19:43:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565628
+;
+
+-- 2018-08-13T19:43:17.794
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=20,Updated=TO_TIMESTAMP('2018-08-13 19:43:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565618
+;
+
+-- 2018-08-13T19:43:21.973
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=30,Updated=TO_TIMESTAMP('2018-08-13 19:43:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565619
+;
+
+-- 2018-08-13T19:43:24.893
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=40,Updated=TO_TIMESTAMP('2018-08-13 19:43:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565620
+;
+
+-- 2018-08-13T19:43:29.201
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=50,Updated=TO_TIMESTAMP('2018-08-13 19:43:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565630
+;
+
+-- 2018-08-13T19:43:32.195
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=60,Updated=TO_TIMESTAMP('2018-08-13 19:43:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565623
+;
+
+-- 2018-08-13T19:43:34.514
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=70,Updated=TO_TIMESTAMP('2018-08-13 19:43:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565622
+;
+
+-- 2018-08-13T19:43:36.729
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=80,Updated=TO_TIMESTAMP('2018-08-13 19:43:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565627
+;
+
+-- 2018-08-13T19:43:42.802
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565615
+;
+
+-- 2018-08-13T19:43:46.477
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565616
+;
+
+-- 2018-08-13T19:43:50.141
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565617
+;
+
+-- 2018-08-13T19:43:53.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565621
+;
+
+-- 2018-08-13T19:43:55.337
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565625
+;
+
+-- 2018-08-13T19:43:56.809
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565624
+;
+
+-- 2018-08-13T19:43:58.083
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:43:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565626
+;
+
+-- 2018-08-13T19:44:01.301
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:44:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565629
+;
+
+-- 2018-08-13T19:44:10.449
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-08-13 19:44:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565614
+;
+
+-- 2018-08-13T19:44:10.847
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565615
+;
+
+-- 2018-08-13T19:44:11.214
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565616
+;
+
+-- 2018-08-13T19:44:11.751
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565617
+;
+
+-- 2018-08-13T19:44:12.111
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565621
+;
+
+-- 2018-08-13T19:44:12.447
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565625
+;
+
+-- 2018-08-13T19:44:12.791
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565624
+;
+
+-- 2018-08-13T19:44:13.154
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565626
+;
+
+-- 2018-08-13T19:44:13.506
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565629
+;
+
+-- 2018-08-13T19:44:14.613
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2018-08-13 19:44:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565614
+;
+
