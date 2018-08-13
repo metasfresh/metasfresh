@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_WF_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
 
@@ -83,8 +85,16 @@ public class OldInventoriesStrategy implements HUsForInventoryStrategy
 		}
 
 		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+		
+		// Order by
+		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
+				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
+				.createQueryOrderBy();
 
-		return huQueryBuilder.createQuery().iterateAndStream();
+
+		return huQueryBuilder.createQuery()
+				.setOrderBy(queryOrderBy)
+				.iterateAndStream();
 	}
 
 	private ImmutableSetMultimap<Integer, ProductId> retrieveInventoryProductIdsByLocatorId()
