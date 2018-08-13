@@ -139,6 +139,7 @@ class FiltersFrequent extends PureComponent {
                     viewId={viewId}
                     outsideClick={this.outsideClick}
                     openedFilter={true}
+                    filtersWrapper={this.props.filtersWrapper}
                   />
                 )}
               </div>
@@ -179,6 +180,7 @@ FiltersFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
+  filtersWrapper: PropTypes.any,
 };
 
 const mapStateToProps = state => {

@@ -32,26 +32,13 @@ class RawLookup extends Component {
   }
 
   componentDidMount() {
-    const { selected, defaultValue, initialFocus, parentElement } = this.props;
-
-    if (parentElement) {
-      // eslint-disable-next-line react/no-find-dom-node
-      let parentEl = ReactDOM.findDOMNode(parentElement);
-
-      this.setState({
-        parentElement: parentEl,
-      });
-    }
+    const { selected, defaultValue, initialFocus } = this.props;
 
     this.handleValueChanged();
 
     if (selected) {
       this.inputSearch.value = selected.caption;
-    } else {
-      this.handleBlur(this.clearState);
-    }
-
-    if (defaultValue) {
+    } else if (defaultValue) {
       this.inputSearch.value = defaultValue.caption;
     }
 
@@ -66,15 +53,24 @@ class RawLookup extends Component {
     const {
       autoFocus,
       defaultValue,
-      fireClickOutside,
+      // fireClickOutside,
       handleInputEmptyStatus,
       filterWidget,
       lookupEmpty,
       localClearing,
       fireDropdownList,
+      parentElement,
     } = this.props;
-
     const { shouldBeFocused } = this.state;
+
+    if (parentElement && !prevProps.parentElement) {
+      // eslint-disable-next-line react/no-find-dom-node
+      let parentEl = ReactDOM.findDOMNode(parentElement);
+
+      this.setState({
+        parentElement: parentEl,
+      });
+    }
 
     if (localClearing && !defaultValue) {
       this.inputSearch.value = '';
@@ -94,13 +90,14 @@ class RawLookup extends Component {
           prevProps.defaultValue.caption !== defaultValue.caption)) &&
       handleInputEmptyStatus(false);
 
-    if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
-      if (defaultValue !== null && typeof defaultValue !== 'undefined') {
-        if (defaultValue.caption !== this.inputSearch.value) {
-          this.inputSearch.value = defaultValue.caption || '';
-        }
-      }
-    }
+    // TODO: Commenting this out as I think it's not needed. - Kuba
+    // if (fireClickOutside && prevProps.fireClickOutside !== fireClickOutside) {
+    //   if (defaultValue !== null && typeof defaultValue !== 'undefined') {
+    //     if (defaultValue.caption !== this.inputSearch.value) {
+    //       this.inputSearch.value = defaultValue.caption || '';
+    //     }
+    //   }
+    // }
 
     if (filterWidget && lookupEmpty && defaultValue === null) {
       this.inputSearch.value = defaultValue;
@@ -407,7 +404,6 @@ class RawLookup extends Component {
       tabIndex,
       isOpen,
     } = this.props;
-
     const {
       isInputEmpty,
       list,
@@ -417,8 +413,8 @@ class RawLookup extends Component {
       isFocused,
       parentElement,
     } = this.state;
-
     const tetherProps = {};
+
     if (parentElement) {
       tetherProps.target = parentElement;
     }
@@ -490,6 +486,8 @@ const mapStateToProps = state => ({
 });
 
 RawLookup.propTypes = {
+  selected: PropTypes.object,
+  forcedWidth: PropTypes.number,
   dispatch: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,

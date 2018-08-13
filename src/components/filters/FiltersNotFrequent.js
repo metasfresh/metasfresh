@@ -121,6 +121,8 @@ class FiltersNotFrequent extends Component {
                 onHide={() => handleShow(false)}
                 viewId={viewId}
                 outsideClick={this.outsideClick}
+                openedFilter={true}
+                filtersWrapper={this.props.filtersWrapper}
               />
             )}
           </div>
@@ -133,6 +135,7 @@ class FiltersNotFrequent extends Component {
 FiltersNotFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  filtersWrapper: PropTypes.any,
 };
 
 const mapStateToProps = state => {

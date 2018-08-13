@@ -31,6 +31,7 @@ class QuickActions extends Component {
     inBackground: PropTypes.bool,
     inModal: PropTypes.bool,
     disabled: PropTypes.bool,
+    stopShortcutPropagation: PropTypes.bool,
   };
 
   unmounted = false;

@@ -11,6 +11,8 @@ import List from '../List/List';
 import RawLookup from './RawLookup';
 
 class Lookup extends Component {
+  rawLookupsState = {};
+
   constructor(props) {
     super(props);
 
@@ -22,8 +24,11 @@ class Lookup extends Component {
           fireClickOutside: false,
           fireDropdownList: false,
           isFocused: false,
+          isInputEmpyt: false,
         };
       });
+
+      this.rawLookupsState = { ...lookupWidgets };
     }
 
     this.state = {
@@ -34,7 +39,8 @@ class Lookup extends Component {
       initialFocus: false,
       localClearing: false,
       autofocusDisabled: false,
-      isFocused: {},
+      isFocused: false,
+      isDropdownListOpen: false,
       lookupWidgets,
     };
   }
@@ -62,8 +68,23 @@ class Lookup extends Component {
     }
   }
 
-  getLookupWidget = name => {
-    return this.state.lookupWidgets[`${name}`];
+  getLookupWidget = name => this.state.lookupWidgets[`${name}`];
+
+  getFocused = fieldName => this.getLookupWidget(fieldName).isFocused;
+
+  _changeWidgetProperty = (field, property, value, callback) => {
+    this.setState(
+      {
+        lookupWidgets: {
+          ...this.state.lookupWidgets,
+          [`${field}`]: {
+            ...this.state.lookupWidgets[`${field}`],
+            [`${property}`]: value,
+          },
+        },
+      },
+      callback
+    );
   };
 
   checkIfDefaultValue = () => {
@@ -139,40 +160,38 @@ class Lookup extends Component {
     }
   };
 
-  openDropdownList = () => {
-    this.setState(
-      {
-        fireDropdownList: true,
-      },
-      () => {
-        this.setState({
-          fireDropdownList: false,
-        });
-      }
-    );
-  };
+  // TODO: I think it's not needed anymore - Kuba
+  // openDropdownList = () => {
+  //   this.setState(
+  //     {
+  //       fireDropdownList: true,
+  //     },
+  //     () => {
+  //       this.setState({
+  //         fireDropdownList: false,
+  //       });
+  //     }
+  //   );
+  // };
 
   dropdownListToggle = (value, field) => {
     const { onFocus, onBlur } = this.props;
 
-    this.setState({
-      lookupWidgets: {
-        ...this.state.lookupWidgets,
-        [`${field}`]: {
-          ...this.state.lookupWidgets[`${field}`],
-          dropdownOpen: value,
-        },
-      },
-    });
+    this._changeWidgetProperty(field, 'dropdownOpen', value, () => {
+      this.setState({
+        isDropdownListOpen: value,
+      });
 
-    if (value && onFocus) {
-      onFocus();
-    } else if (!value && onBlur) {
-      onBlur();
-    }
+      if (value && onFocus) {
+        onFocus();
+      } else if (!value && onBlur) {
+        onBlur();
+      }
+    });
   };
 
   resetLocalClearing = () => {
+    // TODO: Rewrite per widget
     this.setState({
       localClearing: false,
     });
@@ -180,31 +199,35 @@ class Lookup extends Component {
 
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
+    const { isDropdownListOpen, isFocused } = this.state;
 
-    if (this.state.isDropdownListOpen) {
+    if (isDropdownListOpen || isFocused) {
       this.setState(
         {
-          fireClickOutside: true,
+          // fireClickOutside: true,
+          isDropdownListOpen: false,
+          isFocused: false,
+          lookupWidgets: this.rawLookupsState,
           property: '',
         },
         () => {
           onClickOutside && onClickOutside();
-          this.setState({
-            fireClickOutside: false,
-          });
+          // this.setState({
+          //   fireClickOutside: false,
+          // });
         }
       );
-    } else {
-      onClickOutside && onClickOutside();
     }
   };
 
   handleInputEmptyStatus = isEmpty => {
+    // TODO: Rewrite per widget
     this.setState({
       isInputEmpty: isEmpty,
     });
   };
 
+  // TODO: Rewrite per widget
   handleClear = () => {
     const { onChange, properties, onSelectBarcode } = this.props;
 
@@ -220,29 +243,22 @@ class Lookup extends Component {
     });
   };
 
-  handleFocus = fieldName => {
-    this.setState({
-      isFocused: {
-        ...this.state.isFocused,
-        [`${fieldName}`]: true,
-      },
+  handleListFocus = field => {
+    this._changeWidgetProperty(field, 'isFocused', true, () => {
+      this.setState({
+        isFocused: true,
+      });
+      this.props.onFocus();
     });
-    this.props.onFocus();
   };
 
-  handleBlur = fieldName => {
-    this.setState({
-      isFocused: {
-        ...this.state.isFocused,
-        [`${fieldName}`]: false,
-      },
+  handleListBlur = field => {
+    this._changeWidgetProperty(field, 'isFocused', false, () => {
+      this.setState({
+        isFocused: false,
+      });
+      this.props.onBlur();
     });
-
-    this.props.onBlur();
-  };
-
-  getFocused = fieldName => {
-    return !!this.state.isFocused[fieldName];
   };
 
   disableAutofocus = () => {
@@ -264,7 +280,7 @@ class Lookup extends Component {
     return (
       <div
         className="input-icon input-icon-lg raw-lookup-wrapper"
-        onClick={isInputEmpty ? this.openDropdownList : null}
+        onClick={null /*isInputEmpty ? this.openDropdownList : null*/}
       >
         {showBarcodeScanner ? (
           <button
@@ -317,8 +333,6 @@ class Lookup extends Component {
       barcodeSelected,
       scannerElement,
       forceFullWidth,
-      onBlur,
-      onFocus,
     } = this.props;
 
     const {
@@ -390,6 +404,8 @@ class Lookup extends Component {
               }
 
               let width = null;
+              // for multiple lookup widget we want the dropdown
+              // to be full width of the widget component
               if (forceFullWidth && this.dropdown) {
                 width = this.dropdown.offsetWidth;
               }
@@ -407,8 +423,8 @@ class Lookup extends Component {
                   fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
-                  onBlur={onBlur}
-                  onFocus={onFocus}
+                  onBlur={() => this.handleListBlur(item.field)}
+                  onFocus={() => this.handleListFocus(item.field)}
                   isOpen={lookupWidget.dropdownOpen}
                   onDropdownListToggle={val => {
                     this.dropdownListToggle(val, item.field);
@@ -486,8 +502,8 @@ class Lookup extends Component {
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
-                    onFocus={() => this.handleFocus(item.field)}
-                    onBlur={() => this.handleBlur(item.field)}
+                    onFocus={() => this.handleListFocus(item.field)}
+                    onBlur={() => this.handleListBlur(item.field)}
                     {...{
                       dataId,
                       entity,
@@ -517,6 +533,7 @@ class Lookup extends Component {
 Lookup.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
+  forceFullWidth: PropTypes.bool,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));
