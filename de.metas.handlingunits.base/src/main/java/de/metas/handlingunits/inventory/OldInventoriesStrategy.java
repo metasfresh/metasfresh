@@ -1,36 +1,25 @@
 package de.metas.handlingunits.inventory;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.attachments.AttachmentEntry;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
@@ -59,13 +48,13 @@ import lombok.Value;
 
 @Value
 @Builder
-public class OldInvetoriesStrategy implements HUsForInventoryStrategy
+public class OldInventoriesStrategy implements HUsForInventoryStrategy
 {
 	int maxLocators;
 
 	BigDecimal minimumPrice;
 
-	private OldInvetoriesStrategy(final int maxLocators, final BigDecimal minimumPrice)
+	private OldInventoriesStrategy(final int maxLocators, final BigDecimal minimumPrice)
 	{
 		this.maxLocators = maxLocators;
 		this.minimumPrice = minimumPrice;
@@ -84,8 +73,8 @@ public class OldInvetoriesStrategy implements HUsForInventoryStrategy
 		if (!productIdsByLocatorId.isEmpty())
 		{
 			final ImmutableSet<Integer> locators = productIdsByLocatorId.keySet();
-			final List<WarehouseId> warehouseIds = locators.stream().map(this::mapToWarehouseId)
-					.collect(ImmutableList.toImmutableList());
+			final ImmutableSet<WarehouseId> warehouseIds = locators.stream().map(this::mapToWarehouseId)
+					.collect(ImmutableSet.toImmutableSet());
 
 			huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 			huQueryBuilder.addOnlyInLocatorIds(locators);
@@ -102,12 +91,17 @@ public class OldInvetoriesStrategy implements HUsForInventoryStrategy
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_M_Transaction.class).addOnlyActiveRecordsFilter()
+		final IQuery<I_M_Transaction> query = queryBL.createQueryBuilder(I_M_Transaction.class)
+				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_M_Transaction.COLUMN_M_InventoryLine_ID).orderBy()
 				.addColumn(I_M_Transaction.COLUMNNAME_M_Locator_ID)
-				.addColumnDescending(I_M_Transaction.COLUMNNAME_MovementDate).endOrderBy().create()
-				.setLimit(maxLocators)
-				.listDistinct(I_M_Transaction.COLUMNNAME_M_Locator_ID, I_M_Transaction.COLUMNNAME_M_Product_ID).stream()
+				.addColumnDescending(I_M_Transaction.COLUMNNAME_MovementDate).endOrderBy().create();
+		if (maxLocators > 0)
+		{
+			query.setLimit(maxLocators);
+		}
+
+		return query.listDistinct(I_M_Transaction.COLUMNNAME_M_Locator_ID, I_M_Transaction.COLUMNNAME_M_Product_ID).stream()
 				.map(record -> {
 					final ProductId productId = ProductId
 							.ofRepoId((int)record.get(I_M_Product.COLUMNNAME_M_Product_ID));
