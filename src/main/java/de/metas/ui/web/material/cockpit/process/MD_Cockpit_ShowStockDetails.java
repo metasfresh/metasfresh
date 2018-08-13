@@ -66,8 +66,11 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 	protected String doIt() throws Exception
 	{
 		final String viewId = createView().getViewId();
-		// getResult().setWebuiViewId(viewId);
-		getResult().setWebuiIncludedViewIdToOpen(viewId);
+
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId(viewId)
+				.target(ViewOpenTarget.ModalOverlay)
+				.build());
 
 		return MSG_OK;
 	}
