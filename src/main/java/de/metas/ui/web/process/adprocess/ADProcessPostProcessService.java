@@ -28,6 +28,8 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
@@ -311,7 +313,7 @@ public class ADProcessPostProcessService
 					.build();
 		}
 		//
-		// Open view
+		// Create & open view from Records
 		else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 		{
 			final Set<DocumentPath> referencingDocumentPaths = extractReferencingDocumentPaths(processInfo);
@@ -325,23 +327,27 @@ public class ADProcessPostProcessService
 					.build();
 		}
 		//
-		// Open view/included view
-		else if (processExecutionResult.getWebuiIncludedViewIdToOpen() != null)
+		// Open existing view
+		else if (processExecutionResult.getWebuiViewToOpen() != null)
 		{
-			// Open included view (in case current process was called from a view)
-			if (processExecutionResult.getWebuiViewId() != null)
+			final WebuiViewToOpen viewToOpen = processExecutionResult.getWebuiViewToOpen();
+			final ViewOpenTarget target = viewToOpen.getTarget();
+			if (ViewOpenTarget.IncludedView.equals(target))
 			{
 				return OpenIncludedViewAction.builder()
-						.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
-						.profileId(ViewProfileId.fromJson(processExecutionResult.getWebuiViewProfileId()))
+						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
+						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
 						.build();
 			}
-			// Open view
-			else
+			else if (ViewOpenTarget.ModalOverlay.equals(target))
 			{
 				return OpenViewAction.builder()
-						.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
+						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.build();
+			}
+			else
+			{
+				throw new AdempiereException("Unknown target: " + target);
 			}
 		}
 		//

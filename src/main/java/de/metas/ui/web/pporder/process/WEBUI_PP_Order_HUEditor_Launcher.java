@@ -19,6 +19,8 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
@@ -137,7 +139,10 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 						.addAdditionalRelatedProcessDescriptor(createSelectHuAsSourceHuDescriptor())
 						.build());
 
-		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId(husToPickView.getViewId().getViewId())
+				.target(ViewOpenTarget.IncludedView)
+				.build());
 
 		return MSG_OK;
 	}
