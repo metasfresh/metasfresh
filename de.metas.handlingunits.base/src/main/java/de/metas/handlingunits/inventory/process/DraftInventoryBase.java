@@ -3,7 +3,7 @@ package de.metas.handlingunits.inventory.process;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.handlingunits.inventory.DraftInventoryLinesCreator;
-import de.metas.handlingunits.inventory.LocatorAndProductHUsStrategy;
+import de.metas.handlingunits.inventory.HUsForInventoryStrategy;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -55,7 +55,7 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 	{
 		final I_M_Inventory inventory = getRecord(I_M_Inventory.class);
 
-		final LocatorAndProductHUsStrategy strategy = createStrategy(inventory);
+		final HUsForInventoryStrategy strategy = createStrategy(inventory);
 
 		final DraftInventoryLinesCreator draftLinesCreator = DraftInventoryLinesCreator.builder()
 				.inventoryRecord(inventory)
@@ -65,5 +65,5 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 		return "@Created@/@Updated@ #" + draftLinesCreator.getCountInventoryLines();
 	}
 
-	protected abstract LocatorAndProductHUsStrategy createStrategy(I_M_Inventory inventory);
+	protected abstract HUsForInventoryStrategy createStrategy(I_M_Inventory inventory);
 }
