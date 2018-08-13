@@ -454,7 +454,9 @@ public class SqlViewFactory implements IViewFactory
 		return createViewFieldBindingBuilder(documentField, availableDisplayColumnNames).build();
 	}
 
-	public static final SqlViewRowFieldBinding.SqlViewRowFieldBindingBuilder createViewFieldBindingBuilder(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)
+	public static final SqlViewRowFieldBinding.SqlViewRowFieldBindingBuilder createViewFieldBindingBuilder(
+			@NonNull final SqlDocumentFieldDataBindingDescriptor documentField,
+			@NonNull final Collection<String> availableDisplayColumnNames)
 	{
 		final String fieldName = documentField.getFieldName();
 		final boolean isDisplayColumnAvailable = documentField.isUsingDisplayColumn() && availableDisplayColumnNames.contains(fieldName);

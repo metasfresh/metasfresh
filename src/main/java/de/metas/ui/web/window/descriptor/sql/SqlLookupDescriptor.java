@@ -396,8 +396,6 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		private SqlLookupDescriptor build()
 		{
-			// Check.assumeNotEmpty(ctxColumnName, "columnName is not empty");
-
 			final boolean IsParent = false;
 
 			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID <= 0)
@@ -409,7 +407,14 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			}
 			else
 			{
-				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(WINDOWNO_Dummy, displayType, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, AD_Val_Rule_ID);
+				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(
+						WINDOWNO_Dummy,
+						displayType,
+						ctxTableName,
+						ctxColumnName,
+						AD_Reference_Value_ID,
+						IsParent,
+						AD_Val_Rule_ID);
 
 				numericKey = lookupInfo.isNumericKey();
 				validationRuleEffective = extractValidationRule(lookupInfo);

@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.material.cockpit.MaterialCockpitConstants;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 
 /*
@@ -63,8 +63,8 @@ public class MD_Cockpit_DocumentDetail_Display extends MaterialCockpitViewBasedP
 		final Set<Integer> cockpitRowIds = getSelectedCockpitRecordIdsRecursively();
 		final List<TableRecordReference> cockpitDetailRecords = retrieveCockpitDetailRecordReferences(cockpitRowIds);
 
-		getResult().setRecordsToOpen(cockpitDetailRecords, MaterialCockpitConstants.WINDOWID_MaterialCockpit_Detail_String);
-		
+		getResult().setRecordsToOpen(cockpitDetailRecords, MaterialCockpitUtil.WINDOWID_MaterialCockpit_Detail_String);
+
 		return MSG_OK;
 	}
 

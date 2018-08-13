@@ -96,7 +96,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 		this.viewFilterDescriptors = viewFilterDescriptors;
 	}
-	
+
 	@Override
 	public final JSONViewDataType getViewType()
 	{
@@ -182,7 +182,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	{
 		return ImmutableList.of();
 	}
-	
+
 	protected final DocumentFilterDescriptorsProvider getFilterDescriptors()
 	{
 		return viewFilterDescriptors;

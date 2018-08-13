@@ -50,7 +50,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-class ProductFilterUtil
+public class ProductFilterUtil
 {
 	private static final String MSG_FILTER_CAPTION = "Product";
 
