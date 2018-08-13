@@ -10,7 +10,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_WF_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
 
