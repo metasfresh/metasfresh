@@ -15,6 +15,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 
 /*
  * #%L
@@ -59,8 +61,12 @@ public class ProcessExecutionResultTest
 		//
 		result.setRecordsToOpen(createDummyTableRecordReferenceList(3), 1234);
 		//
-		result.setWebuiIncludedViewIdToOpen("123-dummyIncludedViewId");
-		result.setWebuiViewProfileId("dummyProfile");
+		result.setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId("123-dummyIncludedViewId")
+				.profileId("dummyProfile")
+				.target(ViewOpenTarget.IncludedView)
+				.build());
+		
 		//
 		// System.out.println("result: " + result);
 
@@ -87,8 +93,7 @@ public class ProcessExecutionResultTest
 		//
 		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
 		//
-		Assert.assertEquals(result.getWebuiIncludedViewIdToOpen(), resultFromJson.getWebuiIncludedViewIdToOpen());
-		Assert.assertEquals(result.getWebuiViewProfileId(), resultFromJson.getWebuiViewProfileId());
+		Assert.assertEquals(result.getWebuiViewToOpen(), resultFromJson.getWebuiViewToOpen());
 		//
 		// Assert.assertEquals(result.get, resultFromJson.get);
 	}
