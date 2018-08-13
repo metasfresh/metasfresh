@@ -335,7 +335,7 @@ public class CampaignServiceTest
 		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
 
 		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-		assertTrue(existingContactPersons.size() == 1);
+		assertTrue(existingContactPersons.isEmpty());
 	}
 
 	@Test
@@ -416,7 +416,7 @@ public class CampaignServiceTest
 		campaignService.addAsContactPersonsToCampaign(users, campaignId, defaultAddressType);
 
 		final List<I_MKTG_ContactPerson> existingContactPersons = retrieveExistingContactPersons();
-		assertTrue(existingContactPersons.size() == 1);
+		assertTrue(existingContactPersons.isEmpty());
 	}
 
 	private I_C_BPartner createBPartner(final String name)

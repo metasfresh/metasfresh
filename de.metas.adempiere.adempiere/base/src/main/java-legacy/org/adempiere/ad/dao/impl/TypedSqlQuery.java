@@ -1765,9 +1765,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	<ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
+	<ToModelType> QueryInsertExecutorResult executeInsert(
+			@NonNull final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
-		Check.assumeNotNull(queryInserter, "queryInserter not null");
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
 
 		final List<Object> sqlParams = new ArrayList<>();

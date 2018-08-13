@@ -76,6 +76,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class LookupDAO implements ILookupDAO
 {
@@ -384,8 +385,6 @@ public class LookupDAO implements ILookupDAO
 
 		}
 
-
-
 	}
 
 	@VisibleForTesting
@@ -492,8 +491,6 @@ public class LookupDAO implements ILookupDAO
 			this.autoComplete = autoComplete;
 			return this;
 		}
-
-
 
 	}
 
@@ -724,44 +721,24 @@ public class LookupDAO implements ILookupDAO
 		String tableName = MQuery.getZoomTableName(columnName);
 
 		// Case: ColumnName is something like "hu_pip.M_HU_PI_Item_Product_ID". We need to get rid of table alias prefix
-		if (Services.get(IADTableDAO.class).retrieveTableId(tableName) <= 0 // table name does not exist
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+		if (adTableDAO.retrieveTableId(tableName) <= 0 // table name does not exist
 				&& keyColumn.indexOf(".") > 0)
 		{
 			keyColumn = keyColumn.substring(keyColumn.indexOf(".") + 1);
 			tableName = MQuery.getZoomTableName(keyColumn);
 		}
 
-		boolean autoComplete = false;
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		final String sql = "SELECT "
-				+ " " + I_AD_Table.COLUMNNAME_IsAutocomplete
-				+ " FROM " + I_AD_Table.Table_Name + " t"
-				+ " WHERE t." + I_AD_Table.COLUMNNAME_TableName + "=?";
-		final List<Object> sqlParams = Arrays.<Object> asList(tableName);
-		try
+		final boolean autoComplete;
+		final I_AD_Table table = adTableDAO.retrieveTableOrNull(tableName);
+		if (table == null)
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				autoComplete = DisplayType.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsAutocomplete));
-			}
-			Check.assume(!rs.next(), "Only one row in result set was expected for: {} (TableName={})", sql, tableName);
+			autoComplete = false;
 		}
-		catch (final SQLException e)
+		else
 		{
-			final DBException ex = new DBException(e, sql.toString(), sqlParams);
-			logger.error(ex.getLocalizedMessage(), ex);
-			return null;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+			autoComplete = table.isAutocomplete();
 		}
 
 		final ITableRefInfo tableRefInfo = TableRefInfo.builder()
@@ -780,10 +757,8 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
-	public ILookupDisplayInfo retrieveLookupDisplayInfo(final ITableRefInfo tableRefInfo)
+	public ILookupDisplayInfo retrieveLookupDisplayInfo(@NonNull final ITableRefInfo tableRefInfo)
 	{
-		Check.assumeNotNull(tableRefInfo, "tableRefInfo not null");
-
 		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<>();
 		boolean isTranslated = false;
 		int ZoomWindow = 0;
@@ -813,9 +788,9 @@ public class LookupDAO implements ILookupDAO
 			sqlOrderByParams.add(COLUMNNAME_Value);
 		}
 		//
-		if(Services.get(IDeveloperModeBL.class).isEnabled())
+		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
-			if(I_AD_Table.Table_Name.equals(tableRefInfo.getTableName()))
+			if (I_AD_Table.Table_Name.equals(tableRefInfo.getTableName()))
 			{
 				if (sqlWhereClauseColumn.length() > 0)
 				{
