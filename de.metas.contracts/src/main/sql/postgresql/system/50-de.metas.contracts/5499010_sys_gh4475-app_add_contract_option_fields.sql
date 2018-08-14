@@ -38,7 +38,7 @@ UPDATE AD_Column SET Help='', ColumnName='RefundPercent', Description='', Name='
 UPDATE AD_Field SET Name='Rückvergütung %', Description='', Help='' WHERE AD_Column_ID=560133
 ;
 
-SELECT db_alter_table('C_Flatrate_RefundConfig','ALTER TABLE C_Flatrate_RefundConfig RENAME COLUMN Percent TO RefundPercent;')
+SELECT db_alter_table('C_Flatrate_RefundConfig','ALTER TABLE C_Flatrate_RefundConfig RENAME COLUMN Percent TO RefundPercent;');
 
 -- 2018-08-08T07:03:25.743
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
