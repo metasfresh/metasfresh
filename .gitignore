@@ -4,3 +4,4 @@
 target
 bin
 assemblies/.classpath
+assemblies/src/main/resources/rebel.xml
