@@ -10,6 +10,23 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.70
+## Features
+* metasfresh
+  * [#4444](https://github.com/metasfresh/metasfresh/issues/4444) Refund Flatrate Terms adjustments
+  * [#4467](https://github.com/metasfresh/metasfresh/issues/4467) Get rid of the legacy IProcess interface
+
+## Fix
+* metasfresh
+  * [#4463](https://github.com/metasfresh/metasfresh/issues/4463) Wrong pricelist when different invoice partner in sales order
+  * [#4464](https://github.com/metasfresh/metasfresh/issues/4464) Report Business Partner revenue is not working anymore in swing
+
+* metasfresh-webui-frontend
+  * [#1911](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1911) Filters in HU Editor
+  * [#1916](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1916) Fix barcode scanner in HU editor
+  * [#1672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1672) Location dropdown opens again when opening the batch entry
+    * Fixes a focus issue in Lookup fields.
+
 # metasfresh 5.69
 ## Features
 * metasfresh

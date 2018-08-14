@@ -14,7 +14,6 @@
 package org.compiere.report;
 
 import org.adempiere.ad.service.ITaskExecutorService;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.FileUtils;
@@ -35,7 +34,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ClientOnlyProcess;
-import de.metas.process.IProcess;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import lombok.NonNull;
@@ -51,7 +50,8 @@ import net.sf.jasperreports.engine.JasperPrint;
  * @author tsa
  */
 @ClientOnlyProcess
-public class ReportStarter implements IProcess
+public class ReportStarter extends JavaProcess
+// implements IProcess
 {
 	// services
 	private static final Logger log = LogManager.getLogger(ReportStarter.class);
@@ -65,8 +65,10 @@ public class ReportStarter implements IProcess
 	 * </ul>
 	 */
 	@Override
-	public final void startProcess(final ProcessInfo pi, final ITrx trx) throws Exception
+	protected String doIt() throws Exception
 	{
+		final ProcessInfo pi = getProcessInfo();
+
 		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(pi);
 
 		//
@@ -93,6 +95,7 @@ public class ReportStarter implements IProcess
 		{
 			startProcessPrintPreview(reportPrintingInfo);
 		}
+		return MSG_OK;
 	}
 
 	private static JRReportViewerProvider viewerProvider = null;
@@ -198,11 +201,11 @@ public class ReportStarter implements IProcess
 
 		final Object record = recordRef.getModel();
 		final IDocument document = Services.get(IDocumentBL.class).getDocumentOrNull(record);
-		if(document == null)
+		if (document == null)
 		{
 			return null;
 		}
-		
+
 		return document.getDocumentInfo();
 	}
 

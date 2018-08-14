@@ -51,7 +51,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContract(context);
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -70,7 +70,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContract(context);
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -89,7 +89,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		Services.get(IFlatrateBL.class).extendContract(context);
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 
 		I_C_Flatrate_Term curentContract = contract;
 		do
@@ -126,7 +126,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				.nextTermStartDate(null)
 				.build();
 
-		assertThatThrownBy(() -> { Services.get(IFlatrateBL.class).extendContract(context); }).isInstanceOf(AdempiereException.class)
+		assertThatThrownBy(() -> { Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context); }).isInstanceOf(AdempiereException.class)
         .hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP);
 	}
 
