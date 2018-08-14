@@ -45,8 +45,11 @@ public class M_InventoryLine_MarkAsCounted extends JavaProcess
 		getSelectedInventoryLines()
 				.forEach(inventoryLine -> {
 
-					inventoryLine.setIsCounted(true);
-					save(inventoryLine);
+					if (!inventoryLine.isCounted())
+					{
+						inventoryLine.setIsCounted(true);
+						save(inventoryLine);
+					}
 				});
 
 		return MSG_OK;
