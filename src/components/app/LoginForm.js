@@ -302,14 +302,16 @@ class LoginForm extends Component {
               : counterpart.translate('login.callToAction')}
           </button>
         </div>
-        <div className="mt-2 text-center">
-          <a
-            className="forgot-password-link"
-            onClick={this.handleForgotPassword}
-          >
-            {counterpart.translate('login.forgotPassword.caption')}
-          </a>
-        </div>
+        {!roleSelect && (
+          <div className="mt-2 text-center">
+            <a
+              className="forgot-password-link"
+              onClick={this.handleForgotPassword}
+            >
+              {counterpart.translate('login.forgotPassword.caption')}
+            </a>
+          </div>
+        )}
       </div>
     );
   }
