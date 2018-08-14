@@ -14,6 +14,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -44,7 +45,9 @@ public class AssignmentToRefundCandidateRepository
 	@Getter
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
-	public AssignmentToRefundCandidateRepository(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
+
+	public AssignmentToRefundCandidateRepository(
+			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
 	{
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 	}
@@ -66,26 +69,37 @@ public class AssignmentToRefundCandidateRepository
 		final ImmutableList.Builder<AssignmentToRefundCandidate> result = ImmutableList.builder();
 		for (final I_C_Invoice_Candidate_Assignment assignmentRecord : assignmentRecords)
 		{
-			final I_C_Invoice_Candidate refundRecord = load(
-					assignmentRecord.getC_Invoice_Candidate_Term_ID(),
-					I_C_Invoice_Candidate.class);
-
-			final Optional<RefundInvoiceCandidate> refundCandidate = refundInvoiceCandidateRepository.ofNullableRefundRecord(refundRecord);
-			if (!refundCandidate.isPresent())
+			final AssignmentToRefundCandidate assignmentToRefundCandidate = ofRecordOrNull(assignmentRecord);
+			if (assignmentToRefundCandidate != null)
 			{
-				continue;
+				result.add(assignmentToRefundCandidate);
 			}
-
-			final Money assignedMoney = Money.of(
-					assignmentRecord.getAssignedAmount(),
-					refundCandidate.get().getMoney().getCurrencyId());
-
-			final AssignmentToRefundCandidate assignmentToRefundCandidate = new AssignmentToRefundCandidate(
-					refundCandidate.get(),
-					assignedMoney);
-
-			result.add(assignmentToRefundCandidate);
 		}
 		return result.build();
+	}
+
+	public AssignmentToRefundCandidate ofRecordOrNull(@NonNull final I_C_Invoice_Candidate_Assignment assignmentRecord)
+	{
+		final I_C_Invoice_Candidate refundRecord = load(
+				assignmentRecord.getC_Invoice_Candidate_Term_ID(),
+				I_C_Invoice_Candidate.class);
+
+		final Optional<RefundInvoiceCandidate> refundCandidate = refundInvoiceCandidateRepository.ofNullableRefundRecord(refundRecord);
+		if (!refundCandidate.isPresent())
+		{
+			return null;
+		}
+
+		final Money assignedMoney = Money.of(
+				assignmentRecord.getAssignedAmount(),
+				refundCandidate.get().getMoney().getCurrencyId());
+
+		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), refundRecord.getM_Product().getC_UOM());
+
+		final AssignmentToRefundCandidate assignmentToRefundCandidate = new AssignmentToRefundCandidate(
+				refundCandidate.get(),
+				assignedMoney,
+				assignedQuantity);
+		return assignmentToRefundCandidate;
 	}
 }

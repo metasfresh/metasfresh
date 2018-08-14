@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import lombok.Builder;
@@ -42,13 +46,17 @@ import lombok.Value;
 @Value
 public class RefundContract
 {
+	/** may be {@code null} if the contract is not persisted. */
 	FlatrateTermId id;
 
+	/** contains the refund configs, ordered by minQty descending. */
 	List<RefundConfig> refundConfigs;
 
 	LocalDate startDate;
 
 	LocalDate endDate;
+
+	BPartnerId bPartnerId;
 
 	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
 	{
@@ -69,20 +77,24 @@ public class RefundContract
 			return refundConfig != null ? ImmutableList.of(refundConfig) : ImmutableList.of();
 		}
 
+		final Predicate<RefundConfig> minQtyLessOrEqual = config -> config.getMinQty().compareTo(qty) <= 0;
+
 		return refundConfigs
 				.stream()
-				.filter(config -> config.getMinQty().compareTo(qty) <= 0)
+				.filter(minQtyLessOrEqual)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Builder
+	@Builder(toBuilder = true)
 	private RefundContract(
-			@NonNull FlatrateTermId id,
-			@Singular List<RefundConfig> refundConfigs,
-			@NonNull LocalDate startDate,
-			@NonNull LocalDate endDate)
+			@Nullable final FlatrateTermId id,
+			@NonNull final BPartnerId bPartnerId,
+			@Singular final List<RefundConfig> refundConfigs,
+			@NonNull final LocalDate startDate,
+			@NonNull final LocalDate endDate)
 	{
 		this.id = id;
+		this.bPartnerId = bPartnerId;
 		this.startDate = startDate;
 		this.endDate = endDate;
 

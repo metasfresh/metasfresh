@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.util.Check;
 
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,11 +41,14 @@ public class UnassignedPairOfCandidates
 
 	Money moneyToAssign;
 
+	Quantity quantityToAssign;
+
 	@Builder(toBuilder = true)
 	private UnassignedPairOfCandidates(
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
-			@Nullable final Money moneyToAssign)
+			@Nullable final Money moneyToAssign,
+			@Nullable final Quantity quantityToAssign)
 	{
 		Check.assume(
 				!assignableInvoiceCandidate.isAssigned(),
@@ -58,6 +62,7 @@ public class UnassignedPairOfCandidates
 		this.refundInvoiceCandidate = refundInvoiceCandidate;
 		this.assignableInvoiceCandidate = assignableInvoiceCandidate;
 		this.moneyToAssign = moneyToAssign;
+		this.quantityToAssign = quantityToAssign;
 	}
 
 	public UnassignedPairOfCandidates withAssignmentToRefundCandidate(
@@ -66,6 +71,7 @@ public class UnassignedPairOfCandidates
 		return toBuilder()
 				.refundInvoiceCandidate(assignmentToRefundCandidate.getRefundInvoiceCandidate())
 				.moneyToAssign(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate())
+				.quantityToAssign(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate())
 				.build();
 	}
 }

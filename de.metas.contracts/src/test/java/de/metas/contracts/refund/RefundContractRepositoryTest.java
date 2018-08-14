@@ -14,6 +14,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -49,6 +50,8 @@ import lombok.NonNull;
 public class RefundContractRepositoryTest
 {
 	private static final LocalDate NOW = LocalDate.now();
+	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(10);
+
 	private RefundContractRepository refundContractRepository;
 
 	@Before
@@ -81,9 +84,11 @@ public class RefundContractRepositoryTest
 		final I_C_Flatrate_Term contractRecord = createContractRecord(conditionsRecord);
 
 		// invoke the method under test
-		final RefundContract contract = refundContractRepository.getById(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
+		final FlatrateTermId contractId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
+		final RefundContract contract = refundContractRepository.getById(contractId);
 
 		assertThat(contract.getStartDate()).isEqualTo(NOW);
+		assertThat(contract.getBPartnerId()).isEqualTo(BPARTNER_ID);
 		assertThat(contract.getRefundConfigs()).hasSize(4); // we expect a 4th "artificial" config with qty=zero
 		assertThat(contract.getRefundConfig(ZERO).getPercent().isZero()).isTrue();
 	}
@@ -91,13 +96,14 @@ public class RefundContractRepositoryTest
 	private static I_C_Flatrate_Term createContractRecord(@NonNull final I_C_Flatrate_Conditions conditionsRecord)
 	{
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
+
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setC_Flatrate_Conditions(conditionsRecord);
 		contractRecord.setM_Product_ID(30);
 		contractRecord.setStartDate(TimeUtil.asTimestamp(NOW));
 		contractRecord.setEndDate(TimeUtil.asTimestamp(NOW.plusDays(10)));
+		contractRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
 		saveRecord(contractRecord);
 		return contractRecord;
 	}
-
 }

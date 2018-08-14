@@ -1,13 +1,9 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.LocalDate;
-import java.util.Iterator;
 
 import javax.annotation.Nullable;
 
@@ -21,12 +17,8 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.Money;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -70,48 +62,36 @@ public class InvoiceCandidateRepository
 				assignmentToRefundCandidateRepository);
 	}
 
-	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
+//	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
+//	{
+//		return invoiceCandidateFactory.ofRecord(record);
+//	}
+
+
+
+	public AssignableInvoiceCandidate saveCandidateAssignment(@Nullable final UnassignedPairOfCandidates unassignedPair)
 	{
-		return invoiceCandidateFactory.ofRecord(record);
-	}
+		final AssignableInvoiceCandidate assignableInvoiceCandidate = unassignedPair.getAssignableInvoiceCandidate();
+		final RefundConfig refundConfig = unassignedPair.getRefundInvoiceCandidate().getRefundConfig();
 
-	public boolean isRefundInvoiceCandidateRecord(@NonNull final I_C_Invoice_Candidate record)
-	{
-		if (record.getAD_Table_ID() != getTableId(I_C_Flatrate_Term.class))
-		{
-			return false;
-		}
-
-		final I_C_Flatrate_Term term = loadOutOfTrx(record.getRecord_ID(), I_C_Flatrate_Term.class);
-		final boolean recordIsARefundCandidate = X_C_Flatrate_Term.TYPE_CONDITIONS_Refund.equals(term.getType_Conditions());
-
-		return recordIsARefundCandidate;
-	}
-
-	public <T extends InvoiceCandidate> T getById(@NonNull final InvoiceCandidateId id)
-	{
-		final I_C_Invoice_Candidate invoiceCandidateRecord = load(id.getRepoId(), I_C_Invoice_Candidate.class);
-		return invoiceCandidateFactory.ofRecord(invoiceCandidateRecord);
-	}
-
-	public AssignableInvoiceCandidate saveCandidateAssignment(@Nullable final UnassignedPairOfCandidates request)
-	{
-		final RefundConfig refundConfig = request.getRefundInvoiceCandidate().getRefundConfig();
 		final I_C_Invoice_Candidate_Assignment assignmentRecord = loadOrCreateAssignmentRecord(
-				request.getAssignableInvoiceCandidate(),
+				assignableInvoiceCandidate,
 				refundConfig);
 
-		final RefundInvoiceCandidate refundInvoiceCandidate = request.getRefundInvoiceCandidate();
+		final RefundInvoiceCandidate refundInvoiceCandidate = unassignedPair.getRefundInvoiceCandidate();
 
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
-		assignmentRecord.setAssignedAmount(request.getMoneyToAssign().getValue());
+		assignmentRecord.setAssignedAmount(unassignedPair.getMoneyToAssign().getValue());
+		assignmentRecord.setAssignedQuantity(unassignedPair.getQuantityToAssign().getAsBigDecimal());
 		saveRecord(assignmentRecord);
 
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = //
-				new AssignmentToRefundCandidate(refundInvoiceCandidate, request.getMoneyToAssign());
-		return request
-				.getAssignableInvoiceCandidate()
+				new AssignmentToRefundCandidate(
+						refundInvoiceCandidate,
+						unassignedPair.getMoneyToAssign(),
+						unassignedPair.getQuantityToAssign());
+		return assignableInvoiceCandidate
 				.toBuilder()
 				.assignmentToRefundCandidate(assignmentToRefundCandidate)
 				.build();
@@ -138,6 +118,8 @@ public class InvoiceCandidateRepository
 		final int repoId = assignableInvoiceCandidate.getId().getRepoId();
 		final I_C_Invoice_Candidate_Assignment newAssignment = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		newAssignment.setC_Invoice_Candidate_Assigned_ID(repoId);
+		newAssignment.setC_Flatrate_RefundConfig_ID(refundConfig.getId().getRepoId());
+
 		return newAssignment;
 	}
 
@@ -235,36 +217,5 @@ public class InvoiceCandidateRepository
 			this.removeForRefundCandidateId = removeForRefundCandidateId;
 			this.removeForAssignedCandidateId = removeForAssignedCandidateId;
 		}
-	}
-
-	public void save(@NonNull final RefundInvoiceCandidate invoiceCandidate)
-	{
-		final I_C_Invoice_Candidate invoiceCandidateRecord = load(invoiceCandidate.getId().getRepoId(), I_C_Invoice_Candidate.class);
-		final Money money = invoiceCandidate.getMoney();
-
-		invoiceCandidateRecord.setPriceActual(money.getValue());
-		invoiceCandidateRecord.setPriceEntered(money.getValue());
-		invoiceCandidateRecord.setC_Currency_ID(money.getCurrencyId().getRepoId());
-		saveRecord(invoiceCandidateRecord);
-	}
-
-	public Iterator<AssignableInvoiceCandidate> getAllAssigned(
-			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(
-						I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID,
-						refundInvoiceCandidate.getId().getRepoId())
-				.andCollect(
-						I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
-						I_C_Invoice_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(invoiceCandidateFactory::ofRecord)
-				.map(AssignableInvoiceCandidate::cast)
-				.iterator();
 	}
 }

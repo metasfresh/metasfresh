@@ -44,8 +44,14 @@ public class RefundInvoiceCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools= new RefundTestTools();
-		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository())));
+		refundTestTools = new RefundTestTools();
+
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+
+		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
+				refundContractRepository,
+				refundInvoiceCandidateFactory);
 	}
 
 	@Test

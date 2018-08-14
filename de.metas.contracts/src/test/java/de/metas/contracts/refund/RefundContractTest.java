@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
@@ -80,6 +81,7 @@ public class RefundContractTest
 
 		refundContract = RefundContract.builder()
 				.id(FlatrateTermId.ofRepoId(100))
+				.bPartnerId(BPartnerId.ofRepoId(200))
 				.startDate(NOW)
 				.endDate(NOW.plusDays(10))
 				.refundConfig(refundConfig2)

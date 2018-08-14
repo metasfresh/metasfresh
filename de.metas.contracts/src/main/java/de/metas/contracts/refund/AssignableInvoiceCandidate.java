@@ -1,7 +1,13 @@
 package de.metas.contracts.refund;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -44,6 +50,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		return (AssignableInvoiceCandidate)invoiceCandidate;
 	}
 
+	/** Maybe be {@code null} if this instance was not persisted. */
 	InvoiceCandidateId id;
 	BPartnerId bpartnerId;
 	ProductId productId;
@@ -51,17 +58,22 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 
 	Money money;
 
+	/** needed when splitting assignable candidates. */
+	int precision;
+
 	Quantity quantity;
 
+	/** i there is more than one, they are ordered by their refund candidates' configs' minQty, ascending. */
 	List<AssignmentToRefundCandidate> assignmentsToRefundCandidates;
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
-			@NonNull final InvoiceCandidateId id,
+			@Nullable final InvoiceCandidateId id,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
+			final int precision,
 			@NonNull final Quantity quantity,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
@@ -70,12 +82,13 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;
+		this.precision = Check.assumeGreaterOrEqualToZero(precision, "precision");
 		this.quantity = quantity;
 
 		this.assignmentsToRefundCandidates = assignmentsToRefundCandidates;
 	}
 
-	public AssignableInvoiceCandidate withoutRefundInvoiceCandidate()
+	public AssignableInvoiceCandidate withoutRefundInvoiceCandidates()
 	{
 		return toBuilder()
 				.clearAssignmentsToRefundCandidates()
@@ -86,4 +99,48 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 	{
 		return !assignmentsToRefundCandidates.isEmpty();
 	}
+
+	public SplitResult splitQuantity(@NonNull final BigDecimal qtyToSplit)
+	{
+		Check.errorIf(qtyToSplit.compareTo(quantity.getAsBigDecimal()) >= 0,
+				"The given qtyToSplit={} needs to be less than this instance's quantity; this={}",
+				qtyToSplit, this);
+
+		final Quantity newQuantity = Quantity.of(qtyToSplit, quantity.getUOM());
+		final Quantity remainderQuantity = quantity.subtract(qtyToSplit);
+
+		final BigDecimal newFraction = qtyToSplit
+				.setScale(precision*2, RoundingMode.HALF_UP)
+				.divide(quantity.getAsBigDecimal(), RoundingMode.HALF_UP);
+
+		final BigDecimal newMoneyValue = money
+				.getValue()
+				.setScale(precision, RoundingMode.HALF_UP)
+				.multiply(newFraction)
+				.setScale(precision, RoundingMode.HALF_UP);
+		final Money newMoney = Money.of(newMoneyValue, money.getCurrencyId());
+		final Money remainderMoney = money.subtract(newMoney);
+
+		final AssignableInvoiceCandidate remainderCandidate = toBuilder()
+				.quantity(remainderQuantity)
+				.money(remainderMoney)
+				.build();
+
+		final AssignableInvoiceCandidate newCandidate = toBuilder()
+				.id(null)
+				.quantity(newQuantity)
+				.money(newMoney)
+				.build();
+
+		return new SplitResult(remainderCandidate, newCandidate);
+	}
+
+	@Value
+	public static final class SplitResult
+	{
+		AssignableInvoiceCandidate remainder;
+
+		AssignableInvoiceCandidate newCandidate;
+	}
+
 }

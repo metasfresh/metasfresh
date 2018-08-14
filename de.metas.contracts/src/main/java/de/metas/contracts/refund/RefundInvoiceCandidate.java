@@ -1,6 +1,12 @@
 package de.metas.contracts.refund;
 
+import static java.math.BigDecimal.ONE;
+
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -45,7 +51,8 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 		return (RefundInvoiceCandidate)refundInvoiceCandidate;
 	}
 
-	@NonNull
+	/** May be {@code null} is the candidate is not persisted */
+	@Nullable
 	InvoiceCandidateId id;
 
 	@NonNull
@@ -69,5 +76,26 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 
 	/** The sum of the quantities of all assigned {@link AssignableInvoiceCandidate}s. */
 	@NonNull
-	Quantity assignedQuantity;
+	transient Quantity assignedQuantity;
+
+	public Quantity computeAssignableQuantity()
+	{
+		final Optional<RefundConfig> nextRefundConfig = getRefundContract()
+				.getRefundConfigs()
+				.stream()
+				.filter(config -> config.getMinQty().compareTo(getRefundConfig().getMinQty()) > 0)
+				.min(Comparator.comparing(RefundConfig::getMinQty));
+
+		if (!nextRefundConfig.isPresent())
+		{
+			return Quantity.infinite(assignedQuantity.getUOM());
+		}
+
+		return Quantity
+				.of(
+						nextRefundConfig.get().getMinQty(),
+						assignedQuantity.getUOM())
+				.subtract(getAssignedQuantity())
+				.subtract(ONE);
+	}
 }

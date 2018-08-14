@@ -1,6 +1,7 @@
 package de.metas.contracts.refund;
 
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,19 +36,29 @@ public class AssignmentToRefundCandidate
 	@NonNull
 	Money moneyAssignedToRefundCandidate;
 
-	public AssignmentToRefundCandidate withSubtractedMoneyAmount()
+	@NonNull
+	Quantity quantityAssigendToRefundCandidate;
+
+	public AssignmentToRefundCandidate withSubtractedMoneyAndQuantity()
 	{
-		final Money subtrahent = getMoneyAssignedToRefundCandidate();
+		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();
 		final Money newMoneyAmount = refundInvoiceCandidate
 				.getMoney()
-				.subtract(subtrahent);
+				.subtract(moneySubtrahent);
+
+		final Quantity assignedQuantitySubtrahent = getQuantityAssigendToRefundCandidate();
+		final Quantity newQuantity = refundInvoiceCandidate
+				.getAssignedQuantity()
+				.subtract(assignedQuantitySubtrahent);
 
 		final RefundInvoiceCandidate newRefundCandidate = refundInvoiceCandidate.toBuilder()
 				.money(newMoneyAmount)
+				.assignedQuantity(newQuantity)
 				.build();
 
 		return new AssignmentToRefundCandidate(
 				newRefundCandidate,
-				moneyAssignedToRefundCandidate.toZero());
+				moneyAssignedToRefundCandidate.toZero(),
+				quantityAssigendToRefundCandidate.toZero());
 	}
 }

@@ -22,6 +22,7 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -54,11 +55,13 @@ public class RefundConfigRepositoryTest
 
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 
-	private static final BigDecimal FIFTEEN = new BigDecimal("15");
-
 	private static final BigDecimal NINE = new BigDecimal("9");
 
 	private I_C_UOM uomRecord;
+
+	private RefundConfigRepository refundConfigRepository;
+
+	private ConditionsId conditionsId;
 
 	@Before
 	public void init()
@@ -67,15 +70,15 @@ public class RefundConfigRepositoryTest
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
+
+		conditionsId = ConditionsId.ofRepoId(20);
+		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 	}
 
 	@Test
 	public void getByQuery()
 	{
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(20);
 		createThreeRefundConfigRecords(conditionsId);
-
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 
 		final RefundConfigQuery query = RefundConfigQuery.builder()
 				.minQty(NINE)
@@ -88,12 +91,49 @@ public class RefundConfigRepositoryTest
 		assertThat(result.get(0).getMinQty()).isEqualByComparingTo(ZERO);
 	}
 
+	/**
+	 * Use {@link #createThreeRefundConfigRecords(ConditionsId)} to create the standard records (without a product).
+	 * Create another config record that has a productId, but minQty = 10.
+	 * Query for that product and value=9.
+	 * <p>
+	 * Expect the result to be empty, because since there is at least one config record for that product,
+	 * the repo may not fall back to the config records that have no product.
+	 */
+	@Test
+	public void getByQuery_product_id()
+	{
+		final ProductId productId = ProductId.ofRepoId(30);
+
+		final List<I_C_Flatrate_RefundConfig> threeRefundConfigRecords = createThreeRefundConfigRecords(conditionsId);
+		assertThat(threeRefundConfigRecords).allMatch(r -> r.getM_Product_ID() <= 0); // guard
+
+		final I_C_InvoiceSchedule invoiceScheduleRecord = createInvoiceSchedule();
+
+		final I_C_Flatrate_RefundConfig configRecord = newInstance(I_C_Flatrate_RefundConfig.class);
+		configRecord.setM_Product_ID(productId.getRepoId());
+		configRecord.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
+		configRecord.setC_InvoiceSchedule(invoiceScheduleRecord);
+		configRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+		configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		configRecord.setRefundPercent(ELEVEN);
+		configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+		configRecord.setMinQty(TEN);
+		saveRecord(configRecord);
+
+		final RefundConfigQuery query = RefundConfigQuery.builder()
+				.minQty(NINE)
+				.productId(productId)
+				.conditionsId(conditionsId).build();
+
+		// invoke the method under test
+		final List<RefundConfig> result = refundConfigRepository.getByQuery(query);
+
+		assertThat(result.isEmpty());
+	}
+
 	public static List<I_C_Flatrate_RefundConfig> createThreeRefundConfigRecords(@NonNull final ConditionsId conditionsId)
 	{
-		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
-		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
-		invoiceScheduleRecord.setInvoiceDay(1);
-		saveRecord(invoiceScheduleRecord);
+		final I_C_InvoiceSchedule invoiceScheduleRecord = createInvoiceSchedule();
 
 		final I_C_Flatrate_RefundConfig configRecord1 = newInstance(I_C_Flatrate_RefundConfig.class);
 		configRecord1.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
@@ -125,7 +165,16 @@ public class RefundConfigRepositoryTest
 		configRecord3.setMinQty(SIXTEEN); // we often test with assignable candidates that have qty=15, so let's have a 3rd record, that is just beyond that.
 		saveRecord(configRecord3);
 
-		return ImmutableList.of(configRecord1, configRecord2,configRecord3);
+		return ImmutableList.of(configRecord1, configRecord2, configRecord3);
+	}
+
+	private static I_C_InvoiceSchedule createInvoiceSchedule()
+	{
+		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
+		invoiceScheduleRecord.setInvoiceDay(1);
+		saveRecord(invoiceScheduleRecord);
+		return invoiceScheduleRecord;
 	}
 
 }

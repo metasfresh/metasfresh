@@ -1,6 +1,8 @@
 package de.metas.contracts.refund;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Comparator;
 import java.util.List;
@@ -281,5 +283,82 @@ public class RefundConfigRepository
 		}
 		Check.fail("Unsupported C_Flatrate_RefundConfig.RefundBase={}; record={}", refundBase, record);
 		return null;
+	}
+
+	public RefundConfig save(@NonNull final RefundConfig refundConfig)
+	{
+		final I_C_Flatrate_RefundConfig configRecord;
+		if (refundConfig.getId() == null)
+		{
+			configRecord = newInstance(I_C_Flatrate_RefundConfig.class);
+		}
+		else
+		{
+			configRecord = load(refundConfig.getId(), I_C_Flatrate_RefundConfig.class);
+		}
+
+		switch (refundConfig.getRefundBase())
+		{
+			case PERCENTAGE:
+				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+				configRecord.setRefundPercent(refundConfig.getPercent().getValueAsBigDecimal());
+				configRecord.setRefundAmt(null);
+				break;
+			case AMOUNT_PER_UNIT:
+				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+				configRecord.setRefundAmt(refundConfig.getAmount().getValue());
+				configRecord.setRefundPercent(null);
+				break;
+			default:
+				Check.fail("Unexpected refundbase={}", refundConfig.getRefundBase());
+		}
+
+		final InvoiceSchedule savedInvoiceSchedule = invoiceScheduleRepository.save(refundConfig.getInvoiceSchedule());
+		configRecord.setC_InvoiceSchedule_ID(savedInvoiceSchedule.getId().getRepoId());
+
+		configRecord.setC_Flatrate_Conditions_ID(refundConfig.getConditionsId().getRepoId());
+		configRecord.setMinQty(refundConfig.getMinQty());
+
+		configRecord.setM_Product_ID(ProductId.toRepoId(refundConfig.getProductId()));
+
+		switch (refundConfig.getRefundInvoiceType())
+		{
+			case CREDITMEMO:
+				configRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
+				break;
+			case INVOICE:
+				configRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+				break;
+			default:
+				Check.fail("Unexpected refundInvoiceType={}", refundConfig.getRefundInvoiceType());
+		}
+		switch (refundConfig.getRefundMode())
+		{
+			case ALL_MAX_SCALE:
+				configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+				break;
+			case PER_INDIVIDUAL_SCALE:
+				configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
+				break;
+			default:
+				Check.fail("Unexpected refundMode={}", refundConfig.getRefundMode());
+		}
+		saveRecord(configRecord);
+
+		return refundConfig
+				.toBuilder()
+				.id(RefundConfigId.ofRepoId(configRecord.getC_Flatrate_RefundConfig_ID()))
+				.build();
+	}
+
+	public List<RefundConfig> saveAll(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		final ImmutableList.Builder<RefundConfig> result = ImmutableList.builder();
+
+		for (final RefundConfig refundConfig : refundConfigs)
+		{
+			result.add(save(refundConfig));
+		}
+		return result.build();
 	}
 }

@@ -1,30 +1,24 @@
 package de.metas.contracts.refund;
 
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
-import lombok.NonNull;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -50,11 +44,8 @@ import lombok.NonNull;
 
 public class InvoiceCandidateRepositoryTest
 {
-	private static final BigDecimal TWENTY = new BigDecimal("20");
 
-	private static final LocalDate NOW = LocalDate.now();
-
-	private final static BigDecimal FIVE = new BigDecimal("5");
+	private static final BigDecimal THREE = new BigDecimal("3");
 
 	private I_C_UOM uomRecord;
 
@@ -74,8 +65,10 @@ public class InvoiceCandidateRepositoryTest
 				new RefundConfigRepository(
 						new InvoiceScheduleRepository()));
 
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+
 		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				new AssignmentToRefundCandidateRepository(new RefundInvoiceCandidateRepository(refundContractRepository)),
+				new AssignmentToRefundCandidateRepository(new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory)),
 				refundContractRepository);
 
 		refundTestTools = new RefundTestTools();
@@ -87,14 +80,14 @@ public class InvoiceCandidateRepositoryTest
 	@Test
 	public void saveCandidateAssignment()
 	{
-
 		final RefundInvoiceCandidate refundInvoiceCandidate = refundTestTools.createRefundCandidate();
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
 
 		final UnassignedPairOfCandidates unAssignedPairOfCandidates = UnassignedPairOfCandidates.builder()
 				.assignableInvoiceCandidate(assignableInvoiceCandidate)
 				.refundInvoiceCandidate(refundInvoiceCandidate)
-				.moneyToAssign(Money.of(new BigDecimal("3"), refundInvoiceCandidate.getMoney().getCurrencyId()))
+				.moneyToAssign(Money.of(THREE, refundInvoiceCandidate.getMoney().getCurrencyId()))
+				.quantityToAssign(Quantity.of(THREE, refundTestTools.getUomRecord()))
 				.build();
 
 		// invoke the method under test
@@ -108,38 +101,5 @@ public class InvoiceCandidateRepositoryTest
 		assertThat(assignmentRecord.getC_Invoice_Candidate_Assigned_ID()).isEqualTo(assignableInvoiceCandidate.getId().getRepoId());
 		assertThat(assignmentRecord.getC_Invoice_Candidate_Term_ID()).isEqualTo(refundInvoiceCandidate.getId().getRepoId());
 		assertThat(assignmentRecord.getC_Flatrate_Term_ID()).isEqualTo(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
-	}
-
-	@Test
-	public void getById_assignableInvoiceCandidate()
-	{
-		final I_C_Invoice_Candidate assignableCandidateRecord = createAssignableCandidateRecord(refundTestTools.getProductRecord());
-
-		// invoke the method under test
-		final InvoiceCandidate candidate = invoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()));
-
-		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.cast(candidate);
-
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo("15");
-		assertThat(assignableCandidate.getQuantity().getUOMId()).isEqualTo(assignableCandidateRecord.getM_Product().getC_UOM_ID());
-		assertThat(assignableCandidate.getBpartnerId().getRepoId()).isEqualTo(20);
-		assertThat(assignableCandidate.getMoney().getValue()).isEqualTo(TWENTY);
-		assertThat(assignableCandidate.getMoney().getCurrencyId().getRepoId()).isEqualTo(102);
-		assertThat(assignableCandidate.getInvoiceableFrom()).isEqualTo(NOW);
-	}
-
-	public static I_C_Invoice_Candidate createAssignableCandidateRecord(@NonNull final I_M_Product productRecord)
-	{
-		final I_C_Invoice_Candidate assignableCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableCandidateRecord.setIsSOTrx(true);
-		assignableCandidateRecord.setBill_BPartner_ID(20);
-		assignableCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(NOW));
-		assignableCandidateRecord.setNetAmtToInvoice(TWENTY);
-		assignableCandidateRecord.setC_Currency_ID(102);
-		assignableCandidateRecord.setM_Product(productRecord);
-		assignableCandidateRecord.setQtyInvoiced(TEN);
-		assignableCandidateRecord.setQtyToInvoice(FIVE);
-		saveRecord(assignableCandidateRecord);
-		return assignableCandidateRecord;
 	}
 }
