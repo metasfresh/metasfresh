@@ -15,7 +15,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 36452467L;
+	private static final long serialVersionUID = -409190062L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
       super (ctx, M_InventoryLine_ID, trxName);
       /** if (M_InventoryLine_ID == 0)
         {
+			setC_UOM_ID (0);
 			setInventoryType (null); // D
 			setIsCounted (false); // N
 			setM_AttributeSetInstance_ID (0);
@@ -51,6 +52,22 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Zugewiesen an.
+		@param AssignedTo Zugewiesen an	  */
+	@Override
+	public void setAssignedTo (java.lang.String AssignedTo)
+	{
+		set_ValueNoCheck (COLUMNNAME_AssignedTo, AssignedTo);
+	}
+
+	/** Get Zugewiesen an.
+		@return Zugewiesen an	  */
+	@Override
+	public java.lang.String getAssignedTo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AssignedTo);
+	}
 
 	@Override
 	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
@@ -171,7 +188,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		return (java.lang.String)get_Value(COLUMNNAME_InventoryType);
 	}
 
-	/** Set Calculate Count (?).
+	/** Set Gezählt.
 		@param IsCounted 
 		Count number of not empty elements
 	  */
@@ -181,7 +198,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 		set_Value (COLUMNNAME_IsCounted, Boolean.valueOf(IsCounted));
 	}
 
-	/** Get Calculate Count (?).
+	/** Get Gezählt.
 		@return Count number of not empty elements
 	  */
 	@Override
