@@ -650,18 +650,22 @@ public class CalloutOrder extends CalloutEngine
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				// PriceList (indirect: IsTaxIncluded & Currency)
-				final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
-				if (!rs.wasNull())
+				// #4463 don't change the pricelist of a sales order it its bill partner was changed.
+				if (!order.isSOTrx())
 				{
-					order.setM_PriceList_ID(priceListId);
-				}
-				else
-				{ // get default PriceList
-					final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
-					if (i > 0)
+					// PriceList (indirect: IsTaxIncluded & Currency)
+					final int priceListId = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID");
+					if (!rs.wasNull())
 					{
-						order.setM_PriceList_ID(i);
+						order.setM_PriceList_ID(priceListId);
+					}
+					else
+					{ // get default PriceList
+						final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
+						if (i > 0)
+						{
+							order.setM_PriceList_ID(i);
+						}
 					}
 				}
 

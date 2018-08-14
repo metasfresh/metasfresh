@@ -1,7 +1,8 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details_Without_Attributes ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details_Without_Attributes ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
 RETURNS TABLE 
 (
+	Attributes text,
 	Name character varying, 
 	HUQty numeric,
 	HUName text,
@@ -14,17 +15,13 @@ RETURNS TABLE
 	Description Character Varying,
 	bp_product_no character varying(30),
 	bp_product_name character varying(100),
-	line numeric,
-	best_before_date text,
-	lotno character varying,
-	p_value character varying(30),
-	p_description character varying(255), 
-	inout_description character varying(255)
+	line numeric
 )
 AS
 $$
 SELECT
 
+	Attributes,
 	Name, -- product
 	SUM( HUQty ) AS HUQty,
 	HUName,
@@ -37,12 +34,7 @@ SELECT
 	iol.Description,
 	bp_product_no,
 	bp_product_name,
-	max(iol.line) as line,
-	to_char(best_before_date::date, 'MM.YYYY') AS best_before_date,
-	lotno,
-	p_value,
-	p_description,
-	inout_description
+	max(iol.line) as line
 
 FROM
 	-- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
@@ -50,6 +42,7 @@ FROM
 	(
 	SELECT
 		iol.M_InOutLine_ID,
+		Attributes,
 		COALESCE(pt.Name, p.name) AS Name,
 		iol.QtyEnteredTU AS HUQty,
 		CASE WHEN iol.QtyEnteredTU IS NULL THEN NULL ELSE pi.name END AS HUName,
@@ -72,18 +65,12 @@ FROM
 		-- in case there is no C_BPartner_Product, fallback to the default ones
 		COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 		COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
-		iol.line,
-		a.best_before_date,
-		a.lotno,
-		p.value AS p_value,
-		p.description AS p_description,
-		io.inout_description AS inout_description
-		
+		iol.line
 	FROM
 		-- All In Outs linked to the order
 		(
 		SELECT DISTINCT
-			io.*, String_agg (io.description, E'\n') over() AS inout_description
+			io.*
 		FROM
 			-- All In Out Lines directly linked to the order
 			M_InOutLine iol
@@ -132,20 +119,22 @@ FROM
 		-- Attributes
 		LEFT OUTER JOIN
 		(
-			SELECT	
-				M_AttributeSetInstance_ID, M_InOutLine_ID, x.best_before_date, x.lotno
+			SELECT	/** Jasper Servlet runs under linux, jasper client under windows (mostly). both have different fonts therefore, when
+				  * having more than 2 lines, the field is too short to display all lines in the windows font to avoid this I add an extra
+				  * line as soon as the attributes string has more than 15 characters (which is still very likely to fit in two lines)
+				  */
+				CASE WHEN Length(Attributes) > 15 THEN Attributes || E'\n' ELSE Attributes END AS Attributes, M_AttributeSetInstance_ID, M_InOutLine_ID
 			FROM	(
-					SELECT
-						att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID,
-						String_agg (replace(att.ai_value, 'MHD: ', ''), ', ') FILTER (WHERE att.at_value like 'HU_BestBeforeDate') AS best_before_date,
-						String_agg(ai_value, ', ') FILTER (WHERE att.at_value like 'Lot-Nummer') AS lotno
-
+					SELECT 	String_agg ( att.ai_value, ', ' ORDER BY att.M_AttributeSetInstance_ID, length(att.ai_value), att.ai_value) AS Attributes,
+						att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID
 					FROM 	Report.fresh_Attributes att
 					INNER JOIN M_InOutLine iol ON att.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
 					INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID and ol.isActive = 'Y'
-					WHERE 	
-						att.at_Value IN ('HU_BestBeforeDate','Lot-Nummer')
-						
+					WHERE 	-- Label, Herkunft, Aktionen, Marke (ADR), HU_BestBeforeDate, MHD, M_Material_Tracking_ID
+						att.at_Value IN ('1000002', '1000001', '1000030', '1000015', 'HU_BestBeforeDate', '1000021', 'M_Material_Tracking_ID')
+						/* currently those flags are set to be correct for purchase invoices. we need something
+						 * more flexible for all kinds of documents
+						 * att.at_IsAttrDocumentRelevant = 'Y' */
 						  AND ol.C_Order_ID = $1
 					GROUP BY	att.M_AttributeSetInstance_ID, iol.M_InOutLine_ID
 				) x
@@ -158,7 +147,7 @@ FROM
 		COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 	) iol
 GROUP BY
-
+	Attributes,
 	Name, -- product
 	HUName,
 	UOMSymbol,
@@ -168,13 +157,7 @@ GROUP BY
 	StdPrecision,
 	Description,
 	bp_product_no,
-	bp_product_name,
-	best_before_date,
-	lotno,
-	p_value,
-	p_description,
-	inout_description
-
+	bp_product_name
 ORDER BY
 	Name, MIN(M_InOutLine_ID)
 

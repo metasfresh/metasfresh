@@ -35,7 +35,9 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -127,17 +129,13 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private RecordsToOpen recordsToOpen = null;
 
-	//
-	// Webui related
-	//
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private WebuiViewToOpen webuiViewToOpen = null;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewId = null;
-
-	/** Included viewId to be opened (WEBUI) after this process was successfully executed */
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String webuiIncludedViewIdToOpen = null;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String webuiViewProfileId = null;
 
 	private ProcessExecutionResult(final int adPInstanceId)
 	{
@@ -157,7 +155,7 @@ public class ProcessExecutionResult
 				.add("AD_PInstance_ID", AD_PInstance_ID)
 				.add("recordToSelectAfterExecution", recordToSelectAfterExecution)
 				.add("recordsToOpen", recordsToOpen)
-				.add("webuiIncludedViewIdToOpen", webuiIncludedViewIdToOpen)
+				.add("viewToOpen", webuiViewToOpen)
 				.toString();
 	}
 
@@ -427,31 +425,6 @@ public class ProcessExecutionResult
 		return webuiViewId;
 	}
 
-	/**
-	 * Sets webui's included view to be opened if the process was successfully executed.
-	 *
-	 * @param webuiIncludedViewIdToOpen
-	 */
-	public void setWebuiIncludedViewIdToOpen(final String webuiIncludedViewIdToOpen)
-	{
-		this.webuiIncludedViewIdToOpen = webuiIncludedViewIdToOpen;
-	}
-
-	public String getWebuiIncludedViewIdToOpen()
-	{
-		return webuiIncludedViewIdToOpen;
-	}
-
-	public void setWebuiViewProfileId(final String webuiViewProfileId)
-	{
-		this.webuiViewProfileId = webuiViewProfileId;
-	}
-
-	public String getWebuiViewProfileId()
-	{
-		return webuiViewProfileId;
-	}
-
 	public void setPrintFormat(final MPrintFormat printFormat)
 	{
 		this.printFormat = printFormat;
@@ -713,7 +686,7 @@ public class ProcessExecutionResult
 
 		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 		recordsToOpen = otherResult.recordsToOpen;
-		webuiIncludedViewIdToOpen = otherResult.webuiIncludedViewIdToOpen;
+		webuiViewToOpen = otherResult.webuiViewToOpen;
 	}
 
 	//
@@ -813,5 +786,42 @@ public class ProcessExecutionResult
 		{
 			return target;
 		}
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	public static enum ViewOpenTarget
+	{
+		IncludedView, ModalOverlay
+	}
+
+	@Immutable
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	public static final class WebuiViewToOpen
+	{
+		@JsonProperty("viewId")
+		String viewId;
+		@JsonProperty("profileId")
+		String profileId;
+		@JsonProperty("target")
+		ViewOpenTarget target;
+
+		@lombok.Builder
+		@JsonCreator
+		private WebuiViewToOpen(
+				@JsonProperty("viewId") @NonNull final String viewId,
+				@JsonProperty("profileId") final String profileId,
+				@JsonProperty("target") @NonNull final ViewOpenTarget target)
+		{
+			this.viewId = viewId;
+			this.profileId = profileId;
+			this.target = target;
+		}
+
 	}
 }
