@@ -357,8 +357,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addFiltersUnboxed(createPriceProductQueryFilter(date));
 
 		queryBuilder.orderBy()
-				.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID)
-				.addColumn(I_M_ProductPrice.COLUMNNAME_PriceStd);
+				.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
 
 		final List<Integer> productIds  = queryBuilder.create()
 				.listDistinct(I_M_ProductPrice.COLUMNNAME_M_Product_ID, Integer.class);
