@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_M_Inventory;
 
-import de.metas.handlingunits.inventory.OldInventoriesStrategy;
+import de.metas.handlingunits.inventory.OldTransactionsStrategy;
 import de.metas.process.Param;
 import lombok.NonNull;
 
@@ -39,9 +39,9 @@ public class M_Inventory_CreateLines extends DraftInventoryBase
 	private int Qty;
 
 	@Override
-	protected OldInventoriesStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
+	protected OldTransactionsStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		return OldInventoriesStrategy
+		return OldTransactionsStrategy
 				.builder()
 				.maxLocators(Qty)
 				.minimumPrice(valueMin)

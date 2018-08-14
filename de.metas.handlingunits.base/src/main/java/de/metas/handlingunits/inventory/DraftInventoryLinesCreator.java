@@ -94,6 +94,7 @@ public class DraftInventoryLinesCreator
 		return handlingUnitsBL
 				.getStorageFactory()
 				.streamHUProductStorages(hu)
+				.filter(huProductStorage -> !huProductStorage.isEmpty())
 				.map(this::createOrUpdateInventoryLine);
 	}
 
