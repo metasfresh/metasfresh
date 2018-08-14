@@ -93,6 +93,8 @@ public class DraftInventoryLinesCreator
 		while (hus.hasNext())
 		{
 			final I_M_HU hu = hus.next();
+			seenLocatorIs.add(hu.getM_Locator_ID());
+			
 			if (!strategy.match(seenLocatorIs.size()))
 			{
 				return;
@@ -108,7 +110,6 @@ public class DraftInventoryLinesCreator
 				.getStorageFactory()
 				.streamHUProductStorages(hu)
 				.filter(huProductStorage -> !huProductStorage.isEmpty())
-				.peek(huProductStorage -> seenLocatorIs.add(huProductStorage.getM_HU().getM_Locator_ID()))
 				.map(this::createOrUpdateInventoryLine);
 	}
 
