@@ -25,6 +25,7 @@ package org.adempiere.ad.security.permissions;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -107,7 +108,7 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 			return this;
 		}
 
-		final boolean samePermissionAlreadyExists = Check.equals(permissionExisting, permission);
+		final boolean samePermissionAlreadyExists = Objects.equals(permissionExisting, permission);
 
 		if (collisionPolicy == CollisionPolicy.Override)
 		{
@@ -176,6 +177,6 @@ public abstract class PermissionsBuilder<PermissionType extends Permission, Perm
 			return false;
 		}
 
-		return Check.equals(permission, permissionExisting);
+		return Objects.equals(permission, permissionExisting);
 	}
 }
