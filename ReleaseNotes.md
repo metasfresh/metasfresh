@@ -24,6 +24,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1911](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1911) Filters in HU Editor
   * [#1916](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1916) Fix barcode scanner in HU editor
+  * [#1672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1672) Location dropdown opens again when opening the batch entry
+    * Fixes a focus issue in Lookup fields.
 
 # metasfresh 5.69
 ## Features
