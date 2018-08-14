@@ -1,5 +1,7 @@
 package de.metas.inventory.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,7 +43,11 @@ public class M_InventoryLine_MarkAsCounted extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		getSelectedInventoryLines()
-				.forEach(inventoryLine -> inventoryLine.setIsCounted(true));
+				.forEach(inventoryLine -> {
+
+					inventoryLine.setIsCounted(true);
+					save(inventoryLine);
+				});
 
 		return MSG_OK;
 	}
