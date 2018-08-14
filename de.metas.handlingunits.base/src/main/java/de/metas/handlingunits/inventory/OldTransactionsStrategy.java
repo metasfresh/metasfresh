@@ -95,7 +95,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 	@Override
 	public Stream<I_M_HU> streamHus()
 	{
-		final ImmutableSetMultimap<Integer, ProductId> productIdsByLocatorId = retrieveInventoryProductIdsByLocatorId();
+		final ImmutableSetMultimap<Integer, ProductId> productIdsByLocatorId = retrieveProductIdsByLocatorId();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -136,7 +136,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 		final @NonNull LocalDate movementDate;
 	}
 
-	private ImmutableSetMultimap<Integer, ProductId> retrieveInventoryProductIdsByLocatorId()
+	private ImmutableSetMultimap<Integer, ProductId> retrieveProductIdsByLocatorId()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -170,6 +170,6 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 	@Override
 	public boolean match(final int size)
 	{
-		return maxLocators == 0 ? true : maxLocators > size;
+		return maxLocators == 0 ? true : maxLocators >= size;
 	}
 }
