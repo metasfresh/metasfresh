@@ -3,7 +3,10 @@ package de.metas.handlingunits.inventory;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -22,6 +25,7 @@ import de.metas.inventory.IInventoryDAO;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -61,8 +65,9 @@ public class DraftInventoryLinesCreator
 	I_M_Inventory inventoryRecord;
 
 	Map<HuId, I_M_InventoryLine> inventoryLinesByHU;
+	final Set<Integer> seenLocatorIs = Collections.emptySet();
 
-	long countInventoryLines;
+	@NonFinal long countInventoryLines = 0;
 
 	@Builder
 	private DraftInventoryLinesCreator(
@@ -83,10 +88,21 @@ public class DraftInventoryLinesCreator
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> HuId.ofRepoId(line.getM_HU_ID())));
 
 		// create/update new lines
-		countInventoryLines = strategy
-				.streamHus()
-				.flatMap(this::createUpdateInventoryLines)
-				.count();
+		final Iterator<I_M_HU> hus = strategy.streamHus().iterator();
+		while (hus.hasNext())
+		{
+			final I_M_HU hu = hus.next();
+			 if (strategy.match(seenLocatorIs.size()))
+			 {
+				 createUpdateInventoryLines(hu);
+				 countInventoryLines++;
+			 }
+		}
+		
+//		countInventoryLines = strategy
+//				.streamHus()
+//				.flatMap(this::createUpdateInventoryLines)
+//				.count();
 	}
 
 	private Stream<I_M_InventoryLine> createUpdateInventoryLines(@NonNull final I_M_HU hu)
@@ -95,6 +111,7 @@ public class DraftInventoryLinesCreator
 				.getStorageFactory()
 				.streamHUProductStorages(hu)
 				.filter(huProductStorage -> !huProductStorage.isEmpty())
+				.peek(huProductStorage -> seenLocatorIs.add(huProductStorage.getM_HU().getM_Locator_ID()))
 				.map(this::createOrUpdateInventoryLine);
 	}
 
@@ -131,7 +148,7 @@ public class DraftInventoryLinesCreator
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 
 		saveRecord(inventoryLine);
-
+		
 		return inventoryLine;
 	}
 }

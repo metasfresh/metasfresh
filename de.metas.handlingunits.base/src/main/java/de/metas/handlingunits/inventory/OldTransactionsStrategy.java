@@ -166,4 +166,10 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 		final I_M_Locator locator = InterfaceWrapperHelper.load(locatorId, I_M_Locator.class);
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 	}
+	
+	@Override
+	public boolean match(final int size)
+	{
+		return maxLocators == 0 ? true : maxLocators > size;
+	}
 }

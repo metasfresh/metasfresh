@@ -29,4 +29,9 @@ import de.metas.handlingunits.model.I_M_HU;
 public interface HUsForInventoryStrategy
 {
 	Stream<I_M_HU> streamHus();
+	
+	default boolean match(final int size)
+	{
+		return true;
+	}
 }
