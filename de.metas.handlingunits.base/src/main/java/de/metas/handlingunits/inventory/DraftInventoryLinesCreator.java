@@ -67,7 +67,8 @@ public class DraftInventoryLinesCreator
 	Map<HuId, I_M_InventoryLine> inventoryLinesByHU;
 	final Set<Integer> seenLocatorIs = Collections.emptySet();
 
-	@NonFinal long countInventoryLines = 0;
+	@NonFinal
+	long countInventoryLines = 0;
 
 	@Builder
 	private DraftInventoryLinesCreator(
@@ -92,17 +93,12 @@ public class DraftInventoryLinesCreator
 		while (hus.hasNext())
 		{
 			final I_M_HU hu = hus.next();
-			 if (strategy.match(seenLocatorIs.size()))
-			 {
-				 createUpdateInventoryLines(hu);
-				 countInventoryLines++;
-			 }
+			if (strategy.match(seenLocatorIs.size()))
+			{
+				createUpdateInventoryLines(hu);
+				countInventoryLines++;
+			}
 		}
-		
-//		countInventoryLines = strategy
-//				.streamHus()
-//				.flatMap(this::createUpdateInventoryLines)
-//				.count();
 	}
 
 	private Stream<I_M_InventoryLine> createUpdateInventoryLines(@NonNull final I_M_HU hu)
@@ -148,7 +144,7 @@ public class DraftInventoryLinesCreator
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 
 		saveRecord(inventoryLine);
-		
+
 		return inventoryLine;
 	}
 }
