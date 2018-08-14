@@ -31,7 +31,6 @@ import de.metas.contracts.refund.InvoiceCandidateRepository.DeleteAssignmentsReq
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -118,7 +117,7 @@ public class InvoiceCandidateAssignmentService
 				.getById(assignableCandidate.getId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate.getId()))
-				.build();;
+				.build();
 		if (reloadedInvoiceCandidate.isAssigned())
 		{
 			// figure out if the assigned refund candidate(s) change
@@ -158,11 +157,12 @@ public class InvoiceCandidateAssignmentService
 				// the refund candidate matching the given invoiceCandidate parameter changed;
 				// unassign (which also subtracts the assigned money),
 				// then collect the unassigned refund candidates for reassignment.
-				final UnassignResult unassignResult = unassignCandidate(reloadedInvoiceCandidate);
+				final UnassignResult unassignResult = unassignSingleCandidate(reloadedInvoiceCandidate);
 				refundInvoicesCandidateToAssign = unassignResult
 						.getUnassignedPairs()
 						.stream()
 						.map(UnassignedPairOfCandidates::getRefundInvoiceCandidate)
+						.filter(refundCand -> id2matchingRefundCandidate.containsKey(refundCand.getId()))
 						.collect(ImmutableList.toImmutableList());
 			}
 			else
@@ -332,36 +332,32 @@ public class InvoiceCandidateAssignmentService
 				pair -> pair.getRefundInvoiceCandidate().getRefundContract());
 
 		final List<RefundInvoiceCandidate> matchingRefundCandidates = refundInvoiceCandidateService.retrieveMatchingRefundCandidates(
-				assignableInvoiceCandidate, refundContract);
+				assignableInvoiceCandidate, refundContract)
+				.stream()
+				.filter(r -> !r.getAssignedQuantity().isZero())
+				.collect(ImmutableList.toImmutableList());
 
 		if (matchingRefundCandidates.size() > 1)
 		{
 			final UnassignResultBuilder resultBuilder = result.toBuilder();
 
-//			final Comparator<UnassignedPairOfCandidates> comparingByMinQty = Comparator
-//					.comparing(pair -> pair.getRefundInvoiceCandidate().getRefundConfig().getMinQty());
-//			final ImmutableList<UnassignedPairOfCandidates> sortedByMinQtyDesc = matchingRefundCandidates
-//					.stream()
-//					.sorted(comparingByMinQty.reversed())
-//					.collect(ImmutableList.toImmutableList());
-
 			final Comparator<RefundInvoiceCandidate> comparingByMinQty = Comparator
 					.comparing(r -> r.getRefundConfig().getMinQty());
-			final ImmutableList<RefundInvoiceCandidate> sortedByMinQtyDesc = matchingRefundCandidates
+			final ImmutableList<RefundInvoiceCandidate> sortedByMinQty = matchingRefundCandidates
 					.stream()
-					.sorted(comparingByMinQty.reversed())
+					.sorted(comparingByMinQty)
 					.collect(ImmutableList.toImmutableList());
 
-			final RefundInvoiceCandidate highestRefundInvoiceCandidate = sortedByMinQtyDesc
-					.get(sortedByMinQtyDesc.size() - 1);
+			final RefundInvoiceCandidate highestRefundInvoiceCandidate = sortedByMinQty
+					.get(sortedByMinQty.size() - 1);
 
 			Quantity gap = Quantity.zero(assignableInvoiceCandidate.getQuantity().getUOM());
 
 			boolean higherCandidateHasAssignedQty = highestRefundInvoiceCandidate.getAssignedQuantity().signum() > 0;
 
-			for (int i = sortedByMinQtyDesc.size() - 2; i > 1; i--)
+			for (int i = sortedByMinQty.size() - 2; i >= 0; i--)
 			{
-				final RefundInvoiceCandidate refundInvoiceCandidate = sortedByMinQtyDesc.get(i);
+				final RefundInvoiceCandidate refundInvoiceCandidate = sortedByMinQty.get(i);
 
 				final Quantity assignableQty = refundInvoiceCandidate.computeAssignableQuantity();
 				if (assignableQty.isInfinite() || assignableQty.signum() <= 0)
@@ -441,8 +437,8 @@ public class InvoiceCandidateAssignmentService
 		return result;
 	}
 
-	@Value
-	@Builder(toBuilder = true)
+	@lombok.Value
+	@lombok.Builder(toBuilder = true)
 	public static class UnassignResult
 	{
 		/**

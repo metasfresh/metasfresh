@@ -289,11 +289,13 @@ public class RefundInvoiceCandidateServiceTest
 		// set up assignment records; this is usually done elsewhere; we need them in place when loading/retrieving those existing records
 		final I_C_Invoice_Candidate_Assignment firstAssigmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		firstAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(0).getId().getRepoId());
+		firstAssigmentRecord.setC_Flatrate_RefundConfig_ID(perScaleRefundCandidates.get(0).getRefundConfig().getId().getRepoId());
 		firstAssigmentRecord.setAssignedQuantity(FIVE);
 		saveRecord(firstAssigmentRecord);
 
 		final I_C_Invoice_Candidate_Assignment secondAssigmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		secondAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(1).getId().getRepoId());
+		secondAssigmentRecord.setC_Flatrate_RefundConfig_ID(perScaleRefundCandidates.get(1).getRefundConfig().getId().getRepoId());
 		secondAssigmentRecord.setAssignedQuantity(TEN);
 		saveRecord(secondAssigmentRecord);
 

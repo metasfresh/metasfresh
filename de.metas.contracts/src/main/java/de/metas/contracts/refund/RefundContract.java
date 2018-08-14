@@ -58,6 +58,30 @@ public class RefundContract
 
 	BPartnerId bPartnerId;
 
+	@Builder(toBuilder = true)
+	private RefundContract(
+			@Nullable final FlatrateTermId id,
+			@NonNull final BPartnerId bPartnerId,
+			@Singular final List<RefundConfig> refundConfigs,
+			@NonNull final LocalDate startDate,
+			@NonNull final LocalDate endDate)
+	{
+		this.id = id;
+		this.bPartnerId = bPartnerId;
+		this.startDate = startDate;
+		this.endDate = endDate;
+
+		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
+		Check.errorIf(
+				CollectionUtils.hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
+				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
+
+		this.refundConfigs = refundConfigs
+				.stream()
+				.sorted(Comparator.comparing(RefundConfig::getMinQty).reversed())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
 	{
 		return refundConfigs
@@ -85,29 +109,18 @@ public class RefundContract
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Builder(toBuilder = true)
-	private RefundContract(
-			@Nullable final FlatrateTermId id,
-			@NonNull final BPartnerId bPartnerId,
-			@Singular final List<RefundConfig> refundConfigs,
-			@NonNull final LocalDate startDate,
-			@NonNull final LocalDate endDate)
+	public RefundConfig getRefundConfigById(@NonNull final RefundConfigId refundConfigId)
 	{
-		this.id = id;
-		this.bPartnerId = bPartnerId;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		for (RefundConfig refundConfig : refundConfigs)
+		{
+			if (refundConfig.getId().equals(refundConfigId))
+			{
+				return refundConfig;
+			}
+		}
 
-		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
-		Check.errorIf(
-				CollectionUtils.hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
-				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
-
-		this.refundConfigs = refundConfigs
-				.stream()
-				.sorted(Comparator.comparing(RefundConfig::getMinQty).reversed())
-				.collect(ImmutableList.toImmutableList());
-
+		Check.fail("This contract has no config with id={}; this={}", refundConfigId, this);
+		return null;
 	}
 
 }

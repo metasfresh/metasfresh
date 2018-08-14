@@ -15,13 +15,9 @@ import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -50,25 +46,6 @@ import lombok.Value;
 @Repository
 public class InvoiceCandidateRepository
 {
-	@VisibleForTesting
-	@Getter(AccessLevel.PACKAGE)
-	private final InvoiceCandidateFactory invoiceCandidateFactory;
-
-	public InvoiceCandidateRepository(
-			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
-			@NonNull final RefundContractRepository refundContractRepository)
-	{
-		this.invoiceCandidateFactory = new InvoiceCandidateFactory(
-				assignmentToRefundCandidateRepository);
-	}
-
-//	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
-//	{
-//		return invoiceCandidateFactory.ofRecord(record);
-//	}
-
-
-
 	public AssignableInvoiceCandidate saveCandidateAssignment(@Nullable final UnassignedPairOfCandidates unassignedPair)
 	{
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = unassignedPair.getAssignableInvoiceCandidate();
@@ -117,6 +94,7 @@ public class InvoiceCandidateRepository
 
 		final int repoId = assignableInvoiceCandidate.getId().getRepoId();
 		final I_C_Invoice_Candidate_Assignment newAssignment = newInstance(I_C_Invoice_Candidate_Assignment.class);
+
 		newAssignment.setC_Invoice_Candidate_Assigned_ID(repoId);
 		newAssignment.setC_Flatrate_RefundConfig_ID(refundConfig.getId().getRepoId());
 

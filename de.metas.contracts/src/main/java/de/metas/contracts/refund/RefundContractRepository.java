@@ -215,6 +215,7 @@ public class RefundContractRepository
 		return contract
 				.toBuilder()
 				.id(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()))
+				.clearRefundConfigs()
 				.refundConfigs(savedConfigs)
 				.build();
 	}

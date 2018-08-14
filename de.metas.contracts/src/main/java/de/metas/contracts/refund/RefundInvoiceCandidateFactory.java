@@ -19,8 +19,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery.Aggregate;
+import org.compiere.Adempiere;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -32,6 +34,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
+import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment_Aggregate_V;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
@@ -224,7 +227,19 @@ public class RefundInvoiceCandidateFactory
 
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(refundRecord.getC_Invoice_Candidate_ID());
 
-		final BigDecimal assignedQuantity = retrieveAssignedQuantity(invoiceCandidateId);
+		final IPair<RefundConfigId, BigDecimal> configIdAndQuantity = retrieveAssignedQuantity(invoiceCandidateId);
+		final RefundConfig refundConfig;
+		final BigDecimal assignedQuantity;
+		if (configIdAndQuantity == null)
+		{
+			refundConfig = refundContract.getRefundConfig(ZERO);
+			assignedQuantity = ZERO;
+		}
+		else
+		{
+			refundConfig = refundContract.getRefundConfigById(configIdAndQuantity.getLeft());
+			assignedQuantity = configIdAndQuantity.getRight();
+		}
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 
@@ -237,10 +252,10 @@ public class RefundInvoiceCandidateFactory
 				.builder()
 				.id(invoiceCandidateId)
 				.refundContract(refundContract)
-				.refundConfig(refundContract.getRefundConfig(assignedQuantity))
+				.refundConfig(refundConfig)
+				.assignedQuantity(Quantity.of(assignedQuantity, refundRecord.getM_Product().getC_UOM()))
 				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
-				.assignedQuantity(Quantity.of(assignedQuantity, refundRecord.getM_Product().getC_UOM()))
 				.money(money)
 				.build();
 		return Optional.of(invoiceCandidate);
@@ -270,16 +285,54 @@ public class RefundInvoiceCandidateFactory
 		return refundContract;
 	}
 
-	private BigDecimal retrieveAssignedQuantity(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	private IPair<RefundConfigId, BigDecimal> retrieveAssignedQuantity(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return retrieveAssignedQuantityUnitTestMode(invoiceCandidateId);
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_C_Invoice_Candidate_Assignment_Aggregate_V aggregate = queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate_Assignment_Aggregate_V.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment_Aggregate_V.COLUMN_C_Invoice_Candidate_Term_ID, invoiceCandidateId)
+				.create()
+				.firstOnly(I_C_Invoice_Candidate_Assignment_Aggregate_V.class);
+		if (aggregate == null)
+		{
+			return null;
+		}
+
+		return ImmutablePair.of(
+				RefundConfigId.ofRepoId(aggregate.getC_Flatrate_RefundConfig_ID()),
+				aggregate.getAssignedQuantity());
+	}
+
+	private IPair<RefundConfigId, BigDecimal> retrieveAssignedQuantityUnitTestMode(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final BigDecimal assignedQuantity = queryBL
+		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID, invoiceCandidateId)
 				.create()
-				.aggregate(I_C_Invoice_Candidate_Assignment.COLUMN_AssignedQuantity, Aggregate.SUM, BigDecimal.class);
-		return assignedQuantity;
+				.list();
+
+		if (assignmentRecords.isEmpty())
+		{
+			return null;
+		}
+
+		final BigDecimal assignedQty = assignmentRecords
+				.stream()
+				.map(I_C_Invoice_Candidate_Assignment::getAssignedQuantity)
+				.reduce(ZERO, BigDecimal::add);
+
+		return ImmutablePair.of(
+				RefundConfigId.ofRepoId(assignmentRecords.get(0).getC_Flatrate_RefundConfig_ID()),
+				assignedQty);
 	}
 }

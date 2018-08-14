@@ -258,7 +258,7 @@ public class RefundTestTools
 
 	public AssignableInvoiceCandidate createAssignableCandidateStandlone(@NonNull final BigDecimal quantityAsBigDecimal)
 	{
-		final I_C_Invoice_Candidate invoiceCandidateRecord = createAssignableInvoiceCandidateRecord();
+		final I_C_Invoice_Candidate invoiceCandidateRecord = createAssignableInvoiceCandidateRecord(quantityAsBigDecimal);
 
 		final Money money = Money.of(TEN, currency.getId());
 
@@ -283,6 +283,7 @@ public class RefundTestTools
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundCandidate.getId().getRepoId());
 		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundCandidate.getRefundContract().getId().getRepoId());
+		assignmentRecord.setC_Flatrate_RefundConfig_ID(refundCandidate.getRefundConfig().getId().getRepoId());
 		assignmentRecord.setAssignedAmount(TWO);
 		assignmentRecord.setAssignedQuantity(ONE);
 		saveRecord(assignmentRecord);
@@ -299,15 +300,17 @@ public class RefundTestTools
 				.build();
 	}
 
-	public I_C_Invoice_Candidate createAssignableInvoiceCandidateRecord()
+	public I_C_Invoice_Candidate createAssignableInvoiceCandidateRecord(@NonNull final BigDecimal quantityToInvoice)
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this class's constructor
 		invoiceCandidateRecord.setNetAmtInvoiced(ONE);
 		invoiceCandidateRecord.setNetAmtToInvoice(NINE);
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
+		invoiceCandidateRecord.setQtyToInvoice(quantityToInvoice);
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(ASSIGNABLE_CANDIDATE_INVOICE_DATE));
 		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
+
 		invoiceCandidateRecord.setM_Product(productRecord);
 		saveRecord(invoiceCandidateRecord);
 		return invoiceCandidateRecord;

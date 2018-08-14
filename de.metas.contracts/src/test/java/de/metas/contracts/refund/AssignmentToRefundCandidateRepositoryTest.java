@@ -72,19 +72,19 @@ public class AssignmentToRefundCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Timestamp dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
+		final Timestamp dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setStdPrecision(2);
 		save(currencyRecord);
 
-		I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
+		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
-		I_M_Product productRecord = newInstance(I_M_Product.class);
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM(uomRecord);
 		save(productRecord);
 
@@ -115,7 +115,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		refundConfigRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		saveRecord(refundConfigRecord);
 
-		I_C_Flatrate_Term refundContractRecord = newInstance(I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term refundContractRecord = newInstance(I_C_Flatrate_Term.class);
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		refundContractRecord.setBill_BPartner(bPartnerRecord);
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
@@ -125,7 +125,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
 
-		I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
 		refundContractIcRecord.setBill_BPartner(bPartnerRecord);
 		refundContractIcRecord.setM_Product(productRecord);
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
@@ -137,6 +137,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableIcRecord.getC_Invoice_Candidate_ID());
+		assignmentRecord.setC_Flatrate_RefundConfig(refundConfigRecord);
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		save(assignmentRecord);
 
