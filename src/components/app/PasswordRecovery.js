@@ -68,45 +68,16 @@ class PasswordRecovery extends Component {
     dispatch(push('/login'));
   };
 
-  handleKeyPress = e => {
-    if (e.key === 'Enter') {
-      this.form.submit();
-    }
-  };
-
   handleChange = (e, name) => {
     e.preventDefault();
-    const { token } = this.props;
 
-    this.setState(
-      {
-        err: '',
-        form: {
-          ...this.state.form,
-          [`${name}`]: e.target.value,
-        },
+    this.setState({
+      err: '',
+      form: {
+        ...this.state.form,
+        [`${name}`]: e.target.value,
       },
-      () => {
-        const { password, re_password } = this.state.form;
-
-        setTimeout(() => {
-          if (token) {
-            if (password !== re_password) {
-              this.setState({
-                err: counterpart.translate(
-                  'forgotPassword.error.retypedNewPasswordNotMatch'
-                ),
-              });
-            } else {
-              // because timeout
-              this.setState({
-                err: '',
-              });
-            }
-          }
-        }, 500);
-      }
-    );
+    });
   };
 
   handleSubmit = e => {
@@ -121,29 +92,39 @@ class PasswordRecovery extends Component {
     }
 
     if (resetPassword) {
-      // add email (so we need to save it when loading page)
-      this.setState(
-        {
-          pending: true,
-          err: '',
-        },
-        () => {
-          resetPasswordComplete(token, {
-            email: form.email,
-            password: form.password,
-            token,
-          })
-            .then(response => onResetOk(response))
-            .catch(err => {
-              this.setState({
-                err: err.response
-                  ? err.response.data.message
-                  : counterpart.translate('login.error.fallback'),
-                pending: false,
+      const { password, re_password } = this.state.form;
+
+      if (password !== re_password) {
+        this.setState({
+          err: counterpart.translate(
+            'forgotPassword.error.retypedNewPasswordNotMatch'
+          ),
+        });
+      } else {
+        // add email (so we need to save it when loading page)
+        this.setState(
+          {
+            pending: true,
+            err: '',
+          },
+          () => {
+            resetPasswordComplete(token, {
+              email: form.email,
+              password: form.password,
+              token,
+            })
+              .then(response => onResetOk(response))
+              .catch(err => {
+                this.setState({
+                  err: err.response
+                    ? err.response.data.message
+                    : counterpart.translate('login.error.fallback'),
+                  pending: false,
+                });
               });
-            });
-        }
-      );
+          }
+        );
+      }
     } else {
       this.setState(
         {
@@ -281,11 +262,12 @@ class PasswordRecovery extends Component {
 
     return (
       <div>
-        {avatarSrc && (
-          <div className="text-center">
-            <img src={avatarSrc} className="avatar mt-2 mb-2" />
-          </div>
-        )}
+        {resetPassword &&
+          avatarSrc && (
+            <div className="text-center">
+              <img src={avatarSrc} className="avatar mt-2 mb-2" />
+            </div>
+          )}
         {form.fullname && (
           <div className="text-center">
             <span className="user-data">{form.fullname}</span>
@@ -319,10 +301,7 @@ class PasswordRecovery extends Component {
       : this.renderContent();
 
     return (
-      <div
-        className="login-form panel panel-spaced-lg panel-shadowed panel-primary"
-        onKeyPress={this.handleKeyPress}
-      >
+      <div className="login-form panel panel-spaced-lg panel-shadowed panel-primary">
         <div className="text-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
