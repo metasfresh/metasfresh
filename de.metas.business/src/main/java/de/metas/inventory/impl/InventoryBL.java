@@ -158,23 +158,29 @@ public class InventoryBL implements IInventoryBL
 		final Map<Integer, List<I_M_InventoryLine>> linesToLocators = new HashMap<>();
 
 		GuavaCollectors.groupByAndStream(inventoryLines.stream(), I_M_InventoryLine::getM_Locator_ID)
-				.forEach(inventoryLinesPerLocator -> linesToLocators.put(inventoryLinesPerLocator.get(0).getM_Locator_ID(), inventoryLinesPerLocator));
+				.forEach(
+						inventoryLinesPerLocator -> linesToLocators.put(inventoryLinesPerLocator.get(0).getM_Locator_ID(),
+								inventoryLinesPerLocator));
 
-		final List<Integer> keySet = linesToLocators.keySet().stream().collect(ImmutableList.toImmutableList());
-		final int numberOfLocators = keySet.size();
+		final List<Integer> locatorIds = linesToLocators
+				.keySet()
+				.stream()
+				.sorted()
+				.collect(ImmutableList.toImmutableList());
 
-		int j = 0;
-		for (int i = 0; i < numberOfLocators; i++)
+		int i = 0;
+
+		for (int locatorId : locatorIds)
 		{
-			if (j == numberOfCounters)
+			if (i == numberOfCounters)
 			{
-				j = 0;
+				i = 0;
 			}
-			final char counterIdentifier = (char)('A' + j);
+			final char counterIdentifier = (char)('A' + i);
 
-			assignInventoryLinesToCounterIdentifiers(linesToLocators.get(keySet.get(i)), counterIdentifier);
+			assignInventoryLinesToCounterIdentifiers(linesToLocators.get(locatorId), counterIdentifier);
 
-			j++;
+			i++;
 		}
 	}
 
