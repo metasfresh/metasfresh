@@ -5,15 +5,16 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
@@ -28,6 +29,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -60,7 +62,10 @@ import lombok.Value;
 public class OldTransactionsStrategy implements HUsForInventoryStrategy
 {
 	int maxLocators;
+	@NonNull
 	BigDecimal minimumPrice;
+	@NonNull
+	LocalDate movementDate;
 
 	final Map<String, Integer> MOVEMENT_TYPE_ORDERING = ImmutableMap.<String, Integer> builder()
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryIn, 1)
@@ -86,33 +91,32 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 	final Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
 			.thenComparing(TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR);
 
-	private OldTransactionsStrategy(final int maxLocators, final BigDecimal minimumPrice)
+	private OldTransactionsStrategy(final int maxLocators, final BigDecimal minimumPrice, final LocalDate movementDate)
 	{
 		this.maxLocators = maxLocators;
 		this.minimumPrice = minimumPrice;
+		this.movementDate = movementDate;
 	}
 
 	@Override
 	public Stream<I_M_HU> streamHus()
 	{
-		final ImmutableSetMultimap<Integer, ProductId> productIdsByLocatorId = retrieveProductIdsByLocatorId();
-
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
 
-		if (!productIdsByLocatorId.isEmpty())
+		final ImmutableSet<Integer> locatorIds = retrieveLocatorIds();
+		if (locatorIds.isEmpty())
 		{
-			final ImmutableSet<Integer> locators = productIdsByLocatorId.keySet();
-			final ImmutableSet<WarehouseId> warehouseIds = locators.stream().map(this::mapToWarehouseId)
-					.collect(ImmutableSet.toImmutableSet());
-
-			huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
-			huQueryBuilder.addOnlyInLocatorIds(locators);
-			huQueryBuilder.addOnlyWithProductIds(ProductId.toRepoIds(productIdsByLocatorId.values()));
-
+			return Stream.empty();
 		}
+
+		final ImmutableSet<WarehouseId> warehouseIds = locatorIds.stream().map(this::mapToWarehouseId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
+		huQueryBuilder.addOnlyInLocatorIds(locatorIds);
 
 		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
 
@@ -136,16 +140,25 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 		final @NonNull LocalDate movementDate;
 	}
 
-	private ImmutableSetMultimap<Integer, ProductId> retrieveProductIdsByLocatorId()
+	private ImmutableSet<Integer> retrieveLocatorIds()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQuery<I_M_Transaction> query = queryBL.createQueryBuilder(I_M_Transaction.class)
-				.addOnlyActiveRecordsFilter()
-				.create();
+		final IQueryBuilder<I_M_Transaction> queryBuilder = queryBL.createQueryBuilder(I_M_Transaction.class)
+				.addOnlyActiveRecordsFilter();
 
-		return query.listDistinct(I_M_Transaction.COLUMNNAME_M_Locator_ID, I_M_Transaction.COLUMNNAME_M_Product_ID,
-				I_M_Transaction.COLUMNNAME_MovementDate, I_M_Transaction.COLUMNNAME_MovementType)
+		if (BigDecimal.ZERO.compareTo(minimumPrice) < 0)
+		{
+			final Set<Integer> productIds = Services.get(IPriceListDAO.class).retrieveHighPriceProducts(getMinimumPrice(), getMovementDate());
+			if (!productIds.isEmpty())
+			{
+				queryBuilder.addInArrayFilter(I_M_Transaction.COLUMNNAME_M_Product_ID, productIds);
+			}
+		}
+
+		final ImmutableSetMultimap<Integer, ProductId> productsByLocatorIds = queryBuilder.create()
+				.listDistinct(I_M_Transaction.COLUMNNAME_M_Locator_ID, I_M_Transaction.COLUMNNAME_M_Product_ID,
+						I_M_Transaction.COLUMNNAME_MovementDate, I_M_Transaction.COLUMNNAME_MovementType)
 				.stream()
 				.map(record -> {
 					return TransactionContext.builder()
@@ -159,6 +172,8 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 				.map(transaction -> {
 					return GuavaCollectors.entry(transaction.getLocatorId(), transaction.getProductId());
 				}).collect(GuavaCollectors.toImmutableSetMultimap());
+
+		return productsByLocatorIds.keySet();
 	}
 
 	private WarehouseId mapToWarehouseId(final int locatorId)
@@ -166,7 +181,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 		final I_M_Locator locator = InterfaceWrapperHelper.load(locatorId, I_M_Locator.class);
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 	}
-	
+
 	@Override
 	public boolean match(final int size)
 	{

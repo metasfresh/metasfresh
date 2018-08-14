@@ -3,6 +3,7 @@ package de.metas.handlingunits.inventory.process;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_M_Inventory;
+import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.inventory.OldTransactionsStrategy;
 import de.metas.process.Param;
@@ -45,6 +46,7 @@ public class M_Inventory_CreateLines extends DraftInventoryBase
 				.builder()
 				.maxLocators(Qty)
 				.minimumPrice(valueMin)
+				.movementDate(TimeUtil.asLocalDate(inventoryRecord.getMovementDate()))
 				.build();
 	}
 
