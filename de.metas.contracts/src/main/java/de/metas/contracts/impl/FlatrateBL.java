@@ -63,7 +63,6 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
-import org.compiere.model.MNote;
 import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -1185,24 +1184,8 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(currentTerm.getAD_User_InCharge_ID() > 0, conditions + " has AD_User_InCharge_ID > 0");
 			Check.assume(termToReferenceInNote != null, "");
 
-			createNote(currentTerm, termToReferenceInNote, msgValue);
 			notifyUser(currentTerm, msgValue);
 		}
-	}
-
-	// keep this old code that creates AD_Note entries so we make sure it still works the way it used to.
-	private void createNote(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term termToReferenceInNote, final String msgValue)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
-		final MNote note = new MNote(
-				ctx,
-				msgValue,
-				currentTerm.getAD_User_InCharge_ID(),
-				ITrx.TRXNAME_ThreadInherited);
-		note.setAD_Org_ID(currentTerm.getAD_Org_ID());
-		note.setRecord(adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), termToReferenceInNote.getC_Flatrate_Term_ID());
-		note.setTextMsg(msgBL.getMsg(ctx, msgValue));
-		note.saveEx();
 	}
 
 	private void notifyUser(final I_C_Flatrate_Term currentTerm, final String msgValue)
