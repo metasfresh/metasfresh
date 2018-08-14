@@ -308,7 +308,7 @@ public final class ProcessInfo implements Serializable
 			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
 			if (processClassInstance instanceof JavaProcess)
 			{
-				((JavaProcess)processClassInstance).init(this);
+				processClassInstance.init(this);
 			}
 
 			return processClassInstance;
@@ -655,8 +655,7 @@ public final class ProcessInfo implements Serializable
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
 		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
-
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
