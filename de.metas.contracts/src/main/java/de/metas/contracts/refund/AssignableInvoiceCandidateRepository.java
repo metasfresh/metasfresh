@@ -73,7 +73,6 @@ public class AssignableInvoiceCandidateRepository
 				.create()
 				.stream()
 				.map(assignableInvoiceCandidateFactory::ofRecord)
-				.map(AssignableInvoiceCandidate::cast)
 				.iterator();
 	}
 }

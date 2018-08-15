@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -80,6 +81,11 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 
 	public Quantity computeAssignableQuantity()
 	{
+		if(RefundMode.ALL_MAX_SCALE.equals(refundConfig.getRefundMode()))
+		{
+			return Quantity.infinite(assignedQuantity.getUOM());
+		}
+
 		final Optional<RefundConfig> nextRefundConfig = getRefundContract()
 				.getRefundConfigs()
 				.stream()

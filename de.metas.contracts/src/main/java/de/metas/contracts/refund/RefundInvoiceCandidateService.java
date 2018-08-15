@@ -78,10 +78,26 @@ public class RefundInvoiceCandidateService
 	{
 		final List<RefundInvoiceCandidate> existingCandidates = retrieveMatchingRefundCandidates(assignableCandidate, refundContract);
 
+		final BigDecimal qtyToAssign = assignableCandidate.getQuantity().getAsBigDecimal();
+
+		final RefundMode refundMode = refundContract.extractRefundMode();
+		if (refundMode.equals(RefundMode.ALL_MAX_SCALE))
+		{
+			if (!existingCandidates.isEmpty())
+			{
+				return ImmutableList.of(existingCandidates.get(0)); // there should be just one
+			}
+			final RefundConfig refundConfig = refundContract.getRefundConfig(qtyToAssign);
+			final List<RefundInvoiceCandidate> newRefundCandidates = refundInvoiceCandidateFactory
+					.createRefundInvoiceCandidates(
+							assignableCandidate,
+							refundContract,
+							ImmutableList.of(refundConfig));
+			return newRefundCandidates; // this is just one, because we passed just one refundConfig as parameter
+		}
+
 		final ImmutableMap<RefundConfig, RefundInvoiceCandidate> //
 		refundConfig2existingCandidate = Maps.uniqueIndex(existingCandidates, RefundInvoiceCandidate::getRefundConfig);
-
-		final BigDecimal qtyToAssign = assignableCandidate.getQuantity().getAsBigDecimal();
 
 		final Quantity assignedQuantity = existingCandidates.stream()
 				.map(RefundInvoiceCandidate::getAssignedQuantity)
@@ -89,7 +105,7 @@ public class RefundInvoiceCandidateService
 
 		final List<RefundConfig> relevantRefundConfigs = refundContract.getRelevantRefundConfigs(assignedQuantity.getAsBigDecimal().add(qtyToAssign));
 
-		final TreeSet<RefundInvoiceCandidate> result = new TreeSet<RefundInvoiceCandidate>(Comparator.comparing(c -> c.getRefundConfig().getMinQty()));
+		final TreeSet<RefundInvoiceCandidate> result = new TreeSet<>(Comparator.comparing(c -> c.getRefundConfig().getMinQty()));
 
 		final ImmutableList.Builder<RefundConfig> refundConfigsThatNeedCandidates = ImmutableList.builder();
 		for (final RefundConfig relevantRefundConfig : relevantRefundConfigs)

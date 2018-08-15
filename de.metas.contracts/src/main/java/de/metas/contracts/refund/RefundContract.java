@@ -123,4 +123,12 @@ public class RefundContract
 		return null;
 	}
 
+	public RefundMode extractRefundMode()
+	{
+		final RefundMode refundMode = CollectionUtils.extractSingleElement(
+				getRefundConfigs(),
+				RefundConfig::getRefundMode);
+		return refundMode;
+	}
+
 }
