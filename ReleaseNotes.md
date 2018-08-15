@@ -41,8 +41,11 @@ Here come the actual release notes:
   * [#4423](https://github.com/metasfresh/metasfresh/issues/4423) Add vattaxid in Docs_Purchase_Order_Details_Sum function
     * Extended SQL Function, now adding the VAT Tax Id.
   * [#4437](https://github.com/metasfresh/metasfresh/issues/4437) Purchase order: Show description and description bottom
+    * New Fields in Purchase Order for description and description bottom.
   * [#4454](https://github.com/metasfresh/metasfresh/issues/4454) Material Cockpit - add columns and allow to hide columns via config
+    * Extended configuration possibility for Material Cockpit allowing to display/ hide columns.
   * [#4456](https://github.com/metasfresh/metasfresh/issues/4456) Material Cockpit - allow to configure the attribute detail rows' dimenstion spec
+    * Extended Material Cockpit now having additional Fields.
 
 * metasfresh-webui-frontend
   * [#1899](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1899) Improve quick/batch entry layout
