@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
@@ -131,15 +132,21 @@ public class DimensionSpecTest
 		assertThat(groups.get(0).isEmptyGroup()).isTrue();
 		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty);
 		assertThat(groups.get(0).getAttributesKey().isNone()).isTrue();
+		assertThat(groups.get(0).getAttributeId()).isEmpty();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
 		assertThat(groups.get(1).getGroupName().getDefaultValue()).isEqualTo("Name_test1_value1");
-		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(attr1_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(1).getAttributeId()).contains(
+				AttributeId.ofRepoId(attr1.getM_Attribute_ID()));
+		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(
+				attr1_value1.getM_AttributeValue_ID());
 
 		// attr2 has two values, and dimSpecAttr2 which has isIncludeAllAttributeValues=true
 		assertThat(groups.get(2).isEmptyGroup()).isFalse();
 		assertThat(groups.get(2).getGroupName().getDefaultValue()).isEqualTo("dimSpecAttr2_ValueAggregateName");
+		assertThat(groups.get(2).getAttributeId()).contains(
+				AttributeId.ofRepoId(attr2.getM_Attribute_ID()));
 		assertThat(groups.get(2).getAttributesKey().getAttributeValueIds()).containsOnly(
 				attr2_value1.getM_AttributeValue_ID(),
 				attr2_value2.getM_AttributeValue_ID());

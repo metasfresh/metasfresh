@@ -24,25 +24,26 @@ package de.metas.adempiere.pricing.spi.impl.rules;
 
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MProduct;
 
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.rules.AbstractPriceListBasedRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Calculate price using {@link I_M_ProductScalePrice}
@@ -60,7 +61,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			return false;
 		}
 
-		if (pricingCtx.getM_PriceList_Version_ID() <= 0)
+		if (pricingCtx.getPriceListVersionId() == null)
 		{
 			return false;
 		}
@@ -83,7 +84,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		}
 		
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(priceListVersion)
-				.setM_Product_ID(pricingCtx.getM_Product_ID())
+				.setProductId(pricingCtx.getProductId())
 				.noAttributePricing()
 				.onlyScalePrices()
 				.firstMatching();
@@ -115,13 +116,10 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 	private IPricingResult calculateWithScalePrice(
 			final IPricingContext pricingCtx,
 			final IPricingResult result,
-			final I_M_ProductScalePrice scalePrice)
+			@NonNull final I_M_ProductScalePrice scalePrice)
 	{
-		Check.assumeNotNull(scalePrice, "scalePrice not null");
-		
-		final Properties ctx = pricingCtx.getCtx();
-		final int m_M_Product_ID = pricingCtx.getM_Product_ID();
-		int m_M_PriceList_Version_ID = pricingCtx.getM_PriceList_Version_ID();
+		final ProductId productId = pricingCtx.getProductId();
+		PriceListVersionId priceListVersionId = pricingCtx.getPriceListVersionId();
 		PriceListId priceListId = pricingCtx.getPriceListId();
 		//
 		BigDecimal m_PriceStd = null;
@@ -139,8 +137,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		m_PriceStd = scalePrice.getPriceStd();
 		m_PriceList = scalePrice.getPriceList();
 		m_PriceLimit = scalePrice.getPriceLimit();
-		final MProduct prod = MProduct.get(ctx, m_M_Product_ID);
-		m_C_UOM_ID = prod.getC_UOM_ID();
+		m_C_UOM_ID = Services.get(IProductBL.class).getStockingUOMId(productId);
 
 		if (priceListId == null)
 		{
@@ -148,9 +145,9 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
 		}
 
-		if (m_M_PriceList_Version_ID <= 0)
+		if (priceListVersionId == null)
 		{
-			m_M_PriceList_Version_ID = productPrice.getM_PriceList_Version_ID();
+			priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		}
 
 		// TODO handle bom-prices for products that don't have a price themselves.

@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import lombok.NonNull;
@@ -59,8 +60,12 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public I_C_DocType getById(final int docTypeId)
 	{
-		Check.assume(docTypeId > 0, "docTypeId > 0");
-
+		return getById(DocTypeId.ofRepoId(docTypeId));
+	}
+	
+	@Override
+	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
+	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		return InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
 	}
@@ -201,6 +206,11 @@ public class DocTypeDAO implements IDocTypeDAO
 		if (query.getIsSOTrx() != null)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
+		}
+		
+		if(!Check.isEmpty(query.getName(), true))
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());
 		}
 
 		queryBuilder.orderBy()

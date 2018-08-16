@@ -2,12 +2,16 @@ package de.metas.document.archive.async.spi.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.UserRepository;
+import org.adempiere.util.Services;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.model.I_C_DunningDoc;
 
@@ -21,24 +25,23 @@ import de.metas.dunning.model.I_C_DunningDoc;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 /**
  * Integration test between {@link DocOutboundWorkpackageProcessor} and dunning project.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 {
@@ -49,6 +52,8 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 	public void init()
 	{
 		processor = new DocOutboundWorkpackageProcessor();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	private PrintInfo createPrintInfo(final Object record)
@@ -68,6 +73,7 @@ public class DocOutboundWorkpackageProcessorTest extends DunningTestBase
 		InterfaceWrapperHelper.save(dunningDoc);
 
 		final PrintInfo printInfo = createPrintInfo(dunningDoc);
+
 		Assert.assertEquals("Invalid DocumentNo", "ExpectedDocumentNo", printInfo.getName());
 		Assert.assertEquals("Invalid AD_Table_ID", InterfaceWrapperHelper.getTableId(I_C_DunningDoc.class), printInfo.getAD_Table_ID());
 		Assert.assertEquals("Invalid Record_ID", dunningDoc.getC_DunningDoc_ID(), printInfo.getRecord_ID());

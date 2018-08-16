@@ -16,15 +16,22 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import lombok.NonNull;
@@ -98,7 +105,7 @@ public class HUReportExecutor
 		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
-	
+
 	public HUReportExecutor printPreview(final boolean printPreview)
 	{
 		this.printPreview = printPreview;
@@ -126,7 +133,7 @@ public class HUReportExecutor
 			huReportTrxListener = newHUReportTrxListener(adProcessId);
 		}
 
-		final Set<Integer> huIds = extractHUIds(husToProcess);
+		final Set<HuId> huIds = extractHUIds(husToProcess);
 		if (!huReportTrxListener.addAll(huIds))
 		{
 			return; // there are no new HU IDs
@@ -175,9 +182,12 @@ public class HUReportExecutor
 		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies);
 	}
 
-	private ImmutableSet<Integer> extractHUIds(final Collection<HUToReport> hus)
+	private ImmutableSet<HuId> extractHUIds(final Collection<HUToReport> hus)
 	{
-		return hus.stream().map(HUToReport::getHUId).filter(huId -> huId > 0).collect(ImmutableSet.toImmutableSet());
+		return hus.stream()
+				.map(HUToReport::getHUId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private String extractReportingLanguageFromHUs(final Collection<HUToReport> hus)
@@ -207,7 +217,7 @@ public class HUReportExecutor
 	{
 		final Properties ctx = request.getCtx();
 
-		final ImmutableSet<Integer> huIdsToProcess = request.getHuIdsToProcess();
+		final ImmutableSet<HuId> huIdsToProcess = request.getHuIdsToProcess();
 		final String adLanguage = request.getAdLanguage();
 		final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, adLanguage) ? null : adLanguage;
 
@@ -224,7 +234,7 @@ public class HUReportExecutor
 				// Execute report in a new transaction
 				.buildAndPrepareExecution()
 				.onErrorThrowException(request.isOnErrorThrowException())
-				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIdsToProcess, ITrx.TRXNAME_ThreadInherited))
+				.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), HuId.toRepoIds(huIdsToProcess), ITrx.TRXNAME_ThreadInherited))
 				.executeSync();
 
 		return HUReportExecutorResult.builder()
@@ -250,7 +260,7 @@ public class HUReportExecutor
 		private final int windowNo;
 		private final int copies;
 
-		private final Set<Integer> huIdsToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
+		private final Set<HuId> huIdsToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
 
 		private String adLanguage;
 
@@ -277,7 +287,7 @@ public class HUReportExecutor
 			this.copies = copies;
 		}
 
-		public boolean addAll(@NonNull final Collection<Integer> huIds)
+		public boolean addAll(@NonNull final Collection<HuId> huIds)
 		{
 			return huIdsToProcess.addAll(huIds);
 		}
@@ -321,7 +331,7 @@ public class HUReportExecutor
 				return;
 			}
 
-			executeNow(HUReportRequest.builder()
+			final HUReportExecutorResult result = executeNow(HUReportRequest.builder()
 					.ctx(ctx)
 					.adProcessId(adProcessId)
 					.windowNo(windowNo)
@@ -329,6 +339,25 @@ public class HUReportExecutor
 					.adLanguage(adLanguage)
 					.huIdsToProcess(ImmutableSet.copyOf(huIdsToProcess))
 					.build());
+
+			final ProcessExecutionResult processExecutionResult = result.getProcessExecutionResult();
+			if (processExecutionResult.isError() && !processExecutionResult.isErrorWasReportedToUser())
+			{
+				final ProcessInfo processInfo = result.getProcessInfo();
+				final Recipient recipient = Recipient.userAndRole(processInfo.getAD_User_ID(), processInfo.getAD_Role_ID());
+
+				final String plainMessage = StringUtils.formatMessage("AD_PInstance_ID={}\n Summary:\n{}", processInfo.getAD_PInstance_ID(), processExecutionResult.getSummary());
+
+				final INotificationBL notificationBL = Services.get(INotificationBL.class);
+				final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
+						.contentPlain(plainMessage)
+						.important(true)
+						.recipient(recipient)
+						.build();
+
+				notificationBL.send(userNotificationRequest);
+				processExecutionResult.setErrorWasReportedToUser();
+			}
 		}
 	}
 
@@ -342,7 +371,7 @@ public class HUReportExecutor
 		Boolean printPreview;
 		String adLanguage;
 		boolean onErrorThrowException;
-		ImmutableSet<Integer> huIdsToProcess;
+		ImmutableSet<HuId> huIdsToProcess;
 
 		@lombok.Builder
 		private HUReportRequest(
@@ -353,7 +382,7 @@ public class HUReportExecutor
 				@Nullable final Boolean printPreview,
 				final String adLanguage,
 				final boolean onErrorThrowException,
-				final ImmutableSet<Integer> huIdsToProcess)
+				final ImmutableSet<HuId> huIdsToProcess)
 		{
 			Check.assumeNotNull(ctx, "Parameter ctx is not null");
 			Check.assume(adProcessId > 0, "adProcessId > 0");

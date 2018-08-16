@@ -45,6 +45,7 @@ import org.compiere.util.DB;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
 
 /**
  * Import Price Lists from I_PriceList
@@ -420,7 +421,7 @@ public class ImportPriceList extends JavaProcess
 				{
 					// M_ProductPrice
 					// I_M_ProductPrice pp = MProductPrice.get(getCtx(), pricelistversion.getM_PriceList_Version_ID(), imp.getM_Product_ID(), get_TrxName());
-					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(pricelistversion, imp.getM_Product_ID());
+					I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(pricelistversion, ProductId.ofRepoId(imp.getM_Product_ID()));
 
 					final boolean isInsert;
 					if (pp != null)

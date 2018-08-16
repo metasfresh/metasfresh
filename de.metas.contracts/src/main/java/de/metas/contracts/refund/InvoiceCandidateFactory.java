@@ -41,7 +41,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.money.MoneyFactory;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -75,16 +74,13 @@ class InvoiceCandidateFactory
 {
 	private final InvoiceCandidateRepository invoiceCandidateRepository;
 	private final RefundContractRepository refundContractRepository;
-	private final MoneyFactory moneyFactory;
 
 	public InvoiceCandidateFactory(
 			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
-			@NonNull final RefundContractRepository refundContractRepository,
-			@NonNull final MoneyFactory moneyFactory)
+			@NonNull final RefundContractRepository refundContractRepository)
 	{
 		this.refundContractRepository = refundContractRepository;
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
-		this.moneyFactory = moneyFactory;
 	}
 
 	public <T extends InvoiceCandidate> T ofRecord(@NonNull final I_C_Invoice_Candidate record)
@@ -139,7 +135,7 @@ class InvoiceCandidateFactory
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 
 		final BigDecimal priceActual = getValueOverrideOrValue(refundRecord, I_C_Invoice_Candidate.COLUMNNAME_PriceActual);
-		final Money money = moneyFactory.forAmountAndCurrencyId(
+		final Money money = Money.of(
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
@@ -167,7 +163,7 @@ class InvoiceCandidateFactory
 				.add(assignableRecord.getNetAmtToInvoice());
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
-		final Money money = moneyFactory.forAmountAndCurrencyId(moneyAmount, currencyId);
+		final Money money = Money.of(moneyAmount, currencyId);
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)

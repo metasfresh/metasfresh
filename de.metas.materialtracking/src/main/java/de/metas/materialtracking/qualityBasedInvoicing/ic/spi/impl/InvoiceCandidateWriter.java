@@ -65,6 +65,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupByTypeComparator;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
@@ -373,7 +374,7 @@ public class InvoiceCandidateWriter
 		// Invoicing config
 		final IVendorInvoicingInfo vendorInvoicingInfo = getVendorInvoicingInfo();
 		final I_M_PriceList_Version priceListVersion = vendorInvoicingInfo.getM_PriceList_Version();
-		Check.errorUnless(priceListVersion.getM_PriceList_Version_ID() == pricingResult.getM_PriceList_Version_ID(),
+		Check.errorUnless(priceListVersion.getM_PriceList_Version_ID() == PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()),
 				"The plv of vendorInvoicingInfo {} shall have the same M_PriceList_Version_ID as the pricingResult {} of the current invoiceableLine {}",
 				vendorInvoicingInfo, pricingResult, invoiceableLine);
 
@@ -422,7 +423,7 @@ public class InvoiceCandidateWriter
 		//
 		// Pricing
 		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
-		ic.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
+		ic.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 		ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
@@ -602,8 +603,6 @@ public class InvoiceCandidateWriter
 		final IContextAware contextProvider = getContext();
 
 		final Properties ctx = contextProvider.getCtx();
-		final String trxName = contextProvider.getTrxName();
-
 		final int taxCategoryId = pricingResult.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null; // warehouse: N/A
 		final boolean isSOTrx = false;
@@ -613,14 +612,12 @@ public class InvoiceCandidateWriter
 				ic,
 				taxCategoryId,
 				ic.getM_Product_ID(),
-				-1 // C_Charge_ID
-				, date // bill date
-				, date // ship date
-				, ic.getAD_Org_ID(),
+				date, // bill date
+				date, // ship date
+				ic.getAD_Org_ID(),
 				warehouse,
-				ic.getBill_Location_ID(),
-				-1 // shipPartnerLocation
-				, isSOTrx, trxName);
+				ic.getBill_Location_ID(), // shipPartnerLocation TODO
+				isSOTrx);
 		ic.setC_Tax_ID(taxID);
 	}
 }

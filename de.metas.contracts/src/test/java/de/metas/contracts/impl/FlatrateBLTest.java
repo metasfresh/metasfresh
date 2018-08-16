@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -27,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.util.Services;
@@ -40,6 +40,7 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -47,6 +48,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -181,7 +183,12 @@ public class FlatrateBLTest extends ContractsTestBase
 		priceListVersion.setIsActive(true);
 		save(priceListVersion);
 
+		final I_C_UOM productUOM = newInstance(I_C_UOM.class);
+		saveRecord(productUOM);
+
 		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setM_Product_Category_ID(20);
+		product.setC_UOM(productUOM);
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
@@ -214,16 +221,22 @@ public class FlatrateBLTest extends ContractsTestBase
 				result = activity;
 
 				final Properties ctx = Env.getCtx();
-				final String trxName = ITrx.TRXNAME_None;
 
 				final int taxCategoryId = -1;
 				final I_M_Warehouse warehouse = null;
 				final boolean isSOTrx = true;
 
 				taxBL.getTax(
-						ctx, currentTerm, taxCategoryId, currentTerm.getM_Product_ID(), -1 // chargeId
-				, dataEntry.getDate_Reported(), dataEntry.getDate_Reported(), dataEntry.getAD_Org_ID(), warehouse, currentTerm.getBill_BPartner_ID(), -1 // ship location ID
-				, isSOTrx, trxName);
+						ctx,
+						currentTerm,
+						taxCategoryId,
+						currentTerm.getM_Product_ID(),
+						dataEntry.getDate_Reported(),
+						dataEntry.getDate_Reported(),
+						dataEntry.getAD_Org_ID(),
+						warehouse,
+						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
+						isSOTrx);
 				minTimes = 0;
 				result = 3;
 			}

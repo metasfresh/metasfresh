@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-06-08T15:52:00 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -130,7 +129,7 @@ FROM
 	) io ON iol.M_InOutLine_ID = io.M_InOutLine_ID
 WHERE
 	iol.M_InOut_ID = $P{RECORD_ID} AND iol.isActive = 'Y'
-	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
+	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 GROUP BY
 	Attributes,
 	COALESCE( pt.Name, p.name ),
@@ -150,17 +149,39 @@ ORDER BY
 	MIN(iol.M_InOutLine_ID)
 ;]]>
 	</queryString>
-	<field name="attributes" class="java.lang.String"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="huqty" class="java.math.BigDecimal"/>
-	<field name="huname" class="java.lang.String"/>
-	<field name="movementqty" class="java.math.BigDecimal"/>
-	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="stdprecision" class="java.math.BigDecimal"/>
-	<field name="qualitydiscountpercent" class="java.math.BigDecimal"/>
-	<field name="qualitynote" class="java.lang.String"/>
-	<field name="inouts" class="java.lang.String"/>
-	<field name="rma_name" class="java.lang.String"/>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="huqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
+	</field>
+	<field name="huname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="huname"/>
+	</field>
+	<field name="movementqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="movementqty"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="stdprecision" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
+	</field>
+	<field name="qualitydiscountpercent" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qualitydiscountpercent"/>
+	</field>
+	<field name="qualitynote" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="qualitynote"/>
+	</field>
+	<field name="inouts" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="inouts"/>
+	</field>
+	<field name="rma_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="rma_name"/>
+	</field>
 	<group name="inout">
 		<groupExpression><![CDATA[$F{inouts}]]></groupExpression>
 		<groupHeader>

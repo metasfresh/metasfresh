@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,13 +69,13 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.lang.RepoIdAware;
+import de.metas.lang.RepoIdAwares;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -380,16 +381,18 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
-		final ImmutableSet<Integer> ids = repoIdAwares
-				.stream()
-				.map(RepoIdAware::getRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
 	{
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+	}
+
+	public static <T> List<T> loadByRepoIdAwaresOutOfTrx(@NonNull final Collection<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
+	{
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
 	}
 
@@ -1084,7 +1087,7 @@ public class InterfaceWrapperHelper
 			return true;
 		}
 
-		final Object value = getValue(model, columnName).orNull();
+		final Object value = getValue(model, columnName).orElse(null);
 		if (value instanceof String)
 		{
 			return Check.isEmpty((String)value);
@@ -1168,7 +1171,7 @@ public class InterfaceWrapperHelper
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = false;
 		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
-		return Optional.fromNullable(value);
+		return Optional.ofNullable(value);
 	}
 
 	/**

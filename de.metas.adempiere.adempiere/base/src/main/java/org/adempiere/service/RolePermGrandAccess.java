@@ -1,7 +1,5 @@
 package org.adempiere.service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
@@ -109,7 +107,7 @@ public class RolePermGrandAccess
 		request.setIsReadWrite(true); // we always need read write access to processes
 
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final I_AD_Process adProcess = adProcessDAO.retrieveProcessById(getCtx(request), AD_Process_ID);
+		final I_AD_Process adProcess = adProcessDAO.getById(AD_Process_ID);
 
 		Services.get(IUserRolePermissionsDAO.class).createProcessAccess(request.getAD_Role(), AD_Process_ID, request.isReadWrite());
 		logGranted(I_AD_Process.COLUMNNAME_AD_Process_ID, adProcess.getName());

@@ -180,7 +180,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	}
 
 	@Override
-	public MPPProductBOM getPP_Product_BOM()
+	public I_PP_Product_BOM getPP_Product_BOM()
 	{
 		return MPPProductBOM.get(getCtx(), getPP_Product_BOM_ID());
 	}

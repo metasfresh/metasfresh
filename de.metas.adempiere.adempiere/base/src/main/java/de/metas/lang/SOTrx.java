@@ -26,14 +26,27 @@ public enum SOTrx
 {
 	SALES, PURCHASE;
 
-	public static SOTrx ofBoolean(final boolean isSOTrx)
+	public static SOTrx ofBoolean(final Boolean isSOTrx)
 	{
+		if (isSOTrx == null)
+		{
+			return null;
+		}
 		return isSOTrx ? SALES : PURCHASE;
 	}
 
 	public boolean toBoolean()
 	{
 		return isSales();
+	}
+
+	public static boolean toBoolean(final SOTrx soTrx)
+	{
+		if(soTrx == null)
+		{
+			return false;
+		}
+		return soTrx.toBoolean();
 	}
 
 	public boolean isSales()

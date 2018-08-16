@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -28,6 +29,7 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ImmutableReference;
@@ -59,6 +61,7 @@ import lombok.NonNull;
  * <ul>
  * <li>{@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
  * <li>{@link IProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
+ * <li>{@link IProcessParametersCallout} if you want to be notified of users' process parameter changes
  * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li>{@link Process} annotation if you add more info or constraints about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
@@ -70,7 +73,7 @@ import lombok.NonNull;
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
  * @author metas-dev <dev@metasfresh.com>
  */
-public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
+public abstract class JavaProcess implements ILoggable, IContextAware
 {
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
@@ -232,12 +235,11 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	/**
-	 * Start the process.
-	 *
+	 * Note: This method shall be called by the framework.
+	 * 
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
-	@Override
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assume(this == currentInstance(), "This process shall be the current active instance: {}", this);
@@ -368,6 +370,13 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		// nothing at this level
 	}
 
+	private final Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
+	{
+		final Map<ArrayKey, Field> processFields = _fieldsIndexedByFieldKey;
+		final ArrayKey fieldKey = paramInfo.getFieldKey();
+		return processFields.get(fieldKey);
+	}
+
 	/**
 	 * Load "@Param" annotated parameters from {@link ProcessInfo}.
 	 *
@@ -387,15 +396,10 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		}
 
 		//
-		// Retrieve Fields from processInstance's class
-		final Map<ArrayKey, Field> processFields = _fieldsIndexedByFieldKey;
-
-		//
 		// Iterate all process class info parameters and try to update the corresponding field
 		final IRangeAwareParams source = pi.getParameterAsIParams();
 		parameterInfos.forEach(paramInfo -> {
-			final ArrayKey fieldKey = paramInfo.getFieldKey();
-			final Field processField = processFields.get(fieldKey);
+			final Field processField = getAnnotatedParamField(paramInfo);
 			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
 		});
 	}
@@ -414,14 +418,12 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		final Collection<ProcessClassParamInfo> parameterInfos = getParameterInfos(parameterName);
 
-		final Map<ArrayKey, Field> processFields = _fieldsIndexedByFieldKey;
-
 		final boolean failIfNotValid = false;
 
 		// Iterate all process class info parameters and try to update the corresponding field
 		// No parameters => nothing to do
 		parameterInfos.forEach(paramInfo -> {
-			final Field processField = processFields.get(paramInfo.getFieldKey());
+			final Field processField = getAnnotatedParamField(paramInfo);
 			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
 		});
 
@@ -433,13 +435,61 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		}
 	}
 
-	private Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
+	public final boolean hasParametersCallout()
+	{
+		return parametersCallout != null;
+	}
+
+	private final Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
 	{
 		final ProcessInfo pi = getProcessInfo();
 		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
 
 		final Collection<ProcessClassParamInfo> parameterInfos = processClassInfo.getParameterInfos(parameterName);
 		return parameterInfos;
+	}
+
+	public final IRangeAwareParams getParametersFromAnnotatedFields()
+	{
+		final HashMap<String, Object> values = new HashMap<>();
+		final HashMap<String, Object> valuesTo = new HashMap<>();
+
+		final ProcessInfo pi = getProcessInfo();
+		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
+		for (final ProcessClassParamInfo paramInfo : processClassInfo.getParameterInfos())
+		{
+			final Object fieldValue = getAnnotatedParamFieldValue(paramInfo);
+			if (paramInfo.isParameterTo())
+			{
+				valuesTo.put(paramInfo.getParameterName(), fieldValue);
+			}
+			else
+			{
+				values.put(paramInfo.getParameterName(), fieldValue);
+			}
+		}
+
+		return RangeAwareParams.ofMaps(values, valuesTo);
+	}
+
+	private final Object getAnnotatedParamFieldValue(final ProcessClassParamInfo paramInfo)
+	{
+		final Field field = getAnnotatedParamField(paramInfo);
+		if (field == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			final Object fieldValue = field.get(this);
+			return fieldValue;
+		}
+		catch (final Exception ex)
+		{
+			log.warn("Cannot get field's value: {}", field, ex);
+			return null;
+		}
 	}
 
 	/**

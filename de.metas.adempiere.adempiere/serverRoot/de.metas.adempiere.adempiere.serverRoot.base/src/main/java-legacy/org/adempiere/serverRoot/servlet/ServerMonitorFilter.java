@@ -32,6 +32,7 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.DatatypeConverter;
 
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
@@ -40,6 +41,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
+import de.metas.hash.HashableString;
 import de.metas.logging.LogManager;
 
 /**
@@ -137,16 +139,24 @@ public class ServerMonitorFilter implements Filter
 		try
 		{
 			final String userInfo = authorization.substring(6).trim();
-			final String namePassword = new String(DatatypeConverter.parseBase64Binary(userInfo));
+			final String nameAndPassword = new String(DatatypeConverter.parseBase64Binary(userInfo));
 
-			// log.debug("checkAuthorization - Name:Password=" + namePassword);
-			final int index = namePassword.indexOf(':');
-			final String name = namePassword.substring(0, index);
-			final String password = namePassword.substring(index + 1);
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveLoginUserByUserIdAndPassword(name, password);
+			final int index = nameAndPassword.indexOf(':');
+			final String name = nameAndPassword.substring(0, index);
+			final HashableString password = HashableString.ofPlainValue(nameAndPassword.substring(index + 1));
+			
+			final IUserDAO usersRepo = Services.get(IUserDAO.class);
+			final I_AD_User user = usersRepo.retrieveLoginUserByUserId(name);
 			if (user == null)
 			{
-				log.warn("User not found or password did not match: {}", name);
+				log.warn("User not found: {}", name);
+				return false;
+			}
+			
+			final IUserBL usersBL = Services.get(IUserBL.class);
+			if(!usersBL.isPasswordMatching(user, password))
+			{
+				log.warn("Password did not match: {}", name);
 				return false;
 			}
 

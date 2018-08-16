@@ -108,7 +108,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
 				.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.vendorId(vendorProductInfos.getVendorId()) // mandatory
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
 				.purchaseDatePromised(TimeUtil.asLocalDateTime(materialDescriptor.getDate())) // dateRequired

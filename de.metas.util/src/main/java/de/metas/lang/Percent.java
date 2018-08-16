@@ -166,6 +166,9 @@ public class Percent
 		return of(this.valueAsBigDecimal.subtract(percent.valueAsBigDecimal));
 	}
 
+	/**
+	 * @param precision scale of the result; may be less than the scale of the given {@code base}
+	 */
 	public BigDecimal multiply(@NonNull final BigDecimal base, final int precision)
 	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
@@ -185,8 +188,8 @@ public class Percent
 		else
 		{
 			return base
-					.setScale(precision + 2)
-					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY)
+					.setScale(precision + 2, RoundingMode.HALF_UP)
+					.divide(ONE_HUNDRED_VALUE, RoundingMode.HALF_UP)
 					.multiply(valueAsBigDecimal)
 					.setScale(precision, RoundingMode.HALF_UP);
 		}
@@ -225,10 +228,7 @@ public class Percent
 	}
 
 	/**
-	 * Round the nearest {@code .5%} percent value
-	 *
-	 * @param halfUp
-	 * @return
+	 * Round to the nearest {@code .5%} percent value.
 	 */
 	public Percent roundToHalf(@NonNull final RoundingMode roundingMode)
 	{

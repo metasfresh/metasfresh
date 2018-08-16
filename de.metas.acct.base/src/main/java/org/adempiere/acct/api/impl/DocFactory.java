@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.IDocBuilder;
 import org.compiere.acct.PostingExecutionException;
@@ -53,6 +54,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class DocFactory implements IDocFactory
 {
@@ -151,22 +153,24 @@ public class DocFactory implements IDocFactory
 	}
 
 	@Override
-	public Doc<?> getOrNull(final Properties ctx, final MAcctSchema[] ass, final int AD_Table_ID, final int Record_ID, final String trxName)
+	public Doc<?> getOrNull(final Properties ctx, final MAcctSchema[] ass, @NonNull final TableRecordReference documentRef)
 	{
-		final IDocMetaInfo docMetaInfo = getDocMetaInfoOrNull(AD_Table_ID);
+		final int adTableId = documentRef.getAD_Table_ID();
+		final int recordId = documentRef.getRecord_ID();
+		
+		final IDocMetaInfo docMetaInfo = getDocMetaInfoOrNull(adTableId);
 		if (docMetaInfo == null)
 		{
 			// metas: tsa: use info instead of severe because this issue can happen on automatic posting too
-			logger.info("Not found AD_Table_ID=" + AD_Table_ID);
+			logger.info("Not found AD_Table_ID={}", adTableId);
 			return null;
 		}
 
-		final String TableName = docMetaInfo.getTableName();
-
-		final PO documentModel = TableModelLoader.instance.getPO(ctx, TableName, Record_ID, trxName);
+		final String tableName = docMetaInfo.getTableName();
+		final PO documentModel = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
 		if (documentModel == null)
 		{
-			logger.error("Not Found: " + TableName + "_ID=" + Record_ID + " (Processed=Y, trxName=" + trxName + ")");
+			logger.error("Not Found: " + tableName + "_ID=" + recordId + " (Processed=Y)");
 			return null;
 		}
 

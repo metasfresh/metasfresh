@@ -25,6 +25,7 @@ package de.metas.handlingunits.attribute.spi.impl;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -51,7 +52,7 @@ public class HUTrxAttributeProcessor_ASI implements IHUTrxAttributeProcessor
 
 		final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(referencedModel, I_M_AttributeSetInstance.class);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huTrxAttribute);
-		final int attributeId = huTrxAttribute.getM_Attribute_ID();
+		final AttributeId attributeId = AttributeId.ofRepoId(huTrxAttribute.getM_Attribute_ID());
 
 		I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asi, attributeId);
 		if (ai == null)

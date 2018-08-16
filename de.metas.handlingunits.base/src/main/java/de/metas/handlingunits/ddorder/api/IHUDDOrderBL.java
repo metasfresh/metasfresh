@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
+import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator;
@@ -54,10 +55,10 @@ public interface IHUDDOrderBL extends ISingletonService
 	/**
 	 * Create a ddOrder with the handling units assigned to the given receipt line to a warehouse flagged as IsQuarantineWarehouse
 	 */
-	void createQuarantineDDOrderForReceiptLines(List<QuarantineInOutLine> receiptLines);
+	List<I_DD_Order> createQuarantineDDOrderForReceiptLines(List<QuarantineInOutLine> receiptLines);
 
 	/**
 	 * Create a ddOrder with the handling units given as parameter to a warehouse flagged as IsQuarantineWarehouse
 	 */
-	void createQuarantineDDOrderForHUs(List<HUToDistribute> hus);
+	List<I_DD_Order> createQuarantineDDOrderForHUs(List<HUToDistribute> hus);
 }

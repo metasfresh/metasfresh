@@ -194,8 +194,6 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 
 		private AttributeValuesMap(final I_M_Attribute attribute, final Collection<I_M_AttributeValue> attributeValues)
 		{
-			super();
-
 			final ImmutableMap.Builder<String, NamePair> valuesByKey = ImmutableMap.builder();
 			final ImmutableMap.Builder<String, Integer> attributeValueIdByKey = ImmutableMap.builder();
 			NamePair nullValue = null;

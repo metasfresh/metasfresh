@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.NoVendorForProductException;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_PriceList;
@@ -39,10 +40,12 @@ import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**
@@ -440,10 +443,14 @@ public class RequisitionPOCreate extends JavaProcess
 			
 			// task 05914: start
 			//FRESH-334: Make sure the BP_Product if of the product's org or org * 
-			final int orgId = product.getAD_Org_ID();
-			final int productId = product.getM_Product_ID();
+			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
+			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 			
-			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(getCtx(), 0, productId, orgId);
+			final List<I_C_BPartner_Product> partnerProducts = Services.get(IBPartnerProductDAO.class).retrieveBPartnerForProduct(
+					getCtx(),
+					(BPartnerId)null,
+					productId, 
+					orgId);
 	
 			if (partnerProducts.size() > 0)
 			{

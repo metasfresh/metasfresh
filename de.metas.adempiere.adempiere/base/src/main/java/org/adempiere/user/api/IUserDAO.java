@@ -47,15 +47,7 @@ public interface IUserDAO extends ISingletonService
 	 */
 	I_AD_User retrieveLoginUserByUserId(String userId);
 
-	/**
-	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code> and password matches the given one.
-	 *
-	 * @param userId
-	 * @return user; never return null
-	 */
-	I_AD_User retrieveLoginUserByUserIdAndPassword(String userId, String password);
-
-	I_AD_User retrieveUserByPasswordResetCode(Properties ctx, String passwordResetCode);
+	I_AD_User getByPasswordResetCode(String passwordResetCode);
 
 	List<I_AD_User> retrieveUsersSubstitudedBy(I_AD_User user);
 

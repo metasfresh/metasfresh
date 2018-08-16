@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.countryattribute;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
@@ -39,7 +40,7 @@ public interface ICountryAttributeDAO extends ISingletonService
 	 * @param adOrgId
 	 * @return M_Attribute_ID or -1
 	 */
-	int retrieveCountryAttributeId(final int adClientId, final int adOrgId);
+	AttributeId retrieveCountryAttributeId(final int adClientId, final int adOrgId);
 
 	/**
 	 * Gets the attribute value related to a country. The country attribute is set in Sysconfig de.metas.swat.CountryAttribute. If we don't find an attribute value, behavior is described by Sysconfig

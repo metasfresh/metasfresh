@@ -31,6 +31,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -165,10 +166,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					handlerClassName,
 					() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
 
-			final List<Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
-
-			for (final Object model : missingCandidateModels)
+			final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
+			while(missingCandidateModels.hasNext())
 			{
+				final Object model = missingCandidateModels.next();
 				final List<ModelWithoutShipmentScheduleVetoer> vetoListeners = new ArrayList<>();
 
 				for (final ModelWithoutShipmentScheduleVetoer l : tableName2Listeners.get(tableName))

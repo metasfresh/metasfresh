@@ -51,7 +51,6 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MSequence;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.After;
@@ -69,6 +68,7 @@ import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -232,7 +232,7 @@ public class ESRTestBase
 	{
 		final I_AD_Sequence adSequence = create(getCtx(), I_AD_Sequence.class, ITrx.TRXNAME_None);
 		adSequence.setAD_Org_ID(0);
-		adSequence.setName(MSequence.PREFIX_DOCSEQ + tableName);
+		adSequence.setName(IDocumentNoBuilder.PREFIX_DOCSEQ + tableName);
 		adSequence.setDescription("DocumentNo/Value for Table " + tableName);
 		// adSequence.setPrefix(prefix);
 		adSequence.setIsTableID(false);

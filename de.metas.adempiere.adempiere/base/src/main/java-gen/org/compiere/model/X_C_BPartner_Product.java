@@ -15,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 714307253L;
+	private static final long serialVersionUID = 581798620L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -212,6 +212,22 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	public java.lang.String getExclusionFromSaleReason () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExclusionFromSaleReason);
+	}
+
+	/** Set Ingredients.
+		@param Ingredients Ingredients	  */
+	@Override
+	public void setIngredients (java.lang.String Ingredients)
+	{
+		set_Value (COLUMNNAME_Ingredients, Ingredients);
+	}
+
+	/** Get Ingredients.
+		@return Ingredients	  */
+	@Override
+	public java.lang.String getIngredients () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Ingredients);
 	}
 
 	/** Set Gegenwärtiger Lieferant.

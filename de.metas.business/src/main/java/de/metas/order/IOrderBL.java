@@ -13,6 +13,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -65,6 +66,8 @@ public interface IOrderBL extends ISingletonService
 	 * @return
 	 */
 	I_C_BPartner getShipToPartner(I_C_Order order);
+
+	BPartnerLocationId getShipToLocationId(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>C_BPartner_Location</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Location</code>.

@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -45,6 +46,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
@@ -95,6 +98,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		LogManager.setLevel(Level.DEBUG);
 
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@Test
@@ -147,7 +151,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final String key2 = headerAggregationKeyBuilder.buildKey(ic2);
 
 		assertEquals(key1, key2);
-
 	}
 
 	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
@@ -167,21 +170,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				result = null;
 
 				final Properties ctx = Env.getCtx();
-				final String trxName = ITrx.TRXNAME_None;
 				taxBL.getTax(
 						ctx
 						, order1
 						, -1 // taxCategoryId
 						, oL1.getM_Product_ID()
-						, -1 // chargeId
 						, order1.getDatePromised()
 						, order1.getDatePromised()
 						, order1.getAD_Org_ID()
 						, order1.getM_Warehouse()
-						, order1.getBill_BPartner_ID()
 						, order1.getC_BPartner_Location_ID()
-						, order1.isSOTrx()
-						, trxName);
+						, order1.isSOTrx());
 				minTimes = 0;
 				result = 3;
 		}};

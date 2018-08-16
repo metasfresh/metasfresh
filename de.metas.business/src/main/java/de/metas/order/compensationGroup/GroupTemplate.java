@@ -6,6 +6,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.product.ProductCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -44,23 +45,23 @@ import lombok.Value;
 @Value
 public class GroupTemplate
 {
-	int id;
+	GroupTemplateId id;
 	String name;
-	int productCategoryId;
+	ProductCategoryId productCategoryId;
 	List<GroupTemplateLine> lines;
 
 	@Builder
 	private GroupTemplate(
-			final int id,
+			final GroupTemplateId id,
 			@NonNull final String name,
-			final int productCategoryId,
+			final ProductCategoryId productCategoryId,
 			@Singular List<GroupTemplateLine> lines)
 	{
 		Check.assumeNotEmpty(lines, "lines is not empty");
 
-		this.id = id > 0 ? id : 0;
+		this.id = id;
 		this.name = name;
-		this.productCategoryId = productCategoryId > 0 ? productCategoryId : 0;
+		this.productCategoryId = productCategoryId;
 		this.lines = ImmutableList.copyOf(lines);
 	}
 }

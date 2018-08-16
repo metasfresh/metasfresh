@@ -41,11 +41,12 @@ public class ProcessClassInfoTests
 		ProcessClassInfo.resetCache();
 	}
 
-	public static class ProcessImpl implements IProcess
+	public static class ProcessImpl extends JavaProcess
 	{
 		@Override
-		public void startProcess(final ProcessInfo pi, final ITrx trx)
+		protected String doIt() throws Exception
 		{
+			return MSG_OK;
 		}
 	}
 

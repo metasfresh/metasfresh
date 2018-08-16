@@ -90,6 +90,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import net.miginfocom.swing.MigLayout;
@@ -331,7 +332,7 @@ public class CreateInvoiceCandidateDialog
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);
 		}
-		pricingSystemField.setValue(pricingSystemId.getRepoId());
+		pricingSystemField.setValue(PricingSystemId.getRepoId(pricingSystemId));
 
 		// do not load UOMs; instead, they shall be loaded when the product is modified
 		// priceUOMField.loadFirstItem();
@@ -378,7 +379,7 @@ public class CreateInvoiceCandidateDialog
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_None;
 
-		final IContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(ctx, pricingSystemId, I_M_PricingSystem.class, trxName);
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
 
@@ -415,7 +416,8 @@ public class CreateInvoiceCandidateDialog
 						, (Boolean)null // processedPLVFiltering
 				);
 
-				productPrice = ProductPrices.retrieveMainProductPriceOrNull(currentVersion, product.getM_Product_ID());
+				final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+				productPrice = ProductPrices.retrieveMainProductPriceOrNull(currentVersion, productId);
 			}
 			if (productPrice == null)
 			{
@@ -440,22 +442,21 @@ public class CreateInvoiceCandidateDialog
 		try
 		{
 			final Properties ctx = contextProvider.getCtx();
-			final String trxName = contextProvider.getTrxName();
 
 			final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
 			final I_M_Warehouse warehouse = null;
 
 			priceTaxId = Services.get(ITaxBL.class).getTax(
-					ctx, null // no model
-					, taxCategoryId, product.getM_Product_ID() // productId
-					, -1 // chargeId
-					, date // billDate
-					, date // shipDate
-					, product.getAD_Org_ID() // orgId
-					, warehouse, locationField.getValueAsInt() // billC_BPartner_Location_ID
-					, locationField.getValueAsInt() // shipC_BPartner_Location_ID
-					, soTrx.toBoolean() //
-					, trxName);
+					ctx,
+					null, // no model
+					taxCategoryId,
+					product.getM_Product_ID(), // productId
+					date, // billDate
+					date, // shipDate
+					product.getAD_Org_ID(), // orgId
+					warehouse,
+					locationField.getValueAsInt(), // shipC_BPartner_Location_ID
+					soTrx.toBoolean());
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
 		{
@@ -552,7 +553,7 @@ public class CreateInvoiceCandidateDialog
 				throwExceptionIfNotFilled(columns2Ids);
 
 				final Properties ctx = Env.getCtx();
-				final IContextAware contextProvider = new PlainContextAware(ctx, localTrxName);
+				final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 
 				final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, contextProvider);
 

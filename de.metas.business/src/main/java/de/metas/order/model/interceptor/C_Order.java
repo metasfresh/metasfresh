@@ -188,10 +188,39 @@ public class C_Order
 			InterfaceWrapperHelper.save(referencingOrderLine);
 		}
 	}
-	
+
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void checkPricingConditionsInOrderLines(final I_C_Order order)
 	{
 		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocType_ID,
+			I_C_Order.COLUMNNAME_C_BPartner_ID
+	})
+	public void updateDescriptionFromDocType(final I_C_Order order)
+	{
+		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_DropShip_Location_ID
+	})
+	public void onDropShipLocation(final I_C_Order order)
+	{
+		if (order.getDropShip_Location_ID() <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		Services.get(IOrderBL.class).setPriceList(order);
 	}
 }

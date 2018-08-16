@@ -58,6 +58,11 @@ import lombok.NonNull;
  */
 public interface IAttributeStorage extends IAttributeSet
 {
+	static IAttributeStorage cast(final IAttributeSet attributeSet)
+	{
+		return (IAttributeStorage)attributeSet;
+	}
+
 	/**
 	 * Get's storage unique identifier.
 	 *
@@ -98,7 +103,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @throws AttributeNotFoundException if attribute was not found
 	 */
 	IAttributeValue getAttributeValue(String attributeKey);
-	
+
 	default IAttributeValue getAttributeValue(@NonNull final I_M_Attribute attribute)
 	{
 		return getAttributeValue(attribute.getValue());
@@ -378,5 +383,10 @@ public interface IAttributeStorage extends IAttributeSet
 	default int getM_Warehouse_ID()
 	{
 		return -1;
+	}
+
+	default boolean isMandatory(I_M_Attribute attribute)
+	{
+		return false;
 	}
 }

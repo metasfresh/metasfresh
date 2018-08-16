@@ -46,7 +46,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -57,18 +57,17 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
-import org.compiere.model.MNote;
 import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -79,6 +78,7 @@ import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -428,20 +428,19 @@ public class FlatrateBL implements IFlatrateBL
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
+		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				term,
 				taxCategoryId,
 				productId,
-				-1, // chargeId
 				dataEntry.getDate_Reported(),// billDate
 				dataEntry.getDate_Reported(),// shipDate
 				orgId,
 				warehouse,
-				billLocationID,
-				-1 // ship location id
-				, isSOTrx,
-				trxName);
+				shipToLocationId,
+				isSOTrx);
 
 		newCand.setC_Tax_ID(taxId);
 
@@ -476,7 +475,6 @@ public class FlatrateBL implements IFlatrateBL
 			final BigDecimal qtyToInvoice)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
-
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
@@ -558,12 +556,18 @@ public class FlatrateBL implements IFlatrateBL
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
+		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, term, taxCategoryId, productIdForIc, -1 // chargeId
-				, dataEntry.getDate_Reported() // billDate
-				, dataEntry.getDate_Reported() // shipDate
-				, dataEntry.getAD_Org_ID(), warehouse, term.getBill_BPartner_ID(), -1 // ship location id
-				, isSOTrx, trxName);
+				ctx,
+				term,
+				taxCategoryId,
+				productIdForIc,
+				dataEntry.getDate_Reported(), // billDate
+				dataEntry.getDate_Reported(), // shipDate
+				dataEntry.getAD_Org_ID(),
+				warehouse,
+				shipToLocationId,
+				isSOTrx);
 
 		newCand.setC_Tax_ID(taxId);
 
@@ -1029,7 +1033,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public void extendContract(final @NonNull ContractExtendingRequest request)
+	public void extendContractAndNotifyUser(final @NonNull ContractExtendingRequest request)
 	{
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName_IGNORED -> {
 
@@ -1044,7 +1048,7 @@ public class FlatrateBL implements IFlatrateBL
 			contracts.add(currentRequest.getContract());
 			do
 			{
-				extendContractIfRequired(currentRequest);
+				extendContractAndNotifyUserIfRequired(currentRequest);
 
 				final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 				currentTerm.setAD_PInstance_EndOfTerm_ID(currentRequest.getAD_PInstance_ID());
@@ -1106,7 +1110,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void extendContractIfRequired(final @NonNull ContractExtendingRequest request)
+	private void extendContractAndNotifyUserIfRequired(final @NonNull ContractExtendingRequest request)
 	{
 		final I_C_Flatrate_Term currentTerm = request.getContract();
 		final boolean forceExtend = request.isForceExtend();
@@ -1180,24 +1184,21 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(currentTerm.getAD_User_InCharge_ID() > 0, conditions + " has AD_User_InCharge_ID > 0");
 			Check.assume(termToReferenceInNote != null, "");
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
-			final MNote note = new MNote(
-					ctx,
-					msgValue,
-					currentTerm.getAD_User_InCharge_ID(),
-					ITrx.TRXNAME_ThreadInherited);
-			note.setAD_Org_ID(currentTerm.getAD_Org_ID());
-			note.setRecord(adTableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name), termToReferenceInNote.getC_Flatrate_Term_ID());
-			note.setTextMsg(msgBL.getMsg(ctx, msgValue));
-			note.saveEx();
+			notifyUser(currentTerm, msgValue);
 		}
+	}
+
+	private void notifyUser(final I_C_Flatrate_Term currentTerm, final String msgValue)
+	{
+		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
+
+		flatrateGeneratedEventBus.notifyUser(currentTerm, currentTerm.getAD_User_InCharge_ID(), msgValue);
 	}
 
 	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context)
 	{
 		final I_C_Flatrate_Term currentTerm = context.getContract();
 		final Timestamp nextTermStartDate = context.getNextTermStartDate();
-		final I_C_OrderLine ol = context.getOrderLine();
 
 		Check.errorIf(currentTerm.getC_FlatrateTerm_Next_ID() > 0,
 				"{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
@@ -1234,9 +1235,9 @@ public class FlatrateBL implements IFlatrateBL
 		nextTerm.setStartDate(firstDayOfNewTerm);
 		nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
 
-		if (ol != null)
+		if (currentTerm.getC_OrderLine_Term_ID() > 0)
 		{
-			nextTerm.setC_OrderLine_Term(ol);
+			nextTerm.setC_OrderLine_Term(currentTerm.getC_OrderLine_Term());
 		}
 		updateEndDate(nextTransition, nextTerm);
 		updateNoticeDate(nextTransition, nextTerm);
@@ -1356,7 +1357,6 @@ public class FlatrateBL implements IFlatrateBL
 				termDuration = transition.getTermDuration() / 12;
 			}
 
-
 			final I_C_Calendar calendar = transition.getC_Calendar_Contract();
 
 			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
@@ -1368,7 +1368,7 @@ public class FlatrateBL implements IFlatrateBL
 				Check.errorIf(periodsContainingDay.isEmpty(), "Date {} does not exist in calendar={}", currentFirstDay, calendar);
 				Check.errorIf(periodsContainingDay.size() > 1, "Date {} is contained in more than one period of calendar={}; periodsContainingDay={}", currentFirstDay, calendar, periodsContainingDay);
 
-				final I_C_Period period = ListUtils.singleElement(periodsContainingDay);
+				final I_C_Period period = CollectionUtils.singleElement(periodsContainingDay);
 				final I_C_Year year = period.getC_Year();
 
 				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);

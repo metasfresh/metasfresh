@@ -2,6 +2,7 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
 
 import java.util.Arrays;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.util.Services;
@@ -274,7 +275,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		final I_M_AttributeSetInstance asi = inoutLine.getM_AttributeSetInstance();
 		Assert.assertNotNull("ASI exists for " + inoutLine, asi);
 
-		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		Assert.assertNotNull("AI exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute, ai);
 
 		final String valueStringActual = ai.getValue();
@@ -289,7 +290,7 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		{
 			return;
 		}
-		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, attribute.getM_Attribute_ID());
+		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asi, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		Assert.assertNull("AI does not exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute, ai);
 	}
 }

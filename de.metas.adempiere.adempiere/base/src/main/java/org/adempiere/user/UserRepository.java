@@ -1,6 +1,7 @@
 package org.adempiere.user;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -35,10 +36,16 @@ import lombok.NonNull;
 @Repository
 public class UserRepository
 {
+	public User getById(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = loadOutOfTrx(userId.getRepoId(), I_AD_User.class);
+		return ofRecord(userRecord);
+	}
+
 	public User ofRecord(@NonNull final I_AD_User userRecord)
 	{
 		return User.builder()
-				.bpartnerId(BPartnerId.ofRepoId(userRecord.getC_BPartner_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.name(userRecord.getName())
 				.emailAddress(userRecord.getEMail())
@@ -67,5 +74,4 @@ public class UserRepository
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.build();
 	}
-
 }

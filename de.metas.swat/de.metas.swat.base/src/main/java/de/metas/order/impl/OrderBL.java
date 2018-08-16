@@ -41,7 +41,7 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -53,15 +53,20 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -265,9 +270,11 @@ public class OrderBL implements IOrderBL
 
 	private BillBPartnerAndShipToLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
 	{
-		final int bpartnerId = order.getC_BPartner_ID();
 		final org.compiere.model.I_C_BPartner_Location shipToLocation = getShipToLocation(order);
 		final int shipBPLocationId = shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1;
+
+		final int bpartnerId =  shipToLocation != null ? shipToLocation.getC_BPartner_ID() : order.getC_BPartner_ID();
+
 		return new BillBPartnerAndShipToLocation(bpartnerId, shipBPLocationId);
 	}
 
@@ -398,7 +405,16 @@ public class OrderBL implements IOrderBL
 		{
 			return;
 		}
-		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+
+		final int bpartnerId = order.getC_BPartner_ID();
+
+		if (bpartnerId <= 0)
+		{
+			return;
+		}
+
+		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+
 		if (docType == null)
 		{
 			return;
@@ -409,8 +425,14 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		order.setDescription(docType.getDescription());
-		order.setDescriptionBottom(docType.getDocumentNote());
+		final String adLanguage = Util.coalesce(order.getC_BPartner().getAD_Language(), Env.getAD_Language());
+
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
+		order.setDescription(description.translate(adLanguage));
+		order.setDescriptionBottom(documentNote.translate(adLanguage));
 	}
 
 	@Override
@@ -909,6 +931,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public BPartnerLocationId getShipToLocationId(final I_C_Order order)
+	{
+		if (order.isDropShip() && order.getDropShip_BPartner_ID() > 0 && order.getDropShip_Location_ID() > 0)
+		{
+			return BPartnerLocationId.ofRepoId(order.getDropShip_BPartner_ID(), order.getDropShip_Location_ID());
+		}
+
+		return BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+	}
+
+	@Override
 	public org.compiere.model.I_AD_User getShipToUser(final I_C_Order order)
 	{
 		if (order.isDropShip())
@@ -957,7 +990,7 @@ public class OrderBL implements IOrderBL
 		}
 		else
 		{
-			final org.compiere.model.I_C_Order queriedOrder = ListUtils.singleElement(queryiedOrders);
+			final org.compiere.model.I_C_Order queriedOrder = CollectionUtils.singleElement(queryiedOrders);
 
 			fOrder.setQtyInvoiced(DYNATTR_QtyInvoicedSum.getValue(queriedOrder));
 			fOrder.setQtyMoved(DYNATTR_QtyDeliveredSum.getValue(queriedOrder));

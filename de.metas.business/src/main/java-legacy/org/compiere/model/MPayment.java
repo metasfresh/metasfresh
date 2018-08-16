@@ -22,12 +22,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ISysConfigBL;
@@ -36,27 +34,24 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
-import de.metas.process.IProcess;
-import de.metas.process.ProcessInfo;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -95,7 +90,7 @@ import de.metas.process.ProcessInfo;
  * @version $Id: MPayment.java,v 1.4 2006/10/02 05:18:39 jjanke Exp $
  */
 public final class MPayment extends X_C_Payment
-		implements IDocument, IProcess
+		implements IDocument
 {
 
 	/**
@@ -182,10 +177,6 @@ public final class MPayment extends X_C_Payment
 		super(ctx, rs, trxName);
 	}	// MPayment
 
-	/** Temporary Payment Processors */
-	private MPaymentProcessor[] m_mPaymentProcessors = null;
-	/** Temporary Payment Processor */
-	private MPaymentProcessor m_mPaymentProcessor = null;
 	/** Logger */
 	private static Logger s_log = LogManager.getLogger(MPayment.class);
 	/** Error Message */
@@ -405,16 +396,6 @@ public final class MPayment extends X_C_Payment
 		}
 	}	// setBankAccountDetails
 
-	/**
-	 * Set Account Address
-	 *
-	 * @param name name
-	 * @param street street
-	 * @param city city
-	 * @param state state
-	 * @param zip zip
-	 * @param country country
-	 */
 	public void setAccountAddress(final String name, final String street,
 			final String city, final String state, final String zip, final String country)
 	{
@@ -425,101 +406,7 @@ public final class MPayment extends X_C_Payment
 		setA_Zip(zip);
 		setA_Country(country);
 	}   // setAccountAddress
-
-	/**************************************************************************
-	 * Process Payment
-	 *
-	 * @return true if approved
-	 */
-	public boolean processOnline()
-	{
-		log.info("Amt=" + getPayAmt());
-		//
-		setIsOnline(true);
-		setErrorMessage(null);
-		// prevent charging twice
-		if (isOnlineApproved())   // metas: tsa: use IsOnlineApproved instead of IsApproved
-		{
-			log.info("Already processed - " + getR_Result() + " - " + getR_RespMsg());
-			setErrorMessage("Payment already Processed");
-			return true;
-		}
-
-		if (m_mPaymentProcessor == null)
-		{
-			setPaymentProcessor();
-		}
-		if (m_mPaymentProcessor == null)
-		{
-			log.warn("No Payment Processor Model");
-			setErrorMessage("No Payment Processor Model");
-			return false;
-		}
-
-		boolean approved = false;
-
-		try
-		{
-			final PaymentProcessor pp = PaymentProcessor.create(m_mPaymentProcessor, this);
-			if (pp == null)
-			{
-				setErrorMessage("No Payment Processor");
-			}
-			else
-			{
-				// Validate before trying to process
-				// metas: our revision of adempiere doesn't have the validate
-				// feature yet :-(
-				// String msg = pp.validate();
-				// if (msg!=null && msg.trim().length()>0) {
-				// setErrorMessage(Msg.getMsg(getCtx(), msg));
-				// } else {
-				// Process if validation succeeds
-				approved = pp.processCC();
-				if (approved)
-				{
-					setErrorMessage(null);
-				}
-				else {
-					setErrorMessage("From " + getCreditCardName() + ": " + getR_RespMsg());
-				// }
-				}
-			}
-		}
-		catch (final Exception e)
-		{
-			log.error("processOnline", e);
-			setErrorMessage("Payment Processor Error: " + e.getMessage());
-		}
-		setIsOnlineApproved(approved); // metas: tsa: use IsOnlineApproved instead of IsApproved
-		return approved;
-	}   // processOnline
-
-	/**
-	 * Process Online Payment. implements {@link IProcess} after standard constructor Called when pressing the Process_Online button in C_Payment
-	 *
-	 * @param ctx Context
-	 * @param pi Process Info
-	 * @param trx transaction
-	 * @return true if the next process should be performed
-	 */
-	@Override
-	public void startProcess(final ProcessInfo pi, final ITrx trx)
-	{
-		log.info("startProcess: {}", pi);
-		//
-		if (pi.getRecord_ID() != getC_Payment_ID())
-		{
-			throw new AdempiereException("startProcess - Not same Payment - " + pi.getRecord_ID());
-		}
-		// Process it
-		if (!processOnline())
-		{
-			throw new AdempiereException("Failed processing online: " + getErrorMessage());
-		}
-		saveEx(); // metas: changed to saveEx
-	}   // startProcess
-
+	
 	/**
 	 * Before Save
 	 *
@@ -739,138 +626,7 @@ public final class MPayment extends X_C_Payment
 	public String getErrorMessage()
 	{
 		return m_errorMessage;
-	}	// getErrorMessage
-
-	/**
-	 * Set BankAccount and PaymentProcessor
-	 *
-	 * @return true if found
-	 */
-	public boolean setPaymentProcessor()
-	{
-		return setPaymentProcessor(getTenderType(), getCreditCardType());
-	}	// setPaymentProcessor
-
-	/**
-	 * Set BankAccount and PaymentProcessor
-	 *
-	 * @param tender TenderType see TENDER_
-	 * @param CCType CC Type see CC_
-	 * @return true if found
-	 */
-	public boolean setPaymentProcessor(final String tender, final String CCType)
-	{
-		m_mPaymentProcessor = null;
-		// Get Processor List
-		if (m_mPaymentProcessors == null || m_mPaymentProcessors.length == 0)
-		{
-			m_mPaymentProcessors = MPaymentProcessor.find(getCtx(), tender, CCType, getAD_Client_ID(),
-					getC_Currency_ID(), getPayAmt(), get_TrxName());
-		}
-		// Relax Amount
-		if (m_mPaymentProcessors == null || m_mPaymentProcessors.length == 0)
-		{
-			m_mPaymentProcessors = MPaymentProcessor.find(getCtx(), tender, CCType, getAD_Client_ID(),
-					getC_Currency_ID(), BigDecimal.ZERO, get_TrxName());
-		}
-		if (m_mPaymentProcessors == null || m_mPaymentProcessors.length == 0)
-		{
-			return false;
-		}
-
-		// Find the first right one
-		for (final MPaymentProcessor m_mPaymentProcessor2 : m_mPaymentProcessors)
-		{
-			if (m_mPaymentProcessor2.accepts(tender, CCType))
-			{
-				m_mPaymentProcessor = m_mPaymentProcessor2;
-			}
-		}
-		if (m_mPaymentProcessor != null)
-		{
-			setC_BP_BankAccount_ID(m_mPaymentProcessor.getC_BP_BankAccount_ID());
-		}
-		//
-		return m_mPaymentProcessor != null;
-	}   // setPaymentProcessor
-
-	/**
-	 * Get Accepted Credit Cards for PayAmt (default 0)
-	 *
-	 * @return credit cards
-	 */
-	public ValueNamePair[] getCreditCards()
-	{
-		return getCreditCards(getPayAmt());
-	}	// getCreditCards
-
-	/**
-	 * Get Accepted Credit Cards for amount
-	 *
-	 * @param amt trx amount
-	 * @return credit cards
-	 */
-	public ValueNamePair[] getCreditCards(final BigDecimal amt)
-	{
-		try
-		{
-			if (m_mPaymentProcessors == null || m_mPaymentProcessors.length == 0)
-			{
-				m_mPaymentProcessors = MPaymentProcessor.find(getCtx(), null, null,
-						getAD_Client_ID(), getC_Currency_ID(), amt, get_TrxName());
-			}
-			//
-			final HashMap<String, ValueNamePair> map = new HashMap<>(); // to eliminate duplicates
-			for (final MPaymentProcessor m_mPaymentProcessor2 : m_mPaymentProcessors)
-			{
-				if (m_mPaymentProcessor2.isAcceptAMEX())
-				{
-					map.put(CREDITCARDTYPE_Amex, getCreditCardPair(CREDITCARDTYPE_Amex));
-				}
-				if (m_mPaymentProcessor2.isAcceptDiners())
-				{
-					map.put(CREDITCARDTYPE_Diners, getCreditCardPair(CREDITCARDTYPE_Diners));
-				}
-				if (m_mPaymentProcessor2.isAcceptDiscover())
-				{
-					map.put(CREDITCARDTYPE_Discover, getCreditCardPair(CREDITCARDTYPE_Discover));
-				}
-				if (m_mPaymentProcessor2.isAcceptMC())
-				{
-					map.put(CREDITCARDTYPE_MasterCard, getCreditCardPair(CREDITCARDTYPE_MasterCard));
-				}
-				if (m_mPaymentProcessor2.isAcceptCorporate())
-				{
-					map.put(CREDITCARDTYPE_PurchaseCard, getCreditCardPair(CREDITCARDTYPE_PurchaseCard));
-				}
-				if (m_mPaymentProcessor2.isAcceptVisa())
-				{
-					map.put(CREDITCARDTYPE_Visa, getCreditCardPair(CREDITCARDTYPE_Visa));
-				}
-			}  // for all payment processors
- //
-			final ValueNamePair[] retValue = new ValueNamePair[map.size()];
-			map.values().toArray(retValue);
-			log.debug("getCreditCards - #" + retValue.length + " - Processors=" + m_mPaymentProcessors.length);
-			return retValue;
-		}
-		catch (final Exception ex)
-		{
-			ex.printStackTrace();
-			return null;
-		}
-	}	// getCreditCards
-
-	/**
-	 * Get Type and name pair
-	 *
-	 * @param CreditCardType credit card Type
-	 * @return pair
-	 */
-	private ValueNamePair getCreditCardPair(final String CreditCardType)
-	{
-		return new ValueNamePair(CreditCardType, getCreditCardName(CreditCardType));
-	}	// getCreditCardPair
+	}	// getErrorMessage
 
 	/**************************************************************************
 	 * Credit Card Number
@@ -2085,7 +1841,6 @@ public final class MPayment extends X_C_Payment
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();

@@ -4,6 +4,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -50,10 +51,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.lang.RepoIdAware;
 import lombok.NonNull;
 
 /**
@@ -170,7 +171,7 @@ public final class TableRecordReference implements ITableRecordReference
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
 
-		return new TableRecordReference(adTableId.or(-1), recordId.or(-1)); // the -1 shall cause an exception to be thrown
+		return new TableRecordReference(adTableId.orElse(-1), recordId.orElse(-1)); // the -1 shall cause an exception to be thrown
 	}
 
 	/**
@@ -185,7 +186,14 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return null;
 		}
-		return ofReferenced(model);
+
+		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
+		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
+		if (!adTableId.isPresent() || !recordId.isPresent())
+		{
+			return null;
+		}
+		return new TableRecordReference(adTableId.get(), recordId.get());
 	}
 
 	public static final TableRecordReference of(final int adTableId, final int recordId)
@@ -196,6 +204,11 @@ public final class TableRecordReference implements ITableRecordReference
 	public static final TableRecordReference of(final String tableName, final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
+	}
+
+	public static final TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
+	{
+		return new TableRecordReference(tableName, recordId.getRepoId());
 	}
 
 	/**
@@ -459,5 +472,15 @@ public final class TableRecordReference implements ITableRecordReference
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
+	}
+
+	public static <T> List<T> getModels(
+			@NonNull final Collection<ITableRecordReference> references,
+			@NonNull final Class<T> modelClass)
+	{
+		return references
+				.stream()
+				.map(ref -> ref.getModel(modelClass))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

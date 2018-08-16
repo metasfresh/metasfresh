@@ -30,10 +30,12 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 
@@ -135,15 +137,14 @@ public class PricingContextBuilder
 		final PricingSystemId pricingSytemId = vendorInvoicingInfo.getPricingSystemId();
 		final CurrencyId currencyId = CurrencyId.ofRepoId(vendorInvoicingInfo.getC_Currency_ID());
 		final I_M_PriceList_Version priceListVersion = vendorInvoicingInfo.getM_PriceList_Version();
-		final boolean isSOTrx = false; // we are always on purchase side
 
 		//
 		// Update pricing context
-		pricingCtx.setSOTrx(isSOTrx);
+		pricingCtx.setSOTrx(SOTrx.PURCHASE); // we are always on purchase side
 		pricingCtx.setBPartnerId(billBPartnerId);
 		pricingCtx.setCurrencyId(currencyId);
 		pricingCtx.setPricingSystemId(pricingSytemId);
-		pricingCtx.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
+		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
 		pricingCtx.setPriceDate(priceListVersion.getValidFrom()); // just to drive home this point
 	}
 

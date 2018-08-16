@@ -1,18 +1,14 @@
 package de.metas.material.planning.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
@@ -25,6 +21,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -66,7 +63,8 @@ public class PPOrderUtil
 			@NonNull final PPOrder ppOrderPojo,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
-		final BigDecimal multiplier = getQtyMultiplier(ppOrderLinePojo, ppOrderPojo.getProductDescriptor().getProductId());
+		final ProductId productId = ProductId.ofRepoId(ppOrderPojo.getProductDescriptor().getProductId());
+		final BigDecimal multiplier = getQtyMultiplier(ppOrderLinePojo, productId);
 
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderLinePojo);
 
@@ -102,39 +100,12 @@ public class PPOrderUtil
 	 *
 	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
 	 */
-	/* package */BigDecimal getQtyMultiplier(@NonNull final PPOrderLine orderBOMLine, @NonNull final PPOrder ppOrder)
-	{
-		final Integer endProductId = ppOrder.getProductDescriptor().getProductId();
-
-		return getQtyMultiplier(orderBOMLine, endProductId);
-	}
-
 	private BigDecimal getQtyMultiplier(
 			@NonNull final PPOrderLine orderBOMLine,
-			@NonNull final Integer endProductId)
+			@NonNull final ProductId endProductId)
 	{
-
 		final I_PP_Product_BOMLine productBomLine = getProductBomLine(orderBOMLine);
-		if (!productBomLine.isQtyPercentage())
-		{
-			return productBomLine.getQtyBOM();
-		}
-
-		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
-		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-		final I_M_Product endProduct = load(endProductId, I_M_Product.class);
-		final I_C_UOM endUOM = endProduct.getC_UOM();
-
-		final I_C_UOM bomLineUOM = productBomLine.getC_UOM();
-		Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal bomToLineUOMMultiplier = uomConversionBL.convertQty(endProduct, BigDecimal.ONE, endUOM, bomLineUOM);
-
-		final BigDecimal qtyBatchPercent = productBomLine.getQtyBatch();
-		final BigDecimal qtyBatchAbsolute = qtyBatchPercent.divide(Env.ONEHUNDRED, 8, RoundingMode.HALF_UP);
-
-		return qtyBatchAbsolute.multiply(bomToLineUOMMultiplier);
+		return Services.get(IProductBOMBL.class).getQtyMultiplier(productBomLine, endProductId);
 	}
 
 	/**

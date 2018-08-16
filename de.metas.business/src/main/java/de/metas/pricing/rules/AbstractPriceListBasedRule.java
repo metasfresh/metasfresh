@@ -47,7 +47,7 @@ public abstract class AbstractPriceListBasedRule implements IPricingRule
 			return false;
 		}
 
-		if (pricingCtx.getM_Product_ID() <= 0)
+		if (pricingCtx.getProductId() == null)
 		{
 			log.debug("Not applying because there is no M_Product_ID specified in context");
 			return false;

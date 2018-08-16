@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.process;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
@@ -32,16 +33,14 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -49,18 +48,18 @@ import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.Mutable;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.Query;
+import org.compiere.model.IQuery;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
-import de.metas.inoutcandidate.api.IInOutCandidateBL;
-import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -68,13 +67,6 @@ import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.quantity.Quantity;
 
-/**
- * Processes all
- *
- * @author ts
- * @task 08648
- *
- */
 public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 {
 
@@ -128,7 +120,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 						counter.setValue(counter.getValue() + 1);
 						if (counter.getValue() % 100 == 0)
 						{
-							logger.warn("Processed " + counter.getValue() + " M_ReceiptSchedules");
+							addLog("Processed {} M_ReceiptSchedules", counter.getValue());
 						}
 					}
 				}).process(receiptScheds);
@@ -141,10 +133,25 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		// in case we were called from the window, then only process the current selection
 		final IQueryFilter<I_M_ReceiptSchedule> processInfoFilter = getProcessInfo().getQueryFilter();
 
+		// only process records with an effective qty > 0
+		final ICompositeQueryFilter<I_M_ReceiptSchedule> overrideQtyFilter = queryBL
+				.createCompositeQueryFilter(I_M_ReceiptSchedule.class)
+				.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override, Operator.GREATER, ZERO);
+		final ICompositeQueryFilter<I_M_ReceiptSchedule> qtyFilter = queryBL
+				.createCompositeQueryFilter(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override, null)
+				.addCompareFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, Operator.GREATER, ZERO);
+		final ICompositeQueryFilter<I_M_ReceiptSchedule> effectiveQtyFilter = queryBL
+				.createCompositeQueryFilter(I_M_ReceiptSchedule.class)
+				.setJoinOr()
+				.addFilter(overrideQtyFilter)
+				.addFilter(qtyFilter);
+
 		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class, getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()
-				.filter(processInfoFilter);
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.filter(processInfoFilter)
+				.filter(effectiveQtyFilter);
 		if (warehouseId > 0)
 		{
 			queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
@@ -165,8 +172,8 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 
 		return queryBuilder
 				.create()
-				.setOption(Query.OPTION_GuaranteedIteratorRequired, true) // just to be sure
-				.setOption(Query.OPTION_IteratorBufferSize, 1000)
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // just to be sure
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_M_ReceiptSchedule.class);
 	}
 
@@ -190,28 +197,17 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		final de.metas.handlingunits.model.I_M_ReceiptSchedule huReceiptSchedule = create(receiptSchedule, de.metas.handlingunits.model.I_M_ReceiptSchedule.class);
 		generateHUsIfNeeded(huReceiptSchedule);
 
-		// Create result collector
-		final boolean storeReceipts = true;
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(storeReceipts);
+		final CreateReceiptsParameters parameters = CreateReceiptsParameters.builder()
+				.ctx(getCtx())
+				.selectedHuIds(null) // null means to assign all planned HUs which are assigned to the receipt schedule's
+				.createReceiptWithDatePromised(true) // when creating M_InOuts, use the respective C_Orders' DatePromised values
+				.commitEachReceiptIndividually(true)
+				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
+				.receiptSchedules(ImmutableList.of(receiptSchedule))
+				.printReceiptLabels(false)
+				.build();
 
-		// Create Receipt producer
-		final Set<Integer> selectedHUIds = null; // null means to assign all planned HUs which are assigned to the receipt schedule's
-		final boolean createReceiptWithDatePromised = true; // when creating M_InOuts, use the respective C_Orders' DatePromised values
-		final IInOutProducer producer = huReceiptScheduleBL.createInOutProducerFromReceiptScheduleHU(getCtx(), result, selectedHUIds, createReceiptWithDatePromised);
-
-		// Create executor and generate receipts with it
-		final ITrx trx = Services.get(ITrxManager.class).getTrx(ITrx.TRXNAME_ThreadInherited);
-		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
-		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(getCtx(), trx); // run with the trx that is inherited from the outer item processor.
-
-		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
-				.setContext(processorCtx)
-				.setProcessor(producer)
-				// Configure executor to fail on first error
-				// NOTE: we expect max. 1 receipt, so it's fine to fail anyways
-				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
-				// Process schedules => receipt(s) will be generated
-				.process(IteratorUtils.singletonIterator(receiptSchedule));
+		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);
 
 		addLog("M_ReceiptSchedule_ID={} - created a receipt; result={}", receiptSchedule.getM_ReceiptSchedule_ID(), result);
 

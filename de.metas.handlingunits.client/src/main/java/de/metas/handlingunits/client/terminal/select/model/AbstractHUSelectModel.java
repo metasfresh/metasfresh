@@ -60,6 +60,7 @@ import de.metas.adempiere.form.terminal.table.TerminalTableModel;
 import de.metas.adempiere.form.terminal.table.swing.TerminalTableModelListenerAdapter;
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.select.api.IPOSFiltering;
@@ -162,7 +163,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 
 		//
 		// Configure Rows Model
-		rowsTableModel = new TerminalTableModel<IPOSTableRow>(terminalContext, service.getTableRowType());
+		rowsTableModel = new TerminalTableModel<>(terminalContext, service.getTableRowType());
 		rowsTableModel.setEditable(true);
 		rowsTableModel.setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -256,7 +257,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 
 		//
 		// Get old selected rows (to be reselected if possible)
-		final Set<IPOSTableRow> oldSelectedRows = new HashSet<IPOSTableRow>(rowsTableModel.getSelectedRows()); // duplicate old one because it will be cleared
+		final Set<IPOSTableRow> oldSelectedRows = new HashSet<>(rowsTableModel.getSelectedRows()); // duplicate old one because it will be cleared
 
 		//
 		// Set Lines to model
@@ -355,7 +356,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 
 		final Class<T> type = service.getTableRowType();
 
-		final Set<T> rowsCasted = new HashSet<T>();
+		final Set<T> rowsCasted = new HashSet<>();
 		for (final IPOSTableRow row : rows)
 		{
 			final T rowCasted = type.cast(row);
@@ -623,8 +624,8 @@ public abstract class AbstractHUSelectModel implements IDisposable
 		final IPOSFiltering service = getService();
 		final Properties ctx = getCtx();
 
-		final Set<I_M_HU> selectedHUs = huEditorModel.getSelectedHUs();
-		service.processRows(ctx, selectedRows, selectedHUs);
+		final Set<HuId> selectedHuIds = huEditorModel.getSelectedHUIds();
+		service.processRows(ctx, selectedRows, selectedHuIds);
 	}
 
 	/**
@@ -696,7 +697,7 @@ public abstract class AbstractHUSelectModel implements IDisposable
 	{
 		final WarehouseKey newWarehouseKey = new WarehouseKey(getTerminalContext(), warehouse);
 		warehouseKeyLayout.resetKeys();
-		final ArrayList<ITerminalKey> listModel = new ArrayList<ITerminalKey>(1);
+		final ArrayList<ITerminalKey> listModel = new ArrayList<>(1);
 		listModel.add(newWarehouseKey);
 		warehouseKeyLayout.setKeys(listModel);
 		warehouseKeyLayout.setSelectedKey(newWarehouseKey);

@@ -37,7 +37,6 @@ import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
@@ -114,13 +113,12 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
-	public List<I_M_Locator> retrieveLocators(@NonNull final I_M_Warehouse warehouse)
+	public List<I_M_Locator> retrieveLocators(@NonNull final WarehouseId warehouseId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
-		final String trxName = InterfaceWrapperHelper.getTrxName(warehouse);
-		final int warehouseId = warehouse.getM_Warehouse_ID();
+		final Properties ctx =Env.getCtx();
+		final String trxName = ITrx.TRXNAME_None; // this is master data so let's load it out of trx
 
-		return retrieveLocators(ctx, warehouseId, trxName);
+		return retrieveLocators(ctx, warehouseId.getRepoId(), trxName);
 	}
 
 	@Cached(cacheName = I_M_Locator.Table_Name + "#By#M_Warehouse_ID")

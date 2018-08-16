@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
@@ -65,7 +66,7 @@ public class SourceHUsService
 
 	public static SourceHUsService get()
 	{
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			return new SourceHUsService();
 		}
@@ -99,10 +100,9 @@ public class SourceHUsService
 		return ImmutableList.copyOf(sourceHUs);
 	}
 
-	public boolean isHuOrAnyParentSourceHu(final int huId)
+	public boolean isHuOrAnyParentSourceHu(final HuId huId)
 	{
-		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class); // benefit from caching
-		if (sourceHuDAO.isSourceHu(huId)) // check if there is a quick answer
+		if(isSourceHu(huId)) // check if there is a quick answer
 		{
 			return true;
 		}
@@ -112,27 +112,26 @@ public class SourceHUsService
 		return huIdHasAsSourceHuSomewhereAmongItsParents;
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHuIfNoSourceHuIsOnThePath(final int huId)
+	private List<I_M_HU> retrieveTopLevelHuIfNoSourceHuIsOnThePath(final HuId huId)
 	{
-		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final Predicate<I_M_HU> filterToExcludeSourceHus = //
-				currentHu -> !sourceHuDAO.isSourceHu(currentHu.getM_HU_ID());
+		final Predicate<I_M_HU> filterToExcludeSourceHus = currentHu -> !isSourceHu(currentHu.getM_HU_ID());
 
 		final TopLevelHusQuery query = TopLevelHusQuery.builder()
 				.includeAll(false)
 				.filter(filterToExcludeSourceHus)
-				.hus(ImmutableList.of(load(huId, I_M_HU.class)))
+				.hus(ImmutableList.of(handlingUnitsDAO.getById(huId)))
 				.build();
 
 		final List<I_M_HU> topLevelHuThatHasNoSourceHuInItsPath = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(query);
 		return topLevelHuThatHasNoSourceHuInItsPath;
 	}
 
-	public I_M_Source_HU addSourceHuMarker(final int huId)
+	public I_M_Source_HU addSourceHuMarker(@NonNull final HuId huId)
 	{
 		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
-		sourceHU.setM_HU_ID(huId);
+		sourceHU.setM_HU_ID(huId.getRepoId());
 		save(sourceHU);
 
 		logger.info("Created one M_Source_HU record for M_HU_ID={}", huId);
@@ -207,6 +206,11 @@ public class SourceHUsService
 	public boolean isSourceHu(final int huId)
 	{
 		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
+	}
+
+	public boolean isSourceHu(final HuId huId)
+	{
+		return Services.get(ISourceHuDAO.class).isSourceHu(huId.getRepoId());
 	}
 
 	/**

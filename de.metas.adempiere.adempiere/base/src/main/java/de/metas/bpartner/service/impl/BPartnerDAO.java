@@ -40,6 +40,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -85,15 +86,29 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner getById(final int bpartnerId)
 	{
-		return getById(BPartnerId.ofRepoId(bpartnerId));
+		return getById(BPartnerId.ofRepoId(bpartnerId), I_C_BPartner.class);
 	}
+	
+	@Override
+	public <T extends I_C_BPartner> T getById(final int bpartnerId, final Class<T> modelClass)
+	{
+		return getById(BPartnerId.ofRepoId(bpartnerId), modelClass);
+	}
+
 
 	@Override
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
+		return getById(bpartnerId, I_C_BPartner.class);
+	}
+	
+	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
+	{
+		final T bpartner = loadOutOfTrx(bpartnerId.getRepoId(), modelClass);
 		return bpartner;
 	}
+
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)
@@ -400,36 +415,26 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public boolean existsDefaultAddressInTable(final I_C_BPartner_Location address, final String trxName, final String columnName)
 	{
-		final String whereClause = columnName + " = ? AND "
-				+ I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + " = ?";
-		final int rows = new Query(Env.getCtx(), I_C_BPartner_Location.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(true, address.getC_BPartner_ID())
-				.setClient_ID()
-				.count();
-		if (rows == 0)
-		{
-			return false;
-		}
-		return true;
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(columnName, true)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, address.getC_BPartner_ID())
+				.create()
+				.match();
 	}
 
 	@Override
 	public boolean existsDefaultContactInTable(final de.metas.adempiere.model.I_AD_User user, final String trxName)
 	{
-		final String whereClause = de.metas.adempiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + " = ? AND "
-				+ org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + " = ?";
-		final int rows = new Query(Env.getCtx(), org.compiere.model.I_AD_User.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(true, user.getC_BPartner_ID())
-				.setClient_ID()
-				.count();
-		if (0 == rows)
-		{
-			return false;
-		}
-
-		return true;
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
+				.addOnlyContextClient()
+				.create()
+				.match();
 	}
 
 	@Override
@@ -684,7 +689,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		// add/override the with the more specific bpartner-result onto the more general bpGroup-result
 		final ImmutableSet<Entry<BPartnerId, Integer>> entrySet = partnerIdWithoutGroup2DiscountId.entrySet();
-		for(final Entry<BPartnerId, Integer> entry: entrySet)
+		for (final Entry<BPartnerId, Integer> entry : entrySet)
 		{
 			bPartnerId2DiscountId.put(entry.getKey(), entry.getValue());
 		}
@@ -717,9 +722,38 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(I_C_BPartner_Location::isShipToDefault)
+				.findFirst()
+				.map(bpLocation -> BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()), bpLocation.getC_BPartner_Location_ID()))
+				.orElse(null);
+	}
+
+	@Override
 	public String getBPartnerNameById(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner bpartner = loadOutOfTrx(bpartnerId.getRepoId(), I_C_BPartner.class);
+		final I_C_BPartner bpartner = getById(bpartnerId);
 		return bpartner.getName();
+	}
+
+	@Override
+	public BPartnerId getBPartnerIdByValue(@NonNull final String bpartnerValue)
+	{
+		final int bpartnerRepoId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_Value, bpartnerValue)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly();
+
+		if (bpartnerRepoId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue);
+		}
+
+		return BPartnerId.ofRepoId(bpartnerRepoId);
 	}
 }

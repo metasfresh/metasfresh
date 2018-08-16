@@ -1,12 +1,8 @@
 package de.metas.session.jaxrs;
 
-import java.util.Properties;
-
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.email.EMail;
@@ -38,27 +34,6 @@ import de.metas.process.ProcessExecutionResult;
 public interface IServerService extends ISingletonService
 {
 	/**
-	 * Post Immediate.<br>
-	 * Note: Use {@link ITrx#TRXNAME_None}, i.e. out of transaction because we are after-commit so the document shall be accessible for anyone
-	 *
-	 * @param ctx Client Context
-	 * @param AD_Client_ID Client ID of Document
-	 * @param AD_Table_ID Table ID of Document
-	 * @param Record_ID Record ID of this document
-	 * @param force force posting
-	 * @param trxName ignore, retained for backward compatibility
-	 * @return null, if success or error message
-	 */
-	@POST
-	@Path("postImmediate/{AD_Client_ID}/{AD_Table_ID}/{Record_ID}/{force}")
-	public String postImmediate(
-			Properties ctx,
-			@PathParam("AD_Client_ID") int AD_Client_ID,
-			@PathParam("AD_Table_ID") int AD_Table_ID,
-			@PathParam("Record_ID") int Record_ID,
-			@PathParam("force") boolean force);
-
-	/**
 	 * Execute process
 	 *
 	 * @param adPInstanceId
@@ -77,34 +52,4 @@ public interface IServerService extends ISingletonService
 	@POST
 	@Path("sendEMail")
 	EMailSentStatus sendEMail(EMail email);
-
-	/**
-	 * Execute task on server
-	 *
-	 * @param AD_Task_ID task
-	 * @return execution trace
-	 */
-	@POST
-	@Path("executeTask")
-	public String executeTask(int AD_Task_ID);
-
-	/**
-	 * Cash Reset
-	 *
-	 * @param tableName table name
-	 * @param Record_ID record or 0 for all
-	 * @return number of records reset
-	 */
-	@POST
-	@Path("cacheReset")
-	public int cacheReset(String tableName, int Record_ID);
-
-	/**
-	 * Describes the instance and its content for debugging purpose
-	 *
-	 * @return Debugging information about the instance and its content
-	 */
-	@POST
-	@Path("getStatus")
-	public String getStatus();
 }

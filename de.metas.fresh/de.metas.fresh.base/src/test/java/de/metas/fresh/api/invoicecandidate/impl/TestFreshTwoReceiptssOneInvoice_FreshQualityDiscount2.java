@@ -10,12 +10,12 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
@@ -54,7 +54,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
  * <li>And the third invoice line is about the "normal" iol21.
  * <ul>
  * Note that it's three lines as opposed to two because the iols of inOut1 have a different ASI than those of inOut2.
- * 
+ *
  * @task 08507
  *
  */
@@ -83,7 +83,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestT
 	{
 		assertEquals("We are expecting one invoice: " + invoices, 1, invoices.size());
 		final IInvoiceHeader invoice = invoices.remove(0);
-		final I_C_Invoice_Candidate ic = ListUtils.singleElement(invoiceCandidates);
+		final I_C_Invoice_Candidate ic = CollectionUtils.singleElement(invoiceCandidates);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		assertEquals("We are expecting three invoice lines: " + invoiceLines, 3, invoiceLines.size());
@@ -114,7 +114,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestT
 		// invoiceLine2
 		// the InDispute line => this one shall containt the quality discount
 		{
-			final IInvoiceLineRW invoiceLine2 = ListUtils.singleElement(forIol12);
+			final IInvoiceLineRW invoiceLine2 = CollectionUtils.singleElement(forIol12);
 
 			assertThat(invoiceLine2.getQtyToInvoice(), comparesEqualTo(FIVE.negate()));
 			assertThat(invoiceLine2.getPriceActual(), comparesEqualTo(BigDecimal.ONE));

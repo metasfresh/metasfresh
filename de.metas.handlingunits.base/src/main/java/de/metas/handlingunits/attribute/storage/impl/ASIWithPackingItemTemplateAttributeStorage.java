@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,7 +51,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import lombok.NonNull;
 
 /**
- * Wraps an {@link I_M_AttributeSetInstance}, adds definitions from the packing item template's {@link I_M_HU_PI_Attribute}s.
+ * Wraps an {@link I_M_AttributeSetInstance}; returns values of the packing item template's {@link I_M_HU_PI_Attribute}s.
+ * attribute values from the wrapped ASI are <b>not</b> included, unless they are also in the packing item template.
+ * The ASI is mostly used to set {@link IAttributeValue#isNew()} (if it's not in the ASI, then it's new afaiu).
  */
 /* package */ class ASIWithPackingItemTemplateAttributeStorage extends AbstractAttributeStorage
 {
@@ -114,10 +117,10 @@ import lombok.NonNull;
 		// Retrieve Attribute Instances for given ASI
 		// Build M_Attribute_ID to M_AttributeInstance map
 		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(asi);
-		final Map<Integer, I_M_AttributeInstance> attributeId2attributeInstance = new HashMap<>(attributeInstances.size());
+		final Map<AttributeId, I_M_AttributeInstance> attributeId2attributeInstance = new HashMap<>(attributeInstances.size());
 		for (final I_M_AttributeInstance instance : attributeInstances)
 		{
-			attributeId2attributeInstance.put(instance.getM_Attribute_ID(), instance);
+			attributeId2attributeInstance.put(AttributeId.ofRepoId(instance.getM_Attribute_ID()), instance);
 		}
 
 		//
@@ -128,7 +131,7 @@ import lombok.NonNull;
 		final List<IAttributeValue> result = new ArrayList<>(piAttributes.size());
 		for (final I_M_HU_PI_Attribute piAttribute : piAttributes)
 		{
-			final int attributeId = piAttribute.getM_Attribute_ID();
+			final AttributeId attributeId = AttributeId.ofRepoId(piAttribute.getM_Attribute_ID());
 			I_M_AttributeInstance attributeInstance = attributeId2attributeInstance.get(attributeId);
 			final boolean isGeneratedAttribute;
 			if (attributeInstance == null)
@@ -158,7 +161,8 @@ import lombok.NonNull;
 		return result;
 	}
 
-	private IAttributeValue createAttributeValue(final I_M_AttributeInstance attributeInstance,
+	private IAttributeValue createAttributeValue(
+			final I_M_AttributeInstance attributeInstance,
 			final I_M_HU_PI_Attribute piAttribute,
 			final boolean isGeneratedAttribute)
 	{

@@ -175,8 +175,8 @@ public final class ProcessInfo implements Serializable
 	private Boolean async = null;
 
 	/** Parameters */
-	private List<ProcessInfoParameter> parameters = null; // lazy loaded
-	private final List<ProcessInfoParameter> parametersOverride;
+	private ImmutableList<ProcessInfoParameter> parameters = null; // lazy loaded
+	private final ImmutableList<ProcessInfoParameter> parametersOverride;
 
 	//
 	// Reporting related
@@ -288,7 +288,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return new instance or null
 	 */
-	public final IProcess newProcessClassInstanceOrNull()
+	public final JavaProcess newProcessClassInstanceOrNull()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
@@ -305,10 +305,10 @@ public final class ProcessInfo implements Serializable
 		try
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
-			final IProcess processClassInstance = (IProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
 			if (processClassInstance instanceof JavaProcess)
 			{
-				((JavaProcess)processClassInstance).init(this);
+				processClassInstance.init(this);
 			}
 
 			return processClassInstance;
@@ -498,16 +498,16 @@ public final class ProcessInfo implements Serializable
 		return adWindowId;
 	}
 
-	private static final List<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
+	private static final ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
 		if (parametersOverride == null || parametersOverride.isEmpty())
 		{
-			return parameters == null ? ImmutableList.of() : parameters;
+			return parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
 		}
 
 		if (parameters == null || parameters.isEmpty())
 		{
-			return parametersOverride == null ? ImmutableList.of() : parametersOverride;
+			return parametersOverride == null ? ImmutableList.of() : ImmutableList.copyOf(parametersOverride);
 		}
 
 		final Map<String, ProcessInfoParameter> parametersEffective = new HashMap<>();
@@ -655,8 +655,7 @@ public final class ProcessInfo implements Serializable
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
 		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
-
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1063,7 +1062,7 @@ public final class ProcessInfo implements Serializable
 
 		public ProcessInfoBuilder setAD_ProcessByClassname(final String processClassname)
 		{
-			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(getCtx(), processClassname);
+			final int adProcessId = Services.get(IADProcessDAO.class).retriveProcessIdByClassIfUnique(processClassname);
 			if (adProcessId <= 0)
 			{
 				throw new AdempiereException("@NotFound@ @AD_Process_ID@ (@Classname@: " + processClassname + ")");

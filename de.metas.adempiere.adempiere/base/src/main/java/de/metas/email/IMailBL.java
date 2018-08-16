@@ -33,6 +33,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_R_MailText;
 
+import de.metas.i18n.ITranslatableString;
+
 /**
  * Mail configuration
  *
@@ -41,12 +43,25 @@ import org.compiere.model.I_R_MailText;
  */
 public interface IMailBL extends ISingletonService
 {
+	/**
+	 * @throws MailboxNotFoundException
+	 */
 	Mailbox findMailBox(I_AD_Client client,
 			int AD_Org_ID,
 			int AD_Process_ID,
 			I_C_DocType docType,
 			String customType,
 			I_AD_User user);
+
+	public static final class MailboxNotFoundException extends AdempiereException
+	{
+		private static final long serialVersionUID = 8412719309323544757L;
+
+		public MailboxNotFoundException(ITranslatableString msg)
+		{
+			super(msg);
+		}
+	}
 
 	EMail createEMail(I_AD_Client client,
 			String mailCustomType,
@@ -64,13 +79,7 @@ public interface IMailBL extends ISingletonService
 			boolean html);
 
 	/**
-	 * @param ctx
-	 * @param mailbox
-	 * @param to
-	 * @param subject
-	 * @param message
 	 * @param html see the javadoc in {@link EMail}
-	 * @return email created
 	 */
 	EMail createEMail(Properties ctx,
 			Mailbox mailbox,

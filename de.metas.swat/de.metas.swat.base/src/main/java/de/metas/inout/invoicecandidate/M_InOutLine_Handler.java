@@ -41,7 +41,9 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
@@ -54,8 +56,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 
@@ -361,9 +361,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, taxCategoryId, productId, chargeId, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
-				, locationId // shipC_BPartner_Location_ID
-				, isSOTrx, trxName);
+				ctx,
+				ic,
+				taxCategoryId,
+				productId,
+				billDate,
+				shipDate,
+				adOrgId,
+				inOut.getM_Warehouse(),
+				locationId, // shipC_BPartner_Location_ID
+				isSOTrx);
 		ic.setC_Tax_ID(taxId);
 
 		//
@@ -372,10 +379,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// set Quality Issue Percentage Override
 
-		final I_M_AttributeSetInstance asi = inOutLine.getM_AttributeSetInstance();
-		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLine.getM_AttributeSetInstance_ID());
+		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
+		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, attributes);
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
@@ -779,7 +786,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.pricingSystemId(pricingResult.getPricingSystemId())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
 				// also see the javadoc of inOutBL.createPricingCtx(fromInOutLine)
-				.priceListVersionId(pricingResult.getM_PriceList_Version_ID())
+				.priceListVersionId(pricingResult.getPriceListVersionId())
 				.currencyId(pricingResult.getCurrencyId())
 				.taxCategoryId(pricingResult.getC_TaxCategory_ID())
 				//

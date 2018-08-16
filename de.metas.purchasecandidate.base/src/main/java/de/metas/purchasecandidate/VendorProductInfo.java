@@ -53,7 +53,9 @@ public class VendorProductInfo
 
 	boolean aggregatePOs;
 
+	/** vendor specific discount that comes from the {@code C_BPartner} record. I.e. not related to "flat-percent" pricing conditions. */
 	Percent vendorFlatDiscount;
+
 	private PricingConditions pricingConditions;
 
 	boolean defaultVendor;

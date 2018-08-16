@@ -38,45 +38,28 @@ import org.compiere.model.I_M_Warehouse;
 public interface IWarehouseDAO extends ISingletonService
 {
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
-	
+
 	/**
 	 * Checks if the warehouse is covered in M_Warehouse_Routing as specific to one or more doc types
 	 *
-	 * @param ctx
-	 * @param warehouseId
-	 * @param trxName
-	 * @return True if the warehouse is generic (can be used for all doc types).
+	 * @return true if the warehouse is generic (can be used for all doc types).
 	 */
 	boolean hasAvailableDocTypes(final Properties ctx, final int warehouseId, final String trxName);
 
 	/**
 	 * Checks if the warehouse is valid for the given doc type.
-	 *
-	 * @param ctx
-	 * @param warehouseId
-	 * @param docType
-	 * @param trxName
-	 * @return
 	 */
 	boolean isDocTypeAllowed(final Properties ctx, final int warehouseId, final I_C_DocType docType, final String trxName);
 
-	List<I_M_Locator> retrieveLocators(I_M_Warehouse warehouse);
+	List<I_M_Locator> retrieveLocators(WarehouseId warehouseId);
 
 	/**
-	 * retrieve warehouses for a specific docBaseType
-	 *
-	 * @param ctx
-	 * @param docBaseType
-	 * @return
+	 * Retrieve warehouses for a specific docBaseType
 	 */
 	List<I_M_Warehouse> retrieveWarehouses(final Properties ctx, final String docBaseType);
 
 	/**
-	 * retrieve the warehouse for the given org. The warehouse is taken from AD_OrgInfo. if no warehouse found returns null.
-	 *
-	 * @param ctx
-	 * @param org
-	 * @return
+	 * Retrieve the warehouse for the given org. The warehouse is taken from AD_OrgInfo. if no warehouse found returns null.
 	 */
 	I_M_Warehouse retrieveOrgWarehouse(Properties ctx, int adOrgId);
 
@@ -84,18 +67,12 @@ public interface IWarehouseDAO extends ISingletonService
 
 	/**
 	 * Retrieve all warehouses for given organization
-	 *
-	 * @param ctx
-	 * @param AD_Org_ID
-	 * @return list of warehouses
 	 */
 	List<I_M_Warehouse> retrieveForOrg(Properties ctx, int AD_Org_ID);
 
 	/**
 	 * Retrieve all warehouses that have the IsInTransit flag set, for given organization.
 	 *
-	 * @param ctx
-	 * @param adOrgId
 	 * @return list of in transit warehouses
 	 */
 	List<I_M_Warehouse> retrieveWarehousesInTransitForOrg(Properties ctx, int adOrgId);
@@ -103,20 +80,11 @@ public interface IWarehouseDAO extends ISingletonService
 	/**
 	 * Retrieve first InTransit warehouse
 	 *
-	 * @param ctx
-	 * @param adOrgId
 	 * @return in transit warehouse or null
 	 * @see #retrieveWarehousesInTransitForOrg(Properties, int)
 	 */
 	I_M_Warehouse retrieveWarehouseInTransitForOrg(Properties ctx, int adOrgId);
 
-	/**
-	 *
-	 * Retrieve all warehouses for a given context
-	 *
-	 * @param ctx
-	 * @return
-	 */
 	List<I_M_Warehouse> retrieveWarehousesForCtx(Properties ctx);
 
 	List<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);

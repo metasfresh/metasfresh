@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchema;
@@ -17,6 +18,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -25,6 +27,7 @@ import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
 
 /*
@@ -68,6 +71,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	{
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
+		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
 		save(discountSchemaRecord);
 
 		final I_C_BPartner bPartnerVendorRecord = newInstance(I_C_BPartner.class);
@@ -86,7 +90,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 
 		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
 				new PurchaseOrderDemandMatcher(),
-				new VendorProductInfoService());
+				new VendorProductInfoService(new BPartnerBL(new UserRepository())));
 
 		// invoke the method under test
 		final Optional<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvent = purchaseCandidateAdvisedEventCreator

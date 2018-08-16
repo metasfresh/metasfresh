@@ -30,6 +30,12 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 public interface IAttributeStorageFactoryService extends ISingletonService
 {
 	/**
+	 * Add {@link IAttributeStorageListener} to be added to
+	 * all {@link IAttributeStorageFactory}s and {@link IAttributeStorage}s that are created by this instance.
+	 */
+	void addAttributeStorageListener(IAttributeStorageListener listener);
+
+	/**
 	 * Calls {@link #createHUAttributeStorageFactory(IHUAttributesDAO)} with the default {@link IHUAttributesDAO} implementation (no decoupled or on-commit saves).
 	 * <p>
 	 */

@@ -177,7 +177,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			return defaultReturnWhenEmpty;
 		}
 
-		final Object modelValue = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+		final Object modelValueNorm = normalizeValue(InterfaceWrapperHelper.getValue(model, columnName).orElse(null));
 		final boolean modelValueIsNull = InterfaceWrapperHelper.isNull(model, columnName);
 
 		for (final Object value : values)
@@ -186,13 +186,27 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			{
 				return true;
 			}
-			else if (Objects.equals(modelValue, value))
+
+			final Object valueNorm = normalizeValue(value);
+			if (Objects.equals(modelValueNorm, valueNorm))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private static final Object normalizeValue(final Object value)
+	{
+		if (value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
+		}
+		else
+		{
+			return value;
+		}
 	}
 
 	@Override

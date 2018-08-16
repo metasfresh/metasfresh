@@ -214,7 +214,7 @@ public class JasperEngine extends AbstractReportEngine
 		final int AD_PInstance_ID = reportContext.getAD_PInstance_ID();
 		final int Record_ID = reportContext.getRecord_ID();
 
-		final Map<String, Object> jrParameters = new HashMap<String, Object>(ctx.size() + 10);
+		final Map<String, Object> jrParameters = new HashMap<>(ctx.size() + 10);
 		for (final Map.Entry<Object, Object> e : ctx.entrySet())
 		{
 			final Object key = e.getKey();
@@ -306,7 +306,7 @@ public class JasperEngine extends AbstractReportEngine
 
 	private final String getReportPath(final int adProcessId, final Map<String, Object> jrParameters) throws JRException
 	{
-		final I_AD_Process process = Services.get(IADProcessDAO.class).retrieveProcessById(Env.getCtx(), adProcessId);
+		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(adProcessId);
 		final String reportPath = process.getJasperReport();
 		final String reportPath_Tabular = process.getJasperReport_Tabular();
 

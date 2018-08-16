@@ -1,5 +1,7 @@
 package de.metas.ui.web;
 
+import java.util.Map;
+
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -45,81 +47,21 @@ public class WebuiURLs
 	// services
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	public static final String PARAM_windowId = "windowId";
-	public static final String PARAM_documentId = "recordId";
-	public static final String PARAM_viewId = "viewId";
+	private static final String PARAM_windowId = "windowId";
+	private static final String PARAM_documentId = "recordId";
+	private static final String PARAM_viewId = "viewId";
+	private static final String PARAM_ResetPasswordToken = "token";
 
 	private static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
+	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
+	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
+	private static final String SYSCONFIG_RESET_PASSWORD_PATH = "webui.frontend.path.resetPassword";
 
-	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.url.document";
-	private static final String DEFAULT_DOCUMENT_PATH = "/window/{" + PARAM_windowId + "}/{" + PARAM_documentId + "}";
-
-	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.url.view";
-	private static final String DEFAULT_VIEW_PATH = "/window/{" + PARAM_windowId + "}?viewId={" + PARAM_viewId + "}";
-
-	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
-	{
-		final String url = getDocumentUrl();
-		if (url == null)
-		{
-			return null;
-		}
-
-		return MapFormat.format(url, ImmutableMap.<String, Object> builder()
-				.put(WebuiURLs.PARAM_windowId, windowId)
-				.put(WebuiURLs.PARAM_documentId, documentId)
-				.build());
-	}
-
-	/**
-	 * @return e.g. https://webui/window/{windowId}/{documentId}
-	 */
-	public String getDocumentUrl()
-	{
-		final String url = getFrontendURL();
-		if (url == null)
-		{
-			return null;
-		}
-
-		final String documentPath = sysConfigBL.getValue(SYSCONFIG_DOCUMENT_PATH, DEFAULT_DOCUMENT_PATH);
-		return url + documentPath;
-	}
-
-	public String getViewUrl(final int adWindowId, @NonNull final String viewId)
-	{
-		Check.assumeGreaterThanZero(adWindowId, "adWindowId");
-		return getViewUrl(String.valueOf(adWindowId), viewId);
-	}
-
-	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
-	{
-		final String url = getViewUrl();
-		if (url == null)
-		{
-			return null;
-		}
-
-		return MapFormat.format(url, ImmutableMap.<String, Object> builder()
-				.put(WebuiURLs.PARAM_windowId, windowId)
-				.put(WebuiURLs.PARAM_viewId, viewId)
-				.build());
-	}
-
-	/**
-	 * @return e.g. https://webui/window/{windowId}?viewId={viewId}
-	 */
-	public String getViewUrl()
-	{
-		final String url = getFrontendURL();
-		if (url == null)
-		{
-			return null;
-		}
-
-		final String documentPath = sysConfigBL.getValue(SYSCONFIG_VIEW_PATH, DEFAULT_VIEW_PATH);
-		return url + documentPath;
-	}
+	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String> builder()
+			.put(SYSCONFIG_DOCUMENT_PATH, "/window/{" + PARAM_windowId + "}/{" + PARAM_documentId + "}")
+			.put(SYSCONFIG_VIEW_PATH, "/window/{" + PARAM_windowId + "}?viewId={" + PARAM_viewId + "}")
+			.put(SYSCONFIG_RESET_PASSWORD_PATH, "/resetPassword?token={" + PARAM_ResetPasswordToken + "}")
+			.build();
 
 	/**
 	 *
@@ -134,5 +76,60 @@ public class WebuiURLs
 		}
 
 		return url.trim();
+	}
+
+	private String getFrontendURL(@NonNull final String pathSysConfigName, final Map<String, Object> params)
+	{
+		String url = getFrontendURL();
+		if (url == null)
+		{
+			return null;
+		}
+
+		final String path = sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName));
+		if (Check.isEmpty(path, true) || "-".equals(path))
+		{
+			return null;
+		}
+
+		url = url + path;
+
+		if (params != null && !params.isEmpty())
+		{
+			url = MapFormat.format(url, params);
+		}
+
+		return url;
+	}
+
+	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
+	{
+		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object> builder()
+				.put(WebuiURLs.PARAM_windowId, windowId)
+				.put(WebuiURLs.PARAM_documentId, documentId)
+				.build());
+	}
+
+	public String getViewUrl(final int adWindowId, @NonNull final String viewId)
+	{
+		Check.assumeGreaterThanZero(adWindowId, "adWindowId");
+		return getViewUrl(String.valueOf(adWindowId), viewId);
+	}
+
+	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
+	{
+		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object> builder()
+				.put(PARAM_windowId, windowId)
+				.put(PARAM_viewId, viewId)
+				.build());
+	}
+
+	public String getResetPasswordUrl(final String token)
+	{
+		Check.assumeNotEmpty(token, "token is not empty");
+
+		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object> builder()
+				.put(PARAM_ResetPasswordToken, token)
+				.build());
 	}
 }

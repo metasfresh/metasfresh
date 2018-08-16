@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -198,7 +199,7 @@ public class LUTUProducerDestinationTestSupport
 		helper.load(lutuProducer, helper.pTomato, BigDecimal.valueOf(qtyCUTotal), helper.uomKg);
 
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
-		return ListUtils.singleElement(hus);
+		return CollectionUtils.singleElement(hus);
 	}
 
 	/**
@@ -221,10 +222,9 @@ public class LUTUProducerDestinationTestSupport
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
 		assertThat(createdCUs.size(), is(1));
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final I_M_HU cuToSplit = createdCUs.get(0);
-		handlingUnitsBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
 
 		return cuToSplit;
@@ -232,7 +232,7 @@ public class LUTUProducerDestinationTestSupport
 
 	public I_M_HU mkRealCUWithTUandQtyCU(final String strCuQty)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
@@ -245,7 +245,7 @@ public class LUTUProducerDestinationTestSupport
 		assertThat(createdTUs.size(), is(1));
 
 		final I_M_HU createdTU = createdTUs.get(0);
-		handlingUnitsBL.setHUStatus(helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		new M_HU().updateChildren(createdTU);
 		save(createdTU);
 
@@ -304,11 +304,12 @@ public class LUTUProducerDestinationTestSupport
 		// data.helper.commitAndDumpHU(createdLUs.get(0));
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final I_M_HU createdLU = createdLUs.get(0);
 		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
-		handlingUnitsBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
+		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		new M_HU().updateChildren(createdLU);

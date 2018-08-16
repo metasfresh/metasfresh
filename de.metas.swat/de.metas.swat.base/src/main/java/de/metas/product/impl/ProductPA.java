@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -158,7 +159,7 @@ public class ProductPA implements IProductPA
 			throw new IllegalArgumentException(PREFIX_ERR_MSG_NONEXISTING_PROD + productId);
 		}
 
-		final int attributeSetId = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
+		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(product);
 
 		final String sql = SQL_SELECT_ASI;
 		final Object[] sqlParams = new Object[] { attributeSetId, text };

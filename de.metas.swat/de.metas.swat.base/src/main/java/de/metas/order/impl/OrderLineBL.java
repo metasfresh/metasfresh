@@ -40,7 +40,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -51,6 +50,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.CostAmount;
 import de.metas.document.IDocTypeBL;
@@ -240,17 +240,16 @@ public class OrderLineBL implements IOrderLineBL
 
 		if (order.isSOTrx() && order.isDropShip())
 		{
-			int C_BPartner_ID = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
-			ol.setC_BPartner_ID(C_BPartner_ID);
+			final int bpartnerId = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
+			ol.setC_BPartner_ID(bpartnerId);
 
-			final I_C_BPartner_Location deliveryLocation = Services.get(IOrderBL.class).getShipToLocation(order);
-			int C_BPartner_Location_ID = deliveryLocation != null ? deliveryLocation.getC_BPartner_Location_ID() : -1;
+			final BPartnerLocationId deliveryLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(deliveryLocationId, -1));
 
-			ol.setC_BPartner_Location_ID(C_BPartner_Location_ID);
-
-			int AD_User_ID = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
-			ol.setAD_User_ID(AD_User_ID);
+			final int contactId = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
+			ol.setAD_User_ID(contactId);
 		}
+
 		return ol;
 	}
 
@@ -304,7 +303,7 @@ public class OrderLineBL implements IOrderLineBL
 		final int priceListId = order.getM_PriceList_ID();
 		final int precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 
-		BigDecimal lineNetAmt = qtyInPriceUOM.getQty().multiply(ol.getPriceActual());
+		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
 		if (lineNetAmt.scale() > precision)
 		{
 			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
@@ -331,7 +330,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updatePrices(final OrderLinePriceUpdateRequest request)
+	public void updatePrices(@NonNull final OrderLinePriceUpdateRequest request)
 	{
 		OrderLinePriceCalculator.builder()
 				.request(request)
@@ -483,7 +482,7 @@ public class OrderLineBL implements IOrderLineBL
 	public BigDecimal convertQtyEnteredToPriceUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final Quantity qtyEntered = getQtyEntered(orderLine);
-		return convertToPriceUOM(qtyEntered, orderLine).getQty();
+		return convertToPriceUOM(qtyEntered, orderLine).getAsBigDecimal();
 	}
 
 	@Override

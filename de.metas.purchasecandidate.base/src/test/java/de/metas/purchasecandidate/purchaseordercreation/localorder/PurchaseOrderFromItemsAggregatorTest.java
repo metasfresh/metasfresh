@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.impl.OrderLineBL;
@@ -67,7 +67,7 @@ import mockit.Expectations;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, GrossProfitPriceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemsAggregatorTest
 {
 	private I_C_UOM EACH;
@@ -126,7 +126,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.build();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
-				.groupReference(DemandGroupReference.createEmpty())
+				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
 				.purchaseDatePromised(SystemTime.asLocalDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
@@ -137,7 +137,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.qtyToPurchase(TEN)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
-				.profitInfo(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();

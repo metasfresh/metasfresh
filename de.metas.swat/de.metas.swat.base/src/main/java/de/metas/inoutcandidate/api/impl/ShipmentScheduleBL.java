@@ -48,6 +48,7 @@ import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -288,7 +289,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			// FRESH-334 retrieve the bp product for org or for org 0
 			final org.compiere.model.I_M_Product product = olAndSched.getSched().getM_Product();
-			final int orgId = product.getAD_Org_ID();
+			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
 			final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
 			if (bpp == null)

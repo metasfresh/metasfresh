@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.user.UserRepository;
+import org.adempiere.util.Services;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -23,6 +25,8 @@ import org.compiere.model.X_M_InOut;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
@@ -108,6 +112,8 @@ public class M_InOutLine_HandlerTest
 		POJOWrapper.setInstanceName(paymentTermB, "paymentTermB");
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	@Test

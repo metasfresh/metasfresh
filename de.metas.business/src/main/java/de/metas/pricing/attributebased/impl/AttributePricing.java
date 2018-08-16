@@ -6,7 +6,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -16,11 +15,11 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
@@ -28,6 +27,9 @@ import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 
 public class AttributePricing implements IPricingRule
 {
@@ -65,13 +67,13 @@ public class AttributePricing implements IPricingRule
 			return false;
 		}
 
-		if (pricingCtx.getM_Product_ID() <= 0)
+		if (pricingCtx.getProductId() == null)
 		{
 			logger.debug("Not applying because no product: {}", pricingCtx);
 			return false;
 		}
 
-		if (!getAttributeSetInstanceAware(pricingCtx).isPresent())
+		if (!pricingCtx.getAttributeSetInstanceAware().isPresent())
 		{
 			logger.debug("Not applying because not ASI aware: {}", pricingCtx);
 			return false;
@@ -114,21 +116,22 @@ public class AttributePricing implements IPricingRule
 	{
 		Check.assumeNotNull(productPrice, "Parameter productPrice is not null");
 
-		final I_M_Product product = InterfaceWrapperHelper.create(productPrice.getM_Product(), I_M_Product.class);
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
-		
+
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
 		result.setPriceLimit(productPrice.getPriceLimit());
 		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
-		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
+		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
-		result.setM_PriceList_Version_ID(productPrice.getM_PriceList_Version_ID());
+		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
 		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
@@ -178,12 +181,12 @@ public class AttributePricing implements IPricingRule
 		}
 
 		// 2nd fall back to viewing the referenced object as ASI and then check if someone attached a IProductPriceAware to it as dynamic attribute
-		final Optional<IAttributeSetInstanceAware> attributeSetInstanceAware = getAttributeSetInstanceAware(pricingCtx);
-		if (attributeSetInstanceAware.isPresent())
+		final IAttributeSetInstanceAware attributeSetInstanceAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
+		if (attributeSetInstanceAware != null)
 		{
 			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
-			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware.get());
+			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware);
 			return explicitProductPriceAware;
 		}
 		return Optional.empty();
@@ -219,7 +222,7 @@ public class AttributePricing implements IPricingRule
 		}
 
 		// Make sure if the product price matches our pricing context
-		if (productPrice.getM_Product_ID() != pricingCtx.getM_Product_ID())
+		if (productPrice.getM_Product_ID() != ProductId.toRepoId(pricingCtx.getProductId()))
 		{
 			logger.debug("Returning null because M_ProductPrice.M_Product_ID is not matching pricing context product: {}", productPrice);
 			return Optional.empty();
@@ -253,7 +256,7 @@ public class AttributePricing implements IPricingRule
 		}
 
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
-				.setM_Product_ID(pricingCtx.getM_Product_ID())
+				.setProductId(pricingCtx.getProductId())
 				.matching(_defaultMatchers)
 				.matchingAttributes(attributeSetInstance)
 				.firstMatching();
@@ -281,7 +284,7 @@ public class AttributePricing implements IPricingRule
 	 */
 	protected final static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)
 	{
-		final IAttributeSetInstanceAware asiAware = getAttributeSetInstanceAware(pricingCtx).orElse(null);
+		final IAttributeSetInstanceAware asiAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
 		if (asiAware == null)
 		{
 			return null;
@@ -298,23 +301,5 @@ public class AttributePricing implements IPricingRule
 
 		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
 		return attributeSetInstance;
-	}
-
-	/**
-	 * 
-	 * @param pricingCtx
-	 * @return the referenced object of the given {@code pricingCtx} as ASI-Aware. Note that the respective {@code M_AttributeSetInstance_ID} might be {@code <= 0}.
-	 */
-	private static final Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware(final IPricingContext pricingCtx)
-	{
-		final Object referencedObj = pricingCtx.getReferencedObject();
-		if (null == referencedObj)
-		{
-			return Optional.empty();
-		}
-
-		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
-		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
-		return Optional.ofNullable(asiAware);
 	}
 }

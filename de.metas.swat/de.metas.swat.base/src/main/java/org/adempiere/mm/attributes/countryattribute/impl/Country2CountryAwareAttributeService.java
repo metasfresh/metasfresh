@@ -26,6 +26,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
@@ -53,11 +54,11 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 	}
 	
 	@Override
-	public int getM_Attribute_ID(final ICountryAware countryAware)
+	public AttributeId getAttributeId(final ICountryAware countryAware)
 	{
 		final int adClientId = countryAware.getAD_Client_ID();
 		final int adOrgId = countryAware.getAD_Org_ID();
-		final int countryAttributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(adClientId, adOrgId);
+		final AttributeId countryAttributeId = Services.get(ICountryAttributeDAO.class).retrieveCountryAttributeId(adClientId, adOrgId);
 		return countryAttributeId;
 	}
 

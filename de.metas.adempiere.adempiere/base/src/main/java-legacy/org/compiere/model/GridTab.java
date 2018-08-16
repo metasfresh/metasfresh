@@ -98,6 +98,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IProcessPreconditionsContext;
+import lombok.NonNull;
 
 /**
  * Tab Model.
@@ -970,17 +971,17 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			final int maxRowsActual = getMaxQueryRecordsActual(maxRows);
 			m_mTable.setSelectWhereClause(where.toString(), m_vo.getDefaultWhereClause(), m_vo.onlyCurrentRows && !isDetail(), onlyCurrentDays);
 			m_mTable.open(maxRowsActual);
-			
+
 			// gh #986: find out if this is a "failed" zoom operation
-			if (m_query != null 
-					&& !Check.isEmpty(m_query.getZoomTableName()) 
+			if (m_query != null
+					&& !Check.isEmpty(m_query.getZoomTableName())
 					&& !Check.isEmpty(m_query.getZoomColumnName())
 					&& m_mTable.getRowCount() < 1)
 			{
-				// gh #986: see if something can be done about the missing record. If so, request a retry. 
+				// gh #986: see if something can be done about the missing record. If so, request a retry.
 				if (NoDataFoundHandlers.get().invokeHandlers(
-						m_query.getZoomTableName(), 
-						new Object[] { m_query.getZoomValue() }, 
+						m_query.getZoomTableName(),
+						new Object[] { m_query.getZoomValue() },
 						PlainContextAware.newOutOfTrx(getCtx())))
 				{
 					// Since I don't know how to do the retry in here, I throw an exception and the retry will be handled somewhere else in the stack.
@@ -1500,10 +1501,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * @param copyMode
 	 * @return true if copied/new
 	 */
-	public boolean dataNew(final DataNewCopyMode copyMode)
+	public boolean dataNew(@NonNull final DataNewCopyMode copyMode)
 	{
-		Check.assumeNotNull(copyMode, "copyMode not null");
-
 		// metas: end
 		log.debug("dataNew: {}, copyMode={}", this, copyMode);
 		if (!isInsertRecord())
@@ -2200,7 +2199,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		return m_vo.getAD_Tab_ID();
 	}	// getAD_Tab_ID
-	
+
 	public int getTemplateTabId()
 	{
 		return m_vo.getTemplateTabId();
@@ -2575,11 +2574,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		final int adUserId = Env.getAD_User_ID(Env.getCtx());
 		return Services.get(IUserRolePermissionsDAO.class).retrievePrivateAccessRecordIds(adUserId, getAD_Table_ID());
 	}
-	
+
 	private Set<Integer> getLockedRecordIds()
 	{
 		return lockedRecordIdsSupplier.get();
@@ -2594,7 +2593,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return false;
 		}
-		
+
 		return getLockedRecordIds().contains(getRecord_ID());
 	}	// isLocked
 
@@ -2609,7 +2608,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		final int adUserId = Env.getAD_User_ID(Env.getCtx());
 		final int adTableId = getAD_Table_ID();
-		
+
 		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 		if(lock)
 		{
@@ -2619,7 +2618,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			permissionsDAO.deletePrivateAccess(adUserId, adTableId, recordId);
 		}
-		
+
 		lockedRecordIdsSupplier.forget();
 	}
 
@@ -4378,17 +4377,17 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 	}
-	
-	
+
+
 	//
 	//
 	//
-	
+
 	public IProcessPreconditionsContext toPreconditionsContext()
 	{
 		return new GridTabAsPreconditionsContext(this);
 	}
-	
+
 	private static final class GridTabAsPreconditionsContext implements IProcessPreconditionsContext
 	{
 		private final GridTab gridTab;
@@ -4397,13 +4396,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			this.gridTab = gridTab;
 		}
-		
+
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this).addValue(gridTab).toString();
 		}
-		
+
 		@Override
 		public int getAD_Window_ID()
 		{
@@ -4421,7 +4420,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return gridTab.getModel(modelClass);
 		}
-		
+
 		@Override
 		public <T> List<T> getSelectedModels(final Class<T> modelClass)
 		{
@@ -4429,13 +4428,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			final T model = getSelectedModel(modelClass);
 			return ImmutableList.of(model);
 		}
-		
+
 		@Override
 		public int getSingleSelectedRecordId()
 		{
 			return gridTab.getRecord_ID();
 		}
-		
+
 		@Override
 		public int getSelectionSize()
 		{

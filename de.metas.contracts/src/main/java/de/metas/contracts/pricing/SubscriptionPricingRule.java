@@ -107,7 +107,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
-		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
+		subscriptionPricingCtx.setPriceListVersionId(null);
 		
 		return subscriptionPricingCtx;
 	}
@@ -144,8 +144,8 @@ public class SubscriptionPricingRule implements IPricingRule
 		
 		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
 		result.setPricingSystemId(subscriptionPricingResult.getPricingSystemId());
-		result.setM_PriceList_Version_ID(subscriptionPricingResult.getM_PriceList_Version_ID());
-		result.setM_Product_Category_ID(subscriptionPricingResult.getM_Product_Category_ID());
+		result.setPriceListVersionId(subscriptionPricingResult.getPriceListVersionId());
+		result.setProductCategoryId(subscriptionPricingResult.getProductCategoryId());
 		result.setPrecision(subscriptionPricingResult.getPrecision());
 		result.setPriceLimit(subscriptionPricingResult.getPriceLimit());
 		result.setPriceList(subscriptionPricingResult.getPriceList());

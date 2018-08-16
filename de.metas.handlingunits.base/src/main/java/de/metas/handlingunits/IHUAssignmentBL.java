@@ -162,4 +162,6 @@ public interface IHUAssignmentBL extends ISingletonService
 	 * @return builder
 	 */
 	IHUAssignmentBuilder createHUAssignmentBuilder();
+
+	void copyHUAssignments(Object sourceModel, Object targetModel);
 }

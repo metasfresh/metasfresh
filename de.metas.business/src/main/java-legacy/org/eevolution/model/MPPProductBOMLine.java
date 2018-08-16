@@ -42,46 +42,17 @@ import org.eevolution.api.IProductBOMBL;
  */
 public class MPPProductBOMLine extends X_PP_Product_BOMLine
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -6729103151164195906L;
 
-	/**
-	 * Default Constructor
-	 * 
-	 * @param ctx context
-	 * @param PP_Product_BOMLine BOM line to load
-	 * @param Transaction Line
-	 */
 	public MPPProductBOMLine(Properties ctx, int PP_Product_BOMLine, String trxName)
 	{
 		super(ctx, PP_Product_BOMLine, trxName);
-	} // MPPProductBOMLine
-
-	/**
-	 * Parent Constructor.
-	 * 
-	 * @param bom parent BOM
-	 */
-	public MPPProductBOMLine(MPPProductBOM bom)
-	{
-		super(bom.getCtx(), 0, bom.get_TableName());
-		if (bom.get_ID() <= 0)
-			throw new IllegalArgumentException("Header not saved");
-		setPP_Product_BOM_ID(bom.getPP_Product_BOM_ID()); // parent
 	}
 
-	/**
-	 * Load Constructor
-	 * 
-	 * @param ctx context
-	 * @param rs result set record
-	 */
 	public MPPProductBOMLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	} // MPPProductBOMLine
+	}
 
 	@Override
 	protected boolean beforeSave(boolean newRecord)
@@ -168,22 +139,8 @@ public class MPPProductBOMLine extends X_PP_Product_BOMLine
 	/**
 	 * @return UOM precision
 	 */
-	public int getPrecision()
+	private int getPrecision()
 	{
 		return MUOM.getPrecision(getCtx(), getC_UOM_ID());
-	}
-
-	/**
-	 * @return co-product cost allocation percent (i.e. -1/qty)
-	 */
-	public BigDecimal getCostAllocationPerc()
-	{
-		BigDecimal qty = getQty(false).negate();
-		BigDecimal allocationPercent = BigDecimal.ZERO;
-		if (qty.signum() != 0)
-		{
-			allocationPercent = BigDecimal.ONE.divide(qty, 4, RoundingMode.HALF_UP);
-		}
-		return allocationPercent;
 	}
 }

@@ -41,11 +41,6 @@ import org.compiere.model.PO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.freighcost.api.IFreightCostBL;
 
-/**
- * metas version for copy an order line
- *
- * @author Cristina Ghita
- */
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	/**
@@ -64,13 +59,13 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		final Properties ctx = InterfaceWrapperHelper.getCtx(po);
 		if (Services.get(IFreightCostBL.class).isFreightCostProduct(ctx, orderLine.getM_Product_ID(), ITrx.TRXNAME_None))
 		{
-			return;
+			return ;
 		}
 
 		// Check if we shall skip this record
 		if (!isCopyRecord(orderLine))
 		{
-			return;
+			return ;
 		}
 
 		// delegate to super

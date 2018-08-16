@@ -16,6 +16,8 @@ import org.compiere.util.DisplayType;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException
@@ -40,12 +42,12 @@ public class ProductNotOnPriceListException extends AdempiereException
 	private static String buildMessage(final IPricingContext pricingCtx, final int documentLineNo)
 	{
 		return buildMessage(documentLineNo,
-				pricingCtx.getM_Product_ID(),
+				pricingCtx.getProductId(),
 				pricingCtx.getPriceListId(),
 				pricingCtx.getPriceDate());
 	}
 
-	protected static String buildMessage(final int documentLineNo, final int productId, final PriceListId priceListId, final Timestamp priceDate)
+	protected static String buildMessage(final int documentLineNo, final ProductId productId, final PriceListId priceListId, final Timestamp priceDate)
 	{
 		final StringBuilder sb = new StringBuilder();
 		if (documentLineNo > 0)
@@ -56,14 +58,14 @@ public class ProductNotOnPriceListException extends AdempiereException
 			}
 			sb.append("@Line@:").append(documentLineNo);
 		}
-		if (productId > 0)
+		if (productId != null)
 		{
-			final I_M_Product product = productId > 0 ? loadOutOfTrx(productId, I_M_Product.class) : null;
+			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
 			if (sb.length() > 0)
 			{
 				sb.append(", ");
 			}
-			sb.append("@M_Product_ID@:").append(product == null ? "?" : product.getValue() + "_" + product.getName());
+			sb.append("@M_Product_ID@:").append(productName);
 		}
 		if (priceListId != null)
 		{

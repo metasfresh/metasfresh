@@ -2,13 +2,16 @@ package de.metas.shipper.gateway.derkurier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalTime;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderEmailer;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
+import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 
@@ -48,14 +51,18 @@ public class DerKurierClientFactoryManualTest
 
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,
+				new DerKurierDeliveryOrderService(),
 				new DerKurierDeliveryOrderRepository(converters),
-				new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository),
 				converters);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()
 				.restApiBaseUrl("https://leoz.derkurier.de:13000/rs/api/v1")
 				.customerNumber("12345")
-				.parcelNumberAdSequenceId(23)
+				.parcelNumberAdSequenceId(ParcelNumberGenerator.NO_AD_SEQUENCE_ID_FOR_TESTING)
+				.collectorCode("00")
+				.customerCode("01")
+				.desiredTimeFrom(LocalTime.now())
+				.desiredTimeTo(LocalTime.now().plusHours(1))
 				.build();
 		final DerKurierClient client = derKurierClientFactory.createClient(shipperConfig);
 

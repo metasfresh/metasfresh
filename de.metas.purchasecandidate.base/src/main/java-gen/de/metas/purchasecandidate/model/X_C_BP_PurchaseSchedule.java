@@ -14,7 +14,7 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2035991312L;
+	private static final long serialVersionUID = -331589554L;
 
     /** Standard Constructor */
     public X_C_BP_PurchaseSchedule (Properties ctx, int C_BP_PurchaseSchedule_ID, String trxName)
@@ -100,6 +100,43 @@ public class X_C_BP_PurchaseSchedule extends org.compiere.model.PO implements I_
 	public int getC_BP_PurchaseSchedule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_PurchaseSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Calendar() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
+	}
+
+	/** Set Kalender.
+		@param C_Calendar_ID 
+		Bezeichnung des Buchführungs-Kalenders
+	  */
+	@Override
+	public void setC_Calendar_ID (int C_Calendar_ID)
+	{
+		if (C_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Calendar_ID, Integer.valueOf(C_Calendar_ID));
+	}
+
+	/** Get Kalender.
+		@return Bezeichnung des Buchführungs-Kalenders
+	  */
+	@Override
+	public int getC_Calendar_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Calendar_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

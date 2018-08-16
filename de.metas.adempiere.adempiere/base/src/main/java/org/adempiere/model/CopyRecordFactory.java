@@ -65,14 +65,15 @@ public final class CopyRecordFactory
 		{
 			result.addOnRecordCopiedListener(listener);
 		}
-		
+
 		return result;
 	}
 
-	public static void registerCopyRecordSupport(final String tableName, final Class<? extends CopyRecordSupport> copyRecordSupportClass)
+	public static void registerCopyRecordSupport(
+			@NonNull final String tableName,
+			@NonNull final Class<? extends CopyRecordSupport> copyRecordSupportClass)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-		Check.assumeNotNull(copyRecordSupportClass, "copyRecordSupportClass not null");
 		tableName2copyRecordSupportClass.put(tableName, copyRecordSupportClass);
 	}
 
@@ -128,48 +129,4 @@ public final class CopyRecordFactory
 	{
 		staticOnRecordCopiedListeners.add(listener);
 	}
-
-	
-//	public static final class CopyRecordSupportBuilder
-//	{
-//		private String tableName;
-//
-//		private CopyRecordSupportBuilder(final String tableName)
-//		{
-//			this.tableName = tableName;
-//		}
-//		
-//		public CopyRecordSupport build()
-//		{
-//			final CopyRecordSupport result;
-//			final Class<? extends CopyRecordSupport> copyRecordSupportClass = tableName2copyRecordSupportClass.get(tableName);
-//			if (copyRecordSupportClass == null)
-//			{
-//				result = new GeneralCopyRecordSupport(this);
-//			}
-//			else
-//			{
-//				try
-//				{
-//					result = copyRecordSupportClass.newInstance();
-//				}
-//				catch (Exception ex)
-//				{
-//					throw new AdempiereException("Failed creating " + copyRecordSupportClass + " instance for " + tableName, ex);
-//				}
-//			}
-//
-//			for (final IOnRecordCopiedListener listener : staticOnRecordCopiedListeners)
-//			{
-//				result.addOnRecordCopiedListener(listener);
-//			}
-//			
-//			return result;
-//		}
-//		
-//		public String getTableName()
-//		{
-//			return tableName;
-//		}
-//	}
 }

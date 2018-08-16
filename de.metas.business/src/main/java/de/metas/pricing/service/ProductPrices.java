@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -20,6 +18,8 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -50,11 +50,6 @@ public class ProductPrices
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
 
-	public static final ProductPriceQuery newQuery()
-	{
-		return new ProductPriceQuery();
-	}
-
 	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
 		return new ProductPriceQuery()
@@ -69,13 +64,13 @@ public class ProductPrices
 	 * @param productId product (negative values are tolerated)
 	 * @return true if exists
 	 */
-	public static boolean hasMainProductPrice(final I_M_PriceList_Version plv, final int productId)
+	public static boolean hasMainProductPrice(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		if (plv == null)
 		{
 			return false;
 		}
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return false;
 		}
@@ -93,7 +88,7 @@ public class ProductPrices
 
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(
 				productPrice.getM_PriceList_Version(),
-				productPrice.getM_Product_ID());
+				ProductId.ofRepoId(productPrice.getM_Product_ID()));
 
 		final boolean productPriceIsMainPrice = allMainPrices.stream()
 				.anyMatch(mainPrice -> mainPrice.getM_ProductPrice_ID() == productPrice.getM_ProductPrice_ID());
@@ -105,25 +100,15 @@ public class ProductPrices
 		getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
 
-	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final int productId)
+	public static final I_M_ProductPrice retrieveMainProductPriceOrNull(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plv, productId);
-
-		if (allMainPrices.isEmpty())
-		{
-			return null;
-		}
-		if (allMainPrices.size() == 1)
-		{
-			return allMainPrices.get(0);
-		}
-
 		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
 
 	private static List<I_M_ProductPrice> retrieveAllMainPrices(
 			@NonNull final I_M_PriceList_Version plv,
-			final int productId)
+			final ProductId productId)
 	{
 		final List<I_M_ProductPrice> allMainPrices = newMainProductPriceQuery(plv, productId)
 				.toQuery()
@@ -131,34 +116,35 @@ public class ProductPrices
 		return allMainPrices;
 	}
 
-	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final int productId)
+	private static final ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		return newQuery(plv)
-				.setM_Product_ID(productId)
+				.setProductId(productId)
 				.noAttributePricing()
 				//
 				.addMatchersIfAbsent(MATCHERS_MainProductPrice); // IMORTANT: keep it last
 	}
 
-	private static I_M_ProductPrice getFirstOrThrowExceptionIfMoreThanOne(@Nullable final List<I_M_ProductPrice> allMainPrices)
+	private static I_M_ProductPrice getFirstOrThrowExceptionIfMoreThanOne(final List<I_M_ProductPrice> allMainPrices)
 	{
-		final boolean listIsNullOrEmpty = allMainPrices == null || allMainPrices.size() <= 1;
-		if (listIsNullOrEmpty)
+		if (allMainPrices.isEmpty())
 		{
 			return null;
 		}
-
-		if (allMainPrices.size() == 1)
+		else if (allMainPrices.size() == 1)
 		{
 			return allMainPrices.get(0);
 		}
-
-		throw createException(allMainPrices.get(0));
+		else
+		{
+			throw newDuplicateMainProductPriceException(allMainPrices.get(0));
+		}
 	}
 
-	private static AdempiereException createException(@NonNull final I_M_ProductPrice someMainProductPrice)
+	private static AdempiereException newDuplicateMainProductPriceException(@NonNull final I_M_ProductPrice someMainProductPrice)
 	{
-		final org.compiere.model.I_M_Product product = someMainProductPrice.getM_Product();
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final String productName = productBL.getProductValueAndName(ProductId.ofRepoId(someMainProductPrice.getM_Product_ID()));
 
 		final I_M_PriceList_Version plv = someMainProductPrice.getM_PriceList_Version();
 		final I_M_PriceList pl = plv.getM_PriceList();
@@ -168,7 +154,7 @@ public class ProductPrices
 				.setParameter(I_M_PricingSystem.Table_Name, ps.getName())
 				.setParameter(I_M_PriceList.Table_Name, pl.getName())
 				.setParameter(I_M_PriceList_Version.Table_Name, plv.getName())
-				.setParameter(I_M_Product.Table_Name, product.getValue() + "_" + product.getName());
+				.setParameter(I_M_Product.Table_Name, productName);
 
 		return exception;
 	}

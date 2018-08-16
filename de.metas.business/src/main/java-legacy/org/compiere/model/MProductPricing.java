@@ -27,8 +27,10 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 
 /**
  * Product Price Calculations
@@ -108,14 +110,9 @@ public class MProductPricing
 		return result.getDiscount();
 	}	// getDiscount
 
-	/**************************************************************************
-	 * Get Product ID
-	 * 
-	 * @return id
-	 */
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return pricingCtx.getM_Product_ID();
+		return pricingCtx.getProductId();
 	}
 
 	/**
@@ -135,26 +132,17 @@ public class MProductPricing
 	}
 
 	/**
-	 * Get PriceList Version
-	 * 
-	 * @return plv
-	 */
-	public int getM_PriceList_Version_ID()
-	{
-		return result.getM_PriceList_Version_ID();
-	}	// getM_PriceList_Version_ID
-
-	/**
 	 * Set PriceList Version
 	 * 
 	 * @param M_PriceList_Version_ID plv
 	 */
 	public void setM_PriceList_Version_ID(int M_PriceList_Version_ID)
 	{
-		pricingCtx.setM_PriceList_Version_ID(M_PriceList_Version_ID);
-		result.setM_PriceList_Version_ID(M_PriceList_Version_ID);
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(M_PriceList_Version_ID);
+		pricingCtx.setPriceListVersionId(priceListVersionId);
+		result.setPriceListVersionId(priceListVersionId);
 		resetResult();
-	}	// setM_PriceList_Version_ID
+	}
 
 	/**
 	 * Get Price Date
@@ -301,26 +289,6 @@ public class MProductPricing
 				+ "]";
 	}
 
-	public int getAD_Table_ID()
-	{
-		return pricingCtx.getAD_Table_ID();
-	}
-
-	public void setAD_Table_ID(int adTableId)
-	{
-		pricingCtx.setAD_Table_ID(adTableId);
-	}
-
-	public int getRecord_ID()
-	{
-		return pricingCtx.getRecord_ID();
-	}
-
-	public void setRecord_ID(int recordId)
-	{
-		pricingCtx.setRecord_ID(recordId);
-	}
-	
 	public void setConvertPriceToContextUOM(boolean convertPriceToContextUOM)
 	{
 		pricingCtx.setConvertPriceToContextUOM(convertPriceToContextUOM);

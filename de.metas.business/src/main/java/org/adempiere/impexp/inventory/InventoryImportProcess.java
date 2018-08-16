@@ -11,6 +11,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -26,7 +27,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_Inventory;
@@ -39,6 +39,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.inventory.IInventoryBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -231,7 +232,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 		{
 			final int M_AttributeSetInstance_ID = extractM_AttributeSetInstance_ID(importRecord);
 			inventoryLine = InterfaceWrapperHelper.create(getCtx(), I_M_InventoryLine.class, ITrx.TRXNAME_ThreadInherited);
-			inventoryLine.setQtyInternalUse(importRecord.getQtyInternalUse());
+			inventoryLine.setQtyInternalUse(importRecord.getQtyInternalUse().negate());
 			inventoryLine.setM_Inventory(inventory);
 			inventoryLine.setM_Locator(importRecord.getM_Locator());
 			inventoryLine.setM_Product(importRecord.getM_Product());
@@ -253,45 +254,43 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	private int extractM_AttributeSetInstance_ID(@NonNull final I_I_Inventory importRecord)
 	{
 		int M_AttributeSetInstance_ID = 0;
-		final I_M_Product product = InterfaceWrapperHelper.load(importRecord.getM_Product_ID(), I_M_Product.class);
-		if (productBL.isInstanceAttribute(product))
+		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
+		if (productBL.isInstanceAttribute(productId))
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(importRecord);
-
-			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(importRecord.getM_Product());
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
 
 			// lot
 			if (!Check.isEmpty(importRecord.getLot(), true))
 			{
-				final I_M_Attribute lotNumberAttr = lotNumberDateAttributeDAO.getLotNumberAttribute(ctx);
-				attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttr, importRecord.getLot());
+				final AttributeId lotNumberAttrId = lotNumberDateAttributeDAO.getLotNumberAttributeId();
+				attributeSetInstanceBL.setAttributeInstanceValue(asi, lotNumberAttrId, importRecord.getLot());
 			}
 			//
 			// BestBeforeDate
 			if (importRecord.getHU_BestBeforeDate() != null)
 			{
-				final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_BestBeforeDate, I_M_Attribute.class);
+				final I_M_Attribute bestBeforeDateAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_BestBeforeDate);
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, bestBeforeDateAttr, importRecord.getHU_BestBeforeDate());
 			}
 			//
 			// TE
 			if (!Check.isEmpty(importRecord.getTE(), true))
 			{
-				final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_TE, I_M_Attribute.class);
+				final I_M_Attribute TEAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_TE);
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, TEAttr, importRecord.getTE());
 			}
 			//
 			// DateReceived
 			if (importRecord.getDateReceived() != null)
 			{
-				final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_DateReceived, I_M_Attribute.class);
+				final I_M_Attribute dateReceivedAttr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_DateReceived);
 				attributeSetInstanceBL.setAttributeInstanceValue(asi, dateReceivedAttr, importRecord.getDateReceived());
 			}
 			//
 			// SubProducerBPartner_Value
 			if (!Check.isEmpty(importRecord.getSubProducerBPartner_Value(), true))
 			{
-				final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(ctx, AttributeConstants.ATTR_SubProducerBPartner_Value, I_M_Attribute.class);
+				final I_M_Attribute subProducerBPartnettr = attributeDAO.retrieveAttributeByValue(AttributeConstants.ATTR_SubProducerBPartner_Value);
 				final I_M_AttributeValue subProducerBPartneValue = getOrCreateSubproducerAttributeValue(subProducerBPartnettr, importRecord);
 				attributeSetInstanceBL.getCreateAttributeInstance(asi, subProducerBPartneValue);
 			}

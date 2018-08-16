@@ -75,8 +75,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private Quantity qtyToPurchaseInitial;
 
-	@Nullable
-	private PurchaseProfitInfo profitInfo;
+	private PurchaseProfitInfo profitInfoOrNull;
 
 	@NonNull
 	private LocalDateTime purchaseDatePromised;
@@ -84,7 +83,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private LocalDateTime purchaseDatePromisedInitial;
 
-	@Getter(AccessLevel.NONE)
+	// @Getter(AccessLevel.NONE)
 	private final Duration reminderTime;
 
 	@Getter(AccessLevel.PRIVATE)
@@ -124,7 +123,7 @@ public class PurchaseCandidate
 			@NonNull final LocalDateTime purchaseDatePromised,
 			final Duration reminderTime,
 			//
-			final PurchaseProfitInfo profitInfo,
+			@Nullable final PurchaseProfitInfo profitInfoOrNull,
 			//
 			@Singular final List<PurchaseItem> purchaseItems,
 			//
@@ -157,7 +156,7 @@ public class PurchaseCandidate
 		this.purchaseDatePromisedInitial = purchaseDatePromised;
 		this.reminderTime = reminderTime;
 
-		this.profitInfo = profitInfo;
+		this.profitInfoOrNull = profitInfoOrNull;
 
 		this.purchaseOrderItems = purchaseItems
 				.stream()
@@ -178,7 +177,7 @@ public class PurchaseCandidate
 		qtyToPurchase = from.qtyToPurchase;
 		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
 
-		profitInfo = from.profitInfo;
+		profitInfoOrNull = from.profitInfoOrNull;
 
 		purchaseDatePromised = from.purchaseDatePromised;
 		purchaseDatePromisedInitial = from.purchaseDatePromisedInitial;
@@ -430,15 +429,5 @@ public class PurchaseCandidate
 	public List<PurchaseErrorItem> getPurchaseErrorItems()
 	{
 		return ImmutableList.copyOf(purchaseErrorItems);
-	}
-
-	public LocalDateTime getReminderDate()
-	{
-		if (reminderTime == null || purchaseDatePromised == null)
-		{
-			return null;
-		}
-
-		return purchaseDatePromised.minus(reminderTime);
 	}
 }

@@ -6,10 +6,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 
-import de.metas.acct.IFactAcctLogBL;
-import de.metas.acct.IFactAcctLogDAO;
-import de.metas.acct.async.FactAcctLogProcessRequest;
-import de.metas.acct.async.FactAcctLogWorkpackageProcessor;
+import de.metas.acct.aggregation.IFactAcctLogBL;
+import de.metas.acct.aggregation.IFactAcctLogDAO;
+import de.metas.acct.aggregation.async.FactAcctLogProcessRequest;
+import de.metas.acct.aggregation.async.FactAcctLogWorkpackageProcessor;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.process.JavaProcess;
 

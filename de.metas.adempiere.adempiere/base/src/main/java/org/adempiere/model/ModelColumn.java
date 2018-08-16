@@ -10,12 +10,12 @@ package org.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,11 +30,11 @@ import com.google.common.base.Function;
 
 /**
  * Class used to describe a column in a particular model.
- * 
+ *
  * Please note all COLUMN_ fields from generated interfaces.
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <MT> table model class
  * @param <CMT> column's model class
  */
@@ -96,9 +96,9 @@ public final class ModelColumn<MT, CMT>
 
 	/**
 	 * Gets model class.
-	 * 
+	 *
 	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return I_C_Invoice.class
-	 * 
+	 *
 	 * @return model class
 	 */
 	public Class<MT> getModelClass()
@@ -108,9 +108,9 @@ public final class ModelColumn<MT, CMT>
 
 	/**
 	 * Gets model table name.
-	 * 
+	 *
 	 * e.g. if we are talking about I_C_Invoice model class then this method will return "C_Invoice" (i.e. I_C_Invoice.Table_Name)
-	 * 
+	 *
 	 * @return model table name
 	 */
 	public synchronized String getTableName()
@@ -124,9 +124,9 @@ public final class ModelColumn<MT, CMT>
 
 	/**
 	 * Gets column name
-	 * 
+	 *
 	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return "C_BPartner_ID"
-	 * 
+	 *
 	 * @return column name
 	 */
 	public String getColumnName()
@@ -136,9 +136,9 @@ public final class ModelColumn<MT, CMT>
 
 	/**
 	 * Gets column's model class or null
-	 * 
+	 *
 	 * e.g. if we are talking about C_Invoice.C_BPartner_ID field then this method will return I_C_BPartner.class
-	 * 
+	 *
 	 * @return column's model class or null
 	 */
 	public Class<CMT> getColumnModelType()
@@ -162,7 +162,7 @@ public final class ModelColumn<MT, CMT>
 
 	/**
 	 * Function which gets the Value of this model column.
-	 * 
+	 *
 	 * @author tsa
 	 *
 	 */
@@ -172,7 +172,7 @@ public final class ModelColumn<MT, CMT>
 		@Override
 		public Object apply(final MT model)
 		{
-			final Object value = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+			final Object value = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 			return value;
 		}
 

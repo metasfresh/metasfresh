@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
@@ -41,10 +42,11 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -59,12 +61,6 @@ public abstract class AbstractDeliveryTest
 	/** Watches current test and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
-	public final static void staticInit()
-	{
-		AdempiereTestHelper.get().init();
-	}
 
 	protected final Properties ctx = Env.getCtx();
 	protected final String trxName = ITrx.TRXNAME_None;
@@ -115,6 +111,7 @@ public abstract class AbstractDeliveryTest
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		new Expectations()
 		{{
@@ -127,15 +124,12 @@ public abstract class AbstractDeliveryTest
 						, order
 						, -1 // taxCategoryId
 						, orderLine.getM_Product_ID()
-						, -1 // chargeId
 						, order.getDatePromised()
 						, order.getDatePromised()
 						, order.getAD_Org_ID()
 						, order.getM_Warehouse()
-						, order.getBill_BPartner_ID()
 						, order.getC_BPartner_Location_ID()
-						, order.isSOTrx()
-						, trxName);
+						, order.isSOTrx());
 				minTimes = 0;
 				result = 3;
 		}};

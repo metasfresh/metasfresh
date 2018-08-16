@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -71,7 +73,53 @@ public interface IHUStatusBL extends ISingletonService
 	 */
 	void assertLocatorChangeIsAllowed(I_M_HU huRecord, String huStatus);
 
+	boolean isStatusPlanned(I_M_HU huRecord);
+
 	boolean isStatusActive(I_M_HU huRecord);
 
 	boolean isStatusIssued(I_M_HU huRecord);
+
+	boolean isStatusDestroyed(I_M_HU huRecord);
+
+	boolean isStatusShipped(I_M_HU huRecord);
+
+	/**
+	 * Check if an HU has a status that is "physical"/ "concrete"/ "material" Which means the HU exists as a box/ will still be used by us.
+	 *
+	 * The following hu statuses are not phyical:
+	 * <ul>
+	 * <li>{@link X_M_HU_Status#HUSTATUS_Planning Planning}: is a draft state, may or may not be used further
+	 * <li>{@link X_M_HU_Status#HUSTATUS_Destroyed Destroyed}: not used any longer
+	 * <li>{@link X_M_HU_Status#HUSTATUS_Shipped Shipped}: No longer in our warehouses
+	 * </ul>
+	 * NOTE: if status is <code>null</code>, it is considered not physical. It means that the HU was just created and will soon get another status.
+	 *
+	 * In the future, if another status of such kind (let's call it "intangible"), please add it in the implementation of this method.
+	 *
+	 * @return <code>true</code> if the status is a "physical" status (active or picked), false otherwise
+	 */
+	boolean isPhysicalHU(I_M_HU huRecord);
+
+	/**
+	 * Set the status of the HU. <br>
+	 * In case we are dealing with a status that implies moving to/from Gebindelager, also do the collection of HUs in the huContext given as parameter (task 07617).<br>
+	 *
+	 * NOTE: this method is not saving the HU.
+	 *
+	 * @param huContext mandatory, because depending on the given {@code huStatus}, we might need the context's {@link IHUContext#getHUPackingMaterialsCollector()}.
+	 */
+	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus);
+
+	/**
+	 * Same as {@link #setHUStatus(IHUContext, I_M_HU, String)}, but if <code>forceFetchPackingMaterial=true</code>, then the packing material will be fetched automatically.
+	 *
+	 * NOTE: this method is not saving the HU.
+	 */
+	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
+
+	/**
+	 * Activate the HU (assuming it was Planning)
+ */
+	void setHUStatusActive(Collection<I_M_HU> hus);
+
 }

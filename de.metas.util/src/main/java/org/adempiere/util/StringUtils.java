@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -125,14 +126,14 @@ public final class StringUtils
 	 */
 	public static int toIntegerOrZero(final String str)
 	{
-		if (str == null || str.isEmpty())
+		if (Check.isEmpty(str, true))
 		{
 			return 0;
 		}
 
 		try
 		{
-			return Integer.valueOf(str);
+			return Integer.valueOf(str.trim());
 		}
 		catch (final NumberFormatException e)
 		{
@@ -346,7 +347,7 @@ public final class StringUtils
 				// In case message formating failed, we have a fallback format to use
 				messageFormated = new StringBuilder()
 						.append(message)
-						.append(" (").append(params).append(")")
+						.append(" (").append(Arrays.toString(params)).append(")")
 						.toString();
 			}
 		}
@@ -492,5 +493,19 @@ public final class StringUtils
 		}
 
 		return booleanOrNull ? "Y" : "N";
+	}
+
+	/**
+	 * Useful if you e.g. have a path expression and want to make sure it ends with {@code /}.
+	 */
+	public static String appendIfNotEndingWith(
+			@NonNull final String string,
+			@NonNull final String suffix)
+	{
+		if (string.endsWith(suffix))
+		{
+			return string;
+		}
+		return string + suffix;
 	}
 }

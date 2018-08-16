@@ -27,6 +27,7 @@ WHERE
 UNION
 -- Error Handling:
 -- Use allocations to invoice candidate for sales invoice lines that don't have a direkt link - but also for purchase invoices, that have direct link but they don't have match inv for leergut
+
 SELECT
 	il.C_Invoice_ID, ila.C_InvoiceLine_ID, iol.M_InOut_ID, iciol.M_InOutLine_ID, ila.C_Invoice_Candidate_ID
 FROM
@@ -35,6 +36,12 @@ FROM
 	INNER JOIN C_InvoiceCandidate_InOutLine iciol ON ila.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID 
 	INNER JOIN M_InOutLine iol ON iciol.M_InOutLine_ID = iol.M_InOutLine_ID
 	INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
+	LEFT JOIN M_MatchInv mi on mi.c_invoiceline_id = il.c_invoiceline_id
+	
+WHERE
+-- Ignore lines that are already linked and selected above
+	(mi.M_MatchInv_ID IS NULL AND i.IsSOTrx = 'N') OR (il.M_InOutLine_ID IS NULL AND i.IsSOTrx = 'Y') 
+
 ;
 
 

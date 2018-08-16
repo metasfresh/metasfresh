@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -60,10 +62,10 @@ import lombok.NonNull;
 public class ProductPriceQuery
 {
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
-	
+
 	private Object _contextProvider;
-	private int _priceListVersionId;
-	private int _productId;
+	private PriceListVersionId _priceListVersionId;
+	private ProductId _productId;
 
 	private Boolean _attributePricing;
 	private I_M_AttributeSetInstance _attributePricing_asiToMatch;
@@ -74,7 +76,6 @@ public class ProductPriceQuery
 
 	/* package */ ProductPriceQuery()
 	{
-		super();
 	}
 
 	@Override
@@ -182,8 +183,8 @@ public class ProductPriceQuery
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class, getContextProvider())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getM_PriceList_Version_ID())
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getM_Product_ID());
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getPriceListVersionId())
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getProductId());
 
 		//
 		// Attribute pricing records
@@ -242,7 +243,13 @@ public class ProductPriceQuery
 
 	public ProductPriceQuery setM_PriceList_Version_ID(final int priceListVersionId)
 	{
-		_priceListVersionId = priceListVersionId;
+		setPriceListVersionId(PriceListVersionId.ofRepoIdOrNull(priceListVersionId));
+		return this;
+	}
+
+	public ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
+	{
+		this._priceListVersionId = priceListVersionId;
 		return this;
 	}
 
@@ -252,13 +259,19 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	private int getM_PriceList_Version_ID()
+	private PriceListVersionId getPriceListVersionId()
 	{
-		Check.assume(_priceListVersionId > 0, "priceListVersionId > 0 for {}", this);
+		Check.assumeNotNull(_priceListVersionId, "priceListVersionId is set");
 		return _priceListVersionId;
 	}
 
 	public ProductPriceQuery setM_Product_ID(final int productId)
+	{
+		setProductId(ProductId.ofRepoIdOrNull(productId));
+		return this;
+	}
+
+	public ProductPriceQuery setProductId(final ProductId productId)
 	{
 		_productId = productId;
 		return this;
@@ -270,9 +283,9 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	private int getM_Product_ID()
+	private ProductId getProductId()
 	{
-		Check.assume(_productId > 0, "product shall be set for {}", this);
+		Check.assumeNotNull(_productId, "product shall be set for {}", this);
 		return _productId;
 	}
 

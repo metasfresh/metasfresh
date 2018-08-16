@@ -169,7 +169,7 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	private int retrieveParentId(final Object childModel, final ESIncludedModelsConfig includedModelConfig)
 	{
 		final Object parentIdObj = InterfaceWrapperHelper.getValue(childModel, includedModelConfig.getChildLinkColumnName())
-				.orNull();
+				.orElse(null);
 		if (parentIdObj == null)
 		{
 			return -1;

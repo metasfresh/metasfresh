@@ -1,7 +1,6 @@
 package org.compiere.util;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,12 +33,6 @@ public class CacheMgtTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-	}
-
-	@After
-	public void clearCache()
-	{
-		CacheMgt.get().clear();
 	}
 
 	@Test

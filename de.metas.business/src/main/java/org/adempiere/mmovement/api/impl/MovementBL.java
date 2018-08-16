@@ -10,12 +10,12 @@ package org.adempiere.mmovement.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,6 +42,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public class MovementBL implements IMovementBL
 {
@@ -57,11 +58,11 @@ public class MovementBL implements IMovementBL
 		final BigDecimal movementQtyValue = movementLine.getMovementQty();
 		final I_C_UOM movementQtyUOM = getC_UOM(movementLine);
 		final Quantity movementQty = new Quantity(movementQtyValue, movementQtyUOM);
-		
+
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final I_M_Product product = movementLine.getM_Product();
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
-		
+
 		return uomConversionBL.convertQuantityTo(movementQty, uomConversionCtx, uom);
 	}
 
@@ -86,7 +87,6 @@ public class MovementBL implements IMovementBL
 		final I_C_Activity productActivity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextAwareMovement, movementLine.getAD_Org(), product);
 
 		final I_M_Locator locatorFrom = movementLine.getM_Locator();
-
 		final I_C_Activity activityFrom = getActivity(locatorFrom, productActivity);
 
 		movementLine.setC_ActivityFrom(activityFrom);
@@ -101,13 +101,9 @@ public class MovementBL implements IMovementBL
 	}
 
 	/**
-	 * Take the activity from the warehouse, if it exists. Otherwise, take the one from product
-	 * 
-	 * @param locator
-	 * @param productActivity
-	 * @return
+	 * @return the activity from the warehouse, if it exists. Otherwise, return the defaultValue.
 	 */
-	private I_C_Activity getActivity(final I_M_Locator locator, final I_C_Activity productActivity)
+	private I_C_Activity getActivity(@NonNull final I_M_Locator locator, final I_C_Activity defaultValue)
 	{
 		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(locator.getM_Warehouse(), org.adempiere.warehouse.model.I_M_Warehouse.class);
 
@@ -117,21 +113,21 @@ public class MovementBL implements IMovementBL
 		{
 			return warehouseActivity;
 		}
-		return productActivity;
+		return defaultValue;
 	}
 
 	@Override
 	public boolean isReversal(final I_M_Movement movement)
 	{
 		Check.assumeNotNull(movement, "movement not null");
-		
+
 		// Check if we have a counter-part reversal document
 		final int reversalId = movement.getReversal_ID();
 		if (reversalId <= 0)
 		{
 			return false;
 		}
-		
+
 		// Make sure this is the actual reversal and not the original document which was reversed
 		// i.e. this document was created after the reversal (so Reversal_ID is less than this document's ID)
 		final int movementId = movement.getM_Movement_ID();

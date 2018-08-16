@@ -6,8 +6,8 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.money.Money;
-import de.metas.money.grossprofit.GrossProfitComputeRequest;
-import de.metas.money.grossprofit.GrossProfitPriceFactory;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineRepository;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
@@ -39,31 +39,34 @@ import lombok.NonNull;
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	private final GrossProfitPriceFactory grossProfitPriceFactory;
+	private final ProfitPriceActualFactory profitPriceActualFactory;
 	private final OrderLineRepository orderLineRepository;
 
 	public C_OrderLine(
-			@NonNull final GrossProfitPriceFactory grossProfitPriceFactory,
+			@NonNull final ProfitPriceActualFactory profitPriceActualFactory,
 			@NonNull final OrderLineRepository orderLineRepository)
 	{
 		this.orderLineRepository = orderLineRepository;
-		this.grossProfitPriceFactory = grossProfitPriceFactory;
+		this.profitPriceActualFactory = profitPriceActualFactory;
 	}
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_PriceActual)
-	public void updateProfitBasePrice(@NonNull final I_C_OrderLine orderLineRecord)
+	public void updateProfitPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
-		final Money profitBasePrice = grossProfitPriceFactory.calculateNetPrice(GrossProfitComputeRequest.builder()
+
+		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
 				.bPartnerId(orderLine.getBPartnerId())
 				.productId(orderLine.getProductId())
 				.date(orderLine.getDatePromised().toLocalDate())
 				.baseAmount(orderLine.getPriceActual())
 				.paymentTermId(orderLine.getPaymentTermId())
-				.build());
+				.build();
 
-		orderLineRecord.setPriceGrossProfit(profitBasePrice.getValue());
+		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);
+
+		orderLineRecord.setProfitPriceActual(profitBasePrice.getValue());
 	}
 }

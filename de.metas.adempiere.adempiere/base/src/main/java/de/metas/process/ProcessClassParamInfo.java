@@ -13,7 +13,9 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util.ArrayKey;
 
-import com.google.common.base.MoreObjects;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,11 +30,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,28 +45,24 @@ import com.google.common.base.MoreObjects;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@Value
 public final class ProcessClassParamInfo
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	static final ArrayKey createFieldUniqueKey(final Field field)
 	{
 		// NOTE: when building the make, make sure we don't have any references to Class, Field or other java reflection classes
 		return ArrayKey.of(field.getType().getName(), field.getDeclaringClass().getName(), field.getName());
 	}
-	
+
 	static final ArrayKey createParameterUniqueKey(final String parameterName, final boolean parameterTo)
 	{
 		return ArrayKey.of(parameterName, parameterTo);
 	}
 
-	private boolean parameterTo;
+	private final boolean parameterTo;
 	private final String parameterName;
 	private final ArrayKey parameterKey;
-	
+
 	private final boolean mandatory;
 
 	// NOTE: NEVER EVER store the process class as field because we want to have a weak reference to it to prevent ClassLoader memory leaks nightmare.
@@ -72,26 +70,27 @@ public final class ProcessClassParamInfo
 	private final ArrayKey fieldKey;
 	private final Class<?> fieldType; // FIXME: get rid of this to avoid class loader memory leaks
 
-
-	private ProcessClassParamInfo(final Builder builder)
+	@Builder
+	private ProcessClassParamInfo(
+			@NonNull final String parameterName,
+			final boolean parameterTo,
+			@NonNull final Field field,
+			boolean mandatory)
 	{
-		super();
+		Check.assumeNotEmpty(parameterName, "parameter name not empty");
 
-		Check.assumeNotEmpty(builder.parameterName, "parameter name not empty");
-		Check.assumeNotNull(builder.field, "field not null");
-		
-		parameterName = builder.parameterName;
-		parameterTo = builder.parameterTo;
-		parameterKey = createParameterUniqueKey(parameterName, parameterTo);
+		this.parameterName = parameterName;
+		this.parameterTo = parameterTo;
+		this.parameterKey = createParameterUniqueKey(parameterName, parameterTo);
 
-		fieldKey = createFieldUniqueKey(builder.field);
-		fieldType = builder.field.getType();
+		this.fieldKey = createFieldUniqueKey(field);
+		this.fieldType = field.getType();
 
-		mandatory = builder.mandatory;
+		this.mandatory = mandatory;
 	}
 
 	/**
-	 * Loads process instance's parameter value from source.
+	 * Loads process instance's parameter value from source to <code>processField</code>
 	 *
 	 * @param processInstance the process object where we will set the annotated fields to be the loaded parameters. Note that it needs to be an {@link IContextAware}, because we might need to load
 	 *            records from the given <code>source</code>
@@ -113,7 +112,7 @@ public final class ProcessClassParamInfo
 		{
 			if (mandatory)
 			{
-				if(failIfNotValid)
+				if (failIfNotValid)
 				{
 					throw new FillMandatoryException(parameterName);
 				}
@@ -199,7 +198,7 @@ public final class ProcessClassParamInfo
 				Object valueOld;
 				try
 				{
-					if(!processField.isAccessible())
+					if (!processField.isAccessible())
 					{
 						processField.setAccessible(true);
 					}
@@ -210,7 +209,7 @@ public final class ProcessClassParamInfo
 					// shall not happen
 					throw AdempiereException.wrapIfNeeded(e);
 				}
-				
+
 				final int idOld = valueOld == null ? -1 : InterfaceWrapperHelper.getId(valueOld);
 				if (id != idOld)
 				{
@@ -229,83 +228,5 @@ public final class ProcessClassParamInfo
 		}
 
 		return value;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("parameterName", parameterName)
-				.add("mandatory", mandatory)
-				.add("parameterTo", parameterTo)
-				.add("field", fieldKey)
-				.toString();
-	}
-	
-	public ArrayKey getKey()
-	{
-		return parameterKey;
-	}
-
-	public String getParameterName()
-	{
-		return parameterName;
-	}
-
-	public boolean isMandatory()
-	{
-		return mandatory;
-	}
-
-	public ArrayKey getFieldKey()
-	{
-		return fieldKey;
-	}
-
-	public Class<?> getFieldType()
-	{
-		return fieldType;
-	}
-
-	public static final class Builder
-	{
-		private String parameterName;
-		private Field field;
-		private boolean mandatory;
-		private boolean parameterTo;
-
-		private Builder()
-		{
-			super();
-		}
-
-		public ProcessClassParamInfo build()
-		{
-			return new ProcessClassParamInfo(this);
-		}
-
-		public Builder setParameterName(final String parameterName)
-		{
-			this.parameterName = parameterName;
-			return this;
-		}
-
-		public Builder setField(final Field field)
-		{
-			this.field = field;
-			return this;
-		}
-
-		public Builder setMandatory(final boolean mandatory)
-		{
-			this.mandatory = mandatory;
-			return this;
-		}
-
-		public Builder setParameterTo(boolean parameterTo)
-		{
-			this.parameterTo = parameterTo;
-			return this;
-		}
 	}
 }

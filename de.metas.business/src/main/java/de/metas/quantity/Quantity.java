@@ -1,5 +1,8 @@
 package de.metas.quantity;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -73,6 +76,28 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return qty1.add(qty2);
 		}
+	}
+
+	public static Quantity addToNullable(
+			@Nullable final Quantity quantity,
+			@NonNull final BigDecimal augent,
+			@NonNull final I_C_UOM augentUOM)
+	{
+		final Quantity augentQuantity = new Quantity(augent, augentUOM);
+		if (quantity == null)
+		{
+			return augentQuantity;
+		}
+		return addNullables(quantity, augentQuantity);
+	}
+
+	public static BigDecimal asBigDecimal(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return ZERO;
+		}
+		return quantity.getAsBigDecimal();
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
@@ -332,7 +357,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public static final Quantity zero(final I_C_UOM uom)
 	{
-		return new Quantity(BigDecimal.ZERO, uom, BigDecimal.ZERO, uom);
+		return new Quantity(ZERO, uom, ZERO, uom);
 	}
 
 	/**
@@ -345,7 +370,7 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return this;
 		}
-		return new Quantity(BigDecimal.ZERO, uom, BigDecimal.ZERO, sourceUom);
+		return new Quantity(ZERO, uom, ZERO, sourceUom);
 	}
 
 	public Quantity toZeroIfNegative()
@@ -607,7 +632,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity multiply(final BigDecimal multiplicand)
 	{
-		if (multiplicand.compareTo(BigDecimal.ONE) == 0)
+		if (multiplicand.compareTo(ONE) == 0)
 		{
 			return this;
 		}

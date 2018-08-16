@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
@@ -45,12 +46,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -71,6 +72,7 @@ public class CreateDraftIssues
 	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
 
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
@@ -127,7 +129,7 @@ public class CreateDraftIssues
 		final I_PP_Order_Qty candidate = createIssueCandidate(hu, productStorage);
 
 		// update the HU's status so that it's not moved somewhere else etc
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
 		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
 
 		return candidate;
@@ -135,7 +137,7 @@ public class CreateDraftIssues
 
 	/**
 	 * If not a top level HU, take it out first
-	 * 
+	 *
 	 * @param huContext
 	 * @param hu
 	 */
@@ -208,7 +210,7 @@ public class CreateDraftIssues
 		candidate.setM_Product_ID(productId);
 
 		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
-		candidate.setQty(qtyToIssue.getQty());
+		candidate.setQty(qtyToIssue.getAsBigDecimal());
 		candidate.setC_UOM(qtyToIssue.getUOM());
 
 		candidate.setMovementDate(movementDate);

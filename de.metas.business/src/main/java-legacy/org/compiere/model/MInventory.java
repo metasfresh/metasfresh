@@ -30,10 +30,10 @@ import org.adempiere.util.time.SystemTime;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.documentNo.IDocumentNoBuilder;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
@@ -55,9 +55,6 @@ import de.metas.quantity.Quantity;
  */
 public class MInventory extends X_M_Inventory implements IDocument
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 910998472569265447L;
 	
 	private boolean m_justPrepared;
@@ -232,7 +229,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 		setDocAction(DOCACTION_Complete);
 		m_justPrepared = true;
-		
+
 		return IDocument.STATUS_InProgress;
 	}
 
@@ -330,7 +327,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
-					.setTrxName(get_TrxName())
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
@@ -539,12 +535,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 		// MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());
 		// return pl.getC_Currency_ID();
 		return 0;
-	}
-
-	private boolean isReversal()
-	{
-		final int reversalId = getReversal_ID();
-		return reversalId > 0 && reversalId > getM_Inventory_ID();
 	}
 
 	public boolean isComplete()

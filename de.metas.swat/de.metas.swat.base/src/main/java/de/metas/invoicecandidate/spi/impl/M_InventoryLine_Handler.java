@@ -3,13 +3,14 @@ package de.metas.invoicecandidate.spi.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -20,8 +21,6 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
@@ -195,10 +194,16 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx, ic, taxCategoryId, productId, -1, billDate, shipDate, adOrgId, inOut.getM_Warehouse(), locationId // billC_BPartner_Location_ID
-				, locationId // shipC_BPartner_Location_ID
-				, false // isSOTrx same as in vendor return
-				, trxName);
+				ctx,
+				ic,
+				taxCategoryId,
+				productId,
+				billDate,
+				shipDate,
+				adOrgId,
+				inOut.getM_Warehouse(),
+				locationId, // shipC_BPartner_Location_ID
+				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId);
 
 		//
@@ -207,10 +212,10 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// set Quality Issue Percentage Override
 
-		final I_M_AttributeSetInstance asi = inventoryLine.getM_AttributeSetInstance();
-		final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLine.getM_AttributeSetInstance_ID());
+		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, instances);
+		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, attributes);
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated

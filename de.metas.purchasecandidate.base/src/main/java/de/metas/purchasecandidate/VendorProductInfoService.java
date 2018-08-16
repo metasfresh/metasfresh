@@ -57,12 +57,17 @@ import lombok.NonNull;
 @Service
 public class VendorProductInfoService
 {
+	private final IBPartnerBL bpartnerBL;
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	public VendorProductInfoService(@NonNull final IBPartnerBL bpartnerBL)
+	{
+		this.bpartnerBL = bpartnerBL;
+	}
 
 	/**
 	 * @return the default instance for the given product and org, or (if there is none) some instance; never returns null;

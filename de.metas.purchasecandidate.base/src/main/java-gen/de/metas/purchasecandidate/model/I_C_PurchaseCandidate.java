@@ -238,54 +238,6 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set VK Netto.
-	 * Effektiver Verkaufspreis minus Skonto und Rückerstattung
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCustomerPriceGrossProfit (java.math.BigDecimal CustomerPriceGrossProfit);
-
-	/**
-	 * Get VK Netto.
-	 * Effektiver Verkaufspreis minus Skonto und Rückerstattung
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getCustomerPriceGrossProfit();
-
-    /** Column definition for CustomerPriceGrossProfit */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_CustomerPriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "CustomerPriceGrossProfit", null);
-    /** Column name CustomerPriceGrossProfit */
-    public static final String COLUMNNAME_CustomerPriceGrossProfit = "CustomerPriceGrossProfit";
-
-	/**
-	 * Set Zieldatum.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDateRequired (java.sql.Timestamp DateRequired);
-
-	/**
-	 * Get Zieldatum.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateRequired();
-
-    /** Column definition for DateRequired */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DateRequired = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "DateRequired", null);
-    /** Column name DateRequired */
-    public static final String COLUMNNAME_DateRequired = "DateRequired";
-
-	/**
 	 * Set Referenz.
 	 * Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
 	 *
@@ -469,31 +421,6 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
-	 * Set Rohertragspreis.
-	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPriceGrossProfit (java.math.BigDecimal PriceGrossProfit);
-
-	/**
-	 * Get Rohertragspreis.
-	 * Endpreis pro Einheit nach Abzug des erwarteten Rohertrages (Skonto, Rückvergütung usw).
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getPriceGrossProfit();
-
-    /** Column definition for PriceGrossProfit */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceGrossProfit = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PriceGrossProfit", null);
-    /** Column name PriceGrossProfit */
-    public static final String COLUMNNAME_PriceGrossProfit = "PriceGrossProfit";
-
-	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -519,6 +446,102 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set EK Ertrag netto.
+	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProfitPurchasePriceActual (java.math.BigDecimal ProfitPurchasePriceActual);
+
+	/**
+	 * Get EK Ertrag netto.
+	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getProfitPurchasePriceActual();
+
+    /** Column definition for ProfitPurchasePriceActual */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProfitPurchasePriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "ProfitPurchasePriceActual", null);
+    /** Column name ProfitPurchasePriceActual */
+    public static final String COLUMNNAME_ProfitPurchasePriceActual = "ProfitPurchasePriceActual";
+
+	/**
+	 * Set VK Ertrag netto.
+	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProfitSalesPriceActual (java.math.BigDecimal ProfitSalesPriceActual);
+
+	/**
+	 * Get VK Ertrag netto.
+	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getProfitSalesPriceActual();
+
+    /** Column definition for ProfitSalesPriceActual */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProfitSalesPriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "ProfitSalesPriceActual", null);
+    /** Column name ProfitSalesPriceActual */
+    public static final String COLUMNNAME_ProfitSalesPriceActual = "ProfitSalesPriceActual";
+
+	/**
+	 * Set Bestelldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchaseDateOrdered (java.sql.Timestamp PurchaseDateOrdered);
+
+	/**
+	 * Get Bestelldatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPurchaseDateOrdered();
+
+    /** Column definition for PurchaseDateOrdered */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDateOrdered = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDateOrdered", null);
+    /** Column name PurchaseDateOrdered */
+    public static final String COLUMNNAME_PurchaseDateOrdered = "PurchaseDateOrdered";
+
+	/**
+	 * Set Liefer-Zusagedatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised);
+
+	/**
+	 * Get Liefer-Zusagedatum.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPurchaseDatePromised();
+
+    /** Column definition for PurchaseDatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDatePromised = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDatePromised", null);
+    /** Column name PurchaseDatePromised */
+    public static final String COLUMNNAME_PurchaseDatePromised = "PurchaseDatePromised";
+
+	/**
 	 * Set Bestellte Menge.
 	 *
 	 * <br>Type: Quantity
@@ -542,20 +565,20 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_PurchasedQty = "PurchasedQty";
 
 	/**
-	 * Set EK Netto.
-	 * Effektiver Einkaufspreis
+	 * Set EK-Preis.
+	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual);
 
 	/**
-	 * Get EK Netto.
-	 * Effektiver Einkaufspreis
+	 * Get EK-Preis.
+	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

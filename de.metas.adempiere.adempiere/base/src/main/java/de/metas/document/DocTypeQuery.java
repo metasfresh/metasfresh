@@ -53,4 +53,7 @@ public class DocTypeQuery
 
 	@Nullable
 	Boolean isSOTrx;
+	
+	@Nullable
+	String name;
 }

@@ -31,7 +31,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
+
+import lombok.NonNull;
 
 /**
  *
@@ -155,7 +159,10 @@ public final class Check
 	 * @param errMsg
 	 * @param params
 	 */
-	public static void assume(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
+	public static void assume(final boolean cond,
+			@NonNull final Class<? extends RuntimeException> exceptionClass,
+			@NonNull final String errMsg,
+			@NonNull final Object... params)
 	{
 		if (!cond)
 		{
@@ -252,6 +259,12 @@ public final class Check
 		final boolean cond = object != null;
 		assume(cond, exceptionClass, assumptionMessage, params);
 		return object;
+	}
+
+	public static <T> T assumePresent(@NonNull final Optional<T> optional, final String assumptionMessage, final Object... params)
+	{
+		assume(optional.isPresent(), defaultExClazz, assumptionMessage, params);
+		return optional.get();
 	}
 
 	/**
@@ -416,6 +429,16 @@ public final class Check
 		return valueLong;
 	}
 
+	public static BigDecimal assumeGreaterThanZero(final BigDecimal valueBD, final String valueName)
+	{
+		assumeNotNull(valueName, "" + valueName + " is not null");
+		if (valueBD == null || valueBD.signum() <= 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " > 0 but it was " + valueBD);
+		}
+		return valueBD;
+	}
+
 	public static int assumeGreaterOrEqualToZero(final int valueInt, final String valueName)
 	{
 		if (valueInt < 0)
@@ -549,6 +572,33 @@ public final class Check
 		};
 	}
 
+	public static boolean isEmpty(@Nullable final Object value)
+	{
+		if (value == null)
+		{
+			return true;
+		}
+
+		if (value instanceof String)
+		{
+			return isEmpty((String)value, true);
+		}
+		if (value instanceof Object[])
+		{
+			return isEmpty((Object[])value);
+		}
+		if (value instanceof BigDecimal)
+		{
+			return isEmpty((BigDecimal)value);
+		}
+		if (value instanceof Collection<?>)
+		{
+			return isEmpty((Collection<?>)value);
+		}
+
+		return false;
+	}
+
 	public static boolean isEmpty(final String str)
 	{
 		return isEmpty(str, false);
@@ -583,8 +633,6 @@ public final class Check
 	}	// isEmpty
 
 	/**
-	 *
-	 * @param bd
 	 * @return true if bd is null or bd.signum() is zero
 	 */
 	public static boolean isEmpty(final BigDecimal bd)
@@ -601,8 +649,6 @@ public final class Check
 	}
 
 	/**
-	 *
-	 * @param collection
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
 	public static boolean isEmpty(final Collection<?> collection)

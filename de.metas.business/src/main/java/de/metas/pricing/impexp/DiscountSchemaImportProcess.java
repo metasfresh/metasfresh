@@ -149,7 +149,7 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schema.setAD_Org_ID(importRecord.getAD_Org_ID());
 		schema.setValidFrom(SystemTime.asDayTimestamp());
 		schema.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
-		schema.setIsQuantityBased(true);
+		schema.setBreakValueType(X_M_DiscountSchema.BREAKVALUETYPE_Quantity);
 		schema.setName("Import " + importRecord.getBPartner_Value());
 		InterfaceWrapperHelper.save(schema);
 		return schema;
@@ -201,7 +201,6 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 	private void setPricingFields(@NonNull final I_I_DiscountSchema importRecord, @NonNull final I_M_DiscountSchemaBreak schemaBreak)
 	{
-		schemaBreak.setIsPriceOverride(importRecord.isPriceOverride());
 		schemaBreak.setPriceBase(importRecord.getPriceBase());
 		schemaBreak.setBase_PricingSystem_ID(importRecord.getBase_PricingSystem_ID());
 		schemaBreak.setPriceStd(importRecord.getPriceStd());

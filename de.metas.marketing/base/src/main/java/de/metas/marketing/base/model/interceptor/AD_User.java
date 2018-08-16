@@ -5,16 +5,17 @@ import java.util.Optional;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.marketing.base.CampaignService;
+import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_AD_User;
@@ -42,25 +43,32 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_AD_User.class)
-@Component
+@Component("de.metas.marketing.base.model.interceptor.AD_User")
 public class AD_User
 {
+
 	private final static String MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = "MKTG_Campaign_NewsletterGroup_Missing_For_Org";
 
+	private final CampaignRepository campaignRepository;
+	private final CampaignService campaignService;
 	private final UserRepository userRepository;
+	private final ContactPersonService contactPersonService;
 
-	private AD_User(@NonNull final UserRepository userRepository)
+	public AD_User(@NonNull final ContactPersonService contactPersonService,
+			@NonNull final UserRepository userRepository,
+			@NonNull final CampaignRepository campaignRepository,
+			@NonNull final CampaignService campaignService)
 	{
+		this.contactPersonService = contactPersonService;
 		this.userRepository = userRepository;
+		this.campaignRepository = campaignRepository;
+		this.campaignService = campaignService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
 	public void onChangeNewsletter(final I_AD_User userRecord)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final CampaignRepository campaignRepository = Adempiere.getBean(CampaignRepository.class);
-		final CampaignService converters = Adempiere.getBean(CampaignService.class);
 
 		final boolean isNewsletter = userRecord.isNewsletter();
 
@@ -77,7 +85,7 @@ public class AD_User
 				throw new AdempiereException(translatableMsgText);
 			}
 			final User user = userRepository.ofRecord(userRecord);
-			converters.addToCampaignIfHasEmailAddress(user, defaultcampaignId.get());
+			campaignService.addToCampaignIfHasEmailAddress(user, defaultcampaignId.get());
 		}
 		else
 		{
@@ -86,7 +94,20 @@ public class AD_User
 				return; // nothing to do
 			}
 			final User user = userRepository.ofRecord(userRecord);
-			converters.removeFromCampaign(user, defaultcampaignId.get());
+			campaignService.removeFromCampaign(user, defaultcampaignId.get());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_EMail })
+	public void onChangeEmail(final I_AD_User userRecord)
+	{
+
+		final User user = userRepository.ofRecord(userRecord);
+
+		final I_AD_User oldUser = InterfaceWrapperHelper.createOld(userRecord, I_AD_User.class);
+
+		final String oldUserEmail = oldUser.getEMail();
+
+		contactPersonService.updateContactPersonsEmailFromUser(user, oldUserEmail);
 	}
 }

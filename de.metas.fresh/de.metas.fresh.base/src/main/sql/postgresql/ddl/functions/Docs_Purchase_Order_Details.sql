@@ -24,7 +24,9 @@ RETURNS TABLE
 	cursymbol character varying(10),
 	p_value character varying(40),
 	p_description character varying(255),
-	order_description character varying(1024)
+	p_documentnote character varying,
+	order_description character varying(1024),
+	price_pattern text
 )
 AS
 $$
@@ -62,7 +64,9 @@ SELECT
 	c.cursymbol, 
 	p.value AS p_value,
 	p.description AS p_description,
-	o.description AS order_description
+	p.documentnote AS p_documentnote,
+	o.description AS order_description,
+	COALESCE('###,###.' || (repeat('#', (length(substring(ol.PriceEntered::text,'(\.[0-9]*)'))-1))), '###,###') AS price_pattern
 
 FROM
 	C_OrderLine ol
@@ -97,7 +101,7 @@ FROM
 
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'
-	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 ORDER BY
 	ol.line
 
