@@ -196,7 +196,7 @@ export default class SelectionDropdown extends Component {
   };
 
   handleMouseDown = option => {
-    this.props.onSelect(option);
+    this.props.onSelect(option, true);
   };
 
   renderHeader = children => {

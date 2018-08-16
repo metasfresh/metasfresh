@@ -174,7 +174,10 @@ class Lookup extends Component {
   //   );
   // };
 
-  dropdownListToggle = (value, field) => {
+  // mouse param is to tell us if we should enable listening to keys
+  // in Table or not. If user selected option with mouse, we still
+  // wait for more keyboard action (until the field is blurred with keyboard)
+  dropdownListToggle = (value, field, mouse) => {
     const { onFocus, onBlur } = this.props;
 
     this._changeWidgetProperty(field, 'dropdownOpen', value, () => {
@@ -182,16 +185,18 @@ class Lookup extends Component {
         isDropdownListOpen: value,
       });
 
-      if (value && onFocus) {
-        onFocus();
-      } else if (!value && onBlur) {
-        onBlur();
+      if (mouse) {
+        if (value && onFocus) {
+          onFocus();
+        } else if (!value && onBlur) {
+          onBlur();
+        }
       }
     });
   };
 
   resetLocalClearing = () => {
-    // TODO: Rewrite per widget
+    // TODO: Rewrite per widget if needed
     this.setState({
       localClearing: false,
     });
@@ -426,8 +431,8 @@ class Lookup extends Component {
                   onBlur={() => this.handleListBlur(item.field)}
                   onFocus={() => this.handleListFocus(item.field)}
                   isOpen={lookupWidget.dropdownOpen}
-                  onDropdownListToggle={val => {
-                    this.dropdownListToggle(val, item.field);
+                  onDropdownListToggle={(val, mouse) => {
+                    this.dropdownListToggle(val, item.field, mouse);
                   }}
                   forcedWidth={width}
                   parentElement={forceFullWidth && this.dropdown}
