@@ -24,6 +24,7 @@ package org.adempiere.acct.api;
 
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
 import org.compiere.acct.PostingExecutionException;
 
 import de.metas.adempiere.form.IClientUIInvoker;
@@ -112,7 +113,7 @@ public interface IPostingRequestBuilder
 	IPostingRequestBuilder setContext(final Properties ctx, final String trxName);
 
 	/** Sets the processing context's AD_Client_ID to be used */
-	IPostingRequestBuilder setAD_Client_ID(int adClientId);
+	IPostingRequestBuilder setClientId(ClientId clientId);
 
 	/**
 	 * Sets the document to be processed. i.e.

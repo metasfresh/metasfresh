@@ -50,7 +50,7 @@ public class AccountingService implements DocumentPostRequestHandler
 		final IPostingService postingService = Services.get(IPostingService.class);
 		postingService.newPostingRequest()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
-				.setAD_Client_ID(request.getAdClientId())
+				.setClientId(request.getClientId())
 				.setDocument(request.getRecord().getAD_Table_ID(), request.getRecord().getRecord_ID())
 				.setForce(request.isForce())
 				.setFailOnError(true)

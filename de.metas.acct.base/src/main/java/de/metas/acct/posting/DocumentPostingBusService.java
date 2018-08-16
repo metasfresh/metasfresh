@@ -159,7 +159,7 @@ public class DocumentPostingBusService
 		private Properties createCtx(final DocumentPostRequest request)
 		{
 			final Properties ctx = Env.newTemporaryCtx();
-			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, request.getAdClientId());
+			Env.setAD_Client_ID(ctx, request.getClientId());
 			return ctx;
 		}
 	}

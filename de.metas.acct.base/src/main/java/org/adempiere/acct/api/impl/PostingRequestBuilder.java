@@ -34,6 +34,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -69,7 +70,7 @@ import lombok.NonNull;
 	private Properties _ctx;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _force;
-	private Integer _adClientId = null;
+	private ClientId _clientId = null;
 	private TableRecordReference _documentRef = null;
 	private PostImmediate _postImmediate = PostImmediate.IfConfigured;
 	private boolean _postWithoutServer = false;
@@ -151,7 +152,7 @@ import lombok.NonNull;
 	 */
 	private final void postIt_Enqueue()
 	{
-		final int adClientId = getAD_Client_ID();
+		final ClientId clientId = getClientId();
 		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
@@ -160,7 +161,7 @@ import lombok.NonNull;
 		final DocumentPostingBusService postingBusService = Adempiere.getBean(DocumentPostingBusService.class);
 		postingBusService.postRequest(DocumentPostRequest.builder()
 				.record(documentRef)
-				.adClientId(adClientId)
+				.clientId(clientId)
 				.force(force)
 				.build());
 	}
@@ -177,13 +178,13 @@ import lombok.NonNull;
 		final IDocFactory docFactory = Services.get(IDocFactory.class);
 
 		final Properties ctx = getCtx();
-		final int adClientId = getAD_Client_ID();
+		final ClientId clientId = getClientId();
 		final TableRecordReference documentRef = getDocumentRef();
 		final boolean force = isForce();
 
 		try
 		{
-			final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, adClientId);
+			final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, clientId.getRepoId());
 
 			final Doc<?> doc = docFactory.getOrNull(ctx, ass, documentRef);
 			if (doc == null)
@@ -276,24 +277,23 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IPostingRequestBuilder setAD_Client_ID(final int adClientId)
+	public IPostingRequestBuilder setClientId(@NonNull final ClientId clientId)
 	{
 		assertNotExecuted();
-
-		_adClientId = adClientId;
+		Check.assume(!_clientId.isSystem(), "AD_Client_ID is not system");
+		_clientId = clientId;
 		return this;
 	}
 
-	private final int getAD_Client_ID()
+	private final ClientId getClientId()
 	{
-		Check.assumeNotNull(_adClientId, "AD_Client_ID is set");
-		Check.assume(_adClientId > 0, "AD_Client_ID > 0");
-		return _adClientId;
+		Check.assumeNotNull(_clientId, "AD_Client_ID is set");
+		return _clientId;
 	}
 
 	private final I_AD_Client getAD_Client()
 	{
-		return clientDAO.retriveClient(getCtx(), getAD_Client_ID());
+		return clientDAO.getById(getClientId().getRepoId());
 	}
 
 	@Override
@@ -341,11 +341,11 @@ import lombok.NonNull;
 		Properties ctx = InterfaceWrapperHelper.getCtx(documentObj);
 		String trxName = InterfaceWrapperHelper.getTrxName(documentObj);
 		final Optional<Integer> adClientIdOpt = InterfaceWrapperHelper.getValue(documentObj, "AD_Client_ID");
-		final int adClientId = adClientIdOpt.get();
+		final ClientId clientId = ClientId.ofRepoId(adClientIdOpt.get());
 		final TableRecordReference documentRef = TableRecordReference.of(documentObj);
 
 		setContext(ctx, trxName);
-		setAD_Client_ID(adClientId);
+		setClientId(clientId);
 		setDocumentRef(documentRef);
 	}
 
@@ -353,7 +353,7 @@ import lombok.NonNull;
 	public IPostingRequestBuilder setDocument(@NonNull final IDocument document)
 	{
 		setContext(document.getCtx(), document.get_TrxName());
-		setAD_Client_ID(document.getAD_Client_ID());
+		setClientId(ClientId.ofRepoId(document.getAD_Client_ID()));
 		setDocumentRef(document.toTableRecordReference());
 
 		return this;

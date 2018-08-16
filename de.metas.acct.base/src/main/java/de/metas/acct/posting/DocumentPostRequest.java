@@ -1,5 +1,6 @@
 package de.metas.acct.posting;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -39,8 +40,8 @@ public class DocumentPostRequest
 {
 	@JsonProperty("record")
 	TableRecordReference record;
-	@JsonProperty("adClientId")
-	int adClientId;
+	@JsonProperty("clientId")
+	ClientId clientId;
 	@JsonProperty("force")
 	boolean force;
 	@JsonProperty("responseRequired")
@@ -50,12 +51,12 @@ public class DocumentPostRequest
 	@JsonCreator
 	private DocumentPostRequest(
 			@JsonProperty("record") @NonNull final TableRecordReference record,
-			@JsonProperty("adClientId") final int adClientId,
+			@JsonProperty("clientId") @NonNull final ClientId clientId,
 			@JsonProperty("force") final boolean force,
 			@JsonProperty("responseRequired") final boolean responseRequired)
 	{
 		this.record = record;
-		this.adClientId = adClientId;
+		this.clientId = clientId;
 		this.force = force;
 		this.responseRequired = responseRequired;
 	}

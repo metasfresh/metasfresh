@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -101,7 +102,7 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 			postingService.newPostingRequest()
 					// Post it in same context and transaction as the process
 					.setContext(getCtx(), getTrxName())
-					.setAD_Client_ID(getAD_Client_ID())
+					.setClientId(ClientId.ofRepoId(getAD_Client_ID()))
 					.setDocument(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate

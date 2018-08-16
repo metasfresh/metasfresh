@@ -11,6 +11,7 @@ import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
@@ -111,12 +112,12 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 	{
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
-		final int adClientId = getAD_Client_ID();
+		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
 
 		postingService.newPostingRequest()
 				// Post it in same context and transaction as the process
 				.setContext(ctx, trxName)
-				.setAD_Client_ID(adClientId)
+				.setClientId(clientId)
 				.setDocument(adTableId, recordId) // the document to be posted
 				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 				.setPostImmediate(PostImmediate.No) // no, just enqueue it

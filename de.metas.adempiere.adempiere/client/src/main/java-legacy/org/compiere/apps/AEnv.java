@@ -52,6 +52,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
@@ -961,7 +962,7 @@ public final class AEnv
 		Services.get(IPostingService.class)
 				.newPostingRequest()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
-				.setAD_Client_ID(AD_Client_ID)
+				.setClientId(ClientId.ofRepoId(AD_Client_ID))
 				.setDocument(AD_Table_ID, Record_ID)
 				.setForce(force)
 				.setPostImmediate(PostImmediate.Yes)

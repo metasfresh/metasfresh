@@ -37,6 +37,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -1496,9 +1497,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getPO().toString();
 	}
 
+	@Deprecated
 	public final int getAD_Client_ID()
 	{
 		return getPO().getAD_Client_ID();
+	}
+	
+	public final ClientId getClientId()
+	{
+		return ClientId.ofRepoId(getAD_Client_ID());
 	}
 
 	public final int getAD_Org_ID()
@@ -2045,7 +2052,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			postingService.newPostingRequest()
 					// Post it in same context and transaction as this document is posted
 					.setContext(getCtx(), getTrxName())
-					.setAD_Client_ID(getAD_Client_ID())
+					.setClientId(getClientId())
 					.setDocumentFromModel(document) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
