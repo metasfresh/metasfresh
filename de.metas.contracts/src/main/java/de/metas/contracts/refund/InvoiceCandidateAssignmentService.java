@@ -30,6 +30,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
 import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UnassignResult.UnassignResultBuilder;
 import de.metas.contracts.refund.InvoiceCandidateRepository.DeleteAssignmentsRequest;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
@@ -595,10 +596,30 @@ public class InvoiceCandidateAssignmentService
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final RefundConfig newRefundConfig)
 	{
-		// TODO: assert RefundMode.ALL_MAX_SCALE
+		final RefundConfig oldRefundConfig = refundInvoiceCandidate.getRefundConfig();
+		if (oldRefundConfig.equals(newRefundConfig))
+		{
+			return refundInvoiceCandidate;
+
+		}
+		final List<RefundConfig> refundConfigs = refundInvoiceCandidate.getRefundContract().getRefundConfigs();
+
+		Check.errorUnless(RefundMode.ALL_MAX_SCALE.equals(newRefundConfig.getRefundMode()),
+				"Parameter 'newRefundConfig' needs to have refundMode={}", RefundMode.ALL_MAX_SCALE);
+
+		Check.errorUnless(refundConfigs.contains(newRefundConfig),
+				"Parameter 'newRefundConfig' needs to be one of the given refundInvoiceCandidate's contract's configs; newRefundConfig={}; refundInvoiceCandidate={}",
+				newRefundConfig, refundInvoiceCandidate);
+
+		final boolean isPercent = RefundBase.PERCENTAGE.equals(newRefundConfig.getRefundBase());
+
 		// TODO: resetting the refundCcaandidate to zero and iterating allAssignedCandidates is crap;
 		// instead, add new AssignmentToRefundCandidates
 		// which reference newRefundConfig and track the additional money that comes with the new refund config.
+
+		final boolean isHigherRefund = newRefundConfig.getMinQty().compareTo(oldRefundConfig.getMinQty()) > 0;
+
+
 
 		RefundInvoiceCandidate updatedCandidate = refundInvoiceCandidate
 				.toBuilder()

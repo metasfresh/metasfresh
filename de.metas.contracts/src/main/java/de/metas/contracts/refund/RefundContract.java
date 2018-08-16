@@ -75,6 +75,9 @@ public class RefundContract
 		Check.errorIf(
 				CollectionUtils.hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
 				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
+		Check.errorIf(
+				CollectionUtils.hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
+				"The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
 
 		this.refundConfigs = refundConfigs
 				.stream()
@@ -91,7 +94,7 @@ public class RefundContract
 				.orElse(null);
 	}
 
-	public List<RefundConfig> getRelevantRefundConfigs(@NonNull final BigDecimal qty)
+	public List<RefundConfig> getRefundConfigsToApplyForQuantity(@NonNull final BigDecimal qty)
 	{
 		final boolean configsAreNotScaled = RefundMode.ALL_MAX_SCALE.equals(refundConfigs.get(0).getRefundMode());
 
@@ -107,6 +110,17 @@ public class RefundContract
 				.stream()
 				.filter(minQtyLessOrEqual)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<RefundConfig> getRefundConfigRange(
+			@NonNull final RefundConfig currentConfig,
+			@NonNull final RefundConfig targetConfig)
+	{
+		Check.errorIf(currentConfig.getId().equals(targetConfig.getId()),
+				"Params currentConfig and currentConfig={}; targetConfig={}",
+				currentConfig, targetConfig);
+
+		return null;
 	}
 
 	public RefundConfig getRefundConfigById(@NonNull final RefundConfigId refundConfigId)

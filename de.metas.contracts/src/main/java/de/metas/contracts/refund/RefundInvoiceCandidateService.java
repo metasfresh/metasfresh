@@ -103,7 +103,7 @@ public class RefundInvoiceCandidateService
 				.map(RefundInvoiceCandidate::getAssignedQuantity)
 				.reduce(Quantity.zero(assignableCandidate.getQuantity().getUOM()), Quantity::add);
 
-		final List<RefundConfig> relevantRefundConfigs = refundContract.getRelevantRefundConfigs(assignedQuantity.getAsBigDecimal().add(qtyToAssign));
+		final List<RefundConfig> relevantRefundConfigs = refundContract.getRefundConfigsToApplyForQuantity(assignedQuantity.getAsBigDecimal().add(qtyToAssign));
 
 		final TreeSet<RefundInvoiceCandidate> result = new TreeSet<>(Comparator.comparing(c -> c.getRefundConfig().getMinQty()));
 
