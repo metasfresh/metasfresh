@@ -3,6 +3,7 @@ package de.metas.ui.web.document.process;
 import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 
@@ -68,11 +69,11 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	{
 		final int adTableId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
 		final int recordId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
-		final int adClientId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1);
+		final ClientId adClientId = ClientId.ofRepoId(row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
 		return DocumentToRepost.builder()
 				.adTableId(adTableId)
 				.recordId(recordId)
-				.adClientId(adClientId)
+				.clientId(adClientId)
 				.build();
 	}
 
@@ -81,14 +82,14 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 		postingService
 				.newPostingRequest()
 				.setContext(getCtx(), ITrx.TRXNAME_None)
-				.setAD_Client_ID(doc.getAdClientId())
+				.setClientId(doc.getClientId())
 				.setDocument(doc.getAdTableId(), doc.getRecordId())
 				.setForce(enforce)
 				.setPostImmediate(PostImmediate.Yes)
 				.setFailOnError(true) // yes, because we will display a pop-up to user in this case (see below)
 				.postIt();
 	}
-	
+
 	@Override
 	protected void postProcess(boolean success)
 	{
@@ -101,7 +102,7 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	{
 		int adTableId;
 		int recordId;
-		int adClientId;
+		ClientId clientId;
 	}
 
 }
