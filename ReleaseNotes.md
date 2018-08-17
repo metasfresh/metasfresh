@@ -14,16 +14,22 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4444](https://github.com/metasfresh/metasfresh/issues/4444) Refund Flatrate Terms adjustments
+    * New Notification Feature for Refund Contracts, allowing to notify Users about ending contracts.
   * [#4467](https://github.com/metasfresh/metasfresh/issues/4467) Get rid of the legacy IProcess interface
+    * Internal Housekeeping, removing Removes legacy code IProcess.
 
 ## Fix
 * metasfresh
   * [#4463](https://github.com/metasfresh/metasfresh/issues/4463) Wrong pricelist when different invoice partner in sales order
+    * Bugfix for Pricelist retrieval in Sales Order, now getting the correct Pricelist in cases of different Invoice Partners. 
   * [#4464](https://github.com/metasfresh/metasfresh/issues/4464) Report Business Partner revenue is not working anymore in swing
+    * Fixes the Revenue Business Partner Report in swing client.
 
 * metasfresh-webui-frontend
   * [#1911](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1911) Filters in HU Editor
+    * Fix for the Web UI, now not cuting off Filter criteria anymore in narrow window situations.
   * [#1916](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1916) Fix barcode scanner in HU editor
+    * Fix for the Barcode Scanner in Handling Unit editor.
   * [#1672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1672) Location dropdown opens again when opening the batch entry
     * Fixes a focus issue in Lookup fields.
 
@@ -49,19 +55,28 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1899](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1899) Improve quick/batch entry layout
+    * New internal Feature that allows to set the sizes of Batch Entry Fields.
   * [#1909](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1909) Vertical Cabling : Show full product name on quick order entry
+    * Enhanced Lookup Dropdown in Batch entry fields, now allowing to have the dropdown wider than the corresponding search Field.
   
 ## Fixes
 * metasfresh
   * [#4426](https://github.com/metasfresh/metasfresh/issues/4426) Error on new purchase order
+    * Bugfix for new Purchase Order creation with EDI Receipient involved.
   * [#4428](https://github.com/metasfresh/metasfresh/issues/4428) Missing lines in jasper documents
+    * Bugfix for Jasper Documentline when Product Categories ane inactive.
   * [#4451](https://github.com/metasfresh/metasfresh/issues/4451) HU Editor in picking terminal shows all HUs: not filtered for product
+    * Fixes a filtering Bug in Handling Unit editor, now only showing the entries for the filtered Product again.
   * [#4418](https://github.com/metasfresh/metasfresh/issues/4418) Report Revenue Business Partner without Attributes
+    * Fix for Attributes in Shipment Schedule lines and for the Revenue Business Partner Report.
 
 * metasfresh-webui-frontend
   * [#1887](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1887) Non mandatory blue fields in grid view
+    * UI Improvement, now not showing a blue border for non-mandatory fields after initial edit.
   * [#1890](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1890) Applying filter params with [alt]+Enter not working in modal windows
+    * Keyboard Shortcut adjustment, now allowing to use [alt]+enter in modal views with filter parameters.
   * [#1901](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1901) Highlighted action is not the one from mouse over when calling actions with [alt]+l
+    * Shortcut fix for [alt]+l.
 
 # metasfresh 5.68
 ## Features
