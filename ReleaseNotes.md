@@ -60,12 +60,17 @@ Here come the actual release notes:
   * [#4428](https://github.com/metasfresh/metasfresh/issues/4428) Missing lines in jasper documents
     * Bugfix for Jasper Documentline when Product Categories ane inactive.
   * [#4451](https://github.com/metasfresh/metasfresh/issues/4451) HU Editor in picking terminal shows all HUs: not filtered for product
+    * Fixes a filtering Bug in Handling Unit editor, now only showing the entries for the filtered Product again.
   * [#4418](https://github.com/metasfresh/metasfresh/issues/4418) Report Revenue Business Partner without Attributes
+    * Fix for Attributes in Shipment Schedule lines and for the Revenue Business Partner Report.
 
 * metasfresh-webui-frontend
   * [#1887](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1887) Non mandatory blue fields in grid view
+    * UI Improvement, now not showing a blue border for non-mandatory fields after initial edit.
   * [#1890](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1890) Applying filter params with [alt]+Enter not working in modal windows
+    * Keyboard Shortcut adjustment, now allowing to use [alt]+enter in modal views with filter parameters.
   * [#1901](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1901) Highlighted action is not the one from mouse over when calling actions with [alt]+l
+    * Shortcut fix for [alt]+l.
 
 # metasfresh 5.68
 ## Features
