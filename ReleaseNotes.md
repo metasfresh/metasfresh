@@ -14,16 +14,22 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4444](https://github.com/metasfresh/metasfresh/issues/4444) Refund Flatrate Terms adjustments
+    * New Notification Feature for Refund Contracts, allowing to notify Users about ending contracts.
   * [#4467](https://github.com/metasfresh/metasfresh/issues/4467) Get rid of the legacy IProcess interface
+    * Internal Housekeeping, removing Removes legacy code IProcess.
 
 ## Fix
 * metasfresh
   * [#4463](https://github.com/metasfresh/metasfresh/issues/4463) Wrong pricelist when different invoice partner in sales order
+    * Bugfix for Pricelist retrieval in Sales Order, now getting the correct Pricelist in cases of different Invoice Partners. 
   * [#4464](https://github.com/metasfresh/metasfresh/issues/4464) Report Business Partner revenue is not working anymore in swing
+    * Fixes the Revenue Business Partner Report in swing client.
 
 * metasfresh-webui-frontend
   * [#1911](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1911) Filters in HU Editor
+    * Fix for the Web UI, now not cuting off Filter criteria anymore in narrow window situations.
   * [#1916](https://github.com/metasfresh/metasfresh-webui-frontend/pull/1916) Fix barcode scanner in HU editor
+    * Fix for the Barcode Scanner in Handling Unit editor.
   * [#1672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1672) Location dropdown opens again when opening the batch entry
     * Fixes a focus issue in Lookup fields.
 
