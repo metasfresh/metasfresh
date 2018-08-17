@@ -204,6 +204,7 @@ import lombok.NonNull;
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Window, gridTabVO.getAD_Window_ID())
 				.setDetailId(detailId)
+				.setInternalName(gridTabVO.getInternalName())
 				//
 				.setCaption(gridTabVO.getNameTrls(), gridTabVO.getName())
 				.setDescription(gridTabVO.getDescriptionTrls(), gridTabVO.getDescription())
