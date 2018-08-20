@@ -82,7 +82,7 @@ public class M_Inventory
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(null)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
 				.adClientId(inventory.getAD_Client_ID())
 				.adOrgId(inventory.getAD_Org_ID())
 				.build());

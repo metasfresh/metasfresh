@@ -2,14 +2,12 @@ package de.metas.inventory.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.Iterator;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.process.JavaProcess;
@@ -43,34 +41,33 @@ public class M_InventoryLine_MarkAsCounted extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		getSelectedInventoryLines()
-				.forEach(inventoryLine -> {
-
-					if (!inventoryLine.isCounted())
-					{
-						inventoryLine.setIsCounted(true);
-						save(inventoryLine);
-					}
-				});
+				.stream()
+				.forEach(inventoryLine -> markAsCounted(inventoryLine));
 
 		return MSG_OK;
 	}
 
-	private Iterable<I_M_InventoryLine> getSelectedInventoryLines()
+	private void markAsCounted(final I_M_InventoryLine inventoryLine)
 	{
-		final IQueryFilter<I_M_InventoryLine> selectedPartners = getProcessInfo().getQueryFilter();
+		if (!inventoryLine.isCounted())
+		{
+			inventoryLine.setIsCounted(true);
+			save(inventoryLine);
+		}
+	}
+
+	private List<I_M_InventoryLine> getSelectedInventoryLines()
+	{
+		final IQueryFilter<I_M_InventoryLine> selectedInventoryLines = getProcessInfo().getQueryFilter();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_InventoryLine> queryBuilder = queryBL.createQueryBuilder(I_M_InventoryLine.class, getCtx(), ITrx.TRXNAME_ThreadInherited);
+		final IQueryBuilder<I_M_InventoryLine> queryBuilder = queryBL.createQueryBuilder(I_M_InventoryLine.class);
 
-		final Iterator<I_M_InventoryLine> it = queryBuilder
-				.filter(selectedPartners)
+		return queryBuilder
+				.filter(selectedInventoryLines)
 				.addOnlyActiveRecordsFilter()
-				.orderBy().addColumn(I_M_InventoryLine.COLUMNNAME_M_Locator_ID).endOrderBy() // to make it easier for the user to browse the logging.
+				.orderBy().addColumn(I_M_InventoryLine.COLUMNNAME_M_Locator_ID).endOrderBy()
 				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
-				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
-				.iterate(I_M_InventoryLine.class);
-
-		return () -> it;
+				.list(I_M_InventoryLine.class);
 	}
 }

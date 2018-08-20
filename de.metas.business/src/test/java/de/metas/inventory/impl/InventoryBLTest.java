@@ -128,7 +128,7 @@ public class InventoryBLTest
 	}
 
 	@Test
-	public void assignToInventoryCounters_12Locators_5Counters()
+	public void assignToInventoryCounters_6Locators_5Counters()
 	{
 		final int numberOfCounters = 5;
 
@@ -158,29 +158,7 @@ public class InventoryBLTest
 		final I_M_InventoryLine inventoryLine6 = createInventoryLine(locator6);
 		inventoryLines.add(inventoryLine6);
 
-		final I_M_Locator locator7 = createLocator("locator7", 1000006);
-		final I_M_InventoryLine inventoryLine7 = createInventoryLine(locator7);
-		inventoryLines.add(inventoryLine7);
 
-		final I_M_Locator locator8 = createLocator("locator8", 1000007);
-		final I_M_InventoryLine inventoryLine8 = createInventoryLine(locator8);
-		inventoryLines.add(inventoryLine8);
-
-		final I_M_Locator locator9 = createLocator("locator9", 1000008);
-		final I_M_InventoryLine inventoryLine9 = createInventoryLine(locator9);
-		inventoryLines.add(inventoryLine9);
-
-		final I_M_Locator locator10 = createLocator("locator10", 1000009);
-		final I_M_InventoryLine inventoryLine10 = createInventoryLine(locator10);
-		inventoryLines.add(inventoryLine10);
-
-		final I_M_Locator locator11 = createLocator("locator11", 1000010);
-		final I_M_InventoryLine inventoryLine11 = createInventoryLine(locator11);
-		inventoryLines.add(inventoryLine11);
-
-		final I_M_Locator locator12 = createLocator("locator12", 1000011);
-		final I_M_InventoryLine inventoryLine12 = createInventoryLine(locator12);
-		inventoryLines.add(inventoryLine12);
 
 		inventoryBL.assignToInventoryCounters(inventoryLines, numberOfCounters);
 
@@ -207,28 +185,7 @@ public class InventoryBLTest
 		refresh(inventoryLine6);
 		assertTrue("A".equals(inventoryLine6.getAssignedTo()));
 
-		refresh(inventoryLine7);
-		assertTrue("B".equals(inventoryLine7.getAssignedTo()));
 
-		refresh(inventoryLine8);
-
-		assertTrue("C".equals(inventoryLine8.getAssignedTo()));
-
-		refresh(inventoryLine9);
-
-		assertTrue("D".equals(inventoryLine9.getAssignedTo()));
-
-		refresh(inventoryLine10);
-
-		assertTrue("E".equals(inventoryLine10.getAssignedTo()));
-
-		refresh(inventoryLine11);
-
-		assertTrue("A".equals(inventoryLine11.getAssignedTo()));
-
-		refresh(inventoryLine12);
-
-		assertTrue("B".equals(inventoryLine12.getAssignedTo()));
 
 	}
 

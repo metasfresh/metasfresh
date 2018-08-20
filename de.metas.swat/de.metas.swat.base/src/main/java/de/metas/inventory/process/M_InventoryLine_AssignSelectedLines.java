@@ -6,7 +6,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -57,15 +56,15 @@ public class M_InventoryLine_AssignSelectedLines extends JavaProcess
 
 	private List<I_M_InventoryLine> getSelectedInventoryLines()
 	{
-		final IQueryFilter<I_M_InventoryLine> selectedPartners = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_M_InventoryLine> selectedInventoryLines = getProcessInfo().getQueryFilter();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_M_InventoryLine> queryBuilder = queryBL.createQueryBuilder(I_M_InventoryLine.class, getCtx(), ITrx.TRXNAME_ThreadInherited);
+		final IQueryBuilder<I_M_InventoryLine> queryBuilder = queryBL.createQueryBuilder(I_M_InventoryLine.class);
 
 		final List<I_M_InventoryLine> inventoryLines = queryBuilder
-				.filter(selectedPartners)
+				.filter(selectedInventoryLines)
 				.addOnlyActiveRecordsFilter()
-				.orderBy().addColumn(I_M_InventoryLine.COLUMNNAME_M_Locator_ID).endOrderBy() // to make it easier for the user to browse the logging.
+				.orderBy(I_M_InventoryLine.COLUMNNAME_M_Locator_ID)
 				.create()
 				.list(I_M_InventoryLine.class);
 
