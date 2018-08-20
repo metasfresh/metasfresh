@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_InventoryLine
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -788188880L;
+	private static final long serialVersionUID = -409190062L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (Properties ctx, int M_InventoryLine_ID, String trxName)
@@ -24,13 +23,13 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
       super (ctx, M_InventoryLine_ID, trxName);
       /** if (M_InventoryLine_ID == 0)
         {
-			setInventoryType (null);
-// D
+			setC_UOM_ID (0);
+			setInventoryType (null); // D
+			setIsCounted (false); // N
 			setM_AttributeSetInstance_ID (0);
 			setM_Inventory_ID (0);
 			setM_InventoryLine_ID (0);
-			setM_Locator_ID (0);
-// @M_Locator_ID@
+			setM_Locator_ID (0); // @M_Locator_ID@
 			setM_Product_ID (0);
 			setProcessed (false);
 			setQtyBook (BigDecimal.ZERO);
@@ -53,6 +52,22 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Zugewiesen an.
+		@param AssignedTo Zugewiesen an	  */
+	@Override
+	public void setAssignedTo (java.lang.String AssignedTo)
+	{
+		set_ValueNoCheck (COLUMNNAME_AssignedTo, AssignedTo);
+	}
+
+	/** Get Zugewiesen an.
+		@return Zugewiesen an	  */
+	@Override
+	public java.lang.String getAssignedTo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AssignedTo);
+	}
 
 	@Override
 	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
@@ -171,6 +186,32 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	public java.lang.String getInventoryType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InventoryType);
+	}
+
+	/** Set Gezählt.
+		@param IsCounted 
+		Count number of not empty elements
+	  */
+	@Override
+	public void setIsCounted (boolean IsCounted)
+	{
+		set_Value (COLUMNNAME_IsCounted, Boolean.valueOf(IsCounted));
+	}
+
+	/** Get Gezählt.
+		@return Count number of not empty elements
+	  */
+	@Override
+	public boolean isCounted () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCounted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Zeile Nr..
