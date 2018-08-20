@@ -42,13 +42,17 @@ public class AssignmentToRefundCandidate
 	@NonNull
 	RefundConfigId refundConfigId;
 
+	/** Relevant money amount of the assignable invoice candidate. */
+	@NonNull
+	Money moneyBase;
+
 	@NonNull
 	Money moneyAssignedToRefundCandidate;
 
 	@NonNull
 	Quantity quantityAssigendToRefundCandidate;
 
-	public AssignmentToRefundCandidate withSubtractedMoneyAndQuantity()
+	public AssignmentToRefundCandidate withSubtractedAssignedMoneyAndQuantity()
 	{
 		final Money moneySubtrahent = getMoneyAssignedToRefundCandidate();
 		final Money newMoneyAmount = refundInvoiceCandidate
@@ -69,6 +73,7 @@ public class AssignmentToRefundCandidate
 				assignableInvoiceCandidateId,
 				newRefundCandidate,
 				refundConfigId,
+				moneyBase,
 				moneyAssignedToRefundCandidate.toZero(),
 				quantityAssigendToRefundCandidate.toZero());
 	}

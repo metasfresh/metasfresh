@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
@@ -43,6 +44,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Repository
 public class AssignmentToRefundCandidateRepository
 {
 	@Getter
@@ -96,8 +98,12 @@ public class AssignmentToRefundCandidateRepository
 			return null;
 		}
 
+		final Money baseMoney = Money.of(
+				assignmentRecord.getBaseMoneyAmount(),
+				refundCandidate.get().getMoney().getCurrencyId());
+
 		final Money assignedMoney = Money.of(
-				assignmentRecord.getAssignedAmount(),
+				assignmentRecord.getAssignedMoneyAmount(),
 				refundCandidate.get().getMoney().getCurrencyId());
 
 		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), refundRecord.getM_Product().getC_UOM());
@@ -106,6 +112,7 @@ public class AssignmentToRefundCandidateRepository
 				InvoiceCandidateId.ofRepoId(assignmentRecord.getC_Invoice_Candidate_Assigned_ID()),
 				refundCandidate.get(),
 				RefundConfigId.ofRepoId(assignmentRecord.getC_Flatrate_RefundConfig_ID()),
+				baseMoney,
 				assignedMoney,
 				assignedQuantity);
 		return assignmentToRefundCandidate;
@@ -121,7 +128,8 @@ public class AssignmentToRefundCandidateRepository
 
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
-		assignmentRecord.setAssignedAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue());
+		assignmentRecord.setBaseMoneyAmount(assignmentToRefundCandidate.getMoneyBase().getValue());
+		assignmentRecord.setAssignedMoneyAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue());
 		assignmentRecord.setAssignedQuantity(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().getAsBigDecimal());
 		saveRecord(assignmentRecord);
 	}

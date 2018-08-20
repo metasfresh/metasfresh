@@ -66,6 +66,7 @@ public class InvoiceCandidateRepository
 						assignableInvoiceCandidate.getId(),
 						refundInvoiceCandidate,
 						refundConfig.getId(),
+						assignableInvoiceCandidate.getMoney(),
 						unassignedPair.getMoneyToAssign(),
 						unassignedPair.getQuantityToAssign());
 

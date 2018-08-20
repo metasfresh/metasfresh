@@ -76,7 +76,7 @@ public interface I_C_Invoice_Candidate_Assignment
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAssignedAmount (java.math.BigDecimal AssignedAmount);
+	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount);
 
 	/**
 	 * Get Zugeordneter Betrag.
@@ -86,12 +86,12 @@ public interface I_C_Invoice_Candidate_Assignment
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getAssignedAmount();
+	public java.math.BigDecimal getAssignedMoneyAmount();
 
-    /** Column definition for AssignedAmount */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedAmount", null);
-    /** Column name AssignedAmount */
-    public static final String COLUMNNAME_AssignedAmount = "AssignedAmount";
+    /** Column definition for AssignedMoneyAmount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedMoneyAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedMoneyAmount", null);
+    /** Column name AssignedMoneyAmount */
+    public static final String COLUMNNAME_AssignedMoneyAmount = "AssignedMoneyAmount";
 
 	/**
 	 * Set Zugeordnete Menge.
@@ -117,6 +117,29 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedQuantity = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedQuantity", null);
     /** Column name AssignedQuantity */
     public static final String COLUMNNAME_AssignedQuantity = "AssignedQuantity";
+
+	/**
+	 * Set Basisbetrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBaseMoneyAmount (java.math.BigDecimal BaseMoneyAmount);
+
+	/**
+	 * Get Basisbetrag.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getBaseMoneyAmount();
+
+    /** Column definition for BaseMoneyAmount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_BaseMoneyAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "BaseMoneyAmount", null);
+    /** Column name BaseMoneyAmount */
+    public static final String COLUMNNAME_BaseMoneyAmount = "BaseMoneyAmount";
 
 	/**
 	 * Set C_Flatrate_RefundConfig.

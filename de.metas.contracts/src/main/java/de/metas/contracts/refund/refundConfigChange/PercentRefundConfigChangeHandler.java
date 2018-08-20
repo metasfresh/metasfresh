@@ -1,9 +1,10 @@
 package de.metas.contracts.refund.refundConfigChange;
 
-import org.adempiere.util.Check;
-
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
+import de.metas.lang.Percent;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import lombok.NonNull;
 
 /*
@@ -28,42 +29,42 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PercentRefundConfigChangeHandler implements RefundConfigChangeHandler
+public class PercentRefundConfigChangeHandler extends RefundConfigChangeHandler
 {
-	private RefundConfig formerRefundConfig;
-
-	private RefundConfig currentRefundConfig;
-
-	private PercentRefundConfigChangeHandler(@NonNull final RefundConfig currentRefundConfig)
+	public static PercentRefundConfigChangeHandler newInstance(
+			@NonNull final MoneyService moneyService,
+			@NonNull final RefundConfig currentRefundConfig)
 	{
-		this.currentRefundConfig = currentRefundConfig;
-		this.formerRefundConfig = null;
+		return new PercentRefundConfigChangeHandler(moneyService, currentRefundConfig);
 	}
 
-	@Override
-	public void currentRefundConfig(@NonNull final RefundConfig refundConfig)
-	{
-		this.formerRefundConfig = this.currentRefundConfig;
-		this.currentRefundConfig = refundConfig;
-	}
+	private final MoneyService moneyService;
 
-	@Override
-	public RefundConfig getFormerRefundConfig()
+	private PercentRefundConfigChangeHandler(
+			@NonNull final MoneyService moneyService,
+			@NonNull final RefundConfig currentRefundConfig)
 	{
-		return Check.assumeNotNull(formerRefundConfig, "formerRefundConfig may not be null; invoke the currentRefundConfig() method first; this={}", this);
+		super(currentRefundConfig);
+
+		this.moneyService = moneyService;
 	}
 
 	@Override
 	public AssignmentToRefundCandidate createNewAssignment(@NonNull final AssignmentToRefundCandidate existingAssignment)
 	{
-		Check.assumeNotNull(formerRefundConfig, "formerRefundConfig may not be null; invoke the currentRefundConfig() method first; this={}", this);
-		// note: currentRefundConfig can't be null; no need to assume.
+		// note: currentRefundConfig can't be null
+		final Percent percentToApply = getCurrentRefundConfig().getPercent().subtract(getFormerRefundConfig().getPercent());
+
+		final Money base = existingAssignment.getMoneyBase();
+
+		final Money moneyToAssign = moneyService.percentage(percentToApply, base);
 
 		return new AssignmentToRefundCandidate(
 				existingAssignment.getAssignableInvoiceCandidateId(),
 				existingAssignment.getRefundInvoiceCandidate(),
-				currentRefundConfig.getId(),
-				moneyAssignedToRefundCandidate,
-				quantityAssigendToRefundCandidate);
+				getCurrentRefundConfig().getId(),
+				existingAssignment.getMoneyBase(),
+				moneyToAssign,
+				existingAssignment.getQuantityAssigendToRefundCandidate());
 	}
 }

@@ -536,7 +536,7 @@ public class InvoiceCandidateAssignmentService
 		for (final AssignmentToRefundCandidate assignmentToRefundCandidate : assignmentsToRefundCandidates)
 		{
 			final RefundInvoiceCandidate withSubtractedMoneyAmount = assignmentToRefundCandidate
-					.withSubtractedMoneyAndQuantity()
+					.withSubtractedAssignedMoneyAndQuantity()
 					.getRefundInvoiceCandidate();
 			refundInvoiceCandidateRepository.save(withSubtractedMoneyAmount);
 

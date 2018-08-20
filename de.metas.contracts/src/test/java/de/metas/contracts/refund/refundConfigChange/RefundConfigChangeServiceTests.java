@@ -29,6 +29,8 @@ import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyRepository;
+import de.metas.money.MoneyService;
 
 /*
  * #%L
@@ -65,10 +67,14 @@ public class RefundConfigChangeServiceTests
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
+				new RefundInvoiceCandidateRepository(refundContractRepository,
+						new RefundInvoiceCandidateFactory(refundContractRepository)));
+
 		refundConfigChangeService = new RefundConfigChangeService(
-				new AssignmentToRefundCandidateRepository(
-						new RefundInvoiceCandidateRepository(refundContractRepository,
-								new RefundInvoiceCandidateFactory(refundContractRepository))));
+				assignmentToRefundCandidateRepository,
+				new MoneyService(new CurrencyRepository()));
 	}
 
 	@Test

@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1879203372L;
+	private static final long serialVersionUID = -1894852611L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment (Properties ctx, int C_Invoice_Candidate_Assignment_ID, String trxName)
@@ -47,22 +47,22 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
     }
 
 	/** Set Zugeordneter Betrag.
-		@param AssignedAmount 
+		@param AssignedMoneyAmount 
 		Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
 	  */
 	@Override
-	public void setAssignedAmount (java.math.BigDecimal AssignedAmount)
+	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount)
 	{
-		set_Value (COLUMNNAME_AssignedAmount, AssignedAmount);
+		set_Value (COLUMNNAME_AssignedMoneyAmount, AssignedMoneyAmount);
 	}
 
 	/** Get Zugeordneter Betrag.
 		@return Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
 	  */
 	@Override
-	public java.math.BigDecimal getAssignedAmount () 
+	public java.math.BigDecimal getAssignedMoneyAmount () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedAmount);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedMoneyAmount);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -85,6 +85,25 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	public java.math.BigDecimal getAssignedQuantity () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedQuantity);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Basisbetrag.
+		@param BaseMoneyAmount Basisbetrag	  */
+	@Override
+	public void setBaseMoneyAmount (java.math.BigDecimal BaseMoneyAmount)
+	{
+		set_Value (COLUMNNAME_BaseMoneyAmount, BaseMoneyAmount);
+	}
+
+	/** Get Basisbetrag.
+		@return Basisbetrag	  */
+	@Override
+	public java.math.BigDecimal getBaseMoneyAmount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BaseMoneyAmount);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

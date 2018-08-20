@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -40,6 +41,7 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
+@Service
 public class AssignableInvoiceCandidateFactory
 {
 	/** Note: does not load&include {@link AssignmentToRefundCandidate}s; those need to be retrieved using {@link AssignmentToRefundCandidateRepository}. */

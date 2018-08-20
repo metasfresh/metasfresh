@@ -21,6 +21,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import lombok.NonNull;
 
 /*
@@ -48,11 +49,14 @@ import lombok.NonNull;
 public class RefundConfigChangeService
 {
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+	private final MoneyService moneyService;
 
 	public RefundConfigChangeService(
-			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
+			@NonNull final MoneyService moneyService)
 	{
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
+		this.moneyService = moneyService;
 	}
 
 	/**
@@ -182,6 +186,10 @@ public class RefundConfigChangeService
 	private RefundConfigChangeHandler createForConfig(@NonNull final RefundConfig refundConfig)
 	{
 		final boolean isPercent = RefundBase.PERCENTAGE.equals(refundConfig.getRefundBase());
+		if(isPercent)
+		{
+			return PercentRefundConfigChangeHandler.newInstance(moneyService, refundConfig);
+		}
 
 	}
 

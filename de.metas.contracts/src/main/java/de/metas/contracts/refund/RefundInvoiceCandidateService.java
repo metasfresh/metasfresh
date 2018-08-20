@@ -178,6 +178,7 @@ public class RefundInvoiceCandidateService
 				candidateToAssign.getId(),
 				updatedRefundCandidate,
 				refundConfig.getId(),
+				candidateToAssign.getMoney(),
 				moneyAugend,
 				assignedQtyAugent);
 	}

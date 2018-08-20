@@ -1,7 +1,11 @@
 package de.metas.contracts.refund.refundConfigChange;
 
+import org.adempiere.util.Check;
+
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -25,19 +29,39 @@ import de.metas.contracts.refund.RefundConfig;
  * #L%
  */
 
-public interface RefundConfigChangeHandler
+public abstract class RefundConfigChangeHandler
 {
+	private RefundConfig formerRefundConfig;
+
+	@Getter
+	private RefundConfig currentRefundConfig;
+
+	protected RefundConfigChangeHandler(@NonNull final RefundConfig currentRefundConfig)
+	{
+		this.currentRefundConfig = currentRefundConfig;
+		this.formerRefundConfig = null;
+
+	}
+
 	/** Compute and store the difference (percent or otherwise) between the previous config and the given one. */
-	public void currentRefundConfig(RefundConfig refundConfig);
+
+	public void currentRefundConfig(@NonNull final RefundConfig refundConfig)
+	{
+		this.formerRefundConfig = this.currentRefundConfig;
+		this.currentRefundConfig = refundConfig;
+	}
 
 	/**
 	 * @return the refund config that was the current config before {@link #currentRefundConfig(RefundConfig)} was called.
 	 */
-	public RefundConfig getFormerRefundConfig();
+	public RefundConfig getFormerRefundConfig()
+	{
+		return Check.assumeNotNull(formerRefundConfig, "formerRefundConfig may not be null; invoke the currentRefundConfig() method first; this={}", this);
+	}
 
 	/**
 	 * @param existingAssignment an assignment that belongs to the refund config from {@link #getFormerRefundConfig()}.
 	 * @return a new assignment that belongs to the refund config that was set using {@link #currentRefundConfig(RefundConfig)}.
 	 */
-	public AssignmentToRefundCandidate createNewAssignment(AssignmentToRefundCandidate existingAssignment);
+	public abstract AssignmentToRefundCandidate createNewAssignment(AssignmentToRefundCandidate existingAssignment);
 }
