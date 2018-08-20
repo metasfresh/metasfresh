@@ -112,17 +112,6 @@ public class RefundContract
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<RefundConfig> getRefundConfigRange(
-			@NonNull final RefundConfig currentConfig,
-			@NonNull final RefundConfig targetConfig)
-	{
-		Check.errorIf(currentConfig.getId().equals(targetConfig.getId()),
-				"Params currentConfig and currentConfig={}; targetConfig={}",
-				currentConfig, targetConfig);
-
-		return null;
-	}
-
 	public RefundConfig getRefundConfigById(@NonNull final RefundConfigId refundConfigId)
 	{
 		for (RefundConfig refundConfig : refundConfigs)

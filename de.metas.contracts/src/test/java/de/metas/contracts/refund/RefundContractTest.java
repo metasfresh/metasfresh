@@ -1,12 +1,10 @@
 package de.metas.contracts.refund;
 
-import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +19,6 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.lang.Percent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -109,45 +106,4 @@ public class RefundContractTest
 
 		assertThat(result).isEqualTo(refundConfig2);
 	}
-
-	public List<RefundConfig> getRefundConfigRange(
-			@NonNull final RefundConfig currentConfig,
-			@NonNull final RefundConfig targetConfig)
-	{
-		final RefundConfig refundConfig3 = refundConfig1.toBuilder()
-				.minQty(TEN)
-				.build();
-		final RefundConfig refundConfig4 = refundConfig1.toBuilder()
-				.minQty(new BigDecimal("15"))
-				.build();
-
-		final RefundContract refundContract = this.refundContract.toBuilder()
-				.clearRefundConfigs()
-				.refundConfig(refundConfig1)
-				.refundConfig(refundConfig2)
-				.refundConfig(refundConfig3)
-				.refundConfig(refundConfig4)
-				.build();
-
-		assertThat(refundContract.getRefundConfigRange(refundConfig1, refundConfig4))
-				.containsExactlyInAnyOrder(refundConfig2, refundConfig3, refundConfig4);
-
-		assertThat(refundContract.getRefundConfigRange(refundConfig2, refundConfig4))
-				.containsExactlyInAnyOrder(refundConfig3, refundConfig4);
-
-		assertThat(refundContract.getRefundConfigRange(refundConfig1, refundConfig2))
-				.containsExactlyInAnyOrder(refundConfig2);
-
-		assertThat(refundContract.getRefundConfigRange(refundConfig4, refundConfig1))
-				.containsExactlyInAnyOrder(refundConfig3, refundConfig2, refundConfig1);
-
-		assertThat(refundContract.getRefundConfigRange(refundConfig3, refundConfig1))
-				.containsExactlyInAnyOrder(refundConfig2, refundConfig1);
-
-		assertThat(refundContract.getRefundConfigRange(refundConfig3, refundConfig2))
-				.containsExactlyInAnyOrder(refundConfig2);
-
-		return null;
-	}
-
 }

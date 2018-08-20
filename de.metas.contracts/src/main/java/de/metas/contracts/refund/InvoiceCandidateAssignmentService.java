@@ -619,8 +619,6 @@ public class InvoiceCandidateAssignmentService
 
 		final boolean isHigherRefund = newRefundConfig.getMinQty().compareTo(oldRefundConfig.getMinQty()) > 0;
 
-
-
 		RefundInvoiceCandidate updatedCandidate = refundInvoiceCandidate
 				.toBuilder()
 				.money(refundInvoiceCandidate.getMoney().toZero())
@@ -644,6 +642,68 @@ public class InvoiceCandidateAssignmentService
 
 		refundInvoiceCandidateRepository.save(updatedCandidate);
 		return updatedCandidate;
+	}
+
+	@VisibleForTesting
+	List<RefundConfig> getRefundConfigRange(
+			@NonNull final RefundContract contract,
+			@NonNull final RefundConfig currentConfig,
+			@NonNull final RefundConfig targetConfig)
+	{
+		Check.errorIf(currentConfig.getMinQty().equals(targetConfig.getMinQty()),
+				"Params currentConfig and currentConfig={}; targetConfig={}",
+				currentConfig, targetConfig);
+
+		final boolean forward = currentConfig.getMinQty().compareTo(targetConfig.getMinQty()) < 0;
+
+		// make sure we know which order of refund configs we operate on
+		final ImmutableList<RefundConfig> configsByMinQty = contract
+				.getRefundConfigs()
+				.stream()
+				.sorted(Comparator.comparing(RefundConfig::getMinQty))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList.Builder<RefundConfig> result = ImmutableList.builder();
+		if (forward)
+		{
+			boolean collectItem = false;
+			for (int i = 0; i < configsByMinQty.size(); i++)
+			{
+				final RefundConfig item = configsByMinQty.get(i);
+				if (collectItem)
+				{
+					result.add(item);
+				}
+				if (item.getMinQty().equals(targetConfig.getMinQty()))
+				{
+					return result.build(); // we collected the last item (targetConfig) and are done
+				}
+				if (item.getMinQty().equals(currentConfig.getMinQty()))
+				{
+					collectItem = true; // don't collect currentConfig itself, but the next item(s)
+				}
+			}
+		}
+
+		// backward
+		boolean collectItem = false;
+		for (int i = configsByMinQty.size() - 1; i >= 0; i--)
+		{
+			final RefundConfig item = configsByMinQty.get(i);
+			if (item.getMinQty().equals(currentConfig.getMinQty()))
+			{
+				collectItem = true; // do collect currentConfig
+			}
+			if (item.getMinQty().equals(targetConfig.getMinQty()))
+			{
+				return result.build(); // we collected the last item (one "above" targetConfig) and are done
+			}
+			if (collectItem)
+			{
+				result.add(item);
+			}
+		}
+		return result.build();
 	}
 
 	public List<AssignableInvoiceCandidate> getAssignableCandidates(
