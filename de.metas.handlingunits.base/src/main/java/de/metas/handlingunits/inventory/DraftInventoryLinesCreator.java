@@ -3,24 +3,18 @@ package de.metas.handlingunits.inventory;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Inventory;
 
-import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inventory.IInventoryDAO;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
@@ -56,36 +50,25 @@ import lombok.experimental.NonFinal;
 @Value
 public class DraftInventoryLinesCreator
 {
-	IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+
 	IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	I_M_Inventory inventoryRecord;
+	@NonNull final DraftInventoryLines draftInventoryLines;
 
-	Map<HuId, I_M_InventoryLine> inventoryLinesByHU;
 	final Set<Integer> seenLocatorIds = new HashSet<>();
+	
+	@NonFinal long countInventoryLines = 0;
 
-	@NonFinal
-	long countInventoryLines = 0;
-
-	@Builder
-	private DraftInventoryLinesCreator(
-			@NonNull final I_M_Inventory inventoryRecord,
-			@NonNull final HUsForInventoryStrategy strategy)
+	public DraftInventoryLinesCreator(DraftInventoryLines draftInventoryLines)
 	{
-		Check.errorUnless(
-				documentBL.issDocumentDraftedOrInProgress(inventoryRecord),
-				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventoryRecord={}",
-				inventoryRecord.getDocStatus(), inventoryRecord);
-		this.inventoryRecord = inventoryRecord;
+		this.draftInventoryLines = draftInventoryLines;
+	}
 
-		// get existing lines' HuIds
-		this.inventoryLinesByHU = inventoryDAO
-				.retrieveLinesForInventoryId(inventoryRecord.getM_Inventory_ID(), I_M_InventoryLine.class)
-				.stream()
-				.filter(line -> line.getM_HU_ID() > 0)
-				.collect(GuavaCollectors.toImmutableMapByKey(line -> HuId.ofRepoId(line.getM_HU_ID())));
-
+	public void execute()
+	{
+		final HUsForInventoryStrategy strategy = draftInventoryLines.getStrategy();
+		
+		
 		// create/update new lines
 		final Iterator<I_M_HU> hus = strategy.streamHus().iterator();
 		while (hus.hasNext())
@@ -118,17 +101,17 @@ public class DraftInventoryLinesCreator
 
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
-		if (inventoryLinesByHU.containsKey(huId))
+		if (draftInventoryLines.getInventoryLinesByHU().containsKey(huId))
 		{
 			// update line
-			inventoryLine = inventoryLinesByHU.get(huId);
+			inventoryLine = draftInventoryLines.getInventoryLinesByHU().get(huId);
 		}
 		else
 		{
 			// create line
 			inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
-			inventoryLine.setM_Inventory(inventoryRecord);
-			inventoryLine.setAD_Org_ID(inventoryRecord.getAD_Org_ID());
+			inventoryLine.setM_Inventory(draftInventoryLines.getInventoryRecord());
+			inventoryLine.setAD_Org_ID(draftInventoryLines.getInventoryRecord().getAD_Org_ID());
 		}
 
 		inventoryLine.setM_AttributeSetInstance_ID(0);

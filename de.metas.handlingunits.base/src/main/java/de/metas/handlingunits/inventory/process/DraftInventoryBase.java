@@ -2,6 +2,7 @@ package de.metas.handlingunits.inventory.process;
 
 import org.compiere.model.I_M_Inventory;
 
+import de.metas.handlingunits.inventory.DraftInventoryLines;
 import de.metas.handlingunits.inventory.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.HUsForInventoryStrategy;
 import de.metas.process.IProcessPrecondition;
@@ -57,10 +58,13 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 
 		final HUsForInventoryStrategy strategy = createStrategy(inventory);
 
-		final DraftInventoryLinesCreator draftLinesCreator = DraftInventoryLinesCreator.builder()
+		final DraftInventoryLines draftLines = DraftInventoryLines.builder()
 				.inventoryRecord(inventory)
 				.strategy(strategy)
 				.build();
+		
+		final DraftInventoryLinesCreator draftLinesCreator = new DraftInventoryLinesCreator(draftLines);
+		draftLinesCreator.execute();
 
 		return "@Created@/@Updated@ #" + draftLinesCreator.getCountInventoryLines();
 	}
