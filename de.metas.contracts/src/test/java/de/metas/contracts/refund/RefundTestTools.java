@@ -284,7 +284,7 @@ public class RefundTestTools
 		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundCandidate.getRefundContract().getId().getRepoId());
 		assignmentRecord.setC_Flatrate_RefundConfig_ID(refundCandidate.getRefundConfig().getId().getRepoId());
-		assignmentRecord.setAssignedAmount(TWO);
+		assignmentRecord.setAssignedMoneyAmount(TWO);
 		assignmentRecord.setAssignedQuantity(ONE);
 		saveRecord(assignmentRecord);
 

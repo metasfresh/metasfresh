@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,6 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Repository
 public class AssignmentToRefundCandidateRepository
 {
 	@Getter
@@ -91,7 +93,7 @@ public class AssignmentToRefundCandidateRepository
 		}
 
 		final Money assignedMoney = Money.of(
-				assignmentRecord.getAssignedAmount(),
+				assignmentRecord.getAssignedMoneyAmount(),
 				refundCandidate.get().getMoney().getCurrencyId());
 
 		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), refundRecord.getM_Product().getC_UOM());

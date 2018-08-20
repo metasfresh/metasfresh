@@ -26,6 +26,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -73,6 +74,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class RefundInvoiceCandidateFactory
 {
 	private final RefundContractRepository refundContractRepository;

@@ -59,7 +59,7 @@ public class InvoiceCandidateRepository
 
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
-		assignmentRecord.setAssignedAmount(unassignedPair.getMoneyToAssign().getValue());
+		assignmentRecord.setAssignedMoneyAmount(unassignedPair.getMoneyToAssign().getValue());
 		assignmentRecord.setAssignedQuantity(unassignedPair.getQuantityToAssign().getAsBigDecimal());
 		saveRecord(assignmentRecord);
 
