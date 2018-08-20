@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import lombok.Getter;
 
 /**
  *  Model Tab Value Object
@@ -118,6 +119,8 @@ public class GridTabVO implements Evaluatee, Serializable
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.AD_Tab_ID));
 			
 			vo.templateTabId = rs.getInt(I_AD_Tab.COLUMNNAME_Template_Tab_ID);
+			
+			vo.internalName = rs.getString("InternalName");
 			
 			vo.name = rs.getString("Name");
 			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_Name, vo.name);
@@ -426,6 +429,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	/**	Tab	ID			*/
 	private int AD_Tab_ID;
 	private int templateTabId;
+	
+	@Getter
+	private String internalName;
+	
 	/** Name			*/
 	private String name = "";
 	private Map<String, String> nameTrls = null;
