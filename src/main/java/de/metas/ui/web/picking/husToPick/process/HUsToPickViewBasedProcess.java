@@ -18,6 +18,8 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderLineId;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -72,7 +74,7 @@ import lombok.NonNull;
 		}
 
 		// TODO: add clarity
-		if(!huRowReservationMatchesPackageableRow(huRow))
+		if (!huRowReservationMatchesPackageableRow(huRow))
 		{
 			return false;
 		}
@@ -218,7 +220,10 @@ import lombok.NonNull;
 		invalidatePackablesView();
 
 		// After this process finished successfully go back to the picking slots view
-		getResult().setWebuiIncludedViewIdToOpen(getPickingSlotView().getViewId().getViewId());
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId(getPickingSlotView().getViewId().getViewId())
+				.target(ViewOpenTarget.IncludedView)
+				.build());
 	}
 
 	protected final void invalidatePickingSlotsView()

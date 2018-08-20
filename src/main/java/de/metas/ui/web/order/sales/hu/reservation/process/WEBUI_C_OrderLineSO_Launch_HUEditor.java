@@ -13,6 +13,8 @@ import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
@@ -100,7 +102,10 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	{
 		final ViewId viewId = createHUEditorView();
 
-		getResult().setWebuiIncludedViewIdToOpen(viewId.getViewId());
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId(viewId.getViewId())
+				.target(ViewOpenTarget.ModalOverlay)
+				.build());
 
 		return MSG_OK;
 	}

@@ -74,7 +74,6 @@ public final class DocumentLayoutDescriptor
 
 	private DocumentLayoutDescriptor(final Builder builder)
 	{
-		super();
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
 
@@ -112,7 +111,7 @@ public final class DocumentLayoutDescriptor
 	{
 		return windowId;
 	}
-
+	
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);

@@ -3,6 +3,8 @@ package de.metas.ui.web.picking.pickingslot.process;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
@@ -62,8 +64,11 @@ public class WEBUI_Picking_HUEditor_Launcher extends PickingSlotViewBasedProcess
 	{
 		final IView husToPickView = createHUsToPickView();
 
-		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());
-		getResult().setWebuiViewProfileId("husToPick");
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId(husToPickView.getViewId().getViewId())
+				.profileId("husToPick")
+				.target(ViewOpenTarget.IncludedView)
+				.build());
 
 		return MSG_OK;
 	}

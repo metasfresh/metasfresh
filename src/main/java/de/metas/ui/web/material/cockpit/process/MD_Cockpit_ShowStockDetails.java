@@ -11,13 +11,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.handlingunits.model.I_M_HU_Stock_Detail_V;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
-import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -65,29 +66,30 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 	protected String doIt() throws Exception
 	{
 		final String viewId = createView().getViewId();
-		// getResult().setWebuiViewId(viewId);
-		getResult().setWebuiIncludedViewIdToOpen(viewId);
+
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+				.viewId(viewId)
+				.target(ViewOpenTarget.ModalOverlay)
+				.build());
 
 		return MSG_OK;
 	}
 
 	private ViewId createView()
 	{
-		final MaterialCockpitView materialCockpitView = getView();
+		final ViewId materialCockpitViewId = getView().getViewId();
 
-		final List<MaterialCockpitRow> rows = getSelectedRowIds()
-				.stream()
-				.map(materialCockpitView::getById)
+		final List<MaterialCockpitRow> rows = streamSelectedRows()
 				.collect(ImmutableList.toImmutableList());
 
 		final CreateViewRequest.Builder viewRequestBuilder = CreateViewRequest
 				.builder(MaterialCockpitUtil.WINDOW_MaterialCockpit_StockDetailView)
-				.setParentViewId(getView().getViewId());
+				.setParentViewId(materialCockpitViewId);
 
 		// create at least one filter per row; filters will be ORed
 		for (final MaterialCockpitRow row : rows)
 		{
-			Builder filterBuilder = newBuilder(row);
+			DocumentFilter.Builder filterBuilder = newFilterBuilder(row);
 
 			boolean attributeFilterAdded = false;
 
@@ -119,7 +121,7 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 
 					viewRequestBuilder.addStickyFilters(filter);
 					attributeFilterAdded = true;
-					filterBuilder = newBuilder(row);
+					filterBuilder = newFilterBuilder(row);
 				}
 			}
 			else if (dimensionGroup.getAttributeId().isPresent())
@@ -148,7 +150,7 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 
 				viewRequestBuilder.addStickyFilters(filter);
 				attributeFilterAdded = true;
-				filterBuilder = newBuilder(row);
+				filterBuilder = newFilterBuilder(row);
 			}
 
 			if (!attributeFilterAdded)
@@ -162,7 +164,7 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 		return view.getViewId();
 	}
 
-	private Builder newBuilder(@NonNull final MaterialCockpitRow row)
+	private static DocumentFilter.Builder newFilterBuilder(@NonNull final MaterialCockpitRow row)
 	{
 		final Builder builder = DocumentFilter.builder();
 

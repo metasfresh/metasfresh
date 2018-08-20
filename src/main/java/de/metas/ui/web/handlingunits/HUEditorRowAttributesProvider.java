@@ -2,16 +2,14 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -89,24 +87,15 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 
 	private HUEditorRowAttributes createRowAttributes(final ViewRowAttributesKey key)
 	{
-		final int huId = key.getHuId().toInt();
-		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
-		if (hu == null)
-		{
-			throw new IllegalArgumentException("No HU found for M_HU_ID=" + huId);
-		}
-
+		final I_M_HU hu = extractHU(key);
 		final IAttributeStorage attributesStorage = getAttributeStorageFactory().getAttributeStorage(hu);
 		attributesStorage.setSaveOnChange(true);
-
-		final DocumentId documentTypeId = DocumentId.of(huId);
-		final DocumentId huEditorRowId = key.getHuEditorRowId();
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(DocumentType.ViewRecordAttributes, documentTypeId, huEditorRowId);
 
 		final boolean rowAttributesReadonly = isReadonly() // readonly if the provider shall provide readonly attributes
 				|| !X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()); // or, readonly if not Planning, see https://github.com/metasfresh/metasfresh-webui-api/issues/314
 
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(hu);
 
 		final ImmutableSet<ProductId> productIDs = storage.getProductStorages()
@@ -115,7 +104,29 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 				.map(ProductId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		final DocumentPath documentPath = createDocumentPath(key);
 		return new HUEditorRowAttributes(documentPath, attributesStorage, productIDs, rowAttributesReadonly);
+	}
+
+	private I_M_HU extractHU(final ViewRowAttributesKey key)
+	{
+		final HuId huId = HuId.ofRepoId(key.getHuId().toInt());
+
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU hu = handlingUnitsRepo.getByIdOutOfTrx(huId);
+		if (hu == null)
+		{
+			throw new IllegalArgumentException("No HU found for M_HU_ID=" + huId);
+		}
+
+		return hu;
+	}
+
+	private static DocumentPath createDocumentPath(final ViewRowAttributesKey key)
+	{
+		final DocumentId documentTypeId = key.getHuId();
+		final DocumentId huEditorRowId = key.getHuEditorRowId();
+		return DocumentPath.rootDocumentPath(DocumentType.ViewRecordAttributes, documentTypeId, huEditorRowId);
 	}
 
 	private IAttributeStorageFactory getAttributeStorageFactory()

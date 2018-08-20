@@ -612,9 +612,10 @@ public class LayoutFactory
 		}
 
 		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
-				.setGridLayout(layoutGridView())
-				.setSingleRowLayout(layoutSingleRow())
-				.setQueryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
+				.internalName(entityDescriptor.getInternalName())
+				.gridLayout(layoutGridView())
+				.singleRowLayout(layoutSingleRow())
+				.queryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
 
 		//
 		// Quick input
@@ -625,7 +626,7 @@ public class LayoutFactory
 					entityDescriptor.getTableNameOrNull(),
 					entityDescriptor.getDetailId(),
 					entityDescriptor.getIsSOTrx());
-			layoutDetail.setSupportQuickInput(supportQuickInput);
+			layoutDetail.supportQuickInput(supportQuickInput);
 		}
 
 		return layoutDetail;

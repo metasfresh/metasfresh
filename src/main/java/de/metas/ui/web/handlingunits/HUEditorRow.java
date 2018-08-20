@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -173,7 +172,7 @@ public final class HUEditorRow implements IViewRow
 	})
 	private final JSONLookupValue locator;
 
-	private final Supplier<HUEditorRowAttributes> attributesSupplier;
+	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
 	private final List<HUEditorRow> includedRows;
 
@@ -214,12 +213,15 @@ public final class HUEditorRow implements IViewRow
 		final HUEditorRowAttributesProvider attributesProvider = builder.getAttributesProviderOrNull();
 		if (attributesProvider != null)
 		{
-			final DocumentId attributesKey = attributesProvider.createAttributeKey(huId);
-			attributesSupplier = () -> attributesProvider.getAttributes(rowId.toDocumentId(), attributesKey);
+			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
+					.viewRowId(rowId.toDocumentId())
+					.huId(huId)
+					.provider(attributesProvider)
+					.build());
 		}
 		else
 		{
-			attributesSupplier = null;
+			attributesSupplier = Optional.empty();
 		}
 	}
 
@@ -288,26 +290,27 @@ public final class HUEditorRow implements IViewRow
 	@Override
 	public boolean hasAttributes()
 	{
-		return attributesSupplier != null;
+		return attributesSupplier.isPresent();
 	}
 
 	@Override
 	public HUEditorRowAttributes getAttributes() throws EntityNotFoundException
 	{
-		if (attributesSupplier == null)
+		if (!attributesSupplier.isPresent())
 		{
 			throw new EntityNotFoundException("row does not support attributes");
 		}
 
-		final HUEditorRowAttributes attributes = attributesSupplier.get();
+		final HUEditorRowAttributes attributes = attributesSupplier.get().get();
 		if (attributes == null)
 		{
 			throw new EntityNotFoundException("row does not support attributes");
 		}
+
 		return attributes;
 	}
 
-	public Supplier<HUEditorRowAttributes> getAttributesSupplier()
+	public Optional<HUEditorRowAttributesSupplier> getAttributesSupplier()
 	{
 		return attributesSupplier;
 	}
