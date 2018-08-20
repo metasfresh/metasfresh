@@ -5,6 +5,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
+import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.event.Topic;
 import de.metas.event.Type;
@@ -84,13 +85,14 @@ public class FlatrateUserNotificationsProducer
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
 				.contentADMessage(message)
-				.targetAction(TargetRecordAction.of(flatrateTermRef))
+				.targetAction(TargetRecordAction.ofRecordAndWindow(flatrateTermRef, Contracts_Constants.CONTRACTS_WINDOW_ID))
 				.build();
 	}
 
 	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
+
 				.topic(EVENTBUS_TOPIC);
 	}
 
