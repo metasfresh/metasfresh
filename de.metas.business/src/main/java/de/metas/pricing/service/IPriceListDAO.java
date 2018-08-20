@@ -1,5 +1,8 @@
 package de.metas.pricing.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -38,6 +41,7 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 
 public interface IPriceListDAO extends ISingletonService
 {
@@ -123,4 +127,6 @@ public interface IPriceListDAO extends ISingletonService
 	String getPriceListName(final PriceListId priceListId);
 
 	Set<Integer> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
+	
+	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 }
