@@ -104,8 +104,8 @@ public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpres
 			else if (j == 0)
 			{
 				// Double marker (e.g. @@)
-				final String chunk = PARAMETER_DOUBLE_TAG;
-				chunks.add(chunk);
+				// => consider it's an escaped marker, so append "@" only
+				chunks.add(PARAMETER_TAG);
 			}
 			else
 			{
