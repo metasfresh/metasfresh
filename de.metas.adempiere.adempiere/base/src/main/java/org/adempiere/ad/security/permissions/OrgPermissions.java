@@ -13,21 +13,19 @@ package org.adempiere.ad.security.permissions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -54,8 +52,8 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		return new Builder();
 	}
 
-	private final Set<Integer> adClientIds;
-	private final Set<Integer> adOrgIds;
+	private final ImmutableSet<Integer> adClientIds;
+	private final ImmutableSet<Integer> adOrgIds;
 	private final int orgTreeId;
 
 	private OrgPermissions(final Builder builder)
@@ -87,44 +85,45 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 		return adClientIds;
 	}
 
-	// TODO: cache it using memorized supplier
-	public String getClientWhere(final boolean rw)
+	// TODO: cache it using memorized function
+	public String getClientWhere(final String tableName, final String tableAlias, final boolean rw)
 	{
-		//
-		final HashSet<Integer> adClientIds = new HashSet<>();
+		return buildClientWhere(tableName, tableAlias, rw, getAD_Client_IDs());
+	}
+
+	public static String buildClientWhere(
+			final String tableName,
+			final String tableAlias,
+			final boolean rw,
+			final Set<Integer> adClientIds)
+	{
+		final HashSet<Integer> adClientIdsEffective = new HashSet<>(adClientIds);
 		if (!rw)
 		{
-			adClientIds.add(OrgPermission.AD_Client_ID_System);
+			adClientIdsEffective.add(OrgPermission.AD_Client_ID_System);
 		}
-		// Positive List
-		adClientIds.addAll(getAD_Client_IDs());
 
-		//
-		final StringBuilder sb = new StringBuilder();
-		final Iterator<Integer> it = adClientIds.iterator();
-		boolean oneOnly = true;
-		while (it.hasNext())
+		final String tablePrefix = tableAlias != null ? tableAlias + "." : "";
+
+		if (adClientIdsEffective.isEmpty())
 		{
-			if (sb.length() > 0)
-			{
-				sb.append(",");
-				oneOnly = false;
-			}
-			sb.append(it.next());
+			return "/* no Org Access records */ " + tablePrefix + "AD_Client_ID=-1";
 		}
-		if (oneOnly)
+
+		final StringBuilder whereClause = new StringBuilder();
+		whereClause.append(DB.buildSqlList(tablePrefix + "AD_Client_ID", adClientIdsEffective, /* paramsOut */null));
+
+		if (rw && "AD_Org".equals(tableName))
 		{
-			if (sb.length() > 0)
-			{
-				return "AD_Client_ID=" + sb.toString();
-			}
-			else
-			{
-				logger.error("No Access Org records");
-				return "AD_Client_ID=-1";	// No Access Record
-			}
+			whereClause.append(" OR (")
+					.append(tablePrefix).append("AD_Client_ID=").append(OrgPermission.AD_Client_ID_System)
+					.append(" AND ").append(tablePrefix).append("AD_Org_ID=").append(OrgPermission.AD_Org_ID_System)
+					.append(")");
+
+			whereClause.insert(0, "(").append(")");
 		}
-		return "AD_Client_ID IN(" + sb.toString() + ")";
+
+		return whereClause.toString();
 	}
 
 	/**
@@ -159,7 +158,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 				.join(adOrgIds);
 	}
 
-	//FRESH-560: Retrieve the org IDs as set
+	// FRESH-560: Retrieve the org IDs as set
 	public Set<Integer> getAD_Org_IDs_AsSet()
 	{
 		return adOrgIds;
@@ -171,7 +170,7 @@ public class OrgPermissions extends AbstractPermissions<OrgPermission>
 	 */
 	public Set<Integer> getOrgAccess(final boolean rw)
 	{
-		final Set<Integer> adOrgIds = new HashSet<Integer>();
+		final Set<Integer> adOrgIds = new HashSet<>();
 		if (!rw)
 		{
 			adOrgIds.add(Env.CTXVALUE_AD_Org_ID_System);

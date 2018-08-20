@@ -210,9 +210,7 @@ public interface IUserRolePermissions
 
 	boolean isOrgAccess(int AD_Org_ID, boolean rw);
 
-	// boolean isClientAccess(int AD_Client_ID, boolean rw);
-
-	String getClientWhere(boolean rw);
+	String getClientWhere(String tableName, String tableAlias, boolean rw);
 
 	/**
 	 * Get Org Where Clause Value
