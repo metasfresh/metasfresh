@@ -28,20 +28,12 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.ConditionsId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UnassignResult;
 import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UpdateAssignmentResult;
-import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
-import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.invoice.InvoiceSchedule;
-import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -132,7 +124,7 @@ public class InvoiceCandidateAssignmentServiceTest
 		assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
 				refundInvoiceCandidateRepository);
 
-		final InvoiceCandidateRepository invoiceCandidateRepository = new InvoiceCandidateRepository();
+		final InvoiceCandidateRepository invoiceCandidateRepository = new InvoiceCandidateRepository(assignmentToRefundCandidateRepository);
 
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
 
@@ -458,7 +450,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				.getById(preparedAssignableCandidates.get(TEN).getId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(TEN).getId()))
+						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(TEN)))
 				.build();
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
@@ -511,7 +503,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				.getById(preparedAssignableCandidates.get(SEVEN).getId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(SEVEN).getId()))
+						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(SEVEN)))
 				.build();
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
@@ -588,7 +580,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				.getById(assignableCandidateWithSeven.getId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithSeven.getId()))
+						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithSeven))
 				.build();
 		assertThat(reloadedAssignableCandidateWithSeven.getAssignmentsToRefundCandidates()).hasSize(2);
 
@@ -597,7 +589,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				.getById(assignableCandidateWithTen.getId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
-						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithTen.getId()))
+						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithTen))
 				.build();
 		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates()).hasSize(1);
 
@@ -750,68 +742,5 @@ public class InvoiceCandidateAssignmentServiceTest
 					.as("i=%s - wrong persisted moneyOfRefundCandidate", i)
 					.isEqualTo(moneysOfRefundCandidate.get(i));
 		}
-	}
-
-	@Test
-	public void getRefundConfigRange()
-	{
-		final InvoiceSchedule invoiceSchedule = InvoiceSchedule.builder()
-				.id(InvoiceScheduleId.ofRepoId(5))
-				.frequency(Frequency.MONTLY)
-				.invoiceDayOfMonth(1)
-				.build();
-
-		final	RefundConfig refundConfig1 = RefundConfig.builder()
-				.conditionsId(ConditionsId.ofRepoId(20))
-				.invoiceSchedule(invoiceSchedule)
-				.refundInvoiceType(RefundInvoiceType.INVOICE)
-				.refundBase(RefundBase.PERCENTAGE)
-				.refundMode(RefundMode.ALL_MAX_SCALE)
-				.minQty(ZERO)
-				.percent(Percent.of(20))
-				.build();
-
-		final	RefundConfig refundConfig2 = refundConfig1.toBuilder()
-				.minQty(new BigDecimal("5"))
-				.percent(Percent.of(30))
-				.build();
-
-		final RefundConfig refundConfig3 = refundConfig1.toBuilder()
-				.minQty(TEN)
-				.build();
-		final RefundConfig refundConfig4 = refundConfig1.toBuilder()
-				.minQty(new BigDecimal("15"))
-				.build();
-
-		final RefundContract refundContract = RefundContract.builder()
-				.id(FlatrateTermId.ofRepoId(100))
-				.bPartnerId(BPartnerId.ofRepoId(200))
-				.startDate(NOW)
-				.endDate(NOW.plusDays(10))
-				.clearRefundConfigs()
-				.refundConfig(refundConfig1)
-				.refundConfig(refundConfig2)
-				.refundConfig(refundConfig3)
-				.refundConfig(refundConfig4)
-				.build();
-
-		assertThat(invoiceCandidateAssignmentService.getRefundConfigRange(refundContract, refundConfig1, refundConfig4))
-				.containsExactlyInAnyOrder(refundConfig2, refundConfig3, refundConfig4);
-
-		assertThat(invoiceCandidateAssignmentService.getRefundConfigRange(refundContract, refundConfig2, refundConfig4))
-				.containsExactlyInAnyOrder(refundConfig3, refundConfig4);
-
-		assertThat(invoiceCandidateAssignmentService.getRefundConfigRange(refundContract, refundConfig1, refundConfig2))
-				.containsExactlyInAnyOrder(refundConfig2);
-
-		assertThat(invoiceCandidateAssignmentService.getRefundConfigRange(refundContract, refundConfig4, refundConfig1))
-				.containsExactlyInAnyOrder(refundConfig4, refundConfig3, refundConfig2);
-
-		assertThat(invoiceCandidateAssignmentService.getRefundConfigRange(refundContract, refundConfig3, refundConfig1))
-				.containsExactlyInAnyOrder(refundConfig3, refundConfig2);
-
-		assertThat(invoiceCandidateAssignmentService.getRefundConfigRange(refundContract, refundConfig3, refundConfig2))
-				.containsExactlyInAnyOrder(refundConfig3);
-
 	}
 }

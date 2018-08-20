@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 
@@ -55,10 +56,17 @@ public class RefundInvoiceCandidateTest
 		refundTestTools = new RefundTestTools();
 	}
 
+	/**
+	 * Create a contract with {@link RefundMode#PER_INDIVIDUAL_SCALE} and minQties zero and 30.
+	 * Create a {@link RefundInvoiceCandidate} with assigned quantity 20.
+	 * Expect the candidate's assignable quantity to be 29 - 20 = 9
+	 */
 	@Test
 	public void computeAssignableQuantity()
 	{
-		final RefundConfigBuilder configBuilder = refundTestTools.createAndInitConfigBuilder();
+		final RefundConfigBuilder configBuilder = refundTestTools
+				.createAndInitConfigBuilder()
+				.refundMode(RefundMode.PER_INDIVIDUAL_SCALE);
 		final RefundConfig refundConfig1 = configBuilder.minQty(ZERO).build();
 		final RefundConfig refundConfig2 = configBuilder.minQty(THIRTY).build();
 

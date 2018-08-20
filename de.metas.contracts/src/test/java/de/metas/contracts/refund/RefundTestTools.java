@@ -291,7 +291,9 @@ public class RefundTestTools
 		final RefundInvoiceCandidate reloadedRefundCandidate = refundInvoiceCandidateRepository.getById(refundCandidate.getId());
 
 		final AssignmentToRefundCandidate assignementToRefundCandidate = new AssignmentToRefundCandidate(
+				assignableInvoiceCandidate.getId(),
 				reloadedRefundCandidate,
+				refundCandidate.getRefundConfig().getId(),
 				Money.of(TWO, reloadedRefundCandidate.getMoney().getCurrencyId()),
 				Quantity.of(ONE, uomRecord));
 		return assignableInvoiceCandidate

@@ -30,7 +30,6 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
 import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UnassignResult.UnassignResultBuilder;
 import de.metas.contracts.refund.InvoiceCandidateRepository.DeleteAssignmentsRequest;
-import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
@@ -131,7 +130,7 @@ public class InvoiceCandidateAssignmentService
 		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
 				.getById(assignableCandidate.getId())
 				.toBuilder()
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate.getId()))
+				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
 				.build();
 		if (reloadedAssignableCandidate.isAssigned())
 		{
@@ -227,7 +226,7 @@ public class InvoiceCandidateAssignmentService
 		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
 				.getById(assignableCandidate.getId())
 				.toBuilder()
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate.getId()))
+				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
 				.build();
 		if (reloadedAssignableCandidate.isAssigned())
 		{
@@ -290,7 +289,7 @@ public class InvoiceCandidateAssignmentService
 		{
 			resetMoneyAmount(refundCandidateAfterAssignment, refundConfigAfterAssignment);
 			// reload the assignment after the reset of refundCandidateAfterAssignment
-			resultAssignment = singleElement(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate.getId()));
+			resultAssignment = singleElement(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate));
 		}
 		else
 		{
@@ -586,125 +585,7 @@ public class InvoiceCandidateAssignmentService
 		invoiceCandidateRepository.deleteAssignments(request);
 	}
 
-	/**
-	 * Resets/fixes the allocated amount by iterating all candidates that are associated to the given candidate.
-	 * Should be used only if e.g. something was manually changed in the DB.
-	 *
-	 * @param refundConfigAfterAssignment
-	 */
-	public RefundInvoiceCandidate resetMoneyAmount(
-			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
-			@NonNull final RefundConfig newRefundConfig)
-	{
-		final RefundConfig oldRefundConfig = refundInvoiceCandidate.getRefundConfig();
-		if (oldRefundConfig.equals(newRefundConfig))
-		{
-			return refundInvoiceCandidate;
 
-		}
-		final List<RefundConfig> refundConfigs = refundInvoiceCandidate.getRefundContract().getRefundConfigs();
-
-		Check.errorUnless(RefundMode.ALL_MAX_SCALE.equals(newRefundConfig.getRefundMode()),
-				"Parameter 'newRefundConfig' needs to have refundMode={}", RefundMode.ALL_MAX_SCALE);
-
-		Check.errorUnless(refundConfigs.contains(newRefundConfig),
-				"Parameter 'newRefundConfig' needs to be one of the given refundInvoiceCandidate's contract's configs; newRefundConfig={}; refundInvoiceCandidate={}",
-				newRefundConfig, refundInvoiceCandidate);
-
-		final boolean isPercent = RefundBase.PERCENTAGE.equals(newRefundConfig.getRefundBase());
-
-		// TODO: resetting the refundCcaandidate to zero and iterating allAssignedCandidates is crap;
-		// instead, add new AssignmentToRefundCandidates
-		// which reference newRefundConfig and track the additional money that comes with the new refund config.
-
-		final boolean isHigherRefund = newRefundConfig.getMinQty().compareTo(oldRefundConfig.getMinQty()) > 0;
-
-		RefundInvoiceCandidate updatedCandidate = refundInvoiceCandidate
-				.toBuilder()
-				.money(refundInvoiceCandidate.getMoney().toZero())
-				.assignedQuantity(refundInvoiceCandidate.getAssignedQuantity().toZero())
-				.refundConfig(newRefundConfig)
-				.build();
-
-		final Iterator<AssignableInvoiceCandidate> //
-		allAssignedCandidates = assignableInvoiceCandidateRepository.getAllAssigned(refundInvoiceCandidate);
-
-		while (allAssignedCandidates.hasNext())
-		{
-			final AssignableInvoiceCandidate assignedCandidate = allAssignedCandidates.next();
-			updatedCandidate = refundInvoiceCandidateService
-					.addAssignableMoney(
-							updatedCandidate,
-							assignedCandidate)
-					.getRefundInvoiceCandidate();
-
-		}
-
-		refundInvoiceCandidateRepository.save(updatedCandidate);
-		return updatedCandidate;
-	}
-
-	@VisibleForTesting
-	List<RefundConfig> getRefundConfigRange(
-			@NonNull final RefundContract contract,
-			@NonNull final RefundConfig currentConfig,
-			@NonNull final RefundConfig targetConfig)
-	{
-		Check.errorIf(currentConfig.getMinQty().equals(targetConfig.getMinQty()),
-				"Params currentConfig and currentConfig={}; targetConfig={}",
-				currentConfig, targetConfig);
-
-		final boolean forward = currentConfig.getMinQty().compareTo(targetConfig.getMinQty()) < 0;
-
-		// make sure we know which order of refund configs we operate on
-		final ImmutableList<RefundConfig> configsByMinQty = contract
-				.getRefundConfigs()
-				.stream()
-				.sorted(Comparator.comparing(RefundConfig::getMinQty))
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableList.Builder<RefundConfig> result = ImmutableList.builder();
-		if (forward)
-		{
-			boolean collectItem = false;
-			for (int i = 0; i < configsByMinQty.size(); i++)
-			{
-				final RefundConfig item = configsByMinQty.get(i);
-				if (collectItem)
-				{
-					result.add(item);
-				}
-				if (item.getMinQty().equals(targetConfig.getMinQty()))
-				{
-					return result.build(); // we collected the last item (targetConfig) and are done
-				}
-				if (item.getMinQty().equals(currentConfig.getMinQty()))
-				{
-					collectItem = true; // don't collect currentConfig itself, but the next item(s)
-				}
-			}
-		}
-
-		// backward
-		boolean collectItem = false;
-		for (int i = configsByMinQty.size() - 1; i >= 0; i--)
-		{
-			final RefundConfig item = configsByMinQty.get(i);
-			if (item.getMinQty().equals(currentConfig.getMinQty()))
-			{
-				collectItem = true; // do collect currentConfig
-			}
-			if (item.getMinQty().equals(targetConfig.getMinQty()))
-			{
-				return result.build(); // we collected the last item (one "above" targetConfig) and are done
-			}
-			if (collectItem)
-			{
-				result.add(item);
-			}
-		}
-		return result.build();
-	}
 
 	public List<AssignableInvoiceCandidate> getAssignableCandidates(
 			@NonNull final RefundContract contract,

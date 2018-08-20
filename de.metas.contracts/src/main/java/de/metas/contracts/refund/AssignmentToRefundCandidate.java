@@ -1,5 +1,8 @@
 package de.metas.contracts.refund;
 
+import javax.annotation.Nullable;
+
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -30,8 +33,14 @@ import lombok.Value;
 @Value
 public class AssignmentToRefundCandidate
 {
+	@Nullable
+	InvoiceCandidateId assignableInvoiceCandidateId;
+
 	@NonNull
 	RefundInvoiceCandidate refundInvoiceCandidate;
+
+	@NonNull
+	RefundConfigId refundConfigId;
 
 	@NonNull
 	Money moneyAssignedToRefundCandidate;
@@ -57,7 +66,9 @@ public class AssignmentToRefundCandidate
 				.build();
 
 		return new AssignmentToRefundCandidate(
+				assignableInvoiceCandidateId,
 				newRefundCandidate,
+				refundConfigId,
 				moneyAssignedToRefundCandidate.toZero(),
 				quantityAssigendToRefundCandidate.toZero());
 	}

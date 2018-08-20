@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 
@@ -60,7 +61,17 @@ public class InvoiceCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		invoiceCandidateRepository = new InvoiceCandidateRepository();
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
+
+		invoiceCandidateRepository = new InvoiceCandidateRepository(assignmentToRefundCandidateRepository);
 
 		refundTestTools = new RefundTestTools();
 

@@ -33,7 +33,6 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
@@ -66,6 +65,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 	private I_C_Invoice_Candidate assignableIcRecord;
 	private I_C_Invoice_Candidate_Assignment assignmentRecord;
 	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+	private RefundInvoiceCandidateFactory refundInvoiceCandidateFactory;
 
 	@Before
 	public void init()
@@ -145,7 +145,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 				new RefundConfigRepository(
 						new InvoiceScheduleRepository()));
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,
@@ -157,16 +157,17 @@ public class AssignmentToRefundCandidateRepositoryTest
 	@Test
 	public void ofRecord_AssignableInvoiceCandidate_no_assignment_record()
 	{
-		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(assignableIcRecord.getC_Invoice_Candidate_ID());
+		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final AssignableInvoiceCandidate assignableIc = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
 		// guards
-		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateId);
+		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
 		assertThat(resultBeforeDeletion).isNotEmpty();
 
 		delete(assignmentRecord);
 
 		// invoke the method under test
-		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateId);
+		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
 		assertThat(resultAfterDeletion).isEmpty();
 	}
 

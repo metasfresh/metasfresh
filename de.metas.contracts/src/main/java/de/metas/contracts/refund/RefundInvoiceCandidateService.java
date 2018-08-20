@@ -148,7 +148,9 @@ public class RefundInvoiceCandidateService
 			@NonNull final RefundInvoiceCandidate candidateToUpdate,
 			@NonNull final AssignableInvoiceCandidate candidateToAssign)
 	{
-		final RefundMode refundMode = candidateToUpdate.getRefundConfig().getRefundMode();
+		final RefundConfig refundConfig = candidateToUpdate	.getRefundConfig();
+
+		final RefundMode refundMode = refundConfig.getRefundMode();
 		final boolean quantityWithinCurrentScale = isQuantityWithinCurrentScale(candidateToUpdate, candidateToAssign.getQuantity());
 
 		if (!quantityWithinCurrentScale)
@@ -162,9 +164,7 @@ public class RefundInvoiceCandidateService
 							+ " \ncandidateToUpdate={}",
 					candidateToAssign.getQuantity(), candidateToUpdate.getAssignedQuantity(), candidateToAssign, candidateToUpdate);
 		}
-		final Percent percent = candidateToUpdate
-				.getRefundConfig()
-				.getPercent();
+		final Percent percent = refundConfig.getPercent();
 
 		final Money moneyAugend = moneyService.percentage(percent, candidateToAssign.getMoney());
 		final Quantity assignedQtyAugent = candidateToAssign.getQuantity();
@@ -175,7 +175,9 @@ public class RefundInvoiceCandidateService
 				.build();
 
 		return new AssignmentToRefundCandidate(
+				candidateToAssign.getId(),
 				updatedRefundCandidate,
+				refundConfig.getId(),
 				moneyAugend,
 				assignedQtyAugent);
 	}

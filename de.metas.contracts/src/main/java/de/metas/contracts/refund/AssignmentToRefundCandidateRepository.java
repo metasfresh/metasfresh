@@ -1,11 +1,14 @@
 package de.metas.contracts.refund;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
@@ -45,7 +48,6 @@ public class AssignmentToRefundCandidateRepository
 	@Getter
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
-
 	public AssignmentToRefundCandidateRepository(
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
 	{
@@ -53,8 +55,12 @@ public class AssignmentToRefundCandidateRepository
 	}
 
 	public List<AssignmentToRefundCandidate> getAssignmentsToRefundCandidate(
-			@NonNull final InvoiceCandidateId assignableInvoiceCandidateId)
+			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
 	{
+		Check.assumeNotNull(assignableInvoiceCandidate.getId(),
+				"The given assignableInvoiceCandidate needs to have a not-null Id; assignableInvoiceCandidate={}",
+				assignableInvoiceCandidate);
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = queryBL
@@ -62,7 +68,7 @@ public class AssignmentToRefundCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
 						I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
-						assignableInvoiceCandidateId.getRepoId())
+						assignableInvoiceCandidate.getId().getRepoId())
 				.create()
 				.list(I_C_Invoice_Candidate_Assignment.class); // we might have multiple records with different C_Flatrate_RefundConfig_ID
 
@@ -97,9 +103,52 @@ public class AssignmentToRefundCandidateRepository
 		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), refundRecord.getM_Product().getC_UOM());
 
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = new AssignmentToRefundCandidate(
+				InvoiceCandidateId.ofRepoId(assignmentRecord.getC_Invoice_Candidate_Assigned_ID()),
 				refundCandidate.get(),
+				RefundConfigId.ofRepoId(assignmentRecord.getC_Flatrate_RefundConfig_ID()),
 				assignedMoney,
 				assignedQuantity);
 		return assignmentToRefundCandidate;
+	}
+
+	public void save(@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
+	{
+		final I_C_Invoice_Candidate_Assignment assignmentRecord = loadOrCreateAssignmentRecord(
+				assignmentToRefundCandidate.getAssignableInvoiceCandidateId(),
+				assignmentToRefundCandidate.getRefundConfigId());
+
+		final RefundInvoiceCandidate refundInvoiceCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
+
+		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundInvoiceCandidate.getId().getRepoId());
+		assignmentRecord.setC_Flatrate_Term_ID(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
+		assignmentRecord.setAssignedAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue());
+		assignmentRecord.setAssignedQuantity(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().getAsBigDecimal());
+		saveRecord(assignmentRecord);
+	}
+
+	private I_C_Invoice_Candidate_Assignment loadOrCreateAssignmentRecord(
+			@NonNull final InvoiceCandidateId assignableInvoiceCandidateId,
+			@NonNull final RefundConfigId refundConfigId)
+	{
+		final I_C_Invoice_Candidate_Assignment existingAssignment = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID, assignableInvoiceCandidateId)
+				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, refundConfigId)
+				.create()
+				.firstOnly(I_C_Invoice_Candidate_Assignment.class);
+
+		if (existingAssignment != null)
+		{
+			return existingAssignment;
+		}
+
+		final int repoId = assignableInvoiceCandidateId.getRepoId();
+		final I_C_Invoice_Candidate_Assignment newAssignment = newInstance(I_C_Invoice_Candidate_Assignment.class);
+
+		newAssignment.setC_Invoice_Candidate_Assigned_ID(repoId);
+		newAssignment.setC_Flatrate_RefundConfig_ID(refundConfigId.getRepoId());
+
+		return newAssignment;
 	}
 }
