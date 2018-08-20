@@ -34,7 +34,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 public abstract class DraftInventoryBase extends JavaProcess implements IProcessPrecondition
 {
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	final public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!context.isSingleSelection())
 		{
@@ -51,7 +51,7 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 	}
 
 	@Override
-	protected String doIt()
+	final protected String doIt()
 	{
 		final I_M_Inventory inventory = getRecord(I_M_Inventory.class);
 

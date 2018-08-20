@@ -30,8 +30,8 @@ public interface HUsForInventoryStrategy
 {
 	Stream<I_M_HU> streamHus();
 	
-	default boolean match(final int size)
+	default int getMaxLocatorsAllowed()
 	{
-		return true;
+		return 0;
 	}
 }

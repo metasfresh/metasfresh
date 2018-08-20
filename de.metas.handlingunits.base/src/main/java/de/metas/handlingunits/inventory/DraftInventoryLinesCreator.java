@@ -1,7 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +63,7 @@ public class DraftInventoryLinesCreator
 	I_M_Inventory inventoryRecord;
 
 	Map<HuId, I_M_InventoryLine> inventoryLinesByHU;
-	final Set<Integer> seenLocatorIs = new HashSet<>();
+	final Set<Integer> seenLocatorIds = new HashSet<>();
 
 	@NonFinal
 	long countInventoryLines = 0;
@@ -93,9 +91,9 @@ public class DraftInventoryLinesCreator
 		while (hus.hasNext())
 		{
 			final I_M_HU hu = hus.next();
-			seenLocatorIs.add(hu.getM_Locator_ID());
+			seenLocatorIds.add(hu.getM_Locator_ID());
 			
-			if (!strategy.match(seenLocatorIs.size()))
+			if (strategy.getMaxLocatorsAllowed() != 0 && strategy.getMaxLocatorsAllowed() < seenLocatorIds.size())
 			{
 				return;
 			}
@@ -145,7 +143,7 @@ public class DraftInventoryLinesCreator
 		inventoryLine.setQtyBook(huProductStorage.getQty());
 		inventoryLine.setQtyCount(huProductStorage.getQty());
 
-		saveRecord(inventoryLine);
+		Services.get(IInventoryDAO.class).save(inventoryLine);
 
 		return inventoryLine;
 	}

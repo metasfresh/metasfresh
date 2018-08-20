@@ -39,6 +39,11 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Builds up a list of HUs for certain product, locator and warehouse, which have stock 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Value
 @Builder
 public class LocatorAndProductHUsStrategy implements HUsForInventoryStrategy

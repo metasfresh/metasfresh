@@ -41,6 +41,7 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 
 public interface IPriceListDAO extends ISingletonService
 {
@@ -127,5 +128,5 @@ public interface IPriceListDAO extends ISingletonService
 
 	Set<Integer> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
 	
-	Set<Integer> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
+	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 }

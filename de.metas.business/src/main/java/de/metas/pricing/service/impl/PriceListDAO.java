@@ -43,6 +43,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class PriceListDAO implements IPriceListDAO
@@ -348,7 +349,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public Set<Integer> retrieveHighPriceProducts(@NonNull final BigDecimal minimumPrice, @NonNull final LocalDate date)
+	public Set<ProductId> retrieveHighPriceProducts(@NonNull final BigDecimal minimumPrice, @NonNull final LocalDate date)
 	{
 		
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class)
@@ -359,10 +360,12 @@ public class PriceListDAO implements IPriceListDAO
 		queryBuilder.orderBy()
 				.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
 
-		final List<Integer> productIds  = queryBuilder.create()
-				.listDistinct(I_M_ProductPrice.COLUMNNAME_M_Product_ID, Integer.class);
+		return queryBuilder.create()
+				.stream()
+				.map(I_M_ProductPrice::getM_Product_ID)
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 		
-		return ImmutableSet.copyOf(productIds);
 	}
 	
 	private final ICompositeQueryFilter<I_M_ProductPrice> createPriceProductQueryFilter(@NonNull final LocalDate date)

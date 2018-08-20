@@ -57,6 +57,28 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Builds up a list of HUs for (when maxLocators was specified): 
+ * <ul> 
+ * <li>list the locators, ordered by the date they were last inventoriesed</li>
+ * <li> oldest first</li>
+ * <li> if there are >1 products in one locator, then take the date from the one that wasn't inventorized for the longest time</li>
+ * <li>take the first <code>maxLocators</code> locators</li>
+ * <li>take for all products from those locators</li>
+ * <li>and stream HUs</li>
+ * </ul>
+ * 
+ * Builds up a list of HUs for (when minimumPrice was specified):
+ * <ul>
+ * <li>get all products that have a priceActual of > <code>1000€</code></li>
+ * <li>get their locators</li>
+ * <li>get all products from their locators</li>
+ * <li>and stream HUs</li>
+ * </ul>
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Value
 @Builder
 public class OldTransactionsStrategy implements HUsForInventoryStrategy
@@ -67,7 +89,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 	@NonNull
 	LocalDate movementDate;
 
-	final Map<String, Integer> MOVEMENT_TYPE_ORDERING = ImmutableMap.<String, Integer> builder()
+	static final Map<String, Integer> MOVEMENT_TYPE_ORDERING = ImmutableMap.<String, Integer> builder()
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryIn, 1)
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryOut, 2)
 			.put(X_M_Transaction.MOVEMENTTYPE_CustomerShipment, 3)
@@ -132,7 +154,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 
 	@Builder
 	@Value
-	static class TransactionContext
+	static private class TransactionContext
 	{
 		final int locatorId;
 		final @NonNull ProductId productId;
@@ -149,7 +171,7 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 
 		if (BigDecimal.ZERO.compareTo(minimumPrice) < 0)
 		{
-			final Set<Integer> productIds = Services.get(IPriceListDAO.class).retrieveHighPriceProducts(getMinimumPrice(), getMovementDate());
+			final Set<ProductId> productIds = Services.get(IPriceListDAO.class).retrieveHighPriceProducts(getMinimumPrice(), getMovementDate());
 			if (!productIds.isEmpty())
 			{
 				queryBuilder.addInArrayFilter(I_M_Transaction.COLUMNNAME_M_Product_ID, productIds);
@@ -183,8 +205,8 @@ public class OldTransactionsStrategy implements HUsForInventoryStrategy
 	}
 
 	@Override
-	public boolean match(final int size)
+	public int getMaxLocatorsAllowed()
 	{
-		return maxLocators == 0 ? true : maxLocators >= size;
+		return maxLocators;
 	}
 }
