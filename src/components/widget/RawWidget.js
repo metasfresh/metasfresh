@@ -244,6 +244,7 @@ class RawWidget extends Component {
       defaultValue,
       isOpenDatePicker,
       dateFormat,
+      initialFocus,
     } = this.props;
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
@@ -469,6 +470,7 @@ class RawWidget extends Component {
             tabIndex={tabIndex}
             viewId={viewId}
             autoFocus={autoFocus}
+            initialFocus={initialFocus}
             forceFullWidth={this.props.forceFullWidth}
             validStatus={widgetData[0].validStatus}
             newRecordCaption={fields[0].newRecordCaption}
