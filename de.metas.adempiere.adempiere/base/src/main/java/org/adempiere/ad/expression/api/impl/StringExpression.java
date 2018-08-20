@@ -118,7 +118,9 @@ import com.google.common.collect.ImmutableSet;
 			}
 			else
 			{
-				sb.append(chunk.toString());
+				String chunkStr = chunk.toString();
+				chunkStr = StringExpressionCompiler.escape(chunkStr);
+				sb.append(chunkStr);
 			}
 		}
 
