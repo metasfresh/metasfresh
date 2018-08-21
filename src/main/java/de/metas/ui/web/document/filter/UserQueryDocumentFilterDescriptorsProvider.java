@@ -142,17 +142,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			final Object value = queryRestriction.getValue();
 			final Object valueTo = queryRestriction.getValueTo();
 
-			final boolean isParameter;
-			if (operator.isRangeOperator())
-			{
-				isParameter = value == null || valueTo == null;
-			}
-			else
-			{
-				isParameter = value == null;
-			}
-
-			if (isParameter)
+			if (!queryRestriction.isInternalParameter())
 			{
 				final ITranslatableString displayName = searchField.getDisplayName();
 				final DocumentFieldWidgetType widgetType = searchField.getWidgetType();
@@ -166,7 +156,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 						.setOperator(operator)
 						.setDefaultValue(value)
 						.setDefaultValueTo(valueTo)
-						.setMandatory(value == null) // mandatory if there is no default value
+						.setMandatory(queryRestriction.isMandatory())
 						.setLookupDescriptor(lookupDescriptor));
 			}
 			else
