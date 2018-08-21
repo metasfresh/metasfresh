@@ -93,23 +93,24 @@ class FiltersItem extends Component {
       activeFilter = active.find(item => item.filterId === data.filterId);
     }
 
-    if (
-      filter.parameters &&
-      activeFilter &&
-      activeFilter.parameters &&
-      activeFilter.filterId === filter.filterId
-    ) {
-      activeFilter.parameters.map(item => {
-        this.mergeData(
-          item.parameterName,
-          item.value != null ? item.value : '',
-          item.valueTo != null ? item.valueTo : ''
-        );
-      });
-    } else if (filter.parameters) {
+    if (filter.parameters) {
       filter.parameters.map(item => {
         this.mergeData(item.parameterName, '');
       });
+
+      if (
+        activeFilter &&
+        activeFilter.parameters &&
+        activeFilter.filterId === filter.filterId
+      ) {
+        activeFilter.parameters.map(item => {
+          this.mergeData(
+            item.parameterName,
+            item.value != null ? item.value : '',
+            item.valueTo != null ? item.valueTo : ''
+          );
+        });
+      }
     }
   };
 
@@ -118,8 +119,6 @@ class FiltersItem extends Component {
     // IT HAS TO BE UNIFIED
     //
     // OVERWORKED WORKAROUND
-    console.log('FiltersItem setValue: ', property, value, id);
-
     if (Array.isArray(property)) {
       property.map(item => {
         this.mergeData(item.parameterName, value, valueTo);
@@ -140,19 +139,20 @@ class FiltersItem extends Component {
   };
 
   mergeData = (property, value, valueTo) => {
-    const filterObject = { ...this.state.filter.parameters[`${property}`] };
-
     this.setState(prevState => ({
       filter: {
         ...prevState.filter,
-        parameters: {
-          ...prevState.filter.parameters,
-          [`${property}`]: {
-            filterObject,
-            value: this.parseDateToReadable(filterObject.widgetType, value),
-            valueTo: this.parseDateToReadable(filterObject.widgetType, valueTo),
-          },
-        },
+        parameters: prevState.filter.parameters.map(param => {
+          if (param.parameterName === property) {
+            return {
+              ...param,
+              value: this.parseDateToReadable(param.widgetType, value),
+              valueTo: this.parseDateToReadable(param.widgetType, valueTo),
+            };
+          } else {
+            return param;
+          }
+        }),
       },
     }));
   };
@@ -165,6 +165,7 @@ class FiltersItem extends Component {
       bottom,
       right,
     } = this.widgetsContainer.getBoundingClientRect();
+
     dispatch(openFilterBox({ top, left, bottom, right }));
   };
 
