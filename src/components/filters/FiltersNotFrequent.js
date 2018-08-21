@@ -83,9 +83,9 @@ class FiltersNotFrequent extends Component {
                 {activeFilter.captionValue}
               </Fragment>
             ) : (
-              `${counterpart.translate('window.filters.caption2')}: ${
-                activeFilter.caption
-              }`
+              `${counterpart.translate(
+                'window.filters.caption2'
+              )}: ${activeFilter.captionValue || activeFilter.caption}`
             )
           ) : (
             'Filter'

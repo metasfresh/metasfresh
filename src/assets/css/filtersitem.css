@@ -6,6 +6,7 @@
 .filter-wrapper {
   .btn-filter {
     padding: 0.425rem .6rem;
+    max-width: 300px;
   }
 }
 
