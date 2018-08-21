@@ -199,7 +199,7 @@ public class C_Order
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_C_DocType_ID,
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
 			I_C_Order.COLUMNNAME_C_BPartner_ID
 	})
 	public void updateDescriptionFromDocType(final I_C_Order order)
