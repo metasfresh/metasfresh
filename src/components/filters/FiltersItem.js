@@ -21,7 +21,7 @@ class FiltersItem extends Component {
     super(props);
 
     this.state = {
-      filter: props.data,
+      filter: { ...props.data },
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -118,6 +118,8 @@ class FiltersItem extends Component {
     // IT HAS TO BE UNIFIED
     //
     // OVERWORKED WORKAROUND
+    console.log('FiltersItem setValue: ', property, value, id);
+
     if (Array.isArray(property)) {
       property.map(item => {
         this.mergeData(item.parameterName, value, valueTo);
@@ -138,19 +140,20 @@ class FiltersItem extends Component {
   };
 
   mergeData = (property, value, valueTo) => {
+    const filterObject = { ...this.state.filter.parameters[`${property}`] };
+
     this.setState(prevState => ({
-      filter: Object.assign({}, prevState.filter, {
-        parameters: prevState.filter.parameters.map(param => {
-          if (param.parameterName === property) {
-            return Object.assign({}, param, {
-              value: this.parseDateToReadable(param.widgetType, value),
-              valueTo: this.parseDateToReadable(param.widgetType, valueTo),
-            });
-          } else {
-            return param;
-          }
-        }),
-      }),
+      filter: {
+        ...prevState.filter,
+        parameters: {
+          ...prevState.filter.parameters,
+          [`${property}`]: {
+            filterObject,
+            value: this.parseDateToReadable(filterObject.widgetType, value),
+            valueTo: this.parseDateToReadable(filterObject.widgetType, valueTo),
+          },
+        },
+      },
     }));
   };
 
