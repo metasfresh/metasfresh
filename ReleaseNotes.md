@@ -17,8 +17,10 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
+    * Improvement of the Error Handling for Records that cannot be saved.
   * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
-    * New Feature that allows a User to reset a forgotton password.
+    * Fix for the Shortcut [alt]+u.
 
 
 # metasfresh 5.71
