@@ -1,9 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import java.util.List;
-
-import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
-
 /*
  * #%L
  * de.metas.business
@@ -26,9 +22,8 @@ import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
  * #L%
  */
 
-public interface GroupMatcherFactory
+@FunctionalInterface
+public interface GroupMatcher
 {
-	String getAppliesToLineType();
-
-	GroupMatcher createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines);
+	public boolean isMatching(Group group);
 }

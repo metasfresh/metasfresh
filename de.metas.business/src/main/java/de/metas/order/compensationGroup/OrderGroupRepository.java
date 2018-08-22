@@ -228,7 +228,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
-				.groupTemplateId(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID())
+				.groupTemplateId(GroupTemplateId.ofRepoIdOrNull(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()))
 				.precision(precision)
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));

@@ -1,8 +1,6 @@
 package de.metas.order.compensationGroup;
 
-import java.util.List;
-
-import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -26,9 +24,19 @@ import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
  * #L%
  */
 
-public interface GroupMatcherFactory
+@UtilityClass
+public class GroupMatchers
 {
-	String getAppliesToLineType();
+	public static GroupMatcher ALWAYS = new AlwaysMatching();
 
-	GroupMatcher createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines);
+	private static final class AlwaysMatching implements GroupMatcher
+	{
+
+		@Override
+		public boolean isMatching(Group group)
+		{
+			return true;
+		}
+
+	}
 }
