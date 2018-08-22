@@ -91,6 +91,12 @@ public class OrderGroupCompensationChangesHandler
 
 	private boolean isEligible(final I_C_OrderLine orderLine)
 	{
+		// Skip if given line is currently changed by the repository (to avoid race conditions)
+		if (OrderGroupRepository.isRepositoryUpdate(orderLine))
+		{
+			return false;
+		}
+
 		// Skip if not a group line
 		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
 		{
