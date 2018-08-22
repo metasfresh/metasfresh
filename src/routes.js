@@ -152,10 +152,26 @@ export const getRoutes = (store, auth, plugins) => {
       </Route>
       <Route
         path="/login"
-        component={nextState => (
+        component={({ location }) => (
           <Login
-            redirect={nextState.location.query.redirect}
+            redirect={location.query.redirect}
             logged={localStorage.isLogged}
+            {...{ auth }}
+          />
+        )}
+      />
+      <Route
+        path="/forgottenPassword"
+        component={({ location }) => (
+          <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
+        )}
+      />
+      <Route
+        path="/resetPassword"
+        component={({ location }) => (
+          <Login
+            splat={location.pathname.replace('/', '')}
+            token={location.query.token}
             {...{ auth }}
           />
         )}

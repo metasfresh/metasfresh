@@ -39,3 +39,23 @@ export function getAvatar(id) {
 export function getUserSession() {
   return axios.get(`${config.API_URL}/userSession`);
 }
+
+export function resetPasswordRequest(form) {
+  return axios.post(`${config.API_URL}/login/resetPassword`, {
+    ...form,
+  });
+}
+
+export function getResetPasswordInfo(token) {
+  return axios.get(`${config.API_URL}/login/resetPassword/${token}`);
+}
+
+export function resetPasswordComplete(token, form) {
+  return axios.post(`${config.API_URL}/login/resetPassword/${token}`, {
+    ...form,
+  });
+}
+
+export function resetPasswordGetAvatar(token) {
+  return `${config.API_URL}/login/resetPassword/${token}/avatar`;
+}

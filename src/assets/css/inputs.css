@@ -53,6 +53,10 @@ input {
     white-space: nowrap;
     overflow: hidden;
     margin: 0;
+
+    &.instruction-sent {
+        white-space: normal;
+    }
 }
 
 .form-group {
