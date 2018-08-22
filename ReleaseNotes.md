@@ -15,6 +15,11 @@ Here come the actual release notes:
   * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
     * New Feature that allows a User to reset a forgotton password.
 
+## Fixes
+* metasfresh-webui-frontend
+  * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
+    * New Feature that allows a User to reset a forgotton password.
+
 
 # metasfresh 5.71
 ## Features
