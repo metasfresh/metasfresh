@@ -58,7 +58,7 @@
 					<wsdl>true</wsdl>
 					<xmlschema>false</xmlschema>
 					<schemaIncludes>*.wsdl</schemaIncludes>
-					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/</schemaDirectory>
+					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/v2</schemaDirectory>
 					<schemaFiles>*.wsdl</schemaFiles>
 				</configuration>
 			</plugin>
