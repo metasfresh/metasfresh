@@ -44,6 +44,11 @@ public class BoilerPlateId implements RepoIdAware
 		return new BoilerPlateId(repoId);
 	}
 
+	public static BoilerPlateId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	private BoilerPlateId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
