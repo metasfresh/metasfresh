@@ -240,7 +240,7 @@ public class LetterRestController
 	{
 		final Letter request = Letter.builder()
 				.adLanguage(userSession.getAD_Language())
-				.boilerPlateId(BoilerPlateId.ofRepoId(letter.getTextTemplateId()))
+				.boilerPlateId(BoilerPlateId.ofRepoIdOrNull(letter.getTextTemplateId()))
 				.subject(letter.getSubject())
 				.body(letter.getContent())
 				.adOrgId(letter.getAdOrgId())
