@@ -743,6 +743,7 @@ class DocumentList extends Component {
       autofocus,
       inModal,
       updateParentSelectedIds,
+      modal,
     } = this.props;
 
     const {
@@ -760,6 +761,9 @@ class DocumentList extends Component {
       rowEdited,
     } = this.state;
     const { selected, childSelected, parentSelected } = this.getSelected();
+    const modalType = modal ? modal.modalType : null;
+    const stopShortcutPropagation =
+      (isIncluded && !!selected) || (inModal && modalType === 'process');
 
     const styleObject = {};
     if (toggleWidth !== 0) {
@@ -864,7 +868,7 @@ class DocumentList extends Component {
                   shouldNotUpdate={inBackground && !hasIncluded}
                   inBackground={disablePaginationShortcuts}
                   inModal={inModal}
-                  stopShortcutPropagation={isIncluded && !!selected}
+                  stopShortcutPropagation={stopShortcutPropagation}
                   childView={
                     hasIncluded
                       ? {
@@ -990,6 +994,7 @@ const mapStateToProps = (state, props) => ({
         viewId: props.parentDefaultViewId,
       })
     : NO_SELECTION,
+  modal: state.windowHandler.modal,
 });
 
 export default connect(mapStateToProps, null, null, { withRef: true })(
