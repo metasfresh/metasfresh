@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Liefervorgabe;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe;
 import lombok.Getter;
 
 /*
@@ -44,24 +44,24 @@ public enum DeliverySpecifications
 	MAX_DISPO(Liefervorgabe.MAX_DISPO);
 
 	@Getter
-	private final Liefervorgabe soapCode;
+	private final Liefervorgabe v2SoapCode;
 
-	DeliverySpecifications(final Liefervorgabe soapCode)
+	DeliverySpecifications(final Liefervorgabe v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 
-	public static DeliverySpecifications fromSoapCode(final Liefervorgabe soapCode)
+	public static DeliverySpecifications fromV2SoapCode(final Liefervorgabe v2SoapCode)
 	{
-		final DeliverySpecifications type = soapCode2type.get(soapCode);
+		final DeliverySpecifications type = v2SoapCode2type.get(v2SoapCode);
 		if (type == null)
 		{
-			throw new NoSuchElementException("No " + DeliverySpecifications.class + " found for " + soapCode);
+			throw new NoSuchElementException("No " + DeliverySpecifications.class + " found for " + v2SoapCode);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<Liefervorgabe, DeliverySpecifications> soapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(DeliverySpecifications::getSoapCode, Function.identity()));
+	private static final ImmutableMap<Liefervorgabe, DeliverySpecifications> v2SoapCode2type = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(DeliverySpecifications::getV2SoapCode, Function.identity()));
 
 }

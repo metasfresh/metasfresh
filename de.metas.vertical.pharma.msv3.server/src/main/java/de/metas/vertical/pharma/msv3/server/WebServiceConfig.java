@@ -15,11 +15,11 @@ import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
-import de.metas.vertical.pharma.msv3.server.order.OrderStatusWebService;
-import de.metas.vertical.pharma.msv3.server.order.OrderWebService;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebService;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.server.order.v2.OrderStatusWebService;
+import de.metas.vertical.pharma.msv3.server.order.v2.OrderWebService;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.v2.StockAvailabilityWebService;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import lombok.NonNull;
 
 /*
@@ -51,7 +51,7 @@ public class WebServiceConfig
 	private static final String SCHEMA_RESOURCE_PREFIX = "/de/metas/vertical/pharma/vendor/gateway/msv3/schema";
 
 	@Bean
-	public ObjectFactory jaxbObjectFactory()
+	public ObjectFactory jaxbObjectFactoryV2()
 	{
 		return new ObjectFactory();
 	}

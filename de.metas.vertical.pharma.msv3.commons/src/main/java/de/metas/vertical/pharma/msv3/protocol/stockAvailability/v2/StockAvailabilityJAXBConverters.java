@@ -1,20 +1,27 @@
-package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2;
 
 import javax.xml.bind.JAXBElement;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitSubstitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnteil;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitSubstitution;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelneAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
 import lombok.NonNull;
 
 /*
@@ -71,7 +78,7 @@ public class StockAvailabilityJAXBConverters
 	{
 		final VerfuegbarkeitsanfrageEinzelneAntwort soapResponseContent = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneAntwort();
 		soapResponseContent.setId(stockAvailabilityResponse.getId());
-		soapResponseContent.setRTyp(stockAvailabilityResponse.getAvailabilityType().getSoapCode());
+		soapResponseContent.setRTyp(stockAvailabilityResponse.getAvailabilityType().getV2SoapCode());
 		soapResponseContent.getArtikel().addAll(
 				stockAvailabilityResponse.getItems().stream()
 						.map(this::createSOAPStockAvailabilityResponseItem)
@@ -103,8 +110,8 @@ public class StockAvailabilityJAXBConverters
 
 		final VerfuegbarkeitSubstitution soapSubstitution = jaxbObjectFactory.createVerfuegbarkeitSubstitution();
 		soapSubstitution.setLieferPzn(substitution.getPzn().getValueAsLong());
-		soapSubstitution.setGrund(substitution.getReason().getSoapCode());
-		soapSubstitution.setSubstitutionsgrund(substitution.getType().getSoapCode());
+		soapSubstitution.setGrund(substitution.getReason().getV2SoapCode());
+		soapSubstitution.setSubstitutionsgrund(substitution.getType().getV2SoapCode());
 		return soapSubstitution;
 	}
 
@@ -112,10 +119,10 @@ public class StockAvailabilityJAXBConverters
 	{
 		final VerfuegbarkeitAnteil soapShare = jaxbObjectFactory.createVerfuegbarkeitAnteil();
 		soapShare.setMenge(share.getQty().getValueAsInt());
-		soapShare.setTyp(share.getType().getSoapCode());
+		soapShare.setTyp(share.getType().getV2SoapCode());
 		soapShare.setLieferzeitpunkt(share.getDeliveryDate() != null ? JAXBDateUtils.toXMLGregorianCalendar(share.getDeliveryDate()) : null);
 		soapShare.setTour(share.getTour());
-		soapShare.setGrund(share.getReason() != null ? share.getReason().getSoapCode() : null);
+		soapShare.setGrund(share.getReason() != null ? share.getReason().getV2SoapCode() : null);
 		soapShare.setTourabweichung(share.isTourDeviation());
 		return soapShare;
 	}

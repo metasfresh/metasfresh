@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp;
 import lombok.Getter;
 
 /*
@@ -35,10 +35,10 @@ public enum StockAvailabilityResponseItemPartType
 	;
 
 	@Getter
-	private final VerfuegbarkeitRueckmeldungTyp soapCode;
+	private final VerfuegbarkeitRueckmeldungTyp v2SoapCode;
 
-	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp soapCode)
+	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 }

@@ -13,7 +13,7 @@ import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import lombok.NonNull;
 
 /*

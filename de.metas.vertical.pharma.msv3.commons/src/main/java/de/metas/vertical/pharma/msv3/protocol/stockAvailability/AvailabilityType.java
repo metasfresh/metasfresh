@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitTyp;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp;
 import lombok.Getter;
 
 /*
@@ -32,11 +32,11 @@ public enum AvailabilityType
 	;
 
 	@Getter
-	private VerfuegbarkeitTyp soapCode;
+	private VerfuegbarkeitTyp v2SoapCode;
 
-	private AvailabilityType(final VerfuegbarkeitTyp soapCode)
+	private AvailabilityType(final VerfuegbarkeitTyp v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 
 }

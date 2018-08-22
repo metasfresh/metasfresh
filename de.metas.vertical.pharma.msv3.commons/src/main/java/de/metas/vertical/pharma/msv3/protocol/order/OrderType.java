@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Auftragsart;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart;
 import lombok.Getter;
 
 /*
@@ -40,16 +40,16 @@ public enum OrderType
 	;
 
 	@Getter
-	private final Auftragsart soapCode;
+	private final Auftragsart v2SoapCode;
 
-	OrderType(final Auftragsart soapCode)
+	OrderType(final Auftragsart v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 
-	public static OrderType fromSoapCode(final Auftragsart soapCode)
+	public static OrderType fromV2SoapCode(final Auftragsart soapCode)
 	{
-		final OrderType type = soapCode2type.get(soapCode);
+		final OrderType type = v2SoapCode2type.get(soapCode);
 		if (type == null)
 		{
 			throw new NoSuchElementException("No " + OrderType.class + " found for " + soapCode);
@@ -58,6 +58,6 @@ public enum OrderType
 
 	}
 
-	private static final ImmutableMap<Auftragsart, OrderType> soapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(OrderType::getSoapCode, Function.identity()));
+	private static final ImmutableMap<Auftragsart, OrderType> v2SoapCode2type = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(OrderType::getV2SoapCode, Function.identity()));
 }

@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitDefektgrund;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitDefektgrund;
 import lombok.Getter;
 
 /*
@@ -40,10 +40,10 @@ public enum StockAvailabilitySubstitutionReason
 	;
 
 	@Getter
-	private final VerfuegbarkeitDefektgrund soapCode;
+	private final VerfuegbarkeitDefektgrund v2SoapCode;
 
-	StockAvailabilitySubstitutionReason(final VerfuegbarkeitDefektgrund soapCode)
+	StockAvailabilitySubstitutionReason(final VerfuegbarkeitDefektgrund v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 }

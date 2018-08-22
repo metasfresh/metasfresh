@@ -11,7 +11,7 @@ import com.google.common.collect.Maps;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
 import lombok.Getter;
 import lombok.NonNull;
 

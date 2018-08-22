@@ -15,17 +15,18 @@ import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.vertical.pharma.vendor.gateway.msv3.availability.v2.MSV3AvailabilityDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Verfuegbarkeit_Transaction;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelneAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Substitutionsgrund;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund;
 import lombok.Getter;
 
 /*
@@ -33,10 +33,10 @@ public enum StockAvailabilitySubstitutionType
 	;
 
 	@Getter
-	private final Substitutionsgrund soapCode;
+	private final Substitutionsgrund v2SoapCode;
 
-	private StockAvailabilitySubstitutionType(final Substitutionsgrund soapCode)
+	private StockAvailabilitySubstitutionType(final Substitutionsgrund v2SoapCode)
 	{
-		this.soapCode = soapCode;
+		this.v2SoapCode = v2SoapCode;
 	}
 }

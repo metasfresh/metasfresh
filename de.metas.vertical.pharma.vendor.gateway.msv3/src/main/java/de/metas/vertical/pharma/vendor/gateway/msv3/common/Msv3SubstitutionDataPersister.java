@@ -6,8 +6,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import javax.annotation.Nullable;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Substitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungSubstitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitSubstitution;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungSubstitution;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitSubstitution;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 

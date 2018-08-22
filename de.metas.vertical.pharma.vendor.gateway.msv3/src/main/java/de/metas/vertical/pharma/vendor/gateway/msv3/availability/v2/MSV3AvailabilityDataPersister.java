@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
+package de.metas.vertical.pharma.vendor.gateway.msv3.availability.v2;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -10,6 +10,7 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
+import de.metas.vertical.pharma.vendor.gateway.msv3.availability.MSV3ArtikelContextInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Substitution;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitAnteil;
@@ -17,11 +18,11 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Verfuegbarkeits
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsantwortArtikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnteil;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelneAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;

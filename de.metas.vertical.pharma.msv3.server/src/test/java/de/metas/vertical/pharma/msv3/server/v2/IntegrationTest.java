@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.server.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,8 +26,9 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
-import de.metas.vertical.pharma.msv3.server.IntegrationTest.IntegrationTestConfiguration;
-import de.metas.vertical.pharma.msv3.server.order.OrderWebService;
+import de.metas.vertical.pharma.msv3.server.Application;
+import de.metas.vertical.pharma.msv3.server.MockedAmqpTemplate;
+import de.metas.vertical.pharma.msv3.server.order.v2.OrderWebService;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
@@ -39,23 +40,24 @@ import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationSer
 import de.metas.vertical.pharma.msv3.server.security.MSV3User;
 import de.metas.vertical.pharma.msv3.server.security.MockedMSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.msv3.server.security.sync.UserSyncRabbitMQListener;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebService;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.StockAvailabilityRabbitMQListener;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellung;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnfragenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitRueckmeldungTyp;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.v2.StockAvailabilityWebService;
+import de.metas.vertical.pharma.msv3.server.v2.IntegrationTest.IntegrationTestConfiguration;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellen;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellung;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortPosition;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungPosition;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragen;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnteil;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelne.Artikel;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsantwortArtikel;
 
 /*
  * #%L
@@ -193,13 +195,13 @@ public class IntegrationTest
 		final BestellungPosition soapOrderPackageItem = jaxbObjectFactory.createBestellungPosition();
 		soapOrderPackageItem.setPzn(pzn.getValueAsLong());
 		soapOrderPackageItem.setMenge(qtyOrdered);
-		soapOrderPackageItem.setLiefervorgabe(DeliverySpecifications.NORMAL.getSoapCode());
+		soapOrderPackageItem.setLiefervorgabe(DeliverySpecifications.NORMAL.getV2SoapCode());
 
 		final BestellungAuftrag soapOrderPackage = jaxbObjectFactory.createBestellungAuftrag();
 		soapOrderPackage.setId("id");
 		soapOrderPackage.setAuftragsSupportID(123);
 		soapOrderPackage.setAuftragskennung("orderIdentification");
-		soapOrderPackage.setAuftragsart(OrderType.NORMAL.getSoapCode());
+		soapOrderPackage.setAuftragsart(OrderType.NORMAL.getV2SoapCode());
 		// soapOrderPackage.setGebindeId("gebindeId");
 		soapOrderPackage.getPositionen().add(soapOrderPackageItem);
 

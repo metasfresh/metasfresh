@@ -41,16 +41,16 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Auftragsart;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Bestellen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungAntwortPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungDefektgrund;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Liefervorgabe;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Auftragsart;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellen;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAnteil;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortPosition;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import lombok.NonNull;
 
 /*

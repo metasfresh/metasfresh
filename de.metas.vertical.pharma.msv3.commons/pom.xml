@@ -54,7 +54,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<generatePackage>de.metas.vertical.pharma.vendor.gateway.msv3.schema</generatePackage>
+					<generatePackage>de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2</generatePackage>
 					<wsdl>true</wsdl>
 					<xmlschema>false</xmlschema>
 					<schemaIncludes>*.wsdl</schemaIncludes>

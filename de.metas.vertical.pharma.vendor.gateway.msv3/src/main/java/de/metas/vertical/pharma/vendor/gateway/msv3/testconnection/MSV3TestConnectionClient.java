@@ -4,9 +4,9 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ClientBase;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerbindungTesten;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerbindungTestenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerbindungTesten;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerbindungTestenResponse;
 import lombok.NonNull;
 
 /*

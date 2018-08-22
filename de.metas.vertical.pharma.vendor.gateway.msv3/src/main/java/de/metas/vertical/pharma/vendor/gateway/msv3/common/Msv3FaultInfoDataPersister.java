@@ -6,7 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import javax.annotation.Nullable;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 

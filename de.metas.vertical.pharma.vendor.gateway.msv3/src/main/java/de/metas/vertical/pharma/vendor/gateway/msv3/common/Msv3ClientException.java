@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
 import lombok.Builder;
 import lombok.Getter;
 

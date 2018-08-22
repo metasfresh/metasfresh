@@ -9,8 +9,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import lombok.Getter;
 import lombok.NonNull;
 

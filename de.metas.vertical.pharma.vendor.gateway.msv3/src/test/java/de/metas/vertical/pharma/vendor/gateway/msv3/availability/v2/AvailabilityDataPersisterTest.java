@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
+package de.metas.vertical.pharma.vendor.gateway.msv3.availability.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,12 +10,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.availability.MSV3AvailabilityDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.X_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitTyp;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitsanfrageEinzelneAntwort;
 
 /*
  * #%L
