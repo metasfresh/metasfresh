@@ -1,12 +1,8 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -36,40 +32,10 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder=true)
+@Builder(toBuilder = true)
 @ToString(exclude = "authPassword")
 public class MSV3ClientConfig
 {
-	public static MSV3ClientConfig ofdataRecord(
-			@NonNull final I_MSV3_Vendor_Config configDataRecord)
-	{
-
-		final URL baseUrl = toURL(configDataRecord);
-
-		return MSV3ClientConfig.builder()
-				.authPassword(configDataRecord.getPassword())
-				.authUsername(configDataRecord.getUserID())
-				.baseUrl(baseUrl)
-				.bpartnerId(BPartnerId.ofRepoId(configDataRecord.getC_BPartner_ID()))
-				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
-				.build();
-	}
-
-	private static URL toURL(@NonNull final I_MSV3_Vendor_Config configDataRecord)
-	{
-		try
-		{
-			return new URL(configDataRecord.getMSV3_BaseUrl());
-		}
-		catch (MalformedURLException e)
-		{
-			throw new AdempiereException("The MSV3_BaseUrl value of the given MSV3_Vendor_Config can't be parsed as URL", e)
-					.appendParametersToMessage()
-					.setParameter("MSV3_BaseUrl", configDataRecord.getMSV3_BaseUrl())
-					.setParameter("MSV3_Vendor_Config", configDataRecord);
-		}
-	}
-
 	@NonNull
 	URL baseUrl;
 	@NonNull

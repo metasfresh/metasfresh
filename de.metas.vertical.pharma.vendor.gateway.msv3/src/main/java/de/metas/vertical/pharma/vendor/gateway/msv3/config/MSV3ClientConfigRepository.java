@@ -1,9 +1,12 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -13,6 +16,8 @@ import org.compiere.Adempiere;
 import org.compiere.util.CCache;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
@@ -49,6 +54,12 @@ public class MSV3ClientConfigRepository
 			10,
 			CCache.EXPIREMINUTES_Never);
 
+	public MSV3ClientConfig getById(@NonNull final MSV3ClientConfigId id)
+	{
+		final I_MSV3_Vendor_Config record = loadOutOfTrx(id, I_MSV3_Vendor_Config.class);
+		return toMSV3ClientConfig(record);
+	}
+
 	/**
 	 * @param vendorId the C_BPartner_ID of the vendor we wish to order from
 	 *
@@ -73,17 +84,46 @@ public class MSV3ClientConfigRepository
 
 	private Optional<MSV3ClientConfig> retrieveByVendorIdOrNull(final BPartnerId vendorId)
 	{
-		final I_MSV3_Vendor_Config result = Services.get(IQueryBL.class)
+		final I_MSV3_Vendor_Config record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MSV3_Vendor_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MSV3_Vendor_Config.COLUMN_C_BPartner_ID, vendorId)
 				.create()
 				.firstOnly(I_MSV3_Vendor_Config.class);
-		if (result == null)
+		if (record == null)
 		{
 			return Optional.empty();
 		}
-		return Optional.of(MSV3ClientConfig.ofdataRecord(result));
+		return Optional.of(toMSV3ClientConfig(record));
+	}
+
+	@VisibleForTesting
+	public static MSV3ClientConfig toMSV3ClientConfig(@NonNull final I_MSV3_Vendor_Config configDataRecord)
+	{
+		final URL baseUrl = toURL(configDataRecord);
+
+		return MSV3ClientConfig.builder()
+				.authPassword(configDataRecord.getPassword())
+				.authUsername(configDataRecord.getUserID())
+				.baseUrl(baseUrl)
+				.bpartnerId(BPartnerId.ofRepoId(configDataRecord.getC_BPartner_ID()))
+				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
+				.build();
+	}
+
+	private static URL toURL(@NonNull final I_MSV3_Vendor_Config configDataRecord)
+	{
+		try
+		{
+			return new URL(configDataRecord.getMSV3_BaseUrl());
+		}
+		catch (MalformedURLException e)
+		{
+			throw new AdempiereException("The MSV3_BaseUrl value of the given MSV3_Vendor_Config can't be parsed as URL", e)
+					.appendParametersToMessage()
+					.setParameter("MSV3_BaseUrl", configDataRecord.getMSV3_BaseUrl())
+					.setParameter("MSV3_Vendor_Config", configDataRecord);
+		}
 	}
 
 	public MSV3ClientConfig save(@NonNull final MSV3ClientConfig config)

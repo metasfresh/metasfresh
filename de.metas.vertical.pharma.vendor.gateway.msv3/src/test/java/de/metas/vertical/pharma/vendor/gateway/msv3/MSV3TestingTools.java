@@ -10,6 +10,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.I_AD_System;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigRepository;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.NonNull;
 
@@ -69,6 +70,6 @@ public final class MSV3TestingTools
 		configRecord.setC_BPartner_ID(999);
 		save(configRecord);
 
-		return MSV3ClientConfig.ofdataRecord(configRecord);
+		return MSV3ClientConfigRepository.toMSV3ClientConfig(configRecord);
 	}
 }
