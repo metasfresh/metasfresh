@@ -90,13 +90,14 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 				return;
 			}
 
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 			final MSV3ClientConfigRepository configRepo = Adempiere.getBean(MSV3ClientConfigRepository.class);
-			MSV3ClientConfig config = configRepo.getretrieveByVendorIdOrNull(bpartner.getC_BPartner_ID());
+			MSV3ClientConfig config = configRepo.getByVendorIdOrNull(bpartnerId);
 
 			if (config == null)
 			{
 				config = MSV3ClientConfig.builder()
-						.bpartnerId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
+						.bpartnerId(bpartnerId)
 						.authPassword(Password)
 						.authUsername(UserID)
 						.baseUrl(toURL(importRecord))

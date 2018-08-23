@@ -4,17 +4,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.function.Supplier;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
 import org.compiere.util.CCache;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.NonNull;
 
@@ -44,17 +44,7 @@ import lombok.NonNull;
 @DependsOn(Adempiere.BEAN_NAME)
 public class MSV3ClientConfigRepository
 {
-	/**
-	 * {@code null} object, used to store "no config for this vendor" in the {@link #configDataRecords} cache.
-	 * <p>
-	 * Notes: beside this bean being annotated to depending on {@link Adempiere#BEAN_NAME},<br>
-	 * there might not yet be a DB connection when this repository is initialized (in the swing client!).<br>
-	 * That's why we have the supplier.
-	 */
-	private final static Supplier<I_MSV3_Vendor_Config> NULL_CONFIG_RECORD = //
-			ExtendedMemorizingSupplier.of(() -> newInstance(I_MSV3_Vendor_Config.class));
-
-	private final CCache<Integer, I_MSV3_Vendor_Config> configDataRecords = CCache.newCache(
+	private final CCache<BPartnerId, Optional<MSV3ClientConfig>> configDataRecords = CCache.newCache(
 			I_MSV3_Vendor_Config.Table_Name + "#by#" + I_MSV3_Vendor_Config.COLUMNNAME_C_BPartner_ID,
 			10,
 			CCache.EXPIREMINUTES_Never);
@@ -64,27 +54,24 @@ public class MSV3ClientConfigRepository
 	 *
 	 * @return never returns {@code null}.
 	 */
-	public MSV3ClientConfig retrieveByVendorId(final int vendorId)
+	public MSV3ClientConfig getByVendorId(final BPartnerId vendorId)
 	{
-		final MSV3ClientConfig config = getretrieveByVendorIdOrNull(vendorId);
-		Check.errorIf(config == null, "Missing MSV3ClientConfig for vendorId={}", vendorId);
+		final MSV3ClientConfig config = getByVendorIdOrNull(vendorId);
+		if (config == null)
+		{
+			throw new AdempiereException("Missing MSV3ClientConfig for vendorId=" + vendorId);
+		}
 		return config;
 	}
 
-	public MSV3ClientConfig getretrieveByVendorIdOrNull(final int vendorId)
+	public MSV3ClientConfig getByVendorIdOrNull(final BPartnerId vendorId)
 	{
-		final Supplier<I_MSV3_Vendor_Config> recordLoader = () -> retrieveRecordFromDB(vendorId);
+		return configDataRecords.getOrLoad(vendorId, this::retrieveByVendorIdOrNull)
+				.orElse(null);
 
-		final I_MSV3_Vendor_Config configDataRecord = configDataRecords.get(vendorId, recordLoader);
-		if (configDataRecord == NULL_CONFIG_RECORD.get())
-		{
-			return null;
-		}
-
-		return MSV3ClientConfig.ofdataRecord(configDataRecord);
 	}
 
-	private I_MSV3_Vendor_Config retrieveRecordFromDB(final int vendorId)
+	private Optional<MSV3ClientConfig> retrieveByVendorIdOrNull(final BPartnerId vendorId)
 	{
 		final I_MSV3_Vendor_Config result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MSV3_Vendor_Config.class)
@@ -92,12 +79,11 @@ public class MSV3ClientConfigRepository
 				.addEqualsFilter(I_MSV3_Vendor_Config.COLUMN_C_BPartner_ID, vendorId)
 				.create()
 				.firstOnly(I_MSV3_Vendor_Config.class);
-
 		if (result == null)
 		{
-			return NULL_CONFIG_RECORD.get();
+			return Optional.empty();
 		}
-		return result;
+		return Optional.of(MSV3ClientConfig.ofdataRecord(result));
 	}
 
 	public MSV3ClientConfig save(@NonNull final MSV3ClientConfig config)
@@ -130,6 +116,5 @@ public class MSV3ClientConfigRepository
 
 		return configRecord;
 	}
-
 
 }

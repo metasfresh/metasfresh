@@ -6,6 +6,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
@@ -58,15 +59,17 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 	}
 
 	@Override
-	public boolean isProvidedForVendor(final int vendorId)
+	public boolean isProvidedForVendor(final int vendorRepoId)
 	{
-		return configRepo.getretrieveByVendorIdOrNull(vendorId) != null;
+		final BPartnerId vendorId = BPartnerId.ofRepoId(vendorRepoId);
+		return configRepo.getByVendorIdOrNull(vendorId) != null;
 	}
 
 	@Override
 	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
 	{
-		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
+		final BPartnerId vendorId = BPartnerId.ofRepoId(request.getVendorId());
+		final MSV3ClientConfig config = configRepo.getByVendorId(vendorId);
 		final MSV3AvailiabilityClient client = new MSV3AvailiabilityClient(connectionFactory, config);
 
 		return client.retrieveAvailability(request);
@@ -75,7 +78,8 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 	@Override
 	public RemotePurchaseOrderCreated placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
 	{
-		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
+		final BPartnerId vendorId = BPartnerId.ofRepoId(request.getVendorId());
+		final MSV3ClientConfig config = configRepo.getByVendorId(vendorId);
 		final MSV3PurchaseOrderClient client = MSV3PurchaseOrderClient.builder()
 				.config(config)
 				.connectionFactory(connectionFactory).build();
