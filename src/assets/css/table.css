@@ -139,6 +139,23 @@
             align-items: center;
             flex-direction: column;
         }
+
+        &.longtext-cell {
+            position: relative;
+
+            $.extended {
+                word-wrap: break-word;
+                white-space: initial;
+                overflow-y: scroll;
+                position: relative;
+            }
+
+            .extend-text-button {
+                $.extended {
+
+                }
+            }
+        }
     }
 }
 
