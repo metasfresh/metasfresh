@@ -183,7 +183,7 @@ class TableItem extends PureComponent {
     this.setState({
       cellsExtended: !this.state.cellsExtended,
     });
-  }
+  };
 
   renderCells = () => {
     const {

@@ -173,7 +173,7 @@ class TableCell extends PureComponent {
 
     if (cellExtended) {
       style = {
-        height: extendLongText*20
+        height: extendLongText * 20,
       };
     }
 
