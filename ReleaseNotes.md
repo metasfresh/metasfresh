@@ -27,15 +27,20 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4459](https://github.com/metasfresh/metasfresh/issues/4459) Material Cockpit - show stock details
+    * New Feature in Material Cockpit, now showing the Stock details and Locators.
   * [#4491](https://github.com/metasfresh/metasfresh/issues/4491) Introduce Window Tab's Internal Name
+    * New internal Functionality in Application Dictionary that allows to define internal Names of window Tabs for automatic Testing purpose.
 
 ## Fix
 * metasfresh-webui-api
   * [#865](https://github.com/metasfresh/metasfresh-webui-api/issues/865) Org * not selectable in WebUI but in Java Client
+    * Fix of API now allowing to record Org * in Records.
   * [#1027](https://github.com/metasfresh/metasfresh-webui-api/issues/1027) Cannot set attributes for product after receipt in manufacturing
+    * Bugfix for the setting of Attributes after doing a Material Receipt.
 
 * metasfresh-webui-frontend
   * [#1672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1672) Location dropdown opens again when opening the batch entry
+    * Fixes the Lookup behavior in Sales Order Batch entry.
 
 
 # metasfresh 5.70
