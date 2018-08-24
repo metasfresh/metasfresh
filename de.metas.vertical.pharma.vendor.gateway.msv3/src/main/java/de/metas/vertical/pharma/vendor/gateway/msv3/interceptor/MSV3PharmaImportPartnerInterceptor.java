@@ -96,7 +96,7 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 
 			if (config == null)
 			{
-				config = MSV3ClientConfig.builder()
+				config = configRepo.newMSV3ClientConfig()
 						.baseUrl(toURL(importRecord))
 						.authUsername(DEFAULT_UserID)
 						.authPassword(DEFAULT_Password)

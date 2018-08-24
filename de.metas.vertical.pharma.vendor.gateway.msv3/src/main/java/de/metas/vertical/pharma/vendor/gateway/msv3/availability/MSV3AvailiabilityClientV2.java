@@ -31,9 +31,8 @@ import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ClientBaseV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
-import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientMultiException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
+import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientMultiException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
 import lombok.NonNull;
@@ -164,7 +163,7 @@ public class MSV3AvailiabilityClientV2 extends MSV3ClientBaseV2 implements MSV3A
 	private StockAvailabilityResponse makeAvailabilityWebserviceCall(@NonNull final StockAvailabilityQuery query)
 	{
 		final VerfuegbarkeitAnfragenResponse soapResponse = sendAndReceive(
-				jaxbConverters.toJAXBElement(query, MSV3Util.getClientSoftwareId()),
+				jaxbConverters.toJAXBElement(query, getClientSoftwareId()),
 				VerfuegbarkeitAnfragenResponse.class);
 
 		return jaxbConverters.fromJAXB(soapResponse);

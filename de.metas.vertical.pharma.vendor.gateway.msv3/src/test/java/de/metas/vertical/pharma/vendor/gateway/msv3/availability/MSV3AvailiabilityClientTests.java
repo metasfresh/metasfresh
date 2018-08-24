@@ -52,8 +52,6 @@ public class MSV3AvailiabilityClientTests
 	@Ignore
 	public void manualTest()
 	{
-		MSV3TestingTools.setDBVersion(MSV3AvailiabilityClientTests.class.getSimpleName());
-
 		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN, UOM_ID);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)

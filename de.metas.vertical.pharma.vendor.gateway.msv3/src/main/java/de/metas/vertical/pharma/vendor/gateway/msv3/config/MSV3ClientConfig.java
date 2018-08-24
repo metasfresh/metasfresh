@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -63,6 +64,9 @@ public class MSV3ClientConfig
 	@NonNull
 	@Default
 	Version version = VERSION_2;
+	
+	@NonNull
+	ClientSoftwareId clientSoftwareId;
 
 	/** might be null, if the MSV3ClientConfig wasn't stored yet */
 	@Getter

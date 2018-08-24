@@ -2,7 +2,6 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.testconnection;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ClientBaseV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerbindungTesten;
@@ -48,11 +47,9 @@ public class MSV3TestConnectionClientV2 extends MSV3ClientBaseV2 implements MSV3
 		final ObjectFactory objectFactory = getObjectFactory();
 
 		final VerbindungTesten verbindungTesten = objectFactory.createVerbindungTesten();
-		verbindungTesten.setClientSoftwareKennung(MSV3Util.getClientSoftwareId().getValueAsString());
+		verbindungTesten.setClientSoftwareKennung(getClientSoftwareId().getValueAsString());
 
-		sendAndReceive(
-				objectFactory.createVerbindungTesten(verbindungTesten),
-				VerbindungTestenResponse.class);
+		sendAndReceive(objectFactory.createVerbindungTesten(verbindungTesten), VerbindungTestenResponse.class);
 
 		return "ok";
 	}

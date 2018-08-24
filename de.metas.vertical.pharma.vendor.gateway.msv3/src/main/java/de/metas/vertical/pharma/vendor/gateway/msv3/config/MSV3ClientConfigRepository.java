@@ -10,16 +10,20 @@ import java.net.URL;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_System;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig.MSV3ClientConfigBuilder;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import lombok.NonNull;
 
@@ -53,6 +57,8 @@ public class MSV3ClientConfigRepository
 			I_MSV3_Vendor_Config.Table_Name + "#by#" + I_MSV3_Vendor_Config.COLUMNNAME_C_BPartner_ID,
 			10,
 			CCache.EXPIREMINUTES_Never);
+
+	private final ExtendedMemorizingSupplier<ClientSoftwareId> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier.of(this::retrieveSoftwareIndentifier);
 
 	public MSV3ClientConfig getById(@NonNull final MSV3ClientConfigId id)
 	{
@@ -102,12 +108,11 @@ public class MSV3ClientConfigRepository
 		return Optional.of(toMSV3ClientConfig(record));
 	}
 
-	@VisibleForTesting
-	public static MSV3ClientConfig toMSV3ClientConfig(@NonNull final I_MSV3_Vendor_Config configDataRecord)
+	public MSV3ClientConfig toMSV3ClientConfig(@NonNull final I_MSV3_Vendor_Config configDataRecord)
 	{
 		final URL baseUrl = toURL(configDataRecord);
 
-		return MSV3ClientConfig.builder()
+		return newMSV3ClientConfig()
 				.baseUrl(baseUrl)
 				.authUsername(configDataRecord.getUserID())
 				.authPassword(configDataRecord.getPassword())
@@ -115,6 +120,13 @@ public class MSV3ClientConfigRepository
 				// TODO: version
 				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
 				.build();
+	}
+
+	public MSV3ClientConfigBuilder newMSV3ClientConfig()
+	{
+		return MSV3ClientConfig.builder()
+				.clientSoftwareId(CLIENT_SOFTWARE_IDENTIFIER.get());
+
 	}
 
 	private static URL toURL(@NonNull final I_MSV3_Vendor_Config configDataRecord)
@@ -163,4 +175,16 @@ public class MSV3ClientConfigRepository
 		return configRecord;
 	}
 
+	private ClientSoftwareId retrieveSoftwareIndentifier()
+	{
+		try
+		{
+			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
+			return ClientSoftwareId.of("metasfresh-" + adSystem.getDBVersion());
+		}
+		catch (final RuntimeException e)
+		{
+			return ClientSoftwareId.of("metasfresh-<unable to retrieve version!>");
+		}
+	}
 }

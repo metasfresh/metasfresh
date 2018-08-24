@@ -41,7 +41,6 @@ import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ClientBaseV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Bestellung_Transaction;
@@ -116,7 +115,7 @@ public class MSV3PurchaseOrderClientV2 extends MSV3ClientBaseV2 implements MSV3P
 
 		final SupportIDType supportId = supportIdProvider.getNextSupportId();
 		this.request = createBestellungWithOneAuftrag(request, supportId);
-		purchaseOrderRequestPayload = jaxbConverters.toJAXBElement(this.request, MSV3Util.getClientSoftwareId());
+		purchaseOrderRequestPayload = jaxbConverters.toJAXBElement(this.request, getClientSoftwareId());
 
 		return this;
 	}

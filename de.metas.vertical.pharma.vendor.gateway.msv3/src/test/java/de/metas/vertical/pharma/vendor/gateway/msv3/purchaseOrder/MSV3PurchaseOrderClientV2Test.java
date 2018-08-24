@@ -98,7 +98,6 @@ public class MSV3PurchaseOrderClientV2Test
 				.build();
 
 		mockServer = MockWebServiceServer.createServer(msv3PurchaseOrderClient.getWebServiceTemplate());
-		MSV3TestingTools.setDBVersion(MSV3PurchaseOrderClientV2Test.class.getSimpleName());
 	}
 
 	@Test

@@ -8,6 +8,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
@@ -60,11 +61,15 @@ public abstract class MSV3ClientBaseV2
 
 	protected abstract String getUrlSuffix();
 
+	protected final ClientSoftwareId getClientSoftwareId()
+	{
+		return getConfig().getClientSoftwareId();
+	}
+
 	/**
 	 * @param expectedResponseClass if the response is not an instance of this class, the method throws an exception.
 	 */
-	@SuppressWarnings("unchecked")
-	protected <T> T sendAndReceive(
+	protected final <T> T sendAndReceive(
 			@NonNull final JAXBElement<?> messagePayload,
 			@NonNull final Class<? extends T> expectedResponseClass)
 	{
@@ -75,7 +80,7 @@ public abstract class MSV3ClientBaseV2
 		final Object responseValue = responseElement.getValue();
 		if (expectedResponseClass.isInstance(responseValue))
 		{
-			return (T)responseValue;
+			return expectedResponseClass.cast(responseValue);
 		}
 		else if (Msv3FaultInfo.class.isInstance(responseValue))
 		{
