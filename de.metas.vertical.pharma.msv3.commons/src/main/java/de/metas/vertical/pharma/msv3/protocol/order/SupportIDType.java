@@ -42,13 +42,15 @@ public class SupportIDType
 		return new SupportIDType(valueAsInt);
 	}
 
+	public static final int MAX_VALUE = 999999;
+
 	private final int valueAsInt;
 
 	private SupportIDType(final int valueAsInt)
 	{
-		if (valueAsInt < 1 || valueAsInt > 999999)
+		if (valueAsInt < 1 || valueAsInt > MAX_VALUE)
 		{
-			throw new IllegalArgumentException("SupportID value shall be between 1 and 999999 but it was: " + valueAsInt);
+			throw new IllegalArgumentException("SupportID value shall be between 1 and " + MAX_VALUE + " but it was: " + valueAsInt);
 		}
 
 		this.valueAsInt = valueAsInt;

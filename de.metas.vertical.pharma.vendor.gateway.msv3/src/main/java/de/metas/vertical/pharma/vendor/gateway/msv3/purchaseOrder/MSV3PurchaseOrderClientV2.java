@@ -60,12 +60,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -76,6 +76,7 @@ public class MSV3PurchaseOrderClientV2 extends MSV3ClientBaseV2 implements MSV3P
 {
 	private static final String URL_SUFFIX_PLACE_PURCHASE_ORDER = "/bestellen";
 
+	private final SupportIdProvider supportIdProvider;
 	private final OrderJAXBConverters jaxbConverters;
 
 	private OrderCreateRequest request;
@@ -86,11 +87,13 @@ public class MSV3PurchaseOrderClientV2 extends MSV3ClientBaseV2 implements MSV3P
 	@Builder
 	private MSV3PurchaseOrderClientV2(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfig config)
+			@NonNull final MSV3ClientConfig config,
+			@NonNull final SupportIdProvider supportIdProvider)
 	{
 		super(connectionFactory, config);
 
-		this.jaxbConverters = new OrderJAXBConverters();
+		this.supportIdProvider = supportIdProvider;
+		jaxbConverters = new OrderJAXBConverters();
 	}
 
 	@Override
@@ -111,7 +114,8 @@ public class MSV3PurchaseOrderClientV2 extends MSV3ClientBaseV2 implements MSV3P
 				request.getItems(),
 				item -> toOrderCreateRequestPackageItemId(item.getId()));
 
-		this.request = createBestellungWithOneAuftrag(request);
+		final SupportIDType supportId = supportIdProvider.getNextSupportId();
+		this.request = createBestellungWithOneAuftrag(request, supportId);
 		purchaseOrderRequestPayload = jaxbConverters.toJAXBElement(this.request, MSV3Util.getClientSoftwareId());
 
 		return this;
@@ -161,10 +165,8 @@ public class MSV3PurchaseOrderClientV2 extends MSV3ClientBaseV2 implements MSV3P
 		return this;
 	}
 
-	private static OrderCreateRequest createBestellungWithOneAuftrag(@NonNull final PurchaseOrderRequest request)
+	private static OrderCreateRequest createBestellungWithOneAuftrag(@NonNull final PurchaseOrderRequest request, @NonNull final SupportIDType supportId)
 	{
-		final SupportIDType supportId = SupportIDType.of(MSV3Util.retrieveNextSupportId());
-
 		return OrderCreateRequest.builder()
 				.orderId(Id.random())
 				.supportId(supportId)

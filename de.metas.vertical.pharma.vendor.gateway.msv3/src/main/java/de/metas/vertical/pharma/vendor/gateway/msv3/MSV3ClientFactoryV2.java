@@ -7,6 +7,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.availability.MSV3Availiabili
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder.MSV3PurchaseOrderClient;
 import de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder.MSV3PurchaseOrderClientV2;
+import de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder.SupportIdProvider;
 import de.metas.vertical.pharma.vendor.gateway.msv3.testconnection.MSV3TestConnectionClient;
 import de.metas.vertical.pharma.vendor.gateway.msv3.testconnection.MSV3TestConnectionClientV2;
 import lombok.NonNull;
@@ -37,10 +38,14 @@ import lombok.NonNull;
 public class MSV3ClientFactoryV2 implements MSV3ClientFactory
 {
 	private final MSV3ConnectionFactory connectionFactory;
+	private final SupportIdProvider supportIdProvider;
 
-	public MSV3ClientFactoryV2(@NonNull final MSV3ConnectionFactory connectionFactory)
+	public MSV3ClientFactoryV2(
+			@NonNull final MSV3ConnectionFactory connectionFactory,
+			@NonNull final SupportIdProvider supportIdProvider)
 	{
 		this.connectionFactory = connectionFactory;
+		this.supportIdProvider = supportIdProvider;
 	}
 
 	@Override
@@ -70,6 +75,7 @@ public class MSV3ClientFactoryV2 implements MSV3ClientFactory
 		return MSV3PurchaseOrderClientV2.builder()
 				.connectionFactory(connectionFactory)
 				.config(config)
+				.supportIdProvider(supportIdProvider)
 				.build();
 	}
 

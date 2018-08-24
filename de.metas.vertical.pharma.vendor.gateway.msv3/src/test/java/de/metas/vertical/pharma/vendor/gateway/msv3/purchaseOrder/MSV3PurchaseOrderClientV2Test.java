@@ -94,6 +94,7 @@ public class MSV3PurchaseOrderClientV2Test
 		msv3PurchaseOrderClient = MSV3PurchaseOrderClientV2.builder()
 				.config(MSV3TestingTools.createMSV3ClientConfig())
 				.connectionFactory(new MSV3ConnectionFactory())
+				.supportIdProvider(new MockedSupportIdProvider())
 				.build();
 
 		mockServer = MockWebServiceServer.createServer(msv3PurchaseOrderClient.getWebServiceTemplate());
