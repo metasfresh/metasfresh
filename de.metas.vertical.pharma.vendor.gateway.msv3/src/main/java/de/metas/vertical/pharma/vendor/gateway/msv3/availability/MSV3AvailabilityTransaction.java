@@ -1,6 +1,5 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -16,6 +15,7 @@ import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
@@ -80,7 +80,7 @@ public class MSV3AvailabilityTransaction
 		Check.errorIf(vendorId <= 0, "The given parameter vendorId needs to be > 0; vendorId={}", vendorId);
 		this.query = verfuegbarkeitsanfrageEinzelne;
 
-		final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
+		final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId);
 
 		this.orgId = OrgId.ofRepoId(vendor.getAD_Org_ID());
 		this.availabilityDataPersister = MSV3AvailabilityDataPersister.createNewInstance(orgId);
