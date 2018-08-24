@@ -107,7 +107,22 @@
         }
 
         &.LongText {
+            position: relative;
             max-width: 350px;
+
+            .extend-text-button {
+                position: absolute;
+                z-index: 2;
+                top: 1px;
+                right: 1px;
+                width: 15px;
+                height: 15px;
+                background-color: black;
+
+                $.extended {
+                    background-color: red;
+                }
+            }
         }
     }
 
@@ -140,21 +155,15 @@
             flex-direction: column;
         }
 
-        &.longtext-cell {
-            position: relative;
+        &.extended {
+            height: 60px;
 
-            $.extended {
+            &.longtext-cell {
                 word-wrap: break-word;
                 white-space: initial;
                 overflow-y: scroll;
                 position: relative;
-            }
-
-            .extend-text-button {
-                $.extended {
-
-                }
-            }
+            }    
         }
     }
 }

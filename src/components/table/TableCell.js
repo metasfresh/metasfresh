@@ -132,6 +132,8 @@ class TableCell extends PureComponent {
   render() {
     const {
       isEdited,
+      cellExtended,
+      extendLongText,
       widgetData,
       item,
       type,
@@ -153,6 +155,7 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
+      onCellExtend,
     } = this.props;
     const docId = `${this.props.docId}`;
     const tdValue = !isEdited
@@ -188,6 +191,15 @@ class TableCell extends PureComponent {
           }
         )}
       >
+        {item.widgetType.toLowerCase() === 'longtext' &&
+          extendLongText && (
+            <div
+              className={classnames('extend-text-button', {
+                extended: cellExtended,
+              })}
+              onClick={onCellExtend}
+            />
+          )}
         {isEdited ? (
           <MasterWidget
             {...item}
@@ -218,6 +230,7 @@ class TableCell extends PureComponent {
           <div
             className={classnames('cell-text-wrapper', {
               [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
+              extended: cellExtended,
             })}
             title={
               item.widgetType === 'YesNo' ||
@@ -236,11 +249,14 @@ class TableCell extends PureComponent {
 }
 
 TableCell.propTypes = {
+  cellExtended: PropTypes.bool,
+  extendLongText: PropTypes.bool,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
   onClickOutside: PropTypes.func,
   onCellChange: PropTypes.func,
+  onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
 };
 

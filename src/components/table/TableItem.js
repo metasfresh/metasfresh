@@ -179,6 +179,12 @@ class TableItem extends PureComponent {
     }
   };
 
+  handleCellExtend = () => {
+    this.setState({
+      cellsExtended: !this.state.cellsExtended,
+    });
+  }
+
   renderCells = () => {
     const {
       cols,
@@ -199,8 +205,18 @@ class TableItem extends PureComponent {
       viewId,
       isSelected,
     } = this.props;
-    const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
+    const {
+      edited,
+      updatedRow,
+      listenOnKeys,
+      editedCells,
+      cellsExtended,
+    } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
+
+
+    const extendLongText = true;
+
 
     // Iterate over layout settings
     if (colspan) {
@@ -260,6 +276,8 @@ class TableItem extends PureComponent {
                   mainTable,
                   viewId,
                 }}
+                cellExtended={cellsExtended}
+                extendLongText={extendLongText}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 isEdited={isEdited}
@@ -273,6 +291,7 @@ class TableItem extends PureComponent {
                   changeListenOnTrue();
                 }}
                 onCellChange={this.onCellChange}
+                onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 handleKeyDown={e =>
