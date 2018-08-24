@@ -43,23 +43,22 @@ public class Msv3ClientMultiException extends AdempiereException implements Avai
 			@NonNull final Collection<AvailabilityRequestItem> items,
 			@NonNull final Throwable throwable)
 	{
-		final ImmutableMap<AvailabilityRequestItem, Throwable> allItemsWithSameThrowable = //
-				Maps.toMap(items, requestItem -> throwable);
+		final Map<AvailabilityRequestItem, Throwable> allItemsWithSameThrowable = Maps.toMap(items, requestItem -> throwable);
 
-		return new Msv3ClientMultiException(allItemsWithSameThrowable);
+		return new Msv3ClientMultiException(allItemsWithSameThrowable, throwable);
 	}
 
 	public static Msv3ClientMultiException createAllItemsSameFaultInfo(
 			@NonNull final Collection<AvailabilityRequestItem> items,
 			@NonNull final FaultInfo msv3FaultInfo)
 	{
-		final Msv3ClientException msv3ClientException = //
-				Msv3ClientException.builder().msv3FaultInfo(msv3FaultInfo).build();
+		final Msv3ClientException msv3ClientException = Msv3ClientException.builder()
+				.msv3FaultInfo(msv3FaultInfo)
+				.build();
 
-		final ImmutableMap<AvailabilityRequestItem, Throwable> allItemsWithSameThrowable = //
-				Maps.toMap(items, requestItem -> msv3ClientException);
+		final Map<AvailabilityRequestItem, Throwable> allItemsWithSameThrowable = Maps.toMap(items, requestItem -> msv3ClientException);
 
-		return new Msv3ClientMultiException(allItemsWithSameThrowable);
+		return new Msv3ClientMultiException(allItemsWithSameThrowable, msv3ClientException);
 	}
 
 	private static final long serialVersionUID = -8058915938494697758L;
@@ -67,9 +66,9 @@ public class Msv3ClientMultiException extends AdempiereException implements Avai
 	@Getter
 	private final Map<AvailabilityRequestItem, Throwable> requestItem2Exception;
 
-	private Msv3ClientMultiException(@NonNull final Map<AvailabilityRequestItem, Throwable> requestItem2Exception)
+	private Msv3ClientMultiException(@NonNull final Map<AvailabilityRequestItem, Throwable> requestItem2Exception, final Throwable cause)
 	{
-		super(ImmutableTranslatableString.empty());
+		super(ImmutableTranslatableString.empty(), cause);
 		this.requestItem2Exception = ImmutableMap.copyOf(requestItem2Exception);
 	}
 }
