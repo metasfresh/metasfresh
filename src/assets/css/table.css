@@ -115,12 +115,15 @@
                 z-index: 2;
                 top: 1px;
                 right: 1px;
-                width: 15px;
-                height: 15px;
-                background-color: black;
+                width: 0; 
+                height: 0;
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-top: 8px solid $brand-font-color;
 
-                $.extended {
-                    background-color: red;
+                &.extended {
+                    border-top: none;
+                    border-bottom: 8px solid $brand-font-color;
                 }
             }
         }
@@ -163,7 +166,7 @@
                 white-space: initial;
                 overflow-y: scroll;
                 position: relative;
-            }    
+            }
         }
     }
 }

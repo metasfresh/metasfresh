@@ -215,7 +215,7 @@ class TableItem extends PureComponent {
     const cells = merge({}, fieldsByName, editedCells);
 
 
-    const extendLongText = true;
+    const extendLongText = 3;
 
 
     // Iterate over layout settings

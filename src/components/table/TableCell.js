@@ -169,6 +169,13 @@ class TableCell extends PureComponent {
     const isDateField = DATE_FIELD_FORMATS[item.widgetType]
       ? TableCell.getDateFormat(item.widgetType)
       : false;
+    let style = {};
+
+    if (cellExtended) {
+      style = {
+        height: extendLongText*20
+      };
+    }
 
     return (
       <td
@@ -232,6 +239,7 @@ class TableCell extends PureComponent {
               [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
               extended: cellExtended,
             })}
+            style={style}
             title={
               item.widgetType === 'YesNo' ||
               item.widgetType === 'Switch' ||
@@ -250,7 +258,7 @@ class TableCell extends PureComponent {
 
 TableCell.propTypes = {
   cellExtended: PropTypes.bool,
-  extendLongText: PropTypes.bool,
+  extendLongText: PropTypes.number,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
