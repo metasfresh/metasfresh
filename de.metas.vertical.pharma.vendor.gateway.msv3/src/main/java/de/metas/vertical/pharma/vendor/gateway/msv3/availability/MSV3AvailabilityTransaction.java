@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
@@ -20,6 +19,7 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilit
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
@@ -74,15 +74,14 @@ public class MSV3AvailabilityTransaction
 
 	@Builder
 	private MSV3AvailabilityTransaction(
-			final int vendorId,
-			@NonNull final StockAvailabilityQuery verfuegbarkeitsanfrageEinzelne)
+			@NonNull final BPartnerId vendorId,
+			@NonNull final StockAvailabilityQuery query)
 	{
-		Check.errorIf(vendorId <= 0, "The given parameter vendorId needs to be > 0; vendorId={}", vendorId);
-		this.query = verfuegbarkeitsanfrageEinzelne;
+		this.query = query;
 
-		final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId);
-
+		final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId.getBpartnerId());
 		this.orgId = OrgId.ofRepoId(vendor.getAD_Org_ID());
+		
 		this.availabilityDataPersister = MSV3AvailabilityDataPersister.createNewInstance(orgId);
 	}
 

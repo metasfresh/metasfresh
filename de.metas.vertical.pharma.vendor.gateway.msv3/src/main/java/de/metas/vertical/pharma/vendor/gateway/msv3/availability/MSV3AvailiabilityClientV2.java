@@ -107,15 +107,17 @@ public class MSV3AvailiabilityClientV2 extends MSV3ClientBaseV2 implements MSV3A
 			contextInfosByQueryItem.put(queryItem, MSV3ArtikelContextInfo.forRequestItem(requestItem));
 		}
 
+		final BPartnerId bpartnerId = BPartnerId.of(request.getVendorId());
+		
 		final StockAvailabilityQuery query = StockAvailabilityQuery.builder()
 				.id(UUID.randomUUID().toString())
-				.bpartner(BPartnerId.of(request.getVendorId()))
+				.bpartner(bpartnerId)
 				.items(queryItems)
 				.build();
 
 		final MSV3AvailabilityTransaction availabilityTransaction = MSV3AvailabilityTransaction.builder()
-				.vendorId(request.getVendorId())
-				.verfuegbarkeitsanfrageEinzelne(query)
+				.vendorId(bpartnerId)
+				.query(query)
 				.build();
 		availabilityTransaction.putContextInfos(contextInfosByQueryItem);
 

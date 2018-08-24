@@ -1,10 +1,13 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,13 +55,17 @@ public class MSV3AvailiabilityClientTests
 	@Ignore
 	public void manualTest()
 	{
+		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
+		vendor.setAD_Org_ID(123);
+		saveRecord(vendor);
+		
 		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN, UOM_ID);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)
 				.build();
 
 		final AvailabilityRequest request = AvailabilityRequest.builder()
-				.vendorId(999)
+				.vendorId(vendor.getC_BPartner_ID())
 				.availabilityRequestItem(availabilityRequestItem)
 				.build();
 
