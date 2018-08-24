@@ -1,7 +1,14 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,4 +46,21 @@ public enum AvailabilityType
 		this.v2SoapCode = v2SoapCode;
 	}
 
+	public String value()
+	{
+		return v2SoapCode.value();
+	}
+
+	public static AvailabilityType fromV2SoapCode(@NonNull final VerfuegbarkeitTyp v2SoapCode)
+	{
+		final AvailabilityType type = typesByValue.get(v2SoapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + AvailabilityType.class + " found for " + v2SoapCode);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, AvailabilityType> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(AvailabilityType::value, Function.identity()));
 }

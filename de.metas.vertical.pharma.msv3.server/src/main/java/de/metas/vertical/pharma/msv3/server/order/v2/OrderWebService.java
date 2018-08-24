@@ -77,7 +77,7 @@ public class OrderWebService
 		final OrderCreateRequest request = jaxbConverters.fromJAXB(soapRequest.getBestellung(), bpartner);
 		final OrderCreateResponse response = orderService.createOrder(request);
 
-		final JAXBElement<BestellenResponse> jaxbResponse = jaxbConverters.toJAXB(response);
+		final JAXBElement<BestellenResponse> jaxbResponse = jaxbConverters.toJAXBElement(response);
 		logXML("createOrder - response", jaxbResponse);
 		return jaxbResponse;
 	}

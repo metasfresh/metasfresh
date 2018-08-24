@@ -6,11 +6,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3VendorGatewayService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigId;
-import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigRepository;
-import de.metas.vertical.pharma.vendor.gateway.msv3.testconnection.MSV3TestConnectionClient;
 import lombok.NonNull;
 
 /*
@@ -39,8 +36,7 @@ public class MSV3_Vendor_Config_TestConnection
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	private final MSV3ClientConfigRepository configsRepo = Adempiere.getBean(MSV3ClientConfigRepository.class);
-	private final MSV3ConnectionFactory connectionFactory = Adempiere.getBean(MSV3ConnectionFactory.class);
+	private final MSV3VendorGatewayService gateway = Adempiere.getBean(MSV3VendorGatewayService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(
@@ -52,14 +48,10 @@ public class MSV3_Vendor_Config_TestConnection
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final MSV3ClientConfigId configId = MSV3ClientConfigId.ofRepoId(getRecord_ID());
-		final MSV3ClientConfig config = configsRepo.getById(configId);
-
-		final MSV3TestConnectionClient msv3Client = new MSV3TestConnectionClient(connectionFactory, config);
-		msv3Client.testConnection(); // if the connection is not OK, an exception will be thrown
-
+		gateway.testConnection(configId.getRepoId());
 		return MSG_OK;
 	}
 }

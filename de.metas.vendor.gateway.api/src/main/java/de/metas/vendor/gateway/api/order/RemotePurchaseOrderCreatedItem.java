@@ -1,7 +1,7 @@
 package de.metas.vendor.gateway.api.order;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.adempiere.util.Check;
 
@@ -36,7 +36,7 @@ public class RemotePurchaseOrderCreatedItem
 {
 	String remotePurchaseOrderId;
 
-	int internalItemId;
+	MSV3OrderResponsePackageItemPartRepoId internalItemId;
 
 	@NonNull
 	PurchaseOrderRequestItem correspondingRequestItem;
@@ -45,15 +45,15 @@ public class RemotePurchaseOrderCreatedItem
 	BigDecimal confirmedOrderQuantity;
 
 	@NonNull
-	Date confirmedDeliveryDate;
+	LocalDateTime confirmedDeliveryDate;
 
 	@Builder
 	private RemotePurchaseOrderCreatedItem(
 			@NonNull final PurchaseOrderRequestItem correspondingRequestItem,
 			@NonNull final BigDecimal confirmedOrderQuantity,
-			@NonNull final Date confirmedDeliveryDate,
+			@NonNull final LocalDateTime confirmedDeliveryDate,
 			final String remotePurchaseOrderId,
-			final int internalItemId)
+			final MSV3OrderResponsePackageItemPartRepoId internalItemId)
 	{
 		this.correspondingRequestItem = correspondingRequestItem;
 		this.confirmedOrderQuantity = confirmedOrderQuantity;

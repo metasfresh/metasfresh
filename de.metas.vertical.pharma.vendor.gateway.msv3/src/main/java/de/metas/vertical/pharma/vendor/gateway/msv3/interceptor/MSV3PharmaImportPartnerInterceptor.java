@@ -53,9 +53,9 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 	private static final String MSV3_Constant = "MSV3";
 
 	// default values for user and password MSV3_Vendor_ConfigIfNeeded
-	// the values are pe user and there will be changed by the user
-	private static final String Password = "MSV3";
-	private static final String UserID = "MSV3";
+	// the values are per user and there will be changed by the user
+	private static final String DEFAULT_UserID = "MSV3";
+	private static final String DEFAULT_Password = "MSV3";
 
 	private MSV3PharmaImportPartnerInterceptor()
 	{
@@ -97,10 +97,11 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 			if (config == null)
 			{
 				config = MSV3ClientConfig.builder()
-						.bpartnerId(bpartnerId)
-						.authPassword(Password)
-						.authUsername(UserID)
 						.baseUrl(toURL(importRecord))
+						.authUsername(DEFAULT_UserID)
+						.authPassword(DEFAULT_Password)
+						.bpartnerId(de.metas.vertical.pharma.msv3.protocol.types.BPartnerId.of(bpartnerId.getRepoId()))
+						// TODO: version
 						.build();
 			}
 

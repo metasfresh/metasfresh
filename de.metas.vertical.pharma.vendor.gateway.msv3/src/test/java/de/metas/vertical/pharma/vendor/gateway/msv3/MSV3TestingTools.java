@@ -68,6 +68,7 @@ public final class MSV3TestingTools
 		configRecord.setUserID("PLA\\apotheke1");
 		configRecord.setPassword("passwort");
 		configRecord.setC_BPartner_ID(999);
+		// TODO: version
 		save(configRecord);
 
 		return MSV3ClientConfigRepository.toMSV3ClientConfig(configRecord);

@@ -3,8 +3,11 @@ package de.metas.vertical.pharma.msv3.protocol.order;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.vertical.pharma.msv3.protocol.types.PZN;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,39 +32,29 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * Exclusive identification for people! Support (optional display on GUI no proof) - no technical semantics Apo-Wawi awards this; should be sufficiently selective.
- */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class SupportIDType
+public class OrderResponsePackageItemSubstitution
 {
+	@JsonProperty("substitutionReason")
+	OrderSubstitutionReason substitutionReason;
+
+	@JsonProperty("defectReason")
+	OrderDefectReason defectReason;
+
+	@JsonProperty("pzn")
+	PZN pzn;
+
+	@Builder
 	@JsonCreator
-	public static SupportIDType of(final int valueAsInt)
+	private OrderResponsePackageItemSubstitution(
+			@JsonProperty("substitutionReason") @NonNull final OrderSubstitutionReason substitutionReason,
+			@JsonProperty("defectReason") @NonNull final OrderDefectReason defectReason,
+			@JsonProperty("pzn") @NonNull final PZN pzn)
 	{
-		return new SupportIDType(valueAsInt);
+		this.substitutionReason = substitutionReason;
+		this.defectReason = defectReason;
+		this.pzn = pzn;
 	}
 
-	private final int valueAsInt;
-
-	private SupportIDType(final int valueAsInt)
-	{
-		if (valueAsInt < 1 || valueAsInt > 999999)
-		{
-			throw new IllegalArgumentException("SupportID value shall be between 1 and 999999 but it was: " + valueAsInt);
-		}
-
-		this.valueAsInt = valueAsInt;
-	}
-
-	@JsonValue
-	public int toJson()
-	{
-		return valueAsInt;
-	}
-
-	public String getValueAsString()
-	{
-		return String.valueOf(getValueAsInt());
-	}
 }

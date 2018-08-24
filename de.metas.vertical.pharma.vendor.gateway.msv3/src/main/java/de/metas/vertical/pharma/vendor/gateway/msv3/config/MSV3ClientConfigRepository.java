@@ -60,6 +60,11 @@ public class MSV3ClientConfigRepository
 		return toMSV3ClientConfig(record);
 	}
 
+	public boolean hasConfigForVendor(final BPartnerId vendorId)
+	{
+		return getByVendorIdOrNull(vendorId) != null;
+	}
+
 	/**
 	 * @param vendorId the C_BPartner_ID of the vendor we wish to order from
 	 *
@@ -103,10 +108,11 @@ public class MSV3ClientConfigRepository
 		final URL baseUrl = toURL(configDataRecord);
 
 		return MSV3ClientConfig.builder()
-				.authPassword(configDataRecord.getPassword())
-				.authUsername(configDataRecord.getUserID())
 				.baseUrl(baseUrl)
-				.bpartnerId(BPartnerId.ofRepoId(configDataRecord.getC_BPartner_ID()))
+				.authUsername(configDataRecord.getUserID())
+				.authPassword(configDataRecord.getPassword())
+				.bpartnerId(de.metas.vertical.pharma.msv3.protocol.types.BPartnerId.of(configDataRecord.getC_BPartner_ID()))
+				// TODO: version
 				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
 				.build();
 	}
@@ -149,7 +155,7 @@ public class MSV3ClientConfigRepository
 			configRecord = newInstance(I_MSV3_Vendor_Config.class);
 		}
 
-		configRecord.setC_BPartner_ID(config.getBpartnerId().getRepoId());
+		configRecord.setC_BPartner_ID(config.getBpartnerId().getBpartnerId());
 		configRecord.setMSV3_BaseUrl(config.getBaseUrl().toExternalForm());
 		configRecord.setPassword(config.getAuthPassword());
 		configRecord.setUserID(config.getAuthUsername());

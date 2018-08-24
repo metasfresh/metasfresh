@@ -78,26 +78,26 @@ import lombok.NonNull;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
 		MSV3PurchaseOrderRequestPersister.class, Msv3FaultInfoDataPersister.class, Msv3SubstitutionDataPersister.class })
-public class MSV3PurchaseOrderClientTest
+public class MSV3PurchaseOrderClientV2Test
 {
 	private static final BigDecimal CONFIRMED_ORDER_QTY = BigDecimal.TEN;
 	private static final BigDecimal QTY_TO_PURCHASE = new BigDecimal("23");
 	private static final int UOM_ID = 1;
 
 	private MockWebServiceServer mockServer;
-	private MSV3PurchaseOrderClient msv3PurchaseOrderClient;
+	private MSV3PurchaseOrderClientV2 msv3PurchaseOrderClient;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		msv3PurchaseOrderClient = MSV3PurchaseOrderClient.builder()
+		msv3PurchaseOrderClient = MSV3PurchaseOrderClientV2.builder()
 				.config(MSV3TestingTools.createMSV3ClientConfig())
 				.connectionFactory(new MSV3ConnectionFactory())
 				.build();
 
 		mockServer = MockWebServiceServer.createServer(msv3PurchaseOrderClient.getWebServiceTemplate());
-		MSV3TestingTools.setDBVersion(MSV3PurchaseOrderClientTest.class.getSimpleName());
+		MSV3TestingTools.setDBVersion(MSV3PurchaseOrderClientV2Test.class.getSimpleName());
 	}
 
 	@Test
@@ -112,7 +112,7 @@ public class MSV3PurchaseOrderClientTest
 		final PurchaseOrderRequest request = PurchaseOrderRequest.builder()
 				.orgId(10)
 				.vendorId(20)
-				.purchaseOrderRequestItems(purchaseOrderRequestItems)
+				.items(purchaseOrderRequestItems)
 				.build();
 
 		msv3PurchaseOrderClient.prepare(request);
@@ -128,11 +128,16 @@ public class MSV3PurchaseOrderClientTest
 		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placeOrder();
 
 		assertThat(purchaseOrderResponse).isNotNull();
+
+		if (purchaseOrderResponse.getException() != null)
+		{
+			purchaseOrderResponse.getException().printStackTrace();
+		}
 		assertThat(purchaseOrderResponse.getException()).isNull();
 
 		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = purchaseOrderResponse.getPurchaseOrderResponseItems();
 		assertThat(purchaseOrderResponseItems).hasSize(1);
-		assertThat(purchaseOrderResponseItems.get(0).getInternalItemId()).isGreaterThan(0);
+		assertThat(purchaseOrderResponseItems.get(0).getInternalItemId()).isNotNull();
 		assertThat(purchaseOrderResponseItems.get(0).getConfirmedOrderQuantity()).isEqualByComparingTo(CONFIRMED_ORDER_QTY);
 	}
 
@@ -176,13 +181,18 @@ public class MSV3PurchaseOrderClientTest
 		bestellungAntwortPosition.getAnteile().add(bestellungAnteil2);
 		bestellungAntwortPosition.setBestellLiefervorgabe(Liefervorgabe.NORMAL);
 		bestellungAntwortPosition.setBestellMenge(QTY_TO_PURCHASE.intValueExact());
+		bestellungAntwortPosition.setBestellPzn(1234);
 
 		final BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
-		bestellungAntwortAuftrag.setAuftragsart(Auftragsart.NORMAL);
 		bestellungAntwortAuftrag.setId("bestellungAntwortAuftrag.id");
+		bestellungAntwortAuftrag.setAuftragsSupportID(1234);
+		bestellungAntwortAuftrag.setAuftragskennung("1234");
+		bestellungAntwortAuftrag.setAuftragsart(Auftragsart.NORMAL);
 		bestellungAntwortAuftrag.getPositionen().add(bestellungAntwortPosition);
 
 		final BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
+		bestellungAntwort.setId("bestellungAntwort.id");
+		bestellungAntwort.setBestellSupportId(1234);
 		bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
 
 		final BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();

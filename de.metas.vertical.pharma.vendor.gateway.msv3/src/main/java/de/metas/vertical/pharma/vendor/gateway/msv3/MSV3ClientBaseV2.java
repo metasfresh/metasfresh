@@ -7,6 +7,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConverters;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
@@ -36,7 +37,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class MSV3ClientBase
+public abstract class MSV3ClientBaseV2
 {
 	@VisibleForTesting
 	@Getter
@@ -48,7 +49,7 @@ public abstract class MSV3ClientBase
 	@Getter
 	private final ObjectFactory objectFactory;
 
-	public MSV3ClientBase(
+	public MSV3ClientBaseV2(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
 			@NonNull final MSV3ClientConfig config)
 	{
@@ -57,7 +58,7 @@ public abstract class MSV3ClientBase
 		this.webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
 	}
 
-	public abstract String getUrlSuffix();
+	protected abstract String getUrlSuffix();
 
 	/**
 	 * @param expectedResponseClass if the response is not an instance of this class, the method throws an exception.
@@ -78,15 +79,20 @@ public abstract class MSV3ClientBase
 		}
 		else if (Msv3FaultInfo.class.isInstance(responseValue))
 		{
+			final Msv3FaultInfo msv3FaultInfo = (Msv3FaultInfo)responseValue;
 			throw Msv3ClientException.builder()
-					.msv3FaultInfo((Msv3FaultInfo)responseValue).build()
+					.msv3FaultInfo(OrderJAXBConverters.fromJAXB(msv3FaultInfo))
+					.build()
 					.setParameter("uri", uri)
 					.setParameter("config", config);
 		}
-		throw new AdempiereException("Webservice returned unexpected response")
-				.appendParametersToMessage()
-				.setParameter("uri", uri)
-				.setParameter("config", config)
-				.setParameter("response", responseValue);
+		else
+		{
+			throw new AdempiereException("Webservice returned unexpected response")
+					.appendParametersToMessage()
+					.setParameter("uri", uri)
+					.setParameter("config", config)
+					.setParameter("response", responseValue);
+		}
 	}
 }

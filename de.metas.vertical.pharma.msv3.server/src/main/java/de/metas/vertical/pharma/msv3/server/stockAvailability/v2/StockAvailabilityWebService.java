@@ -76,7 +76,7 @@ public class StockAvailabilityWebService
 		final StockAvailabilityQuery stockAvailabilityQuery = jaxbConverters.fromJAXB(soapRequest.getVerfuegbarkeitsanfrage(), bpartner);
 		final StockAvailabilityResponse stockAvailabilityResponse = stockAvailabilityService.checkAvailability(stockAvailabilityQuery);
 
-		final JAXBElement<VerfuegbarkeitAnfragenResponse> jaxbResponse = jaxbConverters.toJAXB(stockAvailabilityResponse);
+		final JAXBElement<VerfuegbarkeitAnfragenResponse> jaxbResponse = jaxbConverters.toJAXBElement(stockAvailabilityResponse);
 		logXML("getStockAvailability - response", jaxbResponse);
 		return jaxbResponse;
 	}

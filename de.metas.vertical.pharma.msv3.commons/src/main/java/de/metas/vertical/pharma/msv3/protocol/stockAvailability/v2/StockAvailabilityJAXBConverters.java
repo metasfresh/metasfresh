@@ -4,18 +4,24 @@ import javax.xml.bind.JAXBElement;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionReason;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionType;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnteil;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitSubstitution;
@@ -49,6 +55,11 @@ public class StockAvailabilityJAXBConverters
 {
 	private final ObjectFactory jaxbObjectFactory;
 
+	public StockAvailabilityJAXBConverters()
+	{
+		this(new ObjectFactory());
+	}
+
 	public StockAvailabilityJAXBConverters(@NonNull final ObjectFactory jaxbObjectFactory)
 	{
 		this.jaxbObjectFactory = jaxbObjectFactory;
@@ -60,12 +71,31 @@ public class StockAvailabilityJAXBConverters
 				.id(soapAvailabilityRequest.getId())
 				.bpartner(bpartner)
 				.items(soapAvailabilityRequest.getArtikel().stream()
-						.map(this::createStockAvailabilityQueryItem)
+						.map(this::fromJAXB)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	private StockAvailabilityQueryItem createStockAvailabilityQueryItem(final VerfuegbarkeitsanfrageEinzelne.Artikel artikel)
+	public JAXBElement<VerfuegbarkeitAnfragen> toJAXBElement(final StockAvailabilityQuery query, final ClientSoftwareId clientSoftwareId)
+	{
+		final VerfuegbarkeitAnfragen soap = jaxbObjectFactory.createVerfuegbarkeitAnfragen();
+		soap.setVerfuegbarkeitsanfrage(toJAXB(query));
+		soap.setClientSoftwareKennung(clientSoftwareId.getValueAsString());
+
+		return jaxbObjectFactory.createVerfuegbarkeitAnfragen(soap);
+	}
+
+	public VerfuegbarkeitsanfrageEinzelne toJAXB(final StockAvailabilityQuery query)
+	{
+		final VerfuegbarkeitsanfrageEinzelne soap = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelne();
+		soap.setId(query.getId());
+		soap.getArtikel().addAll(query.getItems().stream()
+				.map(this::toJAXB)
+				.collect(ImmutableList.toImmutableList()));
+		return soap;
+	}
+
+	private StockAvailabilityQueryItem fromJAXB(final VerfuegbarkeitsanfrageEinzelne.Artikel artikel)
 	{
 		return StockAvailabilityQueryItem.builder()
 				.pzn(PZN.of(artikel.getPzn()))
@@ -74,56 +104,119 @@ public class StockAvailabilityJAXBConverters
 				.build();
 	}
 
-	public JAXBElement<VerfuegbarkeitAnfragenResponse> toJAXB(final StockAvailabilityResponse stockAvailabilityResponse)
+	private VerfuegbarkeitsanfrageEinzelne.Artikel toJAXB(final StockAvailabilityQueryItem queryItem)
 	{
-		final VerfuegbarkeitsanfrageEinzelneAntwort soapResponseContent = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneAntwort();
-		soapResponseContent.setId(stockAvailabilityResponse.getId());
-		soapResponseContent.setRTyp(stockAvailabilityResponse.getAvailabilityType().getV2SoapCode());
-		soapResponseContent.getArtikel().addAll(
-				stockAvailabilityResponse.getItems().stream()
-						.map(this::createSOAPStockAvailabilityResponseItem)
-						.collect(ImmutableList.toImmutableList()));
+		final VerfuegbarkeitsanfrageEinzelne.Artikel soap = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneArtikel();
+		soap.setPzn(queryItem.getPzn().getValueAsLong());
+		soap.setMenge(queryItem.getQtyRequired().getValueAsInt());
+		soap.setBedarf(queryItem.getRequirementType().getCode());
+		return soap;
+	}
 
-		final VerfuegbarkeitAnfragenResponse response = jaxbObjectFactory.createVerfuegbarkeitAnfragenResponse();
-		response.setReturn(soapResponseContent);
+	public JAXBElement<VerfuegbarkeitAnfragenResponse> toJAXBElement(final StockAvailabilityResponse stockAvailabilityResponse)
+	{
+		final VerfuegbarkeitAnfragenResponse response = toJAXB(stockAvailabilityResponse);
 		return jaxbObjectFactory.createVerfuegbarkeitAnfragenResponse(response);
 	}
 
-	private VerfuegbarkeitsantwortArtikel createSOAPStockAvailabilityResponseItem(final StockAvailabilityResponseItem item)
+	private VerfuegbarkeitAnfragenResponse toJAXB(final StockAvailabilityResponse stockAvailabilityResponse)
+	{
+		final VerfuegbarkeitsanfrageEinzelneAntwort soapContent = jaxbObjectFactory.createVerfuegbarkeitsanfrageEinzelneAntwort();
+		soapContent.setId(stockAvailabilityResponse.getId());
+		soapContent.setRTyp(stockAvailabilityResponse.getAvailabilityType().getV2SoapCode());
+		soapContent.getArtikel().addAll(stockAvailabilityResponse.getItems().stream()
+				.map(this::toJAXB)
+				.collect(ImmutableList.toImmutableList()));
+
+		final VerfuegbarkeitAnfragenResponse soap = jaxbObjectFactory.createVerfuegbarkeitAnfragenResponse();
+		soap.setReturn(soapContent);
+		return soap;
+	}
+
+	public StockAvailabilityResponse fromJAXB(final VerfuegbarkeitAnfragenResponse soap)
+	{
+		return fromJAXB(soap.getReturn());
+	}
+
+	private StockAvailabilityResponse fromJAXB(final VerfuegbarkeitsanfrageEinzelneAntwort soap)
+	{
+		return StockAvailabilityResponse.builder()
+				.id(soap.getId())
+				.availabilityType(AvailabilityType.fromV2SoapCode(soap.getRTyp()))
+				.items(soap.getArtikel().stream()
+						.map(this::fromJAXB)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private VerfuegbarkeitsantwortArtikel toJAXB(final StockAvailabilityResponseItem item)
 	{
 		final VerfuegbarkeitsantwortArtikel soapItem = jaxbObjectFactory.createVerfuegbarkeitsantwortArtikel();
 		soapItem.setAnfragePzn(item.getPzn().getValueAsLong());
 		soapItem.setAnfrageMenge(item.getQty().getValueAsInt());
-		soapItem.setSubstitution(createSOAPAvailabilitySubstitution(item.getSubstitution()));
+		soapItem.setSubstitution(toJAXB(item.getSubstitution()));
 		soapItem.getAnteile().addAll(item.getParts().stream()
-				.map(this::creatSOAPStockAvailabilityShare)
+				.map(this::toJAXB)
 				.collect(ImmutableList.toImmutableList()));
 		return soapItem;
 	}
 
-	private VerfuegbarkeitSubstitution createSOAPAvailabilitySubstitution(final StockAvailabilitySubstitution substitution)
+	private StockAvailabilityResponseItem fromJAXB(final VerfuegbarkeitsantwortArtikel soap)
+	{
+		return StockAvailabilityResponseItem.builder()
+				.pzn(PZN.of(soap.getAnfragePzn()))
+				.qty(Quantity.of(soap.getAnfrageMenge()))
+				.substitution(fromJAXB(soap.getSubstitution()))
+				.parts(soap.getAnteile().stream()
+						.map(this::fromJAXB)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private VerfuegbarkeitSubstitution toJAXB(final StockAvailabilitySubstitution substitution)
 	{
 		if (substitution == null)
 		{
 			return null;
 		}
 
-		final VerfuegbarkeitSubstitution soapSubstitution = jaxbObjectFactory.createVerfuegbarkeitSubstitution();
-		soapSubstitution.setLieferPzn(substitution.getPzn().getValueAsLong());
-		soapSubstitution.setGrund(substitution.getReason().getV2SoapCode());
-		soapSubstitution.setSubstitutionsgrund(substitution.getType().getV2SoapCode());
-		return soapSubstitution;
+		final VerfuegbarkeitSubstitution soap = jaxbObjectFactory.createVerfuegbarkeitSubstitution();
+		soap.setLieferPzn(substitution.getPzn().getValueAsLong());
+		soap.setGrund(substitution.getReason().getV2SoapCode());
+		soap.setSubstitutionsgrund(substitution.getType().getV2SoapCode());
+		return soap;
 	}
 
-	private VerfuegbarkeitAnteil creatSOAPStockAvailabilityShare(final StockAvailabilityResponseItemPart share)
+	private StockAvailabilitySubstitution fromJAXB(final VerfuegbarkeitSubstitution soap)
 	{
-		final VerfuegbarkeitAnteil soapShare = jaxbObjectFactory.createVerfuegbarkeitAnteil();
-		soapShare.setMenge(share.getQty().getValueAsInt());
-		soapShare.setTyp(share.getType().getV2SoapCode());
-		soapShare.setLieferzeitpunkt(share.getDeliveryDate() != null ? JAXBDateUtils.toXMLGregorianCalendar(share.getDeliveryDate()) : null);
-		soapShare.setTour(share.getTour());
-		soapShare.setGrund(share.getReason() != null ? share.getReason().getV2SoapCode() : null);
-		soapShare.setTourabweichung(share.isTourDeviation());
-		return soapShare;
+		return StockAvailabilitySubstitution.builder()
+				.pzn(PZN.of(soap.getLieferPzn()))
+				.reason(StockAvailabilitySubstitutionReason.fromV2SoapCode(soap.getGrund()))
+				.type(StockAvailabilitySubstitutionType.fromV2SoapCode(soap.getSubstitutionsgrund()))
+				.build();
+	}
+
+	private VerfuegbarkeitAnteil toJAXB(final StockAvailabilityResponseItemPart itemPart)
+	{
+		final VerfuegbarkeitAnteil soap = jaxbObjectFactory.createVerfuegbarkeitAnteil();
+		soap.setMenge(itemPart.getQty().getValueAsInt());
+		soap.setTyp(itemPart.getType().getV2SoapCode());
+		soap.setLieferzeitpunkt(itemPart.getDeliveryDate() != null ? JAXBDateUtils.toXMLGregorianCalendar(itemPart.getDeliveryDate()) : null);
+		soap.setTour(itemPart.getTour());
+		soap.setGrund(itemPart.getReason() != null ? itemPart.getReason().getV2SoapCode() : null);
+		soap.setTourabweichung(itemPart.isTourDeviation());
+		return soap;
+	}
+
+	private StockAvailabilityResponseItemPart fromJAXB(final VerfuegbarkeitAnteil soap)
+	{
+		return StockAvailabilityResponseItemPart.builder()
+				.qty(Quantity.of(soap.getMenge()))
+				.type(StockAvailabilityResponseItemPartType.fromV2SoapCode(soap.getTyp()))
+				.deliveryDate(JAXBDateUtils.toLocalDateTime(soap.getLieferzeitpunkt()))
+				.reason(StockAvailabilitySubstitutionReason.fromV2SoapCode(soap.getGrund()))
+				.tour(soap.getTour())
+				.tourDeviation(soap.isTourabweichung())
+				.build();
 	}
 }

@@ -2,19 +2,11 @@ package de.metas.vertical.pharma.vendor.gateway.msv3;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
@@ -23,7 +15,7 @@ import org.compiere.model.I_AD_System;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 
 /*
  * #%L
@@ -49,25 +41,27 @@ import de.metas.vendor.gateway.api.ProductAndQuantity;
 
 public class MSV3Util
 {
-
-	public static final int MSV3_MAX_QUANTITY_99999 = 99999;
-
-	public static final int MSV3_MAX_SUPPORT_ID_999999 = 999999;
+	private static final int MSV3_MAX_SUPPORT_ID_999999 = 999999;
 	private static final String MSV3_SUPPORT_ID_SEQUENCE = "MSV3_SupportId";
 
-	public static final ExtendedMemorizingSupplier<String> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier
+	private static final ExtendedMemorizingSupplier<ClientSoftwareId> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier
 			.of(() -> retrieveSoftwareIndentifier());
 
-	private static String retrieveSoftwareIndentifier()
+	public static ClientSoftwareId getClientSoftwareId()
+	{
+		return CLIENT_SOFTWARE_IDENTIFIER.get();
+	}
+
+	private static ClientSoftwareId retrieveSoftwareIndentifier()
 	{
 		try
 		{
 			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
-			return "metasfresh-" + adSystem.getDBVersion();
+			return ClientSoftwareId.of("metasfresh-" + adSystem.getDBVersion());
 		}
 		catch (final RuntimeException e)
 		{
-			return "metasfresh-<unable to retrieve version!>";
+			return ClientSoftwareId.of("metasfresh-<unable to retrieve version!>");
 		}
 	}
 
@@ -76,50 +70,12 @@ public class MSV3Util
 		return UUID.randomUUID().toString();
 	}
 
-	public static long extractPZN(final ProductAndQuantity requestItem)
-	{
-		final String productIdentifier = requestItem.getProductIdentifier();
-		try
-		{
-			return Long.parseLong(productIdentifier);
-		}
-		catch (NumberFormatException e)
-		{
-			throw new AdempiereException("Unable to parse a long value from productIdentifier=" + productIdentifier, e)
-					.appendParametersToMessage().setParameter("requestItem", requestItem);
-		}
-	}
-
-	public static int extractMenge(final ProductAndQuantity requestItem)
-	{
-		final int intValue = requestItem.getQuantity().setScale(0, RoundingMode.UP).intValue();
-		Check.errorIf(intValue > MSV3_MAX_QUANTITY_99999,
-				"The MSV3 standard allows a maximum quantity of {}; productAndQuantity={}",
-				MSV3_MAX_QUANTITY_99999, requestItem);
-		return intValue;
-	}
-
-	public static Timestamp toTimestampOrNull(@Nullable final XMLGregorianCalendar xmlGregorianCalendar)
-	{
-		final Date datePromised = toDateOrNull(xmlGregorianCalendar);
-		if (datePromised == null)
-		{
-			return null;
-		}
-		return new Timestamp(datePromised.getTime());
-	}
-
-	public static Date toDateOrNull(@Nullable final XMLGregorianCalendar xmlGregorianCalendar)
-	{
-		final Date datePromised = xmlGregorianCalendar == null ? null : xmlGregorianCalendar.toGregorianCalendar().getTime();
-		return datePromised;
-	}
-
 	private static int staticIdForUnitTests = 0;
 
+	// TODO: convert it to some service!!!
 	public static int retrieveNextSupportId()
 	{
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			return ++staticIdForUnitTests;
 		}

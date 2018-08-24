@@ -1,12 +1,12 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,37 +36,53 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class OrderCreateRequestPackageItem
+public class OrderResponsePackageItemPart
 {
 	@JsonProperty("id")
-	OrderCreateRequestPackageItemId id;
-
-	@JsonProperty("pzn")
-	PZN pzn;
+	@NonNull
+	OrderResponsePackageItemPartId id;
 
 	@JsonProperty("qty")
+	@NonNull
 	Quantity qty;
 
-	@JsonProperty("deliverySpecifications")
-	DeliverySpecifications deliverySpecifications;
+	@JsonProperty("type")
+	String type;
 
-	@JsonProperty("purchaseCandidateId")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	MSV3PurchaseCandidateId purchaseCandidateId;
+	@JsonProperty("deliveryDate")
+	LocalDateTime deliveryDate;
+
+	@JsonProperty("defectReason")
+	OrderDefectReason defectReason;
+
+	@JsonProperty("tour")
+	String tour;
+
+	@JsonProperty("tourId")
+	String tourId;
+
+	@JsonProperty("tourDeviation")
+	boolean tourDeviation;
 
 	@Builder
 	@JsonCreator
-	private OrderCreateRequestPackageItem(
-			@JsonProperty("id") final OrderCreateRequestPackageItemId id,
-			@JsonProperty("pzn") @NonNull final PZN pzn,
+	private OrderResponsePackageItemPart(
+			@JsonProperty("id") final OrderResponsePackageItemPartId id,
 			@JsonProperty("qty") @NonNull final Quantity qty,
-			@JsonProperty("deliverySpecifications") @NonNull final DeliverySpecifications deliverySpecifications,
-			@JsonProperty("purchaseCandidateId") MSV3PurchaseCandidateId purchaseCandidateId)
+			@JsonProperty("type") final String type,
+			@JsonProperty("deliveryDate") final LocalDateTime deliveryDate,
+			@JsonProperty("defectReason") final OrderDefectReason defectReason,
+			@JsonProperty("tour") final String tour,
+			@JsonProperty("tourId") final String tourId,
+			@JsonProperty("tourDeviation") final boolean tourDeviation)
 	{
-		this.id = id != null ? id : OrderCreateRequestPackageItemId.random();
-		this.pzn = pzn;
+		this.id = id != null ? id : OrderResponsePackageItemPartId.random();
 		this.qty = qty;
-		this.deliverySpecifications = deliverySpecifications;
-		this.purchaseCandidateId = purchaseCandidateId;
+		this.type = type;
+		this.deliveryDate = deliveryDate;
+		this.defectReason = defectReason;
+		this.tour = tour;
+		this.tourId = tourId;
+		this.tourDeviation = tourDeviation;
 	}
 }

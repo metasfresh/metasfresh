@@ -17,51 +17,52 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/**
- * Exclusive identification for people! Support (optional display on GUI no proof) - no technical semantics Apo-Wawi awards this; should be sufficiently selective.
- */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class SupportIDType
+public final class MSV3PurchaseCandidateId
 {
-	@JsonCreator
-	public static SupportIDType of(final int valueAsInt)
+	public static MSV3PurchaseCandidateId ofRepoId(final int repoId)
 	{
-		return new SupportIDType(valueAsInt);
+		return new MSV3PurchaseCandidateId(repoId);
 	}
 
-	private final int valueAsInt;
-
-	private SupportIDType(final int valueAsInt)
+	@JsonCreator
+	public static MSV3PurchaseCandidateId ofRepoIdOrNull(final int repoId)
 	{
-		if (valueAsInt < 1 || valueAsInt > 999999)
-		{
-			throw new IllegalArgumentException("SupportID value shall be between 1 and 999999 but it was: " + valueAsInt);
-		}
+		return repoId > 0 ? new MSV3PurchaseCandidateId(repoId) : null;
+	}
 
-		this.valueAsInt = valueAsInt;
+	public static int toRepoId(final MSV3PurchaseCandidateId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	int repoId;
+
+	private MSV3PurchaseCandidateId(final int repoId)
+	{
+		if (repoId <= 0)
+		{
+			throw new IllegalArgumentException("Invalid repoId: " + repoId);
+		}
+		this.repoId = repoId;
 	}
 
 	@JsonValue
-	public int toJson()
+	public int getRepoId()
 	{
-		return valueAsInt;
-	}
-
-	public String getValueAsString()
-	{
-		return String.valueOf(getValueAsInt());
+		return repoId;
 	}
 }

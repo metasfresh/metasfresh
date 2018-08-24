@@ -64,7 +64,7 @@ public class MSV3AvailiabilityClientTests
 				.availabilityRequestItem(availabilityRequestItem)
 				.build();
 
-		final MSV3AvailiabilityClient msv3AvailiabilityClient = new MSV3AvailiabilityClient(
+		final MSV3AvailiabilityClient msv3AvailiabilityClient = new MSV3AvailiabilityClientV2(
 				new MSV3ConnectionFactory(),
 				MSV3TestingTools.createMSV3ClientConfig());
 

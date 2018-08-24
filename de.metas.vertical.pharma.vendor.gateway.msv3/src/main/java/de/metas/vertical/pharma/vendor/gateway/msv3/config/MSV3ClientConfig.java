@@ -1,9 +1,13 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
 import java.net.URL;
+import java.util.Objects;
 
-import de.metas.bpartner.BPartnerId;
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -36,6 +40,15 @@ import lombok.Value;
 @ToString(exclude = "authPassword")
 public class MSV3ClientConfig
 {
+	public static final Version VERSION_1 = Version.builder()
+			.id("1")
+			.jaxbPackagesToScan(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory.class.getPackage().getName())
+			.build();
+	public static final Version VERSION_2 = Version.builder()
+			.id("2")
+			.jaxbPackagesToScan(de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory.class.getPackage().getName())
+			.build();
+
 	@NonNull
 	URL baseUrl;
 	@NonNull
@@ -47,7 +60,22 @@ public class MSV3ClientConfig
 	@NonNull
 	BPartnerId bpartnerId;
 
+	@NonNull
+	@Default
+	Version version = VERSION_2;
+
 	/** might be null, if the MSV3ClientConfig wasn't stored yet */
 	@Getter
 	MSV3ClientConfigId configId;
+
+	public void assertVersion(@NonNull final String expectedVersion)
+	{
+		if (!Objects.equals(this.version.getId(), expectedVersion))
+		{
+			throw new AdempiereException("Configuration does not have the expected version")
+					.setParameter("config", this)
+					.setParameter("expectedVersion", expectedVersion)
+					.appendParametersToMessage();
+		}
+	}
 }

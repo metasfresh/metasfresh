@@ -1,7 +1,14 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitDefektgrund;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,4 +53,22 @@ public enum StockAvailabilitySubstitutionReason
 	{
 		this.v2SoapCode = v2SoapCode;
 	}
+
+	public String value()
+	{
+		return v2SoapCode.value();
+	}
+
+	public static StockAvailabilitySubstitutionReason fromV2SoapCode(@NonNull final VerfuegbarkeitDefektgrund v2SoapCode)
+	{
+		final StockAvailabilitySubstitutionReason type = typesByValue.get(v2SoapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + StockAvailabilitySubstitutionReason.class + " found for " + v2SoapCode);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, StockAvailabilitySubstitutionReason> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(StockAvailabilitySubstitutionReason::value, Function.identity()));
 }
