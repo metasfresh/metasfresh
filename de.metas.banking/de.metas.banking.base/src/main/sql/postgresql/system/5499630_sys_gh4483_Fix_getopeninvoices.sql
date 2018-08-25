@@ -1,6 +1,3 @@
--- Function: getopeninvoices(numeric, numeric, character varying, numeric, timestamp without time zone, numeric, numeric)
-
--- DROP FUNCTION getopeninvoices(numeric, numeric, character varying, numeric, timestamp without time zone, numeric, numeric);
 CREATE OR REPLACE FUNCTION getopeninvoices
 (
 	c_bpartner_id numeric -- 1
