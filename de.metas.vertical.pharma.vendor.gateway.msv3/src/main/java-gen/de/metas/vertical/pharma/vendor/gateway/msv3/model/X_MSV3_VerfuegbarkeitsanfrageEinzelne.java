@@ -14,7 +14,7 @@ public class X_MSV3_VerfuegbarkeitsanfrageEinzelne extends org.compiere.model.PO
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -999373672L;
+	private static final long serialVersionUID = -1006750286L;
 
     /** Standard Constructor */
     public X_MSV3_VerfuegbarkeitsanfrageEinzelne (Properties ctx, int MSV3_VerfuegbarkeitsanfrageEinzelne_ID, String trxName)

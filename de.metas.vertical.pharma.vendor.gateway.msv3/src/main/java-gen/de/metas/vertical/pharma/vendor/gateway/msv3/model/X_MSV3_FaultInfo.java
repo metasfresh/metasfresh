@@ -14,7 +14,7 @@ public class X_MSV3_FaultInfo extends org.compiere.model.PO implements I_MSV3_Fa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1244118829L;
+	private static final long serialVersionUID = 429914093L;
 
     /** Standard Constructor */
     public X_MSV3_FaultInfo (Properties ctx, int MSV3_FaultInfo_ID, String trxName)
