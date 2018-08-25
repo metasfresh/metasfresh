@@ -21,12 +21,15 @@ Here come the actual release notes:
     * Bugfix for the Keyboard support of [home] and [end] keys in Text Fields.
   * [#1463](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1463) Unable to execute any quick actions in Firefox
     * Fixes a Bug that occurred with quickactions in non-webkit browsers.
+  * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
   * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
     * Improvement of the Error Handling for Records that cannot be saved.
   * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
     * Fix for the Shortcut [alt]+u.
   * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
     * Bugfix for the automatic workflow sequence of combined Lookup Fields.
+  * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
+    
 
 # metasfresh 5.71
 ## Features
