@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3;
 
+import org.springframework.stereotype.Service;
+
 import de.metas.vertical.pharma.msv3.protocol.order.v1.OrderJAXBConvertersV1;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v1.StockAvailabilityJAXBConvertersV1;
 import de.metas.vertical.pharma.vendor.gateway.msv3.availability.MSV3AvailiabilityClient;
@@ -35,6 +37,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class MSV3ClientFactoryV1 implements MSV3ClientFactory
 {
 	private final MSV3ConnectionFactory connectionFactory;
