@@ -7,10 +7,23 @@ export default class PaginationContextShortcuts extends Component {
     FIRST_PAGE: event => {
       event.preventDefault();
 
+      const activeElement = document.activeElement;
+
+      // if input is selected global shortcuts should handle this
+      if (activeElement && activeElement.nodeName === 'INPUT') {
+        return false;
+      }
+
       return this.props.handleFirstPage();
     },
     LAST_PAGE: event => {
       event.preventDefault();
+
+      const activeElement = document.activeElement;
+
+      if (activeElement && activeElement.nodeName === 'INPUT') {
+        return false;
+      }
 
       return this.props.handleLastPage();
     },

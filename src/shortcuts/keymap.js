@@ -11,6 +11,9 @@ const keymaps = {
   OPEN_SIDEBAR_MENU_2: `${mod}+7`,
   DOC_STATUS: `${mod}+I`,
 
+  TEXT_START: 'Home',
+  TEXT_END: 'End',
+
   /* Document context */
   OPEN_ADVANCED_EDIT: `${mod}+E`,
   CLONE_DOCUMENT: `${mod}+W`,

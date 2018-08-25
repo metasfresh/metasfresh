@@ -130,6 +130,33 @@ export default class GlobalContextShortcuts extends Component {
 
       this.props.handleEditModeToggle();
     },
+    TEXT_START: event => {
+      event.preventDefault();
+
+      const activeElement = document.activeElement;
+
+      if (activeElement && activeElement.nodeName === 'INPUT') {
+        this.setCaretPosition(activeElement, 0);
+
+        return true;
+      }
+    },
+    TEXT_END: event => {
+      event.preventDefault();
+
+      const activeElement = document.activeElement;
+
+      if (activeElement && activeElement.nodeName === 'INPUT') {
+        this.setCaretPosition(activeElement, activeElement.value.length);
+
+        return true;
+      }
+    },
+  };
+
+  setCaretPosition = (ctrl, pos) => {
+    ctrl.focus();
+    ctrl.setSelectionRange(pos, pos);
   };
 
   shouldComponentUpdate = nextProps =>
@@ -216,6 +243,16 @@ export default class GlobalContextShortcuts extends Component {
         key="TOGGLE_EDIT_MODE"
         name="TOGGLE_EDIT_MODE"
         handler={this.handlers.TOGGLE_EDIT_MODE}
+      />,
+      <Shortcut
+        key="TEXT_START"
+        name="TEXT_START"
+        handler={this.handlers.TEXT_START}
+      />,
+      <Shortcut
+        key="TEXT_END"
+        name="TEXT_END"
+        handler={this.handlers.TEXT_END}
       />,
     ];
   }

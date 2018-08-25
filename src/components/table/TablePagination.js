@@ -311,7 +311,13 @@ class TablePagination extends PureComponent {
   };
 
   render() {
-    const { size, pageLength, page, compressed } = this.props;
+    const {
+      size,
+      pageLength,
+      page,
+      compressed,
+      disablePaginationShortcuts,
+    } = this.props;
     const pages = size ? Math.ceil(size / pageLength) : 0;
     let pagination = [];
 
@@ -355,10 +361,12 @@ class TablePagination extends PureComponent {
           </div>
         </div>
 
-        <PaginationContextShortcuts
-          handleSelectAll={() => this._handleSelectAll()}
-          {...this.paginationShortcuts()}
-        />
+        {!disablePaginationShortcuts && (
+          <PaginationContextShortcuts
+            handleSelectAll={() => this._handleSelectAll()}
+            {...this.paginationShortcuts()}
+          />
+        )}
       </div>
     );
   }
