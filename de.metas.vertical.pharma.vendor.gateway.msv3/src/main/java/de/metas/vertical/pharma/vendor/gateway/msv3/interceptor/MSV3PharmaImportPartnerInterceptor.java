@@ -101,7 +101,7 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 						.authUsername(DEFAULT_UserID)
 						.authPassword(DEFAULT_Password)
 						.bpartnerId(de.metas.vertical.pharma.msv3.protocol.types.BPartnerId.of(bpartnerId.getRepoId()))
-						// TODO: version
+						.version(MSV3ClientConfig.VERSION_1)
 						.build();
 			}
 

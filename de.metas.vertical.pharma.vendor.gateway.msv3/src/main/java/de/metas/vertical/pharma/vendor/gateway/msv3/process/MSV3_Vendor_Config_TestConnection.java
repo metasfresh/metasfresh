@@ -52,6 +52,6 @@ public class MSV3_Vendor_Config_TestConnection
 	{
 		final MSV3ClientConfigId configId = MSV3ClientConfigId.ofRepoId(getRecord_ID());
 		gateway.testConnection(configId.getRepoId());
-		return MSG_OK;
+		return "@ConnectionOK@";
 	}
 }

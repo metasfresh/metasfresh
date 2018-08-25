@@ -25,6 +25,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig.MSV3ClientConfigBuilder;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
+import de.metas.vertical.pharma.vendor.gateway.msv3.model.X_MSV3_Vendor_Config;
 import lombok.NonNull;
 
 /*
@@ -117,9 +118,25 @@ public class MSV3ClientConfigRepository
 				.authUsername(configDataRecord.getUserID())
 				.authPassword(configDataRecord.getPassword())
 				.bpartnerId(de.metas.vertical.pharma.msv3.protocol.types.BPartnerId.of(configDataRecord.getC_BPartner_ID()))
-				// TODO: version
+				.version(getVersionById(configDataRecord.getVersion()))
 				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
 				.build();
+	}
+
+	private static Version getVersionById(final String versionId)
+	{
+		if (X_MSV3_Vendor_Config.VERSION_1.equals(versionId))
+		{
+			return MSV3ClientConfig.VERSION_1;
+		}
+		else if (X_MSV3_Vendor_Config.VERSION_2.equals(versionId))
+		{
+			return MSV3ClientConfig.VERSION_2;
+		}
+		else
+		{
+			throw new AdempiereException("Unknow MSV3 protocol version: " + versionId);
+		}
 	}
 
 	public MSV3ClientConfigBuilder newMSV3ClientConfig()
