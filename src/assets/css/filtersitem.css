@@ -4,13 +4,13 @@
 }
 
 .filter-wrapper {
-  .btn-filter {
-    padding: 0.425rem .6rem;
-  }
+    .btn-filter {
+        padding: 0.425rem .6rem;
+        max-width: 300px;
+    }
 }
 
 .inline-filters {
-  margin-left: 3px;
-  margin-right: 5px;
+    margin-left: 3px;
+    margin-right: 5px;
 }
-
