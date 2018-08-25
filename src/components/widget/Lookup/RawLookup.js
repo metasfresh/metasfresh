@@ -136,7 +136,7 @@ class RawLookup extends Component {
     });
   };
 
-  handleSelect = select => {
+  handleSelect = (select, mouse) => {
     const {
       onChange,
       handleInputEmptyStatus,
@@ -196,7 +196,7 @@ class RawLookup extends Component {
       this.inputSearch.focus();
     }, 0);
 
-    this.handleBlur();
+    this.handleBlur(mouse);
   };
 
   handleAddNew = () => {
@@ -227,13 +227,13 @@ class RawLookup extends Component {
     );
   };
 
-  handleBlur = () => {
+  handleBlur = mouse => {
     this.setState(
       {
         isFocused: false,
       },
       () => {
-        this.props.onDropdownListToggle(false);
+        this.props.onDropdownListToggle(false, mouse);
       }
     );
   };
