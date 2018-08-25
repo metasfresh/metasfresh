@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.protocol.order.v2;
+package de.metas.vertical.pharma.msv3.protocol.order.v1;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +13,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderDefectReason;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse.OrderResponseBuilder;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
@@ -31,22 +32,22 @@ import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellstatusAbfragenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellstatusAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellung;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAntwortPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungAuftrag;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungPosition;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungRueckmeldungTyp;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungSubstitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import de.metas.vertical.pharma.msv3.protocol.util.v1.MiscJAXBConvertersV1;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellen;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellstatusAbfragenResponse;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellstatusAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellung;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAntwort;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAntwortPosition;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungPosition;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungRueckmeldungTyp;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungSubstitution;
+import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory;
 import lombok.NonNull;
 
 /*
@@ -59,33 +60,62 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class OrderJAXBConverters
+public class OrderJAXBConvertersV1 implements OrderJAXBConverters
 {
-	private final ObjectFactory jaxbObjectFactory;
+	public static final transient OrderJAXBConvertersV1 instance = new OrderJAXBConvertersV1();
 
-	public OrderJAXBConverters()
+	private final ObjectFactory jaxbObjectFactory;
+	private final MiscJAXBConvertersV1 miscConverters;
+
+	private OrderJAXBConvertersV1()
 	{
 		this(new ObjectFactory());
 	}
 
-	public OrderJAXBConverters(@NonNull final ObjectFactory jaxbObjectFactory)
+	public OrderJAXBConvertersV1(@NonNull final ObjectFactory jaxbObjectFactory)
 	{
 		this.jaxbObjectFactory = jaxbObjectFactory;
+		this.miscConverters = new MiscJAXBConvertersV1(jaxbObjectFactory);
 	}
 
-	public JAXBElement<Bestellen> toJAXBElement(final OrderCreateRequest request, final ClientSoftwareId clientSoftwareId)
+	@Override
+	public FaultInfo extractFaultInfoOrNull(final Object value)
+	{
+		return MiscJAXBConvertersV1.extractFaultInfoOrNull(value);
+	}
+
+	@Override
+	public JAXBElement<?> encodeRequest(final OrderCreateRequest request, final ClientSoftwareId clientSoftwareId)
+	{
+		return toJAXBElement(request, clientSoftwareId);
+	}
+
+	@Override
+	public Class<?> getResponseClass()
+	{
+		return BestellenResponse.class;
+	}
+
+	@Override
+	public OrderResponse decodeResponse(final Object soap, final OrderCreateRequest request)
+	{
+		final BestellenResponse response = (BestellenResponse)soap;
+		return fromJAXB(response, request).getOrder();
+	}
+
+	private JAXBElement<Bestellen> toJAXBElement(final OrderCreateRequest request, final ClientSoftwareId clientSoftwareId)
 	{
 		final Bestellen bestellen = jaxbObjectFactory.createBestellen();
 		bestellen.setClientSoftwareKennung(clientSoftwareId.getValueAsString());
@@ -121,7 +151,7 @@ public class OrderJAXBConverters
 	{
 		final BestellungAuftrag soap = jaxbObjectFactory.createBestellungAuftrag();
 		soap.setId(requestPackage.getId().getValueAsString());
-		soap.setAuftragsart(requestPackage.getOrderType().getV2SoapCode());
+		soap.setAuftragsart(requestPackage.getOrderType().getV1SoapCode());
 		soap.setAuftragskennung(requestPackage.getOrderIdentification());
 		soap.setAuftragsSupportID(requestPackage.getSupportId().getValueAsInt());
 		soap.setGebindeId(requestPackage.getPackingMaterialId());
@@ -135,7 +165,7 @@ public class OrderJAXBConverters
 	{
 		return OrderCreateRequestPackage.builder()
 				.id(Id.of(soapOrderPackage.getId()))
-				.orderType(OrderType.fromV2SoapCode(soapOrderPackage.getAuftragsart()))
+				.orderType(OrderType.fromV1SoapCode(soapOrderPackage.getAuftragsart()))
 				.orderIdentification(soapOrderPackage.getAuftragskennung())
 				.supportId(SupportIDType.of(soapOrderPackage.getAuftragsSupportID()))
 				.packingMaterialId(soapOrderPackage.getGebindeId())
@@ -150,7 +180,7 @@ public class OrderJAXBConverters
 		final BestellungPosition soap = jaxbObjectFactory.createBestellungPosition();
 		soap.setPzn(item.getPzn().getValueAsLong());
 		soap.setMenge(item.getQty().getValueAsInt());
-		soap.setLiefervorgabe(item.getDeliverySpecifications().getV2SoapCode());
+		soap.setLiefervorgabe(item.getDeliverySpecifications().getV1SoapCode());
 		return soap;
 	}
 
@@ -159,11 +189,11 @@ public class OrderJAXBConverters
 		return OrderCreateRequestPackageItem.builder()
 				.pzn(PZN.of(soapOrderPackageItem.getPzn()))
 				.qty(Quantity.of(soapOrderPackageItem.getMenge()))
-				.deliverySpecifications(DeliverySpecifications.fromV2SoapCode(soapOrderPackageItem.getLiefervorgabe()))
+				.deliverySpecifications(DeliverySpecifications.fromV1SoapCode(soapOrderPackageItem.getLiefervorgabe()))
 				.build();
 	}
 
-	public OrderCreateResponse fromJAXB(final BestellenResponse soap, final OrderCreateRequest request)
+	private OrderCreateResponse fromJAXB(final BestellenResponse soap, final OrderCreateRequest request)
 	{
 		return OrderCreateResponse.ok(fromJAXB(soap.getReturn(), request));
 	}
@@ -215,11 +245,11 @@ public class OrderJAXBConverters
 	{
 		final OrderResponsePackageBuilder builder = OrderResponsePackage.builder()
 				.id(Id.of(soap.getId()))
-				.orderType(OrderType.fromV2SoapCode(soap.getAuftragsart()))
+				.orderType(OrderType.fromV1SoapCode(soap.getAuftragsart()))
 				.orderIdentification(soap.getAuftragskennung())
 				.supportId(SupportIDType.of(soap.getAuftragsSupportID()))
 				.packingMaterialId(soap.getGebindeId())
-				.faultInfo(fromJAXB(soap.getAuftragsfehler()));
+				.faultInfo(MiscJAXBConvertersV1.fromJAXB(soap.getAuftragsfehler()));
 
 		final List<BestellungAntwortPosition> responseItems = soap.getPositionen();
 		final List<OrderCreateRequestPackageItem> requestItems = requestOrder.getItems();
@@ -244,11 +274,11 @@ public class OrderJAXBConverters
 	{
 		final BestellungAntwortAuftrag soapOrderPackage = jaxbObjectFactory.createBestellungAntwortAuftrag();
 		soapOrderPackage.setId(orderPackage.getId().getValueAsString());
-		soapOrderPackage.setAuftragsart(orderPackage.getOrderType().getV2SoapCode());
+		soapOrderPackage.setAuftragsart(orderPackage.getOrderType().getV1SoapCode());
 		soapOrderPackage.setAuftragskennung(orderPackage.getOrderIdentification());
 		soapOrderPackage.setAuftragsSupportID(orderPackage.getSupportId().getValueAsInt());
 		soapOrderPackage.setGebindeId(orderPackage.getPackingMaterialId());
-		soapOrderPackage.setAuftragsfehler(toJAXB(orderPackage.getFaultInfo()));
+		soapOrderPackage.setAuftragsfehler(miscConverters.toJAXB(orderPackage.getFaultInfo()));
 		soapOrderPackage.getPositionen().addAll(orderPackage.getItems().stream()
 				.map(this::toJAXB)
 				.collect(ImmutableList.toImmutableList()));
@@ -261,7 +291,7 @@ public class OrderJAXBConverters
 				.requestId(requestItem.getId())
 				.pzn(PZN.of(soap.getBestellPzn()))
 				.qty(Quantity.of(soap.getBestellMenge()))
-				.deliverySpecifications(DeliverySpecifications.fromV2SoapCode(soap.getBestellLiefervorgabe()))
+				.deliverySpecifications(DeliverySpecifications.fromV1SoapCode(soap.getBestellLiefervorgabe()))
 				.parts(soap.getAnteile().stream()
 						.map(this::fromJAXB)
 						.collect(ImmutableList.toImmutableList()))
@@ -295,7 +325,7 @@ public class OrderJAXBConverters
 		final BestellungAntwortPosition soapItem = jaxbObjectFactory.createBestellungAntwortPosition();
 		soapItem.setBestellPzn(orderPackageItem.getPzn().getValueAsLong());
 		soapItem.setBestellMenge(qty);
-		soapItem.setBestellLiefervorgabe(orderPackageItem.getDeliverySpecifications().getV2SoapCode());
+		soapItem.setBestellLiefervorgabe(orderPackageItem.getDeliverySpecifications().getV1SoapCode());
 		soapItem.getAnteile().addAll(soapItemParts);
 		soapItem.setSubstitution(toJAXB(orderPackageItem.getSubstitution()));
 		return soapItem;
@@ -307,10 +337,10 @@ public class OrderJAXBConverters
 				.qty(Quantity.of(soap.getMenge()))
 				.type(soap.getTyp() != null ? soap.getTyp().value() : null)
 				.deliveryDate(JAXBDateUtils.toLocalDateTime(soap.getLieferzeitpunkt()))
-				.defectReason(OrderDefectReason.fromV2SoapCode(soap.getGrund()))
+				.defectReason(OrderDefectReason.fromV1SoapCode(soap.getGrund()))
 				.tour(soap.getTour())
 				.tourId(soap.getTourId())
-				.tourDeviation(soap.isTourabweichung())
+				// .tourDeviation(soap.isTourabweichung())
 				.build();
 	}
 
@@ -320,10 +350,10 @@ public class OrderJAXBConverters
 		soap.setMenge(itemPart.getQty().getValueAsInt());
 		soap.setTyp(BestellungRueckmeldungTyp.fromValue(itemPart.getType()));
 		soap.setLieferzeitpunkt(JAXBDateUtils.toXMLGregorianCalendar(itemPart.getDeliveryDate()));
-		soap.setGrund(itemPart.getDefectReason().getV2SoapCode());
+		soap.setGrund(itemPart.getDefectReason().getV1SoapCode());
 		soap.setTour(itemPart.getTour());
 		soap.setTourId(itemPart.getTourId());
-		soap.setTourabweichung(itemPart.isTourDeviation());
+		// soap.setTourabweichung(itemPart.isTourDeviation());
 		return soap;
 	}
 
@@ -335,8 +365,8 @@ public class OrderJAXBConverters
 		}
 
 		return OrderResponsePackageItemSubstitution.builder()
-				.substitutionReason(OrderSubstitutionReason.fromV2SoapCode(soap.getSubstitutionsgrund()))
-				.defectReason(OrderDefectReason.fromV2SoapCode(soap.getGrund()))
+				.substitutionReason(OrderSubstitutionReason.fromV1SoapCode(soap.getSubstitutionsgrund()))
+				.defectReason(OrderDefectReason.fromV1SoapCode(soap.getGrund()))
 				.pzn(PZN.of(soap.getLieferPzn()))
 				.build();
 	}
@@ -349,8 +379,8 @@ public class OrderJAXBConverters
 		}
 
 		final BestellungSubstitution soap = jaxbObjectFactory.createBestellungSubstitution();
-		soap.setSubstitutionsgrund(itemSubstitution.getSubstitutionReason().getV2SoapCode());
-		soap.setGrund(itemSubstitution.getDefectReason().getV2SoapCode());
+		soap.setSubstitutionsgrund(itemSubstitution.getSubstitutionReason().getV1SoapCode());
+		soap.setGrund(itemSubstitution.getDefectReason().getV1SoapCode());
 		soap.setLieferPzn(itemSubstitution.getPzn().getValueAsLong());
 		return soap;
 	}
@@ -360,7 +390,7 @@ public class OrderJAXBConverters
 		final BestellstatusAntwort soapResponseContent = jaxbObjectFactory.createBestellstatusAntwort();
 		soapResponseContent.setId(response.getOrderId().getValueAsString());
 		soapResponseContent.setBestellSupportId(response.getSupportId().getValueAsInt());
-		soapResponseContent.setStatus(response.getOrderStatus().getV2SoapCode());
+		soapResponseContent.setStatus(response.getOrderStatus().getV1SoapCode());
 		soapResponseContent.getAuftraege().addAll(response.getOrderPackages().stream()
 				.map(this::toJAXB)
 				.collect(ImmutableList.toImmutableList()));
@@ -370,31 +400,4 @@ public class OrderJAXBConverters
 		return jaxbObjectFactory.createBestellstatusAbfragenResponse(soapResponse);
 	}
 
-	public static final FaultInfo fromJAXB(final Msv3FaultInfo msv3FaultInfo)
-	{
-		if (msv3FaultInfo == null)
-		{
-			return null;
-		}
-
-		return FaultInfo.builder()
-				.errorCode(msv3FaultInfo.getErrorCode())
-				.userMessage(msv3FaultInfo.getEndanwenderFehlertext())
-				.technicalMessage(msv3FaultInfo.getTechnischerFehlertext())
-				.build();
-	}
-
-	public final Msv3FaultInfo toJAXB(final FaultInfo faultInfo)
-	{
-		if (faultInfo == null)
-		{
-			return null;
-		}
-
-		final Msv3FaultInfo soap = jaxbObjectFactory.createMsv3FaultInfo();
-		soap.setErrorCode(faultInfo.getErrorCode());
-		soap.setEndanwenderFehlertext(faultInfo.getUserMessage());
-		soap.setTechnischerFehlertext(faultInfo.getTechnicalMessage());
-		return soap;
-	}
 }

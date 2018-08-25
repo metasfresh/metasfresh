@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -34,15 +33,27 @@ import lombok.NonNull;
 
 public enum AvailabilityType
 {
-	SPECIFIC(VerfuegbarkeitTyp.SPEZIFISCH), //
-	NON_SPECIFIC(VerfuegbarkeitTyp.UNSPEZIFISCH) //
+	SPECIFIC(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitTyp.SPEZIFISCH,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp.SPEZIFISCH),
+	//
+	NON_SPECIFIC(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitTyp.UNSPEZIFISCH,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp.UNSPEZIFISCH),
+	//
 	;
 
 	@Getter
-	private VerfuegbarkeitTyp v2SoapCode;
+	private de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitTyp v1SoapCode;
 
-	private AvailabilityType(final VerfuegbarkeitTyp v2SoapCode)
+	@Getter
+	private de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp v2SoapCode;
+
+	private AvailabilityType(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitTyp v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp v2SoapCode)
 	{
+		this.v1SoapCode = v1SoapCode;
 		this.v2SoapCode = v2SoapCode;
 	}
 
@@ -51,7 +62,17 @@ public enum AvailabilityType
 		return v2SoapCode.value();
 	}
 
-	public static AvailabilityType fromV2SoapCode(@NonNull final VerfuegbarkeitTyp v2SoapCode)
+	public static AvailabilityType fromV1SoapCode(@NonNull final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitTyp v1SoapCode)
+	{
+		final AvailabilityType type = typesByValue.get(v1SoapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + AvailabilityType.class + " found for " + v1SoapCode);
+		}
+		return type;
+	}
+
+	public static AvailabilityType fromV2SoapCode(@NonNull final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitTyp v2SoapCode)
 	{
 		final AvailabilityType type = typesByValue.get(v2SoapCode.value());
 		if (type == null)

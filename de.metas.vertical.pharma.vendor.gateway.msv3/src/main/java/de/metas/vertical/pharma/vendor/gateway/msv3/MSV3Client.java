@@ -7,13 +7,11 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Msv3FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
-import lombok.Getter;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -38,42 +36,40 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class MSV3ClientBaseV2
+public final class MSV3Client
 {
-	@VisibleForTesting
-	@Getter
 	private final WebServiceTemplate webServiceTemplate;
-
-	@Getter
 	private final MSV3ClientConfig config;
+	private final String urlPrefix;
+	private final FaultInfoExtractor faultInfoExtractor;
 
-	@Getter
-	private final ObjectFactory objectFactory;
-
-	public MSV3ClientBaseV2(
+	@Builder
+	private MSV3Client(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfig config)
+			@NonNull final MSV3ClientConfig config,
+			@NonNull final String urlPrefix,
+			@NonNull final FaultInfoExtractor faultInfoExtractor)
 	{
 		this.config = config;
-		this.objectFactory = new ObjectFactory();
-		this.webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
+		this.urlPrefix = urlPrefix;
+		this.faultInfoExtractor = faultInfoExtractor;
+
+		webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
 	}
 
-	protected abstract String getUrlSuffix();
-
-	protected final ClientSoftwareId getClientSoftwareId()
+	public ClientSoftwareId getClientSoftwareId()
 	{
-		return getConfig().getClientSoftwareId();
+		return config.getClientSoftwareId();
 	}
 
 	/**
 	 * @param expectedResponseClass if the response is not an instance of this class, the method throws an exception.
 	 */
-	protected final <T> T sendAndReceive(
+	public <T> T sendAndReceive(
 			@NonNull final JAXBElement<?> messagePayload,
 			@NonNull final Class<? extends T> expectedResponseClass)
 	{
-		final String uri = config.getBaseUrl() + getUrlSuffix();
+		final String uri = config.getBaseUrl() + urlPrefix;
 
 		final JAXBElement<?> responseElement = (JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(uri, messagePayload);
 
@@ -82,11 +78,12 @@ public abstract class MSV3ClientBaseV2
 		{
 			return expectedResponseClass.cast(responseValue);
 		}
-		else if (Msv3FaultInfo.class.isInstance(responseValue))
+
+		final FaultInfo faultInfo = faultInfoExtractor.extractFaultInfoOrNull(responseValue);
+		if (faultInfo != null)
 		{
-			final Msv3FaultInfo msv3FaultInfo = (Msv3FaultInfo)responseValue;
 			throw Msv3ClientException.builder()
-					.msv3FaultInfo(OrderJAXBConverters.fromJAXB(msv3FaultInfo))
+					.msv3FaultInfo(faultInfo)
 					.build()
 					.setParameter("uri", uri)
 					.setParameter("config", config);
@@ -99,5 +96,17 @@ public abstract class MSV3ClientBaseV2
 					.setParameter("config", config)
 					.setParameter("response", responseValue);
 		}
+	}
+
+	@VisibleForTesting
+	public WebServiceTemplate getWebServiceTemplate()
+	{
+		return webServiceTemplate;
+	}
+
+	@FunctionalInterface
+	public static interface FaultInfoExtractor
+	{
+		FaultInfo extractFaultInfoOrNull(Object value);
 	}
 }

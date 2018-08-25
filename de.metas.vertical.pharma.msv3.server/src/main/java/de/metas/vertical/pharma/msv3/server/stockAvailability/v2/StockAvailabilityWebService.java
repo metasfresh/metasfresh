@@ -11,7 +11,7 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
@@ -52,12 +52,12 @@ public class StockAvailabilityWebService
 
 	private final MSV3ServerAuthenticationService authService;
 	private final StockAvailabilityService stockAvailabilityService;
-	private final StockAvailabilityJAXBConverters jaxbConverters;
+	private final StockAvailabilityJAXBConvertersV2 jaxbConverters;
 
 	public StockAvailabilityWebService(
 			@NonNull final MSV3ServerAuthenticationService authService,
 			@NonNull final StockAvailabilityService stockAvailabilityService,
-			@NonNull final StockAvailabilityJAXBConverters jaxbConverters)
+			@NonNull final StockAvailabilityJAXBConvertersV2 jaxbConverters)
 	{
 		this.authService = authService;
 		this.stockAvailabilityService = stockAvailabilityService;

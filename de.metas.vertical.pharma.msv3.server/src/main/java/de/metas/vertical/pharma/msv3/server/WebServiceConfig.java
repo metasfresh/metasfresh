@@ -15,7 +15,7 @@ import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
 
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
 import de.metas.vertical.pharma.msv3.server.order.v2.OrderStatusWebService;
 import de.metas.vertical.pharma.msv3.server.order.v2.OrderWebService;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.v2.StockAvailabilityWebService;
@@ -107,9 +107,9 @@ public class WebServiceConfig
 	}
 
 	@Bean
-	public StockAvailabilityJAXBConverters stockAvailabilityJAXBConverters(final ObjectFactory jaxbObjectFactory)
+	public StockAvailabilityJAXBConvertersV2 stockAvailabilityJAXBConverters(final ObjectFactory jaxbObjectFactory)
 	{
-		return new StockAvailabilityJAXBConverters(jaxbObjectFactory);
+		return new StockAvailabilityJAXBConvertersV2(jaxbObjectFactory);
 	}
 
 	private static Wsdl11Definition createWsdl(@NonNull final String beanName)

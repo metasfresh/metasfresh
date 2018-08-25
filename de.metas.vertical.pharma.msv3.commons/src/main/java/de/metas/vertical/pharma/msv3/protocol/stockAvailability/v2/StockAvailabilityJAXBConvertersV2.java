@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
@@ -17,9 +18,11 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilit
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionType;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
+import de.metas.vertical.pharma.msv3.protocol.util.v2.MiscJAXBConvertersV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
@@ -51,18 +54,45 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-public class StockAvailabilityJAXBConverters
+public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityJAXBConverters
 {
+	public static final transient StockAvailabilityJAXBConvertersV2 instance = new StockAvailabilityJAXBConvertersV2();
+
 	private final ObjectFactory jaxbObjectFactory;
 
-	public StockAvailabilityJAXBConverters()
+	private StockAvailabilityJAXBConvertersV2()
 	{
 		this(new ObjectFactory());
 	}
 
-	public StockAvailabilityJAXBConverters(@NonNull final ObjectFactory jaxbObjectFactory)
+	public StockAvailabilityJAXBConvertersV2(@NonNull final ObjectFactory jaxbObjectFactory)
 	{
 		this.jaxbObjectFactory = jaxbObjectFactory;
+	}
+
+	@Override
+	public FaultInfo extractFaultInfoOrNull(final Object value)
+	{
+		return MiscJAXBConvertersV2.extractFaultInfoOrNull(value);
+	}
+
+	@Override
+	public JAXBElement<?> encodeRequest(final StockAvailabilityQuery query, final ClientSoftwareId clientSoftwareId)
+	{
+		return toJAXBElement(query, clientSoftwareId);
+	}
+
+	@Override
+	public Class<?> getResponseClass()
+	{
+		return VerfuegbarkeitAnfragenResponse.class;
+	}
+
+	@Override
+	public StockAvailabilityResponse decodeResponse(final Object soap)
+	{
+		final VerfuegbarkeitAnfragenResponse soapResponse = (VerfuegbarkeitAnfragenResponse)soap;
+		return fromJAXB(soapResponse);
 	}
 
 	public StockAvailabilityQuery fromJAXB(@NonNull final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest, @NonNull final BPartnerId bpartner)

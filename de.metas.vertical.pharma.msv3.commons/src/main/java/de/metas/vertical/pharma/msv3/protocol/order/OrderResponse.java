@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
 import lombok.NonNull;
@@ -68,5 +69,20 @@ public class OrderResponse
 		this.supportId = supportId;
 		this.nightOperation = nightOperation;
 		this.orderPackages = ImmutableList.copyOf(orderPackages);
+	}
+
+	public FaultInfo getSingleOrderFaultInfo()
+	{
+		return getSingleOrderPackage().getFaultInfo();
+	}
+
+	private OrderResponsePackage getSingleOrderPackage()
+	{
+		final List<OrderResponsePackage> responseOrders = getOrderPackages();
+		if (responseOrders.size() != 1)
+		{
+			throw new IllegalStateException("Only one order was expected but we have: " + responseOrders);
+		}
+		return responseOrders.get(0);
 	}
 }

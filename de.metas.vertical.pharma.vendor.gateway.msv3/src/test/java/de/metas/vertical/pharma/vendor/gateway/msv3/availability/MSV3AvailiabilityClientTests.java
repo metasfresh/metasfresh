@@ -16,8 +16,10 @@ import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3TestingTools;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
 
 /*
  * #%L
@@ -58,7 +60,7 @@ public class MSV3AvailiabilityClientTests
 		final I_C_BPartner vendor = newInstance(I_C_BPartner.class);
 		vendor.setAD_Org_ID(123);
 		saveRecord(vendor);
-		
+
 		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of("10055555", BigDecimal.TEN, UOM_ID);
 		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)
@@ -69,9 +71,11 @@ public class MSV3AvailiabilityClientTests
 				.availabilityRequestItem(availabilityRequestItem)
 				.build();
 
-		final MSV3AvailiabilityClient msv3AvailiabilityClient = new MSV3AvailiabilityClientV2(
-				new MSV3ConnectionFactory(),
-				MSV3TestingTools.createMSV3ClientConfig());
+		final MSV3AvailiabilityClient msv3AvailiabilityClient = MSV3AvailiabilityClientImpl.builder()
+				.connectionFactory(new MSV3ConnectionFactory())
+				.config(MSV3TestingTools.createMSV3ClientConfig(MSV3ClientConfig.VERSION_2))
+				.jaxbConverters(StockAvailabilityJAXBConvertersV2.instance)
+				.build();
 
 		final AvailabilityResponse response = msv3AvailiabilityClient.retrieveAvailability(request);
 		assertThat(response).isNotNull();

@@ -42,8 +42,7 @@ public class MSV3ConnectionFactory
 {
 	public WebServiceTemplate createWebServiceTemplate(@NonNull final MSV3ClientConfig config)
 	{
-		final HttpComponentsMessageSender messageSender = //
-				createMessageSender(config.getAuthUsername(), config.getAuthPassword());
+		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
 		marshaller.setPackagesToScan(config.getVersion().getJaxbPackagesToScan());
@@ -64,7 +63,8 @@ public class MSV3ConnectionFactory
 		}
 		catch (final SOAPException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("config", config);
 		}
 		return webServiceTemplate;
 	}
@@ -83,7 +83,8 @@ public class MSV3ConnectionFactory
 		}
 		catch (final Exception ex)
 		{
-			throw AdempiereException.wrapIfNeeded(ex);
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("username", authUsername);
 		}
 		return messageSender;
 	}

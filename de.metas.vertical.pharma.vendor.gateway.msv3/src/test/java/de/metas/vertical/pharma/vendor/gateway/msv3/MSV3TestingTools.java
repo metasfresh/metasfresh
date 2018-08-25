@@ -8,6 +8,8 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.Version;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,14 +39,14 @@ public final class MSV3TestingTools
 	{
 	};
 
-	public static MSV3ClientConfig createMSV3ClientConfig()
+	public static MSV3ClientConfig createMSV3ClientConfig(@NonNull final Version version)
 	{
 		return MSV3ClientConfig.builder()
 				.baseUrl(parseURL("http://localhost:8089/msv3/v2.0"))
 				.authUsername("PLA\\apotheke1")
 				.authPassword("passwort")
 				.bpartnerId(BPartnerId.of(999))
-				// TODO: version
+				.version(version)
 				.clientSoftwareId(ClientSoftwareId.of("junit-test"))
 				.build();
 	}

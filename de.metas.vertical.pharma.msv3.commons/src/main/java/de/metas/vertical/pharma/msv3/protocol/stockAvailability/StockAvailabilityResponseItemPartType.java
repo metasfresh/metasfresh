@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -34,18 +33,38 @@ import lombok.NonNull;
 
 public enum StockAvailabilityResponseItemPartType
 {
-	NORMAL(VerfuegbarkeitRueckmeldungTyp.NORMAL), //
-	IN_PARTNER_STORAGE(VerfuegbarkeitRueckmeldungTyp.VERBUND), //
-	SUBSEQUENT_DELIVERY(VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG), //
-	DISPO(VerfuegbarkeitRueckmeldungTyp.DISPO), //
-	NOT_DELIVERABLE(VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR) //
+	NORMAL(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp.NORMAL,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp.NORMAL),
+	//
+	IN_PARTNER_STORAGE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp.VERBUND,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp.VERBUND),
+	//
+	SUBSEQUENT_DELIVERY(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp.NACHLIEFERUNG),
+	//
+	DISPO(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp.DISPO,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp.DISPO),
+	//
+	NOT_DELIVERABLE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR),
+	//
 	;
 
 	@Getter
-	private final VerfuegbarkeitRueckmeldungTyp v2SoapCode;
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp v1SoapCode;
+	@Getter
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp v2SoapCode;
 
-	private StockAvailabilityResponseItemPartType(VerfuegbarkeitRueckmeldungTyp v2SoapCode)
+	private StockAvailabilityResponseItemPartType(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp v2SoapCode)
 	{
+		this.v1SoapCode = v1SoapCode;
 		this.v2SoapCode = v2SoapCode;
 	}
 
@@ -54,7 +73,17 @@ public enum StockAvailabilityResponseItemPartType
 		return v2SoapCode.value();
 	}
 
-	public static StockAvailabilityResponseItemPartType fromV2SoapCode(@NonNull final VerfuegbarkeitRueckmeldungTyp v2SoapCode)
+	public static StockAvailabilityResponseItemPartType fromV1SoapCode(@NonNull final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.VerfuegbarkeitRueckmeldungTyp v1SoapCode)
+	{
+		final StockAvailabilityResponseItemPartType type = typesByValue.get(v1SoapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + StockAvailabilityResponseItemPartType.class + " found for " + v1SoapCode);
+		}
+		return type;
+	}
+
+	public static StockAvailabilityResponseItemPartType fromV2SoapCode(@NonNull final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitRueckmeldungTyp v2SoapCode)
 	{
 		final StockAvailabilityResponseItemPartType type = typesByValue.get(v2SoapCode.value());
 		if (type == null)

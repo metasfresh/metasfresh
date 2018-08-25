@@ -19,22 +19,22 @@ import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.AvailabilityResponseItemBuilder;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionReason;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ClientBaseV2;
+import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Client;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientMultiException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -47,49 +47,52 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class MSV3AvailiabilityClientV2 extends MSV3ClientBaseV2 implements MSV3AvailiabilityClient
+public class MSV3AvailiabilityClientImpl implements MSV3AvailiabilityClient
 {
 	private static final String URL_SUFFIX_RETRIEVE_AVAILABILITY = "/verfuegbarkeitAnfragen";
 
+	private final MSV3Client client;
 	private final StockAvailabilityJAXBConverters jaxbConverters;
 
-	public MSV3AvailiabilityClientV2(
+	@Builder
+	private MSV3AvailiabilityClientImpl(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfig config)
+			@NonNull final MSV3ClientConfig config,
+			@NonNull final StockAvailabilityJAXBConverters jaxbConverters)
 	{
-		super(connectionFactory, config);
+		client = MSV3Client.builder()
+				.connectionFactory(connectionFactory)
+				.config(config)
+				.urlPrefix(URL_SUFFIX_RETRIEVE_AVAILABILITY)
+				.faultInfoExtractor(jaxbConverters::extractFaultInfoOrNull)
+				.build();
 
-		this.jaxbConverters = new StockAvailabilityJAXBConverters();
+		this.jaxbConverters = jaxbConverters;
+
 	}
 
 	@Override
-	protected String getUrlSuffix()
-	{
-		return URL_SUFFIX_RETRIEVE_AVAILABILITY;
-	}
-
-	@Override
-	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
+	public AvailabilityResponse retrieveAvailability(final AvailabilityRequest request)
 	{
 		try
 		{
 			return retrieveAvailability0(request);
 		}
-		catch (final Throwable t)
+		catch (final Throwable ex)
 		{
-			throw Msv3ClientMultiException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), t);
+			throw Msv3ClientMultiException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), ex);
 		}
 	}
 
@@ -108,7 +111,7 @@ public class MSV3AvailiabilityClientV2 extends MSV3ClientBaseV2 implements MSV3A
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.of(request.getVendorId());
-		
+
 		final StockAvailabilityQuery query = StockAvailabilityQuery.builder()
 				.id(UUID.randomUUID().toString())
 				.bpartner(bpartnerId)
@@ -150,6 +153,14 @@ public class MSV3AvailiabilityClientV2 extends MSV3ClientBaseV2 implements MSV3A
 		{
 			availabilityTransaction.store();
 		}
+	}
+
+	private StockAvailabilityResponse makeAvailabilityWebserviceCall(@NonNull final StockAvailabilityQuery query)
+	{
+		final Object soapResponse = client.sendAndReceive(
+				jaxbConverters.encodeRequest(query, client.getClientSoftwareId()),
+				jaxbConverters.getResponseClass());
+		return jaxbConverters.decodeResponse(soapResponse);
 
 	}
 
@@ -160,15 +171,6 @@ public class MSV3AvailiabilityClientV2 extends MSV3ClientBaseV2 implements MSV3A
 				.pzn(PZN.of(requestItem.getProductIdentifier()))
 				.requirementType(RequirementType.NON_SPECIFIC)
 				.build();
-	}
-
-	private StockAvailabilityResponse makeAvailabilityWebserviceCall(@NonNull final StockAvailabilityQuery query)
-	{
-		final VerfuegbarkeitAnfragenResponse soapResponse = sendAndReceive(
-				jaxbConverters.toJAXBElement(query, getClientSoftwareId()),
-				VerfuegbarkeitAnfragenResponse.class);
-
-		return jaxbConverters.fromJAXB(soapResponse);
 	}
 
 	private static AvailabilityResponseBuilder prepareAvailabilityResponse(

@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe;
 import lombok.Getter;
 
 /*
@@ -35,33 +34,63 @@ import lombok.Getter;
 public enum DeliverySpecifications
 {
 	/** see {@link StockAvailabilityResponseItemPartType#NORMAL} */
-	NORMAL(Liefervorgabe.NORMAL),
+	NORMAL(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe.NORMAL,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe.NORMAL),
 	/** see {@link StockAvailabilityResponseItemPartType#IN_PARTNER_STORAGE} */
-	MAX_IN_PARTNER_STORAGE(Liefervorgabe.MAX_VERBUND),
+	MAX_IN_PARTNER_STORAGE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe.MAX_VERBUND,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe.MAX_VERBUND),
 	/** see {@link StockAvailabilityResponseItemPartType#SUBSEQUENT_DELIVERY} */
-	MAX_SUBSEQUENT_DELIVERY(Liefervorgabe.MAX_NACHLIEFERUNG), //
+	MAX_SUBSEQUENT_DELIVERY(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe.MAX_NACHLIEFERUNG,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe.MAX_NACHLIEFERUNG),
 	/** see {@link StockAvailabilityResponseItemPartType#DISPO} */
-	MAX_DISPO(Liefervorgabe.MAX_DISPO);
+	MAX_DISPO(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe.MAX_DISPO,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe.MAX_DISPO)
+	//
+	;
 
 	@Getter
-	private final Liefervorgabe v2SoapCode;
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe v1SoapCode;
+	@Getter
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe v2SoapCode;
 
-	DeliverySpecifications(final Liefervorgabe v2SoapCode)
+	DeliverySpecifications(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe v2SoapCode)
 	{
+		this.v1SoapCode = v1SoapCode;
 		this.v2SoapCode = v2SoapCode;
 	}
 
-	public static DeliverySpecifications fromV2SoapCode(final Liefervorgabe v2SoapCode)
+	public String value()
 	{
-		final DeliverySpecifications type = v2SoapCode2type.get(v2SoapCode);
+		return v2SoapCode.value();
+	}
+
+	public static DeliverySpecifications fromV1SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Liefervorgabe soapCode)
+	{
+		final DeliverySpecifications type = typesByValue.get(soapCode.value());
 		if (type == null)
 		{
-			throw new NoSuchElementException("No " + DeliverySpecifications.class + " found for " + v2SoapCode);
+			throw new NoSuchElementException("No " + DeliverySpecifications.class + " found for " + soapCode);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<Liefervorgabe, DeliverySpecifications> v2SoapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(DeliverySpecifications::getV2SoapCode, Function.identity()));
+	public static DeliverySpecifications fromV2SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Liefervorgabe soapCode)
+	{
+		final DeliverySpecifications type = typesByValue.get(soapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + DeliverySpecifications.class + " found for " + soapCode);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, DeliverySpecifications> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(DeliverySpecifications::value, Function.identity()));
 
 }

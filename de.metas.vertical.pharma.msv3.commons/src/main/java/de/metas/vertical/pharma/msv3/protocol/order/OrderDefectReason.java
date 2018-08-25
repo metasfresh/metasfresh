@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund;
 import lombok.Getter;
 
 /*
@@ -33,41 +32,83 @@ import lombok.Getter;
 
 public enum OrderDefectReason
 {
-	NO_INFO(BestellungDefektgrund.KEINE_ANGABE), //
-	MISSING(BestellungDefektgrund.FEHLT_ZURZEIT), //
-	MANUFACTURER_NOT_AVAILABLE(BestellungDefektgrund.HERSTELLER_NICHT_LIEFERBAR), //
-	ONLY_DIRECT(BestellungDefektgrund.NUR_DIREKT), //
-	NOT_GUIDED(BestellungDefektgrund.NICHT_GEFUEHRT), //
-	UNKNOWN_ITEM_NO(BestellungDefektgrund.ARTIKEL_NR_UNBEKANNT), //
-	OUT_OF_TRADE(BestellungDefektgrund.AUSSER_HANDEL), //
-	NO_REFERENCE(BestellungDefektgrund.KEIN_BEZUG), //
-	TRANSPORT_EXCLUSION(BestellungDefektgrund.TRANSPORTAUSSCHLUSS) //
+	NO_INFO(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.KEINE_ANGABE,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.KEINE_ANGABE),
+	//
+	MISSING(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.FEHLT_ZURZEIT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.FEHLT_ZURZEIT),
+	//
+	MANUFACTURER_NOT_AVAILABLE(
+			null, // de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.HERSTELLER_NICHT_LIEFERBAR,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.HERSTELLER_NICHT_LIEFERBAR),
+	//
+	ONLY_DIRECT(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.NUR_DIREKT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.NUR_DIREKT),
+	//
+	NOT_GUIDED(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.NICHT_GEFUEHRT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.NICHT_GEFUEHRT),
+	//
+	UNKNOWN_ITEM_NO(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.ARTIKEL_NR_UNBEKANNT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.ARTIKEL_NR_UNBEKANNT),
+	//
+	OUT_OF_TRADE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.AUSSER_HANDEL,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.AUSSER_HANDEL),
+	//
+	NO_REFERENCE(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.KEIN_BEZUG,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.KEIN_BEZUG),
+	//
+	TRANSPORT_EXCLUSION(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund.TRANSPORTAUSSCHLUSS,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund.TRANSPORTAUSSCHLUSS)
+	//
 	;
 
 	@Getter
-	private final BestellungDefektgrund v2SoapCode;
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund v1SoapCode;
+	@Getter
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund v2SoapCode;
 
-	OrderDefectReason(final BestellungDefektgrund v2SoapCode)
+	OrderDefectReason(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund v2SoapCode)
 	{
+		this.v1SoapCode = v1SoapCode;
 		this.v2SoapCode = v2SoapCode;
 	}
-	
+
 	public String value()
 	{
 		return v2SoapCode.value();
 	}
 
-	public static OrderDefectReason fromV2SoapCode(final BestellungDefektgrund v2SoapCode)
+	public static OrderDefectReason fromV1SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungDefektgrund soapCode)
 	{
-		final OrderDefectReason type = v2SoapCode2type.get(v2SoapCode);
+		final OrderDefectReason type = typesByValue.get(soapCode.value());
 		if (type == null)
 		{
-			throw new NoSuchElementException("No " + OrderDefectReason.class + " found for " + v2SoapCode);
+			throw new NoSuchElementException("No " + OrderDefectReason.class + " found for " + soapCode);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<BestellungDefektgrund, OrderDefectReason> v2SoapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(OrderDefectReason::getV2SoapCode, Function.identity()));
+	public static OrderDefectReason fromV2SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellungDefektgrund soapCode)
+	{
+		final OrderDefectReason type = typesByValue.get(soapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + OrderDefectReason.class + " found for " + soapCode);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, OrderDefectReason> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(OrderDefectReason::value, Function.identity()));
 
 }

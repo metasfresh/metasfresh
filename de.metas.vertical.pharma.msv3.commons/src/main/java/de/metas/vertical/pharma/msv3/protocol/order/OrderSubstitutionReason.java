@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund;
 import lombok.Getter;
 
 /*
@@ -33,16 +32,30 @@ import lombok.Getter;
 
 public enum OrderSubstitutionReason
 {
-	SUCCESSOR_PRODUCT(Substitutionsgrund.NACHFOLGEPRODUKT), //
-	RE_AND_PARALLEL_IMPORT(Substitutionsgrund.RE_UND_PARALLEL_IMPORT), //
-	PROPOSAL(Substitutionsgrund.VORSCHLAG) //
+	SUCCESSOR_PRODUCT(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Substitutionsgrund.NACHFOLGEPRODUKT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund.NACHFOLGEPRODUKT),
+	//
+	RE_AND_PARALLEL_IMPORT(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Substitutionsgrund.RE_UND_PARALLEL_IMPORT,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund.RE_UND_PARALLEL_IMPORT),
+	//
+	PROPOSAL(
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Substitutionsgrund.VORSCHLAG,
+			de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund.VORSCHLAG)
+	//
 	;
 
 	@Getter
-	private final Substitutionsgrund v2SoapCode;
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Substitutionsgrund v1SoapCode;
+	@Getter
+	private final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund v2SoapCode;
 
-	OrderSubstitutionReason(final Substitutionsgrund v2SoapCode)
+	OrderSubstitutionReason(
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Substitutionsgrund v1SoapCode,
+			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund v2SoapCode)
 	{
+		this.v1SoapCode = v1SoapCode;
 		this.v2SoapCode = v2SoapCode;
 	}
 
@@ -51,9 +64,19 @@ public enum OrderSubstitutionReason
 		return v2SoapCode.value();
 	}
 
-	public static OrderSubstitutionReason fromV2SoapCode(final Substitutionsgrund v2SoapCode)
+	public static OrderSubstitutionReason fromV1SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Substitutionsgrund v1SoapCode)
 	{
-		final OrderSubstitutionReason type = v2SoapCode2type.get(v2SoapCode);
+		final OrderSubstitutionReason type = typesByValue.get(v1SoapCode.value());
+		if (type == null)
+		{
+			throw new NoSuchElementException("No " + OrderSubstitutionReason.class + " found for " + v1SoapCode);
+		}
+		return type;
+	}
+
+	public static OrderSubstitutionReason fromV2SoapCode(final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Substitutionsgrund v2SoapCode)
+	{
+		final OrderSubstitutionReason type = typesByValue.get(v2SoapCode.value());
 		if (type == null)
 		{
 			throw new NoSuchElementException("No " + OrderSubstitutionReason.class + " found for " + v2SoapCode);
@@ -61,7 +84,7 @@ public enum OrderSubstitutionReason
 		return type;
 	}
 
-	private static final ImmutableMap<Substitutionsgrund, OrderSubstitutionReason> v2SoapCode2type = Stream.of(values())
-			.collect(ImmutableMap.toImmutableMap(OrderSubstitutionReason::getV2SoapCode, Function.identity()));
+	private static final ImmutableMap<String, OrderSubstitutionReason> typesByValue = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(OrderSubstitutionReason::value, Function.identity()));
 
 }

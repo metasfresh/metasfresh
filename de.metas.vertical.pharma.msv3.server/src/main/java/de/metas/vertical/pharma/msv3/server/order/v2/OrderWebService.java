@@ -11,7 +11,7 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
-import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConvertersV2;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.order.OrderService;
@@ -52,7 +52,7 @@ public class OrderWebService
 	private static final Logger logger = LoggerFactory.getLogger(OrderWebService.class);
 
 	private final MSV3ServerAuthenticationService authService;
-	private final OrderJAXBConverters jaxbConverters;
+	private final OrderJAXBConvertersV2 jaxbConverters;
 	private final OrderService orderService;
 
 	public OrderWebService(
@@ -61,7 +61,7 @@ public class OrderWebService
 			@NonNull final OrderService orderService)
 	{
 		this.authService = authService;
-		jaxbConverters = new OrderJAXBConverters(jaxbObjectFactory);
+		jaxbConverters = new OrderJAXBConvertersV2(jaxbObjectFactory);
 		this.orderService = orderService;
 	}
 
