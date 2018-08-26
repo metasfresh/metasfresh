@@ -22,6 +22,8 @@ Here come the actual release notes:
   * [#1463](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1463) Unable to execute any quick actions in Firefox
     * Fixes a Bug that occurred with quickactions in non-webkit browsers.
   * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
+  * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) included tab: when refreshing via websocket event the sort/order is not preserved
+    * Improvement of the Websocket refresh behavior when manipulating records in combination with changed order.
   * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
     * Improvement of the Error Handling for Records that cannot be saved.
   * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
