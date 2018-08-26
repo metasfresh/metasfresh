@@ -19,7 +19,7 @@ import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.AvailabilityResponseItemBuilder;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityClientJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
@@ -64,13 +64,13 @@ public class MSV3AvailiabilityClientImpl implements MSV3AvailiabilityClient
 	private static final String URL_SUFFIX_RETRIEVE_AVAILABILITY = "/verfuegbarkeitAnfragen";
 
 	private final MSV3Client client;
-	private final StockAvailabilityJAXBConverters jaxbConverters;
+	private final StockAvailabilityClientJAXBConverters jaxbConverters;
 
 	@Builder
 	private MSV3AvailiabilityClientImpl(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
 			@NonNull final MSV3ClientConfig config,
-			@NonNull final StockAvailabilityJAXBConverters jaxbConverters)
+			@NonNull final StockAvailabilityClientJAXBConverters jaxbConverters)
 	{
 		client = MSV3Client.builder()
 				.connectionFactory(connectionFactory)

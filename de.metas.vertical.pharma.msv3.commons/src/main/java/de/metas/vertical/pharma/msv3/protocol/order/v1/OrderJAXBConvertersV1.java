@@ -8,12 +8,12 @@ import javax.xml.bind.JAXBElement;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.order.DeliverySpecifications;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderClientJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderDefectReason;
-import de.metas.vertical.pharma.msv3.protocol.order.OrderJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse.OrderResponseBuilder;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
@@ -21,7 +21,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage.OrderRe
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemSubstitution;
-import de.metas.vertical.pharma.msv3.protocol.order.OrderStatusResponse;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderServerJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderSubstitutionReason;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderType;
 import de.metas.vertical.pharma.msv3.protocol.order.SupportIDType;
@@ -35,7 +35,6 @@ import de.metas.vertical.pharma.msv3.protocol.util.JAXBDateUtils;
 import de.metas.vertical.pharma.msv3.protocol.util.v1.MiscJAXBConvertersV1;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellstatusAbfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellstatusAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellung;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil;
@@ -48,6 +47,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungPosition
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungRueckmeldungTyp;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungSubstitution;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -72,10 +72,11 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OrderJAXBConvertersV1 implements OrderJAXBConverters
+public class OrderJAXBConvertersV1 implements OrderClientJAXBConverters, OrderServerJAXBConverters
 {
 	public static final transient OrderJAXBConvertersV1 instance = new OrderJAXBConvertersV1();
 
+	@Getter
 	private final ObjectFactory jaxbObjectFactory;
 	private final MiscJAXBConvertersV1 miscConverters;
 
@@ -97,22 +98,48 @@ public class OrderJAXBConvertersV1 implements OrderJAXBConverters
 	}
 
 	@Override
-	public JAXBElement<?> encodeRequest(final OrderCreateRequest request, final ClientSoftwareId clientSoftwareId)
+	public JAXBElement<?> encodeRequestToServer(final OrderCreateRequest request, final ClientSoftwareId clientSoftwareId)
 	{
 		return toJAXBElement(request, clientSoftwareId);
 	}
 
 	@Override
-	public Class<?> getResponseClass()
+	public Class<?> getSoapResponseClassFromServer()
 	{
 		return BestellenResponse.class;
 	}
 
 	@Override
-	public OrderResponse decodeResponse(final Object soap, final OrderCreateRequest request)
+	public OrderResponse decodeResponseFromServer(final Object soap, final OrderCreateRequest request)
 	{
 		final BestellenResponse response = (BestellenResponse)soap;
 		return fromJAXB(response, request).getOrder();
+	}
+
+	@Override
+	public ClientSoftwareId getClientSoftwareIdFromClientRequest(final Object soapRequestObj)
+	{
+		final Bestellen soapRequest = castToRequestFromClient(soapRequestObj);
+		return ClientSoftwareId.of(soapRequest.getClientSoftwareKennung());
+	}
+
+	@Override
+	public OrderCreateRequest decodeRequestFromClient(final Object soapRequestObj, final BPartnerId bpartnerId)
+	{
+		final Bestellen soapRequest = castToRequestFromClient(soapRequestObj);
+		return fromJAXB(soapRequest.getBestellung(), bpartnerId);
+	}
+
+	private static Bestellen castToRequestFromClient(final Object soapRequestObj)
+	{
+		final Bestellen soapRequest = (Bestellen)soapRequestObj;
+		return soapRequest;
+	}
+
+	@Override
+	public JAXBElement<BestellenResponse> encodeResponseToClient(final OrderCreateResponse response)
+	{
+		return toJAXBElement(response);
 	}
 
 	private JAXBElement<Bestellen> toJAXBElement(final OrderCreateRequest request, final ClientSoftwareId clientSoftwareId)
@@ -270,7 +297,7 @@ public class OrderJAXBConvertersV1 implements OrderJAXBConverters
 		return builder.build();
 	}
 
-	private BestellungAntwortAuftrag toJAXB(final OrderResponsePackage orderPackage)
+	BestellungAntwortAuftrag toJAXB(final OrderResponsePackage orderPackage)
 	{
 		final BestellungAntwortAuftrag soapOrderPackage = jaxbObjectFactory.createBestellungAntwortAuftrag();
 		soapOrderPackage.setId(orderPackage.getId().getValueAsString());
@@ -384,20 +411,4 @@ public class OrderJAXBConvertersV1 implements OrderJAXBConverters
 		soap.setLieferPzn(itemSubstitution.getPzn().getValueAsLong());
 		return soap;
 	}
-
-	public JAXBElement<BestellstatusAbfragenResponse> toJAXB(final OrderStatusResponse response)
-	{
-		final BestellstatusAntwort soapResponseContent = jaxbObjectFactory.createBestellstatusAntwort();
-		soapResponseContent.setId(response.getOrderId().getValueAsString());
-		soapResponseContent.setBestellSupportId(response.getSupportId().getValueAsInt());
-		soapResponseContent.setStatus(response.getOrderStatus().getV1SoapCode());
-		soapResponseContent.getAuftraege().addAll(response.getOrderPackages().stream()
-				.map(this::toJAXB)
-				.collect(ImmutableList.toImmutableList()));
-
-		final BestellstatusAbfragenResponse soapResponse = jaxbObjectFactory.createBestellstatusAbfragenResponse();
-		soapResponse.setReturn(soapResponseContent);
-		return jaxbObjectFactory.createBestellstatusAbfragenResponse(soapResponse);
-	}
-
 }

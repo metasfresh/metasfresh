@@ -4,23 +4,12 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.context.annotation.Import;
 import org.springframework.ws.config.annotation.EnableWs;
 import org.springframework.ws.soap.SoapMessageFactory;
 import org.springframework.ws.soap.SoapVersion;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.MessageDispatcherServlet;
-import org.springframework.ws.wsdl.wsdl11.SimpleWsdl11Definition;
-import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
-import org.springframework.xml.xsd.SimpleXsdSchema;
-import org.springframework.xml.xsd.XsdSchema;
-
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
-import de.metas.vertical.pharma.msv3.server.order.v2.OrderStatusWebService;
-import de.metas.vertical.pharma.msv3.server.order.v2.OrderWebService;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.v2.StockAvailabilityWebService;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -46,16 +35,11 @@ import lombok.NonNull;
 
 @EnableWs
 @Configuration
+@Import({ WebServiceConfigV1.class
+		// , WebServiceConfigV2.class
+})
 public class WebServiceConfig
 {
-	private static final String SCHEMA_RESOURCE_PREFIX = "/de/metas/vertical/pharma/vendor/gateway/msv3/schema";
-
-	@Bean
-	public ObjectFactory jaxbObjectFactoryV2()
-	{
-		return new ObjectFactory();
-	}
-
 	@Bean(MessageDispatcherServlet.DEFAULT_MESSAGE_FACTORY_BEAN_NAME)
 	public SoapMessageFactory soapMessageFactory()
 	{
@@ -70,61 +54,10 @@ public class WebServiceConfig
 		final MessageDispatcherServlet servlet = new MessageDispatcherServlet();
 		servlet.setApplicationContext(applicationContext);
 		servlet.setTransformWsdlLocations(true);
-		return new ServletRegistrationBean(servlet, MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/*");
-	}
 
-	// e.g. http://localhost:8080/ws/Msv3VerfuegbarkeitAnfragenService.wsdl
-	@Bean(name = StockAvailabilityWebService.WSDL_BEAN_NAME)
-	public Wsdl11Definition stockAvailabilityWebService()
-	{
-		return createWsdl(StockAvailabilityWebService.WSDL_BEAN_NAME);
+		return new ServletRegistrationBean(servlet,
+				MSV3ServerConstantsV1.WEBSERVICE_ENDPOINT_PATH + "/*"
+		// , MSV3ServerConstantsV2.WEBSERVICE_ENDPOINT_PATH + "/*"
+		);
 	}
-
-	// e.g. http://localhost:8080/ws/Msv3BestellenService.wsdl
-	@Bean(name = OrderWebService.WSDL_BEAN_NAME)
-	public Wsdl11Definition orderWebService()
-	{
-		return createWsdl(OrderWebService.WSDL_BEAN_NAME);
-	}
-
-	// e.g. http://localhost:8080/ws/Msv3BestellstatusAbfragenService.wsdl
-	@Bean(name = OrderStatusWebService.WSDL_BEAN_NAME)
-	public Wsdl11Definition orderStatusWebService()
-	{
-		return createWsdl(OrderStatusWebService.WSDL_BEAN_NAME);
-	}
-
-	@Bean("Msv3Service_schema1")
-	public XsdSchema msv3serviceSchemaXsd()
-	{
-		return createXsdSchema("Msv3Service_schema1.xsd");
-	}
-
-	@Bean("Msv3FachlicheFunktionen")
-	public XsdSchema msv3FachlicheFunktionen()
-	{
-		return createXsdSchema("Msv3FachlicheFunktionen.xsd");
-	}
-
-	@Bean
-	public StockAvailabilityJAXBConvertersV2 stockAvailabilityJAXBConverters(final ObjectFactory jaxbObjectFactory)
-	{
-		return new StockAvailabilityJAXBConvertersV2(jaxbObjectFactory);
-	}
-
-	private static Wsdl11Definition createWsdl(@NonNull final String beanName)
-	{
-		return new SimpleWsdl11Definition(createSchemaResource(beanName + ".wsdl"));
-	}
-
-	private static XsdSchema createXsdSchema(@NonNull final String resourceName)
-	{
-		return new SimpleXsdSchema(createSchemaResource(resourceName));
-	}
-
-	private static ClassPathResource createSchemaResource(@NonNull final String resourceName)
-	{
-		return new ClassPathResource(SCHEMA_RESOURCE_PREFIX + "/" + resourceName);
-	}
-
 }

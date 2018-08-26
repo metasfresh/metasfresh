@@ -1,6 +1,7 @@
-package de.metas.vertical.pharma.msv3.server.security;
+package de.metas.vertical.pharma.msv3.server.stockAvailability.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /*
  * #%L
@@ -24,11 +25,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * #L%
  */
 
-public interface JpaUserRepository extends JpaRepository<JpaUser, Long>
+@Repository
+public interface JpaStockAvailabilityRepository extends JpaRepository<JpaStockAvailability, Long>
 {
-	JpaUser findByUsername(final String username);
-
-	void deleteByUsername(final String username);
+	JpaStockAvailability findByPzn(long pzn);
 
 	long deleteInBatchBySyncTokenNot(String syncToken);
+	
+	long deleteInBatchByPzn(long pzn);
 }

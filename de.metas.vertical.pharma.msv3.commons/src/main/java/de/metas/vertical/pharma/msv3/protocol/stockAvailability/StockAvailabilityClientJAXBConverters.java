@@ -27,7 +27,7 @@ import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
  * #L%
  */
 
-public interface StockAvailabilityJAXBConverters
+public interface StockAvailabilityClientJAXBConverters
 {
 	FaultInfo extractFaultInfoOrNull(Object value);
 

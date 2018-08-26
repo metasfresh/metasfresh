@@ -26,11 +26,11 @@ import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem.RemotePurchaseOrderCreatedItemBuilder;
 import de.metas.vertical.pharma.msv3.protocol.order.DeliverySpecifications;
 import de.metas.vertical.pharma.msv3.protocol.order.MSV3PurchaseCandidateId;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderClientJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItemId;
-import de.metas.vertical.pharma.msv3.protocol.order.OrderJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
@@ -78,7 +78,7 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 	private static final String URL_SUFFIX_PLACE_PURCHASE_ORDER = "/bestellen";
 
 	private final MSV3Client client;
-	private final OrderJAXBConverters jaxbConverters;
+	private final OrderClientJAXBConverters jaxbConverters;
 	private final SupportIdProvider supportIdProvider;
 
 	private OrderCreateRequest request;
@@ -90,7 +90,7 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 			@NonNull final MSV3ConnectionFactory connectionFactory,
 			@NonNull final MSV3ClientConfig config,
 			@NonNull final SupportIdProvider supportIdProvider,
-			@NonNull final OrderJAXBConverters jaxbConverters)
+			@NonNull final OrderClientJAXBConverters jaxbConverters)
 	{
 		client = MSV3Client.builder()
 				.connectionFactory(connectionFactory)
@@ -161,9 +161,9 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 
 	private OrderResponse callWebService(final OrderCreateRequest request)
 	{
-		final JAXBElement<?> soapRequest = jaxbConverters.encodeRequest(request, client.getClientSoftwareId());
-		final Object soapReponse = client.sendAndReceive(soapRequest, jaxbConverters.getResponseClass());
-		final OrderResponse response = jaxbConverters.decodeResponse(soapReponse, request);
+		final JAXBElement<?> soapRequest = jaxbConverters.encodeRequestToServer(request, client.getClientSoftwareId());
+		final Object soapReponse = client.sendAndReceive(soapRequest, jaxbConverters.getSoapResponseClassFromServer());
+		final OrderResponse response = jaxbConverters.decodeResponseFromServer(soapReponse, request);
 		return response;
 	}
 

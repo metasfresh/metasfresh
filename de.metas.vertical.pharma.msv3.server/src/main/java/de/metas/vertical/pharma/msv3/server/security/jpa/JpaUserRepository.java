@@ -1,6 +1,6 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.pharma.msv3.server.security.jpa;
 
-import lombok.experimental.UtilityClass;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /*
  * #%L
@@ -24,12 +24,11 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public final class MSV3ServerConstants
+public interface JpaUserRepository extends JpaRepository<JpaUser, Long>
 {
-	public static final String REST_ENDPOINT_PATH = "/rest";
-	public static final String BACKEND_SYNC_REST_ENDPOINT = REST_ENDPOINT_PATH + "/sync/api";
+	JpaUser findByUsername(final String username);
 
-	public static final String WEBSERVICE_ENDPOINT_PATH = "/ws";
-	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
+	void deleteByUsername(final String username);
+
+	long deleteInBatchBySyncTokenNot(String syncToken);
 }

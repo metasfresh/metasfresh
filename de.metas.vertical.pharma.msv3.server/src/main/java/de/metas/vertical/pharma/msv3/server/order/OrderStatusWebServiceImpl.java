@@ -1,25 +1,17 @@
-package de.metas.vertical.pharma.msv3.server.order.v2;
+package de.metas.vertical.pharma.msv3.server.order;
 
 import javax.xml.bind.JAXBElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
-import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
-import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.order.OrderStatusResponse;
-import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConvertersV2;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderStatusServerJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
-import de.metas.vertical.pharma.msv3.server.order.OrderService;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.msv3.server.util.JAXBUtils;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellstatusAbfragen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellstatusAbfragenResponse;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -44,40 +36,37 @@ import lombok.NonNull;
  * #L%
  */
 
-@Endpoint
-public class OrderStatusWebService
+class OrderStatusWebServiceImpl
 {
-	public static final String WSDL_BEAN_NAME = "Msv3BestellstatusAbfragenService";
-
-	private static final Logger logger = LoggerFactory.getLogger(OrderStatusWebService.class);
+	private static final Logger logger = LoggerFactory.getLogger(OrderStatusWebServiceImpl.class);
 
 	private final MSV3ServerAuthenticationService authService;
-	private final OrderJAXBConvertersV2 jaxbConverters;
+	private final OrderStatusServerJAXBConverters jaxbConverters;
 	private final OrderService orderService;
 
-	public OrderStatusWebService(
+	@Builder
+	private OrderStatusWebServiceImpl(
 			@NonNull final MSV3ServerAuthenticationService authService,
-			@NonNull final ObjectFactory jaxbObjectFactory,
-			@NonNull final OrderService orderService)
+			@NonNull final OrderService orderService,
+			@NonNull final OrderStatusServerJAXBConverters jaxbConverters)
 	{
 		this.authService = authService;
-		jaxbConverters = new OrderJAXBConvertersV2(jaxbObjectFactory);
 		this.orderService = orderService;
+		this.jaxbConverters = jaxbConverters;
 	}
 
-	@PayloadRoot(localPart = "bestellstatusAbfragen", namespace = MSV3ServerConstants.SOAP_NAMESPACE)
-	public @ResponsePayload JAXBElement<BestellstatusAbfragenResponse> getOrderStatus(@RequestPayload final JAXBElement<BestellstatusAbfragen> jaxbRequest)
+	public JAXBElement<?> getOrderStatus(final JAXBElement<?> jaxbRequest)
 	{
 		logXML("getOrderStatus - request", jaxbRequest);
 
-		final BestellstatusAbfragen soapRequest = jaxbRequest.getValue();
-		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
-
-		final Id orderId = Id.of(soapRequest.getBestellId());
+		final Object soapRequest = jaxbRequest.getValue();
+		authService.assertValidClientSoftwareId(jaxbConverters.getClientSoftwareIdFromClientRequest(soapRequest));
 		final BPartnerId bpartner = authService.getCurrentBPartner();
+
+		final Id orderId = jaxbConverters.getOrderIdFromClientRequest(soapRequest);
 		final OrderStatusResponse response = orderService.getOrderStatus(orderId, bpartner);
 
-		final JAXBElement<BestellstatusAbfragenResponse> jaxbResponse = jaxbConverters.toJAXB(response);
+		final JAXBElement<?> jaxbResponse = jaxbConverters.encodeResponseToClient(response);
 		logXML("getOrderStatus - response", jaxbResponse);
 		return jaxbResponse;
 	}

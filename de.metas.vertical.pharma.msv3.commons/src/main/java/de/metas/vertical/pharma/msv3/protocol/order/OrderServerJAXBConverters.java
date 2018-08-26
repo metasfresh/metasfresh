@@ -1,11 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.protocol.order;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import javax.xml.bind.JAXBElement;
+
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,14 +27,11 @@ import org.springframework.stereotype.Repository;
  * #L%
  */
 
-@Repository
-public interface JpaProductExcludeRepository extends JpaRepository<JpaProductExclude, Long>
+public interface OrderServerJAXBConverters
 {
-	boolean existsByPznAndBpartnerId(long pzn, int bpartnerId);
+	ClientSoftwareId getClientSoftwareIdFromClientRequest(Object soapRequest);
 
-	JpaProductExclude findByPznAndBpartnerId(long pzn, int bpartnerId);
+	OrderCreateRequest decodeRequestFromClient(Object soapRequestObj, BPartnerId bpartnerId);
 
-	long deleteInBatchByPznAndBpartnerId(long pzn, int bpartnerId);
-
-	long deleteInBatchBySyncTokenNot(String syncToken);
+	JAXBElement<?> encodeResponseToClient(OrderCreateResponse response);
 }

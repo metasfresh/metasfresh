@@ -1,7 +1,6 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -25,12 +24,13 @@ import org.springframework.stereotype.Repository;
  * #L%
  */
 
-@Repository
-public interface JpaStockAvailabilityRepository extends JpaRepository<JpaStockAvailability, Long>
+@UtilityClass
+public final class MSV3ServerConstantsV2
 {
-	JpaStockAvailability findByPzn(long pzn);
+	// TODO: move those 2 constants from here
+	public static final String REST_ENDPOINT_PATH = "/rest";
+	public static final String BACKEND_SYNC_REST_ENDPOINT = REST_ENDPOINT_PATH + "/sync/api";
 
-	long deleteInBatchBySyncTokenNot(String syncToken);
-	
-	long deleteInBatchByPzn(long pzn);
+	public static final String WEBSERVICE_ENDPOINT_PATH = "/ws/v2";
+	public static final String SOAP_NAMESPACE = "urn:msv3:v2";
 }

@@ -34,7 +34,7 @@ import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
-import de.metas.vertical.pharma.msv3.protocol.order.OrderJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderClientJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.v1.OrderJAXBConvertersV1;
 import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderJAXBConvertersV2;
 import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
@@ -72,7 +72,7 @@ public class MSV3PurchaseOrderClientTest
 	private static final class Context
 	{
 		MSV3ClientConfig config;
-		OrderJAXBConverters jaxbConverters;
+		OrderClientJAXBConverters jaxbConverters;
 		MSV3PurchaseOrderClientImpl client;
 
 		Class<?> bestellenClass;
@@ -92,7 +92,7 @@ public class MSV3PurchaseOrderClientTest
 	public void placeOrder_V1() throws Exception
 	{
 		final MSV3ClientConfig config = MSV3TestingTools.createMSV3ClientConfig(MSV3ClientConfig.VERSION_1);
-		final OrderJAXBConverters jaxbConverters = OrderJAXBConvertersV1.instance;
+		final OrderClientJAXBConverters jaxbConverters = OrderJAXBConvertersV1.instance;
 		final MSV3PurchaseOrderClientImpl client = MSV3PurchaseOrderClientImpl.builder()
 				.connectionFactory(new MSV3ConnectionFactory())
 				.config(config)
@@ -115,7 +115,7 @@ public class MSV3PurchaseOrderClientTest
 	public void placeOrder_V2() throws Exception
 	{
 		final MSV3ClientConfig config = MSV3TestingTools.createMSV3ClientConfig(MSV3ClientConfig.VERSION_2);
-		final OrderJAXBConverters jaxbConverters = OrderJAXBConvertersV2.instance;
+		final OrderClientJAXBConverters jaxbConverters = OrderJAXBConvertersV2.instance;
 		final MSV3PurchaseOrderClientImpl client = MSV3PurchaseOrderClientImpl.builder()
 				.connectionFactory(new MSV3ConnectionFactory())
 				.config(config)
@@ -186,7 +186,7 @@ public class MSV3PurchaseOrderClientTest
 		final JAXBContext requestJc = JAXBContext.newInstance(context.bestellenClass);
 		final Marshaller requestMarshaller = requestJc.createMarshaller();
 
-		final JAXBElement<?> soap = context.jaxbConverters.encodeRequest(context.client.getRequest(), context.client.getClientSoftwareId());
+		final JAXBElement<?> soap = context.jaxbConverters.encodeRequestToServer(context.client.getRequest(), context.client.getClientSoftwareId());
 		requestMarshaller.marshal(soap, requestDocument);
 		final DOMSource payload = new DOMSource(requestDocument);
 

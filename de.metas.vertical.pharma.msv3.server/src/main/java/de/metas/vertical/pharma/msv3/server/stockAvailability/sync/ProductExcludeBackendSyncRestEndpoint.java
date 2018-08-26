@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV2;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 
@@ -36,7 +36,7 @@ import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityS
 @RequestMapping(ProductExcludeBackendSyncRestEndpoint.ENDPOINT)
 public class ProductExcludeBackendSyncRestEndpoint
 {
-	public static final String ENDPOINT = MSV3ServerConstants.BACKEND_SYNC_REST_ENDPOINT + "/productExclude";
+	public static final String ENDPOINT = MSV3ServerConstantsV2.BACKEND_SYNC_REST_ENDPOINT + "/productExclude";
 
 	@Autowired
 	private StockAvailabilityService stockAvailabilityService;

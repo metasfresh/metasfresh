@@ -1,24 +1,19 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability.v2;
+package de.metas.vertical.pharma.msv3.server.stockAvailability;
 
 import javax.xml.bind.JAXBElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ws.server.endpoint.annotation.Endpoint;
-import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityServerJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityService;
 import de.metas.vertical.pharma.msv3.server.util.JAXBUtils;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragen;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -43,45 +38,43 @@ import lombok.NonNull;
  * #L%
  */
 
-@Endpoint
-public class StockAvailabilityWebService
+class StockAvailabilityWebServiceImpl
 {
-	public static final String WSDL_BEAN_NAME = "Msv3VerfuegbarkeitAnfragenService";
-
-	private static final Logger logger = LoggerFactory.getLogger(StockAvailabilityWebService.class);
+	private static final Logger logger = LoggerFactory.getLogger(StockAvailabilityWebServiceImpl.class);
 
 	private final MSV3ServerAuthenticationService authService;
 	private final StockAvailabilityService stockAvailabilityService;
-	private final StockAvailabilityJAXBConvertersV2 jaxbConverters;
+	private final StockAvailabilityServerJAXBConverters jaxbConverters;
 
-	public StockAvailabilityWebService(
+	@Builder
+	private StockAvailabilityWebServiceImpl(
 			@NonNull final MSV3ServerAuthenticationService authService,
 			@NonNull final StockAvailabilityService stockAvailabilityService,
-			@NonNull final StockAvailabilityJAXBConvertersV2 jaxbConverters)
+			@NonNull final StockAvailabilityServerJAXBConverters jaxbConverters)
 	{
 		this.authService = authService;
 		this.stockAvailabilityService = stockAvailabilityService;
 		this.jaxbConverters = jaxbConverters;
 	}
 
-	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = MSV3ServerConstants.SOAP_NAMESPACE)
-	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> getStockAvailability(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
+	public JAXBElement<?> getStockAvailability(@RequestPayload final JAXBElement<?> jaxbRequest)
 	{
 		logXML("getStockAvailability - request", jaxbRequest);
 
-		final VerfuegbarkeitAnfragen soapRequest = jaxbRequest.getValue();
-		authService.assertValidClientSoftwareId(soapRequest.getClientSoftwareKennung());
-		final BPartnerId bpartner = authService.getCurrentBPartner();
+		final Object soapRequest = jaxbRequest.getValue();
+		final ClientSoftwareId clientSoftwareId = jaxbConverters.getClientSoftwareIdFromClientRequest(soapRequest);
+		authService.assertValidClientSoftwareId(clientSoftwareId);
 
-		final StockAvailabilityQuery stockAvailabilityQuery = jaxbConverters.fromJAXB(soapRequest.getVerfuegbarkeitsanfrage(), bpartner);
+		final BPartnerId bpartnerId = authService.getCurrentBPartner();
+		final StockAvailabilityQuery stockAvailabilityQuery = jaxbConverters.decodeRequestFromClient(soapRequest, bpartnerId);
 		final StockAvailabilityResponse stockAvailabilityResponse = stockAvailabilityService.checkAvailability(stockAvailabilityQuery);
 
-		final JAXBElement<VerfuegbarkeitAnfragenResponse> jaxbResponse = jaxbConverters.toJAXBElement(stockAvailabilityResponse);
+		final JAXBElement<?> jaxbResponse = jaxbConverters.encodeResponseToClient(stockAvailabilityResponse);
 		logXML("getStockAvailability - response", jaxbResponse);
 		return jaxbResponse;
 	}
 
-	private void logXML(final String name, final JAXBElement<?> element)
+	private static void logXML(final String name, final JAXBElement<?> element)
 	{
 		if (!logger.isDebugEnabled())
 		{

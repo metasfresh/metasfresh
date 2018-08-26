@@ -6,13 +6,14 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.RequirementType;
-import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityJAXBConverters;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityClientJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPartType;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityServerJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionReason;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitutionType;
@@ -54,7 +55,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityJAXBConverters
+public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityClientJAXBConverters, StockAvailabilityServerJAXBConverters
 {
 	public static final transient StockAvailabilityJAXBConvertersV2 instance = new StockAvailabilityJAXBConvertersV2();
 
@@ -95,11 +96,37 @@ public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityJAXBC
 		return fromJAXB(soapResponse);
 	}
 
-	public StockAvailabilityQuery fromJAXB(@NonNull final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest, @NonNull final BPartnerId bpartner)
+	@Override
+	public ClientSoftwareId getClientSoftwareIdFromClientRequest(final Object soapRequestObj)
+	{
+		final VerfuegbarkeitAnfragen soapRequest = castToRequestFromClient(soapRequestObj);
+		return ClientSoftwareId.of(soapRequest.getClientSoftwareKennung());
+	}
+
+	@Override
+	public StockAvailabilityQuery decodeRequestFromClient(final Object soapRequestObj, final BPartnerId bpartnerId)
+	{
+		final VerfuegbarkeitAnfragen soapRequest = castToRequestFromClient(soapRequestObj);
+		return fromJAXB(soapRequest.getVerfuegbarkeitsanfrage(), bpartnerId);
+	}
+
+	private static VerfuegbarkeitAnfragen castToRequestFromClient(final Object soapRequestObj)
+	{
+		final VerfuegbarkeitAnfragen soapRequest = (VerfuegbarkeitAnfragen)soapRequestObj;
+		return soapRequest;
+	}
+
+	@Override
+	public JAXBElement<VerfuegbarkeitAnfragenResponse> encodeResponseToClient(final StockAvailabilityResponse response)
+	{
+		return toJAXBElement(response);
+	}
+
+	public StockAvailabilityQuery fromJAXB(@NonNull final VerfuegbarkeitsanfrageEinzelne soapAvailabilityRequest, @NonNull final BPartnerId bpartnerId)
 	{
 		return StockAvailabilityQuery.builder()
 				.id(soapAvailabilityRequest.getId())
-				.bpartner(bpartner)
+				.bpartner(bpartnerId)
 				.items(soapAvailabilityRequest.getArtikel().stream()
 						.map(this::fromJAXB)
 						.collect(ImmutableList.toImmutableList()))

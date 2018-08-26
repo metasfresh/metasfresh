@@ -1,10 +1,13 @@
-package de.metas.vertical.pharma.msv3.server.security;
+package de.metas.vertical.pharma.msv3.protocol.order;
 
-import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
+import javax.xml.bind.JAXBElement;
+
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * metasfresh-pharma.msv3.commons
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -12,40 +15,26 @@ import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class MockedMSV3ServerAuthenticationService extends MSV3ServerAuthenticationService
+public interface OrderClientJAXBConverters
 {
-	private MSV3User currentUser;
+	FaultInfo extractFaultInfoOrNull(Object value);
 
-	public MockedMSV3ServerAuthenticationService(final JpaUserRepository usersRepo)
-	{
-		super(usersRepo, /* serverAdminUsername */null, /* serverAdminPassword */null);
-	}
+	JAXBElement<?> encodeRequestToServer(OrderCreateRequest request, ClientSoftwareId clientSoftwareId);
 
-	@Override
-	public MSV3User getCurrentUser()
-	{
-		if (currentUser != null)
-		{
-			return currentUser;
-		}
+	Class<?> getSoapResponseClassFromServer();
 
-		return super.getCurrentUser();
-	}
+	OrderResponse decodeResponseFromServer(Object soap, OrderCreateRequest request);
 
-	public void setCurrentUser(final MSV3User currentUser)
-	{
-		this.currentUser = currentUser;
-	}
 }

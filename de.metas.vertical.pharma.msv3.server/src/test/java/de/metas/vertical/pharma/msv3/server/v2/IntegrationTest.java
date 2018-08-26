@@ -28,20 +28,20 @@ import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.server.Application;
 import de.metas.vertical.pharma.msv3.server.MockedAmqpTemplate;
-import de.metas.vertical.pharma.msv3.server.order.v2.OrderWebService;
+import de.metas.vertical.pharma.msv3.server.order.OrderWebServiceV2;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailabilityUpdatedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
-import de.metas.vertical.pharma.msv3.server.security.JpaUserRepository;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.msv3.server.security.MSV3User;
 import de.metas.vertical.pharma.msv3.server.security.MockedMSV3ServerAuthenticationService;
+import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
 import de.metas.vertical.pharma.msv3.server.security.sync.UserSyncRabbitMQListener;
+import de.metas.vertical.pharma.msv3.server.stockAvailability.StockAvailabilityWebServiceV2;
 import de.metas.vertical.pharma.msv3.server.stockAvailability.sync.StockAvailabilityRabbitMQListener;
-import de.metas.vertical.pharma.msv3.server.stockAvailability.v2.StockAvailabilityWebService;
 import de.metas.vertical.pharma.msv3.server.v2.IntegrationTest.IntegrationTestConfiguration;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellenResponse;
@@ -121,10 +121,10 @@ public class IntegrationTest
 	@Autowired
 	private StockAvailabilityRabbitMQListener stockAvailabilityListener;
 	@Autowired
-	private StockAvailabilityWebService stockAvailabilityWebService;
+	private StockAvailabilityWebServiceV2 stockAvailabilityWebService;
 
 	@Autowired
-	private OrderWebService orderWebService;
+	private OrderWebServiceV2 orderWebService;
 
 	private void setupDummyCurrentUserForBPartnerId(final int bpartnerId)
 	{

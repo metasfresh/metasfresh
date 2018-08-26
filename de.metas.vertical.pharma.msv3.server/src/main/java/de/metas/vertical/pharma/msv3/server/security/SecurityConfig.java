@@ -34,7 +34,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV1;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV2;
 
 @Configuration
 @EnableWebSecurity
@@ -55,10 +56,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception
 	{
-		http.csrf().disable()
+		http
+				.csrf().disable()
 				.authorizeRequests()
-				.antMatchers(MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
-				.antMatchers(MSV3ServerConstants.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
+				.antMatchers(MSV3ServerConstantsV1.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
+				// .antMatchers(MSV3ServerConstantsV2.WEBSERVICE_ENDPOINT_PATH + "/**").hasAuthority(ROLE_CLIENT)
+				.antMatchers(MSV3ServerConstantsV2.REST_ENDPOINT_PATH + "/**").hasAuthority(ROLE_SERVER_ADMIN)
 				.and().httpBasic().realmName(REALM).authenticationEntryPoint(getBasicAuthEntryPoint())
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 

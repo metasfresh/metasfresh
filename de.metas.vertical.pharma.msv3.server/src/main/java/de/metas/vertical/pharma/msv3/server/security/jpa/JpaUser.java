@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.msv3.server.stockAvailability;
+package de.metas.vertical.pharma.msv3.server.security.jpa;
 
 import java.util.UUID;
 
@@ -37,18 +37,27 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "msv3_stock_availability", //
-		uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }), //
-		indexes = @Index(name = "stock_availability_sync_token", columnList = "sync_token") //
+@Table(name = "msv3_user", //
+		uniqueConstraints = @UniqueConstraint(name = "user_uq", columnNames = { "username" }), //
+		indexes = @Index(name = "user_sync_token", columnList = "sync_token") //
 )
 @Getter
 @Setter
 @ToString
-public class JpaStockAvailability extends AbstractEntity
+public class JpaUser extends AbstractEntity
 {
-	/** Pharma-Zentral-Nummer */
-	private long pzn;
-	private int qty;
+	// kundenkennung
+	@NotNull
+	private String username;
+
+	@NotNull
+	private String password;
+
+	@NotNull
+	private Integer bpartnerId;
+
+	@NotNull
+	private Integer bpartnerLocationId;
 
 	@Column(name = "sync_token")
 	@NotNull
