@@ -11,6 +11,10 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.72
 ## Features
+* metasfresh
+  * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
+    * New Translation Feature for Project Status and Product Category.
+
 * metasfresh-webui-frontend
   * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
     * New Feature that allows a User to reset a forgotton password.
