@@ -19,6 +19,7 @@ class Indicator extends Component {
   };
 
   render() {
+    // TODO: We should be using indicator from the state instead of another variable
     const { indicator, isDocumentNotSaved } = this.props;
     return (
       <div>

@@ -350,6 +350,7 @@ class Header extends Component {
       entity,
       query,
       showIndicator,
+      // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       notfound,
       docId,
