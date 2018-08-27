@@ -614,6 +614,7 @@ export function patch(
         return data;
       }
     } catch (error) {
+      await dispatch(indicatorState('error'));
       await dispatch({ type: PATCH_FAILURE, symbol });
 
       const response = await getData(
