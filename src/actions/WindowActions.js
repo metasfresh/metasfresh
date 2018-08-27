@@ -716,7 +716,9 @@ function updateRow(row, scope) {
 
 function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
   return dispatch => {
-    data.map((item, index) => {
+    const dataArray = typeof data.splice === 'function' ? data : [data];
+
+    dataArray.map((item, index) => {
       const parsedItem = item.fieldsByName
         ? {
             ...item,
