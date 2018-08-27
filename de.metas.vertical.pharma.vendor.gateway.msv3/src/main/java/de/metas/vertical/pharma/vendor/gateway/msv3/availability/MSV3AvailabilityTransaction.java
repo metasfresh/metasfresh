@@ -1,6 +1,5 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -8,24 +7,26 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.adempiere.ad.service.IErrorManager;
-import org.adempiere.util.Check;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Verfuegbarkeit_Transaction;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelne;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
@@ -55,69 +56,71 @@ import lombok.Setter;
 @Setter
 public class MSV3AvailabilityTransaction
 {
-	private final int orgId;
+	private final OrgId orgId;
 
-	private final VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelne;
+	private final StockAvailabilityQuery query;
 
-	private VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwort;
+	private StockAvailabilityResponse response;
 
-	private Msv3FaultInfo faultInfo;
+	private FaultInfo faultInfo;
 
 	private Exception otherException;
 
-	private final Map<Artikel, MSV3ArtikelContextInfo> requestArtikel2contextInfo //
-			= new IdentityHashMap<>();
+	private final Map<StockAvailabilityQueryItem, MSV3ArtikelContextInfo> contextInfosByQueryItem = new IdentityHashMap<>();
 
-	private final Map<VerfuegbarkeitsantwortArtikel, MSV3ArtikelContextInfo> responseArtikel2contextInfo //
-			= new IdentityHashMap<>();
+	private final Map<StockAvailabilityResponseItem, MSV3ArtikelContextInfo> contextInfosByResponse = new IdentityHashMap<>();
 
 	private final MSV3AvailabilityDataPersister availabilityDataPersister;
 
 	@Builder
 	private MSV3AvailabilityTransaction(
-			final int vendorId,
-			@NonNull final VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelne)
+			@NonNull final BPartnerId vendorId,
+			@NonNull final StockAvailabilityQuery query)
 	{
-		Check.errorIf(vendorId <= 0, "The given parameter vendorId needs to be > 0; vendorId={}", vendorId);
-		this.verfuegbarkeitsanfrageEinzelne = verfuegbarkeitsanfrageEinzelne;
+		this.query = query;
 
-		final I_C_BPartner vendor = load(vendorId, I_C_BPartner.class);
-
-		this.orgId = vendor.getAD_Org_ID();
+		final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId.getBpartnerId());
+		this.orgId = OrgId.ofRepoId(vendor.getAD_Org_ID());
+		
 		this.availabilityDataPersister = MSV3AvailabilityDataPersister.createNewInstance(orgId);
 	}
 
-	public void putContextInfo(
-			@NonNull final Artikel artikel,
-			@NonNull final MSV3ArtikelContextInfo availabilityRequestItem)
+	public void putContextInfos(final Map<StockAvailabilityQueryItem, MSV3ArtikelContextInfo> contextInfos)
 	{
-		requestArtikel2contextInfo.put(artikel, availabilityRequestItem);
+		contextInfosByQueryItem.putAll(contextInfos);
 	}
 
 	public void putContextInfo(
-			@NonNull final VerfuegbarkeitsantwortArtikel artikel,
-			@NonNull final MSV3ArtikelContextInfo availabilityRequestItem)
+			@NonNull final StockAvailabilityQueryItem queryItem,
+			@NonNull final MSV3ArtikelContextInfo contextInfo)
 	{
-		responseArtikel2contextInfo.put(artikel, availabilityRequestItem);
+		contextInfosByQueryItem.put(queryItem, contextInfo);
+	}
+
+	public void putContextInfo(
+			@NonNull final StockAvailabilityResponseItem responseItem,
+			@NonNull final MSV3ArtikelContextInfo contextInfo)
+	{
+		contextInfosByResponse.put(responseItem, contextInfo);
 	}
 
 	public I_MSV3_Verfuegbarkeit_Transaction store()
 	{
 		final I_MSV3_Verfuegbarkeit_Transaction transactionRecord = newInstance(I_MSV3_Verfuegbarkeit_Transaction.class);
-		transactionRecord.setAD_Org_ID(orgId);
+		transactionRecord.setAD_Org_ID(orgId.getRepoId());
 
 		final I_MSV3_VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelneRecord = //
 				availabilityDataPersister.storeAvailabilityRequest(
-						verfuegbarkeitsanfrageEinzelne,
-						ImmutableMap.copyOf(requestArtikel2contextInfo));
+						query,
+						ImmutableMap.copyOf(contextInfosByQueryItem));
 		transactionRecord.setMSV3_VerfuegbarkeitsanfrageEinzelne(verfuegbarkeitsanfrageEinzelneRecord);
 
-		if (verfuegbarkeitsanfrageEinzelneAntwort != null)
+		if (response != null)
 		{
 			final I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwortRecord = //
 					availabilityDataPersister.storeAvailabilityResponse(
-							verfuegbarkeitsanfrageEinzelneAntwort,
-							ImmutableMap.copyOf(responseArtikel2contextInfo));
+							response,
+							ImmutableMap.copyOf(contextInfosByResponse));
 			transactionRecord.setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(verfuegbarkeitsanfrageEinzelneAntwortRecord);
 		}
 		if (faultInfo != null)

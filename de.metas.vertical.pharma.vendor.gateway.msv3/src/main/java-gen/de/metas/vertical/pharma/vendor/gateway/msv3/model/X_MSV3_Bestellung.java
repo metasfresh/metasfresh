@@ -14,7 +14,7 @@ public class X_MSV3_Bestellung extends org.compiere.model.PO implements I_MSV3_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -823969793L;
+	private static final long serialVersionUID = -403113319L;
 
     /** Standard Constructor */
     public X_MSV3_Bestellung (Properties ctx, int MSV3_Bestellung_ID, String trxName)

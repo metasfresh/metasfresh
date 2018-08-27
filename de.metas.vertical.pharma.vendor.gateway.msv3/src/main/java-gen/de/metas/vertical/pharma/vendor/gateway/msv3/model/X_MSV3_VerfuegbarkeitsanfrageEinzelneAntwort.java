@@ -14,7 +14,7 @@ public class X_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort extends org.compiere.m
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1853011009L;
+	private static final long serialVersionUID = 1172764249L;
 
     /** Standard Constructor */
     public X_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort (Properties ctx, int MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID, String trxName)

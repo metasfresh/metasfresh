@@ -61,6 +61,11 @@ public class OrgId implements RepoIdAware
 		return orgId != null ? orgId.getRepoId() : -1;
 	}
 
+	public static int toRepoIdOrAny(final OrgId orgId)
+	{
+		return orgId != null ? orgId.getRepoId() : ANY.repoId;
+	}
+
 	public static final OrgId ANY = new OrgId();
 
 	int repoId;

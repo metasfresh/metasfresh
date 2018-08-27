@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItem;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItemId;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
@@ -87,7 +88,7 @@ public class OrderService
 						.map(orderPackage -> MSV3OrderSyncRequestPackage.builder()
 								.items(orderPackage.getItems().stream()
 										.map(orderPackageItem -> MSV3OrderSyncRequestPackageItem.builder()
-												.id(orderPackageItem.getId())
+												.id(orderPackageItem.getRequestId())
 												.pzn(orderPackageItem.getPzn())
 												.qty(orderPackageItem.getQty())
 												.build())
@@ -167,7 +168,7 @@ public class OrderService
 	private JpaOrderPackageItem createJpaOrderPackageItem(final OrderResponsePackageItem orderPackageItem)
 	{
 		JpaOrderPackageItem jpaOrderPackageItem = new JpaOrderPackageItem();
-		jpaOrderPackageItem.setUuid(orderPackageItem.getId().getValueAsString());
+		jpaOrderPackageItem.setUuid(orderPackageItem.getRequestId().getValueAsString());
 		jpaOrderPackageItem.setPzn(orderPackageItem.getPzn().getValueAsLong());
 		jpaOrderPackageItem.setQty(orderPackageItem.getQty().getValueAsInt());
 		jpaOrderPackageItem.setDeliverySpecifications(orderPackageItem.getDeliverySpecifications());
@@ -214,7 +215,7 @@ public class OrderService
 		}
 
 		return OrderResponsePackageItem.builder()
-				.id(requestPackageItem.getId())
+				.requestId(requestPackageItem.getId())
 				.pzn(pzn)
 				.qty(qtyRequired)
 				.deliverySpecifications(requestPackageItem.getDeliverySpecifications())
@@ -251,7 +252,7 @@ public class OrderService
 	private OrderResponsePackageItem createOrderResponsePackageItem(final JpaOrderPackageItem jpaOrderPackageItem)
 	{
 		return OrderResponsePackageItem.builder()
-				.id(Id.of(jpaOrderPackageItem.getUuid()))
+				.requestId(OrderCreateRequestPackageItemId.of(jpaOrderPackageItem.getUuid()))
 				.pzn(PZN.of(jpaOrderPackageItem.getPzn()))
 				.qty(Quantity.of(jpaOrderPackageItem.getQty()))
 				.deliverySpecifications(jpaOrderPackageItem.getDeliverySpecifications())

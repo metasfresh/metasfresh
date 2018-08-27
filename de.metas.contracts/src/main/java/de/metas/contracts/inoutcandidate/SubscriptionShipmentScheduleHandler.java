@@ -27,7 +27,9 @@ import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -192,8 +194,15 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
 
-		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_M_Product_ID)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final Iterator<I_C_SubscriptionProgress> subscriptionLines = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
@@ -202,6 +211,10 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addInSubQueryFilter(
+						I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID,
+						I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID,
+						itemProductQuery)
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
