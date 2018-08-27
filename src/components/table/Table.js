@@ -483,7 +483,7 @@ class Table extends Component {
       !event.target.parentNode.className.includes('notification') &&
       !inBackground
     ) {
-      const item = event.path;
+      const item = event.path || (event.composedPath && event.composedPath());
 
       if (item) {
         for (let i = 0; i < item.length; i++) {

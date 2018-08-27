@@ -16,6 +16,7 @@ import {
 import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
+import PasswordRecovery from './PasswordRecovery';
 
 class LoginForm extends Component {
   constructor(props) {
@@ -27,11 +28,16 @@ class LoginForm extends Component {
       err: '',
       dropdownToggled: false,
       dropdownFocused: false,
+      handleResetSubmit: false,
     };
   }
 
   componentDidMount() {
-    this.login.focus();
+    const { path } = this.props;
+
+    if (!path) {
+      this.login.focus();
+    }
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -81,6 +87,61 @@ class LoginForm extends Component {
     });
   }
 
+  handleResetOk = response => {
+    this.setState(
+      {
+        handleResetSubmit: true,
+        pending: true,
+      },
+      () => {
+        const responsePromise = new Promise(resolve => {
+          resolve(response);
+        });
+        this.handleLoginRequest(responsePromise);
+      }
+    );
+  };
+
+  handleLoginRequest = resp => {
+    let request = null;
+
+    if (resp) {
+      request = resp;
+    } else {
+      request = loginRequest(this.login.value, this.passwd.value);
+    }
+
+    request
+      .then(response => {
+        if (response.data.loginComplete) {
+          return this.handleSuccess();
+        }
+        const roles = List(response.data.roles);
+
+        this.setState({
+          roleSelect: true,
+          roles,
+          role: roles.get(0),
+        });
+      })
+      .then(() => {
+        this.setState({
+          pending: false,
+        });
+      })
+      .catch(err => {
+        return this.checkIfAlreadyLogged(err);
+      })
+      .catch(err => {
+        this.setState({
+          err: err.response
+            ? err.response.data.message
+            : counterpart.translate('login.error.fallback'),
+          pending: false,
+        });
+      });
+  };
+
   handleLogin = () => {
     const { dispatch, auth } = this.props;
     const { roleSelect, role } = this.state;
@@ -106,35 +167,7 @@ class LoginForm extends Component {
             });
         }
 
-        loginRequest(this.login.value, this.passwd.value)
-          .then(response => {
-            if (response.data.loginComplete) {
-              return this.handleSuccess();
-            }
-            const roles = List(response.data.roles);
-
-            this.setState({
-              roleSelect: true,
-              roles,
-              role: roles.get(0),
-            });
-          })
-          .then(() => {
-            this.setState({
-              pending: false,
-            });
-          })
-          .catch(err => {
-            return this.checkIfAlreadyLogged(err);
-          })
-          .catch(err => {
-            this.setState({
-              err: err.response
-                ? err.response.data.message
-                : counterpart.translate('login.error.fallback'),
-              pending: false,
-            });
-          });
+        this.handleLoginRequest();
       }
     );
   };
@@ -143,6 +176,11 @@ class LoginForm extends Component {
     this.setState({
       role: option,
     });
+  };
+
+  handleForgotPassword = () => {
+    const { dispatch } = this.props;
+    dispatch(push('/forgottenPassword'));
   };
 
   openDropdown = () => {
@@ -176,7 +214,14 @@ class LoginForm extends Component {
       pending,
       dropdownToggled,
       dropdownFocused,
+      handleResetSubmit,
     } = this.state;
+    const { token, path } = this.props;
+    const onResetOk = this.handleResetOk;
+
+    if (path && !handleResetSubmit) {
+      return <PasswordRecovery {...{ path, token, onResetOk }} />;
+    }
 
     return (
       <div
@@ -257,6 +302,16 @@ class LoginForm extends Component {
               : counterpart.translate('login.callToAction')}
           </button>
         </div>
+        {!roleSelect && (
+          <div className="mt-2 text-center">
+            <a
+              className="forgot-password-link"
+              onClick={this.handleForgotPassword}
+            >
+              {counterpart.translate('login.forgotPassword.caption')}
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -264,6 +319,8 @@ class LoginForm extends Component {
 
 LoginForm.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  path: PropTypes.string,
+  token: PropTypes.string,
 };
 
 LoginForm.contextTypes = {

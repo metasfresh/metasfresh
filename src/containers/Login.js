@@ -17,6 +17,7 @@ class Login extends Component {
     }
   }
 
+  // TODO: We could use current-device lib for this
   userBrowser = () => {
     const isChrome = !!window.chrome && !!window.chrome.webstore;
 
@@ -65,12 +66,14 @@ class Login extends Component {
   };
 
   render() {
-    const { redirect, auth } = this.props;
+    const { redirect, auth, splat, token } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
+    const component = <LoginForm {...{ redirect, auth, token }} path={splat} />;
+
     return (
       <div className="fullscreen">
         <div className="login-container">
-          <LoginForm {...{ redirect, auth }} />
+          {component}
           {!isYourBrowserSupported && (
             <div className="browser-warning">
               <p>Your browser might be not fully supported.</p>
@@ -85,6 +88,10 @@ class Login extends Component {
 
 Login.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  logged: PropTypes.bool,
+  redirect: PropTypes.string,
+  splat: PropTypes.string,
+  token: PropTypes.string,
 };
 
 export default connect()(Login);

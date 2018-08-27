@@ -593,10 +593,26 @@ export function patch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
       );
 
-      await dispatch(indicatorState('saved'));
-      await dispatch({ type: PATCH_SUCCESS, symbol });
+      if (!data[0].validStatus.valid) {
+        await dispatch(indicatorState('error'));
+        await dispatch({ type: PATCH_FAILURE, symbol });
+        const errorMessage = data[0].validStatus.reason;
 
-      return data;
+        dispatch(
+          addNotification(
+            'Error: ' + errorMessage.split(' ', 4).join(' ') + '...',
+            errorMessage,
+            5000,
+            'error',
+            ''
+          )
+        );
+      } else {
+        await dispatch(indicatorState('saved'));
+        await dispatch({ type: PATCH_SUCCESS, symbol });
+
+        return data;
+      }
     } catch (error) {
       await dispatch({ type: PATCH_FAILURE, symbol });
 

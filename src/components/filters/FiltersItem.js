@@ -21,7 +21,7 @@ class FiltersItem extends Component {
     super(props);
 
     this.state = {
-      filter: props.data,
+      filter: { ...props.data },
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -93,23 +93,24 @@ class FiltersItem extends Component {
       activeFilter = active.find(item => item.filterId === data.filterId);
     }
 
-    if (
-      filter.parameters &&
-      activeFilter &&
-      activeFilter.parameters &&
-      activeFilter.filterId === filter.filterId
-    ) {
-      activeFilter.parameters.map(item => {
-        this.mergeData(
-          item.parameterName,
-          item.value != null ? item.value : '',
-          item.valueTo != null ? item.valueTo : ''
-        );
-      });
-    } else if (filter.parameters) {
+    if (filter.parameters) {
       filter.parameters.map(item => {
         this.mergeData(item.parameterName, '');
       });
+
+      if (
+        activeFilter &&
+        activeFilter.parameters &&
+        activeFilter.filterId === filter.filterId
+      ) {
+        activeFilter.parameters.map(item => {
+          this.mergeData(
+            item.parameterName,
+            item.value != null ? item.value : '',
+            item.valueTo != null ? item.valueTo : ''
+          );
+        });
+      }
     }
   };
 
@@ -139,18 +140,20 @@ class FiltersItem extends Component {
 
   mergeData = (property, value, valueTo) => {
     this.setState(prevState => ({
-      filter: Object.assign({}, prevState.filter, {
+      filter: {
+        ...prevState.filter,
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
-            return Object.assign({}, param, {
+            return {
+              ...param,
               value: this.parseDateToReadable(param.widgetType, value),
               valueTo: this.parseDateToReadable(param.widgetType, valueTo),
-            });
+            };
           } else {
             return param;
           }
         }),
-      }),
+      },
     }));
   };
 
@@ -162,6 +165,7 @@ class FiltersItem extends Component {
       bottom,
       right,
     } = this.widgetsContainer.getBoundingClientRect();
+
     dispatch(openFilterBox({ top, left, bottom, right }));
   };
 

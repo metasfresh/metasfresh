@@ -154,8 +154,7 @@ class ListWidget extends Component {
       if (values.length === 0 && lastProperty) {
         disableAutofocus();
       } else if (
-        !ignoreFocus &&
-        this.state.autoFocus &&
+        (ignoreFocus || this.state.autoFocus) &&
         values &&
         values.length > 1
       ) {

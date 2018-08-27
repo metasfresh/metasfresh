@@ -981,10 +981,15 @@ td.pulse-off input {
     .mb-2 {
         margin-bottom: 1.5rem !important;
     }
-}
 
-.login-form > div {
-    position: relative;
+    .forgot-password-link {
+        cursor: pointer;
+        color: $brand-link-color !important;
+
+        &&:hover {
+            color: $brand-color-primary !important;
+        }
+    }
 }
 
 .filter-btn-wrapper {
