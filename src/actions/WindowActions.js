@@ -586,14 +586,13 @@ export function patch(
 
     try {
       const response = await patchRequest(options);
-
       const data =
         response.data instanceof Array ? response.data : [response.data];
       await dispatch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
       );
 
-      if (!data[0].validStatus.valid) {
+      if (data[0].validStatus && !data[0].validStatus.valid) {
         await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
         const errorMessage = data[0].validStatus.reason;
@@ -716,7 +715,9 @@ function updateRow(row, scope) {
 
 function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
   return dispatch => {
-    data.map((item, index) => {
+    const dataArray = typeof data.splice === 'function' ? data : [data];
+
+    dataArray.map((item, index) => {
       const parsedItem = item.fieldsByName
         ? {
             ...item,
