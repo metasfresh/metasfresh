@@ -43,6 +43,7 @@ Here come the actual release notes:
   * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
   * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
   * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
+  * [#1934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1934) Cannot run processes
 
 # metasfresh 5.72
 ## Features
