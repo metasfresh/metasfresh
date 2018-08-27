@@ -2,6 +2,8 @@ package de.metas.vendor.gateway.api.order;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,7 +32,12 @@ import lombok.Value;
 @Builder
 public class PurchaseOrderRequestItem
 {
-	int purchaseCandidateId;
+	@NonNull
+	@Default
+	PurchaseOrderRequestItemId id = PurchaseOrderRequestItemId.random();
 
+	@NonNull
 	ProductAndQuantity productAndQuantity;
+
+	int purchaseCandidateId;
 }

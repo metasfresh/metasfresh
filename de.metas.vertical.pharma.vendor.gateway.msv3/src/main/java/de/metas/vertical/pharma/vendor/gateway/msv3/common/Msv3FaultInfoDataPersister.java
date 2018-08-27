@@ -5,8 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.OrgId;
+
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_FaultInfo;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.Msv3FaultInfo;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -35,14 +37,14 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Msv3FaultInfoDataPersister
 {
-	public static Msv3FaultInfoDataPersister newInstanceWithOrgId(final int orgId)
+	public static Msv3FaultInfoDataPersister newInstanceWithOrgId(final OrgId orgId)
 	{
 		return new Msv3FaultInfoDataPersister(orgId);
 	}
 
-	private final int orgId;
+	private final OrgId orgId;
 
-	public I_MSV3_FaultInfo storeMsv3FaultInfoOrNull(@Nullable final Msv3FaultInfo msv3FaultInfo)
+	public I_MSV3_FaultInfo storeMsv3FaultInfoOrNull(@Nullable final FaultInfo msv3FaultInfo)
 	{
 		if (msv3FaultInfo == null)
 		{
@@ -50,11 +52,11 @@ public class Msv3FaultInfoDataPersister
 		}
 
 		final I_MSV3_FaultInfo faultInfoRecord = newInstance(I_MSV3_FaultInfo.class);
-		faultInfoRecord.setAD_Org_ID(orgId);
-		faultInfoRecord.setMSV3_EndanwenderFehlertext(msv3FaultInfo.getEndanwenderFehlertext());
+		faultInfoRecord.setAD_Org_ID(OrgId.toRepoIdOrAny(orgId));
+		faultInfoRecord.setMSV3_EndanwenderFehlertext(msv3FaultInfo.getUserMessage());
 		faultInfoRecord.setMSV3_ErrorCode(msv3FaultInfo.getErrorCode());
 		faultInfoRecord.setMSV3_FaultInfoType(msv3FaultInfo.getClass().getSimpleName());
-		faultInfoRecord.setMSV3_TechnischerFehlertext(msv3FaultInfo.getTechnischerFehlertext());
+		faultInfoRecord.setMSV3_TechnischerFehlertext(msv3FaultInfo.getTechnicalMessage());
 		save(faultInfoRecord);
 
 		return faultInfoRecord;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackageItemId;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
@@ -97,7 +98,7 @@ public class JsonSerializationTests
 				.bpartner(BPartnerId.of(1234, 5678))
 				.orderPackage(MSV3OrderSyncRequestPackage.builder()
 						.item(MSV3OrderSyncRequestPackageItem.builder()
-								.id(Id.of("11111"))
+								.id(OrderCreateRequestPackageItemId.of("11111"))
 								.pzn(PZN.of(666777888))
 								.qty(Quantity.of(333))
 								.build())

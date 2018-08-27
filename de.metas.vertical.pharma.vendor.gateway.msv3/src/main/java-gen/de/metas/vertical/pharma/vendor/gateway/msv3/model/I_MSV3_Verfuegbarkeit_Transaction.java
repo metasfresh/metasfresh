@@ -180,31 +180,27 @@ public interface I_MSV3_Verfuegbarkeit_Transaction
     public static final String COLUMNNAME_MSV3_FaultInfo_ID = "MSV3_FaultInfo_ID";
 
 	/**
-	 * Set MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
+	 * Set MSV3_Verfuegbarkeit_Transaction.
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: ID
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID (int MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID);
+	public void setMSV3_Verfuegbarkeit_Transaction_ID (int MSV3_Verfuegbarkeit_Transaction_ID);
 
 	/**
-	 * Get MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
+	 * Get MSV3_Verfuegbarkeit_Transaction.
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: ID
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID();
+	public int getMSV3_Verfuegbarkeit_Transaction_ID();
 
-	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort();
-
-	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort MSV3_VerfuegbarkeitsanfrageEinzelneAntwort);
-
-    /** Column definition for MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort> COLUMN_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort>(I_MSV3_Verfuegbarkeit_Transaction.class, "MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID", de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class);
-    /** Column name MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID */
-    public static final String COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID = "MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID";
+    /** Column definition for MSV3_Verfuegbarkeit_Transaction_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object> COLUMN_MSV3_Verfuegbarkeit_Transaction_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object>(I_MSV3_Verfuegbarkeit_Transaction.class, "MSV3_Verfuegbarkeit_Transaction_ID", null);
+    /** Column name MSV3_Verfuegbarkeit_Transaction_ID */
+    public static final String COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID = "MSV3_Verfuegbarkeit_Transaction_ID";
 
 	/**
 	 * Set MSV3_VerfuegbarkeitsanfrageEinzelne.
@@ -234,27 +230,31 @@ public interface I_MSV3_Verfuegbarkeit_Transaction
     public static final String COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelne_ID = "MSV3_VerfuegbarkeitsanfrageEinzelne_ID";
 
 	/**
-	 * Set MSV3_Verfuegbarkeit_Transaction.
+	 * Set MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMSV3_Verfuegbarkeit_Transaction_ID (int MSV3_Verfuegbarkeit_Transaction_ID);
+	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID (int MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID);
 
 	/**
-	 * Get MSV3_Verfuegbarkeit_Transaction.
+	 * Get MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMSV3_Verfuegbarkeit_Transaction_ID();
+	public int getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID();
 
-    /** Column definition for MSV3_Verfuegbarkeit_Transaction_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object> COLUMN_MSV3_Verfuegbarkeit_Transaction_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object>(I_MSV3_Verfuegbarkeit_Transaction.class, "MSV3_Verfuegbarkeit_Transaction_ID", null);
-    /** Column name MSV3_Verfuegbarkeit_Transaction_ID */
-    public static final String COLUMNNAME_MSV3_Verfuegbarkeit_Transaction_ID = "MSV3_Verfuegbarkeit_Transaction_ID";
+	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort getMSV3_VerfuegbarkeitsanfrageEinzelneAntwort();
+
+	public void setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort MSV3_VerfuegbarkeitsanfrageEinzelneAntwort);
+
+    /** Column definition for MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort> COLUMN_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort>(I_MSV3_Verfuegbarkeit_Transaction.class, "MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID", de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class);
+    /** Column name MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID */
+    public static final String COLUMNNAME_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID = "MSV3_VerfuegbarkeitsanfrageEinzelneAntwort_ID";
 
 	/**
 	 * Get Aktualisiert.

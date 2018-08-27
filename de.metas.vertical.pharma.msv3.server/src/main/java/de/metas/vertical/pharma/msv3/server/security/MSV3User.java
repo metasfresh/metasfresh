@@ -48,7 +48,9 @@ public class MSV3User implements UserDetails
 	private final List<GrantedAuthority> authorities;
 
 	private static final List<GrantedAuthority> AUTHORITIES_CLIENT = ImmutableList.of(new SimpleGrantedAuthority(SecurityConfig.ROLE_CLIENT));
-	private static final List<GrantedAuthority> AUTHORITIES_SERVER_ADMIN = ImmutableList.of(new SimpleGrantedAuthority(SecurityConfig.ROLE_SERVER_ADMIN));
+	private static final List<GrantedAuthority> AUTHORITIES_SERVER_ADMIN = ImmutableList.of(
+			new SimpleGrantedAuthority(SecurityConfig.ROLE_CLIENT), // FIXME: delete it
+			new SimpleGrantedAuthority(SecurityConfig.ROLE_SERVER_ADMIN));
 
 	@Builder
 	private MSV3User(

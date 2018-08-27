@@ -1,14 +1,5 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.testconnection;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ClientBase;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3ConnectionFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
-import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerbindungTesten;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerbindungTestenResponse;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.vendor.gateway.msv3
@@ -31,34 +22,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MSV3TestConnectionClient extends MSV3ClientBase
+public interface MSV3TestConnectionClient
 {
-	private static final String URL_SUFFIX_TEST_CONNECTION = "/verbindungTesten";
-
-	public MSV3TestConnectionClient(
-			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfig config)
-	{
-		super(connectionFactory, config);
-	}
-
-	public String testConnection()
-	{
-		final ObjectFactory objectFactory = getObjectFactory();
-
-		final VerbindungTesten verbindungTesten = objectFactory.createVerbindungTesten();
-		verbindungTesten.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
-
-		sendAndReceive(
-				objectFactory.createVerbindungTesten(verbindungTesten),
-				VerbindungTestenResponse.class);
-
-		return "ok";
-	}
-
-	@Override
-	public String getUrlSuffix()
-	{
-		return URL_SUFFIX_TEST_CONNECTION;
-	}
+	String testConnection();
 }

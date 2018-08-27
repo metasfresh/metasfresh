@@ -1,8 +1,9 @@
 package de.metas.vendor.gateway.api.order;
 
-import java.util.Collection;
+import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -37,5 +38,6 @@ public class PurchaseOrderRequest
 	int vendorId;
 
 	@Singular
-	Collection<PurchaseOrderRequestItem> purchaseOrderRequestItems;
+	@NonNull
+	ImmutableList<PurchaseOrderRequestItem> items;
 }

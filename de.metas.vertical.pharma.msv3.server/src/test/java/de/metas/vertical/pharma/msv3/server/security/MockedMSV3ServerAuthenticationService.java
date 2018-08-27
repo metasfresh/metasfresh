@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.security;
 
+import de.metas.vertical.pharma.msv3.server.security.jpa.JpaUserRepository;
+
 /*
  * #%L
  * metasfresh-pharma.msv3.server
