@@ -285,6 +285,7 @@ public class IntegrationTest
 		stockAvailabilityQuery.getArtikel().add(stockAvailabilityQueryItem);
 
 		final VerfuegbarkeitAnfragen soapRequest = jaxbObjectFactory.createVerfuegbarkeitAnfragen();
+		soapRequest.setClientSoftwareKennung("clientSofwareId");
 		soapRequest.setVerfuegbarkeitsanfrage(stockAvailabilityQuery);
 		return jaxbObjectFactory.createVerfuegbarkeitAnfragen(soapRequest);
 	}
