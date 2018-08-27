@@ -588,14 +588,15 @@ export function patch(
       const response = await patchRequest(options);
       const data =
         response.data instanceof Array ? response.data : [response.data];
+      const dataItem = data[0];
       await dispatch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
       );
 
-      if (data[0].validStatus && !data[0].validStatus.valid) {
+      if (dataItem && dataItem.validStatus && !dataItem.validStatus.valid) {
         await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
-        const errorMessage = data[0].validStatus.reason;
+        const errorMessage = dataItem.validStatus.reason;
 
         dispatch(
           addNotification(
