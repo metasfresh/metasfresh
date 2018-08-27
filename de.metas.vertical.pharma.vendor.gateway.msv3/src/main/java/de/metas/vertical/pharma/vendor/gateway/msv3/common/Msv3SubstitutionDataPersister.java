@@ -5,11 +5,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.OrgId;
+
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemSubstitution;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Substitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.BestellungSubstitution;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitSubstitution;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,31 +39,32 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Msv3SubstitutionDataPersister
 {
-	public static Msv3SubstitutionDataPersister newInstanceWithOrgId(final int orgId)
+	public static Msv3SubstitutionDataPersister newInstanceWithOrgId(final OrgId orgId)
 	{
 		return new Msv3SubstitutionDataPersister(orgId);
 	}
 
-	private final int orgId;
+	@NonNull
+	private final OrgId orgId;
 
-	public I_MSV3_Substitution storeSubstitutionOrNull(@Nullable final BestellungSubstitution substitution)
+	public I_MSV3_Substitution storeSubstitutionOrNull(@Nullable final OrderResponsePackageItemSubstitution itemSubstitution)
 	{
-		if (substitution == null)
+		if (itemSubstitution == null)
 		{
 			return null;
 		}
 
 		final I_MSV3_Substitution substitutionRecord = newInstance(I_MSV3_Substitution.class);
-		substitutionRecord.setAD_Org_ID(orgId);
-		substitutionRecord.setMSV3_Grund(substitution.getGrund().toString());
-		substitutionRecord.setMSV3_LieferPzn(Long.toString(substitution.getLieferPzn()));
-		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getSubstitutionsgrund().value());
+		substitutionRecord.setAD_Org_ID(orgId.getRepoId());
+		substitutionRecord.setMSV3_Grund(itemSubstitution.getDefectReason().value());
+		substitutionRecord.setMSV3_LieferPzn(itemSubstitution.getPzn().getValueAsString());
+		substitutionRecord.setMSV3_Substitutionsgrund(itemSubstitution.getSubstitutionReason().value());
 		save(substitutionRecord);
 
 		return substitutionRecord;
 	}
 
-	public I_MSV3_Substitution storeSubstitutionOrNull(@Nullable final VerfuegbarkeitSubstitution substitution)
+	public I_MSV3_Substitution storeSubstitutionOrNull(@Nullable final StockAvailabilitySubstitution substitution)
 	{
 		if (substitution == null)
 		{
@@ -68,9 +72,9 @@ public class Msv3SubstitutionDataPersister
 		}
 
 		final I_MSV3_Substitution substitutionRecord = newInstance(I_MSV3_Substitution.class);
-		substitutionRecord.setMSV3_Grund(substitution.getGrund().toString());
-		substitutionRecord.setMSV3_LieferPzn(Long.toString(substitution.getLieferPzn()));
-		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getSubstitutionsgrund().value());
+		substitutionRecord.setMSV3_Grund(substitution.getReason().value());
+		substitutionRecord.setMSV3_LieferPzn(substitution.getPzn().getValueAsString());
+		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getType().value());
 		save(substitutionRecord);
 
 		return substitutionRecord;

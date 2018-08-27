@@ -50,7 +50,7 @@ public class Group
 	@Getter
 	private final GroupId groupId;
 	@Getter
-	private final int groupTemplateId;
+	private final GroupTemplateId groupTemplateId;
 	private final int precision;
 	@Getter
 	private final BPartnerId bpartnerId;
@@ -67,7 +67,7 @@ public class Group
 	@Builder
 	private Group(
 			@NonNull final GroupId groupId,
-			final int groupTemplateId,
+			final GroupTemplateId groupTemplateId,
 			final int precision,
 			final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
@@ -213,10 +213,13 @@ public class Group
 			}
 		}
 
-		if (!manualCompensationLines.isEmpty())
-		{
-			compensationLines.addAll(manualCompensationLines);
-			updateAllPercentageLines();
-		}
+		compensationLines.addAll(manualCompensationLines);
+
+		updateAllPercentageLines();
+	}
+
+	public boolean isBasedOnGroupTemplate()
+	{
+		return getGroupTemplateId() != null;
 	}
 }

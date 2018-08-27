@@ -1,21 +1,31 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.function.Supplier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
+import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_System;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig.MSV3ClientConfigBuilder;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
+import de.metas.vertical.pharma.vendor.gateway.msv3.model.X_MSV3_Vendor_Config;
 import lombok.NonNull;
 
 /*
@@ -44,60 +54,111 @@ import lombok.NonNull;
 @DependsOn(Adempiere.BEAN_NAME)
 public class MSV3ClientConfigRepository
 {
-	/**
-	 * {@code null} object, used to store "no config for this vendor" in the {@link #configDataRecords} cache.
-	 * <p>
-	 * Notes: beside this bean being annotated to depending on {@link Adempiere#BEAN_NAME},<br>
-	 * there might not yet be a DB connection when this repository is initialized (in the swing client!).<br>
-	 * That's why we have the supplier.
-	 */
-	private final static Supplier<I_MSV3_Vendor_Config> NULL_CONFIG_RECORD = //
-			ExtendedMemorizingSupplier.of(() -> newInstance(I_MSV3_Vendor_Config.class));
-
-	private final CCache<Integer, I_MSV3_Vendor_Config> configDataRecords = CCache.newCache(
+	private final CCache<BPartnerId, Optional<MSV3ClientConfig>> configDataRecords = CCache.newCache(
 			I_MSV3_Vendor_Config.Table_Name + "#by#" + I_MSV3_Vendor_Config.COLUMNNAME_C_BPartner_ID,
 			10,
 			CCache.EXPIREMINUTES_Never);
+
+	private final ExtendedMemorizingSupplier<ClientSoftwareId> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier.of(this::retrieveSoftwareIndentifier);
+
+	public MSV3ClientConfig getById(@NonNull final MSV3ClientConfigId id)
+	{
+		final I_MSV3_Vendor_Config record = loadOutOfTrx(id, I_MSV3_Vendor_Config.class);
+		return toMSV3ClientConfig(record);
+	}
+
+	public boolean hasConfigForVendor(final BPartnerId vendorId)
+	{
+		return getByVendorIdOrNull(vendorId) != null;
+	}
 
 	/**
 	 * @param vendorId the C_BPartner_ID of the vendor we wish to order from
 	 *
 	 * @return never returns {@code null}.
 	 */
-	public MSV3ClientConfig retrieveByVendorId(final int vendorId)
+	public MSV3ClientConfig getByVendorId(final BPartnerId vendorId)
 	{
-		final MSV3ClientConfig config = getretrieveByVendorIdOrNull(vendorId);
-		Check.errorIf(config == null, "Missing MSV3ClientConfig for vendorId={}", vendorId);
+		final MSV3ClientConfig config = getByVendorIdOrNull(vendorId);
+		if (config == null)
+		{
+			throw new AdempiereException("Missing MSV3ClientConfig for vendorId=" + vendorId);
+		}
 		return config;
 	}
 
-	public MSV3ClientConfig getretrieveByVendorIdOrNull(final int vendorId)
+	public MSV3ClientConfig getByVendorIdOrNull(final BPartnerId vendorId)
 	{
-		final Supplier<I_MSV3_Vendor_Config> recordLoader = () -> retrieveRecordFromDB(vendorId);
+		return configDataRecords.getOrLoad(vendorId, this::retrieveByVendorIdOrNull)
+				.orElse(null);
 
-		final I_MSV3_Vendor_Config configDataRecord = configDataRecords.get(vendorId, recordLoader);
-		if (configDataRecord == NULL_CONFIG_RECORD.get())
-		{
-			return null;
-		}
-
-		return MSV3ClientConfig.ofdataRecord(configDataRecord);
 	}
 
-	private I_MSV3_Vendor_Config retrieveRecordFromDB(final int vendorId)
+	private Optional<MSV3ClientConfig> retrieveByVendorIdOrNull(final BPartnerId vendorId)
 	{
-		final I_MSV3_Vendor_Config result = Services.get(IQueryBL.class)
+		final I_MSV3_Vendor_Config record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MSV3_Vendor_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MSV3_Vendor_Config.COLUMN_C_BPartner_ID, vendorId)
 				.create()
 				.firstOnly(I_MSV3_Vendor_Config.class);
-
-		if (result == null)
+		if (record == null)
 		{
-			return NULL_CONFIG_RECORD.get();
+			return Optional.empty();
 		}
-		return result;
+		return Optional.of(toMSV3ClientConfig(record));
+	}
+
+	public MSV3ClientConfig toMSV3ClientConfig(@NonNull final I_MSV3_Vendor_Config configDataRecord)
+	{
+		final URL baseUrl = toURL(configDataRecord);
+
+		return newMSV3ClientConfig()
+				.baseUrl(baseUrl)
+				.authUsername(configDataRecord.getUserID())
+				.authPassword(configDataRecord.getPassword())
+				.bpartnerId(de.metas.vertical.pharma.msv3.protocol.types.BPartnerId.of(configDataRecord.getC_BPartner_ID()))
+				.version(getVersionById(configDataRecord.getVersion()))
+				.configId(MSV3ClientConfigId.ofRepoId(configDataRecord.getMSV3_Vendor_Config_ID()))
+				.build();
+	}
+
+	private static Version getVersionById(final String versionId)
+	{
+		if (X_MSV3_Vendor_Config.VERSION_1.equals(versionId))
+		{
+			return MSV3ClientConfig.VERSION_1;
+		}
+		else if (X_MSV3_Vendor_Config.VERSION_2.equals(versionId))
+		{
+			return MSV3ClientConfig.VERSION_2;
+		}
+		else
+		{
+			throw new AdempiereException("Unknow MSV3 protocol version: " + versionId);
+		}
+	}
+
+	public MSV3ClientConfigBuilder newMSV3ClientConfig()
+	{
+		return MSV3ClientConfig.builder()
+				.clientSoftwareId(CLIENT_SOFTWARE_IDENTIFIER.get());
+
+	}
+
+	private static URL toURL(@NonNull final I_MSV3_Vendor_Config configDataRecord)
+	{
+		try
+		{
+			return new URL(configDataRecord.getMSV3_BaseUrl());
+		}
+		catch (MalformedURLException e)
+		{
+			throw new AdempiereException("The MSV3_BaseUrl value of the given MSV3_Vendor_Config can't be parsed as URL", e)
+					.appendParametersToMessage()
+					.setParameter("MSV3_BaseUrl", configDataRecord.getMSV3_BaseUrl())
+					.setParameter("MSV3_Vendor_Config", configDataRecord);
+		}
 	}
 
 	public MSV3ClientConfig save(@NonNull final MSV3ClientConfig config)
@@ -123,7 +184,7 @@ public class MSV3ClientConfigRepository
 			configRecord = newInstance(I_MSV3_Vendor_Config.class);
 		}
 
-		configRecord.setC_BPartner_ID(config.getBpartnerId().getRepoId());
+		configRecord.setC_BPartner_ID(config.getBpartnerId().getBpartnerId());
 		configRecord.setMSV3_BaseUrl(config.getBaseUrl().toExternalForm());
 		configRecord.setPassword(config.getAuthPassword());
 		configRecord.setUserID(config.getAuthUsername());
@@ -131,5 +192,16 @@ public class MSV3ClientConfigRepository
 		return configRecord;
 	}
 
-
+	private ClientSoftwareId retrieveSoftwareIndentifier()
+	{
+		try
+		{
+			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
+			return ClientSoftwareId.of("metasfresh-" + adSystem.getDBVersion());
+		}
+		catch (final RuntimeException e)
+		{
+			return ClientSoftwareId.of("metasfresh-<unable to retrieve version!>");
+		}
+	}
 }

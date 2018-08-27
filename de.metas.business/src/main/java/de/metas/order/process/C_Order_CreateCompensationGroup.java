@@ -1,5 +1,6 @@
 package de.metas.order.process;
 
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -69,6 +70,10 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 		if (Check.isEmpty(groupNameEffective, true) && productCategory != null)
 		{
 			groupNameEffective = productCategory.getName();
+		}
+		if (Check.isEmpty(groupNameEffective, true))
+		{
+			throw new FillMandatoryException("Name");
 		}
 
 		return GroupTemplate.builder()

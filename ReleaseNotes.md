@@ -10,6 +10,69 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.73
+## Features
+* metasfresh
+  * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
+  * [#4494](https://github.com/metasfresh/metasfresh/issues/4494) Projecttype Org Validation
+  * [#4448](https://github.com/metasfresh/metasfresh/issues/4448) Advanced BLs to create inventory lines
+  * [#4450](https://github.com/metasfresh/metasfresh/issues/4450) Tablet optimized inventory-counting-window
+  * [#4482](https://github.com/metasfresh/metasfresh/issues/4482) Support Doctype Text templates also on purchase order
+  * [#4498](https://github.com/metasfresh/metasfresh/issues/4498) Make fields in explicit user filter mandatory or optional
+  * [#4501](https://github.com/metasfresh/metasfresh/issues/4501) LogicExpressionEvaluator: improve error message in case something went wrong
+  * [#4517](https://github.com/metasfresh/metasfresh/issues/4517) Extend Sales Order REST API to support price and support all product values
+
+* metasfresh-webui-frontend
+  * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
+
+## Fixes
+* metasfresh
+  * [#4483](https://github.com/metasfresh/metasfresh/issues/4483) Payment allocation form does not show invoices
+  * [#4499](https://github.com/metasfresh/metasfresh/issues/4499) Cannot create letter
+  * [#4504](https://github.com/metasfresh/metasfresh/issues/4504) Mandatory logic broken for C_FlatrateTerm.C_Currency_ID
+  * [#4506](https://github.com/metasfresh/metasfresh/issues/4506) Compensation Group's subtotals gets broken after setting/changing the flatrate conditions
+  * [#4509](https://github.com/metasfresh/metasfresh/issues/4509) NPE in Compensation Groups creation
+  * [#4514](https://github.com/metasfresh/metasfresh/issues/4514) Include sales orders REST API to metasfresh-dist/serverRoot
+
+* metasfresh-webui-frontend
+  * [#1188](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1188) Home and End button move caret in text fields
+  * [#1463](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1463) Unable to execute any quick actions in Firefox
+  * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
+  * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) included tab: when refreshing via websocket event the sort/order is not preserved
+  * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
+  * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
+  * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
+  * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
+  * [#1934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1934) Cannot run processes
+
+# metasfresh 5.72
+## Features
+* metasfresh
+  * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
+    * New Translation Feature for Project Status and Product Category.
+
+* metasfresh-webui-frontend
+  * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
+    * New Feature that allows a User to reset a forgotton password.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1188](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1188) Home and End button move caret in text fields
+    * Bugfix for the Keyboard support of [home] and [end] keys in Text Fields.
+  * [#1463](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1463) Unable to execute any quick actions in Firefox
+    * Fixes a Bug that occurred with quickactions in non-webkit browsers.
+  * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
+  * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) included tab: when refreshing via websocket event the sort/order is not preserved
+    * Improvement of the Websocket refresh behavior when manipulating records in combination with changed order.
+  * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
+    * Improvement of the Error Handling for Records that cannot be saved.
+  * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
+    * Fix for the Shortcut [alt]+u.
+  * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
+    * Bugfix for the automatic workflow sequence of combined Lookup Fields.
+  * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
+    
+
 # metasfresh 5.71
 ## Features
 * metasfresh

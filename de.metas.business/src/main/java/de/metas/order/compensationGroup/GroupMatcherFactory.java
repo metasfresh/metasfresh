@@ -1,7 +1,6 @@
 package de.metas.order.compensationGroup;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 
@@ -31,5 +30,5 @@ public interface GroupMatcherFactory
 {
 	String getAppliesToLineType();
 
-	Predicate<Group> createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines);
+	GroupMatcher createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines);
 }

@@ -876,6 +876,17 @@ import lombok.NonNull;
 		_onlyInLocatorIds.add(locatorId);
 		return this;
 	}
+	
+	@Override
+	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<Integer> locatorIds)
+	{
+		if (locatorIds != null && !locatorIds.isEmpty())
+		{
+			_onlyInLocatorIds.addAll(locatorIds);
+		}
+		return this;
+	}
+
 
 	private Set<Integer> getOnlyInLocatorIds()
 	{

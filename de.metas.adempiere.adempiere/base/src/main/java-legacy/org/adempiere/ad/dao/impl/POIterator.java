@@ -13,7 +13,7 @@
  * For the text or an alternative of this public license, you may reach us    *
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
  * or via info@compiere.org or http://www.compiere.org/license.html           *
- * Copyright (C) 2007 Low Heng Sin hengsin@avantz.com                         * 
+ * Copyright (C) 2007 Low Heng Sin hengsin@avantz.com                         *
  * Contributor(s):                                                            *
  * __________________________________________                                 *
  *****************************************************************************/
@@ -30,7 +30,7 @@ import org.compiere.model.POInfo;
 
 /**
  * Iterator implementation to fetch PO one at a time using a prefetch ID list.
- * 
+ *
  * @author Low Heng Sin
  *
  */
@@ -54,7 +54,6 @@ class POIterator<T> implements Iterator<T>
 	 */
 	public POIterator(final Properties ctx, final String tableName, Class<T> clazz, List<Object[]> idList, String trxName)
 	{
-		super();
 		this.ctx = ctx;
 		this.tableName = tableName;
 		this.clazz = clazz;

@@ -14,7 +14,7 @@ public class X_MSV3_VerfuegbarkeitsantwortArtikel extends org.compiere.model.PO 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1121230409L;
+	private static final long serialVersionUID = 1615715811L;
 
     /** Standard Constructor */
     public X_MSV3_VerfuegbarkeitsantwortArtikel (Properties ctx, int MSV3_VerfuegbarkeitsantwortArtikel_ID, String trxName)
