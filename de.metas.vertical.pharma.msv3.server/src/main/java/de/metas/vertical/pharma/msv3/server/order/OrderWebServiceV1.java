@@ -8,7 +8,7 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.order.v1.OrderJAXBConvertersV1;
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV1;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellenResponse;
@@ -54,7 +54,7 @@ public class OrderWebServiceV1
 				.build();
 	}
 
-	@PayloadRoot(localPart = "bestellen", namespace = MSV3ServerConstantsV1.SOAP_NAMESPACE)
+	@PayloadRoot(localPart = "bestellen", namespace = MSV3ServerConstants.SOAP_NAMESPACE_V1)
 	public @ResponsePayload JAXBElement<BestellenResponse> createOrder(@RequestPayload final JAXBElement<Bestellen> jaxbRequest)
 	{
 		@SuppressWarnings("unchecked")

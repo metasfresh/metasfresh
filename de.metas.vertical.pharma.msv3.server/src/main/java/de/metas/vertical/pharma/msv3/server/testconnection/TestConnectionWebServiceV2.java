@@ -10,7 +10,7 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.types.ClientSoftwareId;
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV2;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerbindungTesten;
@@ -56,7 +56,7 @@ public class TestConnectionWebServiceV2
 		jaxbObjectFactory = new ObjectFactory();
 	}
 
-	@PayloadRoot(localPart = "verbindungTesten", namespace = MSV3ServerConstantsV2.SOAP_NAMESPACE)
+	@PayloadRoot(localPart = "verbindungTesten", namespace = MSV3ServerConstants.SOAP_NAMESPACE_V2)
 	public @ResponsePayload JAXBElement<VerbindungTestenResponse> testConnection(@RequestPayload final JAXBElement<VerbindungTesten> jaxbRequest)
 	{
 		final ClientSoftwareId clientSoftwareId = ClientSoftwareId.of(jaxbRequest.getValue().getClientSoftwareKennung());

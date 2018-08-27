@@ -33,6 +33,13 @@ import org.springframework.ws.transport.http.MessageDispatcherServlet;
  * #L%
  */
 
+/**
+ * 
+ * IMPORTANT/NOTE: we are not including the WebServiceConfigV2 so we will not expose the WSDLs and XSDs,
+ * but the `@Endpoint` annotated classes are discovered and autowired.
+ * That means, you will not have the WSDLs exposed but if some client tries to talk v2 with us, we will answer using the v2 endpoint beans.
+ *
+ */
 @EnableWs
 @Configuration
 @Import({ WebServiceConfigV1.class
@@ -55,9 +62,6 @@ public class WebServiceConfig
 		servlet.setApplicationContext(applicationContext);
 		servlet.setTransformWsdlLocations(true);
 
-		return new ServletRegistrationBean(servlet,
-				MSV3ServerConstantsV1.WEBSERVICE_ENDPOINT_PATH + "/*"
-		// , MSV3ServerConstantsV2.WEBSERVICE_ENDPOINT_PATH + "/*"
-		);
+		return new ServletRegistrationBean(servlet, MSV3ServerConstants.WEBSERVICE_ENDPOINT_PATH + "/*");
 	}
 }

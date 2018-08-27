@@ -8,7 +8,7 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2.StockAvailabilityJAXBConvertersV2;
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV2;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.VerfuegbarkeitAnfragenResponse;
@@ -54,7 +54,7 @@ public class StockAvailabilityWebServiceV2
 				.build();
 	}
 
-	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = MSV3ServerConstantsV2.SOAP_NAMESPACE)
+	@PayloadRoot(localPart = "verfuegbarkeitAnfragen", namespace = MSV3ServerConstants.SOAP_NAMESPACE_V2)
 	public @ResponsePayload JAXBElement<VerfuegbarkeitAnfragenResponse> getStockAvailability(@RequestPayload final JAXBElement<VerfuegbarkeitAnfragen> jaxbRequest)
 	{
 		@SuppressWarnings("unchecked")

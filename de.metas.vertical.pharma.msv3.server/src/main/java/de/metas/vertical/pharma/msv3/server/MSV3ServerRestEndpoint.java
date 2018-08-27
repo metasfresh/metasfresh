@@ -35,7 +35,7 @@ import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
  */
 
 @RestController
-@RequestMapping(MSV3ServerConstantsV2.REST_ENDPOINT_PATH)
+@RequestMapping(MSV3ServerConstants.REST_ENDPOINT_PATH)
 public class MSV3ServerRestEndpoint
 {
 	private static final Logger ROOT_LOGGER = LoggerFactory.getLogger(MSV3ServerRestEndpoint.class.getPackage().getName());

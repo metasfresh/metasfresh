@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV2;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedBatchEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3UserChangedEvent;
 import de.metas.vertical.pharma.msv3.server.peer.service.MSV3ServerPeerService;
@@ -44,7 +44,7 @@ import de.metas.vertical.pharma.msv3.server.security.MSV3User;
 @RequestMapping(UserSyncRestEndpoint.ENDPOINT)
 public class UserSyncRestEndpoint
 {
-	public static final String ENDPOINT = MSV3ServerConstantsV2.BACKEND_SYNC_REST_ENDPOINT + "/users";
+	public static final String ENDPOINT = MSV3ServerConstants.BACKEND_SYNC_REST_ENDPOINT + "/users";
 
 	@Autowired
 	private MSV3ServerAuthenticationService authService;

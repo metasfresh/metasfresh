@@ -8,7 +8,7 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import de.metas.vertical.pharma.msv3.protocol.order.v2.OrderStatusJAXBConvertersV2;
-import de.metas.vertical.pharma.msv3.server.MSV3ServerConstantsV2;
+import de.metas.vertical.pharma.msv3.server.MSV3ServerConstants;
 import de.metas.vertical.pharma.msv3.server.security.MSV3ServerAuthenticationService;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellstatusAbfragen;
 import de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2.BestellstatusAbfragenResponse;
@@ -54,7 +54,7 @@ public class OrderStatusWebServiceV2
 				.build();
 	}
 
-	@PayloadRoot(localPart = "bestellstatusAbfragen", namespace = MSV3ServerConstantsV2.SOAP_NAMESPACE)
+	@PayloadRoot(localPart = "bestellstatusAbfragen", namespace = MSV3ServerConstants.SOAP_NAMESPACE_V2)
 	public @ResponsePayload JAXBElement<BestellstatusAbfragenResponse> getOrderStatus(@RequestPayload final JAXBElement<BestellstatusAbfragen> jaxbRequest)
 	{
 		@SuppressWarnings("unchecked")
