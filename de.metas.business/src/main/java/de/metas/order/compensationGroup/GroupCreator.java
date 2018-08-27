@@ -77,7 +77,7 @@ public final class GroupCreator
 		getGroupTemplate()
 				.getLines()
 				.stream()
-				.filter(templateLine -> templateLine.getGroupMatcher().test(group))
+				.filter(templateLine -> templateLine.getGroupMatcher().isMatching(group))
 				.map(templateLine -> compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group))
 				.forEach(group::addNewCompensationLine);
 

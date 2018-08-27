@@ -2,11 +2,14 @@ package de.metas.order.rest.model;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -45,16 +48,22 @@ public class JsonSalesOrderLine
 	@JsonProperty("qty")
 	BigDecimal qty;
 
+	@JsonProperty("price")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	BigDecimal price;
+
 	@Builder
 	@JsonCreator
 	private JsonSalesOrderLine(
 			@JsonProperty("productCode") @NonNull final String productCode,
-			@JsonProperty("qty") @NonNull final BigDecimal qty)
+			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("price") @Nullable final BigDecimal price)
 	{
 		Check.assumeGreaterThanZero(qty, "qty");
 
 		this.productCode = productCode;
 		this.qty = qty;
+		this.price = price;
 	}
 
 }

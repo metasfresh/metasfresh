@@ -1,5 +1,7 @@
 package de.metas.inventory.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -84,6 +86,12 @@ public class InventoryDAO implements IInventoryDAO
 				.updateDirectly()
 				.addSetColumnValue(I_M_InventoryLine.COLUMNNAME_Processed, processed)
 				.execute();
+	}
+
+	@Override
+	public void save(I_M_InventoryLine inventoryLine)
+	{
+		saveRecord(inventoryLine);
 	}
 
 }

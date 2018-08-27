@@ -540,4 +540,6 @@ public interface IHUQueryBuilder
 	 * Ignored if also {@link #setExcludeReservedToOtherThan(OrderLineId)} was called.
 	 */
 	IHUQueryBuilder setExcludeReserved();
+
+	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
 }

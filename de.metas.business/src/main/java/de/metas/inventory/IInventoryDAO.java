@@ -47,4 +47,6 @@ public interface IInventoryDAO extends ISingletonService
 	boolean hasLines(int inventoryId);
 
 	void setInventoryLinesProcessed(int inventoryId, boolean processed);
+	
+	void save(I_M_InventoryLine inventoryLine); 
 }
