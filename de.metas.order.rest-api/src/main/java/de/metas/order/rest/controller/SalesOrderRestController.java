@@ -124,7 +124,8 @@ public class SalesOrderRestController
 
 		salesOrderFactory.newOrderLine()
 				.productId(productId)
-				.addQty(qty);
+				.addQty(qty)
+				.manualPrice(salesOrderLine.getPrice());
 	}
 
 	private JsonSalesOrder toSalesOrder(I_C_Order salesOrderRecord)

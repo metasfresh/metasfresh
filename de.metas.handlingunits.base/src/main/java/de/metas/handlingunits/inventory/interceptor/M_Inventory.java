@@ -129,7 +129,7 @@ public class M_Inventory
 
 			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
 					.setProduct(inventoryLine.getM_Product())
-					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getQty())
+					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getAsBigDecimal())
 					.setUOM(inventoryLine.getC_UOM())
 					.setAttributeStorageFrom(asiAttributeStorageFrom)
 					.setAttributeStorageTo(huAttributeStorageTo)
@@ -141,7 +141,6 @@ public class M_Inventory
 			return IHUContextProcessor.NULL_RESULT; // we don't care
 		});
 	}
-
 
 	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
 	{
@@ -201,7 +200,7 @@ public class M_Inventory
 	{
 		final I_M_Product product = loadOutOfTrx(inventoryLine.getM_Product_ID(), I_M_Product.class);
 		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
-		final PlainProductStorage productStorage = new PlainProductStorage(product, qtyDiff.getUOM(), qtyDiff.getQty());
+		final PlainProductStorage productStorage = new PlainProductStorage(product, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
 		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
 	}
 

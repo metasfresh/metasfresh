@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.UomId;
@@ -84,6 +85,11 @@ public class OrderGroupRepository implements GroupRepository
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
+
+	private static ModelDynAttributeAccessor<I_C_OrderLine, Boolean> ATTR_IsRepoUpdate = new ModelDynAttributeAccessor<>(
+			OrderGroupRepository.class.getName(),
+			"IsRepoUpdate",
+			Boolean.class);
 
 	public OrderGroupRepository(
 			final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
@@ -214,6 +220,16 @@ public class OrderGroupRepository implements GroupRepository
 		}
 	}
 
+	public static boolean isRepositoryUpdate(final I_C_OrderLine orderLine)
+	{
+		return ATTR_IsRepoUpdate.isSet(orderLine);
+	}
+
+	private static void markAsRepositoryUpdate(final I_C_OrderLine orderLine)
+	{
+		ATTR_IsRepoUpdate.setValue(orderLine, Boolean.TRUE);
+	}
+
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
 	{
 		Check.assumeNotEmpty(groupOrderLines, "groupOrderLines is not empty");
@@ -228,7 +244,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
-				.groupTemplateId(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID())
+				.groupTemplateId(GroupTemplateId.ofRepoIdOrNull(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()))
 				.precision(precision)
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
@@ -615,7 +631,13 @@ public class OrderGroupRepository implements GroupRepository
 					.stream()
 					.filter(orderLine -> !orderIdsToSkipDeleting.contains(orderLine.getC_OrderLine_ID()))
 					.collect(ImmutableList.toImmutableList());
-			orderLinesToDelete.forEach(InterfaceWrapperHelper::delete);
+			orderLinesToDelete.forEach(this::deleteOrderLineRecord);
+		}
+
+		private void deleteOrderLineRecord(final I_C_OrderLine orderLine)
+		{
+			markAsRepositoryUpdate(orderLine);
+			InterfaceWrapperHelper.delete(orderLine);
 		}
 	}
 

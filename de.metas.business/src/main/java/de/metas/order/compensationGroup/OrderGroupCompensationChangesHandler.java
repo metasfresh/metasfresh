@@ -52,9 +52,9 @@ public class OrderGroupCompensationChangesHandler
 
 		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
 		final Group group = groupsRepo.retrieveGroup(groupId);
-		if (group.getGroupTemplateId() > 0 && !orderLine.isGroupCompensationLine())
+		if (group.isBasedOnGroupTemplate() && !orderLine.isGroupCompensationLine())
 		{
-			recreateGroup(group);
+			recreateGroupFromTemplate(group);
 		}
 		else
 		{
@@ -62,37 +62,41 @@ public class OrderGroupCompensationChangesHandler
 			groupsRepo.saveGroup(group);
 		}
 	}
-	
+
 	public void recreateGroupOnOrderLineChanged(final I_C_OrderLine orderLine)
 	{
 		if (!isEligible(orderLine))
 		{
 			return;
 		}
-		
+
 		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
 		final Group group = groupsRepo.retrieveGroup(groupId);
-		if (group.getGroupTemplateId() <= 0)
+		if (group.isBasedOnGroupTemplate())
 		{
-			return;
+			recreateGroupFromTemplate(group);
 		}
-
-		recreateGroup(group);
 	}
-	
-	private void recreateGroup(final Group group)
+
+	private void recreateGroupFromTemplate(final Group group)
 	{
 		final GroupTemplate groupTemplate = groupTemplateRepo.getById(group.getGroupTemplateId());
 		groupsRepo.prepareNewGroup()
 				.groupTemplate(groupTemplate)
 				.recreateGroup(group);
-		
+
 		final int orderId = OrderGroupRepository.extractOrderIdFromGroup(group);
 		groupsRepo.renumberOrderLinesForOrderId(orderId);
 	}
 
 	private boolean isEligible(final I_C_OrderLine orderLine)
 	{
+		// Skip if given line is currently changed by the repository (to avoid race conditions)
+		if (OrderGroupRepository.isRepositoryUpdate(orderLine))
+		{
+			return false;
+		}
+
 		// Skip if not a group line
 		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
 		{
