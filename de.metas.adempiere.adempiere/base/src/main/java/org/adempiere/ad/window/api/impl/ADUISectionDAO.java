@@ -102,7 +102,7 @@ public class ADUISectionDAO implements IADUISectionDAO
 				.setTo(targetUISection)
 				.copy();
 		targetUISection.setAD_Org_ID(sourceUISection.getAD_Org_ID());
-		targetUISection.setAD_Tab_ID(targetTab.getAD_Org_ID());
+		targetUISection.setAD_Tab_ID(targetTabId);
 
 		if (targetUISection.getSeqNo() <= 0)
 		{

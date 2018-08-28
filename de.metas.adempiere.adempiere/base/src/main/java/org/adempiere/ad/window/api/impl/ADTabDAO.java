@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADFieldDAO;
 import org.adempiere.ad.window.api.IADTabDAO;
+import org.adempiere.ad.window.api.IADUISectionDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -53,6 +54,7 @@ public class ADTabDAO implements IADTabDAO
 	private static final transient Logger logger = LogManager.getLogger(ADTabDAO.class);
 
 	private final IADFieldDAO fieldDAO = Services.get(IADFieldDAO.class);
+	private final IADUISectionDAO uiSectionDAO = Services.get(IADUISectionDAO.class);
 
 	@Override
 	public void copyWindowTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
@@ -89,6 +91,7 @@ public class ADTabDAO implements IADTabDAO
 		copyTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
 
 		fieldDAO.copyTabFields(targetTab, sourceTab);
+		uiSectionDAO.copyUISections(targetTab, sourceTab);
 	}
 
 	private I_AD_Tab createUpdateTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
