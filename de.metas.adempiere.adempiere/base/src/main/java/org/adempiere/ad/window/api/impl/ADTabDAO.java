@@ -84,6 +84,15 @@ public class ADTabDAO implements IADTabDAO
 	{
 		logger.debug("Copying tab from {} to {}", sourceTab, targetWindow);
 
+		final I_AD_Tab targetTab = createUpdateTab(targetWindow, existingTargetTab, sourceTab);
+
+		copyTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
+
+		fieldDAO.copyTabFields(targetTab, sourceTab);
+	}
+
+	private I_AD_Tab createUpdateTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
+	{
 		final int targetWindowId = targetWindow.getAD_Window_ID();
 		final String entityType = targetWindow.getEntityType();
 
@@ -93,7 +102,7 @@ public class ADTabDAO implements IADTabDAO
 				.setFrom(sourceTab)
 				.setTo(targetTab)
 				.copy();
-		targetTab.setAD_Org_ID(sourceTab.getAD_Org_ID());
+		targetTab.setAD_Org_ID(targetWindow.getAD_Org_ID());
 		targetTab.setAD_Window_ID(targetWindowId);
 		targetTab.setEntityType(entityType);
 
@@ -104,9 +113,7 @@ public class ADTabDAO implements IADTabDAO
 		}
 		save(targetTab);
 
-		fieldDAO.copyTabFields(targetTab, sourceTab);
-
-		copyWindowTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
+		return targetTab;
 	}
 
 	private int retrieveWindowTabLastSeqNo(int windowId)
@@ -119,7 +126,7 @@ public class ADTabDAO implements IADTabDAO
 		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
 
-	private void copyWindowTabTrl(final int targetTabId, final int sourceTabId)
+	private void copyTabTrl(final int targetTabId, final int sourceTabId)
 	{
 		Check.assumeGreaterThanZero(targetTabId, "targetTabId");
 		Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");

@@ -109,7 +109,7 @@ public class ADFieldDAO implements IADFieldDAO
 				.setFrom(sourceField)
 				.setTo(targetField)
 				.copy();
-		targetField.setAD_Org_ID(sourceField.getAD_Org_ID());
+		targetField.setAD_Org_ID(targetTab.getAD_Org_ID());
 		targetField.setAD_Tab_ID(targetTabId);
 		targetField.setEntityType(entityType);
 
