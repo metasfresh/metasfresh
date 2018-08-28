@@ -33,6 +33,8 @@ class QuickActions extends Component {
     inModal: PropTypes.bool,
     disabled: PropTypes.bool,
     stopShortcutPropagation: PropTypes.bool,
+
+    processStatus: PropTypes.string,
   };
 
   unmounted = false;
@@ -180,14 +182,19 @@ class QuickActions extends Component {
   };
 
   toggleTooltip = (type, visible) => {
-    console.log('toggle')
     this.setState({
       [type]: visible,
     });
   };
 
   render() {
-    const { actions, isDropdownOpen, btnTooltip, listTooltip, loading } = this.state;
+    const {
+      actions,
+      isDropdownOpen,
+      btnTooltip,
+      listTooltip,
+      loading,
+    } = this.state;
     const { shouldNotUpdate, processStatus, disabled } = this.props;
     const disabledDuringProcessing = processStatus === 'pending' || loading;
 
