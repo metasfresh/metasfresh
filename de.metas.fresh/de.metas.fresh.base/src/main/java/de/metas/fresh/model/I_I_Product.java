@@ -22,7 +22,7 @@ package de.metas.fresh.model;
  * #L%
  */
 
-public interface I_I_Product
+public interface I_I_Product extends  org.compiere.model.I_I_Product
 {
 
 	// @formatter:off
