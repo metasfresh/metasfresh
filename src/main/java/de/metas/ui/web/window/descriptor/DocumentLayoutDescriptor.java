@@ -112,7 +112,7 @@ public final class DocumentLayoutDescriptor
 	{
 		return windowId;
 	}
-
+	
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
