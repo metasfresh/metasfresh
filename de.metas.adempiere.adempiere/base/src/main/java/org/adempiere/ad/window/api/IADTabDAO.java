@@ -1,10 +1,13 @@
 package org.adempiere.ad.window.api;
 
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Window;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,18 +25,9 @@ package org.adempiere.ad.window.api;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-
-public interface IADFieldDAO extends ISingletonService
+public interface IADTabDAO extends ISingletonService
 {
 
-	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
-
-	void copyTabFields(I_AD_Tab targetTab, I_AD_Tab sourceTab);
+	void copyWindowTabs(I_AD_Window targetWindow, I_AD_Window sourceWindow);
 
 }
