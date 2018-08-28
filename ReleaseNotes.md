@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.74
+## Fixes
+* metasfresh
+  * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems wrt invoice candidate creation from subscription flatrate terms
+
 # metasfresh 5.73
 ## Features
 * metasfresh
