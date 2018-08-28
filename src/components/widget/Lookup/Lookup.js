@@ -522,6 +522,7 @@ class Lookup extends Component {
                       onChange,
                       isInputEmpty,
                       property,
+                      tabIndex,
                     }}
                   />
                 </div>
