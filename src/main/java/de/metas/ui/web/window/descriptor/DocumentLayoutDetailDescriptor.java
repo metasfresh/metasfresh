@@ -48,8 +48,7 @@ public final class DocumentLayoutDetailDescriptor
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
 	{
-		windowId = builder.windowId;
-		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+		windowId = Check.assumeNotNull(builder.windowId, "Parameter windowId is not null");
 
 		detailId = builder.detailId;
 
@@ -136,7 +135,7 @@ public final class DocumentLayoutDetailDescriptor
 		{
 			return singleRowLayout.build();
 		}
-		
+
 		@Override
 		public String toString()
 		{

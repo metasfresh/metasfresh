@@ -23,6 +23,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -72,9 +73,8 @@ public final class DocumentLayoutDescriptor
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
 
-	private DocumentLayoutDescriptor(final Builder builder)
+	private DocumentLayoutDescriptor(@NonNull final Builder builder)
 	{
-		super();
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
 
@@ -152,9 +152,6 @@ public final class DocumentLayoutDescriptor
 	}
 
 	/**
-	 *
-	 * @param detailId
-	 * @return detail
 	 * @throws DocumentLayoutDetailNotFoundException
 	 */
 	public DocumentLayoutDetailDescriptor getDetail(final DetailId detailId)

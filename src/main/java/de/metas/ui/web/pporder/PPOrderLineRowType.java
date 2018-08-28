@@ -51,7 +51,7 @@ public enum PPOrderLineRowType
 
 	public static PPOrderLineRowType forCode(@NonNull final String code)
 	{
-		PPOrderLineRowType type = code2type.get(code);
+		final PPOrderLineRowType type = code2type.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PPOrderLineRowType.class + " found for code: " + code);
