@@ -1,5 +1,9 @@
 package org.adempiere.ad.window.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.List;
 
 /*
@@ -29,6 +33,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADTabDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -43,12 +48,17 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.logging.LogManager;
 
 public class ADWindowDAO implements IADWindowDAO
 {
+	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
+
+	private final IADTabDAO tabDAO = Services.get(IADTabDAO.class);
 
 	@Override
 	public ITranslatableString retrieveWindowName(final int adWindowId)
@@ -269,7 +279,7 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(uiElementGroup, Boolean.TRUE);
 		uiElementGroup.setAD_UI_Column(toUIColumn);
 		uiElementGroup.setSeqNo(retrieveUIElementGroupsNextSeqNo(toUIColumn));
-		InterfaceWrapperHelper.save(uiElementGroup);
+		save(uiElementGroup);
 	}
 
 	@Override
@@ -287,7 +297,7 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(uiElement, Boolean.TRUE);
 		uiElement.setAD_UI_ElementGroup(toUIElementGroup);
 		uiElement.setSeqNo(retrieveUIElementNextSeqNo(toUIElementGroup));
-		InterfaceWrapperHelper.save(uiElement);
+		save(uiElement);
 	}
 
 	@Override
@@ -300,6 +310,29 @@ public class ADWindowDAO implements IADWindowDAO
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
 				.create()
 				.firstOnly(I_AD_Tab.class);
+	}
+
+	@Override
+	public void copyWindow(final int targetWindowId, final int sourceWindowId)
+	{
+		Check.assumeGreaterThanZero(targetWindowId, "targetProcessId");
+		Check.assumeGreaterThanZero(sourceWindowId, "sourceProcessId");
+
+		final I_AD_Window targetWindow = load(targetWindowId, I_AD_Window.class);
+		final I_AD_Window sourceWindow = load(sourceWindowId, I_AD_Window.class);
+
+		logger.debug("Copying from: {} to: {}", sourceWindow, targetWindow);
+
+		copy()
+				.setSkipCalculatedColumns(true)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
+				.setFrom(sourceWindow)
+				.setTo(targetWindow)
+				.copy();
+		save(targetWindow);
+
+		tabDAO.copyWindowTabs(targetWindow, sourceWindow);
 	}
 
 }
