@@ -31,6 +31,7 @@ class Container extends Component {
       query,
       attachments,
       showIndicator,
+      // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       hideHeader,
       handleDeletedStatus,

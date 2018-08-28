@@ -344,6 +344,7 @@ class MasterWindow extends Component {
       documentSummaryElement &&
       master.data[documentSummaryElement.fields[0].field];
 
+    // TODO: We should be using indicator from the state instead of another variable
     const isDocumentNotSaved =
       dataId !== 'notfound' &&
       master.saveStatus.saved !== undefined &&
