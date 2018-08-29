@@ -73,6 +73,8 @@
 		<module>de.metas.adempiere.adempiere</module>
 
 		<module>de.metas.business</module>
+		
+		<module>de.metas.inbound.mail</module>
 
 		<module>de.metas.jax.rs</module>
 
