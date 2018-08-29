@@ -71,7 +71,6 @@ unfiltered
 collapsible
 customization
 customize
-fucking
 pimping
 enqueueing
 callable
@@ -98,3 +97,4 @@ updatable
 occupates
 unsupervised
 flatrate
+config
