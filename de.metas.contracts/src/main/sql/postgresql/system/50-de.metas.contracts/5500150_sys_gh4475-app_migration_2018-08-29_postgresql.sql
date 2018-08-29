@@ -68,3 +68,13 @@ DELETE FROM AD_Index_Table WHERE AD_Index_Table_ID=540437
 ;
 
 DROP INDEX IF EXISTS public.uc_c_invoice_candidate_assignment_assigned_id;
+
+-- 2018-08-29T23:36:19.671
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@RefundBase/P@=''F''',Updated=TO_TIMESTAMP('2018-08-29 23:36:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=565580
+;
+
+-- 2018-08-29T23:41:56.074
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Erzeuge Vertrag',Updated=TO_TIMESTAMP('2018-08-29 23:41:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540460
+;

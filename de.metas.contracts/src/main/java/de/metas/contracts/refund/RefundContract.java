@@ -1,11 +1,7 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
-import static org.adempiere.util.collections.CollectionUtils.hasDifferentValues;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -74,32 +70,9 @@ public class RefundContract
 		this.startDate = startDate;
 		this.endDate = endDate;
 
-		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
-		Check.errorIf(
-				hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
-				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
-		Check.errorIf(
-				hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
-				"The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
+		RefundConfigs.assertValid(refundConfigs);
 
-		this.refundConfigs = refundConfigs
-				.stream()
-				.sorted(Comparator.comparing(RefundConfig::getMinQty).reversed())
-				.collect(ImmutableList.toImmutableList());
-
-		if (RefundMode.ALL_MAX_SCALE.equals(extractRefundMode()))
-		{
-			// we have one IC with different configs, so they need to have the consistent settings
-			Check.errorIf(
-					hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule),
-					"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
-					RefundMode.ALL_MAX_SCALE, refundConfigs);
-
-			Check.errorIf(
-					hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType),
-					"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
-					RefundMode.ALL_MAX_SCALE, refundConfigs);
-		}
+		this.refundConfigs = RefundConfigs.sortByMinQtyDesc(refundConfigs);
 	}
 
 	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
@@ -137,10 +110,7 @@ public class RefundContract
 
 	public RefundMode extractRefundMode()
 	{
-		final RefundMode refundMode = extractSingleElement(
-				getRefundConfigs(),
-				RefundConfig::getRefundMode);
-		return refundMode;
+		return RefundConfigs.extractRefundMode(refundConfigs);
 	}
 
 	public Optional<RefundConfig> getRefundConfigToUseProfitCalculation()

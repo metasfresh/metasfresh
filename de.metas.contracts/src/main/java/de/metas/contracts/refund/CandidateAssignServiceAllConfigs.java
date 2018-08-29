@@ -69,13 +69,6 @@ public class CandidateAssignServiceAllConfigs
 
 		final AssignableInvoiceCandidate assignableCandidateWithoutRefundInvoiceCandidates = assignableCandidate.withoutRefundInvoiceCandidates();
 
-		// IPair<AssignableInvoiceCandidate, Quantity> //
-		// assignedCandidateWithRemainingQty = ImmutablePair.of(
-		// assignableCandidateWithoutRefundInvoiceCandidates,
-		// assignableCandidate.getQuantity());
-
-
-
 		final Mutable<RefundInvoiceCandidate> lastAssignedResultCandidate = new Mutable<>(refundCandidateToAssign);
 
 		// we need to look at the lowest minQty first, in order to "fill" it; only the "biggest" config is does not have the next-higher config's minQty as ceiling
@@ -136,12 +129,6 @@ public class CandidateAssignServiceAllConfigs
 		{
 			refundConfigChangeService.resetMoneyAmount(refundCandidateAfterAssignment, oldRefundConfig, newRefundConfig);
 		}
-
-//		// make sure that all assignments have the *same* refund candidate instance (i.e. the "final" version of it)
-//		final ImmutableList<AssignmentToRefundCandidate> assignments = assignmentsForRefundCandidateToAssign
-//				.stream()
-//				.map(a -> a.withRefundInvoiceCandidate(lastAssignedResultCandidate.getValue()))
-//				.collect(ImmutableList.toImmutableList());
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
 				.toBuilder()

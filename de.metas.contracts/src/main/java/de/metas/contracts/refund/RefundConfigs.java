@@ -1,5 +1,8 @@
 package de.metas.contracts.refund;
 
+import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
+import static org.adempiere.util.collections.CollectionUtils.hasDifferentValues;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -7,6 +10,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -45,6 +49,15 @@ public class RefundConfigs
 		return sortedConfigs;
 	}
 
+	public ImmutableList<RefundConfig> sortByMinQtyDesc(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		final ImmutableList<RefundConfig> sortedConfigs = refundConfigs
+				.stream()
+				.sorted(Comparator.comparing(RefundConfig::getMinQty).reversed())
+				.collect(ImmutableList.toImmutableList());
+		return sortedConfigs;
+	}
+
 	public RefundConfig largestMinQty(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		Check.assumeNotEmpty(refundConfigs, "The given refundConfigs may not be empty");
@@ -53,5 +66,38 @@ public class RefundConfigs
 				.stream()
 				.max(Comparator.comparing(RefundConfig::getMinQty))
 				.get();
+	}
+
+	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		final RefundMode refundMode = extractSingleElement(
+				refundConfigs,
+				RefundConfig::getRefundMode);
+		return refundMode;
+	}
+
+	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
+		Check.errorIf(
+				hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
+				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
+		Check.errorIf(
+				hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
+				"The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
+
+		if (RefundMode.ALL_MAX_SCALE.equals(extractRefundMode(refundConfigs)))
+		{
+			// we have one IC with different configs, so they need to have the consistent settings
+			Check.errorIf(
+					hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule),
+					"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
+					RefundMode.ALL_MAX_SCALE, refundConfigs);
+
+			Check.errorIf(
+					hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType),
+					"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
+					RefundMode.ALL_MAX_SCALE, refundConfigs);
+		}
 	}
 }

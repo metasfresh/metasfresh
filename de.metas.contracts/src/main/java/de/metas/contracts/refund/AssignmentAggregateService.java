@@ -65,9 +65,8 @@ public class AssignmentAggregateService
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<I_C_Invoice_Candidate_Assignment_Aggregate_V> aggregates = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment_Aggregate_V.class)
-				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate_Assignment_Aggregate_V.COLUMN_C_Invoice_Candidate_Term_ID, refundCandidateId)
-				.create()
+				.create() // note: the view has no IsActive column, but its whereclause filters by isactive
 				.list(I_C_Invoice_Candidate_Assignment_Aggregate_V.class);
 
 		final BigDecimal newMoneyAmount = aggregates
@@ -109,9 +108,8 @@ public class AssignmentAggregateService
 
 		final List<I_C_Invoice_Candidate_Assignment_Aggregate_V> aggregates = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment_Aggregate_V.class)
-				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate_Assignment_Aggregate_V.COLUMN_C_Invoice_Candidate_Term_ID, invoiceCandidateId)
-				.create()
+				.create() // note: the view has no IsActive column, but its whereclause filters by isactive
 				.list(I_C_Invoice_Candidate_Assignment_Aggregate_V.class);
 
 		final ImmutableMap.Builder<RefundConfig, BigDecimal> result = ImmutableMap.builder();

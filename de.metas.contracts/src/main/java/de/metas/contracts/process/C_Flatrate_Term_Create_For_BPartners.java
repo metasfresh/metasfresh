@@ -76,7 +76,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
 		{
 			final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
-			
+
 			final RefundConfigQuery query = RefundConfigQuery.builder()
 					.conditionsId(conditionsId)
 					.build();
