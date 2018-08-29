@@ -50,7 +50,7 @@ public class ContractsDAOTest
 	}
 
 	@Test
-	public void test()
+	public void retrieveSubscriptionTermsWithMissingCandidates()
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
 
