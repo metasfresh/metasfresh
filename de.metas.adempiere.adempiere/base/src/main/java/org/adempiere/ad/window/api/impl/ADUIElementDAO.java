@@ -1,6 +1,7 @@
 package org.adempiere.ad.window.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -55,7 +56,7 @@ import de.metas.logging.LogManager;
 public class ADUIElementDAO implements IADUIElementDAO
 {
 
-	IADUIElementFieldDAO uiElementFieldDAO = Services.get(IADUIElementFieldDAO.class);
+	private final IADUIElementFieldDAO uiElementFieldDAO = Services.get(IADUIElementFieldDAO.class);
 
 	private static final transient Logger logger = LogManager.getLogger(ADUIElementDAO.class);
 
@@ -85,7 +86,7 @@ public class ADUIElementDAO implements IADUIElementDAO
 
 	private void copyUIElement(final I_AD_UI_ElementGroup targetElementGroup, final I_AD_UI_Element existingTargetElement, final I_AD_UI_Element sourceUIElement)
 	{
-		logger.debug("Copying UI Element from {} to {}", sourceUIElement, targetElementGroup);
+		logger.debug("Copying UI Element {} to {}", sourceUIElement, targetElementGroup);
 
 		final I_AD_UI_Element targetUIElement = createUpdateUIElement(targetElementGroup, existingTargetElement, sourceUIElement);
 
@@ -102,23 +103,37 @@ public class ADUIElementDAO implements IADUIElementDAO
 				.setFrom(sourceElement)
 				.setTo(targetElement)
 				.copy();
+
 		targetElement.setAD_Org_ID(targetElementGroup.getAD_Org_ID());
 		targetElement.setAD_UI_ElementGroup_ID(targetElementGroupId);
 
-		final int targetFieldId = getTargetFieldId(sourceElement, targetElementGroup);
+		final int tabId = getTabId(targetElementGroup);
+		targetElement.setAD_Tab_ID(tabId);
 
+		final int targetFieldId = getTargetFieldId(sourceElement, tabId);
 		targetElement.setAD_Field_ID(targetFieldId);
+
 		if (targetElement.getSeqNo() <= 0)
 		{
-			final int lastSeqNo = retrieveElementGroupElementLastSeqNo(targetElementGroupId);
+			final int lastSeqNo = retrieveUIElementLastSeqNo(targetElementGroupId);
 			targetElement.setSeqNo(lastSeqNo + 10);
 		}
+
 		save(targetElement);
 
 		return targetElement;
 	}
 
-	private int getTargetFieldId(final I_AD_UI_Element sourceElement, final I_AD_UI_ElementGroup targetElementGroup)
+	private int getTabId(final I_AD_UI_ElementGroup targetElementGroup)
+	{
+		final I_AD_UI_Column uiColumn = targetElementGroup.getAD_UI_Column();
+
+		final I_AD_UI_Section uiSection = uiColumn.getAD_UI_Section();
+
+		return uiSection.getAD_Tab_ID();
+	}
+
+	private int getTargetFieldId(final I_AD_UI_Element sourceElement, final int tabId)
 	{
 		if (sourceElement.getAD_Field_ID() <= 0)
 		{
@@ -128,11 +143,7 @@ public class ADUIElementDAO implements IADUIElementDAO
 
 		final int columnId = sourceField.getAD_Column_ID();
 
-		final I_AD_UI_Column uiColumn = targetElementGroup.getAD_UI_Column();
-
-		final I_AD_UI_Section uiSection = uiColumn.getAD_UI_Section();
-
-		final I_AD_Tab tab = uiSection.getAD_Tab();
+		final I_AD_Tab tab = loadOutOfTrx(tabId, I_AD_Tab.class);
 
 		final Optional<I_AD_Field> fieldForColumn = Services.get(IADFieldDAO.class).retrieveFields(tab)
 				.stream()
@@ -142,7 +153,7 @@ public class ADUIElementDAO implements IADUIElementDAO
 		return fieldForColumn.isPresent() ? fieldForColumn.get().getAD_Field_ID() : -1;
 	}
 
-	private int retrieveElementGroupElementLastSeqNo(int uiElementGroupId)
+	private int retrieveUIElementLastSeqNo(int uiElementGroupId)
 	{
 		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Element.class)
 				.addEqualsFilter(I_AD_UI_Element.COLUMNNAME_AD_UI_ElementGroup_ID, uiElementGroupId)

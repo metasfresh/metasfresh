@@ -72,7 +72,7 @@ public class ADFieldDAO implements IADFieldDAO
 	}
 
 	@Override
-	public void copyTabFields(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
+	public void copyFields(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
 	{
 		final Map<Integer, I_AD_Field> existingTargetFields = retrieveFields(Env.getCtx(), targetTab.getAD_Tab_ID(), ITrx.TRXNAME_ThreadInherited);
 		final Collection<I_AD_Field> sourceFields = retrieveFields(Env.getCtx(), sourceTab.getAD_Tab_ID(), ITrx.TRXNAME_ThreadInherited).values();
@@ -98,7 +98,7 @@ public class ADFieldDAO implements IADFieldDAO
 
 	private void copyField(final I_AD_Tab targetTab, final I_AD_Field existingTargetField, final I_AD_Field sourceField)
 	{
-		logger.debug("Copying field from {} to {}", sourceField, targetTab);
+		logger.debug("Copying field {} to {}", sourceField, targetTab);
 
 		final int targetTabId = targetTab.getAD_Tab_ID();
 		final String entityType = targetTab.getEntityType();

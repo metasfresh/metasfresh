@@ -68,7 +68,7 @@ public class ADUIElementFieldDAO implements IADUIElementFieldDAO
 				});
 	}
 
-	@Cached(cacheName = I_AD_UI_Element.Table_Name + "#by#" + I_AD_UI_ElementField.COLUMNNAME_AD_UI_Element_ID)
+	@Cached(cacheName = I_AD_UI_ElementField.Table_Name + "#by#" + I_AD_UI_ElementField.COLUMNNAME_AD_UI_Element_ID)
 	public Map<Integer, I_AD_UI_ElementField> retrieveUIElementFields(@CacheCtx final Properties ctx, final int uiElementId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_ElementField.class, ctx, trxName)
@@ -81,31 +81,30 @@ public class ADUIElementFieldDAO implements IADUIElementFieldDAO
 
 	private void copyUIElementField(final I_AD_UI_Element targetUIElement, final I_AD_UI_ElementField existingTargetElementField, final I_AD_UI_ElementField sourceUIElementField)
 	{
-		logger.debug("Copying UI Element Field from {} to {}", sourceUIElementField, targetUIElement);
+		logger.debug("Copying UI Element Field {} to {}", sourceUIElementField, targetUIElement);
 
 		createUpdateUIElementField(targetUIElement, existingTargetElementField, sourceUIElementField);
-
 	}
 
 	private void createUpdateUIElementField(final I_AD_UI_Element targetUIElement, final I_AD_UI_ElementField existingTargetElementField, final I_AD_UI_ElementField sourceUIElementField)
 	{
-		final int targetUIElementId = targetUIElement.getAD_UI_Element_ID();
-
 		final I_AD_UI_ElementField targetUIElementField = existingTargetElementField != null ? existingTargetElementField : newInstance(I_AD_UI_ElementField.class);
 
 		copy()
 				.setFrom(sourceUIElementField)
 				.setTo(targetUIElementField)
 				.copy();
+
 		targetUIElementField.setAD_Org_ID(targetUIElement.getAD_Org_ID());
+		targetUIElementField.setSeqNo(sourceUIElementField.getSeqNo());
+
+		final int targetUIElementId = targetUIElement.getAD_UI_Element_ID();
 		targetUIElementField.setAD_UI_Element_ID(targetUIElementId);
 
 		final int targetFieldId = getTargetFieldId(sourceUIElementField, targetUIElement);
-
 		targetUIElementField.setAD_Field_ID(targetFieldId);
-		targetUIElementField.setSeqNo(sourceUIElementField.getSeqNo());
-		save(targetUIElementField);
 
+		save(targetUIElementField);
 	}
 
 	private int getTargetFieldId(final I_AD_UI_ElementField sourceUIElementField, final I_AD_UI_Element targetElement)
@@ -114,6 +113,7 @@ public class ADUIElementFieldDAO implements IADUIElementFieldDAO
 		{
 			return -1;
 		}
+
 		final I_AD_Field sourceField = sourceUIElementField.getAD_Field();
 
 		final int columnId = sourceField.getAD_Column_ID();

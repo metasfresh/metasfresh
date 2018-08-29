@@ -53,7 +53,7 @@ public class ADUISectionDAO implements IADUISectionDAO
 
 	private static final transient Logger logger = LogManager.getLogger(ADUISectionDAO.class);
 
-	private final IADUIColumnDAO  uiColumnDAO = Services.get(IADUIColumnDAO.class);
+	private final IADUIColumnDAO uiColumnDAO = Services.get(IADUIColumnDAO.class);
 
 	@Override
 	public void copyUISections(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
@@ -82,7 +82,7 @@ public class ADUISectionDAO implements IADUISectionDAO
 
 	private void copyUISection(final I_AD_Tab targetTab, final I_AD_UI_Section existingUISection, final I_AD_UI_Section sourceUISection)
 	{
-		logger.debug("Copying UISection from {} to {}", sourceUISection, targetTab);
+		logger.debug("Copying UISection {} to {}", sourceUISection, targetTab);
 
 		final I_AD_UI_Section targetUISection = createUpdateUISection(targetTab, existingUISection, sourceUISection);
 
@@ -93,15 +93,16 @@ public class ADUISectionDAO implements IADUISectionDAO
 
 	private I_AD_UI_Section createUpdateUISection(final I_AD_Tab targetTab, final I_AD_UI_Section existingUISection, final I_AD_UI_Section sourceUISection)
 	{
-
 		final I_AD_UI_Section targetUISection = existingUISection != null ? existingUISection : newInstance(I_AD_UI_Section.class);
 
-		final int targetTabId = targetTab.getAD_Tab_ID();
 		copy()
 				.setFrom(sourceUISection)
 				.setTo(targetUISection)
 				.copy();
+
 		targetUISection.setAD_Org_ID(sourceUISection.getAD_Org_ID());
+
+		final int targetTabId = targetTab.getAD_Tab_ID();
 		targetUISection.setAD_Tab_ID(targetTabId);
 
 		if (targetUISection.getSeqNo() <= 0)
@@ -136,9 +137,9 @@ public class ADUISectionDAO implements IADUISectionDAO
 
 		final String sqlInsert = "INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language, " +
 				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
-				" Name, Description, IsTranslated) " +
+				" Name, IsTranslated) " +
 				" SELECT " + targetUISectionId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
-				" Updated, UpdatedBy, Name, Description, IsTranslated " +
+				" Updated, UpdatedBy, Name, IsTranslated " +
 				" FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + sourceUISectionId;
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_UI_Section_Trl inserted: {}", countInsert);

@@ -55,8 +55,8 @@ public class ADUIElementGroupDAO implements IADUIElementGroupDAO
 	@Override
 	public void copyUIElementGroups(final I_AD_UI_Column targetUIColumn, final I_AD_UI_Column sourceUIColumn)
 	{
-		final Map<String, I_AD_UI_ElementGroup> existingUIElementGroups = retrieveUISections(Env.getCtx(), targetUIColumn.getAD_UI_Column_ID(), ITrx.TRXNAME_ThreadInherited);
-		final Collection<I_AD_UI_ElementGroup> sourceUIElementGroups = retrieveUISections(Env.getCtx(), sourceUIColumn.getAD_UI_Column_ID(), ITrx.TRXNAME_ThreadInherited).values();
+		final Map<String, I_AD_UI_ElementGroup> existingUIElementGroups = retrieveUIElementGroups(Env.getCtx(), targetUIColumn.getAD_UI_Column_ID(), ITrx.TRXNAME_ThreadInherited);
+		final Collection<I_AD_UI_ElementGroup> sourceUIElementGroups = retrieveUIElementGroups(Env.getCtx(), sourceUIColumn.getAD_UI_Column_ID(), ITrx.TRXNAME_ThreadInherited).values();
 
 		sourceUIElementGroups.stream()
 				.forEach(sourceUIElementGroup -> {
@@ -67,7 +67,7 @@ public class ADUIElementGroupDAO implements IADUIElementGroupDAO
 	}
 
 	@Cached(cacheName = I_AD_UI_ElementGroup.Table_Name + "#by#" + I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_Column_ID)
-	public Map<String, I_AD_UI_ElementGroup> retrieveUISections(@CacheCtx final Properties ctx, final int uiColumnId, @CacheTrx final String trxName)
+	public Map<String, I_AD_UI_ElementGroup> retrieveUIElementGroups(@CacheCtx final Properties ctx, final int uiColumnId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_ElementGroup.class, ctx, trxName)
 				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_Column_ID, uiColumnId)
@@ -79,7 +79,7 @@ public class ADUIElementGroupDAO implements IADUIElementGroupDAO
 
 	private void copyUIElementGroup(final I_AD_UI_Column targetUIColumn, final I_AD_UI_ElementGroup existingUIElementGroup, final I_AD_UI_ElementGroup sourceUIElementGroup)
 	{
-		logger.debug("Copying UIElementGroup from {} to {}", sourceUIElementGroup, targetUIColumn);
+		logger.debug("Copying UIElementGroup {} to {}", sourceUIElementGroup, targetUIColumn);
 
 		final I_AD_UI_ElementGroup targetUIElementGroup = createUpdateUIElementGroup(targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
 
@@ -88,20 +88,20 @@ public class ADUIElementGroupDAO implements IADUIElementGroupDAO
 
 	private I_AD_UI_ElementGroup createUpdateUIElementGroup(final I_AD_UI_Column targetUIColumn, final I_AD_UI_ElementGroup existingUIElementGroup, final I_AD_UI_ElementGroup sourceUIElementGroup)
 	{
-
 		final I_AD_UI_ElementGroup targetUIElementGroup = existingUIElementGroup != null ? existingUIElementGroup : newInstance(I_AD_UI_ElementGroup.class);
 
-		final int targetUIColumnId = targetUIColumn.getAD_UI_Column_ID();
 		copy()
 				.setFrom(sourceUIElementGroup)
 				.setTo(targetUIElementGroup)
 				.copy();
+
 		targetUIElementGroup.setAD_Org_ID(targetUIColumn.getAD_Org_ID());
 		targetUIElementGroup.setAD_UI_Column_ID(targetUIColumn.getAD_UI_Column_ID());
 
 		if (targetUIElementGroup.getSeqNo() <= 0)
 		{
-			final int lastSeqNo = retrieveUISectionLastSeqNo(targetUIColumnId);
+			final int targetUIColumnId = targetUIColumn.getAD_UI_Column_ID();
+			final int lastSeqNo = retrieveUIElementGroupLastSeqNo(targetUIColumnId);
 			targetUIElementGroup.setSeqNo(lastSeqNo + 10);
 		}
 
@@ -110,7 +110,7 @@ public class ADUIElementGroupDAO implements IADUIElementGroupDAO
 		return targetUIElementGroup;
 	}
 
-	private int retrieveUISectionLastSeqNo(int uiColumnId)
+	private int retrieveUIElementGroupLastSeqNo(int uiColumnId)
 	{
 		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_ElementGroup.class)
 				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_Column_ID, uiColumnId)

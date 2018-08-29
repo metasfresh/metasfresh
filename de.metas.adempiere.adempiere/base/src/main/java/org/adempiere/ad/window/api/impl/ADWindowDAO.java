@@ -47,6 +47,7 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -330,9 +331,32 @@ public class ADWindowDAO implements IADWindowDAO
 				.setFrom(sourceWindow)
 				.setTo(targetWindow)
 				.copy();
+
 		save(targetWindow);
 
-		tabDAO.copyWindowTabs(targetWindow, sourceWindow);
+		copyWindowTrl(targetWindowId, sourceWindowId);
+
+		tabDAO.copyTabs(targetWindow, sourceWindow);
+	}
+
+	private void copyWindowTrl(final int targetWindowId, final int sourceWindowId)
+	{
+		Check.assumeGreaterThanZero(targetWindowId, "targetWindowId");
+		Check.assumeGreaterThanZero(sourceWindowId, "sourceWindowId");
+
+		final String sqlDelete = "DELETE FROM AD_Window_Trl WHERE AD_Window_ID = " + targetWindowId;
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Window_Trl deleted: {}", countDelete);
+
+		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_UI_Section_ID, AD_Language, " +
+				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+				" Name, IsTranslated) " +
+				" SELECT " + targetWindowId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+				" Updated, UpdatedBy, Name, IsTranslated " +
+				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId;
+
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Window_Trl inserted: {}", countInsert);
 	}
 
 }

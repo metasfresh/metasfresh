@@ -34,6 +34,6 @@ public interface IADFieldDAO extends ISingletonService
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
-	void copyTabFields(I_AD_Tab targetTab, I_AD_Tab sourceTab);
+	void copyFields(I_AD_Tab targetTab, I_AD_Tab sourceTab);
 
 }

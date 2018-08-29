@@ -6,21 +6,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADUIColumnDAO;
 import org.adempiere.ad.window.api.IADUIElementGroupDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Section;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.logging.LogManager;
 
 /*
@@ -54,21 +49,21 @@ public class ADUIColumnDAO implements IADUIColumnDAO
 	@Override
 	public void copyUIColumns(final I_AD_UI_Section targetUISection, final I_AD_UI_Section sourceUISection)
 	{
-		final Map<Integer, I_AD_UI_Column> existingUIColumns = retrieveUIColumns(Env.getCtx(), targetUISection.getAD_UI_Section_ID(), ITrx.TRXNAME_ThreadInherited);
-		final Collection<I_AD_UI_Column> sourceUIColumns = retrieveUIColumns(Env.getCtx(), sourceUISection.getAD_UI_Section_ID(), ITrx.TRXNAME_ThreadInherited).values();
+		final Map<Integer, I_AD_UI_Column> existingUIColumns = retrieveUIColumns(targetUISection.getAD_UI_Section_ID());
+		final Collection<I_AD_UI_Column> sourceUIColumns = retrieveUIColumns(sourceUISection.getAD_UI_Section_ID()).values();
 
 		sourceUIColumns.stream()
 				.forEach(sourceUIColumn -> {
-					final I_AD_UI_Column existingUIColumn = existingUIColumns.get(sourceUISection.getSeqNo());
+					final I_AD_UI_Column existingUIColumn = existingUIColumns.get(sourceUIColumn.getSeqNo());
 					copyUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
 				});
 
 	}
 
 	@Cached(cacheName = I_AD_UI_Column.Table_Name + "#by#" + I_AD_UI_Column.COLUMNNAME_AD_UI_Section_ID)
-	public Map<Integer, I_AD_UI_Column> retrieveUIColumns(@CacheCtx final Properties ctx, final int sectionId, @CacheTrx final String trxName)
+	public Map<Integer, I_AD_UI_Column> retrieveUIColumns(final int sectionId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Column.class, ctx, trxName)
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Column.class)
 				.addEqualsFilter(I_AD_UI_Column.COLUMNNAME_AD_UI_Section_ID, sectionId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_UI_Column.COLUMNNAME_SeqNo)
@@ -78,7 +73,7 @@ public class ADUIColumnDAO implements IADUIColumnDAO
 
 	private void copyUIColumn(final I_AD_UI_Section targetUISection, final I_AD_UI_Column existingUIColumn, final I_AD_UI_Column sourceUIColumn)
 	{
-		logger.debug("Copying UIColumn from {} to {}", sourceUIColumn, targetUISection);
+		logger.debug("Copying UIColumn {} to {}", sourceUIColumn, targetUISection);
 
 		final I_AD_UI_Column targetUIColumn = createUpdateUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
 
@@ -91,9 +86,11 @@ public class ADUIColumnDAO implements IADUIColumnDAO
 		final I_AD_UI_Column targetUIColumn = existingUIColumn != null ? existingUIColumn : newInstance(I_AD_UI_Column.class);
 
 		copy()
+				.addTargetColumnNameToSkip(I_AD_UI_Column.COLUMNNAME_SeqNo)
 				.setFrom(sourceUIColumn)
 				.setTo(targetUIColumn)
 				.copy();
+
 		targetUIColumn.setAD_Org_ID(targetUISection.getAD_Org_ID());
 		targetUIColumn.setAD_UI_Section_ID(targetUISection.getAD_UI_Section_ID());
 		targetUIColumn.setSeqNo(sourceUIColumn.getSeqNo());

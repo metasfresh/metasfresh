@@ -28,6 +28,6 @@ import org.compiere.model.I_AD_Window;
 public interface IADTabDAO extends ISingletonService
 {
 
-	void copyWindowTabs(I_AD_Window targetWindow, I_AD_Window sourceWindow);
+	void copyTabs(I_AD_Window targetWindow, I_AD_Window sourceWindow);
 
 }
