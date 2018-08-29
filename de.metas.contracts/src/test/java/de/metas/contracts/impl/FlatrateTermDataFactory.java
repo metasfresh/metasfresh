@@ -25,6 +25,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.X_C_Tax;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -275,6 +276,7 @@ public class FlatrateTermDataFactory
 		product.setName(name);
 		product.setM_Product_Category_ID(10);
 		product.setC_UOM(uomRecord);
+		product.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(product);
 		return product;
 	}

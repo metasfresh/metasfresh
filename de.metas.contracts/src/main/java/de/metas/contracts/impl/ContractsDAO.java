@@ -103,7 +103,7 @@ public class ContractsDAO implements IContractsDAO
 
 		final IQuery<I_C_Flatrate_Conditions> flatrateConditionsThatRequireInvoicing = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_IsCreateNoInvoice, true)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_IsCreateNoInvoice, false) // the column name is Create*No*Invoice
 				.create();
 		return flatrateConditionsThatRequireInvoicing;
 	}
