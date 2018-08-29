@@ -350,9 +350,9 @@ public class ADWindowDAO implements IADWindowDAO
 
 		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_UI_Section_ID, AD_Language, " +
 				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
-				" Name, IsTranslated) " +
+				" Name, Description, Help, IsTranslated) " +
 				" SELECT " + targetWindowId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
-				" Updated, UpdatedBy, Name, IsTranslated " +
+				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId;
 
 		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
