@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAntwortPosition extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2142401190L;
+	private static final long serialVersionUID = 902852684L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAntwortPosition (Properties ctx, int MSV3_BestellungAntwortPosition_ID, String trxName)

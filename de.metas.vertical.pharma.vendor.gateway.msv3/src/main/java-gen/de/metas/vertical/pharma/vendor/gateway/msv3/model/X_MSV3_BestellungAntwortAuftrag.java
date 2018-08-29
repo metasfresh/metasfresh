@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1781439913L;
+	private static final long serialVersionUID = 2046301461L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAntwortAuftrag (Properties ctx, int MSV3_BestellungAntwortAuftrag_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
         {
 			setMSV3_Auftragsart (null);
 			setMSV3_AuftragsSupportID (0);
-			setMSV3_BestellungAntwortAuftrag_ID (0);
 			setMSV3_BestellungAntwort_ID (0);
+			setMSV3_BestellungAntwortAuftrag_ID (0);
 			setMSV3_Id (null);
         } */
     }
@@ -181,28 +181,6 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
 		return ii.intValue();
 	}
 
-	/** Set MSV3_BestellungAntwortAuftrag.
-		@param MSV3_BestellungAntwortAuftrag_ID MSV3_BestellungAntwortAuftrag	  */
-	@Override
-	public void setMSV3_BestellungAntwortAuftrag_ID (int MSV3_BestellungAntwortAuftrag_ID)
-	{
-		if (MSV3_BestellungAntwortAuftrag_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID, Integer.valueOf(MSV3_BestellungAntwortAuftrag_ID));
-	}
-
-	/** Get MSV3_BestellungAntwortAuftrag.
-		@return MSV3_BestellungAntwortAuftrag	  */
-	@Override
-	public int getMSV3_BestellungAntwortAuftrag_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwort getMSV3_BestellungAntwort() throws RuntimeException
 	{
@@ -232,6 +210,28 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
 	public int getMSV3_BestellungAntwort_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_BestellungAntwort_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set MSV3_BestellungAntwortAuftrag.
+		@param MSV3_BestellungAntwortAuftrag_ID MSV3_BestellungAntwortAuftrag	  */
+	@Override
+	public void setMSV3_BestellungAntwortAuftrag_ID (int MSV3_BestellungAntwortAuftrag_ID)
+	{
+		if (MSV3_BestellungAntwortAuftrag_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID, Integer.valueOf(MSV3_BestellungAntwortAuftrag_ID));
+	}
+
+	/** Get MSV3_BestellungAntwortAuftrag.
+		@return MSV3_BestellungAntwortAuftrag	  */
+	@Override
+	public int getMSV3_BestellungAntwortAuftrag_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_BestellungAntwortAuftrag_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

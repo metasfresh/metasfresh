@@ -53,9 +53,9 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 	private static final String MSV3_Constant = "MSV3";
 
 	// default values for user and password MSV3_Vendor_ConfigIfNeeded
-	// the values are pe user and there will be changed by the user
-	private static final String Password = "MSV3";
-	private static final String UserID = "MSV3";
+	// the values are per user and there will be changed by the user
+	private static final String DEFAULT_UserID = "MSV3";
+	private static final String DEFAULT_Password = "MSV3";
 
 	private MSV3PharmaImportPartnerInterceptor()
 	{
@@ -90,16 +90,18 @@ public class MSV3PharmaImportPartnerInterceptor implements IImportInterceptor
 				return;
 			}
 
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 			final MSV3ClientConfigRepository configRepo = Adempiere.getBean(MSV3ClientConfigRepository.class);
-			MSV3ClientConfig config = configRepo.getretrieveByVendorIdOrNull(bpartner.getC_BPartner_ID());
+			MSV3ClientConfig config = configRepo.getByVendorIdOrNull(bpartnerId);
 
 			if (config == null)
 			{
-				config = MSV3ClientConfig.builder()
-						.bpartnerId(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
-						.authPassword(Password)
-						.authUsername(UserID)
+				config = configRepo.newMSV3ClientConfig()
 						.baseUrl(toURL(importRecord))
+						.authUsername(DEFAULT_UserID)
+						.authPassword(DEFAULT_Password)
+						.bpartnerId(de.metas.vertical.pharma.msv3.protocol.types.BPartnerId.of(bpartnerId.getRepoId()))
+						.version(MSV3ClientConfig.VERSION_1)
 						.build();
 			}
 

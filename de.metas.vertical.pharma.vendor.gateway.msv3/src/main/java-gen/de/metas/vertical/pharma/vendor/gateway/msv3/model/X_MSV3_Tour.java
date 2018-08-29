@@ -14,7 +14,7 @@ public class X_MSV3_Tour extends org.compiere.model.PO implements I_MSV3_Tour, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -13567147L;
+	private static final long serialVersionUID = 1150045423L;
 
     /** Standard Constructor */
     public X_MSV3_Tour (Properties ctx, int MSV3_Tour_ID, String trxName)
