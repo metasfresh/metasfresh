@@ -9,9 +9,10 @@ import SelectionDropdown from '../SelectionDropdown';
 /*
  * We want the selected option to be displayed first,
  * so in case it has an index other than 0 we will move it
- * to the top of the list
+ * to the top of the list. In case it's not in the list (changed partner for instance),
+ * use defaultValue
  */
-const setSelectedValue = function(dropdownList, selected) {
+const setSelectedValue = function(dropdownList, selected, defaultValue) {
   const changedValues = {};
   let idx = 0;
   let selectedOption = selected;
@@ -24,6 +25,14 @@ const setSelectedValue = function(dropdownList, selected) {
     idx = dropdownList.findIndex(
       item => item.caption === selectedOption.caption
     );
+
+    if (idx === -1) {
+      if (defaultValue) {
+        idx = dropdownList.findIndex(
+          item => item.caption === defaultValue.caption
+        );
+      }
+    }
   }
 
   if (idx !== 0) {
@@ -91,7 +100,7 @@ class RawList extends PureComponent {
         }
         changedValues = {
           ...changedValues,
-          ...setSelectedValue(dropdownList, selectedOption),
+          ...setSelectedValue(dropdownList, selectedOption, defaultValue),
         };
       } else {
         changedValues.selected = null;
@@ -108,7 +117,7 @@ class RawList extends PureComponent {
       if (newSelected) {
         changedValues = {
           ...changedValues,
-          ...setSelectedValue(dropdownList, newSelected),
+          ...setSelectedValue(dropdownList, newSelected, defaultValue),
         };
       }
     }
