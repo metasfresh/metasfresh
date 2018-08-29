@@ -1,7 +1,7 @@
 package de.metas.contracts.refund.grossprofit;
 
-import java.util.Optional;
-
+import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractQuery;
 import de.metas.contracts.refund.RefundContractRepository;
@@ -37,7 +37,7 @@ import lombok.NonNull;
 public class RefundProfitPriceActualComponent implements ProfitPriceActualComponent
 {
 	private final CalculateProfitPriceActualRequest request;
-	private final RefundContractRepository refundContractRepository; // TODO: take our the repo/service from here !
+	private final RefundContractRepository refundContractRepository; // TODO: take out the repo/service from here !
 	private final MoneyService moneyService;
 
 	public RefundProfitPriceActualComponent(
@@ -54,18 +54,25 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 	public Money applyToInput(@NonNull final Money input)
 	{
 		final RefundContractQuery query = RefundContractQuery.of(request);
-		final Optional<RefundContract> refundContract = refundContractRepository.getByQuery(query);
 
-		if (!refundContract.isPresent())
+		final RefundConfig refundConfig = refundContractRepository
+				.getByQuery(query)
+				.flatMap(RefundContract::getRefundConfigToUseProfitCalculation)
+				.orElse(null);
+
+		if (refundConfig == null)
 		{
 			return input;
 		}
 
-		final Percent percent = refundContract
-				.get()
-				.getRefundConfig(request.getQuantity().getAsBigDecimal())
-				.getPercent();
+		if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
+		{
+			final Money amountPerUnit = refundConfig.getAmount();
+			final Money profitAmount = amountPerUnit.multiply(request.getQuantity().getAsBigDecimal());
+			return input.subtract(profitAmount);
+		}
 
+		final Percent percent = refundConfig.getPercent();
 		return moneyService.subtractPercent(percent, input);
 	}
 }
