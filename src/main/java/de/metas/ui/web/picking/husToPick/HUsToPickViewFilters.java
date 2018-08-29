@@ -124,7 +124,7 @@ class HUsToPickViewFilters
 						.setFieldName(PARAM_ConsiderAttributes)
 						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(PARAM_ConsiderAttributes))
 						.setMandatory(false)
-						.setDefaultValue(false)
+						.setDefaultValue(true)
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
