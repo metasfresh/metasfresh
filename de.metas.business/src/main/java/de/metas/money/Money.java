@@ -50,6 +50,10 @@ import lombok.Value;
 @Value
 public class Money
 {
+	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
+	{
+		return of(new BigDecimal(value), currencyId);
+	}
 
 	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
 	{

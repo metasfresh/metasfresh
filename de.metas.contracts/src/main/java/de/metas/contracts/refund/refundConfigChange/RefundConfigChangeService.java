@@ -1,6 +1,5 @@
 package de.metas.contracts.refund.refundConfigChange;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -8,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -15,11 +15,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository.DeleteAssignmentsRequest;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository.DeleteAssignmentsRequest.DeleteAssignmentsRequestBuilder;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
+import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import lombok.NonNull;
@@ -46,17 +50,21 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class RefundConfigChangeService
 {
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 	private final MoneyService moneyService;
+	private final RefundInvoiceCandidateService refundInvoiceCandidateService;
 
 	public RefundConfigChangeService(
 			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService)
 	{
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
 		this.moneyService = moneyService;
+		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
 	}
 
 	/**
@@ -114,10 +122,20 @@ public class RefundConfigChangeService
 						.forEach(assignmentToRefundCandidateRepository::save);
 			}
 		}
+		else
+		{
+			final DeleteAssignmentsRequestBuilder builder = DeleteAssignmentsRequest
+					.builder()
+					.removeForRefundCandidateId(refundInvoiceCandidate.getId());
+			for (final RefundConfig currentRangeConfig : refundConfigRange)
+			{
+				builder.refundConfigId(currentRangeConfig.getId());
+			}
 
-		// TODO: delete "superflous" assignments
-		return null;
-
+			assignmentToRefundCandidateRepository.deleteAssignments(builder.build());
+		}
+		final RefundInvoiceCandidate endResult = refundInvoiceCandidateService.updateMoneyFromAssignments(refundInvoiceCandidate);
+		return endResult;
 	}
 
 	@VisibleForTesting
@@ -133,11 +151,7 @@ public class RefundConfigChangeService
 		final boolean forward = currentConfig.getMinQty().compareTo(targetConfig.getMinQty()) < 0;
 
 		// make sure we know which order of refund configs we operate on
-		final ImmutableList<RefundConfig> configsByMinQty = contract
-				.getRefundConfigs()
-				.stream()
-				.sorted(Comparator.comparing(RefundConfig::getMinQty))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<RefundConfig> configsByMinQty = RefundConfigs.sortByMinQtyAsc(contract.getRefundConfigs());
 
 		final ImmutableList.Builder<RefundConfig> result = ImmutableList.builder();
 		if (forward)

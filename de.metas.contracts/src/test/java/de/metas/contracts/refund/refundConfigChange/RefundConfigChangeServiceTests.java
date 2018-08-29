@@ -14,6 +14,7 @@ import org.junit.Test;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.refund.AssignmentAggregateService;
 import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
@@ -24,6 +25,7 @@ import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateFactory;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
@@ -66,15 +68,30 @@ public class RefundConfigChangeServiceTests
 		AdempiereTestHelper.get().init();
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
+
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
-				new RefundInvoiceCandidateRepository(refundContractRepository,
-						new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository)));
+				refundInvoiceCandidateRepository);
+
+		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
+
+		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
+				refundInvoiceCandidateRepository,
+				refundInvoiceCandidateFactory,
+				moneyService,
+				assignmentAggregateService);
 
 		refundConfigChangeService = new RefundConfigChangeService(
 				assignmentToRefundCandidateRepository,
-				new MoneyService(new CurrencyRepository()));
+				moneyService,
+				refundInvoiceCandidateService);
 	}
 
 	@Test

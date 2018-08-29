@@ -55,7 +55,13 @@ public class RefundConfig
 		PER_INDIVIDUAL_SCALE, ALL_MAX_SCALE;
 	}
 
+
 	RefundConfigId id;
+
+	/**
+	 *  Why BigDecimal and not Quantity: this config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product.
+	 */
+	BigDecimal minQty;
 
 	RefundInvoiceType refundInvoiceType;
 
@@ -74,8 +80,6 @@ public class RefundConfig
 
 	boolean useInProfitCalculation;
 
-	/** This config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product. */
-	BigDecimal minQty;
 
 	RefundMode refundMode;
 
@@ -123,8 +127,24 @@ public class RefundConfig
 
 	public boolean isZeroConfig()
 	{
-		return minQty.signum() == 0
+		return minQty.signum() <= 0
 				&& (amount == null || amount.isZero())
 				&& (percent == null || percent.isZero());
+	}
+
+	/**
+	 * If an {@link AssignmentToRefundCandidate} is created using this config,
+	 * then this method decides if that assignement's quantity shall be part of the sum
+	 * when computing the respective {@link RefundInvoiceCandidate}'s assigned quantity.
+	 *
+	 */
+	public boolean isIncludeAssignmentsWithThisConfigInSum()
+	{
+		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
+		{
+			return true;
+		}
+
+		return minQty.signum() <= 0;
 	}
 }

@@ -31,6 +31,7 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.Percent;
 
 /*
  * #%L
@@ -127,8 +128,9 @@ public class RefundInvoiceCandidateFactoryTest
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
 
-		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 	}
 
 	@Test
@@ -145,6 +147,6 @@ public class RefundInvoiceCandidateFactoryTest
 		final List<RefundConfig> refundConfigs = ofRecord.getRefundConfigs();
 		assertThat(refundConfigs).hasSize(1);
 		assertThat(refundConfigs.get(0).getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(refundConfigs.get(0).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(THREE);
+		assertThat(refundConfigs.get(0).getPercent()).isEqualTo(Percent.of(THREE));
 	}
 }

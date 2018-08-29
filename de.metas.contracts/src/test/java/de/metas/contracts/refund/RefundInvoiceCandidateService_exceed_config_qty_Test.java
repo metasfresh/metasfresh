@@ -78,8 +78,10 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
-		//
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,
@@ -95,7 +97,8 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
 				refundInvoiceCandidateFactory,
-				moneyService);
+				moneyService,
+				assignmentAggregateService);
 		//
 		// final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
 		//
@@ -136,8 +139,9 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 		// invoke the method under test
 		final Throwable e = catchThrowable(() -> refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate));
-
 		assertThat(e).isNull();
+//		assertThat(e).isInstanceOf(AdempiereException.class);
+//		assertThat(e).hasMessageContaining("together they exceed the quantity for candidateToUpdate's refund config");
 	}
 
 	private RefundInvoiceCandidate prepareRefundCandidateAndConfigs(final RefundMode refundMode)

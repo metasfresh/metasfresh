@@ -65,7 +65,7 @@ public class AssignableInvoiceCandidateFactory
 				assignableRecord.getM_Product().getC_UOM());
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
-				.id(invoiceCandidateId)
+				.repoId(invoiceCandidateId)
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)

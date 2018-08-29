@@ -18,7 +18,6 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.InvoiceCandidateAssignmentService;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;

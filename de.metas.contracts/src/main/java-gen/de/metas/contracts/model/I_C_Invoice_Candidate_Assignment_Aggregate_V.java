@@ -23,6 +23,31 @@ public interface I_C_Invoice_Candidate_Assignment_Aggregate_V
     /** Load Meta Data */
 
 	/**
+	 * Set Zugeordneter Geldbetrag.
+	 * Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount);
+
+	/**
+	 * Get Zugeordneter Geldbetrag.
+	 * Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAssignedMoneyAmount();
+
+    /** Column definition for AssignedMoneyAmount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment_Aggregate_V, Object> COLUMN_AssignedMoneyAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment_Aggregate_V, Object>(I_C_Invoice_Candidate_Assignment_Aggregate_V.class, "AssignedMoneyAmount", null);
+    /** Column name AssignedMoneyAmount */
+    public static final String COLUMNNAME_AssignedMoneyAmount = "AssignedMoneyAmount";
+
+	/**
 	 * Set Zugeordnete Menge.
 	 * Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
 	 *

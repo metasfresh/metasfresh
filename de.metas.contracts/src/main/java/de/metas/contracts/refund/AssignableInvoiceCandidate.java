@@ -43,15 +43,19 @@ import lombok.Value;
 
 /** Represents an invoice candidate that matches a refund contract and can therefore be assigned to a {@link RefundInvoiceCandidate}. */
 @Value
-public class AssignableInvoiceCandidate implements InvoiceCandidate
+public class AssignableInvoiceCandidate
 {
-	public static AssignableInvoiceCandidate cast(@NonNull final Object invoiceCandidate)
-	{
-		return (AssignableInvoiceCandidate)invoiceCandidate;
-	}
+//	public static AssignableInvoiceCandidate cast(@NonNull final Object invoiceCandidate)
+//	{
+//		return (AssignableInvoiceCandidate)invoiceCandidate;
+//	}
 
-	/** Maybe be {@code null} if this instance was not persisted. */
-	InvoiceCandidateId id;
+	/**
+	 * <li>May be {@code null} if this instance was not persisted.
+	 * <li>The result of {@link #splitQuantity(BigDecimal)} can contain multiple instances that have the same repoId
+	 */
+	InvoiceCandidateId repoId;
+
 	BPartnerId bpartnerId;
 	ProductId productId;
 	LocalDate invoiceableFrom;
@@ -68,7 +72,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
-			@Nullable final InvoiceCandidateId id,
+			@Nullable final InvoiceCandidateId repoId,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
@@ -77,7 +81,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 			@NonNull final Quantity quantity,
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
-		this.id = id;
+		this.repoId = repoId;
 		this.bpartnerId = bpartnerId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
@@ -127,7 +131,7 @@ public class AssignableInvoiceCandidate implements InvoiceCandidate
 				.build();
 
 		final AssignableInvoiceCandidate newCandidate = toBuilder()
-				.id(null)
+				.repoId(repoId)
 				.quantity(newQuantity)
 				.money(newMoney)
 				.build();

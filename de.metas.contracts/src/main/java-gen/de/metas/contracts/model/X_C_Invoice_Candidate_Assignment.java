@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1894852611L;
+	private static final long serialVersionUID = -982526037L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment (Properties ctx, int C_Invoice_Candidate_Assignment_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 			setC_Invoice_Candidate_Assigned_ID (0);
 			setC_Invoice_Candidate_Assignment_ID (0);
 			setC_Invoice_Candidate_Term_ID (0);
+			setIsAssignedQuantityIncludedInSum (false); // N
         } */
     }
 
@@ -46,9 +47,9 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
       return poi;
     }
 
-	/** Set Zugeordneter Betrag.
+	/** Set Zugeordneter Geldbetrag.
 		@param AssignedMoneyAmount 
-		Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
+		Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
 	  */
 	@Override
 	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount)
@@ -56,8 +57,8 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 		set_Value (COLUMNNAME_AssignedMoneyAmount, AssignedMoneyAmount);
 	}
 
-	/** Get Zugeordneter Betrag.
-		@return Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
+	/** Get Zugeordneter Geldbetrag.
+		@return Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
 	  */
 	@Override
 	public java.math.BigDecimal getAssignedMoneyAmount () 
@@ -241,5 +242,28 @@ public class X_C_Invoice_Candidate_Assignment extends org.compiere.model.PO impl
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zugeordnete Menge wird in Summe einbez..
+		@param IsAssignedQuantityIncludedInSum Zugeordnete Menge wird in Summe einbez.	  */
+	@Override
+	public void setIsAssignedQuantityIncludedInSum (boolean IsAssignedQuantityIncludedInSum)
+	{
+		set_Value (COLUMNNAME_IsAssignedQuantityIncludedInSum, Boolean.valueOf(IsAssignedQuantityIncludedInSum));
+	}
+
+	/** Get Zugeordnete Menge wird in Summe einbez..
+		@return Zugeordnete Menge wird in Summe einbez.	  */
+	@Override
+	public boolean isAssignedQuantityIncludedInSum () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAssignedQuantityIncludedInSum);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

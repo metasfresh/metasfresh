@@ -69,12 +69,13 @@ public class PercentRefundConfigChangeHandler extends RefundConfigChangeHandler
 		final Money moneyToAssign = moneyService.percentage(percentToApply, base);
 
 		return new AssignmentToRefundCandidate(
+				getCurrentRefundConfig().getId(),
 				existingAssignment.getAssignableInvoiceCandidateId(),
 				existingAssignment.getRefundInvoiceCandidate(),
-				getCurrentRefundConfig().getId(),
 				existingAssignment.getMoneyBase(),
 				moneyToAssign,
-				existingAssignment.getQuantityAssigendToRefundCandidate());
+				existingAssignment.getQuantityAssigendToRefundCandidate(),
+				getCurrentRefundConfig().isIncludeAssignmentsWithThisConfigInSum());
 	}
 
 	@Override

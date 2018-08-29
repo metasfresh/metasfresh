@@ -4,6 +4,7 @@ import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.adempiere.util.collections.CollectionUtils.singleElement;
@@ -19,8 +20,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,8 +31,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
-import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UnassignResult;
-import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UpdateAssignmentResult;
+import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
+import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.refundConfigChange.RefundConfigChangeService;
@@ -72,7 +72,7 @@ import lombok.Value;
  * #L%
  */
 
-public class InvoiceCandidateAssignmentServiceTest
+public class CandidateAssignServiceTest
 {
 	private static final BigDecimal SEVEN = new BigDecimal("7");
 
@@ -101,7 +101,7 @@ public class InvoiceCandidateAssignmentServiceTest
 
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
-	private InvoiceCandidateAssignmentService invoiceCandidateAssignmentService;
+	private CandidateAssignmentService invoiceCandidateAssignmentService;
 
 	private RefundTestTools refundTestTools;
 	private RefundConfigRepository refundConfigRepository;
@@ -119,14 +119,14 @@ public class InvoiceCandidateAssignmentServiceTest
 
 		refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 
 		assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
 				refundInvoiceCandidateRepository);
-
-		final InvoiceCandidateRepository invoiceCandidateRepository = new InvoiceCandidateRepository();
 
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
 
@@ -136,17 +136,20 @@ public class InvoiceCandidateAssignmentServiceTest
 		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
 				refundInvoiceCandidateFactory,
-				moneyService);
+				moneyService,
+				assignmentAggregateService);
 
-		final RefundConfigChangeService refundConfigChangeService = new RefundConfigChangeService(assignmentToRefundCandidateRepository, moneyService);
-
-		invoiceCandidateAssignmentService = new InvoiceCandidateAssignmentService(
-				refundContractRepository,
-				invoiceCandidateRepository,
-				assignableInvoiceCandidateRepository,
-				refundInvoiceCandidateService,
-				refundInvoiceCandidateRepository,
+		final RefundConfigChangeService refundConfigChangeService = new RefundConfigChangeService(
 				assignmentToRefundCandidateRepository,
+				moneyService,
+				refundInvoiceCandidateService);
+
+		invoiceCandidateAssignmentService = new CandidateAssignmentService(
+				refundContractRepository,
+				refundInvoiceCandidateService,
+				assignableInvoiceCandidateRepository,
+				assignmentToRefundCandidateRepository,
+				refundInvoiceCandidateRepository,
 				refundConfigChangeService);
 
 		refundTestTools = new RefundTestTools();
@@ -198,42 +201,6 @@ public class InvoiceCandidateAssignmentServiceTest
 	}
 
 	@Test
-	public void assignCandidate()
-	{
-		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
-		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone();
-		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
-
-		final AssignCandidatesRequest assignCandidatesRequest = AssignCandidatesRequest.builder()
-				.refundInvoiceCandidate(refundCandidate)
-				.assignableInvoiceCandidate(assignableCandidate)
-				.refundConfig(refundConfig)
-				.build();
-
-		// invoke the method under test
-		final IPair<AssignableInvoiceCandidate, Quantity> result = //
-				invoiceCandidateAssignmentService.assignCandidates(
-						assignCandidatesRequest,
-						assignableCandidate.getQuantity());
-
-		assertThat(result.getRight().isZero()).isTrue(); // everything was assigned
-
-		final RefundInvoiceCandidate assignedRefundInvoiceCandidate = result.getLeft()
-				.getAssignmentsToRefundCandidates()
-				.get(0)
-				.getRefundInvoiceCandidate();
-
-		assertThat(assignedRefundInvoiceCandidate.getId()).isEqualTo(refundCandidate.getId());
-
-		final InvoiceCandidateId invoiceCandidateId = assignedRefundInvoiceCandidate.getId();
-		assertThat(invoiceCandidateId).isEqualTo(refundCandidate.getId());
-		assertThat(assignedRefundInvoiceCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED.add(TWO)); // // we add 20% of 10; 20% is set in the refund config
-
-		final I_C_Invoice_Candidate assignedRefundInvoiceCandidateRecord = RefundTestTools.retrieveRecord(invoiceCandidateId);
-		assertThat(assignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(HUNDRED.add(TWO));
-	}
-
-	@Test
 	public void updateAssignment_not_yet_assigned()
 	{
 		final RefundInvoiceCandidate refundInvoiceCandidate = refundTestTools.createRefundCandidate();
@@ -242,7 +209,7 @@ public class InvoiceCandidateAssignmentServiceTest
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 
-		assertThat(result.isUpdateWasDone()).isTrue();
+		assertThat(result.isUpdateWasDone()).isTrue(); // the update was not necessary, but we didn't have a stable implementation to check it
 		final AssignableInvoiceCandidate assignedCandidate = result.getAssignableInvoiceCandidate();
 
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = assignedCandidate
@@ -256,6 +223,9 @@ public class InvoiceCandidateAssignmentServiceTest
 		assertThat(assignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
 	}
 
+	/**
+	 * Verifies that the {@code updateAssignment} checks the actual status in the DB and reassigns if there already was one.
+	 */
 	@Test
 	public void updateAssignment_already_assinged_according_to_parameter()
 	{
@@ -266,7 +236,7 @@ public class InvoiceCandidateAssignmentServiceTest
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 
-		assertThat(result.isUpdateWasDone()).isFalse();
+		assertThat(result.isUpdateWasDone()).isTrue(); // the update was not necessary, but we didn't have a stable implementation to check it
 		final AssignableInvoiceCandidate assignedCandidate = result.getAssignableInvoiceCandidate();
 
 		final RefundInvoiceCandidate //
@@ -276,6 +246,9 @@ public class InvoiceCandidateAssignmentServiceTest
 		assertThat(resultRefundInvoiceCandidate).isEqualTo(refundInvoiceCandidate); // unchanged bc nothing as really altered
 	}
 
+	/**
+	 * Verifies that the {@code updateAssignment} checks the actual status in the DB and reassigns if there already was one.
+	 */
 	@Test
 	public void updateAssignment_already_assingned_in_backend()
 	{
@@ -283,12 +256,13 @@ public class InvoiceCandidateAssignmentServiceTest
 		final RefundInvoiceCandidate //
 		refundInvoiceCandidate = singleElement(assignableInvoiceCandidate.getAssignmentsToRefundCandidates()).getRefundInvoiceCandidate();
 
+		// prepare a parameter that indicates no assignment exists, but in the DB/backend there is one
 		final AssignableInvoiceCandidate candidateWithRemovedRefundCandidate = assignableInvoiceCandidate.withoutRefundInvoiceCandidates();
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(candidateWithRemovedRefundCandidate);
 
-		assertThat(result.isUpdateWasDone()).isFalse();
+		assertThat(result.isUpdateWasDone()).isTrue();
 		final AssignableInvoiceCandidate assignedCandidate = result.getAssignableInvoiceCandidate();
 		assertThat(assignedCandidate.getAssignmentsToRefundCandidates()).hasSize(1);
 
@@ -300,6 +274,15 @@ public class InvoiceCandidateAssignmentServiceTest
 		assertThat(resultRefundInvoiceCandidate.getMoney()).isEqualTo(refundInvoiceCandidate.getMoney()); // unchanged bc nothing has really altered
 	}
 
+	/**
+	 * existing refund-candidate and assigned candidate.
+	 * the assigned candidate has a money amount of 10 and a refund config with 20%, so 2 are assigned to the refund candidate.
+	 *
+	 * change the assigned candidate's record's money amount from 10 to 20,
+	 * then invoke the method under test
+	 *
+	 * expected: now, 4 are assigned to the refund candidate.
+	 */
 	@Test
 	public void updateAssignment_change_money()
 	{
@@ -316,10 +299,12 @@ public class InvoiceCandidateAssignmentServiceTest
 		// guard: we assume that the refund candidate has already 100 assigned, and btw, we know that 2 of those are "contributed" by 20% of 10 = 2 of our 'assignableCandidate'
 		assertThat(assignementToRefundCandidate.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("100");
 
-		final AssignableInvoiceCandidate assignableCandidateWithChange = assignableCandidate
-				.toBuilder()
-				.money(assignableCandidate.getMoney().multiply(TWO))
-				.build();
+		final I_C_Invoice_Candidate assignableCandidateRecord = load(assignableCandidate.getRepoId(), I_C_Invoice_Candidate.class);
+		assignableCandidateRecord.setNetAmtInvoiced(TWENTY);
+		assignableCandidateRecord.setNetAmtToInvoice(ZERO);
+		saveRecord(assignableCandidateRecord);
+
+		final AssignableInvoiceCandidate assignableCandidateWithChange = assignableInvoiceCandidateRepository.ofRecord(assignableCandidateRecord);
 		assertThat(assignableCandidateWithChange.getMoney().getValue()).isEqualByComparingTo(TWENTY); // guard
 
 		// invoke the method under test
@@ -333,10 +318,10 @@ public class InvoiceCandidateAssignmentServiceTest
 		final AssignmentToRefundCandidate resultAssignmentToRefundCandidate = singleElement(assignedCandidate.getAssignmentsToRefundCandidates());
 
 		assertThat(resultAssignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()).isNotNull();
-		assertThat(resultAssignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("4"); // guard
+		assertThat(resultAssignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo(FOUR);
 
 		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate()).isNotNull();
-		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate().getId()).isEqualTo(assignementToRefundCandidate.getRefundInvoiceCandidate().getId()); // guard
+		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate().getId()).isEqualTo(assignementToRefundCandidate.getRefundInvoiceCandidate().getId());
 		assertThat(resultAssignmentToRefundCandidate.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102"); // according to the assignable candidate's money and the config's percentage
 	}
 
@@ -350,12 +335,13 @@ public class InvoiceCandidateAssignmentServiceTest
 	public void assignCandidate_perScaleConfig1()
 	{
 		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(RefundMode.PER_INDIVIDUAL_SCALE);
-		assertThat(savedRefundCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED); // guard
+		assertThat(savedRefundCandidate.getMoney().getValue()).isEqualByComparingTo(ONE); // guard
 		assertThat(savedRefundCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(THIRTEEN); // guard
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(THREE);
 		// guards
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1);
+		assertThat(assignableCandidate.getRepoId()).isNotNull();
 		assertThat(assignableCandidate.getMoney().getValue()).isEqualByComparingTo(TEN);
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(THREE);
 
@@ -376,7 +362,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				.quantityOfRefundCandidate(Quantity.of(FOURTEEN, uom))
 				// 1/3 = 0.33, so the money to assign to the first refundCandidate is 10% of 10*0.33, i.e. 0.33
 				.moneyAssignedToRefundCandidate(Money.of(new BigDecimal("0.33"), currencyId))
-				.moneyOfRefundCandidate(Money.of(new BigDecimal("100.33"), currencyId))
+				.moneyOfRefundCandidate(Money.of(new BigDecimal("1.33"), currencyId))
 
 				// 2/3 = 0.66, so the money to assign to the first refundCandidate is 20% of 10*0.66, i.e. 1.33
 				.quantityAssignedToRefundCandidate(Quantity.of(TWO, uom))
@@ -440,6 +426,10 @@ public class InvoiceCandidateAssignmentServiceTest
 	 * the assignable-candidate with 7 is partially assigned to both refund candidates.
 	 *
 	 * unassign the assignable-candidates with 7.
+	 *
+	 * expected: the remaining assigned quantity of refund-candidates is 10
+	 *
+	 * Hint: if this one fails, first check if the tests for {@link InvoiceCandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
 	 */
 	@Test
 	public void unassignCandidate_perScaleConfig1()
@@ -454,7 +444,7 @@ public class InvoiceCandidateAssignmentServiceTest
 		assertThat(result.getAdditionalChangedCandidates()).isEmpty();
 
 		final AssignableInvoiceCandidate reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
-				.getById(preparedAssignableCandidates.get(TEN).getId())
+				.getById(preparedAssignableCandidates.get(TEN).getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
 						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(TEN)))
@@ -467,8 +457,8 @@ public class InvoiceCandidateAssignmentServiceTest
 				.builder()
 				.quantityAssignedToRefundCandidate(Quantity.of(TEN, uom)) // the assignable candidate with 10 is still completely assigned
 				.quantityOfRefundCandidate(Quantity.of(TEN, uom)) // used to have 14 and 4 of those belonged to the assignable candidate with 7
-				.moneyAssignedToRefundCandidate(Money.of(ZERO, currentId))
-				.moneyOfRefundCandidate(Money.of(HUNDRED, currentId))
+				.moneyAssignedToRefundCandidate(Money.of(ONE, currentId))
+				.moneyOfRefundCandidate(Money.of(ONE, currentId))
 				.build();
 
 		assertMoneyAndQuantityAssignments(reloadedAssignableCandidateWithTen, expectation);
@@ -487,6 +477,8 @@ public class InvoiceCandidateAssignmentServiceTest
 	 * the refund-candidate that had 3 now has zero;
 	 * the refund-candidate that had 14 now has 14-7=7
 	 * the assignable-candidate with 8 is now exclusively assigned to the refund-candidates with 0
+	 *
+	 * Hint: if this one fails, first check if the tests for {@link InvoiceCandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
 	 */
 	@Test
 	public void unassignCandidate_perScaleConfig2()
@@ -501,13 +493,13 @@ public class InvoiceCandidateAssignmentServiceTest
 
 		// the candidate with seven was also affected
 		assertThat(result.getAdditionalChangedCandidates()).hasSize(1);
-		assertThat(result.getAdditionalChangedCandidates().get(0).getId()).isEqualTo(preparedAssignableCandidates.get(SEVEN).getId());
+		assertThat(result.getAdditionalChangedCandidates().get(0).getRepoId()).isEqualTo(preparedAssignableCandidates.get(SEVEN).getRepoId());
 
-		final AssignableInvoiceCandidate reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository.getById(preparedAssignableCandidates.get(TEN).getId());
+		final AssignableInvoiceCandidate reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository.getById(preparedAssignableCandidates.get(TEN).getRepoId());
 		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates()).isEmpty();
 
 		final AssignableInvoiceCandidate reloadedAssignableCandidateWithSeven = assignableInvoiceCandidateRepository
-				.getById(preparedAssignableCandidates.get(SEVEN).getId())
+				.getById(preparedAssignableCandidates.get(SEVEN).getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
 						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(preparedAssignableCandidates.get(SEVEN)))
@@ -521,7 +513,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				.quantityAssignedToRefundCandidate(Quantity.of(SEVEN, uom)) // the assignable candidate with 10 is still completely assigned
 				.quantityOfRefundCandidate(Quantity.of(SEVEN, uom)) // used to have 14 and 4 of those belonged to the assignable candidate with 7
 				.moneyAssignedToRefundCandidate(Money.of(ONE, currentId))
-				.moneyOfRefundCandidate(Money.of(HUNDRED.add(ONE), currentId))
+				.moneyOfRefundCandidate(Money.of(ONE, currentId))
 				.build();
 
 		assertMoneyAndQuantityAssignments(reloadedAssignableCandidateWithSeven, expectation);
@@ -529,53 +521,106 @@ public class InvoiceCandidateAssignmentServiceTest
 
 	/**
 	 * existing refund-candidate with qty = 13
-	 * per-scale-configs with quantities zero and 15
+	 * all-max-scale-configs with quantities zero and 15
 	 * assignable candidate with qty = 3 and money = 10.
 	 *
 	 * expected:
-	 * <li>Of the assignable candidate, 1 is assigned one new refund-candidate, 2 to a new refund-candidate.
+	 *
+	 * <li>the assignable candidate's 3 are assigned to the existing refund-candidate; 1 is assigned via the config with MinQty=0, and 2 is assigned via the config with MinQty=15
 	 * <li>There are 2 assignments, one with assigned-qty = 14, one with 2
 	 * <li>Overall, the refund-candidate has an assigned quantity of 16, so the 2nd refund config with 20% is used.<br>
 	 */
 	@Test
 	public void assignCandidate_accumulatedConfig_percent1()
 	{
-		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(RefundMode.ALL_MAX_SCALE);
-		assertThat(savedRefundCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED); // guard
-		assertThat(savedRefundCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(THIRTEEN); // guard
+		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final I_C_UOM uom = refundTestTools.getUomRecord();
+
+		final AssignableInvoiceCandidate preAssignedAssignableCandidate = refundTestTools.createAssignableCandidateStandlone(THIRTEEN);
+		assertThat(preAssignedAssignableCandidate.getMoney()).isEqualTo(Money.of(TEN, currencyId));
+		assertThat(preAssignedAssignableCandidate.getQuantity()).isEqualTo(Quantity.of(THIRTEEN, uom));
+		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).isEmpty();
+
+		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(
+				RefundMode.ALL_MAX_SCALE,
+				ImmutableList.of(new IndividualTestAssignment(preAssignedAssignableCandidate, THIRTEEN, ONE)));
+		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).hasSize(1);
+
+		final List<RefundConfig> refundConfigs = savedRefundCandidate.getRefundContract().getRefundConfigs();
+		assertThat(refundConfigs).hasSize(2); // guard
+		final RefundConfig configWithMinQty0 = refundConfigs.get(1);
+		assertThat(configWithMinQty0.getMinQty()).isEqualByComparingTo(ZERO);
+		assertThat(configWithMinQty0.getPercent()).isEqualTo(Percent.of(TEN));
+
+		final RefundConfig configWithMinQty15 = refundConfigs.get(0);
+		assertThat(configWithMinQty15.getMinQty()).isEqualByComparingTo(FIFTEEN);
+		assertThat(configWithMinQty15.getPercent()).isEqualTo(Percent.of(TWENTY));
+
+		assertThat(savedRefundCandidate.getMoney()).isEqualTo(Money.of(ONE, currencyId));
+		assertThat(savedRefundCandidate.getAssignedQuantity()).isEqualTo(Quantity.of(THIRTEEN, uom));
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(THREE);
-		// guards
-		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1);
 		assertThat(assignableCandidate.getMoney().getValue()).isEqualByComparingTo(TEN);
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(THREE);
 
-		// guard: for quantities less than 15 we work with 10%, so if the assignableInvoiceCandidate has 10, then 1 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1);
+		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).hasSize(1);
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableCandidate);
 
 		assertThat(result.isUpdateWasDone()).isTrue();
 
-		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
-		final I_C_UOM uom = refundTestTools.getUomRecord();
+		final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates = result.getAssignableInvoiceCandidate().getAssignmentsToRefundCandidates();
 
-		final AssignmentExpectation expectation = AssignmentExpectation
-				.builder()
-				.quantityAssignedToRefundCandidate(Quantity.of(FOURTEEN, uom)) // this is how much "fits into" the first refund config (13 plus 1)
-				.quantityOfRefundCandidate(Quantity.of(SIXTEEN, uom))
-				.moneyAssignedToRefundCandidate(Money.of(ONE, currencyId)) // 10% of the first refund config
-				.moneyOfRefundCandidate(Money.of(HUNDRED.add(TWO), currencyId)) // 100 plus 20% of 10
+		final ImmutableList<RefundInvoiceCandidate> distinctRefundCandidates = CollectionUtils.extractDistinctElements(assignmentsToRefundCandidates, AssignmentToRefundCandidate::getRefundInvoiceCandidate);
+		assertThat(distinctRefundCandidates).hasSize(1);
+		assertThat(distinctRefundCandidates.get(0).getAssignedQuantity()).isEqualTo(Quantity.of(SIXTEEN, uom)); // 13 plus 3
+		assertThat(distinctRefundCandidates.get(0).getMoney()).isEqualTo(Money.of(FOUR, currencyId)); // 20% of (10+10)
 
-				.quantityAssignedToRefundCandidate(Quantity.of(TWO, uom)) // this is the remaining 2 from the assignableCandidate's 3
-				.quantityOfRefundCandidate(Quantity.of(SIXTEEN, uom))
-				.moneyAssignedToRefundCandidate(Money.of(ONE, currencyId))
-				.moneyOfRefundCandidate(Money.of(HUNDRED.add(TWO), currencyId)) // 100 plus 20% of 10
+		assertThat(assignmentsToRefundCandidates).hasSize(4);
+		assertThat(assignmentsToRefundCandidates)
+				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty0.getId()))
+				.hasSize(2) //
+				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(ONE, uom))) // this is how much "fit into" the first refund config
+				.hasSize(1)
+				.allSatisfy(a -> {
+					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.33", currencyId));   // 10% of 1/3 times 10
+					assertThat(a.isUseAssignedQtyInSum()).isTrue();
+				});
 
-				.build();
+		assertThat(assignmentsToRefundCandidates)
+				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty0.getId()))
+				.hasSize(2) //
+				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(TWO, uom))) // this is the rest that went into the 2nd refund config
+				.hasSize(1)
+				.allSatisfy(a -> {
+					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.67", currencyId));   // 10% of 2/3 times 10
+					assertThat(a.isUseAssignedQtyInSum()).isTrue();
+				});
 
-		assertMoneyAndQuantityAssignments(result.getAssignableInvoiceCandidate(), expectation);
+		assertThat(assignmentsToRefundCandidates)
+				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty15.getId()))
+				.hasSize(2) //
+				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(ONE, uom))) // this is how much "fit into" the first refund config
+				.hasSize(1)
+				.allSatisfy(a -> {
+					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.33", currencyId));   // 10% of 1/3 times 10
+					assertThat(a.isUseAssignedQtyInSum()).isFalse();
+				});
+
+		assertThat(assignmentsToRefundCandidates)
+				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty15.getId()))
+				.hasSize(2) //
+				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(TWO, uom))) // this is the rest that went into the 2nd refund config
+				.hasSize(1)
+				.allSatisfy(a -> {
+					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.67", currencyId));   // 10% of 2/3 times 10
+					assertThat(a.isUseAssignedQtyInSum()).isFalse();
+				});
+
+		// TODO
+		result.getAdditionalChangedCandidates();
 	}
 
 	private ImmutableMap<BigDecimal, AssignableInvoiceCandidate> commonSetupForUnassignWithPerScaleConfig()
@@ -585,44 +630,87 @@ public class InvoiceCandidateAssignmentServiceTest
 		final AssignableInvoiceCandidate assignableCandidateWithSeven = refundTestTools.createAssignableCandidateStandlone(SEVEN);
 		final AssignableInvoiceCandidate assignableCandidateWithTen = refundTestTools.createAssignableCandidateStandlone(TEN);
 
-		prepareRefundCandidate(
+		final RefundInvoiceCandidate refundCandidate0 = prepareRefundCandidate(
 				refundContract,
 				refundContract.getRefundConfig(ZERO),
 				FOURTEEN, // assignedQty
 				ImmutableList.of( // individualAssignments
-						ImmutablePair.of(assignableCandidateWithTen, TEN),
-						ImmutablePair.of(assignableCandidateWithSeven, FOUR)));
-		prepareRefundCandidate(
+						new IndividualTestAssignment(assignableCandidateWithTen, TEN, ONE),
+						new IndividualTestAssignment(assignableCandidateWithSeven, FOUR, ONE)));
+
+		final RefundInvoiceCandidate refundCandidate15 = prepareRefundCandidate(
 				refundContract,
 				refundContract.getRefundConfig(FIFTEEN),
 				THREE, // assignedQty
 				ImmutableList.of( // individualAssignments
-						ImmutablePair.of(assignableCandidateWithSeven, THREE)));
+						new IndividualTestAssignment(assignableCandidateWithSeven, THREE, ONE)));
+		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final I_C_UOM uom = refundTestTools.getUomRecord();
 
+		//
+		// reload the two assignable candidate with their assigned refund candidates
 		final AssignableInvoiceCandidate //
 		reloadedAssignableCandidateWithSeven = assignableInvoiceCandidateRepository
-				.getById(assignableCandidateWithSeven.getId())
+				.getById(assignableCandidateWithSeven.getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
 						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithSeven))
 				.build();
-		assertThat(reloadedAssignableCandidateWithSeven.getAssignmentsToRefundCandidates()).hasSize(2);
-
 		final AssignableInvoiceCandidate //
 		reloadedAssignableCandidateWithTen = assignableInvoiceCandidateRepository
-				.getById(assignableCandidateWithTen.getId())
+				.getById(assignableCandidateWithTen.getRepoId())
 				.toBuilder()
 				.assignmentsToRefundCandidates(
 						assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidateWithTen))
 				.build();
-		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates()).hasSize(1);
 
-		final ImmutableMap<BigDecimal, AssignableInvoiceCandidate> //
-		preparedAssignableCandidates = ImmutableMap.of(SEVEN, reloadedAssignableCandidateWithSeven, TEN, reloadedAssignableCandidateWithTen);
-		return preparedAssignableCandidates;
+		//
+		// guards for reloadedAssignableCandidateWithSeven
+		assertThat(reloadedAssignableCandidateWithSeven.getAssignmentsToRefundCandidates()).hasSize(2);
+		assertThat(reloadedAssignableCandidateWithSeven.getAssignmentsToRefundCandidates())
+				.filteredOn(a -> a.getRefundInvoiceCandidate().getId().equals(refundCandidate0.getId()))
+				.hasSize(1)
+				.allSatisfy(r -> {
+					assertThat(r.getRefundInvoiceCandidate().getMoney()).isEqualTo(Money.of(TWO, currencyId));
+					assertThat(r.getRefundInvoiceCandidate().getAssignedQuantity()).isEqualTo(Quantity.of(FOURTEEN, uom));
+				});
+		assertThat(reloadedAssignableCandidateWithSeven.getAssignmentsToRefundCandidates())
+				.filteredOn(a -> a.getRefundInvoiceCandidate().getId().equals(refundCandidate15.getId()))
+				.hasSize(1)
+				.allSatisfy(r -> {
+					assertThat(r.getRefundInvoiceCandidate().getMoney()).isEqualTo(Money.of(ONE, currencyId));
+					assertThat(r.getRefundInvoiceCandidate().getAssignedQuantity()).isEqualTo(Quantity.of(THREE, uom));
+				});
+
+		//
+		// guards for reloadedAssignableCandidateWithTen
+		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates()).hasSize(1);
+		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates())
+				.filteredOn(a -> a.getRefundInvoiceCandidate().getId().equals(refundCandidate0.getId()))
+				.hasSize(1)
+				.allSatisfy(r -> {
+					assertThat(r.getRefundInvoiceCandidate().getMoney()).isEqualTo(Money.of(TWO, currencyId));
+					assertThat(r.getRefundInvoiceCandidate().getAssignedQuantity()).isEqualTo(Quantity.of(FOURTEEN, uom));
+				});
+		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates())
+				.filteredOn(a -> a.getRefundInvoiceCandidate().getId().equals(refundCandidate15.getId()))
+				.isEmpty();;
+
+		//
+		// finally return the result
+		return ImmutableMap.of(
+				SEVEN, reloadedAssignableCandidateWithSeven,
+				TEN, reloadedAssignableCandidateWithTen);
 	}
 
 	private RefundInvoiceCandidate repareContractAndRefundCandidate(@NonNull final RefundMode refundMode)
+	{
+		return repareContractAndRefundCandidate(refundMode, null);
+	}
+
+	private RefundInvoiceCandidate repareContractAndRefundCandidate(
+			@NonNull final RefundMode refundMode,
+			@Nullable final List<IndividualTestAssignment> individualAssignments)
 	{
 		final RefundContract refundContract = prepareContract(refundMode);
 
@@ -630,7 +718,7 @@ public class InvoiceCandidateAssignmentServiceTest
 				refundContract,
 				refundContract.getRefundConfig(ZERO),
 				THIRTEEN,
-				null);
+				individualAssignments);
 	}
 
 	/**
@@ -640,34 +728,45 @@ public class InvoiceCandidateAssignmentServiceTest
 			@NonNull final RefundContract refundContract,
 			@NonNull final RefundConfig refundConfig,
 			@NonNull final BigDecimal assignedQty,
-			@Nullable final List<IPair<AssignableInvoiceCandidate, BigDecimal>> individualAssignments)
+			@Nullable final List<IndividualTestAssignment> individualAssignments)
 	{
+		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
 		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate(refundContract)
 				.toBuilder()
 				.refundConfigs(ImmutableList.of(refundConfig))
+				.money(Money.of(ONE, currencyId))
 				.assignedQuantity(Quantity.of(assignedQty, refundTestTools.getUomRecord()))
 				.build();
-		final RefundInvoiceCandidate savedRefundCandidate = refundInvoiceCandidateRepository.save(refundCandidate);
+
+		RefundInvoiceCandidate savedRefundCandidate = refundInvoiceCandidateRepository.save(refundCandidate);
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1); // guard
 
 		// no point creating this within refundInvoiceCandidateRepository.save because we don't know (and in this particular case don't care for) the respective assignable candidates.
 		BigDecimal remainingAssignedQty = assignedQty;
+		BigDecimal assignedMoneySum = ZERO;
 		if (individualAssignments != null)
 		{
-			for (final IPair<AssignableInvoiceCandidate, BigDecimal> individualAssignment : individualAssignments)
+			for (final IndividualTestAssignment individualAssignment : individualAssignments)
 			{
-				final AssignableInvoiceCandidate assignableCandidate = individualAssignment.getLeft();
+				final AssignableInvoiceCandidate assignableCandidate = individualAssignment.getAssignableCandidate();
 
 				final I_C_Invoice_Candidate_Assignment assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 				assignmentRecord.setC_Flatrate_RefundConfig_ID(refundConfig.getId().getRepoId());
 				assignmentRecord.setC_Flatrate_Term_ID(refundContract.getId().getRepoId());
 				assignmentRecord.setC_Invoice_Candidate_Term_ID(savedRefundCandidate.getId().getRepoId());
-				assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableCandidate.getId().getRepoId());
-				assignmentRecord.setAssignedQuantity(individualAssignment.getRight());
+				assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableCandidate.getRepoId().getRepoId());
+				assignmentRecord.setAssignedQuantity(individualAssignment.getAssignedQuantity());
+				assignmentRecord.setAssignedMoneyAmount(individualAssignment.getAssignedMoney());
+				assignmentRecord.setBaseMoneyAmount(assignableCandidate.getMoney().getValue());
+				assignmentRecord.setIsAssignedQuantityIncludedInSum(refundConfig.isIncludeAssignmentsWithThisConfigInSum());
 				saveRecord(assignmentRecord);
 
-				remainingAssignedQty = remainingAssignedQty.subtract(individualAssignment.getRight());
+				remainingAssignedQty = remainingAssignedQty.subtract(individualAssignment.getAssignedQuantity());
+				assignedMoneySum = assignedMoneySum.add(individualAssignment.getAssignedMoney());
 			}
+
+			savedRefundCandidate = savedRefundCandidate.toBuilder().money(Money.of(assignedMoneySum, currencyId)).build();
+			savedRefundCandidate = refundInvoiceCandidateRepository.save(savedRefundCandidate);
 		}
 
 		if (remainingAssignedQty.signum() > 0)
@@ -678,10 +777,21 @@ public class InvoiceCandidateAssignmentServiceTest
 			assignmentRecord.setAssignedQuantity(remainingAssignedQty);
 			assignmentRecord.setC_Invoice_Candidate_Term_ID(savedRefundCandidate.getId().getRepoId());
 			assignmentRecord.setC_Invoice_Candidate_Assigned_ID(30); // we need "some" ID because it may not be null in the respective AssignmentToRefundCandidate instance
+			assignmentRecord.setIsAssignedQuantityIncludedInSum(refundConfig.isIncludeAssignmentsWithThisConfigInSum());
 			saveRecord(assignmentRecord);
 		}
 
 		return savedRefundCandidate;
+	}
+
+	@Value
+	private class IndividualTestAssignment
+	{
+		AssignableInvoiceCandidate assignableCandidate;
+
+		BigDecimal assignedQuantity;
+
+		BigDecimal assignedMoney;
 	}
 
 	private RefundContract prepareContract(@NonNull final RefundMode refundMode)
@@ -722,7 +832,7 @@ public class InvoiceCandidateAssignmentServiceTest
 		@Singular("quantityAssignedToRefundCandidate")
 		final List<Quantity> quantitiesAssignedToRefundCandidate;
 
-		/** overall quantity assigned to the refund candidate */
+		/** *overall* quantity assigned to the refund candidate */
 		@Singular("quantityOfRefundCandidate")
 		final List<Quantity> quantitesOfRefundCandidate;
 	}
@@ -756,7 +866,7 @@ public class InvoiceCandidateAssignmentServiceTest
 
 			final RefundInvoiceCandidate resultRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
 			assertThat(resultRefundCandidate.getAssignedQuantity())
-					.as("i=%s - wrong quantityOfRrefundCandidate", i)
+					.as("i=%s - wrong quantityOfRefundCandidate", i)
 					.isEqualTo(quantitiesOfRefundCandidate.get(i));
 			assertThat(resultRefundCandidate.getMoney())
 					.as("i=%s - wrong moneyOfRefundCandidate", i)

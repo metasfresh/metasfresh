@@ -142,9 +142,12 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(assignmentRecord);
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,
@@ -169,5 +172,4 @@ public class AssignmentToRefundCandidateRepositoryTest
 		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
 		assertThat(resultAfterDeletion).isEmpty();
 	}
-
 }

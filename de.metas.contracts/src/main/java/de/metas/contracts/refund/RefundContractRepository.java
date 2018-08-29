@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.CCache;
@@ -151,9 +152,9 @@ public class RefundContractRepository
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
 		final List<RefundConfig> refundConfigs = refundConfigRepository.getByQuery(query);
 
-		// Check.assumeNotEmpty(refundConfigs, // otherwise we should not have been called!
-		// "C_Flatrate_Conditions_ID={} needs to have at least one config for M_Product_ID={}; C_Flatrate_Term={}",
-		// contractRecord.getC_Flatrate_Conditions_ID(), contractRecord.getM_Product_ID(), contractRecord);
+		Check.assumeNotEmpty(refundConfigs, // otherwise we should not have been called!
+				"C_Flatrate_Conditions_ID={} needs to have at least one config for M_Product_ID={}; C_Flatrate_Term={}",
+				contractRecord.getC_Flatrate_Conditions_ID(), contractRecord.getM_Product_ID(), contractRecord);
 
 		final RefundContractBuilder contractBuilder = RefundContract
 				.builder()
@@ -174,6 +175,7 @@ public class RefundContractRepository
 					.productId(productId)
 					.refundInvoiceType(RefundInvoiceType.INVOICE)
 					.refundMode(RefundMode.ALL_MAX_SCALE)
+					.invoiceSchedule(refundConfigs.get(0).getInvoiceSchedule())
 					.build();
 
 			contractBuilder.refundConfig(zeroRefundConfig);

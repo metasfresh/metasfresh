@@ -41,7 +41,6 @@ import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -105,6 +104,9 @@ public class RefundTestTools
 
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
+	// used when creating refund configs
+	private InvoiceSchedule invoiceSchedule;
+
 	public RefundTestTools()
 	{
 		final I_C_ILCandHandler icHandlerRecord = newInstance(I_C_ILCandHandler.class);
@@ -133,11 +135,20 @@ public class RefundTestTools
 		productRecord.setC_UOM(uomRecord);
 		saveRecord(productRecord);
 
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+		invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		saveRecord(invoiceScheduleRecord);
+
+		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
+		invoiceSchedule = invoiceScheduleRepository.ofRecord(invoiceScheduleRecord);
+
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(invoiceScheduleRepository);
 
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository, refundInvoiceCandidateFactory);
@@ -267,7 +278,7 @@ public class RefundTestTools
 
 		return AssignableInvoiceCandidate
 				.builder()
-				.id(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
+				.repoId(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.bpartnerId(BPARTNER_ID)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.money(money)
@@ -286,9 +297,10 @@ public class RefundTestTools
 
 		final I_C_Invoice_Candidate_Assignment assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundCandidate.getId().getRepoId());
-		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getId().getRepoId());
+		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getRepoId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundCandidate.getRefundContract().getId().getRepoId());
 		assignmentRecord.setC_Flatrate_RefundConfig_ID(refundConfig.getId().getRepoId());
+		assignmentRecord.setIsAssignedQuantityIncludedInSum(true);
 		assignmentRecord.setAssignedMoneyAmount(TWO);
 		assignmentRecord.setAssignedQuantity(ONE);
 		saveRecord(assignmentRecord);
@@ -296,12 +308,13 @@ public class RefundTestTools
 		final RefundInvoiceCandidate reloadedRefundCandidate = refundInvoiceCandidateRepository.getById(refundCandidate.getId());
 
 		final AssignmentToRefundCandidate assignementToRefundCandidate = new AssignmentToRefundCandidate(
-				assignableInvoiceCandidate.getId(),
-				reloadedRefundCandidate,
 				refundConfig.getId(),
+				assignableInvoiceCandidate.getRepoId(),
+				reloadedRefundCandidate,
 				assignableInvoiceCandidate.getMoney(),
 				Money.of(TWO, reloadedRefundCandidate.getMoney().getCurrencyId()),
-				Quantity.of(ONE, uomRecord));
+				Quantity.of(ONE, uomRecord),
+				true /*useAssignedQtyInSum*/);
 		return assignableInvoiceCandidate
 				.toBuilder()
 				.assignmentToRefundCandidate(assignementToRefundCandidate)
@@ -332,10 +345,7 @@ public class RefundTestTools
 				.refundBase(RefundBase.PERCENTAGE)
 				.percent(Percent.of(TWENTY))
 				.conditionsId(ConditionsId.ofRepoId(20))
-				.invoiceSchedule(InvoiceSchedule
-						.builder()
-						.frequency(Frequency.DAILY)
-						.build())
+				.invoiceSchedule(invoiceSchedule)
 				.refundInvoiceType(RefundInvoiceType.INVOICE) // keep in sync with the C_DocType's subType that we set up in the constructor.
 				.refundMode(RefundMode.ALL_MAX_SCALE);
 

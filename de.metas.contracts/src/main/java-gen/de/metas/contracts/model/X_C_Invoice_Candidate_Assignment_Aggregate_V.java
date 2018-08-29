@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate_Assignment_Aggregate_V extends org.compiere.m
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2005744418L;
+	private static final long serialVersionUID = 1709043075L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Assignment_Aggregate_V (Properties ctx, int C_Invoice_Candidate_Assignment_Aggregate_V_ID, String trxName)
@@ -40,6 +40,28 @@ public class X_C_Invoice_Candidate_Assignment_Aggregate_V extends org.compiere.m
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Zugeordneter Geldbetrag.
+		@param AssignedMoneyAmount 
+		Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
+	  */
+	@Override
+	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount)
+	{
+		set_ValueNoCheck (COLUMNNAME_AssignedMoneyAmount, AssignedMoneyAmount);
+	}
+
+	/** Get Zugeordneter Geldbetrag.
+		@return Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
+	  */
+	@Override
+	public java.math.BigDecimal getAssignedMoneyAmount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AssignedMoneyAmount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	/** Set Zugeordnete Menge.
 		@param AssignedQuantity 

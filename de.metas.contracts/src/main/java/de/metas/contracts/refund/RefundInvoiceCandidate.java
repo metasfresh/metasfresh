@@ -48,13 +48,8 @@ import lombok.Value;
  */
 @Value
 @Builder(toBuilder = true)
-public class RefundInvoiceCandidate implements InvoiceCandidate
+public class RefundInvoiceCandidate
 {
-//	public static RefundInvoiceCandidate cast(@NonNull final InvoiceCandidate refundInvoiceCandidate)
-//	{
-//		return (RefundInvoiceCandidate)refundInvoiceCandidate;
-//	}
-
 	/** May be {@code null} is the candidate is not persisted */
 	@Nullable
 	InvoiceCandidateId id;

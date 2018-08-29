@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import ch.qos.logback.classic.Level;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.AssignableInvoiceCandidateRepository;
-import de.metas.contracts.refund.InvoiceCandidateAssignmentService;
+import de.metas.contracts.refund.CandidateAssignmentService;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
@@ -54,7 +54,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_Manage_Refund_Candidates.class);
 
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
-	private final InvoiceCandidateAssignmentService invoiceCandidateAssignmentService;
+	private final CandidateAssignmentService invoiceCandidateAssignmentService;
 
 	private RefundInvoiceCandidateService refundInvoiceCandidateService;
 
@@ -64,7 +64,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
 			@NonNull final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository,
 			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService,
-			@NonNull final InvoiceCandidateAssignmentService invoiceCandidateAssociationService)
+			@NonNull final CandidateAssignmentService invoiceCandidateAssociationService)
 	{
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 		this.assignableInvoiceCandidateRepository = assignableInvoiceCandidateRepository;

@@ -69,20 +69,20 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zugeordneter Betrag.
-	 * Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
+	 * Set Zugeordneter Geldbetrag.
+	 * Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount);
 
 	/**
-	 * Get Zugeordneter Betrag.
-	 * Zugeordneter Geldbetrag in der Währung des Vertrags-Rechnungskandidaten.
+	 * Get Zugeordneter Geldbetrag.
+	 * Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -121,7 +121,7 @@ public interface I_C_Invoice_Candidate_Assignment
 	/**
 	 * Set Basisbetrag.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -130,7 +130,7 @@ public interface I_C_Invoice_Candidate_Assignment
 	/**
 	 * Get Basisbetrag.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -318,6 +318,29 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Zugeordnete Menge wird in Summe einbez..
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAssignedQuantityIncludedInSum (boolean IsAssignedQuantityIncludedInSum);
+
+	/**
+	 * Get Zugeordnete Menge wird in Summe einbez..
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAssignedQuantityIncludedInSum();
+
+    /** Column definition for IsAssignedQuantityIncludedInSum */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_IsAssignedQuantityIncludedInSum = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "IsAssignedQuantityIncludedInSum", null);
+    /** Column name IsAssignedQuantityIncludedInSum */
+    public static final String COLUMNNAME_IsAssignedQuantityIncludedInSum = "IsAssignedQuantityIncludedInSum";
 
 	/**
 	 * Get Aktualisiert.

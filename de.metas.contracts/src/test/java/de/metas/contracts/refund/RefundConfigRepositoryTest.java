@@ -89,6 +89,7 @@ public class RefundConfigRepositoryTest
 
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getMinQty()).isEqualByComparingTo(ZERO);
+		assertThat(result.get(0).getInvoiceSchedule()).isNotNull();
 	}
 
 	/**

@@ -92,17 +92,14 @@ public class AssignableInvoiceCandidateFactoryTest
 	public void ofRecord_AssignableInvoiceCandidate()
 	{
 		// invoke the method under test
-		final InvoiceCandidate ofRecord = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
+		final AssignableInvoiceCandidate ofRecord = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
-		assertThat(ofRecord).isInstanceOf(AssignableInvoiceCandidate.class);
-		final AssignableInvoiceCandidate cast = AssignableInvoiceCandidate.cast(ofRecord);
-
-		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-		assertThat(cast.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
+		assertThat(ofRecord.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+		assertThat(ofRecord.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
 
 		// TODO move to dedicated test case
 		// assertThat(cast.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
-		assertThat(cast.getMoney().getValue()).isEqualByComparingTo(TEN);
-		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
+		assertThat(ofRecord.getMoney().getValue()).isEqualByComparingTo(TEN);
+		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 	}
 }

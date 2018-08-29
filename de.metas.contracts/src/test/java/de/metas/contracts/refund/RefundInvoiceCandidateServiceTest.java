@@ -91,7 +91,9 @@ public class RefundInvoiceCandidateServiceTest
 		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 
@@ -100,7 +102,8 @@ public class RefundInvoiceCandidateServiceTest
 		refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
 				refundInvoiceCandidateFactory,
-				moneyService);
+				moneyService,
+				assignmentAggregateService);
 
 		conditionsId = ConditionsId.ofRepoId(20);
 		refundConfigRecords = createAndVerifyBaseRefundconfigs(conditionsId);
@@ -153,13 +156,13 @@ public class RefundInvoiceCandidateServiceTest
 	}
 
 	@Test
-	public void retrieveOrCreateMatchingCandidate_create()
+	public void retrieveOrCreateMatchingCandidate_create_maxScale()
 	{
 		updateRefundConfigRecords(RefundMode.ALL_MAX_SCALE);
-		retrieveOrCreateMatchingCandidate_create_performTest();
+		retrieveOrCreateMatchingCandidate_create_maxScale_performTest();
 	}
 
-	private RefundInvoiceCandidate retrieveOrCreateMatchingCandidate_create_performTest()
+	private RefundInvoiceCandidate retrieveOrCreateMatchingCandidate_create_maxScale_performTest()
 	{
 		final I_C_Invoice_Candidate assignableRecord = AssignableInvoiceCandidateRepositoryTest.createAssignableCandidateRecord(refundTestTools);
 		final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(assignableRecord);
@@ -185,13 +188,23 @@ public class RefundInvoiceCandidateServiceTest
 
 		assertThat(refundCandidate.getRefundContract().getId()).isEqualTo(contractId);
 
+
+		// the assignable qty of 15 spans the first *two* refund configs.
+		// final RefundConfig resultConfig = extractSingleConfig(refundCandidate);
+		final List<RefundConfig> refundConfigs = refundCandidate.getRefundConfigs();
+		assertThat(refundConfigs).hasSize(2);
+
+		// not 100% sure it's a must, but the candidate's configs should be ordered by minQty desc
 		final I_C_Flatrate_RefundConfig secondConfigRecord = refundConfigRecords.get(1);
+		assertThat(refundConfigs.get(0).getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
+		assertThat(refundConfigs.get(0).getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
+		assertThat(refundConfigs.get(0).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
 
-		final RefundConfig resultConfig = extractSingleConfig(refundCandidate);
+		final I_C_Flatrate_RefundConfig firstConfigRecord = refundConfigRecords.get(0);
+		assertThat(refundConfigs.get(1).getConditionsId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_Conditions_ID());
+		assertThat(refundConfigs.get(1).getMinQty()).isEqualByComparingTo(firstConfigRecord.getMinQty());
+		assertThat(refundConfigs.get(1).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
 
-		assertThat(resultConfig.getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
-		assertThat(resultConfig.getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
-		assertThat(resultConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
 
 		return refundCandidate;
 	}
@@ -227,7 +240,7 @@ public class RefundInvoiceCandidateServiceTest
 	{
 		// make sure there is already one refund record
 		updateRefundConfigRecords(RefundMode.ALL_MAX_SCALE);
-		final RefundInvoiceCandidate existingRefundCandidate = retrieveOrCreateMatchingCandidate_create_performTest();
+		final RefundInvoiceCandidate existingRefundCandidate = retrieveOrCreateMatchingCandidate_create_maxScale_performTest();
 
 		updateRefundConfigRecords(RefundMode.PER_INDIVIDUAL_SCALE); // for the actual rest, we change the config
 		final I_C_Invoice_Candidate assignableRecord = AssignableInvoiceCandidateRepositoryTest.createAssignableCandidateRecord(refundTestTools);
@@ -277,7 +290,7 @@ public class RefundInvoiceCandidateServiceTest
 
 	/**
 	 * Invoke {@link #retrieveOrCreateMatchingCandidate_create_perScaleConfig_performTest()} to make sure that
-	 * there are already two refund candidates that match our first two scales (minQty 0 and 10).
+	 * there are already two refund candidates that match our first two configs (minQty 0 and 10).
 	 *
 	 * Assign 5 to the first refund candidate and 10 to the second.
 	 *
@@ -295,12 +308,14 @@ public class RefundInvoiceCandidateServiceTest
 		firstAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(0).getId().getRepoId());
 		firstAssigmentRecord.setC_Flatrate_RefundConfig_ID(extractSingleConfig(perScaleRefundCandidates.get(0)).getId().getRepoId());
 		firstAssigmentRecord.setAssignedQuantity(FIVE);
+		firstAssigmentRecord.setIsAssignedQuantityIncludedInSum(true);
 		saveRecord(firstAssigmentRecord);
 
 		final I_C_Invoice_Candidate_Assignment secondAssigmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		secondAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(1).getId().getRepoId());
 		secondAssigmentRecord.setC_Flatrate_RefundConfig_ID(extractSingleConfig(perScaleRefundCandidates.get(1)).getId().getRepoId());
 		secondAssigmentRecord.setAssignedQuantity(TEN);
+		secondAssigmentRecord.setIsAssignedQuantityIncludedInSum(true);
 		saveRecord(secondAssigmentRecord);
 
 		final RefundContract contract = CollectionUtils.extractSingleElement(perScaleRefundCandidates, RefundInvoiceCandidate::getRefundContract);

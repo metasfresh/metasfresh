@@ -1,7 +1,5 @@
 package de.metas.contracts.refund;
 
-import javax.annotation.Nullable;
-
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -33,14 +31,14 @@ import lombok.Value;
 @Value
 public class AssignmentToRefundCandidate
 {
-	@Nullable
+	@NonNull
+	RefundConfigId refundConfigId;
+
+	@NonNull
 	InvoiceCandidateId assignableInvoiceCandidateId;
 
 	@NonNull
 	RefundInvoiceCandidate refundInvoiceCandidate;
-
-	@NonNull
-	RefundConfigId refundConfigId;
 
 	/** Relevant money amount of the assignable invoice candidate. */
 	@NonNull
@@ -51,6 +49,8 @@ public class AssignmentToRefundCandidate
 
 	@NonNull
 	Quantity quantityAssigendToRefundCandidate;
+
+	boolean useAssignedQtyInSum;
 
 	public AssignmentToRefundCandidate withSubtractedAssignedMoneyAndQuantity()
 	{
@@ -70,11 +70,24 @@ public class AssignmentToRefundCandidate
 				.build();
 
 		return new AssignmentToRefundCandidate(
+				refundConfigId,
 				assignableInvoiceCandidateId,
 				newRefundCandidate,
-				refundConfigId,
 				moneyBase,
 				moneyAssignedToRefundCandidate.toZero(),
-				quantityAssigendToRefundCandidate.toZero());
+				quantityAssigendToRefundCandidate.toZero(),
+				useAssignedQtyInSum);
+	}
+
+	public AssignmentToRefundCandidate withRefundInvoiceCandidate(@NonNull final RefundInvoiceCandidate refundInvoiceCandidate)
+	{
+		return new AssignmentToRefundCandidate(
+				refundConfigId,
+				assignableInvoiceCandidateId,
+				refundInvoiceCandidate,
+				moneyBase,
+				moneyAssignedToRefundCandidate,
+				quantityAssigendToRefundCandidate,
+				useAssignedQtyInSum);
 	}
 }

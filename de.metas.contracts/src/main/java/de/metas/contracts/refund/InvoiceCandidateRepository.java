@@ -4,16 +4,10 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
-import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -69,73 +63,73 @@ public class InvoiceCandidateRepository
 		}
 	}
 
-	public void deleteAssignments(@Nullable final DeleteAssignmentsRequest request)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+//	public void deleteAssignments(@Nullable final DeleteAssignmentsRequest request)
+//	{
+//		final IQueryBL queryBL = Services.get(IQueryBL.class);
+//
+//		final IQueryBuilder<I_C_Invoice_Candidate_Assignment> queryBuilder = queryBL
+//				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class);
+//
+//		if (request.isOnlyActive())
+//		{
+//			queryBuilder.addOnlyActiveRecordsFilter();
+//		}
+//
+//		final ICompositeQueryFilter<I_C_Invoice_Candidate_Assignment> invoiceCandidateIDsOrFilter = queryBL
+//				.createCompositeQueryFilter(I_C_Invoice_Candidate_Assignment.class)
+//				.setJoinOr();
+//
+//		final InvoiceCandidateId removeForContractCandidateId = request.getRemoveForRefundCandidateId();
+//		if (removeForContractCandidateId != null)
+//		{
+//			invoiceCandidateIDsOrFilter.addEqualsFilter(
+//					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID,
+//					removeForContractCandidateId.getRepoId());
+//		}
+//		final InvoiceCandidateId removeForAssignedCandidateId = request.getRemoveForAssignedCandidateId();
+//		if (removeForAssignedCandidateId != null)
+//		{
+//			invoiceCandidateIDsOrFilter.addEqualsFilter(
+//					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
+//					removeForAssignedCandidateId.getRepoId());
+//		}
+//
+//		queryBuilder
+//				.filter(invoiceCandidateIDsOrFilter)
+//				.create()
+//				.delete();
+//	}
 
-		final IQueryBuilder<I_C_Invoice_Candidate_Assignment> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class);
-
-		if (request.isOnlyActive())
-		{
-			queryBuilder.addOnlyActiveRecordsFilter();
-		}
-
-		final ICompositeQueryFilter<I_C_Invoice_Candidate_Assignment> invoiceCandidateIDsOrFilter = queryBL
-				.createCompositeQueryFilter(I_C_Invoice_Candidate_Assignment.class)
-				.setJoinOr();
-
-		final InvoiceCandidateId removeForContractCandidateId = request.getRemoveForRefundCandidateId();
-		if (removeForContractCandidateId != null)
-		{
-			invoiceCandidateIDsOrFilter.addEqualsFilter(
-					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID,
-					removeForContractCandidateId.getRepoId());
-		}
-		final InvoiceCandidateId removeForAssignedCandidateId = request.getRemoveForAssignedCandidateId();
-		if (removeForAssignedCandidateId != null)
-		{
-			invoiceCandidateIDsOrFilter.addEqualsFilter(
-					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
-					removeForAssignedCandidateId.getRepoId());
-		}
-
-		queryBuilder
-				.filter(invoiceCandidateIDsOrFilter)
-				.create()
-				.delete();
-	}
-
-	/**
-	 *
-	 * Note: {@link DeleteAssignmentsRequestBuilder#removeForAssignedCandidateId(InvoiceCandidateId)}
-	 * and {@link DeleteAssignmentsRequestBuilder#removeForRefundCandidateId}
-	 * are {@code OR}ed and at least one of them has to be no-null.
-	 *
-	 */
-	@Value
-	public static final class DeleteAssignmentsRequest
-	{
-		InvoiceCandidateId removeForRefundCandidateId;
-		InvoiceCandidateId removeForAssignedCandidateId;
-
-		boolean onlyActive;
-
-		@Builder
-		private DeleteAssignmentsRequest(
-				@Nullable final InvoiceCandidateId removeForRefundCandidateId,
-				@Nullable final InvoiceCandidateId removeForAssignedCandidateId,
-				@Nullable final Boolean onlyActive)
-		{
-			Check.errorIf(
-					removeForRefundCandidateId == null
-							&& removeForAssignedCandidateId == null,
-					"At least one of the two invoiceCandidateId needs to be not-null");
-
-			this.onlyActive = Util.coalesce(onlyActive, true);
-
-			this.removeForRefundCandidateId = removeForRefundCandidateId;
-			this.removeForAssignedCandidateId = removeForAssignedCandidateId;
-		}
-	}
+//	/**
+//	 *
+//	 * Note: {@link DeleteAssignmentsRequestBuilder#removeForAssignedCandidateId(InvoiceCandidateId)}
+//	 * and {@link DeleteAssignmentsRequestBuilder#removeForRefundCandidateId}
+//	 * are {@code OR}ed and at least one of them has to be no-null.
+//	 *
+//	 */
+//	@Value
+//	public static final class DeleteAssignmentsRequest
+//	{
+//		InvoiceCandidateId removeForRefundCandidateId;
+//		InvoiceCandidateId removeForAssignedCandidateId;
+//
+//		boolean onlyActive;
+//
+//		@Builder
+//		private DeleteAssignmentsRequest(
+//				@Nullable final InvoiceCandidateId removeForRefundCandidateId,
+//				@Nullable final InvoiceCandidateId removeForAssignedCandidateId,
+//				@Nullable final Boolean onlyActive)
+//		{
+//			Check.errorIf(
+//					removeForRefundCandidateId == null
+//							&& removeForAssignedCandidateId == null,
+//					"At least one of the two invoiceCandidateId needs to be not-null");
+//
+//			this.onlyActive = Util.coalesce(onlyActive, true);
+//
+//			this.removeForRefundCandidateId = removeForRefundCandidateId;
+//			this.removeForAssignedCandidateId = removeForAssignedCandidateId;
+//		}
+//	}
 }

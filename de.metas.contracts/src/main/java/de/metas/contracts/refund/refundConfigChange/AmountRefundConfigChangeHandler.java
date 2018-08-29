@@ -56,12 +56,13 @@ public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.getAsBigDecimal());
 
 		return new AssignmentToRefundCandidate(
+				getCurrentRefundConfig().getId(),
 				existingAssignment.getAssignableInvoiceCandidateId(),
 				existingAssignment.getRefundInvoiceCandidate(),
-				getCurrentRefundConfig().getId(),
 				existingAssignment.getMoneyBase(),
 				moneyToAssign,
-				quantityAssigendToRefundCandidate);
+				quantityAssigendToRefundCandidate,
+				getCurrentRefundConfig().isIncludeAssignmentsWithThisConfigInSum());
 	}
 
 	@Override

@@ -48,7 +48,8 @@ public class RefundInvoiceCandidateRepositoryTest
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,

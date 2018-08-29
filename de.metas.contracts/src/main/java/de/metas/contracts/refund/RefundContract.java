@@ -1,15 +1,18 @@
 package de.metas.contracts.refund;
 
+import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
+import static org.adempiere.util.collections.CollectionUtils.hasDifferentValues;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.collect.ImmutableList;
 
@@ -73,16 +76,30 @@ public class RefundContract
 
 		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
 		Check.errorIf(
-				CollectionUtils.hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
+				hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
 				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 		Check.errorIf(
-				CollectionUtils.hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
+				hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
 				"The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
 
 		this.refundConfigs = refundConfigs
 				.stream()
 				.sorted(Comparator.comparing(RefundConfig::getMinQty).reversed())
 				.collect(ImmutableList.toImmutableList());
+
+		if (RefundMode.ALL_MAX_SCALE.equals(extractRefundMode()))
+		{
+			// we have one IC with different configs, so they need to have the consistent settings
+			Check.errorIf(
+					hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule),
+					"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
+					RefundMode.ALL_MAX_SCALE, refundConfigs);
+
+			Check.errorIf(
+					hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType),
+					"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
+					RefundMode.ALL_MAX_SCALE, refundConfigs);
+		}
 	}
 
 	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
@@ -96,14 +113,6 @@ public class RefundContract
 
 	public List<RefundConfig> getRefundConfigsToApplyForQuantity(@NonNull final BigDecimal qty)
 	{
-		final boolean configsAreNotScaled = RefundMode.ALL_MAX_SCALE.equals(refundConfigs.get(0).getRefundMode());
-
-		if (configsAreNotScaled)
-		{
-			final RefundConfig refundConfig = getRefundConfig(qty);
-			return refundConfig != null ? ImmutableList.of(refundConfig) : ImmutableList.of();
-		}
-
 		final Predicate<RefundConfig> minQtyLessOrEqual = config -> config.getMinQty().compareTo(qty) <= 0;
 
 		return refundConfigs
@@ -128,10 +137,18 @@ public class RefundContract
 
 	public RefundMode extractRefundMode()
 	{
-		final RefundMode refundMode = CollectionUtils.extractSingleElement(
+		final RefundMode refundMode = extractSingleElement(
 				getRefundConfigs(),
 				RefundConfig::getRefundMode);
 		return refundMode;
+	}
+
+	public Optional<RefundConfig> getRefundConfigToUseProfitCalculation()
+	{
+		return getRefundConfigs()
+				.stream()
+				.filter(RefundConfig::isUseInProfitCalculation)
+				.findFirst();
 	}
 
 }
