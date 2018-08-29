@@ -76,7 +76,7 @@ class InboundEMailMessageHandler implements MessageHandler
 		final String initialMessageId = Util.coalesce(firstMessageIdReference, messageId);
 
 		return InboundEMail.builder()
-				.from(messageHeaders.get(MailHeaders.SUBJECT, String.class))
+				.from(messageHeaders.get(MailHeaders.FROM, String.class))
 				.to(ImmutableList.copyOf(messageHeaders.get(MailHeaders.TO, String[].class)))
 				.cc(ImmutableList.copyOf(messageHeaders.get(MailHeaders.CC, String[].class)))
 				.bcc(ImmutableList.copyOf(messageHeaders.get(MailHeaders.BCC, String[].class)))
