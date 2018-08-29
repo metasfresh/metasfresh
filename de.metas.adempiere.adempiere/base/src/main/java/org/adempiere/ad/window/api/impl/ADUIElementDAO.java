@@ -1,7 +1,7 @@
 package org.adempiere.ad.window.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -143,7 +143,7 @@ public class ADUIElementDAO implements IADUIElementDAO
 
 		final int columnId = sourceField.getAD_Column_ID();
 
-		final I_AD_Tab tab = loadOutOfTrx(tabId, I_AD_Tab.class);
+		final I_AD_Tab tab = load(tabId, I_AD_Tab.class);
 
 		final Optional<I_AD_Field> fieldForColumn = Services.get(IADFieldDAO.class).retrieveFields(tab)
 				.stream()

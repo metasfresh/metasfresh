@@ -348,7 +348,7 @@ public class ADWindowDAO implements IADWindowDAO
 		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Window_Trl deleted: {}", countDelete);
 
-		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_UI_Section_ID, AD_Language, " +
+		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language, " +
 				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
 				" Name, Description, Help, IsTranslated) " +
 				" SELECT " + targetWindowId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
