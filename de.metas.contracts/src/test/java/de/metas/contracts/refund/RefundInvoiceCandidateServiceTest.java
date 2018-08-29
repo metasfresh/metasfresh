@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
@@ -90,7 +91,7 @@ public class RefundInvoiceCandidateServiceTest
 		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 
@@ -180,18 +181,19 @@ public class RefundInvoiceCandidateServiceTest
 		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
 
 		assertThat(result).hasSize(1);
-		final RefundInvoiceCandidate resultElement = result.get(0);
+		final RefundInvoiceCandidate refundCandidate = result.get(0);
 
-		assertThat(resultElement.getRefundContract().getId()).isEqualTo(contractId);
+		assertThat(refundCandidate.getRefundContract().getId()).isEqualTo(contractId);
 
 		final I_C_Flatrate_RefundConfig secondConfigRecord = refundConfigRecords.get(1);
 
-		final RefundConfig resultConfig = resultElement.getRefundConfig();
+		final RefundConfig resultConfig = extractSingleConfig(refundCandidate);
+
 		assertThat(resultConfig.getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(resultConfig.getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
 		assertThat(resultConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
 
-		return resultElement;
+		return refundCandidate;
 	}
 
 	@Test
@@ -249,9 +251,10 @@ public class RefundInvoiceCandidateServiceTest
 
 		assertThat(firstResultElement.getRefundContract().getId()).isEqualTo(contractId);
 		assertThat(firstResultElement.getId()).isEqualTo(existingRefundCandidate.getId());
-		assertThat(firstResultElement.getRefundConfig().getId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_RefundConfig_ID());
 
-		final RefundConfig firstResultConfig = firstResultElement.getRefundConfig();
+		final RefundConfig firstResultConfig = extractSingleConfig(firstResultElement);
+
+		assertThat(firstResultConfig.getId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_RefundConfig_ID());
 		assertThat(firstResultConfig.getConditionsId().getRepoId()).isEqualTo(firstConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(firstResultConfig.getMinQty()).isEqualByComparingTo(firstConfigRecord.getMinQty());
 		assertThat(firstResultConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(firstConfigRecord.getRefundPercent());
@@ -261,9 +264,10 @@ public class RefundInvoiceCandidateServiceTest
 
 		assertThat(secondResultElement.getId()).isNotEqualTo(existingRefundCandidate.getId());
 		assertThat(secondResultElement.getRefundContract().getId()).isEqualTo(contractId);
-		assertThat(secondResultElement.getRefundConfig().getId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_RefundConfig_ID());
 
-		final RefundConfig secondResultConfig = secondResultElement.getRefundConfig();
+		final RefundConfig secondResultConfig = extractSingleConfig(secondResultElement);
+
+		assertThat(secondResultConfig.getId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_RefundConfig_ID());
 		assertThat(secondResultConfig.getConditionsId().getRepoId()).isEqualTo(secondConfigRecord.getC_Flatrate_Conditions_ID());
 		assertThat(secondResultConfig.getMinQty()).isEqualByComparingTo(secondConfigRecord.getMinQty());
 		assertThat(secondResultConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(secondConfigRecord.getRefundPercent());
@@ -289,13 +293,13 @@ public class RefundInvoiceCandidateServiceTest
 		// set up assignment records; this is usually done elsewhere; we need them in place when loading/retrieving those existing records
 		final I_C_Invoice_Candidate_Assignment firstAssigmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		firstAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(0).getId().getRepoId());
-		firstAssigmentRecord.setC_Flatrate_RefundConfig_ID(perScaleRefundCandidates.get(0).getRefundConfig().getId().getRepoId());
+		firstAssigmentRecord.setC_Flatrate_RefundConfig_ID(extractSingleConfig(perScaleRefundCandidates.get(0)).getId().getRepoId());
 		firstAssigmentRecord.setAssignedQuantity(FIVE);
 		saveRecord(firstAssigmentRecord);
 
 		final I_C_Invoice_Candidate_Assignment secondAssigmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		secondAssigmentRecord.setC_Invoice_Candidate_Term_ID(perScaleRefundCandidates.get(1).getId().getRepoId());
-		secondAssigmentRecord.setC_Flatrate_RefundConfig_ID(perScaleRefundCandidates.get(1).getRefundConfig().getId().getRepoId());
+		secondAssigmentRecord.setC_Flatrate_RefundConfig_ID(extractSingleConfig(perScaleRefundCandidates.get(1)).getId().getRepoId());
 		secondAssigmentRecord.setAssignedQuantity(TEN);
 		saveRecord(secondAssigmentRecord);
 
@@ -315,15 +319,15 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(result).hasSize(3);
 		final RefundInvoiceCandidate firstResultElement = result.get(0);
 		assertThat(firstResultElement.getId()).isEqualTo(perScaleRefundCandidates.get(0).getId());
-		assertThat(firstResultElement.getRefundConfig().getMinQty()).isEqualByComparingTo("0");
+		assertThat(extractSingleConfig(firstResultElement).getMinQty()).isEqualByComparingTo("0");
 
 		final RefundInvoiceCandidate secondResultElement = result.get(1);
 		assertThat(secondResultElement.getId()).isEqualTo(perScaleRefundCandidates.get(1).getId());
-		assertThat(secondResultElement.getRefundConfig().getMinQty()).isEqualByComparingTo("10");
+		assertThat(extractSingleConfig(secondResultElement).getMinQty()).isEqualByComparingTo("10");
 
 		final RefundInvoiceCandidate thirdResultElement = result.get(2);
 		assertThat(thirdResultElement.getId()).isNotIn(perScaleRefundCandidates.get(0).getId(), perScaleRefundCandidates.get(1).getId());
-		assertThat(thirdResultElement.getRefundConfig().getMinQty()).isEqualByComparingTo("16");
+		assertThat(extractSingleConfig(thirdResultElement).getMinQty()).isEqualByComparingTo("16");
 	}
 
 	@Test
@@ -350,11 +354,12 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(ONE);// guard
 		assertThat(assignableCandidate.getMoney().getValue()).isEqualByComparingTo(TEN);// guard
 
-		assertThat(refundCandidate.getRefundConfig().getRefundBase()).isEqualTo(RefundBase.PERCENTAGE);
-		assertThat(refundCandidate.getRefundConfig().getPercent().getValueAsBigDecimal()).isEqualTo("20");
+		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
+		assertThat(refundConfig.getRefundBase()).isEqualTo(RefundBase.PERCENTAGE);
+		assertThat(refundConfig.getPercent().getValueAsBigDecimal()).isEqualTo("20");
 
 		// invoke the method under test
-		final AssignmentToRefundCandidate result = refundInvoiceCandidateService.addAssignableMoney(refundCandidate, assignableCandidate);
+		final AssignmentToRefundCandidate result = refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate);
 
 		assertThat(result.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate.getId());
 		assertThat(result.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2");

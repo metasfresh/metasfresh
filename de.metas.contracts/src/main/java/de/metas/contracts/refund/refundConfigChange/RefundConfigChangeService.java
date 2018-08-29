@@ -67,9 +67,9 @@ public class RefundConfigChangeService
 	 */
 	public RefundInvoiceCandidate resetMoneyAmount(
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
+			@NonNull final RefundConfig oldRefundConfig,
 			@NonNull final RefundConfig newRefundConfig)
 	{
-		final RefundConfig oldRefundConfig = refundInvoiceCandidate.getRefundConfig();
 		if (oldRefundConfig.equals(newRefundConfig))
 		{
 			return refundInvoiceCandidate;
@@ -85,8 +85,7 @@ public class RefundConfigChangeService
 				"Parameter 'newRefundConfig' needs to be one of the given refundInvoiceCandidate's contract's configs; newRefundConfig={}; refundInvoiceCandidate={}",
 				newRefundConfig, refundInvoiceCandidate);
 
-		// TODO: resetting the refundCcaandidate to zero and iterating allAssignedCandidates is crap;
-		// instead, add new AssignmentToRefundCandidates
+		// add new AssignmentToRefundCandidates, or remove existing ones
 		// which reference newRefundConfig and track the additional money that comes with the new refund config.
 
 		final boolean isHigherRefund = newRefundConfig.getMinQty().compareTo(oldRefundConfig.getMinQty()) > 0;
@@ -99,7 +98,6 @@ public class RefundConfigChangeService
 		final RefundConfigChangeHandler handler = createForConfig(oldRefundConfig);
 		if (isHigherRefund)
 		{
-
 			for (final RefundConfig currentRangeConfig : refundConfigRange)
 			{
 				handler.currentRefundConfig(currentRangeConfig);
@@ -117,6 +115,7 @@ public class RefundConfigChangeService
 			}
 		}
 
+		// TODO: delete "superflous" assignments
 		return null;
 
 	}
@@ -186,9 +185,13 @@ public class RefundConfigChangeService
 	private RefundConfigChangeHandler createForConfig(@NonNull final RefundConfig refundConfig)
 	{
 		final boolean isPercent = RefundBase.PERCENTAGE.equals(refundConfig.getRefundBase());
-		if(isPercent)
+		if (isPercent)
 		{
 			return PercentRefundConfigChangeHandler.newInstance(moneyService, refundConfig);
+		}
+		else
+		{
+			return AmountRefundConfigChangeHandler.newInstance(refundConfig);
 		}
 
 	}

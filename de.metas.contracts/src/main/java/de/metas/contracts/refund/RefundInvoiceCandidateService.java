@@ -2,6 +2,7 @@ package de.metas.contracts.refund;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.util.collections.CollectionUtils.singleElement;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -70,7 +71,9 @@ public class RefundInvoiceCandidateService
 	 * that might not not yet be associated with the given {@code assignableInvoiceCandidate}.
 	 * If there are none yet, it creates them as needed.
 	 *
-	 * Note: in case of {@link RefundMode#PER_INDIVIDUAL_SCALE}, there can be multiple refund contracts for an assignable candidate.
+	 * Notes:
+	 * <li>in case of {@link RefundMode#PER_INDIVIDUAL_SCALE}, there can be multiple refund contracts for an assignable candidate. However, each of them has just one refund config.
+	 * <li>in case of {@link RefundMode#ALL_MAX_SCALE}, there is just one refund candidate per assignable candidate, but it can have more than one assignment.
 	 */
 	public List<RefundInvoiceCandidate> retrieveOrCreateMatchingRefundCandidates(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
@@ -93,11 +96,13 @@ public class RefundInvoiceCandidateService
 							assignableCandidate,
 							refundContract,
 							ImmutableList.of(refundConfig));
-			return newRefundCandidates; // this is just one, because we passed just one refundConfig as parameter
+			return newRefundCandidates; // this list contains just one, because we passed just one refundConfig as parameter
 		}
 
 		final ImmutableMap<RefundConfig, RefundInvoiceCandidate> //
-		refundConfig2existingCandidate = Maps.uniqueIndex(existingCandidates, RefundInvoiceCandidate::getRefundConfig);
+		refundConfig2existingCandidate = Maps.uniqueIndex(
+				existingCandidates,
+				c -> singleElement(c.getRefundConfigs()));
 
 		final Quantity assignedQuantity = existingCandidates.stream()
 				.map(RefundInvoiceCandidate::getAssignedQuantity)
@@ -105,7 +110,7 @@ public class RefundInvoiceCandidateService
 
 		final List<RefundConfig> relevantRefundConfigs = refundContract.getRefundConfigsToApplyForQuantity(assignedQuantity.getAsBigDecimal().add(qtyToAssign));
 
-		final TreeSet<RefundInvoiceCandidate> result = new TreeSet<>(Comparator.comparing(c -> c.getRefundConfig().getMinQty()));
+		final TreeSet<RefundInvoiceCandidate> result = new TreeSet<>(Comparator.comparing(c -> singleElement(c.getRefundConfigs()).getMinQty()));
 
 		final ImmutableList.Builder<RefundConfig> refundConfigsThatNeedCandidates = ImmutableList.builder();
 		for (final RefundConfig relevantRefundConfig : relevantRefundConfigs)
@@ -145,13 +150,17 @@ public class RefundInvoiceCandidateService
 	}
 
 	public AssignmentToRefundCandidate addAssignableMoney(
-			@NonNull final RefundInvoiceCandidate candidateToUpdate,
+			@NonNull final RefundInvoiceCandidate refundCandidate,
+			@NonNull final RefundConfig refundConfig,
 			@NonNull final AssignableInvoiceCandidate candidateToAssign)
 	{
-		final RefundConfig refundConfig = candidateToUpdate	.getRefundConfig();
+
+		Check.assume(refundCandidate.getRefundConfigs().contains(refundConfig),
+				"The given refundConfig needs to be one of the given refundCandidate's configs; refundConfig={}; refundCandidate={}",
+				refundConfig, refundCandidate);
 
 		final RefundMode refundMode = refundConfig.getRefundMode();
-		final boolean quantityWithinCurrentScale = isQuantityWithinCurrentScale(candidateToUpdate, candidateToAssign.getQuantity());
+		final boolean quantityWithinCurrentScale = isQuantityWithinCurrentScale(refundCandidate, refundConfig, candidateToAssign.getQuantity());
 
 		if (!quantityWithinCurrentScale)
 		{
@@ -162,16 +171,16 @@ public class RefundInvoiceCandidateService
 							+ " together they exceed the quantity for candidateToUpdate's refund config;"
 							+ " \ncandidateToAssign={}"
 							+ " \ncandidateToUpdate={}",
-					candidateToAssign.getQuantity(), candidateToUpdate.getAssignedQuantity(), candidateToAssign, candidateToUpdate);
+					candidateToAssign.getQuantity(), refundCandidate.getAssignedQuantity(), candidateToAssign, refundCandidate);
 		}
 		final Percent percent = refundConfig.getPercent();
 
 		final Money moneyAugend = moneyService.percentage(percent, candidateToAssign.getMoney());
 		final Quantity assignedQtyAugent = candidateToAssign.getQuantity();
 
-		final RefundInvoiceCandidate updatedRefundCandidate = candidateToUpdate.toBuilder()
-				.money(candidateToUpdate.getMoney().add(moneyAugend))
-				.assignedQuantity(candidateToUpdate.getAssignedQuantity().add(assignedQtyAugent))
+		final RefundInvoiceCandidate updatedRefundCandidate = refundCandidate.toBuilder()
+				.money(refundCandidate.getMoney().add(moneyAugend))
+				.assignedQuantity(refundCandidate.getAssignedQuantity().add(assignedQtyAugent))
 				.build();
 
 		return new AssignmentToRefundCandidate(
@@ -185,9 +194,10 @@ public class RefundInvoiceCandidateService
 
 	private boolean isQuantityWithinCurrentScale(
 			@NonNull final RefundInvoiceCandidate candidateToUpdate,
+			@NonNull final RefundConfig refundConfig,
 			@NonNull final Quantity quantity)
 	{
-		final Quantity assignableQty = candidateToUpdate.computeAssignableQuantity();
+		final Quantity assignableQty = candidateToUpdate.computeAssignableQuantity(refundConfig);
 
 		final boolean withinCurrentScale = assignableQty.compareTo(quantity) >= 0;
 		return withinCurrentScale;

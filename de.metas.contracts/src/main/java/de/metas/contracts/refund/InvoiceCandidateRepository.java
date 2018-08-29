@@ -43,41 +43,6 @@ import lombok.Value;
 @Repository
 public class InvoiceCandidateRepository
 {
-	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
-
-	public InvoiceCandidateRepository( @NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
-	{
-		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
-	}
-
-	public AssignableInvoiceCandidate saveCandidateAssignment(@Nullable final UnassignedPairOfCandidates unassignedPair)
-	{
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = unassignedPair.getAssignableInvoiceCandidate();
-		Check.assumeNotNull(assignableInvoiceCandidate.getId(),
-				"The given unassignedPair's assignableInvoiceCandidate needs to have a non-null Id; unassignedPair={}", unassignedPair);
-
-		final RefundConfig refundConfig = unassignedPair.getRefundInvoiceCandidate().getRefundConfig();
-
-
-		final RefundInvoiceCandidate refundInvoiceCandidate = unassignedPair.getRefundInvoiceCandidate();
-
-		final AssignmentToRefundCandidate assignmentToRefundCandidate = //
-				new AssignmentToRefundCandidate(
-						assignableInvoiceCandidate.getId(),
-						refundInvoiceCandidate,
-						refundConfig.getId(),
-						assignableInvoiceCandidate.getMoney(),
-						unassignedPair.getMoneyToAssign(),
-						unassignedPair.getQuantityToAssign());
-
-		assignmentToRefundCandidateRepository.save(assignmentToRefundCandidate);
-
-		return assignableInvoiceCandidate
-				.toBuilder()
-				.assignmentToRefundCandidate(assignmentToRefundCandidate)
-				.build();
-	}
-
 	@Value
 	public static final class RefundInvoiceCandidateQuery
 	{

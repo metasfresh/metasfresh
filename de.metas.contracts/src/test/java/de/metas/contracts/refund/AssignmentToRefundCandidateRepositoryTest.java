@@ -141,11 +141,10 @@ public class AssignmentToRefundCandidateRepositoryTest
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		save(assignmentRecord);
 
-		final RefundContractRepository refundContractRepository = new RefundContractRepository(
-				new RefundConfigRepository(
-						new InvoiceScheduleRepository()));
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,

@@ -46,8 +46,9 @@ public class RefundInvoiceCandidateRepositoryTest
 
 		refundTestTools = new RefundTestTools();
 
-		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,

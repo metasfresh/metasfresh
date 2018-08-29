@@ -1,13 +1,10 @@
 package de.metas.contracts.refund.refundConfigChange;
 
-import org.adempiere.util.Check;
-
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
-import de.metas.lang.Percent;
 import de.metas.money.Money;
-import de.metas.money.MoneyService;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -32,41 +29,31 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PercentRefundConfigChangeHandler extends RefundConfigChangeHandler
+public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 {
-	public static PercentRefundConfigChangeHandler newInstance(
-			@NonNull final MoneyService moneyService,
+	public static AmountRefundConfigChangeHandler newInstance(
 			@NonNull final RefundConfig currentRefundConfig)
 	{
-		return new PercentRefundConfigChangeHandler(moneyService, currentRefundConfig);
+		return new AmountRefundConfigChangeHandler(currentRefundConfig);
 	}
 
-	private final MoneyService moneyService;
-
-	private PercentRefundConfigChangeHandler(
-			@NonNull final MoneyService moneyService,
+	private AmountRefundConfigChangeHandler(
 			@NonNull final RefundConfig currentRefundConfig)
 	{
 		super(currentRefundConfig);
-
-		Check.errorUnless(RefundBase.PERCENTAGE.equals(currentRefundConfig.getRefundBase()),
-				"The given currentRefundConfig needs to have refundBase = PERCENTAGE; currentRefundConfig={}",
-				currentRefundConfig);
-
-		this.moneyService = moneyService;
 	}
 
 	@Override
 	public AssignmentToRefundCandidate createNewAssignment(@NonNull final AssignmentToRefundCandidate existingAssignment)
 	{
 		// note: currentRefundConfig can't be null
-		final Percent percentToApply = getCurrentRefundConfig()
-				.getPercent()
-				.subtract(getFormerRefundConfig().getPercent());
+		final Money amountToApply = getCurrentRefundConfig()
+				.getAmount()
+				.subtract(getFormerRefundConfig().getAmount());
 
-		final Money base = existingAssignment.getMoneyBase();
+		final Quantity quantityAssigendToRefundCandidate = existingAssignment.getQuantityAssigendToRefundCandidate();
 
-		final Money moneyToAssign = moneyService.percentage(percentToApply, base);
+		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.getAsBigDecimal());
 
 		return new AssignmentToRefundCandidate(
 				existingAssignment.getAssignableInvoiceCandidateId(),
@@ -74,12 +61,12 @@ public class PercentRefundConfigChangeHandler extends RefundConfigChangeHandler
 				getCurrentRefundConfig().getId(),
 				existingAssignment.getMoneyBase(),
 				moneyToAssign,
-				existingAssignment.getQuantityAssigendToRefundCandidate());
+				quantityAssigendToRefundCandidate);
 	}
 
 	@Override
 	protected RefundBase getExpectedRefundBase()
 	{
-		return RefundBase.PERCENTAGE;
+		return RefundBase.AMOUNT_PER_UNIT;
 	}
 }

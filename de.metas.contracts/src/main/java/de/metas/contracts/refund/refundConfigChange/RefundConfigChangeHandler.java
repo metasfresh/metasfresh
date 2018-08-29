@@ -4,6 +4,7 @@ import org.adempiere.util.Check;
 
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -38,6 +39,8 @@ public abstract class RefundConfigChangeHandler
 
 	protected RefundConfigChangeHandler(@NonNull final RefundConfig currentRefundConfig)
 	{
+		assertCorrectRefundBase(currentRefundConfig);
+
 		this.currentRefundConfig = currentRefundConfig;
 		this.formerRefundConfig = null;
 
@@ -47,8 +50,17 @@ public abstract class RefundConfigChangeHandler
 
 	public void currentRefundConfig(@NonNull final RefundConfig refundConfig)
 	{
+		assertCorrectRefundBase(refundConfig);
+
 		this.formerRefundConfig = this.currentRefundConfig;
 		this.currentRefundConfig = refundConfig;
+	}
+
+	private void assertCorrectRefundBase(final RefundConfig refundConfig)
+	{
+		Check.errorUnless(getExpectedRefundBase().equals(refundConfig.getRefundBase()),
+				"The given currentRefundConfig needs to have refundBase = AMOUNT_PER_UNIT; currentRefundConfig={}",
+				refundConfig);
 	}
 
 	/**
@@ -61,7 +73,9 @@ public abstract class RefundConfigChangeHandler
 
 	/**
 	 * @param existingAssignment an assignment that belongs to the refund config from {@link #getFormerRefundConfig()}.
-	 * @return a new assignment that belongs to the refund config that was set using {@link #currentRefundConfig(RefundConfig)}.
+	 * @return a new assignment that belongs to the refund config that was last set using {@link #currentRefundConfig(RefundConfig)}.
 	 */
 	public abstract AssignmentToRefundCandidate createNewAssignment(AssignmentToRefundCandidate existingAssignment);
+
+	protected abstract RefundBase getExpectedRefundBase();
 }

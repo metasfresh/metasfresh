@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -124,27 +125,26 @@ public class RefundInvoiceCandidateFactoryTest
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 
-		final RefundContractRepository refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
 	}
 
 	@Test
 	public void ofRecord_RefundContractInvoiceCandidate()
 	{
 		// invoke the method under test
-		final InvoiceCandidate ofRecord = refundInvoiceCandidateFactory.ofRecord(refundContractIcRecord);
+		final RefundInvoiceCandidate ofRecord = refundInvoiceCandidateFactory.ofRecord(refundContractIcRecord);
 
-		assertThat(ofRecord).isInstanceOf(RefundInvoiceCandidate.class);
-		final RefundInvoiceCandidate cast = RefundInvoiceCandidate.cast(ofRecord);
+		assertThat(ofRecord.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+		assertThat(ofRecord.getRefundContract().getId().getRepoId()).isEqualTo(refundContractRecord.getC_Flatrate_Term_ID());
+		assertThat(ofRecord.getMoney().getValue()).isEqualByComparingTo(TEN);
+		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 
-		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-		assertThat(cast.getRefundContract().getId().getRepoId()).isEqualTo(refundContractRecord.getC_Flatrate_Term_ID());
-		assertThat(cast.getMoney().getValue()).isEqualByComparingTo(TEN);
-		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
-
-		final RefundConfig refundConfig = cast.getRefundConfig();
-		assertThat(refundConfig.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(refundConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(THREE);
+		final List<RefundConfig> refundConfigs = ofRecord.getRefundConfigs();
+		assertThat(refundConfigs).hasSize(1);
+		assertThat(refundConfigs.get(0).getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
+		assertThat(refundConfigs.get(0).getPercent().getValueAsBigDecimal()).isEqualByComparingTo(THREE);
 	}
 }

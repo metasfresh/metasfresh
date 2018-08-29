@@ -102,7 +102,7 @@ public class RefundConfigRepository
 	// return CACHE.getOrLoad(flatrateTermId, () -> getByRefundContractIdForCache(flatrateTermId));
 	// }
 
-	public List<RefundConfig> getByQuery(RefundConfigQuery query)
+	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)
 	{
 		final IQueryBuilder<I_C_Flatrate_RefundConfig> builder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
@@ -145,7 +145,9 @@ public class RefundConfigRepository
 		return processResultRecordList(query, recordsWithoutProduct);
 	}
 
-	private List<RefundConfig> processResultRecordList(RefundConfigQuery query, final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithProductId)
+	private List<RefundConfig> processResultRecordList(
+			@NonNull final RefundConfigQuery query,
+			@NonNull final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithProductId)
 	{
 		if (query.getMinQty() != null)
 		{
@@ -159,6 +161,16 @@ public class RefundConfigRepository
 		return recordsWithProductId.stream()
 				.map(this::ofRecordOrNull)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public RefundConfig getById(@NonNull final RefundConfigId id)
+	{
+		final I_C_Flatrate_RefundConfig record = load(id, I_C_Flatrate_RefundConfig.class);
+
+		return Check.assumeNotNull(
+				ofRecordOrNull(record),
+				"There needs to be a loadable RefundConfig for RefundConfigId={}; I_C_Flatrate_RefundConfig={}",
+				id, record);
 	}
 
 	private RefundConfig getByRefundContractIdForCache(

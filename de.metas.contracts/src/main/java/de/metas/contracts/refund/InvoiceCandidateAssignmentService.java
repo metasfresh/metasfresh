@@ -14,6 +14,7 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Service;
@@ -27,10 +28,12 @@ import com.google.common.collect.Maps;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
+import de.metas.contracts.refund.AssignCandidatesRequest.AssignCandidatesRequestBuilder;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
 import de.metas.contracts.refund.InvoiceCandidateAssignmentService.UnassignResult.UnassignResultBuilder;
 import de.metas.contracts.refund.InvoiceCandidateRepository.DeleteAssignmentsRequest;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.refundConfigChange.RefundConfigChangeService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -74,13 +77,16 @@ public class InvoiceCandidateAssignmentService
 
 	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 
+	private RefundConfigChangeService refundConfigChangeService;
+
 	public InvoiceCandidateAssignmentService(
 			@NonNull final RefundContractRepository refundConfigRepository,
 			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
 			@NonNull final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository,
 			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService,
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
-			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
+			@NonNull final RefundConfigChangeService refundConfigChangeService)
 	{
 		this.refundContractRepository = refundConfigRepository;
 		this.invoiceCandidateRepository = invoiceCandidateRepository;
@@ -88,6 +94,7 @@ public class InvoiceCandidateAssignmentService
 		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
+		this.refundConfigChangeService = refundConfigChangeService;
 	}
 
 	public UpdateAssignmentResult updateAssignment(
@@ -107,18 +114,19 @@ public class InvoiceCandidateAssignmentService
 			final UnassignResult unassignResult = unassignCandidate(assignableCandidate);
 			return UpdateAssignmentResult.updateDone(unassignResult.getAssignableCandidate());
 		}
-		final RefundMode refundMode = refundContract.extractRefundMode();
-		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
-		{
-			return updateAssignmentForPerScaleConfig(assignableCandidate, refundContract);
-		}
-		return updateAssignmentForAccumulatedScaleConfig(assignableCandidate, refundContract);
+		// final RefundMode refundMode = refundContract.extractRefundMode();
+		// if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
+		// {
+		return updateAssignmentForPerScaleConfig(assignableCandidate, refundContract);
+		// }
+		// return updateAssignmentForAccumulatedScaleConfig(assignableCandidate, refundContract);
 	}
 
 	private UpdateAssignmentResult updateAssignmentForPerScaleConfig(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
 			@NonNull final RefundContract refundContract)
 	{
+		// retrieve or create refund candidates to which assignableCandidate shall be assigned
 		final List<RefundInvoiceCandidate> matchingRefundCandidates = //
 				refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
 		final ImmutableMap<InvoiceCandidateId, RefundInvoiceCandidate> //
@@ -191,18 +199,24 @@ public class InvoiceCandidateAssignmentService
 
 		for (final RefundInvoiceCandidate refundCandidateToAssign : refundInvoicesCandidateToAssign)
 		{
-			final UnassignedPairOfCandidates unassignedPair = UnassignedPairOfCandidates
+			final AssignCandidatesRequestBuilder assignCandidatesRequest = AssignCandidatesRequest
 					.builder()
 					.assignableInvoiceCandidate(assignableCandidate.withoutRefundInvoiceCandidates())
-					.refundInvoiceCandidate(refundCandidateToAssign)
-					.build();
+					.refundInvoiceCandidate(refundCandidateToAssign);
 
-			assignedCandidateWithRemainingQty = assignCandidates(
-					unassignedPair,
-					assignedCandidateWithRemainingQty.getRight());
+			for (final RefundConfig refundConfig : refundCandidateToAssign.getRefundConfigs())
+			{
+				assignCandidatesRequest.refundConfig(refundConfig);
 
-			// the result of the last method invocation has all the stuff we need.
-			assignments.addAll(assignedCandidateWithRemainingQty.getLeft().getAssignmentsToRefundCandidates());
+				assignedCandidateWithRemainingQty = assignCandidates(
+						assignCandidatesRequest.build(),
+						assignedCandidateWithRemainingQty.getRight());
+
+				final List<AssignmentToRefundCandidate> createAssignments = assignedCandidateWithRemainingQty
+						.getLeft()
+						.getAssignmentsToRefundCandidates();
+				assignments.addAll(createAssignments);
+			}
 		}
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
@@ -213,112 +227,115 @@ public class InvoiceCandidateAssignmentService
 		return UpdateAssignmentResult.updateDone(resultCandidate);
 	}
 
-	private UpdateAssignmentResult updateAssignmentForAccumulatedScaleConfig(
-			@NonNull final AssignableInvoiceCandidate assignableCandidate,
-			@NonNull final RefundContract refundContract)
-	{
-		final List<RefundInvoiceCandidate> matchingCandidates = refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
-		final RefundInvoiceCandidate matchingRefundCandidate = singleElement(matchingCandidates);
-
-		final RefundInvoiceCandidate refundCandidateToAssign;
-
-		// reload from backend to find out if the assignableCandidate is already assigned or not
-		final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
-				.getById(assignableCandidate.getId())
-				.toBuilder()
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
-				.build();
-		if (reloadedAssignableCandidate.isAssigned())
-		{
-			final AssignmentToRefundCandidate reloadedAssigment = singleElement(reloadedAssignableCandidate.getAssignmentsToRefundCandidates());
-
-			if (isMoneyHasChanged(matchingRefundCandidate, assignableCandidate, reloadedAssigment))
-			{
-				// the refund candidate matching the given invoiceCandidate parameter changed;
-				// unassign (which also subtracts the assigned money),
-				// then collect the unassigned refund candidates for reassignment.
-				final UnassignResult unassignResult = unassignSingleCandidate(reloadedAssignableCandidate);
-				final ImmutableList<RefundInvoiceCandidate> unassignedRefundCandidates = unassignResult
-						.getUnassignedPairs()
-						.stream()
-						.map(UnassignedPairOfCandidates::getRefundInvoiceCandidate)
-						.filter(refundCand -> refundCand.getId().equals(matchingRefundCandidate.getId()))
-						.collect(ImmutableList.toImmutableList());
-				if (unassignedRefundCandidates.size() == 1)
-				{
-					refundCandidateToAssign = singleElement(unassignedRefundCandidates);
-				}
-				else
-				{
-					refundCandidateToAssign = matchingRefundCandidate;
-				}
-			}
-			else
-			{
-				return UpdateAssignmentResult.noUpdateDone(reloadedAssignableCandidate);
-			}
-		}
-		else
-		{
-			refundCandidateToAssign = matchingRefundCandidate;
-		}
-
-		final UnassignedPairOfCandidates unassignedPair = UnassignedPairOfCandidates
-				.builder()
-				.assignableInvoiceCandidate(assignableCandidate.withoutRefundInvoiceCandidates())
-				.refundInvoiceCandidate(refundCandidateToAssign)
-				.build();
-
-		final IPair<AssignableInvoiceCandidate, Quantity> assignedCandidateWithRemainingQty = assignCandidates(
-				unassignedPair,
-				assignableCandidate.getQuantity());
-		Check.errorUnless(
-				assignedCandidateWithRemainingQty.getRight().isZero(),
-				"With RefundMode={}, the full quantity can be assigned; assignedCandidateWithRemainingQty={}",
-				RefundMode.ALL_MAX_SCALE, assignedCandidateWithRemainingQty);
-
-		final AssignmentToRefundCandidate assignment = singleElement(assignedCandidateWithRemainingQty.getLeft().getAssignmentsToRefundCandidates());
-		final RefundInvoiceCandidate refundCandidateAfterAssignment = assignment.getRefundInvoiceCandidate();
-		final Quantity quantityAfterAssignment = refundCandidateAfterAssignment.getAssignedQuantity();
-		final RefundConfig refundConfigAfterAssignment = refundContract.getRefundConfig(quantityAfterAssignment.getAsBigDecimal());
-
-		AssignmentToRefundCandidate resultAssignment;
-
-		final boolean configHasChanged = !matchingRefundCandidate.getRefundConfig().getId().equals(refundConfigAfterAssignment.getId());
-		if (configHasChanged)
-		{
-			resetMoneyAmount(refundCandidateAfterAssignment, refundConfigAfterAssignment);
-			// reload the assignment after the reset of refundCandidateAfterAssignment
-			resultAssignment = singleElement(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate));
-		}
-		else
-		{
-			resultAssignment = assignment;
-		}
-
-		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
-				.toBuilder()
-				.clearAssignmentsToRefundCandidates()
-				.assignmentToRefundCandidate(resultAssignment)
-				.build();
-		return UpdateAssignmentResult.updateDone(resultCandidate);
-	}
+	// /** This method deals with assignableCandidate whose configs have {@link RefundMode#ALL_MAX_SCALE}. */
+	// private UpdateAssignmentResult updateAssignmentForAccumulatedScaleConfig(
+	// @NonNull final AssignableInvoiceCandidate assignableCandidate,
+	// @NonNull final RefundContract refundContract)
+	// {
+	// // retrieve or create refund candidates to which assignableCandidate shall be assigned
+	// final List<RefundInvoiceCandidate> matchingCandidates = refundInvoiceCandidateService.retrieveOrCreateMatchingRefundCandidates(assignableCandidate, refundContract);
+	// final RefundInvoiceCandidate matchingRefundCandidate = singleElement(matchingCandidates);
+	//
+	// final RefundInvoiceCandidate refundCandidateToAssign;
+	//
+	// // reload from backend to find out if the assignableCandidate is already assigned or not
+	// final AssignableInvoiceCandidate reloadedAssignableCandidate = assignableInvoiceCandidateRepository
+	// .getById(assignableCandidate.getId())
+	// .toBuilder()
+	// .assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
+	// .build();
+	// if (reloadedAssignableCandidate.isAssigned())
+	// {
+	// final AssignmentToRefundCandidate reloadedAssigment = singleElement(reloadedAssignableCandidate.getAssignmentsToRefundCandidates());
+	//
+	// if (isMoneyHasChanged(matchingRefundCandidate, assignableCandidate, reloadedAssigment))
+	// {
+	// // the refund candidate matching the given invoiceCandidate parameter changed;
+	// // unassign (which also subtracts the assigned money),
+	// // then collect the unassigned refund candidates for reassignment.
+	// final UnassignResult unassignResult = unassignSingleCandidate(reloadedAssignableCandidate);
+	// final ImmutableList<RefundInvoiceCandidate> unassignedRefundCandidates = unassignResult
+	// .getUnassignedPairs()
+	// .stream()
+	// .map(UnassignedPairOfCandidates::getRefundInvoiceCandidate)
+	// .filter(refundCand -> refundCand.getId().equals(matchingRefundCandidate.getId()))
+	// .collect(ImmutableList.toImmutableList());
+	// if (unassignedRefundCandidates.size() == 1)
+	// {
+	// refundCandidateToAssign = singleElement(unassignedRefundCandidates);
+	// }
+	// else
+	// {
+	// refundCandidateToAssign = matchingRefundCandidate;
+	// }
+	// }
+	// else
+	// {
+	// return UpdateAssignmentResult.noUpdateDone(reloadedAssignableCandidate);
+	// }
+	// }
+	// else
+	// {
+	// refundCandidateToAssign = matchingRefundCandidate;
+	// }
+	//
+	// final UnassignedPairOfCandidates unassignedPair = UnassignedPairOfCandidates
+	// .builder()
+	// .assignableInvoiceCandidate(assignableCandidate.withoutRefundInvoiceCandidates())
+	// .refundInvoiceCandidate(refundCandidateToAssign)
+	// .build();
+	//
+	// final IPair<AssignableInvoiceCandidate, Quantity> assignedCandidateWithRemainingQty = assignCandidates(
+	// unassignedPair,
+	// assignableCandidate.getQuantity());
+	// Check.errorUnless(
+	// assignedCandidateWithRemainingQty.getRight().isZero(),
+	// "With RefundMode={}, the full quantity can be assigned; assignedCandidateWithRemainingQty={}",
+	// RefundMode.ALL_MAX_SCALE, assignedCandidateWithRemainingQty);
+	//
+	// final AssignmentToRefundCandidate assignment = singleElement(assignedCandidateWithRemainingQty.getLeft().getAssignmentsToRefundCandidates());
+	// final RefundInvoiceCandidate refundCandidateAfterAssignment = assignment.getRefundInvoiceCandidate();
+	// final Quantity quantityAfterAssignment = refundCandidateAfterAssignment.getAssignedQuantity();
+	// final RefundConfig refundConfigAfterAssignment = refundContract.getRefundConfig(quantityAfterAssignment.getAsBigDecimal());
+	//
+	// final List<AssignmentToRefundCandidate> resultAssignments;
+	//
+	// final boolean configHasChanged = !matchingRefundCandidate.getRefundConfig().getId().equals(refundConfigAfterAssignment.getId());
+	// if (configHasChanged)
+	// {
+	// refundConfigChangeService.resetMoneyAmount(refundCandidateAfterAssignment, refundConfigAfterAssignment);
+	// // reload the assignment(s) after the reset of refundCandidateAfterAssignment
+	// resultAssignments = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate);
+	// }
+	// else
+	// {
+	// resultAssignments = ImmutableList.of(assignment);
+	// }
+	//
+	// final AssignableInvoiceCandidate resultCandidate = assignableCandidate
+	// .toBuilder()
+	// .clearAssignmentsToRefundCandidates()
+	// .assignmentsToRefundCandidates(resultAssignments)
+	// .build();
+	// return UpdateAssignmentResult.updateDone(resultCandidate);
+	// }
 
 	private boolean isMoneyHasChanged(
 			@NonNull final RefundInvoiceCandidate matchingRefundInvoiceCandidate,
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
 			@NonNull final AssignmentToRefundCandidate reloadedAssigment)
 	{
-		final AssignmentToRefundCandidate newAssigment = refundInvoiceCandidateService
-				.addAssignableMoney(
-						matchingRefundInvoiceCandidate,
-						assignableCandidate);
-
-		final boolean assignedMoneyHasChanged = !Objects.equal(
-				reloadedAssigment.getMoneyAssignedToRefundCandidate(),
-				newAssigment.getMoneyAssignedToRefundCandidate());
-
-		return assignedMoneyHasChanged;
+		// final AssignmentToRefundCandidate newAssigment = refundInvoiceCandidateService
+		// .addAssignableMoney(
+		// matchingRefundInvoiceCandidate,
+		// assignableCandidate);
+		//
+		// final boolean assignedMoneyHasChanged = !Objects.equal(
+		// reloadedAssigment.getMoneyAssignedToRefundCandidate(),
+		// newAssigment.getMoneyAssignedToRefundCandidate());
+		//
+		// return assignedMoneyHasChanged;
+		return true; // TODO fix or cleanup
 	}
 
 	@Value
@@ -346,13 +363,15 @@ public class InvoiceCandidateAssignmentService
 	 */
 	@VisibleForTesting
 	IPair<AssignableInvoiceCandidate, Quantity> assignCandidates(
-			@NonNull final UnassignedPairOfCandidates unAssignedPairOfCandidates,
+			@NonNull final AssignCandidatesRequest assignCandidatesRequest,
 			@NonNull final Quantity quantityToAssign)
 	{
-		final AssignableInvoiceCandidate assignableCandidate = unAssignedPairOfCandidates.getAssignableInvoiceCandidate();
-		final RefundInvoiceCandidate refundCandidate = unAssignedPairOfCandidates.getRefundInvoiceCandidate();
+		final AssignableInvoiceCandidate assignableCandidate = assignCandidatesRequest.getAssignableInvoiceCandidate();
+		final RefundInvoiceCandidate refundCandidate = assignCandidatesRequest.getRefundInvoiceCandidate();
 
-		final Quantity assignableQuantity = refundCandidate.computeAssignableQuantity();
+		final RefundConfig refundConfig = assignCandidatesRequest.getRefundConfig();
+
+		final Quantity assignableQuantity = refundCandidate.computeAssignableQuantity(refundConfig);
 
 		final Quantity quantityToAssignEffective = quantityToAssign.min(assignableQuantity);
 
@@ -382,19 +401,55 @@ public class InvoiceCandidateAssignmentService
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = refundInvoiceCandidateService
 				.addAssignableMoney(
 						refundCandidate,
+						refundConfig,
 						candidateToAssign);
 
 		final RefundInvoiceCandidate //
 		updatedRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
 		refundInvoiceCandidateRepository.save(updatedRefundCandidate);
 
-		final UnassignedPairOfCandidates //
-		updatedPair = unAssignedPairOfCandidates.withAssignmentToRefundCandidate(assignmentToRefundCandidate);
+		// final AssignCandidatesRequest //
+		// updatedPair = assignCandidatesRequest.withAssignmentToRefundCandidate(assignmentToRefundCandidate);
+
+		assignmentToRefundCandidateRepository.save(assignmentToRefundCandidate);
 
 		return ImmutablePair.of(
-				invoiceCandidateRepository.saveCandidateAssignment(updatedPair),
+				assignableCandidate
+						.toBuilder()
+						.assignmentToRefundCandidate(assignmentToRefundCandidate)
+						.build(),
+				// saveCandidateAssignment(assignCandidatesRequest, assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()),
 				remainingQty);
 	}
+
+//	private AssignableInvoiceCandidate saveCandidateAssignment(
+//			@NonNull final AssignCandidatesRequest assignCandidatesRequest,
+//			@NonNull final Money moneyToAssign,
+//			@NonNull final Quantity quantityToAssign)
+//	{
+//		final AssignableInvoiceCandidate //
+//		assignableInvoiceCandidate = assignCandidatesRequest.getAssignableInvoiceCandidate();
+//
+//		final RefundInvoiceCandidate //
+//		refundInvoiceCandidate = assignCandidatesRequest.getRefundInvoiceCandidate();
+//
+//		final AssignmentToRefundCandidate assignmentToRefundCandidate = //
+//				new AssignmentToRefundCandidate(
+//						assignableInvoiceCandidate.getId(),
+//						refundInvoiceCandidate,
+//						assignCandidatesRequest.getRefundConfig().getId(),
+//						assignableInvoiceCandidate.getMoney(),
+//						moneyToAssign, // assignCandidatesRequest.getMoneyToAssign(),
+//						quantityToAssign // assignCandidatesRequest.getQuantityToAssign()
+//				);
+//
+//		assignmentToRefundCandidateRepository.save(assignmentToRefundCandidate);
+//
+//		return assignableInvoiceCandidate
+//				.toBuilder()
+//				.assignmentToRefundCandidate(assignmentToRefundCandidate)
+//				.build();
+//	}
 
 	public void removeAllAssignments(@NonNull final RefundInvoiceCandidate invoiceCandidate)
 	{
@@ -416,26 +471,39 @@ public class InvoiceCandidateAssignmentService
 
 		final List<UnassignedPairOfCandidates> unassignedPairs = result.getUnassignedPairs();
 
+		final ImmutableList<RefundConfig> configs = unassignedPairs
+				.stream()
+				.flatMap(pair -> pair.getRefundInvoiceCandidate().getRefundConfigs().stream())
+				.collect(ImmutableList.toImmutableList());
+
 		final RefundMode refundMode = extractSingleElement(
-				unassignedPairs,
-				pair -> pair.getRefundInvoiceCandidate().getRefundConfig().getRefundMode());
+				configs,
+				RefundConfig::getRefundMode);
 
 		if (RefundMode.ALL_MAX_SCALE.equals(refundMode))
 		{
-			Check.errorIf(unassignedPairs.size() > 1, "If refundMode={}, then there can be only one refund candidate; unassignResult={}", refundMode, result);
-			final UnassignedPairOfCandidates unassignedPair = singleElement(unassignedPairs);
+			// "If refundMode=ALL_MAX_SCALE, then there can be only one refund candidate
+			final RefundInvoiceCandidate refundCandidate = CollectionUtils.extractSingleElement(unassignedPairs, UnassignedPairOfCandidates::getRefundInvoiceCandidate);
 
-			final RefundInvoiceCandidate refundCandidate = unassignedPair.getRefundInvoiceCandidate();
-			final RefundConfig currentRefundConfig = refundCandidate.getRefundConfig();
+			final Quantity previouslyAssignedQty = refundCandidate
+					.getAssignedQuantity()
+					.add(assignableInvoiceCandidate.getQuantity());
+
+			// note that in this refund mode the whole qty for *all* refundConfigs is assigned to this candidate.
+			// therefore we can get the "biggest" refund config like this.
+			final RefundConfig oldRefundConfig = refundCandidate
+					.getRefundContract()
+					.getRefundConfig(previouslyAssignedQty.getAsBigDecimal());
+
 			final RefundConfig newRefundConfig = refundCandidate
 					.getRefundContract()
 					.getRefundConfig(refundCandidate.getAssignedQuantity().getAsBigDecimal());
 
 			// if accumulated: check if the current quantity still matches the respective candidate's current refund-config's minQty;
-			if (!currentRefundConfig.getId().equals(newRefundConfig.getId()))
+			if (!oldRefundConfig.getId().equals(newRefundConfig.getId()))
 			{
 				// if not, then update the candidates' refund-config and money; don't forget I_C_Invoice_Candidate_Assignment.C_Flatrate_RefundConfig_ID
-				resetMoneyAmount(refundCandidate, newRefundConfig);
+				refundConfigChangeService.resetMoneyAmount(refundCandidate, oldRefundConfig, newRefundConfig);
 			}
 			return result;
 		}
@@ -455,8 +523,9 @@ public class InvoiceCandidateAssignmentService
 		{
 			final UnassignResultBuilder resultBuilder = result.toBuilder();
 
-			final Comparator<RefundInvoiceCandidate> comparingByMinQty = Comparator
-					.comparing(r -> r.getRefundConfig().getMinQty());
+			final Comparator<RefundInvoiceCandidate> // if refundMode == PER_SCALE, then each refundCandidate has just one config
+			comparingByMinQty = Comparator.comparing(r -> singleElement(r.getRefundConfigs()).getMinQty());
+
 			final ImmutableList<RefundInvoiceCandidate> sortedByMinQty = matchingRefundCandidates
 					.stream()
 					.sorted(comparingByMinQty)
@@ -473,7 +542,10 @@ public class InvoiceCandidateAssignmentService
 			{
 				final RefundInvoiceCandidate refundInvoiceCandidate = sortedByMinQty.get(i);
 
-				final Quantity assignableQty = refundInvoiceCandidate.computeAssignableQuantity();
+				// remember, if refundMode == PER_SCALE, then each refundCandidate has just one config
+				final RefundConfig refundConfigs = singleElement(refundInvoiceCandidate.getRefundConfigs());
+
+				final Quantity assignableQty = refundInvoiceCandidate.computeAssignableQuantity(refundConfigs);
 				if (assignableQty.isInfinite() || assignableQty.signum() <= 0)
 				{
 					continue;
@@ -486,12 +558,6 @@ public class InvoiceCandidateAssignmentService
 
 				higherCandidateHasAssignedQty = higherCandidateHasAssignedQty || refundInvoiceCandidate.getAssignedQuantity().signum() > 0;
 			}
-			// TODO: if per-scale: check if
-			// * the "lowest" candidate now has an assignable quantity (i.e. a "gap");
-			// * and there are "higher" candidates with an assigned quantity
-			// if yes then
-			// then get the quantity of that "lowest" candidate's gap
-			// take a look at the "highest" candidate with an assigned quantity
 
 			if (gap.signum() > 0)
 			{
@@ -543,6 +609,7 @@ public class InvoiceCandidateAssignmentService
 			final UnassignedPairOfCandidates unassignedPair = UnassignedPairOfCandidates
 					.builder()
 					.assignableInvoiceCandidate(withoutRefundInvoiceCandidate)
+					.unassignedQuantity(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate())
 					.refundInvoiceCandidate(withSubtractedMoneyAmount)
 					.build();
 			resultBuilder.unassignedPair(unassignedPair);
@@ -559,10 +626,11 @@ public class InvoiceCandidateAssignmentService
 		 * The assignable candidate after the unassignment.
 		 * Note that this candidate has no assignments anymore.
 		 */
+		@NonNull
 		AssignableInvoiceCandidate assignableCandidate;
 
 		/**
-		 * Each pair's {@link UnassignedPairOfCandidates#getAssignableInvoiceCandidate()} is this result's {@link #assignableCandidate}.
+		 * Each pair's {@link AssignCandidatesRequest#getAssignableInvoiceCandidate()} is this result's {@link #assignableCandidate}.
 		 */
 		@Singular
 		List<UnassignedPairOfCandidates> unassignedPairs;
@@ -570,6 +638,7 @@ public class InvoiceCandidateAssignmentService
 		/**
 		 * Further candidates whose assignments also changed due to the unassignment.
 		 * Note that for {@link RefundMode#ALL_MAX_SCALE}, this list is always empty.
+		 * TODO fix comment
 		 */
 		@Singular("additionalChangedCandidate")
 		List<AssignableInvoiceCandidate> additionalChangedCandidates;
@@ -584,8 +653,6 @@ public class InvoiceCandidateAssignmentService
 				.build();
 		invoiceCandidateRepository.deleteAssignments(request);
 	}
-
-
 
 	public List<AssignableInvoiceCandidate> getAssignableCandidates(
 			@NonNull final RefundContract contract,

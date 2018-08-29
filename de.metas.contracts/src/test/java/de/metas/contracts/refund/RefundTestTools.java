@@ -6,9 +6,12 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
@@ -134,7 +137,7 @@ public class RefundTestTools
 
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository);
 
 		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository, refundInvoiceCandidateFactory);
@@ -279,11 +282,13 @@ public class RefundTestTools
 		final AssignableInvoiceCandidate assignableInvoiceCandidate = createAssignableCandidateStandlone();
 		final RefundInvoiceCandidate refundCandidate = createRefundCandidate();
 
+		final RefundConfig refundConfig = singleElement(refundCandidate.getRefundConfigs());
+
 		final I_C_Invoice_Candidate_Assignment assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundCandidate.getId().getRepoId());
 		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundCandidate.getRefundContract().getId().getRepoId());
-		assignmentRecord.setC_Flatrate_RefundConfig_ID(refundCandidate.getRefundConfig().getId().getRepoId());
+		assignmentRecord.setC_Flatrate_RefundConfig_ID(refundConfig.getId().getRepoId());
 		assignmentRecord.setAssignedMoneyAmount(TWO);
 		assignmentRecord.setAssignedQuantity(ONE);
 		saveRecord(assignmentRecord);
@@ -293,7 +298,7 @@ public class RefundTestTools
 		final AssignmentToRefundCandidate assignementToRefundCandidate = new AssignmentToRefundCandidate(
 				assignableInvoiceCandidate.getId(),
 				reloadedRefundCandidate,
-				refundCandidate.getRefundConfig().getId(),
+				refundConfig.getId(),
 				assignableInvoiceCandidate.getMoney(),
 				Money.of(TWO, reloadedRefundCandidate.getMoney().getCurrencyId()),
 				Quantity.of(ONE, uomRecord));
@@ -335,5 +340,12 @@ public class RefundTestTools
 				.refundMode(RefundMode.ALL_MAX_SCALE);
 
 		return refundConfigBuilder;
+	}
+
+	public static RefundConfig extractSingleConfig(@NonNull final RefundInvoiceCandidate refundCandidate)
+	{
+		final List<RefundConfig> resultConfigs = refundCandidate.getRefundConfigs();
+		assertThat(resultConfigs).hasSize(1);
+		return resultConfigs.get(0);
 	}
 }

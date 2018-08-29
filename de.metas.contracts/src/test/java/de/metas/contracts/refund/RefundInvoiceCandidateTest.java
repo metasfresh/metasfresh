@@ -11,6 +11,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
@@ -81,7 +83,7 @@ public class RefundInvoiceCandidateTest
 		final RefundInvoiceCandidate refundInvoiceCandidate = RefundInvoiceCandidate
 				.builder()
 				.assignedQuantity(Quantity.of(TWENTY, refundTestTools.getUomRecord()))
-				.refundConfig(refundConfig1)
+				.refundConfigs(ImmutableList.of(refundConfig1))
 				.bpartnerId(BPartnerId.ofRepoId(10))
 				.invoiceableFrom(NOW)
 				.money(Money.of(ONE, refundTestTools.getCurrency().getId()))
@@ -89,7 +91,7 @@ public class RefundInvoiceCandidateTest
 				.build();
 
 		// invoke the method under test
-		final Quantity result = refundInvoiceCandidate.computeAssignableQuantity();
+		final Quantity result = refundInvoiceCandidate.computeAssignableQuantity(refundConfig1);
 
 		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("9");
 	}

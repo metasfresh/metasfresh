@@ -70,7 +70,7 @@ public class RefundConfigChangeServiceTests
 
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
 				new RefundInvoiceCandidateRepository(refundContractRepository,
-						new RefundInvoiceCandidateFactory(refundContractRepository)));
+						new RefundInvoiceCandidateFactory(refundContractRepository, refundConfigRepository)));
 
 		refundConfigChangeService = new RefundConfigChangeService(
 				assignmentToRefundCandidateRepository,
