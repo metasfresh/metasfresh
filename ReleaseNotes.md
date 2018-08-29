@@ -11,19 +11,27 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 5.73
+## Fixes
+* metasfresh
+  * [#4520](https://github.com/metasfresh/metasfresh/issues/4520) Requests cannot be saved
+  * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems wrt invoice candidate creation from subscription flatrate terms
+
+# metasfresh 5.72
 ## Features
 * metasfresh
-  * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
-  * [#4494](https://github.com/metasfresh/metasfresh/issues/4494) Projecttype Org Validation
   * [#4448](https://github.com/metasfresh/metasfresh/issues/4448) Advanced BLs to create inventory lines
   * [#4450](https://github.com/metasfresh/metasfresh/issues/4450) Tablet optimized inventory-counting-window
   * [#4482](https://github.com/metasfresh/metasfresh/issues/4482) Support Doctype Text templates also on purchase order
+  * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
+    * New Translation Feature for Project Status and Product Category.
+  * [#4494](https://github.com/metasfresh/metasfresh/issues/4494) Projecttype Org Validation
   * [#4498](https://github.com/metasfresh/metasfresh/issues/4498) Make fields in explicit user filter mandatory or optional
   * [#4501](https://github.com/metasfresh/metasfresh/issues/4501) LogicExpressionEvaluator: improve error message in case something went wrong
   * [#4517](https://github.com/metasfresh/metasfresh/issues/4517) Extend Sales Order REST API to support price and support all product values
 
 * metasfresh-webui-frontend
   * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
+    * New Feature that allows a User to reset a forgotton password.
 
 ## Fixes
 * metasfresh
@@ -34,28 +42,6 @@ Here come the actual release notes:
   * [#4509](https://github.com/metasfresh/metasfresh/issues/4509) NPE in Compensation Groups creation
   * [#4514](https://github.com/metasfresh/metasfresh/issues/4514) Include sales orders REST API to metasfresh-dist/serverRoot
 
-* metasfresh-webui-frontend
-  * [#1188](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1188) Home and End button move caret in text fields
-  * [#1463](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1463) Unable to execute any quick actions in Firefox
-  * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
-  * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) included tab: when refreshing via websocket event the sort/order is not preserved
-  * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
-  * [#1872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1872) [alt]+u not working as before
-  * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
-  * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
-  * [#1934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1934) Cannot run processes
-
-# metasfresh 5.72
-## Features
-* metasfresh
-  * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
-    * New Translation Feature for Project Status and Product Category.
-
-* metasfresh-webui-frontend
-  * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
-    * New Feature that allows a User to reset a forgotton password.
-
-## Fixes
 * metasfresh-webui-frontend
   * [#1188](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1188) Home and End button move caret in text fields
     * Bugfix for the Keyboard support of [home] and [end] keys in Text Fields.
@@ -71,21 +57,27 @@ Here come the actual release notes:
   * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
     * Bugfix for the automatic workflow sequence of combined Lookup Fields.
   * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
+  * [#1934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1934) Cannot run processes
     
 
 # metasfresh 5.71
 ## Features
 * metasfresh
   * [#4459](https://github.com/metasfresh/metasfresh/issues/4459) Material Cockpit - show stock details
+    * New Feature in Material Cockpit, now showing the Stock details and Locators.
   * [#4491](https://github.com/metasfresh/metasfresh/issues/4491) Introduce Window Tab's Internal Name
+    * New internal Functionality in Application Dictionary that allows to define internal Names of window Tabs for automatic Testing purpose.
 
 ## Fix
 * metasfresh-webui-api
   * [#865](https://github.com/metasfresh/metasfresh-webui-api/issues/865) Org * not selectable in WebUI but in Java Client
+    * Fix of API now allowing to record Org * in Records.
   * [#1027](https://github.com/metasfresh/metasfresh-webui-api/issues/1027) Cannot set attributes for product after receipt in manufacturing
+    * Bugfix for the setting of Attributes after doing a Material Receipt.
 
 * metasfresh-webui-frontend
   * [#1672](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1672) Location dropdown opens again when opening the batch entry
+    * Fixes the Lookup behavior in Sales Order Batch entry.
 
 
 # metasfresh 5.70

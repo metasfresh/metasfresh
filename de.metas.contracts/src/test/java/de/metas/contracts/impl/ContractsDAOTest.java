@@ -50,13 +50,13 @@ public class ContractsDAOTest
 	}
 
 	@Test
-	public void test()
+	public void retrieveSubscriptionTermsWithMissingCandidates()
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
 
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		conditions.setIsCreateNoInvoice(true);
+		conditions.setIsCreateNoInvoice(false);
 		save(conditions);
 
 		final I_C_Flatrate_Term term1 = newInstance(I_C_Flatrate_Term.class);
