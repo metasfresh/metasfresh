@@ -24,9 +24,9 @@ class TableItem extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const extendLongText = 3;
+    const { multilineText } = this.props;
 
-    if (extendLongText && this.props.isSelected !== prevProps.isSelected) {
+    if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
     }
   }
@@ -212,6 +212,8 @@ class TableItem extends PureComponent {
       colspan,
       viewId,
       isSelected,
+      multilineText,
+      multilineTextLines,
     } = this.props;
     const {
       edited,
@@ -221,10 +223,7 @@ class TableItem extends PureComponent {
       cellsExtended,
     } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
-
-
-    const extendLongText = 3;
-
+    const extendLongText = multilineText ? multilineTextLines : 0;
 
     // Iterate over layout settings
     if (colspan) {
@@ -283,9 +282,9 @@ class TableItem extends PureComponent {
                   caption,
                   mainTable,
                   viewId,
+                  extendLongText,
                 }}
                 cellExtended={cellsExtended}
-                extendLongText={extendLongText}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 isEdited={isEdited}
@@ -500,6 +499,8 @@ TableItem.propTypes = {
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
   isSelected: PropTypes.bool,
+  multilineText: PropTypes.bool,
+  multilineTextLines: PropTypes.number,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);

@@ -43,6 +43,8 @@ class Table extends Component {
     onSelectionChanged: PropTypes.func,
     onRowEdited: PropTypes.func,
     defaultSelected: PropTypes.array,
+    multilineText: PropTypes.bool,
+    multilineTextLines: PropTypes.number,
   };
 
   _isMounted = false;
@@ -944,6 +946,8 @@ class Table extends Component {
       showIncludedViewOnSelect,
       openIncludedViewOnSelect,
       viewId,
+      multilineText,
+      multilineTextLines,
     } = this.props;
 
     const { selected, rows, collapsedRows, collapsedParentsRows } = this.state;
@@ -969,6 +973,8 @@ class Table extends Component {
             readonly,
             collapsible,
             viewId,
+            multilineText,
+            multilineTextLines,
           }}
           key={`${i}-${docId}`}
           collapsed={collapsedParentsRows.indexOf(item[keyProperty]) > -1}

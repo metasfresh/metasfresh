@@ -66,16 +66,26 @@ class Tabs extends Component {
   };
 
   renderTabs = tabs => {
-    const { toggleTableFullScreen, fullScreen, windowType } = this.props;
+    const {
+      toggleTableFullScreen,
+      fullScreen,
+      windowType,
+      multilineText,
+      multilineTextLines,
+    } = this.props;
     const { selected } = this.state;
 
     return tabs.map(item => {
-      const itemWithProps = Object.assign({}, item, {
-        props: Object.assign({}, item.props, {
+      const itemWithProps = {
+        ...item,
+        props: {
+          ...item.props,
           toggleFullScreen: toggleTableFullScreen,
           fullScreen: fullScreen,
-        }),
-      });
+          multilineText,
+          multilineTextLines,
+        },
+      };
 
       if (selected == item.key) {
         const { tabid, queryOnActivate, docId, orderBy } = item.props;
@@ -122,6 +132,8 @@ class Tabs extends Component {
 Tabs.propTypes = {
   dispatch: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
+  multilineText: PropTypes.bool,
+  multilineTextLines: PropTypes.number,
 };
 
 export default connect(state => ({
