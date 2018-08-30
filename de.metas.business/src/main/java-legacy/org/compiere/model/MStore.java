@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
@@ -168,7 +169,7 @@ public class MStore extends X_W_Store
 	 */
 	public static MStore[] getOfClient(MClient client)
 	{
-		ArrayList<MStore> list = new ArrayList<MStore>();
+		ArrayList<MStore> list = new ArrayList<>();
 		String sql = "SELECT * FROM W_Store WHERE AD_Client_ID=? AND IsActive='Y'";
 		PreparedStatement pstmt = null;
 		try
@@ -229,7 +230,7 @@ public class MStore extends X_W_Store
 	}	// getActive
 
 	/** Cache */
-	private static CCache<Integer, MStore> s_cache = new CCache<Integer, MStore>("W_Store", 2);
+	private static CCache<Integer, MStore> s_cache = new CCache<>("W_Store", 2);
 	/** Logger */
 	private static Logger s_log = LogManager.getLogger(MStore.class);
 
@@ -384,7 +385,7 @@ public class MStore extends X_W_Store
 				.password(client.getRequestUserPW())
 				.smtpAuthorization(isSmtpAuthorization)
 				.sendFromServer(client.isServerEMail())
-				.adClientId(client.getAD_Client_ID());
+				.adClientId(ClientId.ofRepoId(client.getAD_Client_ID()));
 		
 		final String wstoreEMail = getWStoreEMail();
 		if(!Check.isEmpty(wstoreEMail, true))
@@ -451,7 +452,7 @@ public class MStore extends X_W_Store
 	{
 		if (m_msgs != null && !reload)
 			return m_msgs;
-		ArrayList<MMailMsg> list = new ArrayList<MMailMsg>();
+		ArrayList<MMailMsg> list = new ArrayList<>();
 		//
 		String sql = "SELECT * FROM W_MailMsg WHERE W_Store_ID=? ORDER BY MailMsgType";
 		PreparedStatement pstmt = null;
