@@ -78,6 +78,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -138,6 +139,8 @@ import lombok.NonNull;
 	//
 	// Manual packing materials related:
 	private boolean manualPackingMaterial = false;
+
+	private M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // default as before
 
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
@@ -286,7 +289,7 @@ import lombok.NonNull;
 		packingMaterial_huPIItemProducts.add(piip);
 
 		// collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs.
-		if (manualPackingMaterial)
+		if (manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
@@ -300,7 +303,7 @@ import lombok.NonNull;
 			{
 				// https://github.com/metasfresh/metasfresh/issues/4028 Multiple shipment lines for one order line all have the order line's TU-Qty
 				// this is a dirty hack;
-				// note that for "no-HU" shipment we assume a homogeneous PiiP and therefore may simply add up those TU quantities 
+				// note that for "no-HU" shipment we assume a homogeneous PiiP and therefore may simply add up those TU quantities
 				// TODO if we get to it before we ditch HU-less shipments altogether:
 				// * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picked
 				// * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
@@ -428,7 +431,7 @@ import lombok.NonNull;
 		}
 
 		// Update packing materials info, if there is "one" info
-		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial);
+		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse));
 
 		// https://github.com/metasfresh/metasfresh/issues/3503
 		if (packingMaterial_huPIItemProducts != null && packingMaterial_huPIItemProducts.size() == 1)
@@ -437,7 +440,7 @@ import lombok.NonNull;
 			shipmentLine.setM_HU_PI_Item_Product_Override(piipForShipmentLine); // this field is currently displayed in the swing client, so we set it, even if it's redundant
 			shipmentLine.setM_HU_PI_Item_Product_Calculated(piipForShipmentLine);
 
-			if (manualPackingMaterial)
+			if (manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
@@ -500,7 +503,7 @@ import lombok.NonNull;
 		}
 
 		// Guard: while generating shipment line from candidates, we shall have HUs for them
-		if (!haveHUAssigments && !manualPackingMaterial)
+		if (!haveHUAssigments && !manualPackingMaterial && !M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
 		{
 			throw new HUException("No HUs to assign and manualPackingMaterial==false."
 					+ "\n @M_InOutLine_ID@: " + shipmentLine
@@ -569,5 +572,11 @@ import lombok.NonNull;
 	public void setAlreadyAssignedTUIds(final Set<Integer> alreadyAssignedTUIds)
 	{
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
+	}
+
+	public void setQuantityToUse(final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	{
+		this.quantityToUse = quantityToUse;
+
 	}
 }

@@ -60,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
@@ -117,6 +118,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private boolean createPackingLines = false;
 	private boolean manualPackingMaterial = false;
 	private boolean shipmentDateToday = false;
+
+	private M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // default as it was before
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -559,6 +562,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
 			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
+			currentShipmentLineBuilder.setQuantityToUse(quantityToUse);
 
 		}
 
@@ -609,6 +613,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", processorCtx=" + processorCtx + ", currentShipment=" + currentShipment
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setQuantityToUse(final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	{
+		this.quantityToUse = quantityToUse;
+		return this;
 	}
 
 }
