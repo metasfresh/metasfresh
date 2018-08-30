@@ -14,17 +14,33 @@ import { shouldRenderColumn } from '../../utils/tableHelpers';
 class TableItem extends PureComponent {
   constructor(props) {
     super(props);
+
+    const multilineText = props.cols.filter(item => item.multilineText === true)
+      .length;
+
+    let multilineTextLines = 0;
+    props.cols.forEach(col => {
+      if (
+        col.multilineTextLines &&
+        col.multilineTextLines > multilineTextLines
+      ) {
+        multilineTextLines = col.multilineTextLines;
+      }
+    });
+
     this.state = {
       edited: '',
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
       editedCells: {},
+      multilineText,
+      multilineTextLines,
     };
   }
 
   componentDidUpdate(prevProps) {
-    const { multilineText } = this.props;
+    const { multilineText } = this.state;
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend();
@@ -212,8 +228,6 @@ class TableItem extends PureComponent {
       colspan,
       viewId,
       isSelected,
-      multilineText,
-      multilineTextLines,
     } = this.props;
     const {
       edited,
@@ -221,9 +235,10 @@ class TableItem extends PureComponent {
       listenOnKeys,
       editedCells,
       cellsExtended,
+      multilineText,
+      multilineTextLines,
     } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
-    const extendLongText = multilineText ? multilineTextLines : 0;
 
     // Iterate over layout settings
     if (colspan) {
@@ -243,6 +258,7 @@ class TableItem extends PureComponent {
                   VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
             const isEdited = edited === property;
+            const extendLongText = multilineText ? multilineTextLines : 0;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -499,8 +515,6 @@ TableItem.propTypes = {
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
   isSelected: PropTypes.bool,
-  multilineText: PropTypes.bool,
-  multilineTextLines: PropTypes.number,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);
