@@ -52,6 +52,12 @@ public class InboundEMailRepository
 
 	public void save(@NonNull final InboundEMail email)
 	{
+		final I_C_Mail mailRecord = toMailRecord(email);
+		InterfaceWrapperHelper.save(mailRecord);
+	}
+
+	private I_C_Mail toMailRecord(final InboundEMail email)
+	{
 		final I_C_Mail mailRecord = InterfaceWrapperHelper.newInstance(I_C_Mail.class);
 		mailRecord.setIsInboundEMail(true);
 		mailRecord.setEMail_From(email.getFrom());
@@ -71,8 +77,7 @@ public class InboundEMailRepository
 		mailRecord.setEMailHeadersJSON(toJson(email.getHeaders()));
 
 		mailRecord.setR_Request_ID(RequestId.toRepoId(email.getRequestId()));
-
-		InterfaceWrapperHelper.save(mailRecord);
+		return mailRecord;
 	}
 
 	private String toJson(final Map<String, Object> map)
