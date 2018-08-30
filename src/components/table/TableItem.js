@@ -23,6 +23,14 @@ class TableItem extends PureComponent {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    const extendLongText = 3;
+
+    if (extendLongText && this.props.isSelected !== prevProps.isSelected) {
+      this.handleCellExtend();
+    }
+  }
+
   initPropertyEditor = fieldName => {
     const { cols, fieldsByName } = this.props;
 
@@ -491,6 +499,7 @@ TableItem.propTypes = {
   collapsed: PropTypes.bool,
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
+  isSelected: PropTypes.bool,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);
