@@ -62,7 +62,6 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
-			<version>1.5.6</version><!-- pls keep it in sync with spring's version -->
 		</dependency>
 
 		<!--
