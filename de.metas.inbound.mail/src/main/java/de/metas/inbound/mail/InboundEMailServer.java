@@ -158,6 +158,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 						.shouldMarkMessagesAsRead(false)
 						.shouldDeleteMessages(false)
 						.shouldReconnectAutomatically(true)
+						.embeddedPartsAsBytes(false)
 						.headerMapper(new DefaultMailHeaderMapper()))
 				.handle(InboundEMailMessageHandler.builder()
 						.config(config)
