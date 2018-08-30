@@ -85,7 +85,10 @@
     }
 
     td {
-        width: 75px;
+        /* This causes weird things in the layout so we should
+         * setting this width arbitrary
+        */
+        /*width: 75px;*/
         position: relative;
         cursor: pointer;
         border-top: 0;
