@@ -313,14 +313,6 @@
 				<version>1.2</version>
 			</dependency>
 
-			<dependency>
-				<groupId>javax.mail</groupId>
-				<artifactId>mail</artifactId>
-				<!-- Version 1.4.1 would also be available as OSGI bundle for servicemix, 
-					see http://repo1.maven.org/maven2/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail -->
-				<version>1.4.3</version>
-			</dependency>
-
 			<!-- Concordion for acceptance testing -->
 			<dependency>
 				<groupId>org.concordion</groupId>
