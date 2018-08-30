@@ -155,7 +155,6 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
-      onCellExtend,
     } = this.props;
     const docId = `${this.props.docId}`;
     const tdValue = !isEdited
@@ -198,15 +197,6 @@ class TableCell extends PureComponent {
           }
         )}
       >
-        {item.widgetType.toLowerCase() === 'longtext' &&
-          extendLongText && (
-            <div
-              className={classnames('extend-text-button', {
-                extended: cellExtended,
-              })}
-              onClick={onCellExtend}
-            />
-          )}
         {isEdited ? (
           <MasterWidget
             {...item}
