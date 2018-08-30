@@ -3,6 +3,7 @@ package de.metas.inbound.mail;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,7 +59,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 	private final InboundEMailConfigRepository configsRepo;
 	private final IntegrationFlowContext flowContext;
 
-	private final Set<InboundEMailConfigId> loadedConfigIds = ConcurrentHashMap.newKeySet();
+	private final Map<InboundEMailConfigId, InboundEMailConfig> loadedConfigs = new ConcurrentHashMap<>();
 
 	public InboundEMailServer(
 			@NonNull final InboundEMailService emailService,
@@ -74,7 +75,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 	public void afterPropertiesSet() throws Exception
 	{
 		loadAll();
-		logger.info("Started with {} inbound configs", loadedConfigIds.size());
+		logger.info("Started with {} inbound configs", loadedConfigs.size());
 	}
 
 	private static String toFlowId(final InboundEMailConfigId configId)
@@ -87,9 +88,9 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 		reload(configsRepo.getAll());
 	}
 
-	private void reload(final Collection<InboundEMailConfig> configs)
+	private synchronized void reload(final Collection<InboundEMailConfig> configs)
 	{
-		final HashSet<InboundEMailConfigId> configIdsToUnload = new HashSet<>(loadedConfigIds);
+		final HashSet<InboundEMailConfigId> configIdsToUnload = new HashSet<>(loadedConfigs.keySet());
 
 		for (final InboundEMailConfig config : configs)
 		{
@@ -109,16 +110,23 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 		reload(config);
 	}
 
-	public void reload(final InboundEMailConfig config)
+	public synchronized void reload(final InboundEMailConfig config)
 	{
-		unloadById(config.getId());
+		final InboundEMailConfigId configId = config.getId();
+		final InboundEMailConfig loadedConfig = loadedConfigs.get(configId);
+		if (loadedConfig != null && loadedConfig.equals(config))
+		{
+			logger.info("Skip reloading {} because it's already loaded and not changed", config);
+		}
+
+		unloadById(configId);
 		load(config);
 	}
 
-	public void unloadById(final InboundEMailConfigId configId)
+	public synchronized void unloadById(final InboundEMailConfigId configId)
 	{
-		final boolean wasLoaded = loadedConfigIds.remove(configId);
-		if (!wasLoaded)
+		final InboundEMailConfig loadedConfig = loadedConfigs.remove(configId);
+		if (loadedConfig == null)
 		{
 			logger.info("Skip unloading inbound mail for {} because it's not loaded", configId);
 			return;
@@ -136,7 +144,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 		}
 	}
 
-	private void load(final InboundEMailConfig config)
+	private synchronized void load(final InboundEMailConfig config)
 	{
 		final IntegrationFlow flow = createIntegrationFlow(config);
 
@@ -144,7 +152,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 				.id(toFlowId(config.getId()))
 				.register();
 
-		loadedConfigIds.add(config.getId());
+		loadedConfigs.put(config.getId(), config);
 
 		logger.info("Loaded inbound mail for {}", config);
 	}
