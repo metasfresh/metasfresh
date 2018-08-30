@@ -71,6 +71,11 @@
 			<artifactId>de.metas.order.rest-api</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.inbound</groupId>
+			<artifactId>de.metas.inbound.mail</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
