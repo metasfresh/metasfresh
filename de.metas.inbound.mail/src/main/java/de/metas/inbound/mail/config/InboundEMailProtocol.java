@@ -1,4 +1,4 @@
-package de.metas.inbound.mail;
+package de.metas.inbound.mail.config;
 
 import java.util.Map;
 import java.util.stream.Stream;

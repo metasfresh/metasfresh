@@ -1,5 +1,7 @@
 package de.metas.inbound.mail;
 
+import de.metas.inbound.mail.config.InboundEMailConfig;
+
 /*
  * #%L
  * de.metas.inbound.mail

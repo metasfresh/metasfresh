@@ -18,6 +18,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.inbound.mail.config.InboundEMailConfig;
 import lombok.Builder;
 import lombok.NonNull;
 

@@ -18,6 +18,10 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
+import de.metas.inbound.mail.config.InboundEMailConfig;
+import de.metas.inbound.mail.config.InboundEMailConfigChangedListener;
+import de.metas.inbound.mail.config.InboundEMailConfigId;
+import de.metas.inbound.mail.config.InboundEMailConfigRepository;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 

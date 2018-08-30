@@ -1,4 +1,4 @@
-package de.metas.inbound.mail;
+package de.metas.inbound.mail.config;
 
 import java.util.List;
 import java.util.Optional;

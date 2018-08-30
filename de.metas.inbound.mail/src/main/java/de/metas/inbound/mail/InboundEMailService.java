@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.inbound.mail.config.InboundEMailConfig;
 import lombok.NonNull;
 
 /*

@@ -7,9 +7,9 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.inbound.mail.InboundEMail;
-import de.metas.inbound.mail.InboundEMailConfig;
 import de.metas.inbound.mail.InboundEMailListener;
 import de.metas.inbound.mail.InboundEMailRepository;
+import de.metas.inbound.mail.config.InboundEMailConfig;
 import de.metas.request.RequestId;
 import lombok.NonNull;
 

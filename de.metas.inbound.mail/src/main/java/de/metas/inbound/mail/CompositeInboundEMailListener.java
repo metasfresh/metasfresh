@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.inbound.mail.config.InboundEMailConfig;
 import lombok.ToString;
 
 /*
@@ -29,7 +30,7 @@ import lombok.ToString;
  */
 
 @ToString
-public class CompositeInboundEMailListener implements InboundEMailListener
+final class CompositeInboundEMailListener implements InboundEMailListener
 {
 	public static CompositeInboundEMailListener of(final List<InboundEMailListener> listeners)
 	{

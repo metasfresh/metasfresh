@@ -1,4 +1,4 @@
-package de.metas.inbound.mail;
+package de.metas.inbound.mail.config;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
