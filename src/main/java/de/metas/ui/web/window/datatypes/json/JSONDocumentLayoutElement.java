@@ -91,6 +91,14 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean allowShowPassword; // in case widgetType is Password
 
+	@JsonProperty("multilineText")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean multilineText;
+
+	@JsonProperty("multilineTextLines")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer multilineTextLines;
+
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
@@ -115,7 +123,7 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("sortable")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean viewAllowSorting;
-	
+
 	@JsonProperty("restrictToMediaTypes")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<MediaType> restrictToMediaTypes;
@@ -143,6 +151,17 @@ public final class JSONDocumentLayoutElement
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		allowShowPassword = element.isAllowShowPassword() ? Boolean.TRUE : null;
 
+		if (element.isMultilineText())
+		{
+			multilineText = Boolean.TRUE;
+			multilineTextLines = element.getMultilineTextLines();
+		}
+		else
+		{
+			multilineText = null;
+			multilineTextLines = null;
+		}
+
 		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
 		final ButtonFieldActionType buttonActionType = buttonAction == null ? null : buttonAction.getActionType();
 		if (buttonActionType == ButtonFieldActionType.processCall)
@@ -160,7 +179,7 @@ public final class JSONDocumentLayoutElement
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 		viewEditorRenderMode = element.getViewEditorRenderMode() != null ? element.getViewEditorRenderMode().toJson() : null;
 		viewAllowSorting = element.isGridElement() ? element.isViewAllowSorting() : null;
-		
+
 		restrictToMediaTypes = ImmutableSet.copyOf(element.getRestrictToMediaTypes());
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
@@ -174,6 +193,8 @@ public final class JSONDocumentLayoutElement
 
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
 		allowShowPassword = null;
+		multilineText = null;
+		multilineTextLines = null;
 		buttonProcessId = null;
 
 		type = null;
@@ -181,7 +202,7 @@ public final class JSONDocumentLayoutElement
 		gridAlign = JSONLayoutAlign.right;
 		viewEditorRenderMode = ViewEditorRenderMode.NEVER.toJson();
 		viewAllowSorting = null;
-		
+
 		restrictToMediaTypes = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //

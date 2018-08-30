@@ -108,6 +108,8 @@ public class LayoutFactory
 			.put("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
 			.build();
 
+	private static final int DEFAULT_MultiLine_LinesCount = 3;
+
 	//
 	// Parameters
 	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
@@ -400,6 +402,8 @@ public class LayoutFactory
 				.setInternalName(uiElement.toString())
 				.setLayoutType(layoutType)
 				.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
+				.setMultilineText(uiElement.isMultiLine())
+				.setMultilineTextLines(extractMultiLineLinesCount(uiElement))
 				.setAdvancedField(uiElement.isAdvancedField())
 				.restrictToMediaTypes(MediaType.fromNullableCommaSeparatedString(uiElement.getMediaTypes()));
 
@@ -456,6 +460,17 @@ public class LayoutFactory
 
 		logger.trace("Built layout element for {}: {}", uiElement, layoutElementBuilder);
 		return layoutElementBuilder;
+	}
+
+	private static int extractMultiLineLinesCount(final I_AD_UI_Element uiElement)
+	{
+		if (!uiElement.isMultiLine())
+		{
+			return 0;
+		}
+
+		final int linesCount = uiElement.getMultiLine_LinesCount();
+		return linesCount > 0 ? linesCount : DEFAULT_MultiLine_LinesCount;
 	}
 
 	/**
