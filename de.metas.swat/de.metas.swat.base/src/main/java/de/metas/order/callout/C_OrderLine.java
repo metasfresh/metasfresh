@@ -16,20 +16,17 @@ package de.metas.order.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -42,16 +39,17 @@ import de.metas.order.IOrderLineBL;
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
-
-
-	@CalloutMethod(columnNames = {I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void resetManualFlags(final I_C_OrderLine orderLine, final ICalloutField field)
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
-		ol.setIsManualDiscount(false);
-		ol.setIsManualPrice(false);
-		
-		// update prices : see taks 06727
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
+		resetManualFlags(orderLine);
+		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
+	}
+
+	private void resetManualFlags(final I_C_OrderLine orderLine)
+	{
+		orderLine.setIsManualDiscount(false);
+		orderLine.setIsManualPrice(false);
+		Services.get(IOrderLineBL.class).updatePrices(orderLine); // see task 06727
 	}
 }
