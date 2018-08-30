@@ -13,15 +13,14 @@ package org.eevolution.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -119,7 +118,6 @@ public class ProductBOMBL implements IProductBOMBL
 		return qtyPlusScap;
 	}
 
-
 	@Override
 	public boolean isValidVariantGroup(final I_PP_Product_BOMLine bomLine)
 	{
@@ -143,7 +141,7 @@ public class ProductBOMBL implements IProductBOMBL
 
 		return isComponentOrPacking;
 	}
-	
+
 	@Override
 	public BigDecimal getQtyMultiplier(
 			@NonNull final I_PP_Product_BOMLine productBomLine,
@@ -167,5 +165,12 @@ public class ProductBOMBL implements IProductBOMBL
 
 		final Percent qtyBatchPercent = Percent.of(productBomLine.getQtyBatch());
 		return qtyBatchPercent.multiply(bomToLineUOMMultiplier, 8);
+	}
+
+	@Override
+	public String getBOMDescriptionForProductId(@NonNull final ProductId productId)
+	{
+		return ProductBOMDescriptionBuilder.newInstance()
+				.build(productId);
 	}
 }
