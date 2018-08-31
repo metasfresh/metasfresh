@@ -47,10 +47,15 @@ Here come the actual release notes:
   * [#4483](https://github.com/metasfresh/metasfresh/issues/4483) Payment allocation form does not show invoices
     * Fix for the Payment Allocation Form, now showing filtered invoices again.
   * [#4499](https://github.com/metasfresh/metasfresh/issues/4499) Cannot create letter
+    * Bugfix. Fixes the creation of Letters in WebUI modal overlay.
   * [#4504](https://github.com/metasfresh/metasfresh/issues/4504) Mandatory logic broken for C_FlatrateTerm.C_Currency_ID
+    * Fixes the evaluation of the mandatory logic for the Currency Field in Flatrate Term window.
   * [#4506](https://github.com/metasfresh/metasfresh/issues/4506) Compensation Group's subtotals gets broken after setting/changing the flatrate conditions
+    * Bugfix for the calculation of the subtotal in compensation groups. Now these are recalculated when adjusting corresponding flatrate conditions.
   * [#4509](https://github.com/metasfresh/metasfresh/issues/4509) NPE in Compensation Groups creation
+    * Bugfix for a Null Pointer Exception when creating compensation groups in Sales Order Lines.
   * [#4514](https://github.com/metasfresh/metasfresh/issues/4514) Include sales orders REST API to metasfresh-dist/serverRoot
+    * Invluding the REST API for Sales Orders to default API environment.
 
 * metasfresh-webui-frontend
   * [#1188](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1188) Home and End button move caret in text fields
@@ -58,6 +63,7 @@ Here come the actual release notes:
   * [#1463](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1463) Unable to execute any quick actions in Firefox
     * Fixes a Bug that occurred with quickactions in non-webkit browsers.
   * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
+    * Minor Bugfix for the filtering in WebUI window.
   * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) included tab: when refreshing via websocket event the sort/order is not preserved
     * Improvement of the Websocket refresh behavior when manipulating records in combination with changed order.
   * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
@@ -67,7 +73,9 @@ Here come the actual release notes:
   * [#1923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1923) Sequence of Dropdowns in combined Business Partner Lookups not working
     * Bugfix for the automatic workflow sequence of combined Lookup Fields.
   * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
+    * Fixes the Filtering in WebUI for filters that have a default filter criteria set. Now it's possible to also set other filter criteria again.
   * [#1934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1934) Cannot run processes
+    * Bugfix for running actions with paramaters.
     
 
 # metasfresh 5.71
