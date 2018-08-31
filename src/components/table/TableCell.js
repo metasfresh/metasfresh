@@ -55,6 +55,8 @@ class TableCell extends PureComponent {
     }
   };
 
+  // TODO: THIS NEEDS URGENT REFACTORING, WHY THE HECK ARE WE RETURNING
+  // SIX DIFFERENT TYPES OF VALUES HERE ? UBER-BAD DESIGN !
   static fieldValueToString = (
     fieldValue,
     fieldType = 'Text',
