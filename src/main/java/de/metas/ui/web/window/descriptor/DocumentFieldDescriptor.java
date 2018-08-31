@@ -28,7 +28,9 @@ import com.google.common.collect.Sets;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
@@ -486,6 +488,12 @@ public final class DocumentFieldDescriptor
 					final T valueConv = (T)(Integer)lookupValue.getIdAsInt();
 					return valueConv;
 				}
+				else if (value instanceof RepoIdAware)
+				{
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)((RepoIdAware)value).getRepoId();
+					return valueConv;
+				}
 
 			}
 			else if (BigDecimal.class == targetType)
@@ -669,6 +677,12 @@ public final class DocumentFieldDescriptor
 					final T valueConv = (T)ColorValue.ofHexString(value.toString());
 					return valueConv;
 				}
+			}
+			else if (WebuiImageId.class == targetType)
+			{
+				@SuppressWarnings("unchecked")
+				final T valueConv = (T)WebuiImageId.ofNullableObject(value);
+				return valueConv;
 			}
 		}
 		catch (final Exception e)

@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
@@ -902,6 +903,11 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				final ColorValue color = (ColorValue)value;
 				final int adColorId = Services.get(IColorRepository.class).saveFlatColorAndReturnId(color.getHexString());
 				return adColorId;
+			}
+			else if (RepoIdAware.class.isAssignableFrom(valueClass))
+			{
+				final RepoIdAware repoIdAware = (RepoIdAware)value;
+				return repoIdAware.getRepoId();
 			}
 		}
 		else if (String.class.equals(targetClass))

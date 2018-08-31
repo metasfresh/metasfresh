@@ -8,6 +8,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.lang.RepoIdAware;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -176,7 +177,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 				.map(field -> createProcessInfoParameter(field))
 				.collect(GuavaCollectors.toImmutableList());
 		adPInstanceDAO.saveParameterToDB(adPInstanceId, piParams);
-		
+
 		return SaveResult.SAVED;
 	}
 
@@ -194,6 +195,13 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 			final LookupValue lookupValue = (LookupValue)fieldValue;
 			parameter = lookupValue.getId();
 			info = lookupValue.getDisplayName();
+			parameterTo = null;
+			infoTo = null;
+		}
+		else if (fieldValue instanceof RepoIdAware)
+		{
+			parameter = ((RepoIdAware)fieldValue).getRepoId();
+			info = parameter.toString();
 			parameterTo = null;
 			infoTo = null;
 		}

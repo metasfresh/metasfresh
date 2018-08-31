@@ -47,6 +47,7 @@ import de.metas.ui.web.login.json.JSONResetPasswordRequest;
 import de.metas.ui.web.notification.UserNotificationsService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.session.UserSessionRepository;
+import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.upload.WebuiImageService;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -360,8 +361,8 @@ public class LoginRestController
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);
 		final I_AD_User user = usersRepo.getByPasswordResetCode(token);
 
-		final int avatarId = user.getAvatar_ID();
-		if (avatarId <= 0)
+		final WebuiImageId avatarId = WebuiImageId.ofRepoIdOrNull(user.getAvatar_ID());
+		if (avatarId == null)
 		{
 			return ResponseEntity.notFound().build();
 		}
