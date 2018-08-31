@@ -280,7 +280,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		//
 		// Locking
 		final ILockManager lockManager = Services.get(ILockManager.class);
-		final LockOwner lockOwner = LockOwner.forOwnerName(getClass().getSimpleName() + "#generateInvoiceCandidates");
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
 
 		//
 		// Iterate retrieved models and generate invoice candidates for them
