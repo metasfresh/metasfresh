@@ -12,13 +12,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -26,9 +23,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
@@ -69,13 +64,6 @@ public class RefundConfigRepository
 {
 	private final InvoiceScheduleRepository invoiceScheduleRepository;
 
-	private final CCache<FlatrateTermId, RefundConfig> CACHE = CCache.<FlatrateTermId, RefundConfig> newCache(
-			I_C_Flatrate_RefundConfig.Table_Name + "#by#"
-					+ I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID + "#"
-					+ I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
-			0,
-			CCache.EXPIREMINUTES_Never);
-
 	public RefundConfigRepository(@NonNull final InvoiceScheduleRepository invoiceScheduleRepository)
 	{
 		this.invoiceScheduleRepository = invoiceScheduleRepository;
@@ -86,21 +74,6 @@ public class RefundConfigRepository
 		return createRefundConfigQuery(conditionsId)
 				.match();
 	}
-
-	// public List<RefundConfig> getByConditionsId(
-	// @NonNull final ConditionsId conditionsId)
-	// {
-	// return createRefundConfigQuery(conditionsId)
-	// .stream()
-	// .map(this::ofRecordOrNull)
-	// .collect(ImmutableList.toImmutableList());
-	// }
-	//
-	// public RefundConfig getByRefundContractId(
-	// @NonNull final FlatrateTermId flatrateTermId)
-	// {
-	// return CACHE.getOrLoad(flatrateTermId, () -> getByRefundContractIdForCache(flatrateTermId));
-	// }
 
 	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)
 	{
@@ -171,41 +144,6 @@ public class RefundConfigRepository
 				ofRecordOrNull(record),
 				"There needs to be a loadable RefundConfig for RefundConfigId={}; I_C_Flatrate_RefundConfig={}",
 				id, record);
-	}
-
-	private RefundConfig getByRefundContractIdForCache(
-			@NonNull final FlatrateTermId flatrateTermId)
-	{
-		final I_C_Flatrate_Term term = Check.assumeNotNull(
-				load(flatrateTermId.getRepoId(), I_C_Flatrate_Term.class),
-				"The C_Flatrate_Term record for flatrateTermId={}, is not null",
-				flatrateTermId);
-
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
-
-		final RefundConfig config = getByConditionsIdAndProductId(conditionsId, productId);
-		return Check.assumeNotNull(config, "The refundConfig for flatrateTermId={} is not null", flatrateTermId);
-	}
-
-	private RefundConfig getByConditionsIdAndProductId(
-			@NonNull final ConditionsId conditionsId,
-			@NonNull final ProductId productId)
-	{
-		final I_C_Flatrate_RefundConfig configRecord = createRefundConfigQueryBuilder(conditionsId)
-				.addInArrayFilter(
-						I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
-						null,
-						productId.getRepoId())
-				.orderBy()
-				.addColumn(
-						I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
-						Direction.Descending,
-						Nulls.Last)
-				.endOrderBy()
-				.create()
-				.first();
-		return ofRecordOrNull(configRecord);
 	}
 
 	private IQuery<I_C_Flatrate_RefundConfig> createRefundConfigQuery(

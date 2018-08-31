@@ -68,8 +68,7 @@ public class RefundProfitPriceActualComponent implements ProfitPriceActualCompon
 		if (RefundBase.AMOUNT_PER_UNIT.equals(refundConfig.getRefundBase()))
 		{
 			final Money amountPerUnit = refundConfig.getAmount();
-			final Money profitAmount = amountPerUnit.multiply(request.getQuantity().getAsBigDecimal());
-			return input.subtract(profitAmount);
+			return input.subtract(amountPerUnit);
 		}
 
 		final Percent percent = refundConfig.getPercent();

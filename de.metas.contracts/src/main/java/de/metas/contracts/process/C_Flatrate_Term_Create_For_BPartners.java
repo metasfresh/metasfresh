@@ -25,8 +25,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -49,6 +51,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.product.ProductId;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {
@@ -81,11 +84,23 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 					.conditionsId(conditionsId)
 					.build();
 
-			final List<RefundConfig> allConfigs = refundConfigRepository.getByQuery(query);
-			for (final RefundConfig config : allConfigs)
+			final List<ProductId> productIds = refundConfigRepository
+					.getByQuery(query)
+					.stream()
+					.map(RefundConfig::getProductId)
+					.distinct()
+					.collect(Collectors.toCollection(ArrayList::new));
+			for (final ProductId productId : productIds)
 			{
-				final I_M_Product product = loadOutOfTrx(config.getProductId().getRepoId(), I_M_Product.class);
-				addProduct(product);
+				if (productId == null)
+				{
+					addProduct(null);
+				}
+				else
+				{
+					final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+					addProduct(product);
+				}
 			}
 		}
 		else
