@@ -17,6 +17,8 @@ Here come the actual release notes:
     * Fixes a Bug in Requests, now being able to save Requests again in WebUI.
   * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems with invoice candidate creation from subscription flatrate terms
     * Bugfix in subscription contract handling, now creating corresponding invoice candidates again.
+  * [#4538](https://github.com/metasfresh/metasfresh/issues/4538) WebUI: New Translation Window for R_RequestType
+    * New Window that allows to maintain Request Type Translations in WebUI.
 
 # metasfresh 5.72
 ## Features
