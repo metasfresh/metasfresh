@@ -14,20 +14,29 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#4520](https://github.com/metasfresh/metasfresh/issues/4520) Requests cannot be saved
-  * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems wrt invoice candidate creation from subscription flatrate terms
+    * Fixes a Bug in Requests, now being able to save Requests again in WebUI.
+  * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems with invoice candidate creation from subscription flatrate terms
+    * Bugfix in subscription contract handling, now creating corresponding invoice candidates again.
 
 # metasfresh 5.72
 ## Features
 * metasfresh
   * [#4448](https://github.com/metasfresh/metasfresh/issues/4448) Advanced BLs to create inventory lines
+    * Extended Business Logic for the creation of Inventory lines. Now able to generate the inventorylines based on product value and last inventory count of products in a warehouse locator.
   * [#4450](https://github.com/metasfresh/metasfresh/issues/4450) Tablet optimized inventory-counting-window
+    * New window that allows the invntory counting via a tablet sized interface.
   * [#4482](https://github.com/metasfresh/metasfresh/issues/4482) Support Doctype Text templates also on purchase order
+    * Adopting the existing doctype text support to purchase orders.
   * [#4492](https://github.com/metasfresh/metasfresh/issues/4492) Project Status and Product Category Trl
     * New Translation Feature for Project Status and Product Category.
   * [#4494](https://github.com/metasfresh/metasfresh/issues/4494) Projecttype Org Validation
+    * New Validation Rule for Projecttype, now respecting the records organisation.
   * [#4498](https://github.com/metasfresh/metasfresh/issues/4498) Make fields in explicit user filter mandatory or optional
+    * Extended Filter functionality allowing to set
   * [#4501](https://github.com/metasfresh/metasfresh/issues/4501) LogicExpressionEvaluator: improve error message in case something went wrong
+    * Improvement of Error messages.
   * [#4517](https://github.com/metasfresh/metasfresh/issues/4517) Extend Sales Order REST API to support price and support all product values
+    * Extended Sales Order REST API, now supporting prices and product values.
 
 * metasfresh-webui-frontend
   * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
@@ -36,6 +45,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#4483](https://github.com/metasfresh/metasfresh/issues/4483) Payment allocation form does not show invoices
+    * Fix for the Payment Allocation Form, now showing filtered invoices again.
   * [#4499](https://github.com/metasfresh/metasfresh/issues/4499) Cannot create letter
   * [#4504](https://github.com/metasfresh/metasfresh/issues/4504) Mandatory logic broken for C_FlatrateTerm.C_Currency_ID
   * [#4506](https://github.com/metasfresh/metasfresh/issues/4506) Compensation Group's subtotals gets broken after setting/changing the flatrate conditions
