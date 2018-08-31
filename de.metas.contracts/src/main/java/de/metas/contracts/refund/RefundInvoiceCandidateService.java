@@ -78,8 +78,8 @@ public class RefundInvoiceCandidateService
 	 * If there are none yet, it creates them as needed.
 	 *
 	 * Notes:
-	 * <li>in case of {@link RefundMode#PER_INDIVIDUAL_SCALE}, there can be multiple refund contracts for an assignable candidate. However, each of them has just one refund config.
-	 * <li>in case of {@link RefundMode#ALL_MAX_SCALE}, there is just one refund candidate per assignable candidate, but it can have more than one assignment.
+	 * <li>in case of {@link RefundMode#APPLY_TO_EXCEEDING_QTY}, there can be multiple refund contracts for an assignable candidate. However, each of them has just one refund config.
+	 * <li>in case of {@link RefundMode#APPLY_TO_ALL_QTIES}, there is just one refund candidate per assignable candidate, but it can have more than one assignment.
 	 */
 	public List<RefundInvoiceCandidate> retrieveOrCreateMatchingRefundCandidates(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
@@ -100,7 +100,7 @@ public class RefundInvoiceCandidateService
 		Check.assumeNotNull(relevantRefundConfigs, "relevantRefundConfigs may not by empty; assignedTargetQuantity={}; refundContract={}", assignedTargetQuantity, refundContract);
 
 		final RefundMode refundMode = refundContract.extractRefundMode();
-		if (refundMode.equals(RefundMode.ALL_MAX_SCALE))
+		if (refundMode.equals(RefundMode.APPLY_TO_ALL_QTIES))
 		{
 			if (!existingCandidates.isEmpty())
 			{
@@ -180,7 +180,7 @@ public class RefundInvoiceCandidateService
 				"The given refundConfig needs to be one of the given refundCandidate's configs; refundConfig={}; refundCandidate={}",
 				refundConfig, refundCandidate);
 
-		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundConfig.getRefundMode()))
+		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundConfig.getRefundMode()))
 		{
 			final boolean quantityWithinCurrentScale = isQuantityWithinCurrentScale(refundCandidate, refundConfig, candidateToAssign.getQuantity());
 			Check.errorUnless(

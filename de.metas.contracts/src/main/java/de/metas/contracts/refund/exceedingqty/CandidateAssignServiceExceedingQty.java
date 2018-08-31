@@ -1,4 +1,4 @@
-package de.metas.contracts.refund;
+package de.metas.contracts.refund.exceedingqty;
 
 import static org.adempiere.util.collections.CollectionUtils.singleElement;
 
@@ -13,10 +13,19 @@ import org.adempiere.util.lang.Mutable;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.refund.AssignCandidatesRequest;
 import de.metas.contracts.refund.AssignCandidatesRequest.AssignCandidatesRequestBuilder;
+import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
+import de.metas.contracts.refund.AssignmentToRefundCandidate;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
+import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundInvoiceCandidate;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -42,14 +51,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public class CandidateAssignServiceCurrentMinQtyConfig
+public class CandidateAssignServiceExceedingQty
 {
 
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private final RefundInvoiceCandidateService refundInvoiceCandidateService;
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 
-	public CandidateAssignServiceCurrentMinQtyConfig(
+	public CandidateAssignServiceExceedingQty(
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
 			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService,
 			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
@@ -64,8 +73,8 @@ public class CandidateAssignServiceCurrentMinQtyConfig
 			@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssign,
 			@NonNull final RefundContract refundContract)
 	{
-		Check.errorUnless(RefundMode.PER_INDIVIDUAL_SCALE.equals(refundContract.extractRefundMode()),
-				"refundMode needs to be {}; refundContract={}", RefundMode.PER_INDIVIDUAL_SCALE, refundContract);
+		Check.errorUnless(RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundContract.extractRefundMode()),
+				"refundMode needs to be {}; refundContract={}", RefundMode.APPLY_TO_EXCEEDING_QTY, refundContract);
 
 		final AssignableInvoiceCandidate assignableCandidateWithoutRefundInvoiceCandidates = assignableCandidate.withoutRefundInvoiceCandidates();
 

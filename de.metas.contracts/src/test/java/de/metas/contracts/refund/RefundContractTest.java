@@ -69,7 +69,7 @@ public class RefundContractTest
 				.invoiceSchedule(invoiceSchedule)
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.PERCENTAGE)
-				.refundMode(RefundMode.ALL_MAX_SCALE)
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
 				.minQty(ZERO)
 				.percent(Percent.of(20))
 				.build();

@@ -101,7 +101,7 @@ public class RefundInvoiceCandidateFactory
 
 		final RefundMode refundMode = refundContract.extractRefundMode();
 
-		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
+		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundMode))
 		{
 			for (final RefundConfig refundConfig : refundConfigs)
 			{
@@ -223,6 +223,7 @@ public class RefundInvoiceCandidateFactory
 				break;
 			default:
 				Check.fail("The current refundConfig has an ussupported invoice type={}", refundInvoiceType);
+				break;
 		}
 
 		final int docTypeId = Services.get(IDocTypeDAO.class)

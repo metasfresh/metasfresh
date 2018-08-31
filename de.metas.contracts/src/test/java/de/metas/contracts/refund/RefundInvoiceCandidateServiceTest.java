@@ -75,10 +75,6 @@ public class RefundInvoiceCandidateServiceTest
 
 	private ConditionsId conditionsId;
 
-	private RefundConfigRepository refundConfigRepository;
-
-	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
-
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
 	@Before
@@ -88,14 +84,14 @@ public class RefundInvoiceCandidateServiceTest
 
 		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
-		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
 		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
 
 		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
-		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
 
@@ -135,7 +131,7 @@ public class RefundInvoiceCandidateServiceTest
 
 	private void updateRefundConfigRecords(@NonNull final RefundMode refundMode)
 	{
-		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
+		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundMode))
 		{
 			refundConfigRecords.get(0).setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
 			saveRecord(refundConfigRecords.get(0));
@@ -156,13 +152,13 @@ public class RefundInvoiceCandidateServiceTest
 	}
 
 	@Test
-	public void retrieveOrCreateMatchingCandidate_create_maxScale()
+	public void retrieveOrCreateMatchingCandidate_create_allConfigs()
 	{
-		updateRefundConfigRecords(RefundMode.ALL_MAX_SCALE);
-		retrieveOrCreateMatchingCandidate_create_maxScale_performTest();
+		updateRefundConfigRecords(RefundMode.APPLY_TO_ALL_QTIES);
+		retrieveOrCreateMatchingCandidate_create_allConfigs_performTest();
 	}
 
-	private RefundInvoiceCandidate retrieveOrCreateMatchingCandidate_create_maxScale_performTest()
+	private RefundInvoiceCandidate retrieveOrCreateMatchingCandidate_create_allConfigs_performTest()
 	{
 		final I_C_Invoice_Candidate assignableRecord = AssignableInvoiceCandidateRepositoryTest.createAssignableCandidateRecord(refundTestTools);
 		final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(assignableRecord);
@@ -239,10 +235,10 @@ public class RefundInvoiceCandidateServiceTest
 	private List<RefundInvoiceCandidate> retrieveOrCreateMatchingCandidate_create_perScaleConfig_performTest()
 	{
 		// make sure there is already one refund record
-		updateRefundConfigRecords(RefundMode.ALL_MAX_SCALE);
-		final RefundInvoiceCandidate existingRefundCandidate = retrieveOrCreateMatchingCandidate_create_maxScale_performTest();
+		updateRefundConfigRecords(RefundMode.APPLY_TO_ALL_QTIES);
+		final RefundInvoiceCandidate existingRefundCandidate = retrieveOrCreateMatchingCandidate_create_allConfigs_performTest();
 
-		updateRefundConfigRecords(RefundMode.PER_INDIVIDUAL_SCALE); // for the actual rest, we change the config
+		updateRefundConfigRecords(RefundMode.APPLY_TO_EXCEEDING_QTY); // for the actual rest, we change the config
 		final I_C_Invoice_Candidate assignableRecord = AssignableInvoiceCandidateRepositoryTest.createAssignableCandidateRecord(refundTestTools);
 		assignableRecord.setQtyInvoiced(TEN);
 		assignableRecord.setQtyToInvoice(FIVE);

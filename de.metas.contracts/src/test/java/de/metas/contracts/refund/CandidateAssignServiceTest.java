@@ -35,7 +35,7 @@ import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.refundConfigChange.RefundConfigChangeService;
+import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -104,7 +104,6 @@ public class CandidateAssignServiceTest
 	private CandidateAssignmentService invoiceCandidateAssignmentService;
 
 	private RefundTestTools refundTestTools;
-	private RefundConfigRepository refundConfigRepository;
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
 
@@ -115,7 +114,7 @@ public class CandidateAssignServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 
 		refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
@@ -334,7 +333,7 @@ public class CandidateAssignServiceTest
 	@Test
 	public void assignCandidate_perScaleConfig1()
 	{
-		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(RefundMode.PER_INDIVIDUAL_SCALE);
+		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(RefundMode.APPLY_TO_EXCEEDING_QTY);
 		assertThat(savedRefundCandidate.getMoney().getValue()).isEqualByComparingTo(ONE); // guard
 		assertThat(savedRefundCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(THIRTEEN); // guard
 
@@ -384,7 +383,7 @@ public class CandidateAssignServiceTest
 	@Test
 	public void assignCandidate_perScaleConfig2()
 	{
-		prepareContract(RefundMode.PER_INDIVIDUAL_SCALE);
+		prepareContract(RefundMode.APPLY_TO_EXCEEDING_QTY);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(SIXTEEN);
 		// guards
@@ -542,7 +541,7 @@ public class CandidateAssignServiceTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).isEmpty();
 
 		final RefundInvoiceCandidate savedRefundCandidate = repareContractAndRefundCandidate(
-				RefundMode.ALL_MAX_SCALE,
+				RefundMode.APPLY_TO_ALL_QTIES,
 				ImmutableList.of(new IndividualTestAssignment(preAssignedAssignableCandidate, THIRTEEN, ONE)));
 		assertThat(POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class)).hasSize(1);
 
@@ -600,7 +599,7 @@ public class CandidateAssignServiceTest
 
 	private ImmutableMap<BigDecimal, AssignableInvoiceCandidate> commonSetupForUnassignWithPerScaleConfig()
 	{
-		final RefundContract refundContract = prepareContract(RefundMode.PER_INDIVIDUAL_SCALE);
+		final RefundContract refundContract = prepareContract(RefundMode.APPLY_TO_EXCEEDING_QTY);
 
 		final AssignableInvoiceCandidate assignableCandidateWithSeven = refundTestTools.createAssignableCandidateStandlone(SEVEN);
 		final AssignableInvoiceCandidate assignableCandidateWithTen = refundTestTools.createAssignableCandidateStandlone(TEN);
@@ -669,7 +668,7 @@ public class CandidateAssignServiceTest
 				});
 		assertThat(reloadedAssignableCandidateWithTen.getAssignmentsToRefundCandidates())
 				.filteredOn(a -> a.getRefundInvoiceCandidate().getId().equals(refundCandidate15.getId()))
-				.isEmpty();;
+				.isEmpty();
 
 		//
 		// finally return the result

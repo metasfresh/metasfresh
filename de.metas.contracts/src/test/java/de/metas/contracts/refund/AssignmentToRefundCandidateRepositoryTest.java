@@ -65,7 +65,6 @@ public class AssignmentToRefundCandidateRepositoryTest
 	private I_C_Invoice_Candidate assignableIcRecord;
 	private I_C_Invoice_Candidate_Assignment assignmentRecord;
 	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
-	private RefundInvoiceCandidateFactory refundInvoiceCandidateFactory;
 
 	@Before
 	public void init()
@@ -147,7 +146,9 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
 
-		refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(
+				refundContractRepository,
+				assignmentAggregateService);
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
 				refundContractRepository,

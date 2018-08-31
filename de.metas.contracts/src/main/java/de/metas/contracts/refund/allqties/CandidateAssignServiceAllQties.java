@@ -1,4 +1,4 @@
-package de.metas.contracts.refund;
+package de.metas.contracts.refund.allqties;
 
 import static org.adempiere.util.collections.CollectionUtils.singleElement;
 
@@ -9,9 +9,19 @@ import org.adempiere.util.Check;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.contracts.refund.AssignCandidatesRequest;
+import de.metas.contracts.refund.AssignableInvoiceCandidate;
+import de.metas.contracts.refund.AssignmentToRefundCandidate;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
+import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.refundConfigChange.RefundConfigChangeService;
+import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
+import de.metas.contracts.refund.RefundConfigs;
+import de.metas.contracts.refund.RefundContract;
+import de.metas.contracts.refund.RefundInvoiceCandidate;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -37,14 +47,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public class CandidateAssignServiceAllConfigs
+public class CandidateAssignServiceAllQties
 {
 	private final RefundConfigChangeService refundConfigChangeService;
 	private final RefundInvoiceCandidateService refundInvoiceCandidateService;
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
-	public CandidateAssignServiceAllConfigs(
+	public CandidateAssignServiceAllQties(
 			@NonNull final RefundConfigChangeService refundConfigChangeService,
 			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService,
 			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
@@ -61,8 +71,8 @@ public class CandidateAssignServiceAllConfigs
 			@NonNull final RefundInvoiceCandidate refundCandidateToAssign,
 			@NonNull final RefundContract refundContract)
 	{
-		Check.errorUnless(RefundMode.ALL_MAX_SCALE.equals(refundContract.extractRefundMode()),
-				"refundMode needs to be {}; refundContract={}", RefundMode.ALL_MAX_SCALE, refundContract);
+		Check.errorUnless(RefundMode.APPLY_TO_ALL_QTIES.equals(refundContract.extractRefundMode()),
+				"refundMode needs to be {}; refundContract={}", RefundMode.APPLY_TO_ALL_QTIES, refundContract);
 
 		final AssignableInvoiceCandidate assignableCandidateWithoutRefundInvoiceCandidates = assignableCandidate.withoutRefundInvoiceCandidates();
 
@@ -90,16 +100,14 @@ public class CandidateAssignServiceAllConfigs
 
 		//
 		// second part: now see if the biggest applicable refund config changed. if yes, add or removed assignments for the respective configs that now apply as well or don't apply anymore
-		final List<RefundConfig> relevantConfigsBeforeAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateToAssign.getAssignedQuantity().getAsBigDecimal());
 		final List<RefundConfig> relevantConfigsAfterAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateAfterAssignment.getAssignedQuantity().getAsBigDecimal());
 
-		final RefundConfig oldRefundConfig = RefundConfigs.largestMinQty(relevantConfigsBeforeAssignment);
 		final RefundConfig newRefundConfig = RefundConfigs.largestMinQty(relevantConfigsAfterAssignment);
 
-		final boolean configHasChanged = !oldRefundConfig.equals(newRefundConfig);
+		final boolean configHasChanged = !refundConfig.equals(newRefundConfig);
 		if (configHasChanged)
 		{
-			refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidateAfterAssignment, oldRefundConfig, newRefundConfig);
+			refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidateAfterAssignment, refundConfig, newRefundConfig);
 		}
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate

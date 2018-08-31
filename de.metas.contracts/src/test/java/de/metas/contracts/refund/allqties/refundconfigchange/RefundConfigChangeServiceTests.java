@@ -1,4 +1,4 @@
-package de.metas.contracts.refund.refundConfigChange;
+package de.metas.contracts.refund.allqties.refundconfigchange;
 
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
@@ -20,6 +20,7 @@ import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundContractRepository;
@@ -108,7 +109,7 @@ public class RefundConfigChangeServiceTests
 				.invoiceSchedule(invoiceSchedule)
 				.refundInvoiceType(RefundInvoiceType.INVOICE)
 				.refundBase(RefundBase.PERCENTAGE)
-				.refundMode(RefundMode.ALL_MAX_SCALE)
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
 				.minQty(ZERO)
 				.percent(Percent.of(20))
 				.build();

@@ -1,4 +1,4 @@
-package de.metas.contracts.refund.refundConfigChange;
+package de.metas.contracts.refund.allqties.refundconfigchange;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -80,8 +80,8 @@ public class RefundConfigChangeService
 		final RefundContract refundContract = refundInvoiceCandidate.getRefundContract();
 		final List<RefundConfig> refundConfigs = refundContract.getRefundConfigs();
 
-		Check.errorUnless(RefundMode.ALL_MAX_SCALE.equals(newRefundConfig.getRefundMode()),
-				"Parameter 'newRefundConfig' needs to have refundMode={}", RefundMode.ALL_MAX_SCALE);
+		Check.errorUnless(RefundMode.APPLY_TO_ALL_QTIES.equals(newRefundConfig.getRefundMode()),
+				"Parameter 'newRefundConfig' needs to have refundMode={}", RefundMode.APPLY_TO_ALL_QTIES);
 
 		Check.errorUnless(refundConfigs.contains(newRefundConfig),
 				"Parameter 'newRefundConfig' needs to be one of the given refundInvoiceCandidate's contract's configs; newRefundConfig={}; refundInvoiceCandidate={}",

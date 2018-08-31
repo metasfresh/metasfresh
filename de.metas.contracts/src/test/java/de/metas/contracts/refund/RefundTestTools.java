@@ -347,7 +347,7 @@ public class RefundTestTools
 				.conditionsId(ConditionsId.ofRepoId(20))
 				.invoiceSchedule(invoiceSchedule)
 				.refundInvoiceType(RefundInvoiceType.INVOICE) // keep in sync with the C_DocType's subType that we set up in the constructor.
-				.refundMode(RefundMode.ALL_MAX_SCALE);
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES);
 
 		return refundConfigBuilder;
 	}

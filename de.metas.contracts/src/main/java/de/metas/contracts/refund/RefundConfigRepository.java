@@ -210,11 +210,11 @@ public class RefundConfigRepository
 		final String refundMode = record.getRefundMode();
 		if (X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale.equals(refundMode))
 		{
-			return RefundMode.PER_INDIVIDUAL_SCALE;
+			return RefundMode.APPLY_TO_EXCEEDING_QTY;
 		}
 		else if (X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated.equals(refundMode))
 		{
-			return RefundMode.ALL_MAX_SCALE;
+			return RefundMode.APPLY_TO_ALL_QTIES;
 		}
 		Check.fail("Unsupported C_Flatrate_RefundConfig.RefundMode={}; record={}", refundMode, record);
 		return null;
@@ -261,6 +261,7 @@ public class RefundConfigRepository
 				break;
 			default:
 				Check.fail("Unexpected refundbase={}", refundConfig.getRefundBase());
+				break;
 		}
 
 		final InvoiceSchedule savedInvoiceSchedule = invoiceScheduleRepository.save(refundConfig.getInvoiceSchedule());
@@ -281,17 +282,19 @@ public class RefundConfigRepository
 				break;
 			default:
 				Check.fail("Unexpected refundInvoiceType={}", refundConfig.getRefundInvoiceType());
+				break;
 		}
 		switch (refundConfig.getRefundMode())
 		{
-			case ALL_MAX_SCALE:
+			case APPLY_TO_ALL_QTIES:
 				configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 				break;
-			case PER_INDIVIDUAL_SCALE:
+			case APPLY_TO_EXCEEDING_QTY:
 				configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
 				break;
 			default:
 				Check.fail("Unexpected refundMode={}", refundConfig.getRefundMode());
+				break;
 		}
 		saveRecord(configRecord);
 

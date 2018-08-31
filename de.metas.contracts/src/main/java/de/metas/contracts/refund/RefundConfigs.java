@@ -96,18 +96,18 @@ public class RefundConfigs
 				hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
 				"The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
 
-		if (RefundMode.ALL_MAX_SCALE.equals(extractRefundMode(refundConfigs)))
+		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
 		{
 			// we have one IC with different configs, so they need to have the consistent settings
 			Check.errorIf(
 					hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule),
 					"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
-					RefundMode.ALL_MAX_SCALE, refundConfigs);
+					RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 
 			Check.errorIf(
 					hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType),
 					"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
-					RefundMode.ALL_MAX_SCALE, refundConfigs);
+					RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 		}
 	}
 }

@@ -59,7 +59,7 @@ public class RefundInvoiceCandidateTest
 	}
 
 	/**
-	 * Create a contract with {@link RefundMode#PER_INDIVIDUAL_SCALE} and minQties zero and 30.
+	 * Create a contract with {@link RefundMode#APPLY_TO_EXCEEDING_QTY} and minQties zero and 30.
 	 * Create a {@link RefundInvoiceCandidate} with assigned quantity 20.
 	 * Expect the candidate's assignable quantity to be 29 - 20 = 9
 	 */
@@ -68,7 +68,7 @@ public class RefundInvoiceCandidateTest
 	{
 		final RefundConfigBuilder configBuilder = refundTestTools
 				.createAndInitConfigBuilder()
-				.refundMode(RefundMode.PER_INDIVIDUAL_SCALE);
+				.refundMode(RefundMode.APPLY_TO_EXCEEDING_QTY);
 		final RefundConfig refundConfig1 = configBuilder.minQty(ZERO).build();
 		final RefundConfig refundConfig2 = configBuilder.minQty(THIRTY).build();
 

@@ -174,7 +174,7 @@ public class RefundContractRepository
 					.conditionsId(conditionsId)
 					.productId(productId)
 					.refundInvoiceType(RefundInvoiceType.INVOICE)
-					.refundMode(RefundMode.ALL_MAX_SCALE)
+					.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
 					.invoiceSchedule(refundConfigs.get(0).getInvoiceSchedule())
 					.build();
 

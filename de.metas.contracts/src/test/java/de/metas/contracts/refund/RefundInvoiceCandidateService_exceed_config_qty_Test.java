@@ -112,7 +112,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 	@Test
 	public void addAssignableMoney_qty_exceeds_config_per_scale()
 	{
-		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.PER_INDIVIDUAL_SCALE);
+		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.APPLY_TO_EXCEEDING_QTY);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(TWENTY);
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);// guard
@@ -130,7 +130,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 	@Test
 	public void addAssignableMoney_qty_exceeds_config_accumulated()
 	{
-		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.ALL_MAX_SCALE);
+		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.APPLY_TO_ALL_QTIES);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(TWENTY);
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);// guard
@@ -193,7 +193,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 						.frequency(Frequency.DAILY)
 						.build())
 				.refundInvoiceType(RefundInvoiceType.INVOICE) // keep in sync with the C_DocType's subType that we set up in the constructor.
-				.refundMode(RefundMode.ALL_MAX_SCALE);
+				.refundMode(RefundMode.APPLY_TO_ALL_QTIES);
 
 		return refundConfigBuilder;
 	}

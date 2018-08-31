@@ -64,7 +64,7 @@ public class RefundInvoiceCandidate
 	RefundContract refundContract;
 
 	/**
-	 * If {@link RefundMode} is {@link RefundMode#PER_INDIVIDUAL_SCALE}, then there is one config per candidate; if it is {@link RefundMode#ALL_MAX_SCALE}, then there is one or many.
+	 * If {@link RefundMode} is {@link RefundMode#APPLY_TO_EXCEEDING_QTY}, then there is one config per candidate; if it is {@link RefundMode#APPLY_TO_ALL_QTIES}, then there is one or many.
 	 */
 	// @NonNull
 	// RefundConfig refundConfig;

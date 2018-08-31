@@ -164,6 +164,7 @@ public class InvoiceScheduleRepository
 				break;
 			default:
 				Check.fail("Unsupported frequency={}", invoiceSchedule.getFrequency());
+				break;
 		}
 
 		invoiceScheduleRecord.setInvoiceDistance(invoiceSchedule.getInvoiceDistance());
@@ -202,6 +203,9 @@ public class InvoiceScheduleRepository
 				break;
 			case SUNDAY:
 				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Sunday);
+				break;
+			default:
+				Check.fail("Unexpected day of week");
 				break;
 		}
 	}

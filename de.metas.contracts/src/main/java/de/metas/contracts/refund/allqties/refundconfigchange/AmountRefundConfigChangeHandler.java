@@ -1,4 +1,4 @@
-package de.metas.contracts.refund.refundConfigChange;
+package de.metas.contracts.refund.allqties.refundconfigchange;
 
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;

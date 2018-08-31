@@ -25,7 +25,9 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.AssignmentToRefundCandidateRepository.DeleteAssignmentsRequest;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult.UnassignResultBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.refundConfigChange.RefundConfigChangeService;
+import de.metas.contracts.refund.allqties.CandidateAssignServiceAllQties;
+import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
+import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
@@ -136,12 +138,12 @@ public class CandidateAssignmentService
 			refundCandidatesToAssign = matchingRefundCandidates;
 		}
 
-		if (RefundMode.ALL_MAX_SCALE.equals(refundMode))
+		if (RefundMode.APPLY_TO_ALL_QTIES.equals(refundMode))
 		{
 			Check.assume(matchingRefundCandidates.size() == 1,
 					"If refundMode={}, then there needs to be exactly one refund candidate; refundCandidatesToAssign={}", refundMode, matchingRefundCandidates);
 
-			final CandidateAssignServiceAllConfigs candidateAssignService = new CandidateAssignServiceAllConfigs(
+			final CandidateAssignServiceAllQties candidateAssignService = new CandidateAssignServiceAllQties(
 					refundConfigChangeService,
 					refundInvoiceCandidateService,
 					assignmentToRefundCandidateRepository,
@@ -158,7 +160,7 @@ public class CandidateAssignmentService
 			matchingRefundCandidates.forEach(c -> Check.assume(c.getRefundConfigs().size() == 1,
 					"If refundMode={}, then every refundInvoiceCandidate retuned by retrieveOrCreateMatchingRefundCandidates() needs to have exactly one config", refundMode, c));
 
-			final CandidateAssignServiceCurrentMinQtyConfig candidateAssignService = new CandidateAssignServiceCurrentMinQtyConfig(
+			final CandidateAssignServiceExceedingQty candidateAssignService = new CandidateAssignServiceExceedingQty(
 					refundInvoiceCandidateRepository,
 					refundInvoiceCandidateService,
 					assignmentToRefundCandidateRepository);
@@ -169,12 +171,6 @@ public class CandidateAssignmentService
 					refundContract);
 
 		}
-		// final RefundMode refundMode = refundContract.extractRefundMode();
-		// if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
-		// {
-		// return updateAssignmentForPerScaleConfig(assignableCandidate, refundContract);
-		// }
-		// return updateAssignmentForAccumulatedScaleConfig(assignableCandidate, refundContract);
 	}
 
 	/**
@@ -191,34 +187,11 @@ public class CandidateAssignmentService
 				.flatMap(pair -> pair.getRefundInvoiceCandidate().getRefundConfigs().stream())
 				.collect(ImmutableList.toImmutableList());
 
-		final RefundMode refundMode = extractSingleElement(
-				configs,
-				RefundConfig::getRefundMode);
+		final RefundMode refundMode = RefundConfigs.extractRefundMode(configs);
 
-		if (RefundMode.ALL_MAX_SCALE.equals(refundMode))
+		if (RefundMode.APPLY_TO_ALL_QTIES.equals(refundMode))
 		{
-			// "If refundMode=ALL_MAX_SCALE, then there can be only one refund candidate
-			final RefundInvoiceCandidate refundCandidate = extractSingleElement(unassignedPairs, UnassignedPairOfCandidates::getRefundInvoiceCandidate);
-
-			final Quantity previouslyAssignedQty = refundCandidate
-					.getAssignedQuantity()
-					.add(assignableInvoiceCandidate.getQuantity());
-
-			// note that in this refund mode the whole qty for *all* refundConfigs is assigned to this candidate.
-			// therefore we can get the "biggest" refund config like this.
-			final RefundConfig oldRefundConfig = refundCandidate
-					.getRefundContract()
-					.getRefundConfig(previouslyAssignedQty.getAsBigDecimal());
-
-			final RefundConfig newRefundConfig = refundCandidate
-					.getRefundContract()
-					.getRefundConfig(refundCandidate.getAssignedQuantity().getAsBigDecimal());
-
-			// check if the current quantity still matches the respective candidate's current refund-config's minQty;
-			if (!oldRefundConfig.getId().equals(newRefundConfig.getId()))
-			{
-				refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidate, oldRefundConfig, newRefundConfig);
-			}
+			createOrDeleteAdditionalAssignments(unassignedPairs, assignableInvoiceCandidate.getQuantity());
 			return result;
 		}
 
@@ -289,6 +262,34 @@ public class CandidateAssignmentService
 		}
 
 		return result;
+	}
+
+	private void createOrDeleteAdditionalAssignments(
+			@NonNull final List<UnassignedPairOfCandidates> unassignedPairs,
+			@NonNull final Quantity assignableQty)
+	{
+		// "If refundMode=ALL_MAX_SCALE, then there can be only one refund candidate
+		final RefundInvoiceCandidate refundCandidate = extractSingleElement(unassignedPairs, UnassignedPairOfCandidates::getRefundInvoiceCandidate);
+
+		final Quantity previouslyAssignedQty = refundCandidate
+				.getAssignedQuantity()
+				.add(assignableQty);
+
+		// note that in this refund mode the whole qty for *all* refundConfigs is assigned to this candidate.
+		// therefore we can get the "biggest" refund config like this.
+		final RefundConfig oldRefundConfig = refundCandidate
+				.getRefundContract()
+				.getRefundConfig(previouslyAssignedQty.getAsBigDecimal());
+
+		final RefundConfig newRefundConfig = refundCandidate
+				.getRefundContract()
+				.getRefundConfig(refundCandidate.getAssignedQuantity().getAsBigDecimal());
+
+		// check if the current quantity still matches the respective candidate's current refund-config's minQty;
+		if (!oldRefundConfig.getId().equals(newRefundConfig.getId()))
+		{
+			refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidate, oldRefundConfig, newRefundConfig);
+		}
 	}
 
 	/**

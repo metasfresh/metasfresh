@@ -1,4 +1,4 @@
-package de.metas.contracts.refund;
+package de.metas.contracts.refund.exceedingqty;
 
 import static de.metas.contracts.refund.RefundTestTools.extractSingleConfig;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +10,19 @@ import org.adempiere.util.lang.IPair;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.contracts.refund.AssignCandidatesRequest;
+import de.metas.contracts.refund.AssignableInvoiceCandidate;
+import de.metas.contracts.refund.AssignmentAggregateService;
+import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
+import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidate;
+import de.metas.contracts.refund.RefundInvoiceCandidateFactory;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.contracts.refund.RefundTestTools;
+import de.metas.contracts.refund.exceedingqty.CandidateAssignServiceExceedingQty;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -44,7 +57,7 @@ public class CandidateAssignServiceCurrentMinQtyConfigTest
 	private static final BigDecimal TWO = new BigDecimal("2");;
 
 	private static final BigDecimal HUNDRED = new BigDecimal("100");
-	private CandidateAssignServiceCurrentMinQtyConfig candidateAssignServiceCurrentMinQtyConfig;
+	private CandidateAssignServiceExceedingQty candidateAssignServiceCurrentMinQtyConfig;
 
 	private RefundTestTools refundTestTools;
 
@@ -73,7 +86,7 @@ public class CandidateAssignServiceCurrentMinQtyConfigTest
 				moneyService,
 				assignmentAggregateService);
 
-		candidateAssignServiceCurrentMinQtyConfig = new CandidateAssignServiceCurrentMinQtyConfig(
+		candidateAssignServiceCurrentMinQtyConfig = new CandidateAssignServiceExceedingQty(
 				refundInvoiceCandidateRepository,
 				refundInvoiceCandidateService,
 				assignmentToRefundCandidateRepository);

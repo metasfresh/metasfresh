@@ -82,7 +82,7 @@ public class RefundInvoiceCandidateRepository
 	}
 
 	/**
-	 * Note that in the case of {@link RefundMode#PER_INDIVIDUAL_SCALE},
+	 * Note that in the case of {@link RefundMode#APPLY_TO_EXCEEDING_QTY},
 	 * there can be multiple refund candidates (with different refund configs and assigned quantities) for a given contract and date.
 	 *
 	 * @return matching candidates with the minimum {@code DateToInvoice} value, ordered by quantity.

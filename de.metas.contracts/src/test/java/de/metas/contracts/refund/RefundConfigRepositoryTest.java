@@ -57,8 +57,6 @@ public class RefundConfigRepositoryTest
 
 	private static final BigDecimal NINE = new BigDecimal("9");
 
-	private I_C_UOM uomRecord;
-
 	private RefundConfigRepository refundConfigRepository;
 
 	private ConditionsId conditionsId;
@@ -68,7 +66,7 @@ public class RefundConfigRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		uomRecord = newInstance(I_C_UOM.class);
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
 		conditionsId = ConditionsId.ofRepoId(20);

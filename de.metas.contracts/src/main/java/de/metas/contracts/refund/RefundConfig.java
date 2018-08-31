@@ -52,7 +52,11 @@ public class RefundConfig
 
 	public enum RefundMode
 	{
-		PER_INDIVIDUAL_SCALE, ALL_MAX_SCALE;
+		/** The config matching the respective minQty is applied only to the part that exceeds that quantity. */
+		APPLY_TO_EXCEEDING_QTY,
+
+		/** The config matching the respective minQty is applied to all assignments. */
+		APPLY_TO_ALL_QTIES;
 	}
 
 
@@ -140,7 +144,7 @@ public class RefundConfig
 	 */
 	public boolean isIncludeAssignmentsWithThisConfigInSum()
 	{
-		if (RefundMode.PER_INDIVIDUAL_SCALE.equals(refundMode))
+		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundMode))
 		{
 			return true;
 		}

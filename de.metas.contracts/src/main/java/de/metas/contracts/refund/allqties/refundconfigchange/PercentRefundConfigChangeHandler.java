@@ -1,4 +1,4 @@
-package de.metas.contracts.refund.refundConfigChange;
+package de.metas.contracts.refund.allqties.refundconfigchange;
 
 import org.adempiere.util.Check;
 
