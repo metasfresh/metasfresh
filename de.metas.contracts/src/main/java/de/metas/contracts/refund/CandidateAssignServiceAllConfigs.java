@@ -2,16 +2,13 @@ package de.metas.contracts.refund;
 
 import static org.adempiere.util.collections.CollectionUtils.singleElement;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.Mutable;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.refundConfigChange.RefundConfigChangeService;
@@ -69,55 +66,30 @@ public class CandidateAssignServiceAllConfigs
 
 		final AssignableInvoiceCandidate assignableCandidateWithoutRefundInvoiceCandidates = assignableCandidate.withoutRefundInvoiceCandidates();
 
-		final Mutable<RefundInvoiceCandidate> lastAssignedResultCandidate = new Mutable<>(refundCandidateToAssign);
-
-		// we need to look at the lowest minQty first, in order to "fill" it; only the "biggest" config is does not have the next-higher config's minQty as ceiling
-		final ImmutableList<RefundConfig> sortedConfigs = RefundConfigs.sortByMinQtyAsc(refundCandidateToAssign.getRefundConfigs());
-
-		Quantity quantityLeft = assignableCandidate.getQuantity();
-		final List<Quantity> quantitiesToAssign = new ArrayList<>();
-		for (final RefundConfig refundConfig : sortedConfigs)
-		{
-			final Quantity assignableQuantity = refundCandidateToAssign.computeAssignableQuantity(refundConfig);
-
-			final Quantity quantityToAssignEffective = quantityLeft.min(assignableQuantity);
-			quantitiesToAssign.add(quantityToAssignEffective);
-
-			quantityLeft = quantityLeft.subtract(quantityToAssignEffective);
-			if (quantityLeft.signum() <= 0)
-			{
-				break;
-			}
-		}
-
-		final List<AssignmentToRefundCandidate> assignmentsForRefundCandidateToAssign = new ArrayList<>();
-		final RefundConfig refundConfig = sortedConfigs.get(0);
+		//
+		// first part: only assign to the smallest refund config (with minQty=0).
+		final RefundConfig refundConfig = RefundConfigs.smallestMinQty(refundCandidateToAssign.getRefundConfigs());
 		Check.assume(refundConfig.getMinQty().signum() == 0, "The first refundConfig from sortedConfigs needs to have minQty=0");
 
 		final AssignCandidatesRequest assignCandidatesRequest = AssignCandidatesRequest
 				.builder()
 				.assignableInvoiceCandidate(assignableCandidateWithoutRefundInvoiceCandidates)
-				.refundInvoiceCandidate(lastAssignedResultCandidate.getValue())
+				.refundInvoiceCandidate(refundCandidateToAssign)
 				.refundConfig(refundConfig)
 				.build();
 
-		for (final Quantity quantityToAssign : quantitiesToAssign)
-		{
-			final List<AssignmentToRefundCandidate> createdAssignments = assignCandidate(
-					assignCandidatesRequest,
-					quantityToAssign)
-							.getAssignmentsToRefundCandidates();
+		final List<AssignmentToRefundCandidate> createdAssignments = assignCandidate(
+				assignCandidatesRequest,
+				assignableCandidate.getQuantity())
+						.getAssignmentsToRefundCandidates();
 
-			// the assignableInvoiceCandidate of our assignCandidatesRequest had no assignments, so the result has exactly one assignment.
-			final AssignmentToRefundCandidate createdAssignment = singleElement(createdAssignments);
-			assignmentsForRefundCandidateToAssign.add(createdAssignment);
+		// the assignableInvoiceCandidate of our assignCandidatesRequest had no assignments, so the result has exactly one assignment.
+		final AssignmentToRefundCandidate createdAssignment = singleElement(createdAssignments);
 
-			lastAssignedResultCandidate.setValue(createdAssignment.getRefundInvoiceCandidate());
-		}
+		final RefundInvoiceCandidate refundCandidateAfterAssignment = createdAssignment.getRefundInvoiceCandidate();
 
-
-		final RefundInvoiceCandidate refundCandidateAfterAssignment = lastAssignedResultCandidate.getValue();
-
+		//
+		// second part: now see if the biggest applicable refund config changed. if yes, add or removed assignments for the respective configs that now apply as well or don't apply anymore
 		final List<RefundConfig> relevantConfigsBeforeAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateToAssign.getAssignedQuantity().getAsBigDecimal());
 		final List<RefundConfig> relevantConfigsAfterAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateAfterAssignment.getAssignedQuantity().getAsBigDecimal());
 
@@ -127,7 +99,7 @@ public class CandidateAssignServiceAllConfigs
 		final boolean configHasChanged = !oldRefundConfig.equals(newRefundConfig);
 		if (configHasChanged)
 		{
-			refundConfigChangeService.resetMoneyAmount(refundCandidateAfterAssignment, oldRefundConfig, newRefundConfig);
+			refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidateAfterAssignment, oldRefundConfig, newRefundConfig);
 		}
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
@@ -150,24 +122,11 @@ public class CandidateAssignServiceAllConfigs
 		final RefundInvoiceCandidate refundCandidate = assignCandidatesRequest.getRefundInvoiceCandidate();
 
 		final RefundConfig refundConfig = assignCandidatesRequest.getRefundConfig();
-
-		final AssignableInvoiceCandidate candidateToAssign;
-		final boolean partialAssignRequired = assignableCandidate.getQuantity().compareTo(quantityToAssign) > 0;
-		if (partialAssignRequired)
-		{
-			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssign.getAsBigDecimal());
-			candidateToAssign = splitResult.getNewCandidate();
-		}
-		else
-		{
-			candidateToAssign = assignableCandidate;
-		}
-
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = refundInvoiceCandidateService
 				.addAssignableMoney(
 						refundCandidate,
 						refundConfig,
-						candidateToAssign);
+						assignableCandidate);
 
 		final RefundInvoiceCandidate //
 		updatedRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();

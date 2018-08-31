@@ -55,7 +55,6 @@ public class ProfitPriceActualFactory
 		}
 
 		final ProfitPriceActualCalculator calculator = builder.build();
-
 		return calculator.getProfitPriceActual();
 	}
 }

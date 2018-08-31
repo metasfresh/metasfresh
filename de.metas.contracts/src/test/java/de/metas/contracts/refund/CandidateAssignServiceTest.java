@@ -578,49 +578,24 @@ public class CandidateAssignServiceTest
 		assertThat(distinctRefundCandidates.get(0).getAssignedQuantity()).isEqualTo(Quantity.of(SIXTEEN, uom)); // 13 plus 3
 		assertThat(distinctRefundCandidates.get(0).getMoney()).isEqualTo(Money.of(FOUR, currencyId)); // 20% of (10+10)
 
-		assertThat(assignmentsToRefundCandidates).hasSize(4);
+		assertThat(assignmentsToRefundCandidates).hasSize(2);
 		assertThat(assignmentsToRefundCandidates)
 				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty0.getId()))
-				.hasSize(2) //
-				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(ONE, uom))) // this is how much "fit into" the first refund config
-				.hasSize(1)
+				.hasSize(1) //
 				.allSatisfy(a -> {
-					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.33", currencyId));   // 10% of 1/3 times 10
-					assertThat(a.isUseAssignedQtyInSum()).isTrue();
-				});
-
-		assertThat(assignmentsToRefundCandidates)
-				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty0.getId()))
-				.hasSize(2) //
-				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(TWO, uom))) // this is the rest that went into the 2nd refund config
-				.hasSize(1)
-				.allSatisfy(a -> {
-					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.67", currencyId));   // 10% of 2/3 times 10
+					assertThat(a.getQuantityAssigendToRefundCandidate()).isEqualTo(Quantity.of(THREE, uom));
+					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(ONE, currencyId));   // 10% of 10
 					assertThat(a.isUseAssignedQtyInSum()).isTrue();
 				});
 
 		assertThat(assignmentsToRefundCandidates)
 				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty15.getId()))
-				.hasSize(2) //
-				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(ONE, uom))) // this is how much "fit into" the first refund config
-				.hasSize(1)
+				.hasSize(1) //
 				.allSatisfy(a -> {
-					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.33", currencyId));   // 10% of 1/3 times 10
+					assertThat(a.getQuantityAssigendToRefundCandidate()).isEqualTo(Quantity.of(THREE, uom));
+					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of(ONE, currencyId));   // 10% 10
 					assertThat(a.isUseAssignedQtyInSum()).isFalse();
 				});
-
-		assertThat(assignmentsToRefundCandidates)
-				.filteredOn(a -> a.getRefundConfigId().equals(configWithMinQty15.getId()))
-				.hasSize(2) //
-				.filteredOn(a -> a.getQuantityAssigendToRefundCandidate().equals(Quantity.of(TWO, uom))) // this is the rest that went into the 2nd refund config
-				.hasSize(1)
-				.allSatisfy(a -> {
-					assertThat(a.getMoneyAssignedToRefundCandidate()).isEqualTo(Money.of("0.67", currencyId));   // 10% of 2/3 times 10
-					assertThat(a.isUseAssignedQtyInSum()).isFalse();
-				});
-
-		// TODO
-		result.getAdditionalChangedCandidates();
 	}
 
 	private ImmutableMap<BigDecimal, AssignableInvoiceCandidate> commonSetupForUnassignWithPerScaleConfig()

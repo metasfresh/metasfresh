@@ -67,13 +67,7 @@ public class RefundConfigChangeService
 		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
 	}
 
-	/**
-	 * Resets/fixes the allocated amount by iterating all candidates that are associated to the given candidate.
-	 * Should be used only if e.g. something was manually changed in the DB.
-	 *
-	 * @param refundConfigAfterAssignment
-	 */
-	public RefundInvoiceCandidate resetMoneyAmount(
+	public RefundInvoiceCandidate createOrDeleteAdditionalAssignments(
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final RefundConfig oldRefundConfig,
 			@NonNull final RefundConfig newRefundConfig)

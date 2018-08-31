@@ -68,6 +68,16 @@ public class RefundConfigs
 				.get();
 	}
 
+	public RefundConfig smallestMinQty(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		Check.assumeNotEmpty(refundConfigs, "The given refundConfigs may not be empty");
+
+		return refundConfigs
+				.stream()
+				.min(Comparator.comparing(RefundConfig::getMinQty))
+				.get();
+	}
+
 	public RefundMode extractRefundMode(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		final RefundMode refundMode = extractSingleElement(

@@ -214,11 +214,10 @@ public class CandidateAssignmentService
 					.getRefundContract()
 					.getRefundConfig(refundCandidate.getAssignedQuantity().getAsBigDecimal());
 
-			// if accumulated: check if the current quantity still matches the respective candidate's current refund-config's minQty;
+			// check if the current quantity still matches the respective candidate's current refund-config's minQty;
 			if (!oldRefundConfig.getId().equals(newRefundConfig.getId()))
 			{
-				// if not, then update the candidates' refund-config and money; don't forget I_C_Invoice_Candidate_Assignment.C_Flatrate_RefundConfig_ID
-				refundConfigChangeService.resetMoneyAmount(refundCandidate, oldRefundConfig, newRefundConfig);
+				refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidate, oldRefundConfig, newRefundConfig);
 			}
 			return result;
 		}
