@@ -1,7 +1,13 @@
 package de.metas.inbound.mail;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
+
+import javax.activation.DataSource;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -14,7 +20,9 @@ import org.springframework.stereotype.Repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.IAttachmentBL;
 import de.metas.request.RequestId;
 import lombok.NonNull;
 
@@ -54,6 +62,15 @@ public class InboundEMailRepository
 	{
 		final I_C_Mail mailRecord = toMailRecord(email);
 		InterfaceWrapperHelper.save(mailRecord);
+
+		final List<InboundEMailAttachment> attachments = email.getAttachments();
+		if (!attachments.isEmpty())
+		{
+			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
+			attachmentBL.addEntriesFromDataSources(mailRecord, attachments.stream()
+					.map(InboundEMailAttachmentDataSource::new)
+					.collect(ImmutableList.toImmutableList()));
+		}
 	}
 
 	private I_C_Mail toMailRecord(final InboundEMail email)
@@ -106,5 +123,40 @@ public class InboundEMailRepository
 			return null;
 		}
 		return RequestId.ofRepoId(requestIds.get(0));
+	}
+
+	private static final class InboundEMailAttachmentDataSource implements DataSource
+	{
+		private InboundEMailAttachment attachment;
+
+		private InboundEMailAttachmentDataSource(@NonNull final InboundEMailAttachment attachment)
+		{
+			this.attachment = attachment;
+		}
+
+		@Override
+		public String getName()
+		{
+			return attachment.getFilename();
+		}
+
+		@Override
+		public String getContentType()
+		{
+			return attachment.getContentType();
+		}
+
+		@Override
+		public InputStream getInputStream() throws IOException
+		{
+			return Files.newInputStream(attachment.getTempFile());
+		}
+
+		@Override
+		public OutputStream getOutputStream() throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
+
 	}
 }

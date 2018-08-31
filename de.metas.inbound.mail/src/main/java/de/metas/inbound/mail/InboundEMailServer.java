@@ -13,7 +13,6 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.integration.dsl.mail.Mail;
-import org.springframework.integration.mail.support.DefaultMailHeaderMapper;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
@@ -167,7 +166,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 						.shouldDeleteMessages(false)
 						.shouldReconnectAutomatically(true)
 						.embeddedPartsAsBytes(false)
-						.headerMapper(new DefaultMailHeaderMapper()))
+						.headerMapper(InboundEMailHeaderAndContentMapper.newInstance()))
 				.handle(InboundEMailMessageHandler.builder()
 						.config(config)
 						.emailService(emailService)

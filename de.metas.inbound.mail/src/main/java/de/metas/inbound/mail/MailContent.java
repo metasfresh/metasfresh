@@ -1,12 +1,7 @@
 package de.metas.inbound.mail;
 
-import java.time.ZonedDateTime;
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
-import de.metas.request.RequestId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,42 +30,13 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class InboundEMail
+@Builder
+public final class MailContent
 {
-	String from;
-	ImmutableList<String> to;
-	ImmutableList<String> cc;
-	ImmutableList<String> bcc;
+	String text;
+	String html;
 
-	String subject;
-	String content;
-	String contentType;
-
-	@NonNull
-	ZonedDateTime receivedDate;
-
-	@NonNull
-	String messageId;
-	@NonNull
-	String initialMessageId;
-
-	@NonNull
-	ImmutableMap<String, Object> headers;
-	
 	@NonNull
 	@Singular
 	ImmutableList<InboundEMailAttachment> attachments;
-
-	RequestId requestId;
-
-	public InboundEMail withRequestId(final RequestId requestId)
-	{
-		if (Objects.equals(this.requestId, requestId))
-		{
-			return this;
-		}
-
-		return toBuilder().requestId(requestId).build();
-	}
 }

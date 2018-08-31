@@ -5,11 +5,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.Part;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.Util;
 import org.springframework.integration.mail.MailHeaders;
@@ -72,11 +67,11 @@ class InboundEMailMessageHandler implements MessageHandler
 
 	private static InboundEMail toInboundEMail(final Message<?> message)
 	{
-		final Object contentObj = message.getPayload();
-		final String content = getContent(contentObj);
 		final MessageHeaders messageHeaders = message.getHeaders();
 		@SuppressWarnings("unchecked")
 		final MultiValueMap<String, Object> messageRawHeaders = messageHeaders.get(MailHeaders.RAW_HEADERS, MultiValueMap.class);
+
+		final MailContent mailContent = MailContentCollector.toMailContent(messageHeaders.get(InboundEMailHeaderAndContentMapper.CONTENT));
 
 		final String messageId = toMessageId(messageRawHeaders.getFirst("Message-ID"));
 		final String firstMessageIdReference = toMessageId(messageRawHeaders.getFirst("References"));
@@ -88,12 +83,13 @@ class InboundEMailMessageHandler implements MessageHandler
 				.cc(ImmutableList.copyOf(messageHeaders.get(MailHeaders.CC, String[].class)))
 				.bcc(ImmutableList.copyOf(messageHeaders.get(MailHeaders.BCC, String[].class)))
 				.subject(messageHeaders.get(MailHeaders.SUBJECT, String.class))
-				.content(content)
+				.content(mailContent.getText())
 				.contentType(messageHeaders.get(MailHeaders.CONTENT_TYPE, String.class))
 				.receivedDate(toZonedDateTime(messageHeaders.get(MailHeaders.RECEIVED_DATE)))
 				.messageId(messageId)
 				.initialMessageId(initialMessageId)
 				.headers(convertMailHeadersToJson(messageRawHeaders))
+				.attachments(mailContent.getAttachments())
 				.build();
 	}
 
@@ -121,71 +117,6 @@ class InboundEMailMessageHandler implements MessageHandler
 		else
 		{
 			throw new IllegalArgumentException("Cannot convert " + dateObj + " (" + dateObj.getClass() + ") to " + ZonedDateTime.class);
-		}
-	}
-
-	private static String getContent(final Object contentObj)
-	{
-		if (contentObj == null)
-		{
-			return null;
-		}
-		else if (contentObj instanceof String)
-		{
-			final String content = (String)contentObj;
-			System.out.println("part=[" + (content.length() > 40 ? content.substring(0, 40) + "..." : content) + "]");
-			return content;
-		}
-		else if (contentObj instanceof Multipart)
-		{
-			final Multipart content = (Multipart)contentObj;
-			return getContentFromMultipart(content);
-		}
-		else if (contentObj instanceof Part)
-		{
-			final Part content = (Part)contentObj;
-			return getContentFromPart(content);
-		}
-		else
-		{
-			return contentObj.toString();
-		}
-	}
-
-	private static String getContentFromMultipart(Multipart content)
-	{
-		try
-		{
-			for (int partIdx = 0, partsCount = content.getCount(); partIdx < partsCount; partIdx++)
-			{
-				final BodyPart part = content.getBodyPart(partIdx);
-				final Object partContentObj = part.getContent();
-				getContent(partContentObj);
-			}
-
-			return ""; // TODO
-		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-	}
-
-	private static String getContentFromPart(final Part part)
-	{
-		try
-		{
-			String contentType = part.getContentType();
-			System.out.println("part=" + part + ":"
-					+ " contentType=" + contentType
-					+ ", disposition=" + part.getDisposition()
-					+ ", filename=" + part.getFileName());
-
-			return ""; // TOOD
-		}
-		catch (javax.mail.MessagingException ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
