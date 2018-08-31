@@ -35,18 +35,12 @@ public class AssignCandidatesRequest
 
 	AssignableInvoiceCandidate assignableInvoiceCandidate;
 
-	// Money moneyToAssign;
-	//
-	// Quantity quantityToAssign;
-
-	 RefundConfig refundConfig;
+	RefundConfig refundConfig;
 
 	@Builder(toBuilder = true)
 	private AssignCandidatesRequest(
 			@NonNull final RefundInvoiceCandidate refundInvoiceCandidate,
 			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate,
-			// @NonNull final Money moneyToAssign,
-			// @NonNull final Quantity quantityToAssign,
 			@NonNull final RefundConfig refundConfig)
 	{
 		this.refundInvoiceCandidate = refundInvoiceCandidate;
@@ -55,26 +49,8 @@ public class AssignCandidatesRequest
 				"This unassignedPair's assignableInvoiceCandidate needs to have a non-null RepoId; this={}", this);
 		this.assignableInvoiceCandidate = assignableInvoiceCandidate;
 
-		// Check.assume(moneyToAssign.getCurrencyId().equals(refundInvoiceCandidate.getMoney().getCurrencyId()),
-		// "The given moneyToAssign needs to be in the given refundInvoiceCandidate's currency; moneyToAssign={}; refundInvoiceCandidate={}",
-		// moneyToAssign, refundInvoiceCandidate);
-		// this.moneyToAssign = moneyToAssign;
-		//
-		// this.quantityToAssign = quantityToAssign;
-
 		Check.assumeNotNull(refundConfig.getId(),
 				"This unassignedPair's refundConfig needs to have a non-null Id; unassignedPair={}", this);
 		this.refundConfig = refundConfig;
 	}
-
-//	public AssignCandidatesRequest withAssignmentToRefundCandidate(
-//			@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
-//	{
-//		return toBuilder()
-//				.refundInvoiceCandidate(assignmentToRefundCandidate.getRefundInvoiceCandidate())
-//				// .moneyToAssign(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate())
-//				// .quantityToAssign(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate())
-//				.build();
-//	}
-
 }

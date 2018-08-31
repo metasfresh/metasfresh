@@ -9,7 +9,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import de.metas.invoice.InvoiceScheduleRepository;
 
 /*

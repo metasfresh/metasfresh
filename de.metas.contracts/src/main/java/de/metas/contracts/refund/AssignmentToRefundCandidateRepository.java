@@ -129,10 +129,6 @@ public class AssignmentToRefundCandidateRepository
 
 	public AssignmentToRefundCandidate save(@NonNull final AssignmentToRefundCandidate assignmentToRefundCandidate)
 	{
-		// final I_C_Invoice_Candidate_Assignment assignmentRecord = loadOrCreateAssignmentRecord(
-		// assignmentToRefundCandidate.getAssignableInvoiceCandidateId(),
-		// assignmentToRefundCandidate.getRefundConfigId());
-
 		final RefundInvoiceCandidate refundInvoiceCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
 
 		final I_C_Invoice_Candidate_Assignment assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
@@ -150,32 +146,6 @@ public class AssignmentToRefundCandidateRepository
 
 		return assignmentToRefundCandidate;
 	}
-
-	// private I_C_Invoice_Candidate_Assignment loadOrCreateAssignmentRecord(
-	// @NonNull final InvoiceCandidateId assignableInvoiceCandidateId,
-	// @NonNull final RefundConfigId refundConfigId)
-	// {
-	// final I_C_Invoice_Candidate_Assignment existingAssignment = Services.get(IQueryBL.class)
-	// .createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
-	// .addOnlyActiveRecordsFilter()
-	// .addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID, assignableInvoiceCandidateId)
-	// .addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, refundConfigId)
-	// .create()
-	// .firstOnly(I_C_Invoice_Candidate_Assignment.class);
-	//
-	// if (existingAssignment != null)
-	// {
-	// return existingAssignment;
-	// }
-	//
-	// final int repoId = assignableInvoiceCandidateId.getRepoId();
-	// final I_C_Invoice_Candidate_Assignment newAssignment = newInstance(I_C_Invoice_Candidate_Assignment.class);
-	//
-	// newAssignment.setC_Invoice_Candidate_Assigned_ID(repoId);
-	// newAssignment.setC_Flatrate_RefundConfig_ID(refundConfigId.getRepoId());
-	//
-	// return newAssignment;
-	// }
 
 	public void deleteAssignments(@Nullable final DeleteAssignmentsRequest request)
 	{
@@ -220,7 +190,6 @@ public class AssignmentToRefundCandidateRepository
 	}
 
 	/**
-	 *
 	 * Note: {@link DeleteAssignmentsRequestBuilder#removeForAssignedCandidateId(InvoiceCandidateId)}
 	 * and {@link DeleteAssignmentsRequestBuilder#removeForRefundCandidateId}
 	 * are {@code OR}ed and at least one of them has to be no-null.

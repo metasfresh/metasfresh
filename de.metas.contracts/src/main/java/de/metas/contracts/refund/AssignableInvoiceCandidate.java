@@ -45,11 +45,6 @@ import lombok.Value;
 @Value
 public class AssignableInvoiceCandidate
 {
-//	public static AssignableInvoiceCandidate cast(@NonNull final Object invoiceCandidate)
-//	{
-//		return (AssignableInvoiceCandidate)invoiceCandidate;
-//	}
-
 	/**
 	 * <li>May be {@code null} if this instance was not persisted.
 	 * <li>The result of {@link #splitQuantity(BigDecimal)} can contain multiple instances that have the same repoId
@@ -146,5 +141,4 @@ public class AssignableInvoiceCandidate
 
 		AssignableInvoiceCandidate newCandidate;
 	}
-
 }
