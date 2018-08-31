@@ -61,6 +61,11 @@ class FiltersNotFrequent extends Component {
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
+    let caption = activeFilter ? activeFilter.caption : 'Filter';
+    if (activeFilter.captionValue && activeFilter.captionValue.length) {
+      caption = activeFilter.captionValue;
+    }
+
     return (
       <div className="filter-wrapper">
         <button
@@ -83,9 +88,7 @@ class FiltersNotFrequent extends Component {
                 {activeFilter.captionValue}
               </Fragment>
             ) : (
-              `${counterpart.translate(
-                'window.filters.caption2'
-              )}: ${activeFilter.captionValue || activeFilter.caption}`
+              `${counterpart.translate('window.filters.caption2')}: ${caption}`
             )
           ) : (
             'Filter'
