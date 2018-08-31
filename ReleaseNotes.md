@@ -40,7 +40,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1878) Forgot password feature
-    * New Feature that allows a User to reset a forgotton password.
+    * New Feature that allows a User to reset a forgotten password.
 
 ## Fixes
 * metasfresh
@@ -64,7 +64,7 @@ Here come the actual release notes:
     * Fixes a Bug that occurred with quickactions in non-webkit browsers.
   * [#1578](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1578) Applied filter params sometimes not displayed in filter
     * Minor Bugfix for the filtering in WebUI window.
-  * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) included tab: when refreshing via websocket event the sort/order is not preserved
+  * [#1589](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1589) Included tab: when refreshing via websocket event the sort/order is not preserved
     * Improvement of the Websocket refresh behavior when manipulating records in combination with changed order.
   * [#1707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1707) Red line is missing when a document was not saved
     * Improvement of the Error Handling for Records that cannot be saved.
@@ -75,7 +75,9 @@ Here come the actual release notes:
   * [#1927](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1927) No additional filter parameter from a dropdown selectable when filter has a default value set
     * Fixes the Filtering in WebUI for filters that have a default filter criteria set. Now it's possible to also set other filter criteria again.
   * [#1934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1934) Cannot run processes
-    * Bugfix for running actions with paramaters.
+    * Bugfix for running actions with parameters.
+  * [#1948](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1948) Filter Attribute Label not set properly
+    * Fixes the Filter Button Label.
     
 
 # metasfresh 5.71
