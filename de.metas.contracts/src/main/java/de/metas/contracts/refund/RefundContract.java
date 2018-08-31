@@ -1,10 +1,23 @@
 package de.metas.contracts.refund;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -30,18 +43,82 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class RefundContract
 {
-	@NonNull
+	/** may be {@code null} if the contract is not persisted. */
 	FlatrateTermId id;
 
-	@NonNull
-	RefundConfig refundConfig;
+	/** contains the refund configs, ordered by minQty descending. */
+	List<RefundConfig> refundConfigs;
 
-	@NonNull
 	LocalDate startDate;
 
-	@NonNull
 	LocalDate endDate;
+
+	BPartnerId bPartnerId;
+
+	@Builder(toBuilder = true)
+	private RefundContract(
+			@Nullable final FlatrateTermId id,
+			@NonNull final BPartnerId bPartnerId,
+			@Singular final List<RefundConfig> refundConfigs,
+			@NonNull final LocalDate startDate,
+			@NonNull final LocalDate endDate)
+	{
+		this.id = id;
+		this.bPartnerId = bPartnerId;
+		this.startDate = startDate;
+		this.endDate = endDate;
+
+		RefundConfigs.assertValid(refundConfigs);
+
+		this.refundConfigs = RefundConfigs.sortByMinQtyDesc(refundConfigs);
+	}
+
+	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
+	{
+		return refundConfigs
+				.stream()
+				.filter(config -> config.getMinQty().compareTo(qty) <= 0)
+				.findFirst()
+				.orElse(null);
+	}
+
+	public List<RefundConfig> getRefundConfigsToApplyForQuantity(@NonNull final BigDecimal qty)
+	{
+		final Predicate<RefundConfig> minQtyLessOrEqual = config -> config.getMinQty().compareTo(qty) <= 0;
+
+		return refundConfigs
+				.stream()
+				.filter(minQtyLessOrEqual)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public RefundConfig getRefundConfigById(@NonNull final RefundConfigId refundConfigId)
+	{
+		for (RefundConfig refundConfig : refundConfigs)
+		{
+			if (refundConfig.getId().equals(refundConfigId))
+			{
+				return refundConfig;
+			}
+		}
+
+		Check.fail("This contract has no config with id={}; this={}", refundConfigId, this);
+		return null;
+	}
+
+	public RefundMode extractRefundMode()
+	{
+		return RefundConfigs.extractRefundMode(refundConfigs);
+	}
+
+	public Optional<RefundConfig> getRefundConfigToUseProfitCalculation()
+	{
+		return getRefundConfigs()
+				.stream()
+				.filter(RefundConfig::isUseInProfitCalculation)
+				.findFirst();
+	}
+
 }

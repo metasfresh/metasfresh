@@ -7,6 +7,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
@@ -50,6 +52,7 @@ public class InvoiceSchedule
 		TWICE_MONTHLY;
 	}
 
+	/** may be {@code null} if the record was not persisted yet. */
 	InvoiceScheduleId id;
 
 	Frequency frequency;
@@ -62,9 +65,9 @@ public class InvoiceSchedule
 
 	int invoiceDistance;
 
-	@Builder
+	@Builder(toBuilder=true)
 	public InvoiceSchedule(
-			@NonNull final InvoiceScheduleId id,
+			@Nullable final InvoiceScheduleId id,
 			@NonNull final Frequency frequency,
 			final int invoiceDistance,
 			final DayOfWeek invoiceDayOfWeek,
