@@ -154,7 +154,7 @@ public class RefundConfigRepository
 	}
 
 	private IQueryBuilder<I_C_Flatrate_RefundConfig> createRefundConfigQueryBuilder(
-			@Nullable final ConditionsId conditionsId)
+			@NonNull final ConditionsId conditionsId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)

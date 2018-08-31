@@ -1,5 +1,7 @@
 package de.metas.contracts.refund.allqties.refundconfigchange;
 
+import org.adempiere.util.Check;
+
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
@@ -40,7 +42,7 @@ public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 	private AmountRefundConfigChangeHandler(
 			@NonNull final RefundConfig currentRefundConfig)
 	{
-		super(currentRefundConfig);
+		super(Check.assumeNotNull(currentRefundConfig, "currentRefundConfig may not be null"));
 	}
 
 	@Override

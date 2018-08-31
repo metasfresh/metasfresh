@@ -47,7 +47,7 @@ public class PercentRefundConfigChangeHandler extends RefundConfigChangeHandler
 			@NonNull final MoneyService moneyService,
 			@NonNull final RefundConfig currentRefundConfig)
 	{
-		super(currentRefundConfig);
+		super(Check.assumeNotNull(currentRefundConfig, "currentRefundConfig may not be null"));
 
 		Check.errorUnless(RefundBase.PERCENTAGE.equals(currentRefundConfig.getRefundBase()),
 				"The given currentRefundConfig needs to have refundBase = PERCENTAGE; currentRefundConfig={}",
