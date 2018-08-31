@@ -14,7 +14,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1985934014L;
+	private static final long serialVersionUID = 1161476834L;
 
     /** Standard Constructor */
     public X_AD_Table (Properties ctx, int AD_Table_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 			setIsAutocomplete (false); // N
 			setIsChangeLog (false);
 			setIsDeleteable (true); // Y
+			setIsEnableRemoteCacheInvalidation (false); // N
 			setIsHighVolume (false);
 			setIsSecurityEnabled (false);
 			setIsView (false); // N
@@ -375,6 +376,29 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public boolean isDeleteable () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDeleteable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Enable remote cache invalidation.
+		@param IsEnableRemoteCacheInvalidation Enable remote cache invalidation	  */
+	@Override
+	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation)
+	{
+		set_Value (COLUMNNAME_IsEnableRemoteCacheInvalidation, Boolean.valueOf(IsEnableRemoteCacheInvalidation));
+	}
+
+	/** Get Enable remote cache invalidation.
+		@return Enable remote cache invalidation	  */
+	@Override
+	public boolean isEnableRemoteCacheInvalidation () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsEnableRemoteCacheInvalidation);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

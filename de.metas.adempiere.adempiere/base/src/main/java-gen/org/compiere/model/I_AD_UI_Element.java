@@ -424,6 +424,29 @@ public interface I_AD_UI_Element
     public static final String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
 
 	/**
+	 * Set Multi Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsMultiLine (boolean IsMultiLine);
+
+	/**
+	 * Get Multi Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isMultiLine();
+
+    /** Column definition for IsMultiLine */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsMultiLine = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsMultiLine", null);
+    /** Column name IsMultiLine */
+    public static final String COLUMNNAME_IsMultiLine = "IsMultiLine";
+
+	/**
 	 * Set Labels selector field.
 	 *
 	 * <br>Type: Table
@@ -499,6 +522,29 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_MediaTypes = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "MediaTypes", null);
     /** Column name MediaTypes */
     public static final String COLUMNNAME_MediaTypes = "MediaTypes";
+
+	/**
+	 * Set Lines Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMultiLine_LinesCount (int MultiLine_LinesCount);
+
+	/**
+	 * Get Lines Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getMultiLine_LinesCount();
+
+    /** Column definition for MultiLine_LinesCount */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_MultiLine_LinesCount = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "MultiLine_LinesCount", null);
+    /** Column name MultiLine_LinesCount */
+    public static final String COLUMNNAME_MultiLine_LinesCount = "MultiLine_LinesCount";
 
 	/**
 	 * Set Name.
