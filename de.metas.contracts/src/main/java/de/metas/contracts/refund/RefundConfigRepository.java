@@ -168,6 +168,11 @@ public class RefundConfigRepository
 		{
 			return null;
 		}
+		return ofRecord(record);
+	}
+
+	public RefundConfig ofRecord(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
 		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
 
 		final RefundConfigBuilder builder = RefundConfig

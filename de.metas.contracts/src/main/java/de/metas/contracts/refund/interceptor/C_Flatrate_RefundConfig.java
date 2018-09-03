@@ -1,5 +1,6 @@
 package de.metas.contracts.refund.interceptor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.callout.annotations.Callout;
@@ -87,7 +88,12 @@ public class C_Flatrate_RefundConfig
 				.conditionsId(ConditionsId.ofRepoId(configRecord.getC_Flatrate_Conditions_ID()))
 				.build();
 
-		final List<RefundConfig> refundConfigs = refundConfigRepository.getByQuery(query);
-		RefundConfigs.assertValid(refundConfigs);
+		final List<RefundConfig> existingRefundConfigs = refundConfigRepository.getByQuery(query);
+		final RefundConfig newRefundConfig = refundConfigRepository.ofRecord(configRecord);
+
+		final ArrayList<RefundConfig> allRefundConfigs = new ArrayList<>(existingRefundConfigs);
+		allRefundConfigs.add(newRefundConfig);
+
+		RefundConfigs.assertValid(allRefundConfigs);
 	}
 }
