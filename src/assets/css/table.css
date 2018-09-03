@@ -166,7 +166,7 @@
 
             &.longtext-cell {
                 word-wrap: break-word;
-                white-space: initial;
+                white-space: pre;
                 overflow-y: scroll;
                 position: relative;
             }
