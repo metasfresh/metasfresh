@@ -12,11 +12,14 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 
@@ -46,19 +49,38 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 {
 	private I_C_SubscriptionProgress firstRecord;
 	private I_C_SubscriptionProgress secondRecord;
+	private I_M_Product secondProduct;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		final I_M_Product firstProduct = newInstance(I_M_Product.class);
+		firstProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
+		save(firstProduct);
+
+		final I_C_Flatrate_Term firstTerm = newInstance(I_C_Flatrate_Term.class);
+		firstTerm.setM_Product(firstProduct);
+		save(firstTerm);
+
 		firstRecord = newInstance(I_C_SubscriptionProgress.class);
+		firstRecord.setC_Flatrate_Term(firstTerm);
 		firstRecord.setEventDate(SystemTime.asTimestamp());
 		firstRecord.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		firstRecord.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		save(firstRecord);
 
+		secondProduct = newInstance(I_M_Product.class);
+		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
+		save(secondProduct);
+
+		final I_C_Flatrate_Term secondTerm = newInstance(I_C_Flatrate_Term.class);
+		secondTerm.setM_Product(secondProduct);
+		save(secondTerm);
+
 		secondRecord = newInstance(I_C_SubscriptionProgress.class);
+		secondRecord.setC_Flatrate_Term(secondTerm);
 		secondRecord.setEventDate(TimeUtil.addDays(SystemTime.asTimestamp(), 4));
 		secondRecord.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		secondRecord.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
@@ -87,6 +109,23 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 5, 0);
 		assertBothRecordsAreReturned();
+	}
+
+	/**
+	 * Verifies that subscription progress records with service products do not miss any shipment schedule.
+	 */
+	@Test
+	public void retrieveModelsWithMissingCandidates_Service_Product()
+	{
+		// taken from another test; i don't really care, i just need a setup that returns both records
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, 0);
+		assertBothRecordsAreReturned(); // guard
+
+		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Service);
+		save(secondProduct);
+
+		assertOnlyFirstRecordIsReturned();
 	}
 
 	private void assertOnlyFirstRecordIsReturned()

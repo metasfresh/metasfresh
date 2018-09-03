@@ -5,21 +5,25 @@ import static java.math.BigDecimal.ONE;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 
+import org.adempiere.util.collections.CollectionUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.InvoiceCandidateAssignmentService;
 import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -100,13 +104,25 @@ public class FlatrateTermRefund_Handler
 		return ic -> {
 			final RefundConfigRepository refundConfigRepository = Adempiere.getBean(RefundConfigRepository.class);
 
-			final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(FlatrateTermId.ofRepoId(ic.getRecord_ID()));
+			final I_C_Flatrate_Term flatrateTermRecord = TableRecordReference.ofReferenced(ic).getModel(I_C_Flatrate_Term.class);
+			final BigDecimal minQty = ic.getQtyInvoiced().add(ic.getQtyToInvoice());
+
+			final RefundConfigQuery query = RefundConfigQuery.builder()
+					.productId(ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID()))
+					.conditionsId(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()))
+					.minQty(minQty)
+					.build();
+
+			// because we provided product, conditions and minQty there may be only one matching config.
+			final List<RefundConfig> refundConfigs = refundConfigRepository.getByQuery(query);
+			final RefundConfig refundConfig = CollectionUtils.singleElement(refundConfigs);
+
 			ic.setC_InvoiceSchedule_ID(refundConfig.getInvoiceSchedule().getId().getRepoId());
 		};
 	}
 
 	@Override
-	public Timestamp calculateDateOrdered(I_C_Invoice_Candidate invoiceCandidateRecord)
+	public Timestamp calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		return invoiceCandidateRecord.getDateOrdered();
 	}

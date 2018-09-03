@@ -60,7 +60,7 @@ public class OrderCreateRequestTest
 						.orderIdentification("orderIdentification")
 						.packingMaterialId("packingMaterialId")
 						.item(OrderCreateRequestPackageItem.builder()
-								.id(Id.random())
+								.id(OrderCreateRequestPackageItemId.random())
 								.pzn(PZN.of(1000123))
 								.qty(Quantity.of(66))
 								.deliverySpecifications(DeliverySpecifications.NORMAL)

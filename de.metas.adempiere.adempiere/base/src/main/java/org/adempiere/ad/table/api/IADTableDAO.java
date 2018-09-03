@@ -24,6 +24,7 @@ package org.adempiere.ad.table.api;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -166,4 +167,6 @@ public interface IADTableDAO extends ISingletonService
 	I_AD_Table retrieveDocumentTableTemplate(I_AD_Table targetTable);
 
 	boolean isStandardColumn(String columnName);
+	
+	Set<String> getTableNamesWithRemoteCacheInvalidation();
 }

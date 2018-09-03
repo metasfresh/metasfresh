@@ -7,9 +7,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.service.OrgId;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.vertical.pharma.vendor.gateway.msv3.MSV3Util;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItem;
+import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponseItemPart;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Substitution;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitAnteil;
@@ -17,11 +24,6 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Verfuegbarkeits
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_VerfuegbarkeitsantwortArtikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitAnteil;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelne.Artikel;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsanfrageEinzelneAntwort;
-import de.metas.vertical.pharma.vendor.gateway.msv3.schema.VerfuegbarkeitsantwortArtikel;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -51,30 +53,31 @@ import lombok.NonNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MSV3AvailabilityDataPersister
 {
-	public static MSV3AvailabilityDataPersister createNewInstance(final int orgId)
+	public static MSV3AvailabilityDataPersister createNewInstance(@NonNull final OrgId orgId)
 	{
 		return new MSV3AvailabilityDataPersister(orgId);
 	}
 
-	private final Map<VerfuegbarkeitAnteil, Integer> verfuegbarkeitAnteil2DataRecordId = new HashMap<>();
+	private final Map<StockAvailabilityResponseItemPart, Integer> verfuegbarkeitAnteil2DataRecordId = new HashMap<>();
 
-	private final int orgId;
+	@NonNull
+	private final OrgId orgId;
 
 	public I_MSV3_VerfuegbarkeitsanfrageEinzelne storeAvailabilityRequest(
-			@NonNull final VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelne,
-			@NonNull final ImmutableMap<Artikel, MSV3ArtikelContextInfo> artikel2ContextInfo)
+			@NonNull final StockAvailabilityQuery verfuegbarkeitsanfrageEinzelne,
+			@NonNull final ImmutableMap<StockAvailabilityQueryItem, MSV3ArtikelContextInfo> immutableMap)
 	{
 		final I_MSV3_VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelneRecord = newInstance(I_MSV3_VerfuegbarkeitsanfrageEinzelne.class);
 		verfuegbarkeitsanfrageEinzelneRecord.setMSV3_Id(verfuegbarkeitsanfrageEinzelne.getId());
-		verfuegbarkeitsanfrageEinzelneRecord.setAD_Org_ID(orgId);
+		verfuegbarkeitsanfrageEinzelneRecord.setAD_Org_ID(orgId.getRepoId());
 
 		save(verfuegbarkeitsanfrageEinzelneRecord);
 
-		final List<Artikel> artikel = verfuegbarkeitsanfrageEinzelne.getArtikel();
-		for (final Artikel singleArticle : artikel)
+		final List<StockAvailabilityQueryItem> artikel = verfuegbarkeitsanfrageEinzelne.getItems();
+		for (final StockAvailabilityQueryItem singleArticle : artikel)
 		{
 			final I_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel articleRecord = //
-					createVerfuegbarkeitsanfrageEinzelne_Artikel(singleArticle, artikel2ContextInfo);
+					createVerfuegbarkeitsanfrageEinzelne_Artikel(singleArticle, immutableMap);
 
 			articleRecord.setMSV3_VerfuegbarkeitsanfrageEinzelne(verfuegbarkeitsanfrageEinzelneRecord);
 			save(articleRecord);
@@ -84,16 +87,16 @@ public class MSV3AvailabilityDataPersister
 	}
 
 	private I_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel createVerfuegbarkeitsanfrageEinzelne_Artikel(
-			@NonNull final Artikel singleArticle,
-			@NonNull final ImmutableMap<Artikel, MSV3ArtikelContextInfo> artikel2ContextInfo)
+			@NonNull final StockAvailabilityQueryItem singleArticle,
+			@NonNull final ImmutableMap<StockAvailabilityQueryItem, MSV3ArtikelContextInfo> immutableMap)
 	{
 		final I_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel articleRecord = newInstance(I_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel.class);
-		articleRecord.setAD_Org_ID(orgId);
-		articleRecord.setMSV3_Bedarf(singleArticle.getBedarf());
-		articleRecord.setMSV3_Menge(singleArticle.getMenge());
-		articleRecord.setMSV3_Pzn(Long.toString(singleArticle.getPzn()));
+		articleRecord.setAD_Org_ID(orgId.getRepoId());
+		articleRecord.setMSV3_Bedarf(singleArticle.getRequirementType().getCode());
+		articleRecord.setMSV3_Menge(singleArticle.getQtyRequired().getValueAsInt());
+		articleRecord.setMSV3_Pzn(singleArticle.getPzn().getValueAsString());
 
-		final MSV3ArtikelContextInfo availabilityRequestItem = artikel2ContextInfo.get(singleArticle);
+		final MSV3ArtikelContextInfo availabilityRequestItem = immutableMap.get(singleArticle);
 		if (availabilityRequestItem != null)
 		{
 			articleRecord.setC_OrderLineSO_ID(availabilityRequestItem.getSalesOrderLineId());
@@ -103,70 +106,60 @@ public class MSV3AvailabilityDataPersister
 	}
 
 	public I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort storeAvailabilityResponse(
-			@NonNull final VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwort,
-			@NonNull ImmutableMap<VerfuegbarkeitsantwortArtikel, MSV3ArtikelContextInfo> artikel2ContextInfo)
+			@NonNull final StockAvailabilityResponse response,
+			@NonNull ImmutableMap<StockAvailabilityResponseItem, MSV3ArtikelContextInfo> artikel2ContextInfo)
 	{
-		final I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwortRecord = //
-				createVerfuegbarkeitsanfrageEinzelneAntwortRecord(verfuegbarkeitsanfrageEinzelneAntwort);
-		save(verfuegbarkeitsanfrageEinzelneAntwortRecord);
+		final I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort responseRecord = createAndSaveRecord(response);
 
-		final List<VerfuegbarkeitsantwortArtikel> artikel = verfuegbarkeitsanfrageEinzelneAntwort.getArtikel();
-		for (final VerfuegbarkeitsantwortArtikel singleArtikel : artikel)
+		final List<StockAvailabilityResponseItem> items = response.getItems();
+		for (final StockAvailabilityResponseItem item : items)
 		{
-			final I_MSV3_VerfuegbarkeitsantwortArtikel verfuegbarkeitsantwortArtikelRecord = //
-					createVerfuegbarkeitsantwortArtikelRecord(
-							singleArtikel,
-							artikel2ContextInfo);
+			final I_MSV3_VerfuegbarkeitsantwortArtikel itemRecord = createRecord(item, artikel2ContextInfo);
+			itemRecord.setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(responseRecord);
+			save(itemRecord);
 
-			verfuegbarkeitsantwortArtikelRecord.setMSV3_VerfuegbarkeitsanfrageEinzelneAntwort(verfuegbarkeitsanfrageEinzelneAntwortRecord);
-			save(verfuegbarkeitsantwortArtikelRecord);
-
-			final List<VerfuegbarkeitAnteil> anteile = singleArtikel.getAnteile();
-			for (final VerfuegbarkeitAnteil anteil : anteile)
+			for (final StockAvailabilityResponseItemPart itemPart : item.getParts())
 			{
-				final I_MSV3_VerfuegbarkeitAnteil verfuegbarkeitAnteilRecord = createVerfuegbarkeitAnteilRecord(anteil);
+				final I_MSV3_VerfuegbarkeitAnteil verfuegbarkeitAnteilRecord = createRecord(itemPart);
 
-				verfuegbarkeitAnteilRecord.setMSV3_VerfuegbarkeitsantwortArtikel(verfuegbarkeitsantwortArtikelRecord);
+				verfuegbarkeitAnteilRecord.setMSV3_VerfuegbarkeitsantwortArtikel(itemRecord);
 				save(verfuegbarkeitAnteilRecord);
-				verfuegbarkeitAnteil2DataRecordId.put(anteil, verfuegbarkeitAnteilRecord.getMSV3_VerfuegbarkeitAnteil_ID());
+				verfuegbarkeitAnteil2DataRecordId.put(itemPart, verfuegbarkeitAnteilRecord.getMSV3_VerfuegbarkeitAnteil_ID());
 			}
 		}
 
-		return verfuegbarkeitsanfrageEinzelneAntwortRecord;
+		return responseRecord;
 	}
 
-	private I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort createVerfuegbarkeitsanfrageEinzelneAntwortRecord(
-			@NonNull final VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwort)
+	private I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort createAndSaveRecord(@NonNull final StockAvailabilityResponse response)
 	{
-		final I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwortRecord = //
-				newInstance(I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class);
+		final I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort record = newInstance(I_MSV3_VerfuegbarkeitsanfrageEinzelneAntwort.class);
 
-		verfuegbarkeitsanfrageEinzelneAntwortRecord.setAD_Org_ID(orgId);
-		verfuegbarkeitsanfrageEinzelneAntwortRecord
-				.setMSV3_Id(verfuegbarkeitsanfrageEinzelneAntwort.getId());
-		verfuegbarkeitsanfrageEinzelneAntwortRecord
-				.setMSV3_VerfuegbarkeitTyp(verfuegbarkeitsanfrageEinzelneAntwort.getRTyp().value());
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_Id(response.getId());
+		record.setMSV3_VerfuegbarkeitTyp(response.getAvailabilityType().value());
 
-		return verfuegbarkeitsanfrageEinzelneAntwortRecord;
+		save(record);
+
+		return record;
 	}
 
-	private I_MSV3_VerfuegbarkeitsantwortArtikel createVerfuegbarkeitsantwortArtikelRecord(
-			@NonNull final VerfuegbarkeitsantwortArtikel singleArtikel,
-			@NonNull ImmutableMap<VerfuegbarkeitsantwortArtikel, MSV3ArtikelContextInfo> artikel2ContextInfo)
+	private I_MSV3_VerfuegbarkeitsantwortArtikel createRecord(
+			@NonNull final StockAvailabilityResponseItem item,
+			@NonNull ImmutableMap<StockAvailabilityResponseItem, MSV3ArtikelContextInfo> artikel2ContextInfo)
 	{
-		final I_MSV3_VerfuegbarkeitsantwortArtikel verfuegbarkeitsantwortArtikelRecord =//
-				newInstance(I_MSV3_VerfuegbarkeitsantwortArtikel.class);
+		final I_MSV3_VerfuegbarkeitsantwortArtikel verfuegbarkeitsantwortArtikelRecord = newInstance(I_MSV3_VerfuegbarkeitsantwortArtikel.class);
 
-		verfuegbarkeitsantwortArtikelRecord.setAD_Org_ID(orgId);
-		verfuegbarkeitsantwortArtikelRecord.setMSV3_AnfrageMenge(singleArtikel.getAnfrageMenge());
-		verfuegbarkeitsantwortArtikelRecord.setMSV3_AnfragePzn(Long.toString(singleArtikel.getAnfragePzn()));
+		verfuegbarkeitsantwortArtikelRecord.setAD_Org_ID(orgId.getRepoId());
+		verfuegbarkeitsantwortArtikelRecord.setMSV3_AnfrageMenge(item.getQty().getValueAsInt());
+		verfuegbarkeitsantwortArtikelRecord.setMSV3_AnfragePzn(item.getPzn().getValueAsString());
 
 		final I_MSV3_Substitution substitutionOrNull = Msv3SubstitutionDataPersister
 				.newInstanceWithOrgId(orgId)
-				.storeSubstitutionOrNull(singleArtikel.getSubstitution());
+				.storeSubstitutionOrNull(item.getSubstitution());
 		verfuegbarkeitsantwortArtikelRecord.setMSV3_VerfuegbarkeitSubstitution(substitutionOrNull);
 
-		final MSV3ArtikelContextInfo availabilityRequestItem = artikel2ContextInfo.get(singleArtikel);
+		final MSV3ArtikelContextInfo availabilityRequestItem = artikel2ContextInfo.get(item);
 		if (availabilityRequestItem != null)
 		{
 			verfuegbarkeitsantwortArtikelRecord.setC_OrderLineSO_ID(availabilityRequestItem.getSalesOrderLineId());
@@ -176,21 +169,22 @@ public class MSV3AvailabilityDataPersister
 		return verfuegbarkeitsantwortArtikelRecord;
 	}
 
-	private I_MSV3_VerfuegbarkeitAnteil createVerfuegbarkeitAnteilRecord(@NonNull final VerfuegbarkeitAnteil anteil)
+	private I_MSV3_VerfuegbarkeitAnteil createRecord(@NonNull final StockAvailabilityResponseItemPart itemPart)
 	{
-		final I_MSV3_VerfuegbarkeitAnteil verfuegbarkeitAnteilRecord = newInstance(I_MSV3_VerfuegbarkeitAnteil.class);
+		final I_MSV3_VerfuegbarkeitAnteil record = newInstance(I_MSV3_VerfuegbarkeitAnteil.class);
 
-		verfuegbarkeitAnteilRecord.setAD_Org_ID(orgId);
-		verfuegbarkeitAnteilRecord.setMSV3_Grund(anteil.getGrund().value());
-		verfuegbarkeitAnteilRecord.setMSV3_Lieferzeitpunkt(MSV3Util.toTimestampOrNull(anteil.getLieferzeitpunkt()));
-		verfuegbarkeitAnteilRecord.setMSV3_Menge(anteil.getMenge());
-		verfuegbarkeitAnteilRecord.setMSV3_Tourabweichung(anteil.isTourabweichung());
-		verfuegbarkeitAnteilRecord.setMSV3_Typ(anteil.getTyp().value());
-		return verfuegbarkeitAnteilRecord;
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setMSV3_Grund(itemPart.getReason().value());
+		record.setMSV3_Lieferzeitpunkt(TimeUtil.asTimestamp(itemPart.getDeliveryDate()));
+		record.setMSV3_Menge(itemPart.getQty().getValueAsInt());
+		record.setMSV3_Tourabweichung(itemPart.isTourDeviation());
+		record.setMSV3_Typ(itemPart.getType().value());
+
+		return record;
 	}
 
-	public int getVerfuegbarkeitAnteilDataRecordId(@NonNull final VerfuegbarkeitAnteil verfuegbarkeitAnteil)
+	public int getVerfuegbarkeitAnteilDataRecordId(@NonNull final StockAvailabilityResponseItemPart itemPart)
 	{
-		return verfuegbarkeitAnteil2DataRecordId.get(verfuegbarkeitAnteil);
+		return verfuegbarkeitAnteil2DataRecordId.get(itemPart);
 	}
 }

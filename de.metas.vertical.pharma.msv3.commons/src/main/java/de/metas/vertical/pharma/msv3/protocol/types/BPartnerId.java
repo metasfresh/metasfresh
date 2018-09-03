@@ -37,6 +37,12 @@ public class BPartnerId
 	{
 		return new BPartnerId(bpartnerId, bpartnerLocationId);
 	}
+	
+	public static BPartnerId of(final int bpartnerId)
+	{
+		final int bpartnerLocationId = -1;
+		return new BPartnerId(bpartnerId, bpartnerLocationId);
+	}
 
 	@JsonProperty("bpartnerId")
 	private final int bpartnerId;
@@ -53,12 +59,8 @@ public class BPartnerId
 		{
 			throw new IllegalArgumentException("bpartnerId shall be > 0");
 		}
-		if (bpartnerLocationId < 1)
-		{
-			throw new IllegalArgumentException("bpartnerLocationId shall be > 0");
-		}
 
 		this.bpartnerId = bpartnerId;
-		this.bpartnerLocationId = bpartnerLocationId;
+		this.bpartnerLocationId = bpartnerLocationId > 0 ? bpartnerLocationId : -1;
 	}
 }

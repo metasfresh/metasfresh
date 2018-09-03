@@ -34,7 +34,6 @@ import de.metas.product.ProductId;
 
 public interface IProductBOMBL extends ISingletonService
 {
-
 	boolean isValidFromTo(I_PP_Product_BOM productBOM, Date date);
 
 	boolean isValidFromTo(I_PP_Product_BOMLine bomLine, Date date);
@@ -83,4 +82,6 @@ public interface IProductBOMBL extends ISingletonService
 	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
 	 */
 	BigDecimal getQtyMultiplier(I_PP_Product_BOMLine productBomLine, ProductId endProductId);
+
+	String getBOMDescriptionForProductId(ProductId productId);
 }

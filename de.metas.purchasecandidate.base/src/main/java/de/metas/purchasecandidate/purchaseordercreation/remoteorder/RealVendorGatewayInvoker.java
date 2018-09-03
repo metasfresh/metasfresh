@@ -86,7 +86,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 		final PurchaseOrderRequest purchaseOrderRequest = PurchaseOrderRequest.builder()
 				.orgId(orgId.getRepoId())
 				.vendorId(vendorId.getRepoId())
-				.purchaseOrderRequestItems(requestItem2Candidate.keySet())
+				.items(requestItem2Candidate.keySet())
 				.build();
 
 		final RemotePurchaseOrderCreated purchaseOrderResponse = vendorGatewayService.placePurchaseOrder(purchaseOrderRequest);

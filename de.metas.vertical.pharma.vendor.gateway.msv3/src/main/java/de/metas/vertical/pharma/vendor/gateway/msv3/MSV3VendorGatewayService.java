@@ -2,10 +2,17 @@ package de.metas.vertical.pharma.vendor.gateway.msv3;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
@@ -15,7 +22,9 @@ import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
 import de.metas.vertical.pharma.vendor.gateway.msv3.availability.MSV3AvailiabilityClient;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigId;
 import de.metas.vertical.pharma.vendor.gateway.msv3.config.MSV3ClientConfigRepository;
+import de.metas.vertical.pharma.vendor.gateway.msv3.config.Version;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAntwortAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder.MSV3PurchaseOrderClient;
@@ -47,27 +56,51 @@ import lombok.NonNull;
 public class MSV3VendorGatewayService implements VendorGatewayService
 {
 	private final MSV3ClientConfigRepository configRepo;
-	private final MSV3ConnectionFactory connectionFactory;
+	private final ImmutableMap<String, MSV3ClientFactory> clientFactoriesByVersion;
 
 	public MSV3VendorGatewayService(
-			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfigRepository configRepo)
+			@NonNull final MSV3ClientConfigRepository configRepo,
+			@NonNull final List<MSV3ClientFactory> clientFactories)
 	{
 		this.configRepo = configRepo;
-		this.connectionFactory = connectionFactory;
+		clientFactoriesByVersion = Maps.uniqueIndex(clientFactories, MSV3ClientFactory::getVersionId);
+	}
+
+	private MSV3ClientFactory getClientFactory(final Version version)
+	{
+		final MSV3ClientFactory clientFactory = clientFactoriesByVersion.get(version.getId());
+		if (clientFactory == null)
+		{
+			throw new AdempiereException("No MSV3 client factory found for version " + version + "."
+					+ " Available factories are: " + clientFactoriesByVersion);
+		}
+		return clientFactory;
 	}
 
 	@Override
-	public boolean isProvidedForVendor(final int vendorId)
+	public String testConnection(final int configRepoId)
 	{
-		return configRepo.getretrieveByVendorIdOrNull(vendorId) != null;
+		final MSV3ClientConfigId configId = MSV3ClientConfigId.ofRepoId(configRepoId);
+		final MSV3ClientConfig config = configRepo.getById(configId);
+		return getClientFactory(config.getVersion())
+				.newTestConnectionClient(config)
+				.testConnection();
+	}
+
+	@Override
+	public boolean isProvidedForVendor(final int vendorRepoId)
+	{
+		final BPartnerId vendorId = BPartnerId.ofRepoId(vendorRepoId);
+		return configRepo.hasConfigForVendor(vendorId);
 	}
 
 	@Override
 	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
 	{
-		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
-		final MSV3AvailiabilityClient client = new MSV3AvailiabilityClient(connectionFactory, config);
+		final BPartnerId vendorId = BPartnerId.ofRepoId(request.getVendorId());
+		final MSV3ClientConfig config = configRepo.getByVendorId(vendorId);
+		final MSV3AvailiabilityClient client = getClientFactory(config.getVersion())
+				.newAvailabilityClient(config);
 
 		return client.retrieveAvailability(request);
 	}
@@ -75,10 +108,10 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 	@Override
 	public RemotePurchaseOrderCreated placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
 	{
-		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
-		final MSV3PurchaseOrderClient client = MSV3PurchaseOrderClient.builder()
-				.config(config)
-				.connectionFactory(connectionFactory).build();
+		final BPartnerId vendorId = BPartnerId.ofRepoId(request.getVendorId());
+		final MSV3ClientConfig config = configRepo.getByVendorId(vendorId);
+		final MSV3PurchaseOrderClient client = getClientFactory(config.getVersion())
+				.newPurchaseOrderClient(config);
 
 		return client.prepare(request).placeOrder();
 	}
