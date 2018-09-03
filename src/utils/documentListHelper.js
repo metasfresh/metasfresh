@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
-import {
-  getItemsByProperty,
-  mapIncluded,
-} from '../actions/WindowActions';
+import { Map } from 'immutable';
+import { getItemsByProperty, mapIncluded } from '../actions/WindowActions';
 import { getSelection } from '../reducers/windowHandler';
 
 const DLpropTypes = {
@@ -55,12 +53,16 @@ const NO_SELECTION = [];
 const NO_VIEW = {};
 const PANEL_WIDTHS = ['1', '.2', '4'];
 
-const filtersToObject = function(filtersArray) {
-  if (filtersArray && filtersArray.length) {
+const filtersToMap = function(filtersArray) {
+  let filtersMap = Map();
 
+  if (filtersArray && filtersArray.length) {
+    filtersArray.forEach(filter => {
+      filtersMap = filtersMap.set(filter.filterId, filter);
+    });
   }
 
-  return null;
+  return filtersMap;
 };
 
 const doesSelectionExist = function({
@@ -111,6 +113,6 @@ export {
   PANEL_WIDTHS,
   getSortingQuery,
   redirectToNewDocument,
-  filtersToObject,
+  filtersToMap,
   doesSelectionExist,
 };

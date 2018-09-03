@@ -61,11 +61,11 @@ export function createViewRequest({
     }
   }
 
-  return post(config.API_URL + '/documentView/' + windowId, {
+  return post(`${config.API_URL}/documentView/${windowId}`, {
     documentType: windowId,
-    viewType: viewType,
-    referencing: referencing,
-    filters: filters,
+    viewType,
+    referencing,
+    filters,
   });
 }
 

@@ -45,6 +45,7 @@ import {
   getSortingQuery,
   redirectToNewDocument,
   doesSelectionExist,
+  filtersToMap,
 } from '../../utils/documentListHelper';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
@@ -74,7 +75,7 @@ class DocumentList extends Component {
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
-      filtersActive: null,
+      filtersActive: Map(),
       clickOutsideLock: false,
       isShowIncluded: false,
       hasShowIncluded: false,
@@ -153,7 +154,7 @@ class DocumentList extends Component {
         {
           data: null,
           layout: null,
-          filtersActive: null,
+          filtersActive: Map(),
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
         },
@@ -218,7 +219,7 @@ class DocumentList extends Component {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
             const rows = mergeRows({
-              toRows: this.state.data.result.toArray(),
+              toRows: this.state.data.result,
               fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
             });
@@ -377,12 +378,12 @@ class DocumentList extends Component {
       refTabId,
       refRowIds,
     } = this.props;
-    const { page, sort, filters } = this.state;
+    const { page, sort, filtersActive } = this.state;
 
     createViewRequest({
       windowId: windowType,
       viewType: type,
-      filtersActive: filters,
+      filters: filtersActive.toIndexedSeq().toArray(),
       refDocType: refType,
       refDocId: refId,
       refTabId,
@@ -406,7 +407,11 @@ class DocumentList extends Component {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
 
-    filterViewRequest(windowType, viewId, filtersActive).then(response => {
+    filterViewRequest(
+      windowType,
+      viewId,
+      filtersActive.toIndexedSeq().toArray()
+    ).then(response => {
       const viewId = response.data.viewId;
 
       if (isIncluded) {
@@ -494,7 +499,7 @@ class DocumentList extends Component {
               result,
             },
             pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-            filtersActive: response.data.filters,
+            filters: filtersToMap(response.data.filters),
           },
           () => {
             if (forceSelection && response.data && result && result.size > 0) {
@@ -558,10 +563,10 @@ class DocumentList extends Component {
     );
   };
 
-  handleFilterChange = filters => {
+  handleFilterChange = activeFilters => {
     this.setState(
       {
-        filtersActive: filters,
+        activeFilters,
         page: 1,
       },
       () => {
@@ -689,7 +694,7 @@ class DocumentList extends Component {
       viewId,
       clickOutsideLock,
       page,
-      filtersActive,
+      activeFilters,
       isShowIncluded,
       hasShowIncluded,
       refreshSelection,
@@ -701,7 +706,6 @@ class DocumentList extends Component {
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =
       (isIncluded && !!selected) || (inModal && modalType === 'process');
-    // const filtersData = layout.filters
 
     const styleObject = {};
     if (toggleWidth !== 0) {
@@ -778,9 +782,8 @@ class DocumentList extends Component {
 
                 {layout.filters && (
                   <Filters
-                    {...{ windowType, viewId }}
-                    filterData={layout.filters}
-                    filtersActive={filtersActive}
+                    {...{ windowType, viewId, activeFilters }}
+                    filterData={filtersToMap(layout.filters)}
                     updateDocList={this.handleFilterChange}
                   />
                 )}
