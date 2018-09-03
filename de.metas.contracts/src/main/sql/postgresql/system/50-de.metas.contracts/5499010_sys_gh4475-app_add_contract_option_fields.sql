@@ -347,7 +347,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-08-08T07:25:06.764
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Flatrate_RefundConfig','ALTER TABLE public.C_Flatrate_RefundConfig ADD COLUMN MinQty NUMERIC NOT NULL')
+/* DDL */ SELECT public.db_alter_table('C_Flatrate_RefundConfig','ALTER TABLE public.C_Flatrate_RefundConfig ADD COLUMN MinQty NUMERIC NOT NULL DEFAULT 0')
 ;
 
 -- 2018-08-08T07:25:35.051
