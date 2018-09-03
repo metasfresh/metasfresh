@@ -14,10 +14,11 @@ import org.springframework.stereotype.Component;
 
 import ch.qos.logback.classic.Level;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
-import de.metas.contracts.refund.InvoiceCandidate;
-import de.metas.contracts.refund.InvoiceCandidateAssignmentService;
-import de.metas.contracts.refund.InvoiceCandidateRepository;
+import de.metas.contracts.refund.AssignableInvoiceCandidateRepository;
+import de.metas.contracts.refund.CandidateAssignmentService;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -52,15 +53,23 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 
 	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_Manage_Refund_Candidates.class);
 
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
-	private final InvoiceCandidateAssignmentService invoiceCandidateAssignmentService;
+	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
+	private final CandidateAssignmentService invoiceCandidateAssignmentService;
+
+	private RefundInvoiceCandidateService refundInvoiceCandidateService;
+
+	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
 	private C_Invoice_Candidate_Manage_Refund_Candidates(
-			@NonNull final InvoiceCandidateRepository invoiceCandidateRepository,
-			@NonNull final InvoiceCandidateAssignmentService invoiceCandidateAssociationService)
+			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
+			@NonNull final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository,
+			@NonNull final RefundInvoiceCandidateService refundInvoiceCandidateService,
+			@NonNull final CandidateAssignmentService invoiceCandidateAssociationService)
 	{
-		this.invoiceCandidateRepository = invoiceCandidateRepository;
+		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
+		this.assignableInvoiceCandidateRepository = assignableInvoiceCandidateRepository;
 		this.invoiceCandidateAssignmentService = invoiceCandidateAssociationService;
+		this.refundInvoiceCandidateService = refundInvoiceCandidateService;
 	}
 
 	@ModelChange(//
@@ -82,7 +91,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		{
 			return; // it's not yet ready
 		}
-		if (invoiceCandidateRepository.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
+		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
 		{
 			return;
 		}
@@ -93,7 +102,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 	{
 		try
 		{
-			final AssignableInvoiceCandidate assignableInvoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final AssignableInvoiceCandidate assignableInvoiceCandidate = assignableInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
 			invoiceCandidateAssignmentService.updateAssignment(assignableInvoiceCandidate);
 		}
 		catch (final RuntimeException e)
@@ -109,15 +118,14 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
-		if (invoiceCandidate instanceof RefundInvoiceCandidate)
+		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
 		{
-			final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate.cast(invoiceCandidate);
+			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
 			invoiceCandidateAssignmentService.removeAllAssignments(refundCandidate);
 		}
 		else
 		{
-			final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.cast(invoiceCandidate);
+			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
 			if (assignableCandidate.isAssigned())
 			{
 				invoiceCandidateAssignmentService.unassignCandidate(assignableCandidate);

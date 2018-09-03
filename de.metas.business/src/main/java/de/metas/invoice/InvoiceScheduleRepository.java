@@ -1,6 +1,9 @@
 package de.metas.invoice;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.DayOfWeek;
 
@@ -131,4 +134,79 @@ public class InvoiceScheduleRepository
 		}
 	}	// getCalendarDay
 
+	public InvoiceSchedule save(@NonNull final InvoiceSchedule invoiceSchedule)
+	{
+		final I_C_InvoiceSchedule invoiceScheduleRecord;
+		if (invoiceSchedule.getId() == null)
+		{
+			invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);
+		}
+		else
+		{
+			invoiceScheduleRecord = load(invoiceSchedule.getId().getRepoId(), I_C_InvoiceSchedule.class);
+		}
+
+		switch (invoiceSchedule.getFrequency())
+		{
+			case DAILY:
+				invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+				break;
+			case WEEKLY:
+				invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Weekly);
+				setInvoiceWeekDayOfRecord(invoiceSchedule, invoiceScheduleRecord);
+				break;
+			case MONTLY:
+				invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Monthly);
+				invoiceScheduleRecord.setInvoiceDay(invoiceSchedule.getInvoiceDayOfMonth());
+				break;
+			case TWICE_MONTHLY:
+				invoiceScheduleRecord.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_TwiceMonthly);
+				break;
+			default:
+				Check.fail("Unsupported frequency={}", invoiceSchedule.getFrequency());
+				break;
+		}
+
+		invoiceScheduleRecord.setInvoiceDistance(invoiceSchedule.getInvoiceDistance());
+
+		saveRecord(invoiceScheduleRecord);
+
+		return invoiceSchedule
+				.toBuilder()
+				.id(InvoiceScheduleId.ofRepoId(invoiceScheduleRecord.getC_InvoiceSchedule_ID()))
+				.build();
+	}
+
+	private void setInvoiceWeekDayOfRecord(
+			@NonNull final InvoiceSchedule invoiceSchedule,
+			@NonNull final I_C_InvoiceSchedule invoiceScheduleRecord)
+	{
+		switch (invoiceSchedule.getInvoiceDayOfWeek())
+		{
+			case MONDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Monday);
+				break;
+			case TUESDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Tuesday);
+				break;
+			case WEDNESDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Wednesday);
+				break;
+			case THURSDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Thursday);
+				break;
+			case FRIDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Friday);
+				break;
+			case SATURDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Saturday);
+				break;
+			case SUNDAY:
+				invoiceScheduleRecord.setInvoiceWeekDay(X_C_InvoiceSchedule.INVOICEWEEKDAY_Sunday);
+				break;
+			default:
+				Check.fail("Unexpected day of week");
+				break;
+		}
+	}
 }

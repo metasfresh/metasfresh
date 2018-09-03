@@ -11,11 +11,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
 import org.compiere.util.TimeUtil;
@@ -55,35 +57,34 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * #L%
  */
 
-public class InvoiceCandidateFactoryTest
+public class AssignmentToRefundCandidateRepositoryTest
 {
-	private static final BigDecimal THREE = new BigDecimal("3");;
+	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal NINE = new BigDecimal("9");
 
-	private I_C_BPartner bPartnerRecord;
-	private I_M_Product productRecord;
 	private I_C_Invoice_Candidate assignableIcRecord;
-	private I_C_Invoice_Candidate refundContractIcRecord;
-	private Timestamp dateToInvoiceOfAssignableCand;
-	private I_C_Flatrate_Term refundContractRecord;
 	private I_C_Invoice_Candidate_Assignment assignmentRecord;
-	private InvoiceCandidateFactory invoiceCandidateFactory;
+	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
+		final Timestamp dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setStdPrecision(2);
 		save(currencyRecord);
 
-		bPartnerRecord = newInstance(I_C_BPartner.class);
+		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
 
-		productRecord = newInstance(I_M_Product.class);
+		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
+
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM(uomRecord);
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
@@ -108,11 +109,14 @@ public class InvoiceCandidateFactoryTest
 		refundConfigRecord.setM_Product(productRecord);
 		refundConfigRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
 		refundConfigRecord.setC_InvoiceSchedule(invoiceSchedule);
-		refundConfigRecord.setPercent(THREE);
+		refundConfigRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+		refundConfigRecord.setRefundPercent(THREE);
+		refundConfigRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
 		saveRecord(refundConfigRecord);
 
-		refundContractRecord = newInstance(I_C_Flatrate_Term.class);
+		final I_C_Flatrate_Term refundContractRecord = newInstance(I_C_Flatrate_Term.class);
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		refundContractRecord.setBill_BPartner(bPartnerRecord);
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
 		refundContractRecord.setM_Product(productRecord);
 		refundContractRecord.setC_Currency(currencyRecord);
@@ -120,7 +124,7 @@ public class InvoiceCandidateFactoryTest
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
 
-		refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
 		refundContractIcRecord.setBill_BPartner(bPartnerRecord);
 		refundContractIcRecord.setM_Product(productRecord);
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
@@ -132,65 +136,41 @@ public class InvoiceCandidateFactoryTest
 
 		assignmentRecord = newInstance(I_C_Invoice_Candidate_Assignment.class);
 		assignmentRecord.setC_Invoice_Candidate_Assigned_ID(assignableIcRecord.getC_Invoice_Candidate_ID());
+		assignmentRecord.setC_Flatrate_RefundConfig(refundConfigRecord);
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundContractIcRecord.getC_Invoice_Candidate_ID());
 		save(assignmentRecord);
 
-		invoiceCandidateFactory = new InvoiceCandidateRepository(
-				new RefundContractRepository(
-						new RefundConfigRepository(
-								new InvoiceScheduleRepository())))
-										.getInvoiceCandidateFactory();
-	}
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 
-	@Test
-	public void ofRecord_AssignableInvoiceCandidate()
-	{
-		// invoke the method under test
-		final InvoiceCandidate ofRecord = invoiceCandidateFactory.ofRecord(assignableIcRecord);
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
 
-		assertThat(ofRecord).isInstanceOf(AssignableInvoiceCandidate.class);
-		final AssignableInvoiceCandidate cast = AssignableInvoiceCandidate.cast(ofRecord);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
 
-		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-		assertThat(cast.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(cast.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
-		assertThat(cast.getMoney().getValue()).isEqualByComparingTo(TEN);
-		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
-	}
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(
+				refundContractRepository,
+				assignmentAggregateService);
 
-	@Test
-	public void ofRecord_RefundContractInvoiceCandidate()
-	{
-		// invoke the method under test
-		final InvoiceCandidate ofRecord = invoiceCandidateFactory.ofRecord(refundContractIcRecord);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
+				refundContractRepository,
+				refundInvoiceCandidateFactory);
 
-		assertThat(ofRecord).isInstanceOf(RefundInvoiceCandidate.class);
-		final RefundInvoiceCandidate cast = RefundInvoiceCandidate.cast(ofRecord);
-
-		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-		assertThat(cast.getRefundContract().getId().getRepoId()).isEqualTo(refundContractRecord.getC_Flatrate_Term_ID());
-		assertThat(cast.getMoney().getValue()).isEqualByComparingTo(TEN);
-		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
-
-		final RefundConfig refundConfig = cast.getRefundContract().getRefundConfig();
-		assertThat(refundConfig.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(refundConfig.getPercent().getValueAsBigDecimal()).isEqualByComparingTo(THREE);
+		assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
 	}
 
 	@Test
 	public void ofRecord_AssignableInvoiceCandidate_no_assignment_record()
 	{
+		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final AssignableInvoiceCandidate assignableIc = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
+
+		// guards
+		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		assertThat(resultBeforeDeletion).isNotEmpty();
+
 		delete(assignmentRecord);
 
 		// invoke the method under test
-		final InvoiceCandidate ofRecord = invoiceCandidateFactory.ofRecord(assignableIcRecord);
-
-		assertThat(ofRecord).isInstanceOf(AssignableInvoiceCandidate.class);
-		final AssignableInvoiceCandidate cast = AssignableInvoiceCandidate.cast(ofRecord);
-
-		assertThat(cast.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-		assertThat(cast.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
-		assertThat(cast.getAssignmentToRefundCandidate()).isNull();;
-		assertThat(cast.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
+		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		assertThat(resultAfterDeletion).isEmpty();
 	}
 }

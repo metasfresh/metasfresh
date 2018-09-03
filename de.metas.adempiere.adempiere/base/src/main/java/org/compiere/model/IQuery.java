@@ -124,7 +124,7 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> Map<Integer, ET> mapById(Class<ET> clazz) throws DBException;
-	
+
 	default Map<Integer, T> mapById() throws DBException
 	{
 		return mapById(getModelClass());
@@ -161,7 +161,7 @@ public interface IQuery<T>
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Return first model that match query criteria. If there are more records that match criteria an exception will be thrown.
+	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
 	 *
 	 * @return first PO or null.
 	 * @throws DBMoreThenOneRecordsFoundException

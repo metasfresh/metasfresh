@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,6 +42,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import lombok.NonNull;
 
 public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 {
@@ -110,10 +111,10 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 	}
 
 	@Override
-	public List<I_C_ILCandHandler> retrieveForClass(final Properties ctx, final Class<? extends IInvoiceCandidateHandler> clazz)
+	public List<I_C_ILCandHandler> retrieveForClass(
+			final Properties ctx,
+			@NonNull final Class<? extends IInvoiceCandidateHandler> clazz)
 	{
-		Check.assumeNotNull(clazz, "clazz not null");
-
 		final String classname = clazz.getName();
 
 		final List<I_C_ILCandHandler> result = new ArrayList<I_C_ILCandHandler>();

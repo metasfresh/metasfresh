@@ -2,22 +2,15 @@ package de.metas.contracts.refund;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
-import de.metas.contracts.refund.InvoiceCandidateRepository.RefundInvoiceCandidateQuery;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.money.Money;
 
 /*
  * #%L
@@ -41,52 +34,26 @@ import de.metas.money.Money;
  * #L%
  */
 
-public class InvoiceCandidateRepositoryTest
+public class RefundInvoiceCandidateRepositoryTest
 {
-	@Rule
-	public final AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
-	private InvoiceCandidateRepository invoiceCandidateRepository;
-
 	private RefundTestTools refundTestTools;
+	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		invoiceCandidateRepository = new InvoiceCandidateRepository(
-				new RefundContractRepository(
-						new RefundConfigRepository(
-								new InvoiceScheduleRepository())));
-
 		refundTestTools = new RefundTestTools();
-	}
 
-	@Test
-	public void saveCandidateAssignment()
-	{
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 
-		final RefundInvoiceCandidate refundInvoiceCandidate = refundTestTools.createRefundCandidate();
-		final AssignableInvoiceCandidate assignableInvoiceCandidate = refundTestTools.createAssignableCandidateStandlone();
-
-		final UnassignedPairOfCandidates unAssignedPairOfCandidates = UnassignedPairOfCandidates.builder()
-				.assignableInvoiceCandidate(assignableInvoiceCandidate)
-				.refundInvoiceCandidate(refundInvoiceCandidate)
-				.moneyToAssign(Money.of(new BigDecimal("3"), refundInvoiceCandidate.getMoney().getCurrencyId()))
-				.build();
-
-		// invoke the method under test
-		final AssignableInvoiceCandidate result = invoiceCandidateRepository.saveCandidateAssignment(unAssignedPairOfCandidates);
-
-		assertThat(result.getAssignmentToRefundCandidate().getRefundInvoiceCandidate().getId()).isEqualTo(refundInvoiceCandidate.getId());
-
-		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = POJOLookupMap.get().getRecords(I_C_Invoice_Candidate_Assignment.class);
-		assertThat(assignmentRecords).hasSize(1);
-		final I_C_Invoice_Candidate_Assignment assignmentRecord = assignmentRecords.get(0);
-		assertThat(assignmentRecord.getC_Invoice_Candidate_Assigned_ID()).isEqualTo(assignableInvoiceCandidate.getId().getRepoId());
-		assertThat(assignmentRecord.getC_Invoice_Candidate_Term_ID()).isEqualTo(refundInvoiceCandidate.getId().getRepoId());
-		assertThat(assignmentRecord.getC_Flatrate_Term_ID()).isEqualTo(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
+		refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
+				refundContractRepository,
+				refundInvoiceCandidateFactory);
 	}
 
 	@Test
@@ -100,9 +67,9 @@ public class InvoiceCandidateRepositoryTest
 				.build();
 
 		// invoke the method under test
-		final Optional<RefundInvoiceCandidate> result = invoiceCandidateRepository.getRefundInvoiceCandidate(query);
-		assertThat(result).isPresent();
-		assertThat(result.get()).isEqualTo(refundCandidate);
+		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isEqualTo(refundCandidate);
 	}
 
 	@Test
@@ -120,10 +87,10 @@ public class InvoiceCandidateRepositoryTest
 				.build();
 
 		// invoke the method under test
-		final Optional<RefundInvoiceCandidate> result = invoiceCandidateRepository.getRefundInvoiceCandidate(query);
+		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
 
-		assertThat(result).isPresent();
-		assertThat(result.get()).isEqualTo(refundCandidate);
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isEqualTo(refundCandidate);
 	}
 
 	@Test
@@ -141,7 +108,7 @@ public class InvoiceCandidateRepositoryTest
 				.build();
 
 		// invoke the method under test
-		final Optional<RefundInvoiceCandidate> result = invoiceCandidateRepository.getRefundInvoiceCandidate(query);
+		final List<RefundInvoiceCandidate> result = refundInvoiceCandidateRepository.getRefundInvoiceCandidates(query);
 
 		assertThat(result)
 				.as("Expect empty result bc the query is for a time range coming after refundCandidate's date; query=%s", query)

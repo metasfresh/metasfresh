@@ -69,29 +69,104 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zugeordneter Betrag.
-	 * Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	 * Set Zugeordneter Geldbetrag.
+	 * Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAssignedAmount (java.math.BigDecimal AssignedAmount);
+	public void setAssignedMoneyAmount (java.math.BigDecimal AssignedMoneyAmount);
 
 	/**
-	 * Get Zugeordneter Betrag.
-	 * Zugeordneter Betrag in der Währung des zugeordneten Rechnungskandidaten
+	 * Get Zugeordneter Geldbetrag.
+	 * Zugeordneter Geldbetrag, in der Währung des Vertrags-Rechnungskandidaten.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getAssignedAmount();
+	public java.math.BigDecimal getAssignedMoneyAmount();
 
-    /** Column definition for AssignedAmount */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedAmount", null);
-    /** Column name AssignedAmount */
-    public static final String COLUMNNAME_AssignedAmount = "AssignedAmount";
+    /** Column definition for AssignedMoneyAmount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedMoneyAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedMoneyAmount", null);
+    /** Column name AssignedMoneyAmount */
+    public static final String COLUMNNAME_AssignedMoneyAmount = "AssignedMoneyAmount";
+
+	/**
+	 * Set Zugeordnete Menge.
+	 * Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAssignedQuantity (java.math.BigDecimal AssignedQuantity);
+
+	/**
+	 * Get Zugeordnete Menge.
+	 * Zugeordneter Menge in der Maßeinheit des jeweiligen Produktes
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAssignedQuantity();
+
+    /** Column definition for AssignedQuantity */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_AssignedQuantity = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "AssignedQuantity", null);
+    /** Column name AssignedQuantity */
+    public static final String COLUMNNAME_AssignedQuantity = "AssignedQuantity";
+
+	/**
+	 * Set Basisbetrag.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBaseMoneyAmount (java.math.BigDecimal BaseMoneyAmount);
+
+	/**
+	 * Get Basisbetrag.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getBaseMoneyAmount();
+
+    /** Column definition for BaseMoneyAmount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_BaseMoneyAmount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "BaseMoneyAmount", null);
+    /** Column name BaseMoneyAmount */
+    public static final String COLUMNNAME_BaseMoneyAmount = "BaseMoneyAmount";
+
+	/**
+	 * Set C_Flatrate_RefundConfig.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_RefundConfig_ID (int C_Flatrate_RefundConfig_ID);
+
+	/**
+	 * Get C_Flatrate_RefundConfig.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_RefundConfig_ID();
+
+	public de.metas.contracts.model.I_C_Flatrate_RefundConfig getC_Flatrate_RefundConfig();
+
+	public void setC_Flatrate_RefundConfig(de.metas.contracts.model.I_C_Flatrate_RefundConfig C_Flatrate_RefundConfig);
+
+    /** Column definition for C_Flatrate_RefundConfig_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, de.metas.contracts.model.I_C_Flatrate_RefundConfig> COLUMN_C_Flatrate_RefundConfig_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, de.metas.contracts.model.I_C_Flatrate_RefundConfig>(I_C_Invoice_Candidate_Assignment.class, "C_Flatrate_RefundConfig_ID", de.metas.contracts.model.I_C_Flatrate_RefundConfig.class);
+    /** Column name C_Flatrate_RefundConfig_ID */
+    public static final String COLUMNNAME_C_Flatrate_RefundConfig_ID = "C_Flatrate_RefundConfig_ID";
 
 	/**
 	 * Set Pauschale - Vertragsperiode.
@@ -243,6 +318,29 @@ public interface I_C_Invoice_Candidate_Assignment
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Zugeordnete Menge wird in Summe einbez..
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAssignedQuantityIncludedInSum (boolean IsAssignedQuantityIncludedInSum);
+
+	/**
+	 * Get Zugeordnete Menge wird in Summe einbez..
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAssignedQuantityIncludedInSum();
+
+    /** Column definition for IsAssignedQuantityIncludedInSum */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object> COLUMN_IsAssignedQuantityIncludedInSum = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate_Assignment, Object>(I_C_Invoice_Candidate_Assignment.class, "IsAssignedQuantityIncludedInSum", null);
+    /** Column name IsAssignedQuantityIncludedInSum */
+    public static final String COLUMNNAME_IsAssignedQuantityIncludedInSum = "IsAssignedQuantityIncludedInSum";
 
 	/**
 	 * Get Aktualisiert.

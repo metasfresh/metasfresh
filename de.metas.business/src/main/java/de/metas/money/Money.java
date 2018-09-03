@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
@@ -48,6 +50,10 @@ import lombok.Value;
 @Value
 public class Money
 {
+	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
+	{
+		return of(new BigDecimal(value), currencyId);
+	}
 
 	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
@@ -56,6 +62,15 @@ public class Money
 
 	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
+		return new Money(value, currencyId);
+	}
+
+	public static final Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
+	{
+		if (value == null || currencyId == null)
+		{
+			return null;
+		}
 		return new Money(value, currencyId);
 	}
 
