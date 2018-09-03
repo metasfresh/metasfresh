@@ -499,7 +499,7 @@ class DocumentList extends Component {
               result,
             },
             pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-            filters: filtersToMap(response.data.filters),
+            filtersActive: filtersToMap(response.data.filters),
           },
           () => {
             if (forceSelection && response.data && result && result.size > 0) {
@@ -694,7 +694,7 @@ class DocumentList extends Component {
       viewId,
       clickOutsideLock,
       page,
-      activeFilters,
+      filtersActive,
       isShowIncluded,
       hasShowIncluded,
       refreshSelection,
@@ -782,7 +782,8 @@ class DocumentList extends Component {
 
                 {layout.filters && (
                   <Filters
-                    {...{ windowType, viewId, activeFilters }}
+                    {...{ windowType, viewId }}
+                    activeFilters={filtersActive}
                     filterData={filtersToMap(layout.filters)}
                     updateDocList={this.handleFilterChange}
                   />
