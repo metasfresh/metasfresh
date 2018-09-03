@@ -466,7 +466,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public int signum()
 	{
-		return getQty().signum();
+		return getAsBigDecimal().signum();
 	}
 
 	/**
@@ -502,7 +502,7 @@ public final class Quantity implements Comparable<Quantity>
 		final int qtyToAdd_sourceUomId = qtyToAdd.getSource_UOM_ID();
 		if (uomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_Value = qtyToAdd.getQty();
+			qtyToAdd_Value = qtyToAdd.getAsBigDecimal();
 		}
 		else if (uomId == qtyToAdd_sourceUomId)
 		{
@@ -523,7 +523,7 @@ public final class Quantity implements Comparable<Quantity>
 		}
 		else if (sourceUomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_SourceValue = qtyToAdd.getQty();
+			qtyToAdd_SourceValue = qtyToAdd.getAsBigDecimal();
 		}
 		else
 		{
@@ -533,7 +533,7 @@ public final class Quantity implements Comparable<Quantity>
 
 		//
 		// Compute new Quantity's values
-		final BigDecimal qtyNew_Value = this.getQty().add(qtyToAdd_Value);
+		final BigDecimal qtyNew_Value = this.getAsBigDecimal().add(qtyToAdd_Value);
 		final I_C_UOM qtyNew_UOM = this.getUOM();
 		final BigDecimal qtyNew_SourceValue;
 		final I_C_UOM qtyNew_SourceUOM;

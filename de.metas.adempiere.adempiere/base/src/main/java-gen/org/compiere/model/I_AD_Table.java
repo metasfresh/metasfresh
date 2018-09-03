@@ -455,6 +455,29 @@ public interface I_AD_Table
     public static final String COLUMNNAME_IsDeleteable = "IsDeleteable";
 
 	/**
+	 * Set Enable remote cache invalidation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation);
+
+	/**
+	 * Get Enable remote cache invalidation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isEnableRemoteCacheInvalidation();
+
+    /** Column definition for IsEnableRemoteCacheInvalidation */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_IsEnableRemoteCacheInvalidation = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "IsEnableRemoteCacheInvalidation", null);
+    /** Column name IsEnableRemoteCacheInvalidation */
+    public static final String COLUMNNAME_IsEnableRemoteCacheInvalidation = "IsEnableRemoteCacheInvalidation";
+
+	/**
 	 * Set High Volume.
 	 * Use Search instead of Pick list
 	 *

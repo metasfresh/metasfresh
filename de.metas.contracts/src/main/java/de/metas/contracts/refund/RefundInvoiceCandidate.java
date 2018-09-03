@@ -1,10 +1,21 @@
 package de.metas.contracts.refund;
 
+import static java.math.BigDecimal.ONE;
+
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,16 +42,16 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Represents the invoice candidate that will end up as "refund" invoice line.
+ * Also see {@link AssignableInvoiceCandidate}.
+ */
 @Value
 @Builder(toBuilder = true)
-public class RefundInvoiceCandidate implements InvoiceCandidate
+public class RefundInvoiceCandidate
 {
-	public static RefundInvoiceCandidate cast(@NonNull final InvoiceCandidate refundInvoiceCandidate)
-	{
-		return (RefundInvoiceCandidate)refundInvoiceCandidate;
-	}
-
-	@NonNull
+	/** May be {@code null} is the candidate is not persisted */
+	@Nullable
 	InvoiceCandidateId id;
 
 	@NonNull
@@ -52,6 +63,43 @@ public class RefundInvoiceCandidate implements InvoiceCandidate
 	@NonNull
 	RefundContract refundContract;
 
+	/**
+	 * If {@link RefundMode} is {@link RefundMode#APPLY_TO_EXCEEDING_QTY}, then there is one config per candidate; if it is {@link RefundMode#APPLY_TO_ALL_QTIES}, then there is one or many.
+	 */
+	// @NonNull
+	// RefundConfig refundConfig;
+	@NonNull
+	List<RefundConfig> refundConfigs;
+
 	@NonNull
 	Money money;
+
+	/** The sum of the quantities of all assigned {@link AssignableInvoiceCandidate}s. */
+	@NonNull
+	transient Quantity assignedQuantity;
+
+	/** Computes how much can still be assigned to this candidate, according to the given config. */
+	public Quantity computeAssignableQuantity(@NonNull final RefundConfig refundCondig)
+	{
+		final Optional<RefundConfig> nextRefundConfig = getRefundContract()
+				.getRefundConfigs()
+				.stream()
+				.filter(config -> config.getMinQty().compareTo(refundCondig.getMinQty()) > 0)
+				.min(Comparator.comparing(RefundConfig::getMinQty));
+
+		final I_C_UOM uomRecord = assignedQuantity.getUOM();
+
+		if (!nextRefundConfig.isPresent())
+		{
+			return Quantity.infinite(uomRecord);
+		}
+
+		return Quantity
+				.of(
+						nextRefundConfig.get().getMinQty(),
+						uomRecord)
+				.subtract(getAssignedQuantity())
+				.subtract(ONE)
+				.max(Quantity.zero(uomRecord));
+	}
 }

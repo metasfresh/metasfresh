@@ -223,4 +223,6 @@ public interface IOrderLineBL extends ISingletonService
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 
 	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);
+
+	void updateProductDescriptionFromProductBOMIfConfigured(org.compiere.model.I_C_OrderLine orderLine);
 }

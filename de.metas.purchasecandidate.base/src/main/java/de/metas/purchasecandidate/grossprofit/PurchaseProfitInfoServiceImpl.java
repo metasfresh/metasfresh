@@ -1,10 +1,12 @@
 package de.metas.purchasecandidate.grossprofit;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.util.Services;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +18,10 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -65,14 +67,16 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	private final ProfitPriceActualFactory profitPriceActualFactory;
 
 	public PurchaseProfitInfoServiceImpl(
 			@NonNull final MoneyService moneyService,
-			@NonNull final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo)
+			@NonNull final OrderLineWithGrossProfitPriceRepository grossProfitPriceRepo,
+			@NonNull final ProfitPriceActualFactory profitPriceActualFactory)
 	{
 		this.moneyService = moneyService;
 		this.grossProfitPriceRepo = grossProfitPriceRepo;
+		this.profitPriceActualFactory = profitPriceActualFactory;
 	}
 
 	@Override
@@ -92,6 +96,8 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 	@Override
 	public PurchaseProfitInfo calculate(@NonNull final PurchaseProfitInfoRequest request)
 	{
+		final LocalDate date = LocalDate.now();
+
 		final Set<OrderAndLineId> salesOrderAndLineIds = request.getSalesOrderAndLineIds();
 		final Quantity qtyToPurchase = request.getQtyToPurchase();
 		final VendorProductInfo vendorProductInfo = request.getVendorProductInfo();
@@ -100,13 +106,17 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		final Percent vendorFlatDiscount = vendorProductInfo.getVendorFlatDiscount();
 
 		final PricingConditionsBreak vendorPricingConditionsBreak = vendorProductInfo.getPricingConditionsBreakOrNull(qtyToPurchase);
+		if (vendorPricingConditionsBreak == null)
+		{
+			return null;
+		}
 
 		// Compute price (gross and net) from pricing conditions break
 		final CalculatePricingConditionsRequest calculatePricingConditionsRequest = CalculatePricingConditionsRequest.builder()
 				.forcePricingConditionsBreak(vendorPricingConditionsBreak) // maybe be null
 				.pricingConditionsId(vendorProductInfo.getPricingConditions().getId())
 				.bpartnerFlatDiscount(vendorFlatDiscount)
-				.pricingCtx(createPricingContext(vendorProductInfo.getProductId(), vendorId))
+				.pricingCtx(createPricingContext(vendorProductInfo.getProductId(), vendorId, date))
 				.build();
 
 		final PricingConditionsResult vendorPricingConditionsResult = pricingConditionsService
@@ -130,38 +140,30 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 
 		final Money purchaseBasePrice = Money.of(purchaseBasePriceValue, currencyId);
 
-		Money purchaseNetPrice;
-		if (vendorPricingConditionsBreak != null)
-		{
-			purchaseNetPrice = moneyService.subtractPercent(vendorPricingConditionsBreak.getDiscount(), purchaseBasePrice);
-		}
-		else
-		{
-			purchaseNetPrice = moneyService.subtractPercent(vendorPricingConditionsResult.getDiscount(), purchaseBasePrice);
-		}
+		final Money purchaseNetPrice = moneyService.subtractPercent(vendorPricingConditionsResult.getDiscount(), purchaseBasePrice);
 
-		//
-		// Subtract paymentTerm discount if any
-		if (purchaseNetPrice != null
-				&& purchaseNetPrice.signum() != 0
-				&& vendorPricingConditionsBreak.getPaymentTermIdOrNull() != null)
-		{
-			final PaymentTermId derivedPaymentTermId = vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull();
-			final Percent discount = paymentTermRepo.getPaymentTermDiscount(derivedPaymentTermId);
-			purchaseNetPrice = moneyService.subtractPercent(discount, purchaseNetPrice);
-		}
+		final CalculateProfitPriceActualRequest calculateProfitPriceActualRequest = CalculateProfitPriceActualRequest.builder()
+				.bPartnerId(vendorId)
+				.productId(vendorProductInfo.getProductId())
+				.date(date)
+				.baseAmount(purchaseNetPrice)
+				.paymentTermId(vendorPricingConditionsBreak.getDerivedPaymentTermIdOrNull())
+				.quantity(qtyToPurchase)
+				.build();
+		final Money purchaseNetPriceWithExpectedBenefits = profitPriceActualFactory.calculateProfitPriceActual(calculateProfitPriceActualRequest);
 
 		//
 		return PurchaseProfitInfo.builder()
 				.profitSalesPriceActual(grossProfitPriceRepo.getProfitMinBasePrice(salesOrderAndLineIds))
 				.purchasePriceActual(purchaseBasePrice)
-				.profitPurchasePriceActual(purchaseNetPrice)
+				.profitPurchasePriceActual(purchaseNetPriceWithExpectedBenefits)
 				.build();
 	}
 
 	private IPricingContext createPricingContext(
 			@NonNull final ProductId productId,
-			@NonNull final BPartnerId vendorId)
+			@NonNull final BPartnerId vendorId,
+			@NonNull final LocalDate date)
 	{
 		final int countryId = bpartnersRepo.getDefaultShipToLocationCountryId(vendorId);
 
@@ -171,6 +173,7 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		pricingCtx.setBPartnerId(vendorId);
 		pricingCtx.setC_Country_ID(countryId);
 		pricingCtx.setSOTrx(SOTrx.PURCHASE);
+		pricingCtx.setPriceDate(TimeUtil.asTimestamp(date));
 
 		return pricingCtx;
 	}

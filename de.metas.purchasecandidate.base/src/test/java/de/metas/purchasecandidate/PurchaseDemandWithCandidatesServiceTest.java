@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
@@ -44,8 +45,10 @@ import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
+import de.metas.payment.grossprofit.PaymentProfitPriceActualComponentProvider;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
@@ -196,9 +199,13 @@ public class PurchaseDemandWithCandidatesServiceTest
 				new ReferenceGenerator(),
 				bpPurchaseScheduleService);
 
+		final MoneyService moneyService = new MoneyService(currencyRepository);
+		final ProfitPriceActualFactory profitPriceActualFactory = new ProfitPriceActualFactory(Optional.of(ImmutableList.of(new PaymentProfitPriceActualComponentProvider(moneyService))));
+
 		final PurchaseProfitInfoService purchaseProfitInfoService = new PurchaseProfitInfoServiceImpl(
-				new MoneyService(currencyRepository),
-				new OrderLineWithGrossProfitPriceRepository());
+				moneyService,
+				new OrderLineWithGrossProfitPriceRepository(),
+				profitPriceActualFactory);
 
 		final VendorProductInfoService vendorProductInfoService = new VendorProductInfoService(new BPartnerBL(new UserRepository()));
 

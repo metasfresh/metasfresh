@@ -25,8 +25,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -47,7 +49,9 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfigQuery;
 import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.product.ProductId;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {
@@ -74,11 +78,29 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund.equals(conditions.getType_Conditions()))
 		{
-			final List<RefundConfig> allConfigs = refundConfigRepository.getByConditionsId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()));
-			for (final RefundConfig config : allConfigs)
+			final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
+
+			final RefundConfigQuery query = RefundConfigQuery.builder()
+					.conditionsId(conditionsId)
+					.build();
+
+			final List<ProductId> productIds = refundConfigRepository
+					.getByQuery(query)
+					.stream()
+					.map(RefundConfig::getProductId)
+					.distinct()
+					.collect(Collectors.toCollection(ArrayList::new));
+			for (final ProductId productId : productIds)
 			{
-				final I_M_Product product = loadOutOfTrx(config.getProductId().getRepoId(), I_M_Product.class);
-				addProduct(product);
+				if (productId == null)
+				{
+					addProduct(null);
+				}
+				else
+				{
+					final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+					addProduct(product);
+				}
 			}
 		}
 		else
@@ -91,9 +113,9 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			}
 		}
 
-		if(p_adUserInChargeId > 0)
+		if (p_adUserInChargeId > 0)
 		{
-			final I_AD_User userInCharge= loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
+			final I_AD_User userInCharge = loadOutOfTrx(p_adUserInChargeId, I_AD_User.class);
 			setUserInCharge(userInCharge);
 		}
 		setStartDate(p_startDate);

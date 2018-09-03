@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -1256,6 +1257,10 @@ public class TimeUtil
 		else if (obj instanceof Instant)
 		{
 			return new Timestamp(Date.from((Instant)obj).getTime());
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return Timestamp.from(((ZonedDateTime)obj).toInstant());
 		}
 		else
 		{
