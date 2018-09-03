@@ -200,15 +200,19 @@ export default function windowHandler(state = initialState, action) {
     // SCOPED ACTIONS
 
     case INIT_LAYOUT_SUCCESS:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
+      return {
+        ...state,
+        [action.scope]: {
+          ...state[action.scope],
           layout: action.layout,
-        }),
-      });
+        },
+      };
 
     case INIT_DATA_SUCCESS:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
+      return {
+        ...state,
+        [action.scope]: {
+          ...state[action.scope],
           data: action.data,
           docId: action.docId,
           layout: {},
@@ -218,8 +222,8 @@ export default function windowHandler(state = initialState, action) {
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
-        }),
-      });
+        },
+      };
     case CLEAR_MASTER_DATA:
       return {
         ...state,
