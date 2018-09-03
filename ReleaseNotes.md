@@ -11,14 +11,30 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 5.73
+## Features
+* metasfresh
+  * [#4475](https://github.com/metasfresh/metasfresh/issues/4475) Refund contract - add further options
+  * [#4511](https://github.com/metasfresh/metasfresh/issues/4511) Implement support for MSV3 version 1
+  * [#4530](https://github.com/metasfresh/metasfresh/issues/4530) WebUI Adjustments for Country, Postal and City Window
+  * [#4535](https://github.com/metasfresh/metasfresh/issues/4535) Set Sales Order Line's ProductDescription as Product BOM's description
+  * [#4536](https://github.com/metasfresh/metasfresh/issues/4536) Introduce AD_Table.IsEnableRemoteCacheInvalidation
+
+metasfresh-webui-api
+  * [#1032](https://github.com/metasfresh/metasfresh-webui-api/issues/1032) Window layout API shall provide text multilineText and multilineTextLines properties
+
 ## Fixes
 * metasfresh
   * [#4520](https://github.com/metasfresh/metasfresh/issues/4520) Requests cannot be saved
     * Fixes a Bug in Requests, now being able to save Requests again in WebUI.
   * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems with invoice candidate creation from subscription flatrate terms
     * Bugfix in subscription contract handling, now creating corresponding invoice candidates again.
+  * [#4526](https://github.com/metasfresh/metasfresh/issues/4526) Filter for attributes in picking terminal shall be set by default
+  * [#4537](https://github.com/metasfresh/metasfresh/issues/4537) Invoice candiate handler BL creates lock with non-unique owner
   * [#4538](https://github.com/metasfresh/metasfresh/issues/4538) WebUI: New Translation Window for R_RequestType
     * New Window that allows to maintain Request Type Translations in WebUI.
+
+* metasfresh-webui-api
+  * [#438](https://github.com/metasfresh/metasfresh-webui-api/issues/438) minor: error for wizard with no picture
 
 # metasfresh 5.72
 ## Features
