@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
@@ -80,4 +81,6 @@ public interface IADWindowDAO extends ISingletonService
 	I_AD_Tab retrieveFirstTab(final int adWindowId);
 
 	void copyWindow(int targetWindowId, int sourceWindowId);
+
+	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 }

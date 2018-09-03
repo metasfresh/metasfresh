@@ -31,7 +31,7 @@ public class AD_Window_CopyWindow extends JavaProcess
 	@Param(parameterName = PARAM_Source_AD_Window_ID, mandatory = true)
 	private int sourceWindowId;
 
-	final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
