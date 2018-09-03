@@ -1,6 +1,5 @@
 import counterpart from 'counterpart';
 import classnames from 'classnames';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -29,15 +28,24 @@ import {
 import {
   connectWS,
   disconnectWS,
-  getItemsByProperty,
   getRowsData,
   indicatorState,
-  mapIncluded,
   parseToDisplay,
   selectTableItems,
   removeSelectedTableItems,
 } from '../../actions/WindowActions';
-import { getSelection, getSelectionDirect } from '../../reducers/windowHandler';
+import { getSelectionDirect } from '../../reducers/windowHandler';
+import {
+  DLpropTypes,
+  DLcontextTypes,
+  DLmapStateToProps,
+  NO_SELECTION,
+  NO_VIEW,
+  PANEL_WIDTHS,
+  getSortingQuery,
+  redirectToNewDocument,
+  doesSelectionExist,
+} from '../../utils/documentListHelper';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 import Filters from '../filters/Filters';
@@ -46,31 +54,7 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 
-const NO_SELECTION = [];
-const NO_VIEW = {};
-const PANEL_WIDTHS = ['1', '.2', '4'];
-
 class DocumentList extends Component {
-  static propTypes = {
-    // from parent
-    windowType: PropTypes.string.isRequired,
-
-    // from <DocList>
-    updateParentSelectedIds: PropTypes.func,
-
-    // from @connect
-    dispatch: PropTypes.func.isRequired,
-    selections: PropTypes.object.isRequired,
-    childSelected: PropTypes.array.isRequired,
-    parentSelected: PropTypes.array.isRequired,
-    selected: PropTypes.array.isRequired,
-    isModal: PropTypes.bool,
-  };
-
-  static contextTypes = {
-    store: PropTypes.object.isRequired,
-  };
-
   constructor(props) {
     super(props);
 
@@ -87,14 +71,11 @@ class DocumentList extends Component {
       layout: null,
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
-
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
-      filters: null,
-
+      filtersActive: null,
       clickOutsideLock: false,
-
       isShowIncluded: false,
       hasShowIncluded: false,
 
@@ -172,7 +153,7 @@ class DocumentList extends Component {
         {
           data: null,
           layout: null,
-          filters: null,
+          filtersActive: null,
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
         },
@@ -304,45 +285,6 @@ class DocumentList extends Component {
     }
   };
 
-  doesSelectionExist({ data, selected, hasIncluded = false } = {}) {
-    // When the rows are changing we should ensure
-    // that selection still exist
-    if (hasIncluded) {
-      return true;
-    }
-
-    if (selected && selected[0] === 'all') {
-      return true;
-    }
-
-    let rows = [];
-
-    data &&
-      data.result &&
-      data.result.map(item => {
-        rows = rows.concat(mapIncluded(item));
-      });
-
-    return (
-      data &&
-      data.size &&
-      data.result &&
-      selected &&
-      selected[0] &&
-      getItemsByProperty(rows, 'id', selected[0]).length
-    );
-  }
-
-  getTableData = data => {
-    return data;
-  };
-
-  redirectToNewDocument = () => {
-    const { dispatch, windowType } = this.props;
-
-    dispatch(push(`/window/${windowType}/new`));
-  };
-
   setClickOutsideLock = value => {
     this.setState({
       clickOutsideLock: !!value,
@@ -440,7 +382,7 @@ class DocumentList extends Component {
     createViewRequest({
       windowId: windowType,
       viewType: type,
-      filters,
+      filtersActive: filters,
       refDocType: refType,
       refDocId: refId,
       refTabId,
@@ -462,9 +404,9 @@ class DocumentList extends Component {
 
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
-    const { page, sort, filters, viewId } = this.state;
+    const { page, sort, filtersActive, viewId } = this.state;
 
-    filterViewRequest(windowType, viewId, filters).then(response => {
+    filterViewRequest(windowType, viewId, filtersActive).then(response => {
       const viewId = response.data.viewId;
 
       if (isIncluded) {
@@ -526,7 +468,7 @@ class DocumentList extends Component {
         response.data &&
         result.size > 0 &&
         (selection.length === 0 ||
-          !this.doesSelectionExist({
+          !doesSelectionExist({
             data: {
               ...response.data,
               result,
@@ -552,7 +494,7 @@ class DocumentList extends Component {
               result,
             },
             pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-            filters: response.data.filters,
+            filtersActive: response.data.filters,
           },
           () => {
             if (forceSelection && response.data && result && result.size > 0) {
@@ -603,21 +545,15 @@ class DocumentList extends Component {
     );
   };
 
-  getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
-
   sortData = (asc, field, startPage) => {
     const { viewId, page } = this.state;
 
     this.setState(
       {
-        sort: this.getSortingQuery(asc, field),
+        sort: getSortingQuery(asc, field),
       },
       () => {
-        this.getData(
-          viewId,
-          startPage ? 1 : page,
-          this.getSortingQuery(asc, field)
-        );
+        this.getData(viewId, startPage ? 1 : page, getSortingQuery(asc, field));
       }
     );
   };
@@ -625,7 +561,7 @@ class DocumentList extends Component {
   handleFilterChange = filters => {
     this.setState(
       {
-        filters: filters,
+        filtersActive: filters,
         page: 1,
       },
       () => {
@@ -744,6 +680,7 @@ class DocumentList extends Component {
       inModal,
       updateParentSelectedIds,
       modal,
+      dispatch,
     } = this.props;
 
     const {
@@ -752,7 +689,7 @@ class DocumentList extends Component {
       viewId,
       clickOutsideLock,
       page,
-      filters,
+      filtersActive,
       isShowIncluded,
       hasShowIncluded,
       refreshSelection,
@@ -764,6 +701,7 @@ class DocumentList extends Component {
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =
       (isIncluded && !!selected) || (inModal && modalType === 'process');
+    // const filtersData = layout.filters
 
     const styleObject = {};
     if (toggleWidth !== 0) {
@@ -777,7 +715,7 @@ class DocumentList extends Component {
       includedView.windowType &&
       includedView.viewId;
 
-    const selectionValid = this.doesSelectionExist({
+    const selectionValid = doesSelectionExist({
       data,
       selected,
       hasIncluded,
@@ -828,7 +766,9 @@ class DocumentList extends Component {
                   !isModal && (
                     <button
                       className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
-                      onClick={() => this.redirectToNewDocument()}
+                      onClick={() =>
+                        redirectToNewDocument(dispatch, windowType)
+                      }
                       title={layout.newRecordCaption}
                     >
                       <i className="meta-icon-add" />
@@ -840,7 +780,7 @@ class DocumentList extends Component {
                   <Filters
                     {...{ windowType, viewId }}
                     filterData={layout.filters}
-                    filtersActive={filters}
+                    filtersActive={filtersActive}
                     updateDocList={this.handleFilterChange}
                   />
                 )}
@@ -972,31 +912,9 @@ class DocumentList extends Component {
   }
 }
 
-const mapStateToProps = (state, props) => ({
-  selections: state.windowHandler.selections,
-  selected: getSelection({
-    state,
-    windowType: props.windowType,
-    viewId: props.defaultViewId,
-  }),
-  childSelected:
-    props.includedView && props.includedView.windowType
-      ? getSelection({
-          state,
-          windowType: props.includedView.windowType,
-          viewId: props.includedView.viewId,
-        })
-      : NO_SELECTION,
-  parentSelected: props.parentWindowType
-    ? getSelection({
-        state,
-        windowType: props.parentWindowType,
-        viewId: props.parentDefaultViewId,
-      })
-    : NO_SELECTION,
-  modal: state.windowHandler.modal,
-});
+DocumentList.propTypes = { ...DLpropTypes };
+DocumentList.contextTypes = { ...DLcontextTypes };
 
-export default connect(mapStateToProps, null, null, { withRef: true })(
+export default connect(DLmapStateToProps, null, null, { withRef: true })(
   DocumentList
 );
