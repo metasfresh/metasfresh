@@ -161,12 +161,16 @@
             flex-direction: column;
         }
 
+        &.longtext-cell {
+            white-space: pre;
+            height: 21px;
+        }
+
         &.extended {
             height: 60px;
 
             &.longtext-cell {
                 word-wrap: break-word;
-                white-space: pre;
                 overflow-y: scroll;
                 position: relative;
             }
