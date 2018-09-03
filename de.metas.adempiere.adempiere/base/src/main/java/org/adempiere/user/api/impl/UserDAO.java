@@ -31,6 +31,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -197,6 +199,34 @@ public class UserDAO implements IUserDAO
 				.create()
 				.first(I_AD_User.COLUMNNAME_Name, String.class);
 		return !Check.isEmpty(fullname) ? fullname : "?";
+	}
+
+	@Override
+	public UserId retrieveUserIdByEMail(@NonNull final String email, @NonNull final ClientId adClientId)
+	{
+		final List<Integer> userIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, email)
+				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
+				.create()
+				.listIds();
+
+		if (userIds.isEmpty())
+		{
+			return null;
+		}
+		else if (userIds.size() == 1)
+		{
+			return UserId.ofRepoId(userIds.get(0));
+		}
+		else
+		{
+			// more than one user found for given mail.
+			// shall not happen but it's better to return null instead of returning to first/random one,
+			// because might be that some BL will link confidential infos to that (wrong) user/bpartner.
+			logger.info("Found more than one user for email={} and clientId={}: {}. Returning null", email, adClientId, userIds);
+			return null;
+		}
 	}
 
 	@Override
