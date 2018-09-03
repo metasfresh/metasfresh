@@ -14,13 +14,37 @@ import { shouldRenderColumn } from '../../utils/tableHelpers';
 class TableItem extends PureComponent {
   constructor(props) {
     super(props);
+
+    const multilineText = props.cols.filter(item => item.multilineText === true)
+      .length;
+
+    let multilineTextLines = 0;
+    props.cols.forEach(col => {
+      if (
+        col.multilineTextLines &&
+        col.multilineTextLines > multilineTextLines
+      ) {
+        multilineTextLines = col.multilineTextLines;
+      }
+    });
+
     this.state = {
       edited: '',
       activeCell: '',
       updatedRow: false,
       listenOnKeys: true,
       editedCells: {},
+      multilineText,
+      multilineTextLines,
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    const { multilineText } = this.state;
+
+    if (multilineText && this.props.isSelected !== prevProps.isSelected) {
+      this.handleCellExtend();
+    }
   }
 
   initPropertyEditor = fieldName => {
@@ -179,6 +203,12 @@ class TableItem extends PureComponent {
     }
   };
 
+  handleCellExtend = () => {
+    this.setState({
+      cellsExtended: !this.state.cellsExtended,
+    });
+  };
+
   renderCells = () => {
     const {
       cols,
@@ -199,7 +229,15 @@ class TableItem extends PureComponent {
       viewId,
       isSelected,
     } = this.props;
-    const { edited, updatedRow, listenOnKeys, editedCells } = this.state;
+    const {
+      edited,
+      updatedRow,
+      listenOnKeys,
+      editedCells,
+      cellsExtended,
+      multilineText,
+      multilineTextLines,
+    } = this.state;
     const cells = merge({}, fieldsByName, editedCells);
 
     // Iterate over layout settings
@@ -220,6 +258,7 @@ class TableItem extends PureComponent {
                   VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
               item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
             const isEdited = edited === property;
+            const extendLongText = multilineText ? multilineTextLines : 0;
 
             let widgetData = item.fields.map(prop => {
               if (cells) {
@@ -259,7 +298,9 @@ class TableItem extends PureComponent {
                   caption,
                   mainTable,
                   viewId,
+                  extendLongText,
                 }}
+                cellExtended={cellsExtended}
                 key={`${rowId}-${property}`}
                 isRowSelected={isSelected}
                 isEdited={isEdited}
@@ -273,6 +314,7 @@ class TableItem extends PureComponent {
                   changeListenOnTrue();
                 }}
                 onCellChange={this.onCellChange}
+                onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 handleKeyDown={e =>
@@ -472,6 +514,7 @@ TableItem.propTypes = {
   collapsed: PropTypes.bool,
   processed: PropTypes.bool,
   notSaved: PropTypes.bool,
+  isSelected: PropTypes.bool,
 };
 
 export default connect(false, false, false, { withRef: true })(TableItem);
