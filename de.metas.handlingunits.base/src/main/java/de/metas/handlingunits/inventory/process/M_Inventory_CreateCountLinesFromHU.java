@@ -44,7 +44,7 @@ public class M_Inventory_CreateCountLinesFromHU extends DraftInventoryBase
 	@Override
 	protected LocatorAndProductHUsStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(inventoryRecord.getM_Warehouse_ID());
+		final WarehouseId warehouseId = inventoryRecord.getM_Warehouse_ID() > 0 ? WarehouseId.ofRepoId(inventoryRecord.getM_Warehouse_ID()) : null;
 
 		final LocatorAndProductHUsStrategy strategy = LocatorAndProductHUsStrategy
 				.builder()
