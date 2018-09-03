@@ -9,6 +9,11 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.74
+## Feautures
+* metasfresh-webui-frontend
+  * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
+    * New feature that expands multiline fields when the row is selected.
 
 # metasfresh 5.73
 ## Features
