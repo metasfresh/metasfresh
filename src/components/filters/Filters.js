@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
+import { filtersToMap } from '../../utils/documentListHelper';
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
@@ -10,7 +11,6 @@ class Filters extends Component {
   state = {
     activeFilter: null,
     activeFiltersCaptions: {},
-    activeFilterItemsCaptions: {},
     notValidFields: null,
     widgetShown: false,
   };
@@ -31,7 +31,6 @@ class Filters extends Component {
       this.setState({
         activeFilter: null,
         activeFiltersCaptions: {},
-        activeFilterItemsCaptions: {},
       });
     }
   };
@@ -39,26 +38,63 @@ class Filters extends Component {
   // PARSING FILTERS ---------------------------------------------------------
   parseActiveFilters = () => {
     const { filtersActive, filterData } = this.props;
-    const parsedFilters = [];
     const activeFiltersCaptions = {};
-    const activeFilterItemsCaptions = {};
 
     if (filtersActive.size) {
       filtersActive.forEach((filter, filterId) => {
-        activeFiltersCaptions[filterId] = filter.parameters.reduce(
-          (acc, parameter) => {
-            acc[parameter.parameterName] = parameter.value;
+        const captionsArray = ['', ''];
 
-            return acc;
-          },
-          {}
-        );
+        console.log('active params ?: ', filter, filterId)
 
-        activeFiltersCaptions[filterId]
+        filter.parameters.forEach(({ value, parameterName}) => {
+          const parentFilter = filterData.get(filterId);
+          const filterParameter = parentFilter.parameters.find(
+            param => param.parameterName === parameterName
+          );
+          let captionName = filterParameter.caption;
+          let itemCaption = filterParameter.caption;
+
+          console.log('HE ?: ', value, parameterName, filterParameter)
+
+          switch (filterParameter.widgetType) {
+            case 'Text':
+              captionName = value;
+              // itemCaption = filterParameter.caption;
+              break;
+            case 'List':
+              captionName = value.caption;
+              // itemCaption = filterParameter.caption;
+              break;
+            case 'Labels':
+            // values array, { key:, caption: }
+              captionName = value.values.reduce((caption, item) => {
+                return `${caption}, ${item.caption}`;
+              }, '');
+              // itemCaption = filterParameter.caption;
+              break;
+            case 'YesNo':
+            case 'Switch':
+            default:
+              // captionName = filterParameter.caption;
+              // itemCaption = filterParameter.caption;
+              break;
+          }
+          captionsArray[0] = captionsArray[0]
+            ? `${captionsArray[0]}, ${captionName}`
+            : captionName;
+          captionsArray[1] = captionsArray[1]
+            ? `${captionsArray[1]}, ${itemCaption}`
+            : itemCaption;
+        });
+
+        activeFiltersCaptions[filterId] = captionsArray;
       });
+
+      console.log('filtersactive: ', filtersActive.toIndexedSeq().toArray(), activeFiltersCaptions);
 
       this.setState({
         activeFilter: filtersActive.toIndexedSeq().toArray(),
+        activeFiltersCaptions,
       });
     }
   };
@@ -66,12 +102,20 @@ class Filters extends Component {
   sortFilters = data => {
     return {
       frequentFilters: this.annotateFilters(
-        data.filter(filter => filter.frequent).toIndexedSeq().toArray()
+        data
+          .filter(filter => filter.frequent)
+          .toIndexedSeq()
+          .toArray()
       ),
       notFrequentFilters: this.annotateFilters(
-        data.filter(filter => !filter.frequent && !filter.static).toIndexedSeq().toArray()
+        data
+          .filter(filter => !filter.frequent && !filter.static)
+          .toIndexedSeq()
+          .toArray()
       ),
-      staticFilters: this.annotateFilters(data.filter(filter => filter.static)).toIndexedSeq().toArray(),
+      staticFilters: this.annotateFilters(data.filter(filter => filter.static))
+        .toIndexedSeq()
+        .toArray(),
     };
   };
 
@@ -88,10 +132,9 @@ class Filters extends Component {
     const { activeFilter } = this.state;
 
     if (activeFilter) {
-      const activeFilter = activeFilter.find(
-        item => item.filterId === filterId
-      );
-      return typeof activeFilter !== 'undefined';
+      const active = activeFilter.find(item => item.filterId === filterId);
+
+      return typeof active !== 'undefined';
     }
 
     return false;
@@ -113,7 +156,7 @@ class Filters extends Component {
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = this.isFilterValid(filter);
 
-    // console.log('applyFilters: ', filter)
+    console.log('APPLY: ', filter);
 
     this.setState(
       {
@@ -141,8 +184,6 @@ class Filters extends Component {
     const { activeFilter } = this.state;
     let newFilter;
 
-    // console.log('setFilterActive: ', filterToAdd)
-
     if (activeFilter) {
       newFilter = activeFilter.filter(
         item => item.filterId !== filterToAdd.filterId
@@ -152,14 +193,18 @@ class Filters extends Component {
       newFilter = [filterToAdd];
     }
 
-    // console.log('new filter: ', { ...newFilter });
+    console.log('new filter: ', { ...newFilter });
+
+    const filtersMap = filtersToMap(newFilter);
 
     this.setState(
       {
-        activeFilter: newFilter,
+        activeFilter: filtersMap,
+        // activeFilter: filtersToMap(newFilter),
       },
       () => {
-        updateDocList(newFilter);
+        // updateDocList(newFilter);
+        updateDocList(filtersMap);
       }
     );
   };

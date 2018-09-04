@@ -564,9 +564,11 @@ class DocumentList extends Component {
   };
 
   handleFilterChange = activeFilters => {
+    console.log('handleFilterChange: ', [...activeFilters]);
+
     this.setState(
       {
-        activeFilters,
+        filtersActive: activeFilters,
         page: 1,
       },
       () => {
@@ -782,8 +784,7 @@ class DocumentList extends Component {
 
                 {layout.filters && (
                   <Filters
-                    {...{ windowType, viewId }}
-                    activeFilters={filtersActive}
+                    {...{ windowType, viewId, filtersActive }}
                     filterData={filtersToMap(layout.filters)}
                     updateDocList={this.handleFilterChange}
                   />
