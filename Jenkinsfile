@@ -56,6 +56,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		)
 		echo "mvnConf=${mvnConf.toString()}"
 
+		final String BUILD_ARTIFACT_URL
+
 		stage('Set versions and build metasfresh-webui-frontend')
 		{
 			checkout scm; // i hope this to do all the magic we need
@@ -102,13 +104,14 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
 				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
-				final BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz";
-
+				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz";
+/*
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 				currentBuild.description="""artifacts (if not yet cleaned up)
 <ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
 </ul>""";
+*/
 			} // withMaven
 
 			// gh #968:
@@ -116,6 +119,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 			env.MF_VERSION="${MF_VERSION}"
 		} // stage
+
+		final String publishedDockerImageName;
 
 		stage('Build and push nginx docker image')
 		{
@@ -127,8 +132,14 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				MF_VERSION, // versionSuffix
 				'docker/nginx' // workDir
 			);
-			dockerBuildAndPush(materialDispoDockerConf)
+			publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
 		}
+
+		currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
+<ul>
+<li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
+<li>a docker image with name <code>${publishedDockerImageName}</code><br>
+</ul>"""
 	} // configFileProvider
  } // node
 
