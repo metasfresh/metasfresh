@@ -10,30 +10,32 @@ package de.metas.dunning.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.util.Services;
+
 /**
  * Dunnable document.
- * 
- * 
+ *
+ *
  * A dunnable document, is a document which can be dunned.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IDunnableDoc
 {
@@ -61,11 +63,17 @@ public interface IDunnableDoc
 
 	String getTableName();
 
+	default int getTableId()
+	{
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(getTableName());
+		return tableId;
+	}
+
 	int getRecordId();
 
 	boolean isInDispute();
-	
-	//FRESH-504: Add DocumentNo
-	
+
+	// FRESH-504: Add DocumentNo
+
 	String getDocumentNo();
 }
