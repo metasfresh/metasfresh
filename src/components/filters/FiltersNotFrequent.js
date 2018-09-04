@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
+import classnames from 'classnames';
 import { connect } from 'react-redux';
 
 import { getItemsByProperty } from '../../actions/WindowActions';
@@ -62,11 +63,12 @@ class FiltersNotFrequent extends Component {
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
-    let captions = activeFilter
-      ? activeFiltersCaptions[activeFilter.filterId]
-      : 'Filter';
+    let captions =
+      activeFilter && activeFiltersCaptions[activeFilter.filterId]
+        ? activeFiltersCaptions[activeFilter.filterId]
+        : 'Filter';
     let panelCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
-    let buttonCaption = activeFilter.caption;
+    let buttonCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
 
     if (captions.splice) {
       buttonCaption = captions[0];
@@ -77,12 +79,15 @@ class FiltersNotFrequent extends Component {
       <div className="filter-wrapper">
         <button
           onClick={() => this.toggleDropdown(true)}
-          className={
-            'btn btn-filter btn-meta-outline-secondary ' +
-            'btn-distance btn-sm' +
-            (isOpenDropdown ? ' btn-select' : '') +
-            (activeFilters.length > 0 ? ' btn-active' : '')
-          }
+          className={classnames(
+            'btn btn-filter btn-meta-outline-secondary',
+            'btn-distance btn-sm',
+            {
+              'btn-select': isOpenDropdown,
+              'btn-active': activeFilters.length > 0,
+            }
+          )}
+          title={buttonCaption}
           tabIndex={modalVisible ? -1 : 0}
         >
           <i className="meta-icon-preview" />

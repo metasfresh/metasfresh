@@ -20,15 +20,15 @@ class FiltersItem extends Component {
   constructor(props) {
     super(props);
 
-    const { active } = props;
+    const { active, data } = props;
     let activeFilter = null;
     if (active) {
-      activeFilter = active.find(item => item.filterId === props.data.filterId);
+      activeFilter = active.find(item => item.filterId === data.filterId);
     }
 
     this.state = {
       filter: { ...props.data },
-      activeFilter: { ...activeFilter },
+      activeFilter: active ? { ...activeFilter } : null,
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -140,10 +140,18 @@ class FiltersItem extends Component {
   };
 
   mergeData = (property, value, valueTo, updateActive) => {
-    let { activeFilter } = this.state;
+    let { activeFilter, filter } = this.state;
 
     if (updateActive) {
       let paramExists = false;
+
+      if (!activeFilter) {
+        activeFilter = {
+          filterId: filter.filterId,
+          parameters: [],
+        };
+      }
+
       const updatedParameters = activeFilter.parameters.map(param => {
         if (param.parameterName === property) {
           paramExists = true;
