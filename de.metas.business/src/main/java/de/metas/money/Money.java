@@ -74,6 +74,15 @@ public class Money
 		return new Money(value, currencyId);
 	}
 
+	public static final Money toZeroOrNull(@Nullable final Money money)
+	{
+		if (money == null)
+		{
+			return null;
+		}
+		return money.toZero();
+	}
+
 	public static final Money zero(@NonNull final CurrencyId currencyId)
 	{
 		return new Money(ZERO, currencyId);
