@@ -53,7 +53,7 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
 	public void setDunningGraceIfAutomatic(final I_C_Invoice invoice)
 	{
-		Services.get(IInvoiceSourceBL.class).setDunningGraceIfAutomatic(invoice);
+		Services.get(IInvoiceSourceBL.class).setDunningGraceIfManaged(invoice);
 		InterfaceWrapperHelper.save(invoice);
 	}
 

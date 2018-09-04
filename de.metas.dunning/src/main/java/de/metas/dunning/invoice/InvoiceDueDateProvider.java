@@ -28,5 +28,9 @@ import de.metas.invoice.InvoiceId;
 
 public interface InvoiceDueDateProvider
 {
+	/**
+	 * Get the due date the given invoice.
+	 * Note: together with the respective dunning's grace days, this date is used to compute the invoice's dunning grace date.
+	 */
 	LocalDate provideDueDateOrNull(InvoiceId invoiceId);
 }

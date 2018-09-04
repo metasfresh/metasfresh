@@ -44,17 +44,17 @@ public interface IInvoiceSourceBL extends ISingletonService
 	}
 
 	/**
-	 * Sets the invoice's dunning grace if it has a dunning with "Automatic dunning grace."
+	 * Set the invoice's dunning grace if it has a dunning with "IsManageDunnableDocGraceDate"
 	 *
 	 * NOTE: this method is not saving the invoice.
 	 *
 	 * @param invoice
 	 * @return true if invoice was updated
 	 */
-	boolean setDunningGraceIfAutomatic(I_C_Invoice invoice);
+	boolean setDunningGraceIfManaged(I_C_Invoice invoice);
 
 	/**
-	 * Gets the propper dunning for the given invoice. <br>
+	 * Get the proper dunning for the given invoice. <br>
 	 * BP dunning has priority, after that BP Group dunning, lastly Org dunning.
 	 *
 	 * @param invoice
@@ -63,7 +63,7 @@ public interface IInvoiceSourceBL extends ISingletonService
 	I_C_Dunning getDunningForInvoiceOrNull(I_C_Invoice invoice);
 
 	/**
-	 * Does a mass writeoff for unprocessed dunning candidates that belong to a writeoff dunning level
+	 * Do a mass writeoff for unprocessed dunning candidates that belong to a writeoff dunning level
 	 */
 	int writeOffDunningDocs(Properties ctx, String writeOffDescription);
 }

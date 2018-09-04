@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoice.InvoiceId;
@@ -38,11 +37,11 @@ import lombok.NonNull;
 public class InvoiceDueDateProviderService
 {
 	private final List<InvoiceDueDateProvider> invoiceDueDateProviders;
-	private final InvoiceDueDateProvider defaultInvoicedueDateProvider;
+	private final PaymentTermBasedDueDateProvider defaultInvoicedueDateProvider;
 
 	public InvoiceDueDateProviderService(
 			@NonNull final Optional<List<InvoiceDueDateProvider>> invoiceDueDateProviders,
-			@NonNull final InvoiceDueDateProvider defaultInvoicedueDateProvider)
+			@NonNull final PaymentTermBasedDueDateProvider defaultInvoicedueDateProvider)
 	{
 		this.invoiceDueDateProviders = invoiceDueDateProviders
 				.orElse(ImmutableList.of())
@@ -53,15 +52,17 @@ public class InvoiceDueDateProviderService
 		this.defaultInvoicedueDateProvider = defaultInvoicedueDateProvider;
 	}
 
-	public LocalDate provideDueDateFor(@NonNull final InvoiceId invoice)
+	public LocalDate provideDueDateFor(@NonNull final InvoiceId invoiceId)
 	{
+		for (final InvoiceDueDateProvider provider : invoiceDueDateProviders)
+		{
+			final LocalDate dueDate = provider.provideDueDateOrNull(invoiceId);
+			if (dueDate != null)
+			{
+				return dueDate;
+			}
+		}
 
-		final Optional<LocalDate> dueDate = invoiceDueDateProviders
-				.stream()
-				.map(p -> p.provideDueDateOrNull(invoice))
-				.filter(Predicates.notNull())
-				.findFirst();
-
-		return dueDate.orElse(defaultInvoicedueDateProvider.provideDueDateOrNull(invoice));
+		return defaultInvoicedueDateProvider.provideDueDateOrNull(invoiceId);
 	}
 }

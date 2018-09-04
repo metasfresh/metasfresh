@@ -30,7 +30,7 @@ public class C_Invoice_UpdateAutomaticDunningGrace extends JavaProcess
 
 		for (final org.compiere.model.I_C_Invoice invoice : iterable)
 		{
-			invoiceSourceBL.setDunningGraceIfAutomatic(invoice);
+			invoiceSourceBL.setDunningGraceIfManaged(invoice);
 			InterfaceWrapperHelper.save(invoice);
 		}
 

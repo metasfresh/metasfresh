@@ -36,7 +36,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 	private final static transient Logger logger = LogManager.getLogger(InvoiceSourceBL.class);
 
 	@Override
-	public boolean setDunningGraceIfAutomatic(@NonNull final I_C_Invoice invoice)
+	public boolean setDunningGraceIfManaged(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Dunning dunning = getDunningForInvoiceOrNull(invoice);
 		if (dunning == null)
@@ -45,7 +45,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 			return false;
 		}
 
-		if (!I_C_Dunning.DUNNINGTIMER_AutomaticGrace.equalsIgnoreCase(dunning.getDunningTimer()))
+		if (!dunning.isManageDunnableDocGraceDate())
 		{
 			// Dunning is not set to update automatically. Skip it
 			return false;
