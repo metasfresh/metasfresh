@@ -20,8 +20,15 @@ class FiltersItem extends Component {
   constructor(props) {
     super(props);
 
+    const { active } = props;
+    let activeFilter = null;
+    if (active) {
+      activeFilter = active.find(item => item.filterId === props.data.filterId);
+    }
+
     this.state = {
       filter: { ...props.data },
+      activeFilter: { ...activeFilter },
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -85,13 +92,7 @@ class FiltersItem extends Component {
   }
 
   init = () => {
-    const { active, data } = this.props;
-    const { filter } = this.state;
-    let activeFilter;
-
-    if (active) {
-      activeFilter = active.find(item => item.filterId === data.filterId);
-    }
+    const { filter, activeFilter } = this.state;
 
     if (filter.parameters) {
       filter.parameters.map(item => {
@@ -121,10 +122,10 @@ class FiltersItem extends Component {
     // OVERWORKED WORKAROUND
     if (Array.isArray(property)) {
       property.map(item => {
-        this.mergeData(item.parameterName, value, valueTo);
+        this.mergeData(item.parameterName, value, valueTo, true);
       });
     } else {
-      this.mergeData(property, value, valueTo);
+      this.mergeData(property, value, valueTo, true);
     }
   };
 
@@ -138,7 +139,39 @@ class FiltersItem extends Component {
     return value;
   };
 
-  mergeData = (property, value, valueTo) => {
+  mergeData = (property, value, valueTo, updateActive) => {
+    let { activeFilter } = this.state;
+
+    if (updateActive) {
+      let paramExists = false;
+      const updatedParameters = activeFilter.parameters.map(param => {
+        if (param.parameterName === property) {
+          paramExists = true;
+
+          return {
+            ...param,
+            value: this.parseDateToReadable(param.widgetType, value),
+            valueTo: this.parseDateToReadable(param.widgetType, valueTo),
+          };
+        } else {
+          return param;
+        }
+      });
+
+      if (!paramExists) {
+        updatedParameters.push({
+          parameterName: property,
+          value,
+          valueTo,
+        });
+      }
+
+      activeFilter = {
+        ...activeFilter,
+        parameters: updatedParameters,
+      };
+    }
+
     this.setState(prevState => ({
       filter: {
         ...prevState.filter,
@@ -154,6 +187,7 @@ class FiltersItem extends Component {
           }
         }),
       },
+      activeFilter,
     }));
   };
 
@@ -171,7 +205,7 @@ class FiltersItem extends Component {
 
   handleApply = () => {
     const { applyFilters, closeFilterMenu } = this.props;
-    const { filter } = this.state;
+    const { filter, activeFilter } = this.state;
 
     if (
       filter &&
@@ -181,7 +215,7 @@ class FiltersItem extends Component {
       return this.handleClear();
     }
 
-    applyFilters(filter, () => {
+    applyFilters(activeFilter, () => {
       closeFilterMenu();
     });
   };
