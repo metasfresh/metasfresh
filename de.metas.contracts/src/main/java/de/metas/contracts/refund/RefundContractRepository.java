@@ -27,12 +27,10 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.RefundConfig.RefundBase;
-import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
-import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
 import de.metas.lang.Percent;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -166,20 +164,16 @@ public class RefundContractRepository
 		final boolean hasZeroQtyConfig = refundConfigs.stream().anyMatch(config -> config.getMinQty().signum() <= 0);
 		if (!hasZeroQtyConfig)
 		{
-			final RefundConfig zeroRefundConfig = RefundConfig.builder()
+			final RefundConfig template = refundConfigs.get(0);
+
+			final RefundConfig zeroConfig = template
+					.toBuilder()
 					.id(null)
 					.minQty(ZERO)
-					.refundBase(RefundBase.PERCENTAGE)
 					.percent(Percent.ZERO)
-					.conditionsId(conditionsId)
-					.productId(productId)
-					.refundInvoiceType(RefundInvoiceType.INVOICE)
-					.refundMode(RefundMode.APPLY_TO_ALL_QTIES)
-					.invoiceSchedule(refundConfigs.get(0).getInvoiceSchedule())
+					.amount(Money.toZeroOrNull(template.getAmount()))
 					.build();
-
-			contractBuilder.refundConfig(zeroRefundConfig);
-
+			contractBuilder.refundConfig(zeroConfig);
 		}
 		contractBuilder.refundConfigs(refundConfigs);
 

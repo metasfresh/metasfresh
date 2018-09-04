@@ -10,12 +10,12 @@ package org.adempiere.ad.window.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,7 +25,7 @@ package org.adempiere.ad.window.process;
 
 import java.util.List;
 
-import org.adempiere.ad.window.api.IADFieldDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -36,9 +36,9 @@ import de.metas.process.JavaProcess;
 
 /**
  * Copy Single Layout settings (one row layout) to grid layout.
- * 
+ *
  * After running this process, same fields that are displayed on single layout will be displayed in grid layout, in the same order.
- * 
+ *
  * @author tsa
  *
  */
@@ -73,7 +73,7 @@ public class AD_Tab_SetGridLayoutFromSingleLayout extends JavaProcess
 
 	private void copySingleLayoutToGridLayout(final I_AD_Tab adTab)
 	{
-		final List<I_AD_Field> adFields = Services.get(IADFieldDAO.class).retrieveFields(adTab);
+		final List<I_AD_Field> adFields = Services.get(IADWindowDAO.class).retrieveFields(adTab);
 		for (final I_AD_Field adField : adFields)
 		{
 			copySingleLayoutToGridLayout(adField);

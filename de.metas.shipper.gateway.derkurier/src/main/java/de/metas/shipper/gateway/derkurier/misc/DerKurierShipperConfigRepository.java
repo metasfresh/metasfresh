@@ -105,7 +105,7 @@ public class DerKurierShipperConfigRepository
 				.username(shipperConfigMailBox.getUserName())
 				.password(shipperConfigMailBox.getPassword())
 				.smtpAuthorization(shipperConfigMailBox.isSmtpAuthorization())
-				.adUserId(-1)
+				.adUserId(null)
 				.build();
 		return mailbox;
 	}

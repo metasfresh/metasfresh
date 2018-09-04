@@ -1,10 +1,12 @@
-package org.adempiere.ad.window.api;
+package de.metas.inbound.mail;
+
+import de.metas.inbound.mail.config.InboundEMailConfig;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.inbound.mail
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,25 +15,16 @@ package org.adempiere.ad.window.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-
-public interface IADFieldDAO extends ISingletonService
+public interface InboundEMailListener
 {
-
-	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
-
+	InboundEMail onInboundEMailReceived(InboundEMailConfig config, InboundEMail email);
 }

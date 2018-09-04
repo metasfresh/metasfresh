@@ -26,6 +26,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
@@ -63,6 +65,8 @@ public interface IUserDAO extends ISingletonService
 
 	/** @return user's full name or <code>?</code> if no found */
 	String retrieveUserFullname(int adUserId);
+
+	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
 
 	/**
 	 * Fetch all system(login) user IDs
