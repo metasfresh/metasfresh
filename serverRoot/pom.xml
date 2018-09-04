@@ -66,6 +66,11 @@
 			<artifactId>de.metas.printing.rest-api-impl</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.order</groupId>
+			<artifactId>de.metas.order.rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
