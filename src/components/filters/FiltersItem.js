@@ -247,6 +247,7 @@ class FiltersItem extends Component {
       outsideClick,
       captionValue,
       openedFilter,
+      panelCaption,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
@@ -279,7 +280,7 @@ class FiltersItem extends Component {
             <div className="filter-controls">
               <div>
                 {counterpart.translate('window.activeFilter.caption')}:
-                <span className="filter-active">{data.caption}</span>
+                <span className="filter-active">{panelCaption}</span>
               </div>
               {isActive && (
                 <span

@@ -564,8 +564,6 @@ class DocumentList extends Component {
   };
 
   handleFilterChange = activeFilters => {
-    console.log('handleFilterChange: ', [...activeFilters]);
-
     this.setState(
       {
         filtersActive: activeFilters,

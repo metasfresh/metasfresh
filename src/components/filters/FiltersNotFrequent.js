@@ -54,6 +54,7 @@ class FiltersNotFrequent extends Component {
       clearFilters,
       active,
       modalVisible,
+      activeFiltersCaptions,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -61,9 +62,15 @@ class FiltersNotFrequent extends Component {
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
-    let caption = activeFilter ? activeFilter.caption : 'Filter';
-    if (activeFilter.captionValue && activeFilter.captionValue.length) {
-      caption = activeFilter.captionValue;
+    let captions = activeFilter
+      ? activeFiltersCaptions[activeFilter.filterId]
+      : 'Filter';
+    let panelCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
+    let buttonCaption = activeFilter.caption;
+
+    if (captions.splice) {
+      buttonCaption = captions[0];
+      panelCaption = captions[1];
     }
 
     return (
@@ -88,7 +95,9 @@ class FiltersNotFrequent extends Component {
                 {activeFilter.captionValue}
               </Fragment>
             ) : (
-              `${counterpart.translate('window.filters.caption2')}: ${caption}`
+              `${counterpart.translate(
+                'window.filters.caption2'
+              )}: ${buttonCaption}`
             )
           ) : (
             'Filter'
@@ -111,6 +120,7 @@ class FiltersNotFrequent extends Component {
             ) : (
               <FiltersItem
                 captionValue={activeFilter.captionValue}
+                panelCaption={panelCaption}
                 windowType={windowType}
                 data={activeFilter.isActive ? activeFilter : openFilter}
                 closeFilterMenu={() => this.toggleDropdown(false)}

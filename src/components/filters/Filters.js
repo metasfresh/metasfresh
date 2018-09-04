@@ -44,9 +44,7 @@ class Filters extends Component {
       filtersActive.forEach((filter, filterId) => {
         const captionsArray = ['', ''];
 
-        console.log('active params ?: ', filter, filterId)
-
-        filter.parameters.forEach(({ value, parameterName}) => {
+        filter.parameters.forEach(({ value, parameterName }) => {
           const parentFilter = filterData.get(filterId);
           const filterParameter = parentFilter.parameters.find(
             param => param.parameterName === parameterName
@@ -54,29 +52,21 @@ class Filters extends Component {
           let captionName = filterParameter.caption;
           let itemCaption = filterParameter.caption;
 
-          console.log('HE ?: ', value, parameterName, filterParameter)
-
           switch (filterParameter.widgetType) {
             case 'Text':
               captionName = value;
-              // itemCaption = filterParameter.caption;
               break;
             case 'List':
               captionName = value.caption;
-              // itemCaption = filterParameter.caption;
               break;
             case 'Labels':
-            // values array, { key:, caption: }
               captionName = value.values.reduce((caption, item) => {
                 return `${caption}, ${item.caption}`;
               }, '');
-              // itemCaption = filterParameter.caption;
               break;
             case 'YesNo':
             case 'Switch':
             default:
-              // captionName = filterParameter.caption;
-              // itemCaption = filterParameter.caption;
               break;
           }
           captionsArray[0] = captionsArray[0]
@@ -89,8 +79,6 @@ class Filters extends Component {
 
         activeFiltersCaptions[filterId] = captionsArray;
       });
-
-      console.log('filtersactive: ', filtersActive.toIndexedSeq().toArray(), activeFiltersCaptions);
 
       this.setState({
         activeFilter: filtersActive.toIndexedSeq().toArray(),
@@ -156,8 +144,6 @@ class Filters extends Component {
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = this.isFilterValid(filter);
 
-    console.log('APPLY: ', filter);
-
     this.setState(
       {
         notValidFields: !valid,
@@ -193,34 +179,17 @@ class Filters extends Component {
       newFilter = [filterToAdd];
     }
 
-    console.log('new filter: ', { ...newFilter });
-
     const filtersMap = filtersToMap(newFilter);
 
     this.setState(
       {
-        activeFilter: filtersMap,
-        // activeFilter: filtersToMap(newFilter),
+        activeFilter: newFilter,
       },
       () => {
-        // updateDocList(newFilter);
         updateDocList(filtersMap);
       }
     );
   };
-
-    // const activeFilters = data.filter(filter => filter.isActive);
-    // const activeFilter = activeFilters.length === 1 && activeFilters[0];
-
-    // let caption = activeFilter ? activeFilter.caption : 'Filter';
-    // if (activeFilter.captionValue && activeFilter.captionValue.length) {
-    //   caption = activeFilter.captionValue;
-    // }
-
-    // // buttonCaption meta, foo, Active,
-    //   // for textFields value
-    //   // for switch 
-    // // panelCaption Name, Search Key, Active
 
   /*
      *  Method to lock backdrop, to do not close on click onClickOutside
@@ -295,7 +264,12 @@ class Filters extends Component {
     const { frequentFilters, notFrequentFilters } = this.sortFilters(
       filterData
     );
-    const { notValidFields, widgetShown, activeFilter } = this.state;
+    const {
+      notValidFields,
+      widgetShown,
+      activeFilter,
+      activeFiltersCaptions,
+    } = this.state;
 
     return (
       <div
@@ -308,12 +282,15 @@ class Filters extends Component {
         <div className="filter-wrapper">
           {!!frequentFilters.length && (
             <FiltersFrequent
-              windowType={windowType}
+              {...{
+                activeFiltersCaptions,
+                windowType,
+                notValidFields,
+                viewId,
+                widgetShown,
+              }}
               data={frequentFilters}
-              notValidFields={notValidFields}
-              viewId={viewId}
               handleShow={this.handleShow}
-              widgetShown={widgetShown}
               applyFilters={this.applyFilters}
               clearFilters={this.clearFilters}
               active={activeFilter}
@@ -323,12 +300,15 @@ class Filters extends Component {
           )}
           {!!notFrequentFilters.length && (
             <FiltersNotFrequent
-              windowType={windowType}
+              {...{
+                activeFiltersCaptions,
+                windowType,
+                notValidFields,
+                viewId,
+                widgetShown,
+              }}
               data={notFrequentFilters}
-              notValidFields={notValidFields}
-              viewId={viewId}
               handleShow={this.handleShow}
-              widgetShown={widgetShown}
               applyFilters={this.applyFilters}
               clearFilters={this.clearFilters}
               active={activeFilter}
