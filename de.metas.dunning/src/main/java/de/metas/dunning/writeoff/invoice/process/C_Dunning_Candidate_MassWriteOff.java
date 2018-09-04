@@ -10,12 +10,12 @@ package de.metas.dunning.writeoff.invoice.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +55,7 @@ public class C_Dunning_Candidate_MassWriteOff extends JavaProcess
 		final Properties ctx = getCtx();
 		final String writeOffDescription = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
 
-		final int writeOffCount = Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(ctx, writeOffDescription, this);
+		final int writeOffCount = Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(ctx, writeOffDescription);
 
 		return "@WriteOff@ #" + writeOffCount;
 	}

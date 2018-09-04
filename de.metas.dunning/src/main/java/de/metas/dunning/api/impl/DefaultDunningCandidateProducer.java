@@ -10,18 +10,17 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -30,7 +29,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -57,11 +55,11 @@ import de.metas.logging.LogManager;
  * <b>IMPORTANT:</b><br>
  * Currently, this implementation is supposed to handle <b>all</b> <code>sourceDoc</code>'s, so its {@link #isHandled(IDunnableDoc)} method always returns <code>true</code>. This means, that
  * currently, no other implementation may be registered in the {@link IDunningCandidateProducerFactory}.
- * 
- * 
- * 
+ *
+ *
+ *
  * @author ts
- * 
+ *
  */
 public class DefaultDunningCandidateProducer implements IDunningCandidateProducer
 {
@@ -87,7 +85,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		Services.get(ITrxManager.class).run(context.getTrxName(), context.getTrxRunnerConfig(), new TrxRunnable()
 		{
 			@Override
-			public void run(String localTrxName)
+			public void run(final String localTrxName)
 			{
 				final IDunningContext localContext = Services.get(IDunningBL.class).createDunningContext(context, localTrxName);
 				candidate[0] = createDunningCandidate0(localContext, sourceDoc);
@@ -97,14 +95,18 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		return candidate[0];
 	}
 
-	private I_C_Dunning_Candidate createDunningCandidate0(IDunningContext context, IDunnableDoc sourceDoc)
+	private I_C_Dunning_Candidate createDunningCandidate0(final IDunningContext context, final IDunnableDoc sourceDoc)
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 		final I_C_DunningLevel dunningLevel = context.getC_DunningLevel();
 
-		final int tableId = MTable.getTable_ID(sourceDoc.getTableName());
+		final int tableId = sourceDoc.getTableId();
 
-		I_C_Dunning_Candidate candidate = dunningDAO.retrieveDunningCandidate(context, tableId, sourceDoc.getRecordId(), dunningLevel);
+		I_C_Dunning_Candidate candidate = dunningDAO.retrieveDunningCandidate(
+				context,
+				tableId,
+				sourceDoc.getRecordId(),
+				dunningLevel);
 		if (candidate == null)
 		{
 			// Create a new one
@@ -206,16 +208,16 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 	/**
 	 * Check if given <code>sourceDoc</code> is eligible for creating {@link I_C_Dunning_Candidate}
-	 * 
+	 *
 	 * @param context
 	 * @param sourceDoc
 	 * @return true if eligible
 	 */
-	protected boolean isEligible(IDunningContext context, IDunnableDoc sourceDoc)
+	protected boolean isEligible(final IDunningContext context, final IDunnableDoc sourceDoc)
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
-		final int tableId = MTable.getTable_ID(sourceDoc.getTableName());
+		final int tableId = sourceDoc.getTableId();
 		final int recordId = sourceDoc.getRecordId();
 		final I_C_DunningLevel dunningLevel = context.getC_DunningLevel();
 
@@ -294,7 +296,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 	/**
 	 * Gets required days between dunnings
-	 * 
+	 *
 	 * @param context
 	 * @return required days between dunnings or ZERO if not enforced
 	 */
@@ -352,7 +354,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		return false;
 	}
 
-	protected Date getLastDunningDateEffective(List<I_C_Dunning_Candidate> candidates)
+	protected Date getLastDunningDateEffective(final List<I_C_Dunning_Candidate> candidates)
 	{
 		Date lastDunningDateEffective = null;
 		for (final I_C_Dunning_Candidate candidate : candidates)
@@ -381,7 +383,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 	/**
 	 * Gets Days after last DunningDateEffective
-	 * 
+	 *
 	 * @param dunningDate
 	 * @param candidates
 	 * @return days after DunningDateEffective or {@link #DAYS_NotAvailable} if not available
