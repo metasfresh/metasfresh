@@ -3,6 +3,11 @@ package org.adempiere.service;
 import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
@@ -34,9 +39,11 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class ClientId implements RepoIdAware
 {
+	@JsonCreator
 	public static ClientId ofRepoId(final int repoId)
 	{
 		if (repoId == SYSTEM.repoId)
@@ -74,6 +81,13 @@ public class ClientId implements RepoIdAware
 	private ClientId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	private ClientId()

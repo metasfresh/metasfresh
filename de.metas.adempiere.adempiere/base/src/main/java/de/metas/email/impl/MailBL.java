@@ -12,7 +12,9 @@ import javax.mail.internet.InternetAddress;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.user.UserId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -69,7 +71,7 @@ public class MailBL implements IMailBL
 				.email(user.getEMail())
 				.username(user.getEMailUser())
 				.password(user.getEMailUserPW())
-				.adUserId(user.getAD_User_ID())
+				.adUserId(UserId.ofRepoId(user.getAD_User_ID()))
 				.build();
 	}
 
@@ -95,8 +97,8 @@ public class MailBL implements IMailBL
 						.password(adMailbox.getPassword())
 						.smtpAuthorization(adMailbox.isSmtpAuthorization())
 						.sendFromServer(client.isServerEMail())
-						.adClientId(client.getAD_Client_ID())
-						.adUserId(-1)
+						.adClientId(ClientId.ofRepoId(client.getAD_Client_ID()))
+						.adUserId(null)
 						.columnUserTo(config.getColumnUserTo())
 						.build();
 
@@ -129,8 +131,8 @@ public class MailBL implements IMailBL
 				.password(client.getRequestUserPW())
 				.smtpAuthorization(client.isSmtpAuthorization())
 				.sendFromServer(client.isServerEMail())
-				.adClientId(client.getAD_Client_ID())
-				.adUserId(-1)
+				.adClientId(ClientId.ofRepoId(client.getAD_Client_ID()))
+				.adUserId(null)
 				.columnUserTo(null)
 				.build();
 		log.debug("Fallback to AD_Client settings: {}", mailbox);

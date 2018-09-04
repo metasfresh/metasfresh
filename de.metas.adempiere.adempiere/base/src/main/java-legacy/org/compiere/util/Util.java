@@ -18,7 +18,6 @@ package org.compiere.util;
 
 import java.awt.Color;
 import java.awt.font.TextAttribute;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -26,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -45,7 +43,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
-import javax.mail.internet.MimeUtility;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -62,6 +59,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.google.common.base.Predicates;
+import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -1298,54 +1296,16 @@ public class Util
 		DB.createT_Selection(AD_PInstance_ID, results, trxName);
 	}
 
-	/***
-	 * encode base64
-	 *
-	 * @param b
-	 * @return
-	 * @throws Exception
-	 */
 	// metas: 03749
-	public static byte[] encodeBase64(final byte[] b)
+	public static String encodeBase64(final byte[] b)
 	{
-		try
-		{
-			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			final OutputStream b64os = MimeUtility.encode(baos, "base64");
-			b64os.write(b);
-			b64os.close();
-			return baos.toByteArray();
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException(e);
-		}
+		return BaseEncoding.base64().encode(b);
 	}
 
-	/***
-	 * decode base64
-	 *
-	 * @param b
-	 * @return
-	 * @throws Exception
-	 */
 	// metas: 03749
-	public static byte[] decodeBase64(byte[] b)
+	public static byte[] decodeBase64(final String str)
 	{
-		try
-		{
-			final ByteArrayInputStream bais = new ByteArrayInputStream(b);
-			final InputStream b64is = MimeUtility.decode(bais, "base64");
-			final byte[] tmp = new byte[b.length];
-			final int n = b64is.read(tmp);
-			final byte[] res = new byte[n];
-			System.arraycopy(tmp, 0, res, 0, n);
-			return res;
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException(e);
-		}
+		return BaseEncoding.base64().decode(str);
 	}
 
 	// 03743

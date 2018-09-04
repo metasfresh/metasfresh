@@ -1227,7 +1227,7 @@ public class ImportHelper implements IImportHelper
 					// metas: rc: start
 					try
 					{
-						decoded = new String(Util.decodeBase64(value.toString().getBytes()));
+						decoded = new String(Util.decodeBase64(value.toString()));
 						paramSQL = decoded.getBytes();
 					}
 					catch (final Exception e)
