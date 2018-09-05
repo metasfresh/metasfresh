@@ -31,12 +31,26 @@ class Filters extends Component {
     // find any filters with default values first and extend
     // activeFilters with them
     filterData.forEach((filter, filterId) => {
-      filter.parameters &&
-        filter.parameters.forEach(({ defaultValue, parameterName }) => {
+      if (filter.parameters) {
+        outerParameters: for (let parameter of filter.parameters) {
+          const { defaultValue, parameterName } = parameter;
+
           if (defaultValue) {
             const isActive = filtersActive.has(filterId);
 
-            if (!isActive) {
+            if (isActive) {
+              //look for existing parameterName in parameters array
+              // skip if found as they override defaultValue ALWAYS
+              const filterActive = filtersActive.get(filterId);
+
+              if (filterActive.parameters) {
+                for (let activeParameter of filterActive.parameters) {
+                  if (activeParameter.parameterName === parameterName) {
+                    continue outerParameters;
+                  }
+                }
+              }
+            } else {
               filtersActive = filtersActive.set(filterId, {
                 filterId,
                 parameters: [],
@@ -54,14 +68,14 @@ class Filters extends Component {
                 parameterName,
                 value: defaultValue,
               });
-              seen.add(parameterName)
+              seen.add(parameterName);
             }
 
-            outer: for (let index = 0; index < length; index += 1) {
+            innerParameters: for (let index = 0; index < length; index += 1) {
               let name = paramsArray[index].parameterName;
 
               if (seen.has(name) || !paramsArray[index].defaultValue) {
-                continue outer;
+                continue innerParameters;
               }
 
               seen.add(name);
@@ -76,7 +90,8 @@ class Filters extends Component {
               parameters: extendedParams,
             });
           }
-        });
+        }
+      }
     });
 
     if (filtersActive.size) {
@@ -94,6 +109,7 @@ class Filters extends Component {
           switch (filterParameter.widgetType) {
             case 'Text':
               captionName = value;
+
               break;
             case 'List':
               captionName = value.caption;
@@ -108,9 +124,11 @@ class Filters extends Component {
             default:
               break;
           }
+
           captionsArray[0] = captionsArray[0]
             ? `${captionsArray[0]}, ${captionName}`
             : captionName;
+
           captionsArray[1] = captionsArray[1]
             ? `${captionsArray[1]}, ${itemCaption}`
             : itemCaption;
