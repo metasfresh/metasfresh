@@ -31,13 +31,10 @@ class Filters extends Component {
     // find any filters with default values first and extend
     // activeFilters with them
     filterData.forEach((filter, filterId) => {
-      // console.log('filter: ', filterData)
       filter.parameters &&
         filter.parameters.forEach(({ defaultValue, parameterName }) => {
           if (defaultValue) {
             const isActive = filtersActive.has(filterId);
-
-            console.log('parseActive: ', defaultValue, parameterName, filterId, isActive)
 
             if (!isActive) {
               filtersActive = filtersActive.set(filterId, {
@@ -52,8 +49,17 @@ class Filters extends Component {
               extendedParams = [],
               seen = new Set();
 
+            if (!paramsArray.length) {
+              extendedParams.push({
+                parameterName,
+                value: defaultValue,
+              });
+              seen.add(parameterName)
+            }
+
             outer: for (let index = 0; index < length; index += 1) {
               let name = paramsArray[index].parameterName;
+
               if (seen.has(name) || !paramsArray[index].defaultValue) {
                 continue outer;
               }
