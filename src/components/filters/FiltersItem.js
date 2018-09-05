@@ -96,7 +96,11 @@ class FiltersItem extends Component {
 
     if (filter.parameters) {
       filter.parameters.map(item => {
-        this.mergeData(item.parameterName, '');
+        if (item.defaultValue != null) {
+          this.mergeData(item.parameterName, item.defaultValue, '', true);
+        } else {
+          this.mergeData(item.parameterName, '');
+        }    
       });
 
       if (
