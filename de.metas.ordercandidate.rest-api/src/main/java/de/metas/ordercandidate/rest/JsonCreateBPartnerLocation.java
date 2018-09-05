@@ -1,13 +1,8 @@
 package de.metas.ordercandidate.rest;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
-import lombok.Builder;
 import lombok.Data;
 
 /*
@@ -34,32 +29,12 @@ import lombok.Data;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
-@Builder
-public final class JsonOLCandCreateRequest
+public class JsonCreateBPartnerLocation
 {
-	private JsonCreateOrganization org;
-	
-	private JsonBPartnerInfo bpartner;
-	private JsonBPartnerInfo billBPartner;
-	private JsonBPartnerInfo dropShipBPartner;
-	private JsonBPartnerInfo handOverBPartner;
+	String code;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate dateRequired;
-	private int flatrateConditionsId;
-
-	private String productCode;
-	private String productDescription;
-	private BigDecimal qty;
-	private String uomCode;
-	private int packingMaterialId;
-
-	private String pricingSystemCode;
-	private BigDecimal price;
-	private BigDecimal discount;
-	// private String currencyCode; // shall come from pricingSystem/priceList
-
-	private String poReference;
-	
-	private String externalId;
+	String address1;
+	String address2;
+	String city;
+	String countryCode;
 }

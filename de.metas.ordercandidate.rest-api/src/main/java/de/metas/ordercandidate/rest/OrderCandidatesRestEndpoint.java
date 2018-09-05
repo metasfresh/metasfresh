@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.rest;
 
+import de.metas.util.web.MetasfreshRestAPIConstants;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -24,7 +26,7 @@ package de.metas.ordercandidate.rest;
 
 public interface OrderCandidatesRestEndpoint
 {
-	String ENDPOINT = "/api/sales/order/candidates";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order/candidates";
 
 	String PATH_BULK = "/bulk";
 

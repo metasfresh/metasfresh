@@ -108,15 +108,15 @@ public class OLCandRepository
 		olCandPO.setM_Product_ID(request.getProductId().getRepoId());
 		olCandPO.setProductDescription(request.getProductDescription());
 		olCandPO.setQty(request.getQty());
-		olCandPO.setC_UOM_ID(request.getUomId());
+		olCandPO.setC_UOM_ID(request.getUomId().getRepoId());
 		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
 
-		if (request.getPricingSystemId() > 0)
+		if (request.getPricingSystemId() != null)
 		{
-			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId());
+			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId().getRepoId());
 		}
 		olCandPO.setPriceEntered(request.getPrice());
-		olCandPO.setDiscount(request.getDiscount());
+		olCandPO.setDiscount(request.getDiscount() != null ? request.getDiscount().getValueAsBigDecimal() : null);
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 		olCandPO.setAD_InputDataSource_ID(Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(request.getAdInputDataSourceInternalName()));

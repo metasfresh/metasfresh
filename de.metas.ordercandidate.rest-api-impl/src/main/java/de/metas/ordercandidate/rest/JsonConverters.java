@@ -2,17 +2,25 @@ package de.metas.ordercandidate.rest;
 
 import java.util.List;
 
+import org.adempiere.uom.UomId;
+import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.lang.Percent;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -43,10 +51,35 @@ import lombok.NonNull;
 @Service
 public class JsonConverters
 {
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IProductBL productsBL = Services.get(IProductBL.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 	public final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
-		final ProductId productId = Services.get(IProductDAO.class).retrieveProductIdByValue(request.getProductCode());
-		final int uomId = request.getUomId() > 0 ? request.getUomId() : Services.get(IProductBL.class).getStockingUOM(productId).getC_UOM_ID();
+		final ProductId productId = productsRepo.retrieveProductIdByValue(request.getProductCode());
+
+		final UomId uomId;
+		if (!Check.isEmpty(request.getUomCode(), true))
+		{
+			uomId = uomsRepo.getUomIdByX12DE355(request.getUomCode());
+		}
+		else
+		{
+			uomId = UomId.ofRepoId(productsBL.getStockingUOMId(productId));
+		}
+
+		PricingSystemId pricingSystemId;
+		if (!Check.isEmpty(request.getPricingSystemCode(), true))
+		{
+			pricingSystemId = priceListsRepo.getPricingSystemIdByValue(request.getPricingSystemCode());
+		}
+		else
+		{
+			pricingSystemId = null;
+		}
 
 		return OLCandCreateRequest.builder()
 				.externalId(request.getExternalId())
@@ -64,35 +97,44 @@ public class JsonConverters
 				.productDescription(request.getProductDescription())
 				.qty(request.getQty())
 				.uomId(uomId)
-				.huPIItemProductId(request.getHuPIItemProductId())
+				.huPIItemProductId(request.getPackingMaterialId())
 				//
-				.pricingSystemId(request.getPricingSystemId())
+				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
-				.discount(request.getDiscount());
+				.discount(Percent.ofNullable(request.getDiscount()));
 	}
 
-	private static final OLCandBPartnerInfo toOLCandBPartnerInfo(final JsonBPartnerInfo json)
+	private final OLCandBPartnerInfo toOLCandBPartnerInfo(final JsonBPartnerInfo json)
 	{
 		if (json == null)
 		{
 			return null;
 		}
+
+		final BPartnerId bpartnerId = bpartnersRepo.getBPartnerIdByValue(json.getBpartner().getCode());
+
 		return OLCandBPartnerInfo.builder()
-				.bpartnerId(json.getBpartnerId())
+				.bpartnerId(bpartnerId.getRepoId())
 				.bpartnerLocationId(json.getBpartnerLocationId())
 				.contactId(json.getContactId())
 				.build();
 	}
 
-	private static final JsonBPartnerInfo toJson(final OLCandBPartnerInfo bpartner)
+	private final JsonBPartnerInfo toJson(final OLCandBPartnerInfo bpartnerInfo)
 	{
-		if (bpartner == null)
+		if (bpartnerInfo == null)
 		{
 			return null;
 		}
 
+		final int bpartnerId = bpartnerInfo.getBpartnerId();
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+
 		return JsonBPartnerInfo.builder()
-				.bpartnerId(bpartner.getBpartnerId())
+				.bpartner(JsonCreateBPartner.builder()
+						.code(bpartner.getValue())
+						.name(bpartner.getName())
+						.build())
 				.bpartnerLocationId(bpartner.getBpartnerLocationId())
 				.contactId(bpartner.getContactId())
 				.build();
