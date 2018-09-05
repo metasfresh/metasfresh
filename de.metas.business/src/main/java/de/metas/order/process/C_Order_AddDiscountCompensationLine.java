@@ -12,6 +12,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -68,7 +69,7 @@ public class C_Order_AddDiscountCompensationLine extends OrderCompensationGroupP
 
 	private GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(final Group group)
 	{
-		final GroupTemplateLine templateLine = GroupTemplateLine.ofProductId(compensationProductId);
+		final GroupTemplateLine templateLine = GroupTemplateLine.ofProductId(ProductId.ofRepoId(compensationProductId));
 		return compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group);
 	}
 }

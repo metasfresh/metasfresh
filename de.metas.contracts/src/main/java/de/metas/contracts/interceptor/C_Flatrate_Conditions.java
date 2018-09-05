@@ -25,6 +25,7 @@ package de.metas.contracts.interceptor;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -78,13 +79,23 @@ public class C_Flatrate_Conditions
 			final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-					throw new AdempiereException(MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
+			throw new AdempiereException(MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P,
 					new Object[] {
 							msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_C_Flatrate_Transition_ID),
 							msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryIntervalUnit) + ", " +
 									msgBL.translate(ctx, I_C_Flatrate_Transition.COLUMNNAME_DeliveryInterval)
 					});
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteMatchings(final I_C_Flatrate_Conditions cond)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Matching.class)
+				.addEqualsFilter(I_C_Flatrate_Matching.COLUMN_C_Flatrate_Conditions_ID, cond.getC_Flatrate_Conditions_ID())
+				.create()
+				.delete();
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })

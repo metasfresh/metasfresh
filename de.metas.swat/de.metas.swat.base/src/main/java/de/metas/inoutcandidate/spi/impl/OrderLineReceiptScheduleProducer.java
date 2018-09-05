@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -40,7 +41,6 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -270,26 +270,24 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// #653 In case the ASI doesn't exist, create it
 		if (rsASI == null)
 		{
-			rsASI = Services.get(IAttributeSetInstanceBL.class).createASI(receiptSchedule.getM_Product());
+			final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+			rsASI = Services.get(IAttributeSetInstanceBL.class).createASI(productId);
 		}
 
-		final I_M_Attribute lotNumberDateAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberDateAttribute(ctx);
-
-		if (lotNumberDateAttr == null)
+		final AttributeId lotNumberDateAttrId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberDateAttributeId();
+		if (lotNumberDateAttrId == null)
 		{
 			// nothing to do
-
 		}
 		else
 		{
 
 			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-			final int lotNumberDateAttrID = lotNumberDateAttr.getM_Attribute_ID();
-			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberDateAttrID);
+			I_M_AttributeInstance lotNumberDateAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberDateAttrId);
 
 			if (lotNumberDateAI == null)
 			{
-				lotNumberDateAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberDateAttrID, trxName);
+				lotNumberDateAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberDateAttrId, trxName);
 			}
 
 			final de.metas.order.model.I_C_Order orderModel = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
@@ -313,24 +311,21 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	{
 		Check.assume(lotNumberDate != null, "Lot number date attribute not null");
 
-		final I_M_Attribute lotNumberAttr = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttribute(ctx);
-
-		if (lotNumberAttr == null)
+		final AttributeId lotNumberAttrId = Services.get(ILotNumberDateAttributeDAO.class).getLotNumberAttributeId();
+		if (lotNumberAttrId == null)
 		{
 			// nothing to do
-
 		}
 		else
 		{
 
 			final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-			final int lotNumberAttrID = lotNumberAttr.getM_Attribute_ID();
-			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberAttrID);
+			I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(rsASI, lotNumberAttrId);
 
 			if (lotNumberAI == null)
 			{
-				lotNumberAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberAttrID, trxName);
+				lotNumberAI = attributeDAO.createNewAttributeInstance(ctx, rsASI, lotNumberAttrId, trxName);
 			}
 
 			// provide the lotNumber in the ASI

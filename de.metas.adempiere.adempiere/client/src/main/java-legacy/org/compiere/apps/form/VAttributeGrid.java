@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps.form;
 
@@ -30,6 +30,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -45,6 +47,7 @@ import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -65,17 +68,17 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPrices;
-
+import de.metas.product.ProductId;
 
 /**
- *	Product Attribute Table.
- *	Select one or two attributes for view/etc.
- *	
- *  @author Jorg Janke
- *  @version $Id: VAttributeGrid.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
+ * Product Attribute Table.
+ * Select one or two attributes for view/etc.
+ * 
+ * @author Jorg Janke
+ * @version $Id: VAttributeGrid.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 public class VAttributeGrid extends CPanel
-	implements FormPanel, ChangeListener, ActionListener
+		implements FormPanel, ChangeListener, ActionListener
 {
 	/**
 	 * 
@@ -83,16 +86,17 @@ public class VAttributeGrid extends CPanel
 	private static final long serialVersionUID = 3207678550566202041L;
 
 	/**
-	 * 	Init
-	 *	@param WindowNo
-	 *	@param frame
+	 * Init
+	 * 
+	 * @param WindowNo
+	 * @param frame
 	 */
 	@Override
-	public void init (int WindowNo, FormFrame frame)
+	public void init(int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
 		m_frame = frame;
-		//	Layout
+		// Layout
 		frame.getContentPane().add(this, BorderLayout.CENTER);
 		this.setLayout(new BorderLayout());
 		this.add(tabbedPane, BorderLayout.CENTER);
@@ -101,132 +105,136 @@ public class VAttributeGrid extends CPanel
 		confirmPanel.setActionListener(this);
 		//
 		tabbedPane.add(selectPanel, Msg.getMsg(Env.getCtx(), "Selection"));
-		selectPanel.add(attributeLabel1, new ALayoutConstraint(0,0));
-		m_attributes = MAttribute.getOfClient(Env.getCtx(), true, true);
-		Vector<KeyNamePair> vector = new Vector<KeyNamePair>();
-		vector.add(new KeyNamePair(0,""));
+		selectPanel.add(attributeLabel1, new ALayoutConstraint(0, 0));
+		m_attributes = retrieveAttributes(Env.getCtx(), true, true);
+		Vector<KeyNamePair> vector = new Vector<>();
+		vector.add(new KeyNamePair(0, ""));
 		for (int i = 0; i < m_attributes.length; i++)
-			vector.add(m_attributes[i].getKeyNamePair());
+			vector.add(toKeyNamePair(m_attributes[i]));
 		attributeCombo1 = new CComboBox(vector);
 		selectPanel.add(attributeCombo1, null);
-		selectPanel.add(attributeLabel2, new ALayoutConstraint(1,0));
+		selectPanel.add(attributeLabel2, new ALayoutConstraint(1, 0));
 		attributeCombo2 = new CComboBox(vector);
 		selectPanel.add(attributeCombo2, null);
 		//
 		fillPicks();
-		selectPanel.add(labelPriceList, new ALayoutConstraint(2,0));
+		selectPanel.add(labelPriceList, new ALayoutConstraint(2, 0));
 		selectPanel.add(pickPriceList);
-		selectPanel.add(labelWarehouse, new ALayoutConstraint(3,0));
+		selectPanel.add(labelWarehouse, new ALayoutConstraint(3, 0));
 		selectPanel.add(pickWarehouse);
 		//
-		selectPanel.setPreferredSize(new Dimension (300,200));
+		selectPanel.setPreferredSize(new Dimension(300, 200));
 		//
-		//	Grid
+		// Grid
 		tabbedPane.add(gridPanel, "AttributeGrid");
 		modePanel.add(modeLabel);
 		modePanel.add(modeCombo);
 		modeCombo.addActionListener(this);
-	}	//	init
+	}	// init
 
-	/**	Window No			*/
-	private int         	m_WindowNo = 0;
-	/**	FormFrame			*/
-	private FormFrame 		m_frame;
-	/** Product Attributes	*/
-	private MAttribute[]	m_attributes = null;
-	/** Setting Grid		*/
-	private boolean			m_setting = false;
-	/**	Logger	*/
+	private static KeyNamePair toKeyNamePair(final I_M_Attribute attribute)
+	{
+		return KeyNamePair.of(attribute.getM_Attribute_ID(), attribute.getName());
+	}
+
+	/** Window No */
+	private int m_WindowNo = 0;
+	/** FormFrame */
+	private FormFrame m_frame;
+	/** Product Attributes */
+	private MAttribute[] m_attributes = null;
+	/** Setting Grid */
+	private boolean m_setting = false;
+	/** Logger */
 	private static Logger log = LogManager.getLogger(VAttributeGrid.class);
-	
-	/**	Modes				*/
-	private static String[]	MODES = new String[]{
-		Msg.getMsg(Env.getCtx(), "ModeView")
-	//	,Msg.getMsg(Env.getCtx(), "ModePO")
-	//	,Msg.getMsg(Env.getCtx(), "ModePrice")
+
+	/** Modes */
+	private static String[] MODES = new String[] {
+			Msg.getMsg(Env.getCtx(), "ModeView")
+			// ,Msg.getMsg(Env.getCtx(), "ModePO")
+			// ,Msg.getMsg(Env.getCtx(), "ModePrice")
 	};
-	private static final int	MODE_VIEW = 0;
-	private static final int	MODE_PO = 0;
-	private static final int	MODE_PRICE = 0;
-	
-	/** Price List Version	*/
-	private int				m_M_PriceList_Version_ID = 0;
-	private DecimalFormat	m_price = DisplayType.getNumberFormat(DisplayType.CostPrice);
-	/** Warehouse			*/
-	private int				m_M_Warehouse_ID = 0;
-	private DecimalFormat	m_qty = DisplayType.getNumberFormat(DisplayType.Quantity);
-	
-	/** UI			**/
+	private static final int MODE_VIEW = 0;
+	private static final int MODE_PO = 0;
+	private static final int MODE_PRICE = 0;
+
+	/** Price List Version */
+	private int m_M_PriceList_Version_ID = 0;
+	private DecimalFormat m_price = DisplayType.getNumberFormat(DisplayType.CostPrice);
+	/** Warehouse */
+	private int m_M_Warehouse_ID = 0;
+	private DecimalFormat m_qty = DisplayType.getNumberFormat(DisplayType.Quantity);
+
+	/** UI **/
 	private CTabbedPane tabbedPane = new CTabbedPane();
-	private CPanel		selectPanel = new CPanel(new ALayout());
-	private CLabel		attributeLabel1 = new CLabel(Msg.getElement(Env.getCtx(), "M_Attribute_ID") + " 1");
-	private CComboBox	attributeCombo1 = null;
-	private CLabel		attributeLabel2 = new CLabel(Msg.getElement(Env.getCtx(), "M_Attribute_ID") + " 2");
-	private CComboBox	attributeCombo2 = null;
-	private CLabel 		labelPriceList = new CLabel(Msg.getElement(Env.getCtx(), "M_PriceList_ID"));
-	private VComboBox 	pickPriceList = new VComboBox();
-	private CLabel 		labelWarehouse = new CLabel(Msg.getElement(Env.getCtx(), "M_Warehouse_ID"));
-	private VComboBox 	pickWarehouse = new VComboBox();
+	private CPanel selectPanel = new CPanel(new ALayout());
+	private CLabel attributeLabel1 = new CLabel(Msg.getElement(Env.getCtx(), "M_Attribute_ID") + " 1");
+	private CComboBox attributeCombo1 = null;
+	private CLabel attributeLabel2 = new CLabel(Msg.getElement(Env.getCtx(), "M_Attribute_ID") + " 2");
+	private CComboBox attributeCombo2 = null;
+	private CLabel labelPriceList = new CLabel(Msg.getElement(Env.getCtx(), "M_PriceList_ID"));
+	private VComboBox pickPriceList = new VComboBox();
+	private CLabel labelWarehouse = new CLabel(Msg.getElement(Env.getCtx(), "M_Warehouse_ID"));
+	private VComboBox pickWarehouse = new VComboBox();
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	//
-	private CPanel		gridPanel = new CPanel(new BorderLayout());
-	private CPanel		modePanel = new CPanel();
-	private CLabel		modeLabel = new CLabel(Msg.getMsg(Env.getCtx(), "Mode"));
-	private CComboBox	modeCombo = new CComboBox(MODES);
-	
+	private CPanel gridPanel = new CPanel(new BorderLayout());
+	private CPanel modePanel = new CPanel();
+	private CLabel modeLabel = new CLabel(Msg.getMsg(Env.getCtx(), "Mode"));
+	private CComboBox modeCombo = new CComboBox(MODES);
+
 	/**
-	 * 	Dispose
+	 * Dispose
 	 */
 	@Override
-	public void dispose ()
+	public void dispose()
 	{
 		if (m_frame != null)
 			m_frame.dispose();
 		m_frame = null;
-	}	//	dispose
+	}	// dispose
 
 	/**
-	 *	Fill Picks with values
+	 * Fill Picks with values
 	 */
-	private void fillPicks ()
+	private void fillPicks()
 	{
-		//	Price List
+		// Price List
 		String sql = "SELECT M_PriceList_Version.M_PriceList_Version_ID,"
-			+ " M_PriceList_Version.Name || ' (' || c.Iso_Code || ')' AS ValueName "
-			+ "FROM M_PriceList_Version, M_PriceList pl, C_Currency c "
-			+ "WHERE M_PriceList_Version.M_PriceList_ID=pl.M_PriceList_ID"
-			+ " AND pl.C_Currency_ID=c.C_Currency_ID"
-			+ " AND M_PriceList_Version.IsActive='Y' AND pl.IsActive='Y'";
-		//	Add Access & Order
-		sql = Env.getUserRolePermissions().addAccessSQL (sql, "M_PriceList_Version", true, false)	// fully qualidfied - RO 
-			+ " ORDER BY M_PriceList_Version.Name";
+				+ " M_PriceList_Version.Name || ' (' || c.Iso_Code || ')' AS ValueName "
+				+ "FROM M_PriceList_Version, M_PriceList pl, C_Currency c "
+				+ "WHERE M_PriceList_Version.M_PriceList_ID=pl.M_PriceList_ID"
+				+ " AND pl.C_Currency_ID=c.C_Currency_ID"
+				+ " AND M_PriceList_Version.IsActive='Y' AND pl.IsActive='Y'";
+		// Add Access & Order
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_PriceList_Version", true, false)	// fully qualidfied - RO
+				+ " ORDER BY M_PriceList_Version.Name";
 		try
 		{
-			pickPriceList.addItem(new KeyNamePair (0, ""));
+			pickPriceList.addItem(new KeyNamePair(0, ""));
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				KeyNamePair kn = new KeyNamePair (rs.getInt(1), rs.getString(2));
+				KeyNamePair kn = new KeyNamePair(rs.getInt(1), rs.getString(2));
 				pickPriceList.addItem(kn);
 			}
 			rs.close();
 			pstmt.close();
 
-			//	Warehouse
+			// Warehouse
 			sql = "SELECT M_Warehouse_ID, Value || ' - ' || Name AS ValueName "
-				+ "FROM M_Warehouse "
-				+ "WHERE IsActive='Y'";
-			sql = Env.getUserRolePermissions().addAccessSQL (sql,
+					+ "FROM M_Warehouse "
+					+ "WHERE IsActive='Y'";
+			sql = Env.getUserRolePermissions().addAccessSQL(sql,
 					"M_Warehouse", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO)
-				+ " ORDER BY Value";
-			pickWarehouse.addItem(new KeyNamePair (0, ""));
+					+ " ORDER BY Value";
+			pickWarehouse.addItem(new KeyNamePair(0, ""));
 			pstmt = DB.prepareStatement(sql, null);
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				KeyNamePair kn = new KeyNamePair
-					(rs.getInt("M_Warehouse_ID"), rs.getString("ValueName"));
+				KeyNamePair kn = new KeyNamePair(rs.getInt("M_Warehouse_ID"), rs.getString("ValueName"));
 				pickWarehouse.addItem(kn);
 			}
 			rs.close();
@@ -236,30 +244,31 @@ public class VAttributeGrid extends CPanel
 		{
 			log.error(sql, e);
 		}
-	}	//	fillPicks
+	}	// fillPicks
 
-	
 	/**
-	 * 	Change Listener
-	 *	@param e event
+	 * Change Listener
+	 * 
+	 * @param e event
 	 */
 	@Override
-	public void stateChanged (ChangeEvent e)
+	public void stateChanged(ChangeEvent e)
 	{
 		if (e.getSource() != tabbedPane)
 			return;
 		if (tabbedPane.getSelectedIndex() == 1)
 			createGrid();
-	}	//	stateChanged
+	}	// stateChanged
 
 	/**
-	 * 	Action Performed
-	 *	@param e event
+	 * Action Performed
+	 * 
+	 * @param e event
 	 */
 	@Override
-	public void actionPerformed (ActionEvent e)
+	public void actionPerformed(ActionEvent e)
 	{
-	//	log.debug(e.toString());
+		// log.debug(e.toString());
 		if (e.getSource() == modeCombo)
 			createGrid();
 		else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
@@ -271,20 +280,19 @@ public class VAttributeGrid extends CPanel
 		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
 			m_frame.dispose();
-	}	//	actionPerformed
+	}	// actionPerformed
 
-	
 	private void gridOK()
 	{
 		int mode = modeCombo.getSelectedIndex();
-		//	Create PO
+		// Create PO
 		if (mode == MODE_PO)
 		{
 			createPO();
 			modeCombo.setSelectedIndex(MODE_VIEW);
 			return;
 		}
-		//	Update Prices
+		// Update Prices
 		else if (mode == MODE_PRICE)
 		{
 			updatePrices();
@@ -294,23 +302,25 @@ public class VAttributeGrid extends CPanel
 		else if (mode == MODE_VIEW)
 			;
 		m_frame.dispose();
-	}	//	gridOK
-	
+	}	// gridOK
+
 	private void createPO()
 	{
-		
+
 	}
+
 	private void updatePrices()
 	{
-		
+
 	}
+
 	/**
-	 * 	Create Grid
+	 * Create Grid
 	 */
 	private void createGrid()
 	{
 		if (attributeCombo1 == null || m_setting)
-			return;		//	init
+			return;		// init
 		int indexAttr1 = attributeCombo1.getSelectedIndex();
 		int indexAttr2 = attributeCombo2.getSelectedIndex();
 		if (indexAttr1 == indexAttr2)
@@ -328,32 +338,32 @@ public class VAttributeGrid extends CPanel
 		KeyNamePair wh = (KeyNamePair)pickWarehouse.getSelectedItem();
 		if (wh != null)
 			m_M_Warehouse_ID = wh.getKey();
-		
-		//	x dimension
+
+		// x dimension
 		int cols = 2;
 		I_M_AttributeValue[] xValues = null;
 		if (indexAttr1 > 0)
-			xValues = m_attributes[indexAttr1-1].getMAttributeValues(null);
+			xValues = m_attributes[indexAttr1 - 1].getMAttributeValues(null);
 		if (xValues != null)
 		{
 			cols = xValues.length;
-			log.info("X - " + m_attributes[indexAttr1-1].getName() + " #" + xValues.length);
+			log.info("X - " + m_attributes[indexAttr1 - 1].getName() + " #" + xValues.length);
 		}
-		
-		//	y dimension
+
+		// y dimension
 		int rows = 2;
 		I_M_AttributeValue[] yValues = null;
 		if (indexAttr2 > 0)
-			yValues = m_attributes[indexAttr2-1].getMAttributeValues(null);
+			yValues = m_attributes[indexAttr2 - 1].getMAttributeValues(null);
 		if (yValues != null)
 		{
 			rows = yValues.length;
-			log.info("Y - " + m_attributes[indexAttr2-1].getName() + " #" + yValues.length);
+			log.info("Y - " + m_attributes[indexAttr2 - 1].getName() + " #" + yValues.length);
 		}
-		
+
 		//
 		gridPanel.removeAll();
-		CPanel grid = new CPanel(new GridLayout(rows, cols, 5,5));
+		CPanel grid = new CPanel(new GridLayout(rows, cols, 5, 5));
 		gridPanel.add(modePanel, BorderLayout.NORTH);
 		gridPanel.add(new CScrollPane(grid), BorderLayout.CENTER);
 		//
@@ -368,18 +378,18 @@ public class VAttributeGrid extends CPanel
 				I_M_AttributeValue yValue = null;
 				if (yValues != null)
 					yValue = yValues[row];
-			//	log.debug("Row=" + row + " - Col=" + col);
+				// log.debug("Row=" + row + " - Col=" + col);
 				//
 				if (row == 0 && col == 0)
 				{
-					CPanel descr = new CPanel(new GridLayout(2,1,0,0));
+					CPanel descr = new CPanel(new GridLayout(2, 1, 0, 0));
 					if (xValues != null)
-						descr.add(new JLabel(m_attributes[indexAttr1-1].getName(),JLabel.TRAILING));
+						descr.add(new JLabel(m_attributes[indexAttr1 - 1].getName(), JLabel.TRAILING));
 					if (yValues != null)
-						descr.add(new JLabel(m_attributes[indexAttr2-1].getName()));
+						descr.add(new JLabel(m_attributes[indexAttr2 - 1].getName()));
 					grid.add(descr);
 				}
-				else if (row == 0)	//	column labels
+				else if (row == 0)	// column labels
 				{
 					if (xValue != null)
 					{
@@ -388,7 +398,7 @@ public class VAttributeGrid extends CPanel
 					else
 						grid.add(new JLabel());
 				}
-				else if (col == 0)	//	row labels
+				else if (col == 0)	// row labels
 				{
 					if (yValue != null)
 						grid.add(new JLabel(yValue.getName()));
@@ -397,7 +407,7 @@ public class VAttributeGrid extends CPanel
 				}
 				else
 				{
-					grid.add(getGridElement (xValue, yValue));
+					grid.add(getGridElement(xValue, yValue));
 				}
 			}
 		}
@@ -405,50 +415,51 @@ public class VAttributeGrid extends CPanel
 		tabbedPane.setSelectedIndex(1);
 		m_setting = false;
 		m_frame.pack();
-	}	//	createGrid
-	
+	}	// createGrid
+
 	/**
-	 * 	Get Grid Element
-	 *	@param xValue X value
-	 *	@param yValue Y value
-	 *	@return Panel with Info
+	 * Get Grid Element
+	 * 
+	 * @param xValue X value
+	 * @param yValue Y value
+	 * @return Panel with Info
 	 */
-	private CPanel getGridElement (I_M_AttributeValue xValue, I_M_AttributeValue yValue)
+	private CPanel getGridElement(I_M_AttributeValue xValue, I_M_AttributeValue yValue)
 	{
 		CPanel element = new CPanel();
 		element.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		element.setLayout(new BoxLayout(element, BoxLayout.Y_AXIS));
-		
+
 		String sql = "SELECT * FROM M_Product WHERE IsActive='Y'";
-		//	Product Attributes
+		// Product Attributes
 		if (xValue != null)
 			sql += " AND M_AttributeSetInstance_ID IN "
-				+ "(SELECT M_AttributeSetInstance_ID "
-				+ "FROM M_AttributeInstance "
-				+ "WHERE M_Attribute_ID=" + xValue.getM_Attribute_ID()
-				+ " AND M_AttributeValue_ID=" + xValue.getM_AttributeValue_ID() + ")"; 
+					+ "(SELECT M_AttributeSetInstance_ID "
+					+ "FROM M_AttributeInstance "
+					+ "WHERE M_Attribute_ID=" + xValue.getM_Attribute_ID()
+					+ " AND M_AttributeValue_ID=" + xValue.getM_AttributeValue_ID() + ")";
 		if (yValue != null)
 			sql += " AND M_AttributeSetInstance_ID IN "
-				+ "(SELECT M_AttributeSetInstance_ID "
-				+ "FROM M_AttributeInstance "
-				+ "WHERE M_Attribute_ID=" + yValue.getM_Attribute_ID()
-				+ " AND M_AttributeValue_ID=" + yValue.getM_AttributeValue_ID() + ")"; 
-		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_Product", 
-			IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+					+ "(SELECT M_AttributeSetInstance_ID "
+					+ "FROM M_AttributeInstance "
+					+ "WHERE M_Attribute_ID=" + yValue.getM_Attribute_ID()
+					+ " AND M_AttributeValue_ID=" + yValue.getM_AttributeValue_ID() + ")";
+		sql = Env.getUserRolePermissions().addAccessSQL(sql, "M_Product",
+				IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
 		PreparedStatement pstmt = null;
 		int noProducts = 0;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, null);
-			ResultSet rs = pstmt.executeQuery ();
-			while (rs.next ())
+			pstmt = DB.prepareStatement(sql, null);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
 			{
 				MProduct product = new MProduct(Env.getCtx(), rs, null);
-				addProduct (element, product);
+				addProduct(element, product);
 				noProducts++;
 			}
-			rs.close ();
-			pstmt.close ();
+			rs.close();
+			pstmt.close();
 			pstmt = null;
 		}
 		catch (Exception e)
@@ -458,52 +469,53 @@ public class VAttributeGrid extends CPanel
 		try
 		{
 			if (pstmt != null)
-				pstmt.close ();
+				pstmt.close();
 			pstmt = null;
 		}
 		catch (Exception e)
 		{
 			pstmt = null;
 		}
-		
+
 		int mode = modeCombo.getSelectedIndex();
-		//	No Products
+		// No Products
 		if (noProducts == 0 && mode == MODE_VIEW)
 		{
-		//	CButton button = ConfirmPanel.createNewButton(true);
-		//	button.addActionListener(this);
-		//	element.add(button);
+			// CButton button = ConfirmPanel.createNewButton(true);
+			// button.addActionListener(this);
+			// element.add(button);
 		}
-		else	//	Additional Elements
+		else	// Additional Elements
 		{
 			if (mode == MODE_PRICE)
 			{
-				//	Price Field
+				// Price Field
 			}
 			else if (mode == MODE_PO)
 			{
-				//	Qty Field
+				// Qty Field
 			}
-		}		
+		}
 		return element;
-	}	//	getGridElement
-	
+	}	// getGridElement
+
 	/**
-	 * 	Add Product
-	 *	@param element panel
-	 *	@param product product
+	 * Add Product
+	 * 
+	 * @param element panel
+	 * @param product product
 	 */
 	private void addProduct(CPanel element, MProduct product)
 	{
-		Insets ii = new Insets(2,4,2,4);
-		int M_Product_ID = product.getM_Product_ID();
+		Insets ii = new Insets(2, 4, 2, 4);
+		ProductId M_Product_ID = ProductId.ofRepoId(product.getM_Product_ID());
 		CPanel pe = new CPanel();
 		pe.setBorder(BorderFactory.createLineBorder(Color.BLUE, 1));
 		pe.setLayout(new GridBagLayout());
-		
-		//	Product Value - Price
-		pe.add(new JLabel(product.getValue()), new GridBagConstraints(0,0, 1,1, 0,0, 
-				GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, ii, 0,0));
+
+		// Product Value - Price
+		pe.add(new JLabel(product.getValue()), new GridBagConstraints(0, 0, 1, 1, 0, 0,
+				GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, ii, 0, 0));
 		String formatted = "";
 		if (m_M_PriceList_Version_ID > 0)
 		{
@@ -519,24 +531,77 @@ public class VAttributeGrid extends CPanel
 				formatted = "-";
 			}
 		}
-		pe.add(new JLabel(formatted, JLabel.RIGHT), new GridBagConstraints(1,0, 1,1, .5,0, 
-			GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, ii, 0,0));
-		
-		//	Product Name - Qty
-		pe.add(new JLabel(product.getName()), new GridBagConstraints(0,1, 1,1, 0,0, 
-			GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, ii, 0,0));
+		pe.add(new JLabel(formatted, JLabel.RIGHT), new GridBagConstraints(1, 0, 1, 1, .5, 0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, ii, 0, 0));
+
+		// Product Name - Qty
+		pe.add(new JLabel(product.getName()), new GridBagConstraints(0, 1, 1, 1, 0, 0,
+				GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, ii, 0, 0));
 		formatted = "";
 		if (m_M_Warehouse_ID != 0)
 		{
-			BigDecimal qty = MStorage.getQtyAvailable(m_M_Warehouse_ID, M_Product_ID, 0, null);
+			BigDecimal qty = MStorage.getQtyAvailable(m_M_Warehouse_ID, M_Product_ID.getRepoId(), 0, null);
 			if (qty == null)
 				formatted = "-";
 			else
 				formatted = m_qty.format(qty);
 		}
-		pe.add(new JLabel(formatted, JLabel.RIGHT), new GridBagConstraints(1,1, 1,1, .5,0, 
-			GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, ii, 0,0));
+		pe.add(new JLabel(formatted, JLabel.RIGHT), new GridBagConstraints(1, 1, 1, 1, .5, 0,
+				GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, ii, 0, 0));
 		//
 		element.add(pe);
-	}	//	addProduct
-}	//	VAttributeTable
+	}	// addProduct
+
+	/**
+	 * Get Attributes Of Client
+	 *
+	 * @param ctx Properties
+	 * @param onlyProductAttributes only Product Attributes
+	 * @param onlyListAttributes only List Attributes
+	 * @return array of attributes
+	 */
+	private static MAttribute[] retrieveAttributes(Properties ctx, boolean onlyProductAttributes, boolean onlyListAttributes)
+	{
+		ArrayList<MAttribute> list = new ArrayList<>();
+		int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		String sql = "SELECT * FROM M_Attribute "
+				+ "WHERE AD_Client_ID=? AND IsActive='Y'";
+		if (onlyProductAttributes)
+			sql += " AND IsInstanceAttribute='N'";
+		if (onlyListAttributes)
+			sql += " AND AttributeValueType='L'";
+		sql += " ORDER BY Name";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, null);
+			pstmt.setInt(1, AD_Client_ID);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+				list.add(new MAttribute(ctx, rs, null));
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			log.error(sql, e);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close();
+			pstmt = null;
+		}
+		catch (Exception e)
+		{
+			pstmt = null;
+		}
+
+		MAttribute[] retValue = new MAttribute[list.size()];
+		list.toArray(retValue);
+		log.debug("AD_Client_ID=" + AD_Client_ID + " - #" + retValue.length);
+		return retValue;
+	}	// getOfClient
+
+}	// VAttributeTable

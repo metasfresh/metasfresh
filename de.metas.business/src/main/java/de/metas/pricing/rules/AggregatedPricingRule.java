@@ -44,7 +44,7 @@ public final class AggregatedPricingRule implements IPricingRule
 {
 	private static final transient Logger logger = LogManager.getLogger(AggregatedPricingRule.class);
 
-	private final List<IPricingRule> rules = new ArrayList<IPricingRule>();
+	private final List<IPricingRule> rules = new ArrayList<>();
 
 	/**
 	 * Add a {@link IPricingRule} child.
@@ -136,7 +136,7 @@ public final class AggregatedPricingRule implements IPricingRule
 			// it found out that it cannot be applied.
 			// As a side effect on some pricing results you will get a list of applied rules like: ProductScalePrice, PriceListVersionVB, PriceListVersion, Discount,
 			// which means that ProductScalePrice and PriceListVersionVB were not actually applied because they found out that while doing the "calculate()".
-			result.getRulesApplied().add(rule);
+			result.addPricingRuleApplied(rule);
 			logger.debug("Applied rule {}, result: {}", rule, result);
 		}
 	}

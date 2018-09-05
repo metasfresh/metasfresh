@@ -272,6 +272,29 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
 
 	/**
+	 * Set Ingredients.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIngredients (java.lang.String Ingredients);
+
+	/**
+	 * Get Ingredients.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIngredients();
+
+    /** Column definition for Ingredients */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Ingredients = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Ingredients", null);
+    /** Column name Ingredients */
+    public static final String COLUMNNAME_Ingredients = "Ingredients";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *

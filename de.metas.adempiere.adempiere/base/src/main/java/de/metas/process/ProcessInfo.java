@@ -288,7 +288,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return new instance or null
 	 */
-	public final IProcess newProcessClassInstanceOrNull()
+	public final JavaProcess newProcessClassInstanceOrNull()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
@@ -305,10 +305,10 @@ public final class ProcessInfo implements Serializable
 		try
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
-			final IProcess processClassInstance = (IProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
 			if (processClassInstance instanceof JavaProcess)
 			{
-				((JavaProcess)processClassInstance).init(this);
+				processClassInstance.init(this);
 			}
 
 			return processClassInstance;
@@ -655,8 +655,7 @@ public final class ProcessInfo implements Serializable
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
 		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
-
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -818,7 +817,10 @@ public final class ProcessInfo implements Serializable
 			final int adClientId = getAD_Client_ID();
 			final I_AD_Client processClient = clientDAO.retriveClient(ctx, adClientId);
 			Env.setContext(processCtx, Env.CTXNAME_AD_Client_ID, processClient.getAD_Client_ID());
-			Env.setContext(processCtx, Env.CTXNAME_AD_Language, processClient.getAD_Language());
+
+			final String contextLanguage = Env.getAD_Language(ctx);
+			final String languagetoUse = contextLanguage != null ? contextLanguage : processClient.getAD_Language();
+			Env.setContext(processCtx, Env.CTXNAME_AD_Language, languagetoUse);
 
 			//
 			// AD_Org, M_Warehouse

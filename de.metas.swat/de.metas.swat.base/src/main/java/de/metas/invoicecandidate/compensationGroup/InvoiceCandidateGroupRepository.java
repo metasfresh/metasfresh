@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.UomId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -17,6 +18,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
@@ -29,6 +31,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -103,7 +106,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.groupId(groupId)
 				.precision(precision)
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.isSOTrx(order.isSOTrx());
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
@@ -141,8 +144,8 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		return GroupCompensationLine.builder()
 				.repoId(extractLineId(invoiceCandidate))
 				.seqNo(invoiceCandidate.getLine())
-				.productId(invoiceCandidate.getM_Product_ID())
-				.uomId(invoiceCandidate.getC_UOM_ID())
+				.productId(ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()))
+				.uomId(UomId.ofRepoId(invoiceCandidate.getC_UOM_ID()))
 				.type(GroupCompensationType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationType()))
 				.amtType(GroupCompensationAmtType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationAmtType()))
 				.percentage(Percent.of(invoiceCandidate.getGroupCompensationPercentage()))

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -15,7 +16,6 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import com.google.common.base.MoreObjects;
@@ -25,6 +25,7 @@ import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 public class AttributePricingBL implements IAttributePricingBL
 {
@@ -65,11 +66,11 @@ public class AttributePricingBL implements IAttributePricingBL
 			return null;
 		}
 
-		final I_M_Product product = productPrice.getM_Product();
-		int overrideM_AttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+		final AttributeSetId overrideAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
 
 		final I_M_AttributeSetInstance resultASI = Services.get(IAttributeDAO.class).prepareCopy(productPriceASI)
-				.overrideM_AttributeSet_ID(overrideM_AttributeSet_ID)
+				.overrideAttributeSetId(overrideAttributeSetId)
 				// IMPORTANT: copy only those which are not empty (task #1272)
 				// NOTE: At the moment we use only the M_AttributeValue_ID so that's why we check only that field
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)

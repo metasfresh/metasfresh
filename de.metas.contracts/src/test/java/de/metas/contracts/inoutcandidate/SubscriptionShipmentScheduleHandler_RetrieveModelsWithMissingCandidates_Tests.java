@@ -10,13 +10,16 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 
@@ -30,12 +33,12 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,19 +49,38 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 {
 	private I_C_SubscriptionProgress firstRecord;
 	private I_C_SubscriptionProgress secondRecord;
+	private I_M_Product secondProduct;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		final I_M_Product firstProduct = newInstance(I_M_Product.class);
+		firstProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
+		save(firstProduct);
+
+		final I_C_Flatrate_Term firstTerm = newInstance(I_C_Flatrate_Term.class);
+		firstTerm.setM_Product(firstProduct);
+		save(firstTerm);
+
 		firstRecord = newInstance(I_C_SubscriptionProgress.class);
+		firstRecord.setC_Flatrate_Term(firstTerm);
 		firstRecord.setEventDate(SystemTime.asTimestamp());
 		firstRecord.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		firstRecord.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		save(firstRecord);
 
+		secondProduct = newInstance(I_M_Product.class);
+		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Item);
+		save(secondProduct);
+
+		final I_C_Flatrate_Term secondTerm = newInstance(I_C_Flatrate_Term.class);
+		secondTerm.setM_Product(secondProduct);
+		save(secondTerm);
+
 		secondRecord = newInstance(I_C_SubscriptionProgress.class);
+		secondRecord.setC_Flatrate_Term(secondTerm);
 		secondRecord.setEventDate(TimeUtil.addDays(SystemTime.asTimestamp(), 4));
 		secondRecord.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		secondRecord.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
@@ -89,10 +111,27 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		assertBothRecordsAreReturned();
 	}
 
+	/**
+	 * Verifies that subscription progress records with service products do not miss any shipment schedule.
+	 */
+	@Test
+	public void retrieveModelsWithMissingCandidates_Service_Product()
+	{
+		// taken from another test; i don't really care, i just need a setup that returns both records
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(SubscriptionShipmentScheduleHandler.SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 4, 0);
+		assertBothRecordsAreReturned(); // guard
+
+		secondProduct.setProductType(X_M_Product.PRODUCTTYPE_Service);
+		save(secondProduct);
+
+		assertOnlyFirstRecordIsReturned();
+	}
+
 	private void assertOnlyFirstRecordIsReturned()
 	{
-		final List<Object> result = new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
-		
+		final List<? extends Object> result = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
+
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0)).isInstanceOf(I_C_SubscriptionProgress.class);
 
@@ -102,7 +141,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 	private void assertBothRecordsAreReturned()
 	{
-		final List<Object> secondResult = new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
+		final List<? extends Object> secondResult = IteratorUtils.asList(new SubscriptionShipmentScheduleHandler().retrieveModelsWithMissingCandidates(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 		assertThat(secondResult).hasSize(2);
 
 		assertThat(secondResult).allSatisfy(r -> {

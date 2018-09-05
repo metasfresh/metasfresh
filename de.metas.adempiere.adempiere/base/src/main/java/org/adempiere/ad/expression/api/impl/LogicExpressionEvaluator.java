@@ -243,68 +243,79 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 		{
 			throw new ExpressionEvaluationException("Cannot evaluate null expression");
 		}
-		else if (expr.isConstant())
+
+		try
 		{
-			final boolean result = expr.constantValue();
-			logger.trace("constant {} => {}", expr, result);
-			return result;
+			if (expr.isConstant())
+			{
+				final boolean result = expr.constantValue();
+				logger.trace("constant {} => {}", expr, result);
+				return result;
+			}
+			else if (expr instanceof LogicTuple)
+			{
+				final LogicTuple tuple = (LogicTuple)expr;
+
+				final String firstEval = ctx.getValue(tuple.getOperand1());
+				if (firstEval == VALUE_NotFound)
+				{
+					logger.trace("tuple {} => null because first operand could not be evaluated", expr);
+					return null;
+				}
+				final String secondEval = ctx.getValue(tuple.getOperand2());
+				if (secondEval == VALUE_NotFound)
+				{
+					logger.trace("tuple {} => null because second operand could not be evaluated", expr);
+					return null;
+				}
+
+				final String operator = tuple.getOperator();
+				final boolean result = evaluateLogicTuple(firstEval, operator, secondEval);
+				logger.trace("tuple {} => \"{}\" {} \"{}\" => {}", expr, firstEval, operator, secondEval, result);
+
+				return result;
+			}
+			else if (expr instanceof LogicExpression)
+			{
+				final LogicExpression logicExpr = (LogicExpression)expr;
+
+				// Left value
+				final ILogicExpression leftExpression = logicExpr.getLeft();
+				if (leftExpression == null)
+				{
+					throw new ExpressionEvaluationException("Invalid compiled expression: " + expr + " (left expression is missing)");
+				}
+				final BooleanValueSupplier leftValueSupplier = () -> evaluateOrNull(ctx, leftExpression);
+
+				// Right value
+				final ILogicExpression rightExpression = logicExpr.getRight();
+				if (rightExpression == null)
+				{
+					final Boolean leftValue = leftValueSupplier.getValueOrNull();
+					logger.trace("expression {} => {} (only left expression was considered because right is missing)", expr, leftValue);
+					return leftValue;
+				}
+				final BooleanValueSupplier rightValueSupplier = () -> evaluateOrNull(ctx, rightExpression);
+
+				// Boolean evaluator
+				final String logicOperator = logicExpr.getOperator();
+				final BooleanEvaluator logicExprEvaluator = getBooleanEvaluatorByOperator(logicOperator);
+
+				final Boolean result = logicExprEvaluator.evaluateOrNull(leftValueSupplier, rightValueSupplier);
+				logger.trace("expression {} => {}", logicExpr, result);
+				return result;
+			}
+			else
+			{
+				throw new ExpressionEvaluationException("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
+			}
 		}
-		else if (expr instanceof LogicTuple)
+		catch (final Exception ex)
 		{
-			final LogicTuple tuple = (LogicTuple)expr;
-
-			final String firstEval = ctx.getValue(tuple.getOperand1());
-			if (firstEval == VALUE_NotFound)
-			{
-				logger.trace("tuple {} => null because first operand could not be evaluated", expr);
-				return null;
-			}
-			final String secondEval = ctx.getValue(tuple.getOperand2());
-			if (secondEval == VALUE_NotFound)
-			{
-				logger.trace("tuple {} => null because second operand could not be evaluated", expr);
-				return null;
-			}
-
-			final String operator = tuple.getOperator();
-			final boolean result = evaluateLogicTuple(firstEval, operator, secondEval);
-			logger.trace("tuple {} => \"{}\" {} \"{}\" => {}", expr, firstEval, operator, secondEval, result);
-
-			return result;
-		}
-		else if (expr instanceof LogicExpression)
-		{
-			final LogicExpression logicExpr = (LogicExpression)expr;
-
-			// Left value
-			final ILogicExpression leftExpression = logicExpr.getLeft();
-			if (leftExpression == null)
-			{
-				throw new ExpressionEvaluationException("Invalid compiled expression: " + expr + " (left expression is missing)");
-			}
-			final BooleanValueSupplier leftValueSupplier = () -> evaluateOrNull(ctx, leftExpression);
-
-			// Right value
-			final ILogicExpression rightExpression = logicExpr.getRight();
-			if (rightExpression == null)
-			{
-				final Boolean leftValue = leftValueSupplier.getValueOrNull();
-				logger.trace("expression {} => {} (only left expression was considered because right is missing)", expr, leftValue);
-				return leftValue;
-			}
-			final BooleanValueSupplier rightValueSupplier = () -> evaluateOrNull(ctx, rightExpression);
-
-			// Boolean evaluator
-			final String logicOperator = logicExpr.getOperator();
-			final BooleanEvaluator logicExprEvaluator = getBooleanEvaluatorByOperator(logicOperator);
-
-			final Boolean result = logicExprEvaluator.evaluateOrNull(leftValueSupplier, rightValueSupplier);
-			logger.trace("expression {} => {}", logicExpr, result);
-			return result;
-		}
-		else
-		{
-			throw new ExpressionEvaluationException("Unsupported ILogicExpression type: " + expr + " (class: " + expr.getClass() + ")");
+			throw ExpressionEvaluationException.wrapIfNeeded(ex)
+					.setParameter("expression", expr)
+					.setParameter("context", ctx)
+					.appendParametersToMessage();
 		}
 	}
 
@@ -460,7 +471,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 				final boolean result = evaluateLogicTuple(operand1Resolved, tuple.getOperator(), operand2Resolved);
 				return ConstantLogicExpression.of(result);
 			}
-			else if(Objects.equals(operand1, operand1Resolved)
+			else if (Objects.equals(operand1, operand1Resolved)
 					&& Objects.equals(operand2, operand2Resolved))
 			{
 				return tuple;

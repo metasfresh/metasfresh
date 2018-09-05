@@ -36,7 +36,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -166,7 +166,7 @@ import lombok.NonNull;
 				productNames.add(productName);
 			}
 		}
-		final String productNamesStr = ListUtils.toString(productNames, ", ");
+		final String productNamesStr = CollectionUtils.toString(productNames, ", ");
 		//
 		summary.append("\n");
 		summary.append("@M_Product_ID@: ").append(Check.isEmpty(productNamesStr, true) ? "*" : productNamesStr);
@@ -182,7 +182,7 @@ import lombok.NonNull;
 				warehouseNames.add(warehouseName);
 			}
 		}
-		final String warehouseNamesStr = ListUtils.toString(warehouseNames, ", ");
+		final String warehouseNamesStr = CollectionUtils.toString(warehouseNames, ", ");
 		//
 		summary.append("\n");
 		summary.append("@M_Warehouse_ID@: ").append(Check.isEmpty(warehouseNamesStr, true) ? "*" : warehouseNamesStr);
@@ -198,7 +198,7 @@ import lombok.NonNull;
 				bpartnerNames.add(bpartnerName);
 			}
 		}
-		final String bpartnerNamesStr = ListUtils.toString(bpartnerNames, ", ");
+		final String bpartnerNamesStr = CollectionUtils.toString(bpartnerNames, ", ");
 		//
 		summary.append("\n");
 		summary.append("@C_BPartner_ID@: ").append(Check.isEmpty(bpartnerNamesStr, true) ? "*" : bpartnerNamesStr);

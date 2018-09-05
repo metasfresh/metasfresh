@@ -3,9 +3,9 @@ package de.metas.adempiere.callout;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.MOrgInfo;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
@@ -41,7 +41,10 @@ public class OrderLine extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		if (orderLine.getM_Warehouse_ID() == MOrgInfo.get(calloutField.getCtx(), order.getAD_Org_ID(), ITrx.TRXNAME_None).getDropShip_Warehouse_ID())
+		final int orgDropShipWarehouseId = Services.get(IOrgDAO.class)
+				.retrieveOrgInfo(calloutField.getCtx(), order.getAD_Org_ID(), ITrx.TRXNAME_None)
+				.getDropShip_Warehouse_ID();
+		if (orderLine.getM_Warehouse_ID() == orgDropShipWarehouseId)
 		{
 			// order line's warehouse is the dropship warehouse; nothing to do
 			return NO_ERROR;
@@ -58,11 +61,17 @@ public class OrderLine extends CalloutEngine
 	public String chkManualPrice(final ICalloutField calloutField)
 	{
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
-		if (!orderLine.isManualPrice())
+
+		if (orderLine.isManualPrice())
 		{
-			Services.get(IOrderLineBL.class).updatePrices(orderLine);
+			return NO_ERROR;
 		}
 
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			return NO_ERROR; // if we don't even have a product yet, then there is nothing to update
+		}
+		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 		return NO_ERROR;
 	}
 

@@ -10,6 +10,10 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -26,14 +30,18 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
-import org.compiere.model.MProduct;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.lang.SOTrx;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -65,47 +73,46 @@ import lombok.Builder;
  */
 public final class ASIEditingInfo
 {
-	public static final ASIEditingInfo of( //
-			final int productId, final int attributeSetInstanceId //
-			, final String callerTableName, final int callerColumnId //
-			, final boolean isSOTrx //
-	)
+	public static final ASIEditingInfo of(
+			final ProductId productId,
+			final AttributeSetInstanceId attributeSetInstanceId,
+			final String callerTableName, final int callerColumnId,
+			final SOTrx soTrx)
 	{
 		return builder()
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.callerTableName(callerTableName)
 				.callerColumnId(callerColumnId)
-				.isSOTrx(isSOTrx)
+				.soTrx(soTrx)
 				.build();
 	}
 
-	public static final ASIEditingInfo readonlyASI(final int attributeSetInstanceId)
+	public static final ASIEditingInfo readonlyASI(final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		return builder()
 				.type(WindowType.StrictASIAttributes)
-				.isSOTrx(true)
+				.soTrx(SOTrx.SALES)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 	}
-	
-	public static final ASIEditingInfo processParameterASI(final int attributeSetInstanceId)
+
+	public static final ASIEditingInfo processParameterASI(final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		return builder()
 				.type(WindowType.ProcessParameter)
-				.isSOTrx(true)
+				.soTrx(SOTrx.SALES)
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 	}
 
-
 	// Parameters
 	private final WindowType _type;
-	private final int _productId;
-	private final int _attributeSetInstanceId;
+	private final ProductId _productId;
+	private final AttributeSetInstanceId _attributeSetInstanceId;
 	private final String _callerTableName;
 	private final int _calledColumnId;
-	private final boolean _isSOTrx;
+	private final SOTrx _soTrx;
 
 	// Deducted values
 	private final I_M_AttributeSet _attributeSet;
@@ -117,12 +124,13 @@ public final class ASIEditingInfo
 	private final boolean isGuaranteeDateEnabled;
 
 	@Builder
-	private ASIEditingInfo( //
+	private ASIEditingInfo(
 			final WindowType type,
-			final int productId, final int attributeSetInstanceId //
-			, final String callerTableName, final int callerColumnId //
-			, final boolean isSOTrx //
-	)
+			final ProductId productId,
+			final AttributeSetInstanceId attributeSetInstanceId,
+			final String callerTableName,
+			final int callerColumnId,
+			@NonNull final SOTrx soTrx)
 	{
 		// Parameters, must be set first
 		_type = type != null ? type : extractType(callerTableName, callerColumnId);
@@ -130,17 +138,17 @@ public final class ASIEditingInfo
 		_attributeSetInstanceId = attributeSetInstanceId;
 		_callerTableName = callerTableName;
 		_calledColumnId = callerColumnId;
-		_isSOTrx = isSOTrx;
+		_soTrx = soTrx;
 
 		// Deducted values, we assume params are set
 		_attributeSet = retrieveM_AttributeSet();
-		if (attributeSetInstanceId <= 0)
+		if (attributeSetInstanceId == null || attributeSetInstanceId.isNone())
 		{
 			_attributeSetInstance = null;
 		}
 		else
 		{
-			final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.create(Env.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, ITrx.TRXNAME_None);
+			final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
 			_attributeSetInstance = LegacyAdapters.convertToPO(asi);
 		}
 
@@ -191,22 +199,22 @@ public final class ASIEditingInfo
 		return _type;
 	}
 
-	private int getM_Product_ID()
+	private ProductId getProductId()
 	{
 		return _productId;
 	}
 
 	private I_M_Product getM_Product()
 	{
-		final int M_Product_ID = getM_Product_ID();
-		if (M_Product_ID <= 0)
+		final ProductId productId = getProductId();
+		if (productId == null)
 		{
 			return null;
 		}
-		return MProduct.get(Env.getCtx(), M_Product_ID);
+		return Services.get(IProductDAO.class).getById(productId);
 	}
 
-	public int getM_AttributeSetInstance_ID()
+	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
 		return _attributeSetInstanceId;
 	}
@@ -228,7 +236,7 @@ public final class ASIEditingInfo
 
 	public boolean isSOTrx()
 	{
-		return _isSOTrx;
+		return _soTrx.toBoolean();
 	}
 
 	@Nullable
@@ -237,10 +245,10 @@ public final class ASIEditingInfo
 		return _attributeSet;
 	}
 
-	public int getM_AttributeSet_ID()
+	public AttributeSetId getAttributeSetId()
 	{
 		final I_M_AttributeSet attributeSet = getM_AttributeSet();
-		return attributeSet == null ? -1 : attributeSet.getM_AttributeSet_ID();
+		return attributeSet != null ? AttributeSetId.ofRepoId(attributeSet.getM_AttributeSet_ID()) : AttributeSetId.NONE;
 	}
 
 	public String getM_AttributeSet_Name()
@@ -287,7 +295,7 @@ public final class ASIEditingInfo
 				}
 
 				final MAttributeSetInstance asi = getM_AttributeSetInstance();
-				attributeSet = asi == null ? null : asi.getM_AttributeSet();
+				attributeSet = getAttributeSet(asi);
 				break;
 			}
 			case Pricing:
@@ -298,7 +306,7 @@ public final class ASIEditingInfo
 			case StrictASIAttributes:
 			{
 				final MAttributeSetInstance asi = getM_AttributeSetInstance();
-				attributeSet = asi == null ? null : asi.getM_AttributeSet();
+				attributeSet = getAttributeSet(asi);
 				break;
 			}
 			default:
@@ -309,6 +317,19 @@ public final class ASIEditingInfo
 		}
 
 		return attributeSet;
+	}
+
+	private I_M_AttributeSet getAttributeSet(final I_M_AttributeSetInstance asi)
+	{
+		if (asi == null)
+		{
+			return null;
+		}
+
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(asi.getM_AttributeSet_ID());
+		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
 	private I_M_AttributeSet getProductAttributeSet()
@@ -366,7 +387,7 @@ public final class ASIEditingInfo
 			}
 			else if (type == WindowType.Regular)
 			{
-				final boolean asiExists = getM_AttributeSetInstance_ID() > 0;
+				final boolean asiExists = AttributeSetInstanceId.isRegular(getAttributeSetInstanceId());
 				if (!asiExists)
 				{
 					return true; // exclude
@@ -388,12 +409,13 @@ public final class ASIEditingInfo
 		return _availableAttributes;
 	}
 
-	public Set<Integer> getAvailableAttributeIds()
+	public Set<AttributeId> getAvailableAttributeIds()
 	{
 		return getAvailableAttributes()
 				.stream()
-				.map(attribute -> attribute.getM_Attribute_ID())
-				.collect(GuavaCollectors.toImmutableSet());
+				.map(I_M_Attribute::getM_Attribute_ID)
+				.map(AttributeId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private ImmutableList<MAttribute> retrieveAvailableAttributes()
@@ -408,7 +430,7 @@ public final class ASIEditingInfo
 		{
 			case Regular:
 			{
-				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID())
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getAttributeSetInstanceId())
 						.stream();
 				break;
 			}
@@ -455,7 +477,7 @@ public final class ASIEditingInfo
 			}
 			case StrictASIAttributes:
 			{
-				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID())
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getAttributeSetInstanceId())
 						.stream();
 				break;
 			}
@@ -478,7 +500,9 @@ public final class ASIEditingInfo
 	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
-	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(@Nullable final MAttributeSet attributeSet, final int attributeSetInstanceId)
+	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(
+			@Nullable final MAttributeSet attributeSet,
+			final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final LinkedHashMap<Integer, MAttribute> attributes = new LinkedHashMap<>(); // preserve the order
 
@@ -494,10 +518,10 @@ public final class ASIEditingInfo
 		//
 		// If we have an ASI then fetch the attributes from ASI which are missing in attributeSet
 		// and add them to our "attributes" index.
-		if (attributeSetInstanceId > 0)
+		if(AttributeSetInstanceId.isRegular(attributeSetInstanceId))
 		{
 			Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_AttributeInstance.class, Env.getCtx(), ITrx.TRXNAME_None)
+					.createQueryBuilderOutOfTrx(I_M_AttributeInstance.class)
 					.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
 					//
 					.andCollect(I_M_AttributeInstance.COLUMN_M_Attribute_ID)

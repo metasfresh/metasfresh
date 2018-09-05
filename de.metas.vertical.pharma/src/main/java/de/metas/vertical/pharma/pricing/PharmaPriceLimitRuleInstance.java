@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma.pricing;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -25,6 +23,8 @@ import de.metas.pricing.limit.PriceLimitRestrictions;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.vertical.pharma.PharmaCustomerPermission;
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
 import de.metas.vertical.pharma.model.I_M_Product;
@@ -78,7 +78,7 @@ class PharmaPriceLimitRuleInstance
 		{
 			return PriceLimitRuleResult.notApplicable("BPartner not eligible");
 		}
-		if (!isEligibleProduct(pricingContext.getM_Product_ID()))
+		if (!isEligibleProduct(pricingContext.getProductId()))
 		{
 			return PriceLimitRuleResult.notApplicable("Product not eligible");
 		}
@@ -133,14 +133,14 @@ class PharmaPriceLimitRuleInstance
 		return PharmaCustomerPermissions.of(bpartner).hasOnlyPermission(PharmaCustomerPermission.PHARMACIE);
 	}
 
-	private static boolean isEligibleProduct(final int productId)
+	private static boolean isEligibleProduct(final ProductId productId)
 	{
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return false;
 		}
 
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
 		if (product == null || !product.isActive())
 		{
 			return false;
@@ -179,7 +179,7 @@ class PharmaPriceLimitRuleInstance
 		final IEditablePricingContext basePricingContext = context.getPricingContext().copy();
 		basePricingContext.setPricingSystemId(priceLimitRestrictions.getBasePricingSystemId());
 		basePricingContext.setPriceListId(null); // will be recomputed
-		basePricingContext.setM_PriceList_Version_ID(-1); // will be recomputed
+		basePricingContext.setPriceListVersionId(null); // will be recomputed
 		basePricingContext.setDisallowDiscount(true);
 
 		final IPricingResult basePriceResult = pricingBL.calculatePrice(basePricingContext);

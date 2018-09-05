@@ -16,7 +16,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -56,6 +55,13 @@ import lombok.NonNull;
 @Repository
 public class ContactPersonRepository
 {
+	private final BPartnerLocationRepository bpLocationRepo;
+
+	public ContactPersonRepository(@NonNull final BPartnerLocationRepository bpLocationRepo)
+	{
+		this.bpLocationRepo = bpLocationRepo;
+	}
+
 	public ContactPerson save(@NonNull final ContactPerson contactPerson)
 	{
 		final I_MKTG_ContactPerson contactPersonRecord = createOrUpdateRecordDontSave(contactPerson);
@@ -66,7 +72,7 @@ public class ContactPersonRepository
 				.build();
 	}
 
-	private static I_MKTG_ContactPerson createOrUpdateRecordDontSave(
+	private I_MKTG_ContactPerson createOrUpdateRecordDontSave(
 			@NonNull final ContactPerson contactPerson)
 	{
 		final I_MKTG_ContactPerson contactPersonRecord = loadRecordIfPossible(contactPerson)
@@ -77,7 +83,6 @@ public class ContactPersonRepository
 
 		if (contactPerson.getBpLocationId() != null)
 		{
-			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
 			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
 			contactPersonRecord.setC_BPartner_Location_ID(bpLocation.getId().getRepoId());
 			contactPersonRecord.setC_Location_ID(bpLocation.getLocationId().getRepoId());
@@ -103,7 +108,7 @@ public class ContactPersonRepository
 		return contactPersonRecord;
 	}
 
-	private static Optional<I_MKTG_ContactPerson> loadRecordIfPossible(
+	private Optional<I_MKTG_ContactPerson> loadRecordIfPossible(
 			@NonNull final ContactPerson contactPerson)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -138,10 +143,13 @@ public class ContactPersonRepository
 
 		if (contactPerson.getBpLocationId() != null)
 		{
-			final BPartnerLocationRepository bpLocationRepo = Adempiere.getBean(BPartnerLocationRepository.class);
 			final BPartnerLocation bpLocation = bpLocationRepo.getByBPartnerLocationId(contactPerson.getBpLocationId());
 			final LocationId locationId = bpLocation.getLocationId();
 			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, locationId.getRepoId());
+		}
+		else
+		{
+			baseQueryFilter.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_C_Location_ID, null);
 		}
 
 		final String emailAddress = contactPerson.getEmailAddessStringOrNull();

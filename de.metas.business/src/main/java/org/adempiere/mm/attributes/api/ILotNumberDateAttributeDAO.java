@@ -1,7 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
-import java.util.Properties;
-
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 
@@ -30,20 +29,11 @@ import org.compiere.model.I_M_Attribute;
 public interface ILotNumberDateAttributeDAO extends ISingletonService
 {
 
-	/**
-	 * Get the M_Attribute instance for LotNumberDate
-	 * 
-	 * @param ctx
-	 * @return
-	 */
-	I_M_Attribute getLotNumberDateAttribute(Properties ctx);
+	/** @return LotNumberDate attribute ID */
+	AttributeId getLotNumberDateAttributeId();
 
-	/**
-	 * Get the M_Attribute instance for Lot-Nummer
-	 * 
-	 * @param ctx
-	 * @return
-	 */
-	I_M_Attribute getLotNumberAttribute(Properties ctx);
+	/** @return Lot-Nummer attribute ID */
+	AttributeId getLotNumberAttributeId();
 
+	I_M_Attribute getLotNumberAttribute();
 }

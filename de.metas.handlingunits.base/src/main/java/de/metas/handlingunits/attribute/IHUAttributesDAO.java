@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,10 +24,10 @@ package de.metas.handlingunits.attribute;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.impl.HUAttributesBySeqNoComparator;
 import de.metas.handlingunits.model.I_M_HU;
@@ -56,7 +56,7 @@ public interface IHUAttributesDAO extends ISingletonService
 	/**
 	 * Called by API when a new HU is created.
 	 * Depends on implemenentation, here the internal caches could be initialized.
-	 * 
+	 *
 	 * @param hu
 	 */
 	void initHUAttributes(I_M_HU hu);
@@ -70,21 +70,18 @@ public interface IHUAttributesDAO extends ISingletonService
 	List<I_M_HU_Attribute> retrieveAttributesOrdered(I_M_HU hu);
 
 	/**
-	 *
-	 * @param hu
-	 * @param attribute
 	 * @return the attribute or <code>null</code>
 	 */
-	I_M_HU_Attribute retrieveAttribute(I_M_HU hu, I_M_Attribute attribute);
+	I_M_HU_Attribute retrieveAttribute(I_M_HU hu, AttributeId attributeId);
 
 	/**
 	 * If the DAO implementation supports "autoflush" this method will disable it
 	 * and it will return an {@link IAutoCloseable} which when closed it will enable back the "autoflush".
-	 * 
+	 *
 	 * If DAO implementation does not support "autoflush", this method will return a {@link NullAutoCloseable}.
-	 * 
+	 *
 	 * If the autoflush is already disabled, this method will return {@link NullAutoCloseable}.
-	 * 
+	 *
 	 * @return {@link IAutoCloseable} to enable back the autoflush or {@link NullAutoCloseable}
 	 */
 	IAutoCloseable temporaryDisableAutoflush();

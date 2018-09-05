@@ -40,7 +40,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -50,11 +49,13 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.CompositePriceLimitRule;
@@ -68,6 +69,10 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.IPricingDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class PricingBL implements IPricingBL
@@ -91,7 +96,7 @@ public class PricingBL implements IPricingBL
 			final boolean isSOTrx)
 	{
 		final IEditablePricingContext pricingCtx = createPricingContext();
-		pricingCtx.setM_Product_ID(M_Product_ID);
+		pricingCtx.setProductId(ProductId.ofRepoIdOrNull(M_Product_ID));
 		pricingCtx.setBPartnerId(BPartnerId.ofRepoIdOrNull(C_BPartner_ID));
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
 
@@ -103,7 +108,7 @@ public class PricingBL implements IPricingBL
 		{
 			pricingCtx.setQty(BigDecimal.ONE);
 		}
-		pricingCtx.setSOTrx(isSOTrx);
+		pricingCtx.setSOTrx(SOTrx.ofBoolean(isSOTrx));
 		pricingCtx.setC_UOM_ID(C_UOM_ID);
 
 		return pricingCtx;
@@ -210,7 +215,7 @@ public class PricingBL implements IPricingBL
 		// if set and there is one in the pricingCtx, also check if it is consistent.
 		if (pricingCtx.getPricingSystemId() != null
 				&& priceDate != null
-				&& pricingCtx.getM_Product_ID() > 0
+				&& pricingCtx.getProductId() != null
 				&& pricingCtx.getC_Country_ID() > 0)
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
@@ -226,22 +231,23 @@ public class PricingBL implements IPricingBL
 				pricingCtx.setPriceListId(PriceListId.ofRepoId(computedPLV.getM_PriceList_ID()));
 
 				// while we are at it, do a little sanity check and also set the PLV-ID
-				Check.assume(pricingCtx.getM_PriceList_Version_ID() <= 0 || pricingCtx.getM_PriceList_Version_ID() == computedPLV.getM_PriceList_Version_ID(),
-						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and IsSOTrx={}, we computed a different M_PriceList_Version={}",
+				Check.assume(pricingCtx.getPriceListVersionId() == null
+						|| pricingCtx.getPriceListVersionId().getRepoId() == computedPLV.getM_PriceList_Version_ID(),
+						"Given PricingContext {} has M_PriceList_Version={}, but from M_PricingSystem={}, Product={}, Country={} and SOTrx={}, we computed a different M_PriceList_Version={}",
 						pricingCtx,  // 0
 						pricingCtx.getM_PriceList_Version(),  // 1
 						pricingCtx.getPricingSystemId(),  // 2
-						pricingCtx.getM_Product_ID(),  // 3
+						pricingCtx.getProductId(),  // 3
 						pricingCtx.getC_Country_ID(),  // 4
-						pricingCtx.isSOTrx(),  // 5
+						pricingCtx.getSoTrx(),  // 5
 						computedPLV);
-				pricingCtx.setM_PriceList_Version_ID(computedPLV.getM_PriceList_Version_ID());
+				pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(computedPLV.getM_PriceList_Version_ID()));
 			}
 		}
 
 		//
 		// Set M_PriceList_Version_ID from PL and date, if necessary.
-		if (pricingCtx.getM_PriceList_Version_ID() <= 0
+		if (pricingCtx.getPriceListVersionId() == null
 				&& pricingCtx.getPriceListId() != null
 				&& priceDate != null)
 		{
@@ -252,9 +258,9 @@ public class PricingBL implements IPricingBL
 				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, priceDate, processedPLVFiltering);
 				if (plv != null)
 				{
-					final int priceListVersionId = plv.getM_PriceList_Version_ID();
+					final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 					logger.debug("Setting to context: M_PriceList_Version_ID={} from M_PriceList={} and PriceDate={}", priceListVersionId, priceList, priceDate);
-					pricingCtx.setM_PriceList_Version_ID(priceListVersionId);
+					pricingCtx.setPriceListVersionId(priceListVersionId);
 				}
 			}
 			catch (PriceListVersionNotFoundException e)
@@ -268,7 +274,7 @@ public class PricingBL implements IPricingBL
 		//
 		// set PL from PLV
 		if (pricingCtx.getPriceListId() == null
-				&& pricingCtx.getM_PriceList_Version_ID() > 0)
+				&& pricingCtx.getPriceListVersionId() != null)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
@@ -279,7 +285,7 @@ public class PricingBL implements IPricingBL
 		//
 		// set priceDate from PLV
 		if (pricingCtx.getPriceDate() == null
-				&& pricingCtx.getM_PriceList_Version_ID() > 0)
+				&& pricingCtx.getPriceListVersionId() != null)
 		{
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
@@ -318,7 +324,11 @@ public class PricingBL implements IPricingBL
 			final I_C_UOM uomTo = loadOutOfTrx(pricingCtx.getC_UOM_ID(), I_C_UOM.class);
 			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
 
-			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(result.getM_Product_ID(), BigDecimal.ONE, uomFrom, uomTo);
+			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
+					ProductId.toRepoId(result.getProductId()),
+					BigDecimal.ONE,
+					uomFrom,
+					uomTo);
 
 			result.setPriceLimit(factor.multiply(result.getPriceLimit()));
 			result.setPriceList(factor.multiply(result.getPriceList()));
@@ -329,23 +339,26 @@ public class PricingBL implements IPricingBL
 
 	private void setProductInfo(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		final I_M_Product product = pricingCtx.getM_Product();
-		if (product == null || product.getM_Product_ID() <= 0)
+		final ProductId productId = pricingCtx.getProductId();
+		if (productId == null)
 		{
 			return;
 		}
 
-		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
+		result.setProductCategoryId(productCategoryId);
 
 		//
 		// Set Price_UOM_ID (06942)
 		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
 		if (plv != null)
 		{
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, product.getM_Product_ID());
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 			if (productPrice == null)
 			{
-				result.setPrice_UOM_ID(product.getC_UOM_ID());
+				final int uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				result.setPrice_UOM_ID(uomId);
 			}
 			else
 			{
@@ -354,7 +367,8 @@ public class PricingBL implements IPricingBL
 		}
 		else
 		{
-			result.setPrice_UOM_ID(product.getC_UOM_ID());
+			final int uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			result.setPrice_UOM_ID(uomId);
 		}
 	}
 
@@ -364,8 +378,8 @@ public class PricingBL implements IPricingBL
 		final PricingResult result = new PricingResult();
 		result.setPricingSystemId(pricingCtx.getPricingSystemId());
 		result.setPriceListId(pricingCtx.getPriceListId());
-		result.setM_PriceList_Version_ID(pricingCtx.getM_PriceList_Version_ID());
-		result.setM_Product_ID(pricingCtx.getM_Product_ID());
+		result.setPriceListVersionId(pricingCtx.getPriceListVersionId());
+		result.setProductId(pricingCtx.getProductId());
 		result.setCurrencyId(pricingCtx.getCurrencyId());
 		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
 		result.setPriceDate(pricingCtx.getPriceDate());

@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -42,7 +41,7 @@ public interface IAttributeSetInstanceAware
 	I_M_Product getM_Product();
 	int getM_Product_ID();
 	// @formatter:on
-	
+
 	// @formatter:off
 	String COLUMNNAME_M_AttributeSetInstance_ID = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 	I_M_AttributeSetInstance getM_AttributeSetInstance();

@@ -26,23 +26,31 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 @ToString
@@ -50,10 +58,13 @@ class PricingContext implements IEditablePricingContext
 {
 	private PricingSystemId pricingSystemId;
 	private PriceListId priceListId;
-	private int M_PriceList_Version_ID;
+
+	private PriceListVersionId priceListVersionId;
+	private I_M_PriceList_Version _priceListVersion = null;
+
 	private boolean skipCheckingPriceListSOTrxFlag;
 
-	private int M_Product_ID;
+	private ProductId productId;
 
 	/**
 	 * PriceDate timestamp.
@@ -72,11 +83,7 @@ class PricingContext implements IEditablePricingContext
 	private CurrencyId currencyId;
 	private BPartnerId bpartnerId;
 	private BigDecimal qty;
-	private boolean isSOTrx;
-	private int AD_Table_ID;
-	private int Record_ID;
-	private int m_PP_Product_BOM_ID;
-	private int m_PP_Product_BOMLine_ID;
+	private SOTrx soTrx = SOTrx.PURCHASE;
 	private Object referencedObject;
 	private String trxName;
 	private boolean convertPriceToContextUOM;
@@ -93,23 +100,19 @@ class PricingContext implements IEditablePricingContext
 	public IEditablePricingContext copy()
 	{
 		final PricingContext pricingCtxNew = new PricingContext();
-		pricingCtxNew.M_Product_ID = M_Product_ID;
+		pricingCtxNew.productId = productId;
 		pricingCtxNew.pricingSystemId = pricingSystemId;
 		pricingCtxNew.priceListId = priceListId;
-		pricingCtxNew.M_PriceList_Version_ID = M_PriceList_Version_ID;
+		pricingCtxNew.priceListVersionId = priceListVersionId;
 		pricingCtxNew._priceListVersion = _priceListVersion;
-		pricingCtxNew.priceDateTS = this.priceDateTS;
-		pricingCtxNew.priceDateNowTS = this.priceDateNowTS;
+		pricingCtxNew.priceDateTS = priceDateTS;
+		pricingCtxNew.priceDateNowTS = priceDateNowTS;
 		pricingCtxNew.C_UOM_ID = C_UOM_ID;
 		pricingCtxNew.currencyId = currencyId;
 		pricingCtxNew.C_Country_ID = C_Country_ID;
 		pricingCtxNew.bpartnerId = bpartnerId;
 		pricingCtxNew.qty = qty;
-		pricingCtxNew.isSOTrx = isSOTrx;
-		pricingCtxNew.AD_Table_ID = AD_Table_ID;
-		pricingCtxNew.Record_ID = Record_ID;
-		pricingCtxNew.m_PP_Product_BOM_ID = m_PP_Product_BOM_ID;
-		pricingCtxNew.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
+		pricingCtxNew.soTrx = soTrx;
 		pricingCtxNew.referencedObject = referencedObject;
 		pricingCtxNew.disallowDiscount = disallowDiscount;
 		pricingCtxNew.forcePricingConditionsBreak = forcePricingConditionsBreak;
@@ -137,29 +140,16 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return M_Product_ID;
+		return productId;
 	}
 
 	@Override
-	public IEditablePricingContext setM_Product_ID(final int m_Product_ID)
+	public IEditablePricingContext setProductId(final ProductId productId)
 	{
-		M_Product_ID = m_Product_ID;
-		product = null; // reset
+		this.productId = productId;
 		return this;
-	}
-
-	private I_M_Product product;
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		if (product == null && getM_Product_ID() > 0)
-		{
-			product = InterfaceWrapperHelper.create(getCtx(), getM_Product_ID(), I_M_Product.class, ITrx.TRXNAME_None);
-		}
-		return product;
 	}
 
 	@Override
@@ -176,40 +166,38 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getM_PriceList_Version_ID()
+	public PriceListVersionId getPriceListVersionId()
 	{
-		return M_PriceList_Version_ID;
-	}
-
-	private I_M_PriceList_Version _priceListVersion = null;
-
-	@Override
-	public I_M_PriceList_Version getM_PriceList_Version()
-	{
-		final int priceListVersionId = getM_PriceList_Version_ID();
-		if (priceListVersionId <= 0)
-		{
-			return null;
-		}
-
-		if (_priceListVersion == null || _priceListVersion.getM_PriceList_Version_ID() != priceListVersionId)
-		{
-			_priceListVersion = InterfaceWrapperHelper.create(getCtx(), priceListVersionId, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
-		}
-		return _priceListVersion;
+		return priceListVersionId;
 	}
 
 	@Override
-	public IEditablePricingContext setM_PriceList_Version_ID(final int m_PriceList_Version_ID)
+	public IEditablePricingContext setPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
-		if (M_PriceList_Version_ID == m_PriceList_Version_ID)
+		if (Objects.equals(this.priceListVersionId, priceListVersionId))
 		{
 			return this;
 		}
 
-		M_PriceList_Version_ID = m_PriceList_Version_ID;
+		this.priceListVersionId = priceListVersionId;
 		_priceListVersion = null; // needs to be reloaded
 		return this;
+	}
+
+	@Override
+	public I_M_PriceList_Version getM_PriceList_Version()
+	{
+		final PriceListVersionId priceListVersionId = getPriceListVersionId();
+		if (priceListVersionId == null)
+		{
+			return null;
+		}
+
+		if (_priceListVersion == null || _priceListVersion.getM_PriceList_Version_ID() != priceListVersionId.getRepoId())
+		{
+			_priceListVersion = Services.get(IPriceListDAO.class).getPriceListVersionById(priceListVersionId);
+		}
+		return _priceListVersion;
 	}
 
 	@Override
@@ -221,7 +209,7 @@ class PricingContext implements IEditablePricingContext
 	@Override
 	public IEditablePricingContext setPriceDate(final Timestamp priceDate)
 	{
-		this.priceDateTS = priceDate == null ? 0 : priceDate.getTime();
+		priceDateTS = priceDate == null ? 0 : priceDate.getTime();
 		return this;
 	}
 
@@ -278,63 +266,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public boolean isSOTrx()
+	public SOTrx getSoTrx()
 	{
-		return isSOTrx;
+		return soTrx;
 	}
 
 	@Override
-	public IEditablePricingContext setSOTrx(final boolean isSOTrx)
+	public IEditablePricingContext setSOTrx(@NonNull final SOTrx soTrx)
 	{
-		this.isSOTrx = isSOTrx;
-		return this;
-	}
-
-	@Override
-	public int getPP_Product_BOM_ID()
-	{
-		return m_PP_Product_BOM_ID;
-	}
-
-	@Override
-	public int getPP_Product_BOMLine_ID()
-	{
-		return m_PP_Product_BOMLine_ID;
-	}
-
-	public void setPP_Product_BOM_ID(final int m_PP_Product_BOM_ID)
-	{
-		this.m_PP_Product_BOM_ID = m_PP_Product_BOM_ID;
-	}
-
-	public void setPP_Product_BOMLine_ID(final int m_PP_Product_BOMLine_ID)
-	{
-		this.m_PP_Product_BOMLine_ID = m_PP_Product_BOMLine_ID;
-	}
-
-	@Override
-	public int getAD_Table_ID()
-	{
-		return AD_Table_ID;
-	}
-
-	@Override
-	public IEditablePricingContext setAD_Table_ID(final int aD_Table_ID)
-	{
-		AD_Table_ID = aD_Table_ID;
-		return this;
-	}
-
-	@Override
-	public int getRecord_ID()
-	{
-		return Record_ID;
-	}
-
-	@Override
-	public IEditablePricingContext setRecord_ID(final int record_ID)
-	{
-		Record_ID = record_ID;
+		this.soTrx = soTrx;
 		return this;
 	}
 
@@ -436,7 +376,7 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public IEditablePricingContext setManualPrice(boolean isManualPrice)
+	public IEditablePricingContext setManualPrice(final boolean isManualPrice)
 	{
 		this.isManualPrice = isManualPrice;
 		return this;
@@ -449,9 +389,9 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public IEditablePricingContext setC_Country_ID(int countryId)
+	public IEditablePricingContext setC_Country_ID(final int countryId)
 	{
-		this.C_Country_ID = countryId;
+		C_Country_ID = countryId;
 		return this;
 	}
 
@@ -462,14 +402,14 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public IEditablePricingContext setFailIfNotCalculated(boolean failIfNotCalculated)
+	public IEditablePricingContext setFailIfNotCalculated(final boolean failIfNotCalculated)
 	{
 		this.failIfNotCalculated = failIfNotCalculated;
 		return this;
 	}
 
 	@Override
-	public IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag)
+	public IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(final boolean skipCheckingPriceListSOTrxFlag)
 	{
 		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		return this;
@@ -486,5 +426,19 @@ class PricingContext implements IEditablePricingContext
 	{
 		this.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		return this;
+	}
+
+	@Override
+	public Optional<IAttributeSetInstanceAware> getAttributeSetInstanceAware()
+	{
+		final Object referencedObj = getReferencedObject();
+		if (referencedObj == null)
+		{
+			return Optional.empty();
+		}
+
+		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(referencedObj);
+		return Optional.ofNullable(asiAware);
 	}
 }

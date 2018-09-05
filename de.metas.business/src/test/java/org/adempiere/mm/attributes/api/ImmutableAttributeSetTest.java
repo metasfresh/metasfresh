@@ -67,15 +67,14 @@ public class ImmutableAttributeSetTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeStringValue);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeStringNullValue);
 
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		final ImmutableAttributeSet attributeSet = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		final ImmutableAttributeSet ofAttributesetInstanceId = ImmutableAttributeSet.ofAttributesetInstanceId(attributeSetInstanceId);
+		assertTrue(attributeSet.getAttributes().contains(attrStringWithValue));
+		assertTrue(attributeSet.getAttributes().contains(attributeStringNull));
 
-		assertTrue(ofAttributesetInstanceId.getAttributes().contains(attrStringWithValue));
-		assertTrue(ofAttributesetInstanceId.getAttributes().contains(attributeStringNull));
-
-		assertTrue(ofAttributesetInstanceId.getValue(attrStringWithValue).equals(attributeStringValue.getValue()));
-		assertNull(ofAttributesetInstanceId.getValue(attributeStringNull));
+		assertTrue(attributeSet.getValue(attrStringWithValue).equals(attributeStringValue.getValue()));
+		assertNull(attributeSet.getValue(attributeStringNull));
 
 	}
 

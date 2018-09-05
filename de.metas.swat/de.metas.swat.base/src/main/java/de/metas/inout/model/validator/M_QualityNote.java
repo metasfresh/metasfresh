@@ -1,12 +1,10 @@
 package de.metas.inout.model.validator;
 
-import java.util.Properties;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
 
@@ -56,14 +54,13 @@ public class M_QualityNote
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(qualityNote);
 		// create a new attribute value for the qualityNote
 
 		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class);
 
 		// set attribute
-		final I_M_Attribute qualityNoteAttribute = qualityNoteDAO.getQualityNoteAttribute(ctx);
-		attributeValue.setM_Attribute(qualityNoteAttribute);
+		final AttributeId qualityNoteAttributeId = qualityNoteDAO.getQualityNoteAttributeId();
+		attributeValue.setM_Attribute_ID(AttributeId.toRepoId(qualityNoteAttributeId));
 
 		// set value
 		attributeValue.setValue(qualityNote.getValue());

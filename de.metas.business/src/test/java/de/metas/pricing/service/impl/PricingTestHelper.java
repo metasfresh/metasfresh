@@ -1,5 +1,8 @@
 package de.metas.pricing.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -9,6 +12,7 @@ import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
@@ -26,8 +30,11 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -64,6 +71,7 @@ public class PricingTestHelper
 	private I_M_PriceList_Version defaultPriceListVerion;
 
 	private I_M_Product defaultProduct;
+	private I_C_UOM defaultUOM;
 
 	public I_M_Attribute attr_Country;
 	public I_M_AttributeValue attr_Country_DE;
@@ -72,6 +80,7 @@ public class PricingTestHelper
 	public I_M_Attribute attr_Label;
 	public I_M_AttributeValue attr_Label_Bio;
 	public final I_M_AttributeValue attr_Label_NULL = null;
+
 
 	public PricingTestHelper()
 	{
@@ -82,7 +91,8 @@ public class PricingTestHelper
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
 		//
-		defaultProduct = createProduct("Product1");
+		defaultUOM = newInstance(I_C_UOM.class); saveRecord(defaultUOM);
+		defaultProduct = createProduct("Product1", defaultUOM);
 		//
 		attr_Country = createM_Attribute("Country", X_M_Attribute.ATTRIBUTEVALUETYPE_List);
 		attr_Country_CH = createM_AttributeValue(attr_Country, "CH");
@@ -139,11 +149,15 @@ public class PricingTestHelper
 		return country;
 	}
 
-	public final I_M_Product createProduct(final String name)
+	public final I_M_Product createProduct(
+			final String name,
+			@NonNull final I_C_UOM uom)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), I_M_Product.class, ITrx.TRXNAME_None);
 		product.setValue(name);
 		product.setName(name);
+		product.setM_Product_Category_ID(20);
+		product.setC_UOM(uom);
 		InterfaceWrapperHelper.save(product);
 		return product;
 	}
@@ -210,8 +224,8 @@ public class PricingTestHelper
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(defaultPricingSystem.getM_PricingSystem_ID()));
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(defaultPriceList.getM_PriceList_ID()));
-		pricingCtx.setM_PriceList_Version_ID(defaultPriceListVerion.getM_PriceList_Version_ID());
-		pricingCtx.setM_Product_ID(defaultProduct.getM_Product_ID());
+		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(defaultPriceListVerion.getM_PriceList_Version_ID()));
+		pricingCtx.setProductId(ProductId.ofRepoId(defaultProduct.getM_Product_ID()));
 
 		return pricingCtx;
 	}
@@ -227,7 +241,7 @@ public class PricingTestHelper
 	{
 		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct);
 	}
-	
+
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
 	{
 		return pricingBL.calculatePrice(pricingCtx);

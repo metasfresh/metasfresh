@@ -4,12 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.uom.UomId;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -38,8 +41,8 @@ public class GroupTests
 	private int nextSeqNo = 1;
 
 	private static final int C_Order_ID = 123;
-	private static final int M_Product_ID = 1;
-	private static final int C_UOM_ID = 1;
+	private static final ProductId M_Product_ID = ProductId.ofRepoId(1);
+	private static final UomId C_UOM_ID = UomId.ofRepoId(2);
 
 	@Test
 	public void test_updateAllPercentageLines_twoPercentDiscountLines()
@@ -48,7 +51,7 @@ public class GroupTests
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
 				.bpartnerId(BPartnerId.ofRepoId(3))
-				.isSOTrx(true)
+				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
 				.compensationLine(percentageDiscountLine(30).build())
@@ -87,7 +90,7 @@ public class GroupTests
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
 				.precision(2)
 				.bpartnerId(BPartnerId.ofRepoId(3))
-				.isSOTrx(true)
+				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())
 				.regularLine(regularLine(260).build())
 				.build();

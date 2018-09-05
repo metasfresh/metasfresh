@@ -13,12 +13,12 @@ package de.metas.handlingunits.client.terminal.select.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.HuId;
 
 /**
  * @author cg
@@ -81,7 +81,7 @@ public interface IPOSFiltering
 
 	Object getReferencedObject(IPOSTableRow row);
 
-	void processRows(Properties ctx, Set<IPOSTableRow> rows, Set<I_M_HU> selectedHUs);
+	void processRows(Properties ctx, Set<IPOSTableRow> rows, Set<HuId> selectedHUs);
 
 	void closeRows(Set<IPOSTableRow> rows);
 

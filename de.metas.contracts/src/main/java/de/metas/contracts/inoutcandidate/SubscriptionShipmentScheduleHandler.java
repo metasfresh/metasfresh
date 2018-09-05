@@ -1,12 +1,12 @@
 package de.metas.contracts.inoutcandidate;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -16,20 +16,25 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.IFlatrateBL;
@@ -45,7 +50,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
 import lombok.NonNull;
@@ -55,16 +59,19 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
 
-	private static final Logger logger = LogManager.getLogger(SubscriptionShipmentScheduleHandler.class);
-
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 		final I_C_SubscriptionProgress subscriptionLine = create(model, I_C_SubscriptionProgress.class);
 
-		Check.assume(subscriptionLine.getQty().signum() > 0, subscriptionLine + " has Qty>0");
-
+		if (subscriptionLine.getQty().signum() <= 0)
+		{
+			Loggables.get().addLog(
+					"Skip C_SubscriptionProgress_ID={} with Qty={}",
+					subscriptionLine.getC_SubscriptionProgress_ID(), subscriptionLine.getQty());
+			return ImmutableList.of();
+		}
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class, model);
 
 		final int tableId = InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class);
@@ -125,7 +132,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		invalidateCandidatesFor(subscriptionLine);
 
 		// Note: AllowConsolidateInOut is set on the first update of this schedule
-		return Collections.singletonList(newSched);
+		return ImmutableList.of(newSched);
 	}
 
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
@@ -156,8 +163,14 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private ImmutableStorageSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
 	{
-		final I_M_Warehouse warehouse = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouse(subscriptionLine.getM_ShipmentSchedule());
-		final ImmutableSet<Integer> locatorIds = Services.get(IWarehouseDAO.class).retrieveLocators(warehouse).stream().map(I_M_Locator::getM_Locator_ID).collect(ImmutableSet.toImmutableSet());
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(subscriptionLine.getM_ShipmentSchedule());
+		final ImmutableSet<Integer> locatorIds = warehouseDAO.retrieveLocators(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.stream()
+				.map(I_M_Locator::getM_Locator_ID)
+				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
 				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
@@ -174,30 +187,42 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public List<Object> retrieveModelsWithMissingCandidates(
+	public Iterator<? extends Object> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
 			final String trxName)
 	{
 		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
 
-		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_C_SubscriptionProgress> subscriptionLines = queryBL
+
+		final IQuery<I_C_Flatrate_Term> itemProductQuery = queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_M_Product_ID)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
+		final Iterator<I_C_SubscriptionProgress> subscriptionLines = queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.LESS_OR_EQUAL, eventDateMaximum)
+				.addCompareFilter(I_C_SubscriptionProgress.COLUMN_Qty, Operator.GREATER, ZERO)
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_M_ShipmentSchedule_ID, null) // we didn't do this in the very old code which i found
+				.addInSubQueryFilter(
+						I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID,
+						I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID,
+						itemProductQuery)
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMN_C_SubscriptionProgress_ID).endOrderBy()
 				.create()
-				.list();
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterate(I_C_SubscriptionProgress.class);
 
-		logger.debug("Identified {} C_SubscriptionProgress that need a shipment schedule", subscriptionLines.size());
-
-		return new ArrayList<>(subscriptionLines);
+		return subscriptionLines;
 	}
 
 	@Override

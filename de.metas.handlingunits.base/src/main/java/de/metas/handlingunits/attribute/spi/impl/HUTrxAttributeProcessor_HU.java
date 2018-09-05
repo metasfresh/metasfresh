@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.spi.impl;
 
+import org.adempiere.mm.attributes.AttributeId;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,7 +26,6 @@ package de.metas.handlingunits.attribute.spi.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
@@ -104,8 +105,8 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 		}
 
 		final I_M_HU hu = trx.getM_HU();
-		final I_M_Attribute attribute = trx.getM_Attribute();
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(hu, attribute);
+		final AttributeId attributeId = AttributeId.ofRepoId(trx.getM_Attribute_ID());
+		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(hu, attributeId);
 		return huAttribute;
 	}
 

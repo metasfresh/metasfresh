@@ -2,7 +2,7 @@ package org.compiere.apps.search;
 
 import org.compiere.model.MQuery.Operator;
 
-import com.google.common.base.MoreObjects;
+import lombok.Data;
 
 /*
  * #%L
@@ -17,15 +17,16 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@Data
 final class UserQueryRestriction implements IUserQueryRestriction
 {
 	private Join join = Join.AND;
@@ -33,79 +34,8 @@ final class UserQueryRestriction implements IUserQueryRestriction
 	private Operator operator = Operator.EQUAL;
 	private Object value;
 	private Object valueTo;
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("join", join)
-				.add("searchField", searchField)
-				.add("operator", operator)
-				.add("value", value)
-				.add("valueTo", valueTo)
-				.toString();
-	}
-
-	@Override
-	public Join getJoin()
-	{
-		return join;
-	}
-
-	@Override
-	public void setJoin(final Join join)
-	{
-		this.join = join;
-	}
-
-	@Override
-	public IUserQueryField getSearchField()
-	{
-		return searchField;
-	}
-
-	@Override
-	public void setSearchField(final IUserQueryField searchField)
-	{
-		this.searchField = searchField;
-	}
-
-	@Override
-	public Operator getOperator()
-	{
-		return operator;
-	}
-
-	@Override
-	public void setOperator(final Operator operator)
-	{
-		this.operator = operator;
-	}
-
-	@Override
-	public Object getValue()
-	{
-		return value;
-	}
-
-	@Override
-	public void setValue(final Object value)
-	{
-		this.value = value;
-	}
-
-	@Override
-	public Object getValueTo()
-	{
-		return valueTo;
-	}
-
-	@Override
-	public void setValueTo(final Object valueTo)
-	{
-		this.valueTo = valueTo;
-	}
+	private boolean mandatory;
+	private boolean internalParameter;
 
 	@Override
 	public boolean isEmpty()
@@ -115,5 +45,17 @@ final class UserQueryRestriction implements IUserQueryRestriction
 		return getSearchField() == null
 				&& getValue() == null
 				&& getValueTo() == null;
+	}
+
+	public boolean hasNullValues()
+	{
+		if (operator != null && operator.isRangeOperator())
+		{
+			return value == null || valueTo == null;
+		}
+		else
+		{
+			return value == null;
+		}
 	}
 }

@@ -1,5 +1,8 @@
 package de.metas.quantity;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -73,6 +76,28 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return qty1.add(qty2);
 		}
+	}
+
+	public static Quantity addToNullable(
+			@Nullable final Quantity quantity,
+			@NonNull final BigDecimal augent,
+			@NonNull final I_C_UOM augentUOM)
+	{
+		final Quantity augentQuantity = new Quantity(augent, augentUOM);
+		if (quantity == null)
+		{
+			return augentQuantity;
+		}
+		return addNullables(quantity, augentQuantity);
+	}
+
+	public static BigDecimal asBigDecimal(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return ZERO;
+		}
+		return quantity.getAsBigDecimal();
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
@@ -332,7 +357,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public static final Quantity zero(final I_C_UOM uom)
 	{
-		return new Quantity(BigDecimal.ZERO, uom, BigDecimal.ZERO, uom);
+		return new Quantity(ZERO, uom, ZERO, uom);
 	}
 
 	/**
@@ -345,7 +370,7 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return this;
 		}
-		return new Quantity(BigDecimal.ZERO, uom, BigDecimal.ZERO, sourceUom);
+		return new Quantity(ZERO, uom, ZERO, sourceUom);
 	}
 
 	public Quantity toZeroIfNegative()
@@ -441,7 +466,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public int signum()
 	{
-		return getQty().signum();
+		return getAsBigDecimal().signum();
 	}
 
 	/**
@@ -477,7 +502,7 @@ public final class Quantity implements Comparable<Quantity>
 		final int qtyToAdd_sourceUomId = qtyToAdd.getSource_UOM_ID();
 		if (uomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_Value = qtyToAdd.getQty();
+			qtyToAdd_Value = qtyToAdd.getAsBigDecimal();
 		}
 		else if (uomId == qtyToAdd_sourceUomId)
 		{
@@ -498,7 +523,7 @@ public final class Quantity implements Comparable<Quantity>
 		}
 		else if (sourceUomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_SourceValue = qtyToAdd.getQty();
+			qtyToAdd_SourceValue = qtyToAdd.getAsBigDecimal();
 		}
 		else
 		{
@@ -508,7 +533,7 @@ public final class Quantity implements Comparable<Quantity>
 
 		//
 		// Compute new Quantity's values
-		final BigDecimal qtyNew_Value = this.getQty().add(qtyToAdd_Value);
+		final BigDecimal qtyNew_Value = this.getAsBigDecimal().add(qtyToAdd_Value);
 		final I_C_UOM qtyNew_UOM = this.getUOM();
 		final BigDecimal qtyNew_SourceValue;
 		final I_C_UOM qtyNew_SourceUOM;
@@ -598,7 +623,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity multiply(final BigDecimal multiplicand)
 	{
-		if (multiplicand.compareTo(BigDecimal.ONE) == 0)
+		if (multiplicand.compareTo(ONE) == 0)
 		{
 			return this;
 		}

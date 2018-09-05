@@ -9,10 +9,12 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
@@ -48,6 +50,10 @@ import lombok.Value;
 @Value
 public class Money
 {
+	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
+	{
+		return of(new BigDecimal(value), currencyId);
+	}
 
 	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
@@ -57,6 +63,24 @@ public class Money
 	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
 		return new Money(value, currencyId);
+	}
+
+	public static final Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
+	{
+		if (value == null || currencyId == null)
+		{
+			return null;
+		}
+		return new Money(value, currencyId);
+	}
+
+	public static final Money toZeroOrNull(@Nullable final Money money)
+	{
+		if (money == null)
+		{
+			return null;
+		}
+		return money.toZero();
 	}
 
 	public static final Money zero(@NonNull final CurrencyId currencyId)
@@ -122,7 +146,7 @@ public class Money
 		Check.errorIf(currencyIds.size() > 1,
 				"at least two money instances have different currencies: {}", currency2moneys);
 
-		return ListUtils.singleElement(currencyIds.asList());
+		return CollectionUtils.singleElement(currencyIds.asList());
 	}
 
 	public static boolean isSameCurrency(@NonNull final Money... moneys)

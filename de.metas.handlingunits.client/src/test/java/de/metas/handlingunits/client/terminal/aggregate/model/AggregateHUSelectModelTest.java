@@ -30,7 +30,7 @@ import java.util.function.Predicate;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
 import org.junit.Test;
@@ -350,7 +350,7 @@ public class AggregateHUSelectModelTest extends InventoryHUSelectModelTestTempla
 
 	private static final BPartnerLocationKey getBPartnerLocationKeyByBPartnerLocationId(final List<BPartnerLocationKey> bpartnerLocationKeys, final int bpartnerLocationId)
 	{
-		return ListUtils.singleElement(bpartnerLocationKeys, new Predicate<BPartnerLocationKey>()
+		return CollectionUtils.singleElement(bpartnerLocationKeys, new Predicate<BPartnerLocationKey>()
 		{
 			@Override
 			public boolean test(final BPartnerLocationKey value)

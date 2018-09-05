@@ -42,7 +42,7 @@ import com.google.common.base.MoreObjects;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class ByteArrayBackedDataSource implements DataSource
+final class ByteArrayBackedDataSource implements DataSource
 {
 	private static final String DEFAULT_MimeType = MimeType.TYPE_TextPlain;
 

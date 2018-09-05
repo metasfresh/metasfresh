@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.Check;
 
@@ -35,25 +36,33 @@ public class AttributeSetInstanceId implements RepoIdAware
 
 	public static AttributeSetInstanceId ofRepoId(final int repoId)
 	{
-		if (repoId == NONE.repoId)
+		final AttributeSetInstanceId id = ofRepoIdOrNull(repoId);
+		if (id == null)
 		{
-			return NONE;
+			throw new AdempiereException("Invalid repoId: " + repoId);
 		}
-		else
-		{
-			return new AttributeSetInstanceId(repoId);
-		}
+		return id;
+	}
+
+	public static AttributeSetInstanceId ofRepoIdOrNone(final int repoId)
+	{
+		final AttributeSetInstanceId asiId = ofRepoIdOrNull(repoId);
+		return asiId != null ? asiId : NONE;
 	}
 
 	public static AttributeSetInstanceId ofRepoIdOrNull(final int repoId)
 	{
-		if (repoId < 0)
+		if (repoId == NONE.repoId)
 		{
-			return null;
+			return NONE;
+		}
+		else if (repoId > 0)
+		{
+			return new AttributeSetInstanceId(repoId);
 		}
 		else
 		{
-			return ofRepoId(repoId);
+			return null;
 		}
 	}
 
@@ -66,12 +75,21 @@ public class AttributeSetInstanceId implements RepoIdAware
 
 	private AttributeSetInstanceId(final int repoId)
 	{
-		// note that there is a special ASI which in fact does have ID=0
-		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
 	private AttributeSetInstanceId()
 	{
 		this.repoId = AttributeConstants.M_AttributeSetInstance_ID_None;
+	}
+
+	public boolean isNone()
+	{
+		return repoId == NONE.repoId;
+	}
+
+	public static boolean isRegular(final AttributeSetInstanceId asiId)
+	{
+		return asiId != null && !asiId.isNone();
 	}
 }

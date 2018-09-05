@@ -53,13 +53,13 @@ class AttributeStorageQualityInspectionSchedulable implements IQualityInspection
 			return Optional.absent();
 		}
 
-		final I_M_Attribute attrIsQualityInspection = huMaterialTrackingBL.getIsQualityInspectionAttribute(context.getCtx());
+		final I_M_Attribute attrIsQualityInspection = huMaterialTrackingBL.getIsQualityInspectionAttribute();
 		if (!attributeStorage.hasAttribute(attrIsQualityInspection))
 		{
 			return Optional.absent();
 		}
 
-		final I_M_Attribute attrMaterialTrackingId = materialTrackingAttributeBL.getMaterialTrackingAttribute(context.getCtx());
+		final I_M_Attribute attrMaterialTrackingId = materialTrackingAttributeBL.getMaterialTrackingAttribute();
 		final IQualityInspectionSchedulable qualityInspectionAware = new AttributeStorageQualityInspectionSchedulable(attributeStorage, attrMaterialTrackingId, attrIsQualityInspection);
 		return Optional.of(qualityInspectionAware);
 	}

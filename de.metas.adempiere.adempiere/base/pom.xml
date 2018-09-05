@@ -60,8 +60,8 @@
 
 		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
 		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
 		</dependency>
 
 		<!--

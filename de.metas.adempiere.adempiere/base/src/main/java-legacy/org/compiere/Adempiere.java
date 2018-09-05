@@ -23,6 +23,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -61,6 +62,7 @@ import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -214,11 +216,11 @@ public class Adempiere
 		return springApplicationContext.getBeansOfType(requiredType).values();
 	}
 
-	private static void throwExceptionIfNull(final ApplicationContext springApplicationContext)
+	private static ApplicationContext throwExceptionIfNull(final ApplicationContext springApplicationContext)
 	{
 		if (springApplicationContext != null)
 		{
-			return;
+			return springApplicationContext;
 		}
 		final String message;
 		if (isUnitTestMode())
@@ -237,6 +239,17 @@ public class Adempiere
 			message = "SpringApplicationContext not configured yet";
 		}
 		throw new AdempiereException(message);
+	}
+
+	public static boolean isSpringProfileActive(@NonNull final String profileName)
+	{
+		final ApplicationContext springApplicationContext = throwExceptionIfNull(getSpringApplicationContext());
+
+		final String[] activeProfiles = springApplicationContext.getEnvironment().getActiveProfiles();
+		final boolean profileIsActive = Arrays
+				.stream(activeProfiles)
+				.anyMatch(env -> env.equalsIgnoreCase(profileName));
+		return profileIsActive;
 	}
 
 	//

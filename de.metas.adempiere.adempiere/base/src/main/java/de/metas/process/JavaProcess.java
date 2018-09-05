@@ -61,7 +61,7 @@ import lombok.NonNull;
  * <ul>
  * <li>{@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
  * <li>{@link IProcessDefaultParametersProvider} if you want to provide some default values for parameters, when the UI parameters dialog is loaded
- * <li>{@link IProcessParametersCallout} if you want to be notified of users' process paramter changes
+ * <li>{@link IProcessParametersCallout} if you want to be notified of users' process parameter changes
  * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li>{@link Process} annotation if you add more info or constraints about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
@@ -73,7 +73,7 @@ import lombok.NonNull;
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
  * @author metas-dev <dev@metasfresh.com>
  */
-public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
+public abstract class JavaProcess implements ILoggable, IContextAware
 {
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
@@ -235,12 +235,11 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	/**
-	 * Start the process.
-	 *
+	 * Note: This method shall be called by the framework.
+	 * 
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
-	@Override
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assume(this == currentInstance(), "This process shall be the current active instance: {}", this);

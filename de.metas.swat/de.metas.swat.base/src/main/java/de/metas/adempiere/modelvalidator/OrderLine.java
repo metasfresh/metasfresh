@@ -1,6 +1,5 @@
 package de.metas.adempiere.modelvalidator;
 
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.util.Services;
@@ -44,8 +43,6 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
 
 /**
@@ -98,40 +95,8 @@ public class OrderLine implements ModelValidator
 	@Override
 	public String modelChange(final PO po, int type)
 	{
-		onNewAndChange(po, type);
 		onNewAndChangeAndDelete(po, type);
 		return null;
-	}
-
-	private void onNewAndChange(final PO po, final int type)
-	{
-		final ModelChangeType changeType = ModelChangeType.valueOf(type);
-		if (!changeType.isBefore() || !changeType.isNewOrChange())
-		{
-			return;
-		}
-
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
-		if (!ol.isProcessed())
-		{
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-					.orderLine(ol)
-					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-					.updateLineNetAmt(true)
-					.build());
-
-			logger.debug("Setting TaxAmtInfo for {}", ol);
-			orderLineBL.setTaxAmtInfo(ol);
-		}
-
-		logger.debug("Making sure {} has a M_Shipper_ID", ol);
-		if(ol.getM_Shipper_ID() <= 0)
-		{
-			orderLineBL.setShipper(ol);
-		}
 	}
 
 	private void onNewAndChangeAndDelete(final PO po, int type)

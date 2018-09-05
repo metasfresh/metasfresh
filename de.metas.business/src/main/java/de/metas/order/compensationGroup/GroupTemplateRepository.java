@@ -4,22 +4,21 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,7 +45,8 @@ import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 @Component
 public class GroupTemplateRepository
 {
-	private final CCache<Integer, GroupTemplate> groupTemplatesById = CCache.<Integer, GroupTemplate> newCache(I_C_CompensationGroup_Schema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
+	private final CCache<GroupTemplateId, GroupTemplate> //
+	groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate> newCache(I_C_CompensationGroup_Schema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
 			.addResetForTableName(I_C_CompensationGroup_SchemaLine.Table_Name);
 
 	private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
@@ -59,15 +59,13 @@ public class GroupTemplateRepository
 				GroupMatcherFactory::getAppliesToLineType);
 	}
 
-	public GroupTemplate getById(final int groupTemplateId)
+	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
 	{
 		return groupTemplatesById.getOrLoad(groupTemplateId, () -> retrieveById(groupTemplateId));
 	}
 
-	private GroupTemplate retrieveById(final int groupTemplateId)
+	private GroupTemplate retrieveById(@NonNull final GroupTemplateId groupTemplateId)
 	{
-		Check.assume(groupTemplateId > 0, "groupTemplateId > 0");
-
 		final I_C_CompensationGroup_Schema schemaPO = InterfaceWrapperHelper.load(groupTemplateId, I_C_CompensationGroup_Schema.class);
 
 		final List<I_C_CompensationGroup_SchemaLine> schemaLinePOs = retrieveSchemaLines(groupTemplateId);
@@ -76,13 +74,13 @@ public class GroupTemplateRepository
 				.collect(ImmutableList.toImmutableList());
 
 		return GroupTemplate.builder()
-				.id(schemaPO.getC_CompensationGroup_Schema_ID())
+				.id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
 				.name(schemaPO.getName())
 				.lines(lines)
 				.build();
 	}
 
-	private List<I_C_CompensationGroup_SchemaLine> retrieveSchemaLines(final int groupTemplateId)
+	private List<I_C_CompensationGroup_SchemaLine> retrieveSchemaLines(final GroupTemplateId groupTemplateId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_SchemaLine.class)
@@ -98,19 +96,19 @@ public class GroupTemplateRepository
 	{
 		final BigDecimal percentage = schemaLinePO.getCompleteOrderDiscount();
 		return GroupTemplateLine.builder()
-				.id(schemaLinePO.getC_CompensationGroup_SchemaLine_ID())
+				.id(GroupTemplateLineId.ofRepoIdOrNull(schemaLinePO.getC_CompensationGroup_SchemaLine_ID()))
 				.groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
-				.productId(schemaLinePO.getM_Product_ID())
+				.productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
 				.percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
 				.build();
 	}
 
-	private Predicate<Group> createGroupMatcher(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
+	private GroupMatcher createGroupMatcher(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
 	{
 		final String type = schemaLinePO.getType();
 		if (type == null)
 		{
-			return Predicates.alwaysTrue();
+			return GroupMatchers.ALWAYS;
 		}
 
 		final GroupMatcherFactory groupMatcherFactory = groupMatcherFactoriesByType.get(type);

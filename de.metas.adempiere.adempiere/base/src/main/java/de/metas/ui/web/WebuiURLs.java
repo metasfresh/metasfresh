@@ -67,7 +67,7 @@ public class WebuiURLs
 	 *
 	 * @return e.g. https://webui
 	 */
-	private String getFrontendURL()
+	public String getFrontendURL()
 	{
 		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
 		if (Check.isEmpty(url, true) || "-".equals(url))

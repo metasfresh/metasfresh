@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.UomId;
 import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,9 +49,9 @@ public final class GroupCompensationLine
 	private final int seqNo;
 
 	@Getter
-	private final int productId;
+	private final ProductId productId;
 	@Getter
-	private final int uomId;
+	private final UomId uomId;
 
 	@Getter
 	private final GroupCompensationType type;
@@ -69,14 +71,14 @@ public final class GroupCompensationLine
 	private BigDecimal lineNetAmt;
 
 	@Getter
-	private int groupTemplateLineId;
+	private GroupTemplateLineId groupTemplateLineId;
 
 	@Builder
 	public GroupCompensationLine(
 			final int repoId,
 			final int seqNo,
-			final int productId,
-			final int uomId,
+			@NonNull final ProductId productId,
+			@NonNull final UomId uomId,
 			@NonNull final GroupCompensationType type,
 			@NonNull final GroupCompensationAmtType amtType,
 			final Percent percentage,
@@ -84,13 +86,10 @@ public final class GroupCompensationLine
 			final BigDecimal qty,
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
-			final int groupTemplateLineId)
+			final GroupTemplateLineId groupTemplateLineId)
 	{
-		Check.assume(productId > 0, "productId > 0");
-		Check.assume(uomId > 0, "uomId > 0");
-
 		this.repoId = repoId > 0 ? repoId : -1;
-		this.groupTemplateLineId = groupTemplateLineId > 0 ? groupTemplateLineId : -1;
+		this.groupTemplateLineId = groupTemplateLineId;
 
 		this.seqNo = seqNo;
 
@@ -99,11 +98,12 @@ public final class GroupCompensationLine
 
 		this.type = type;
 		this.amtType = amtType;
-		this.baseAmt = baseAmt != null ? baseAmt : BigDecimal.ZERO;
 
 		if (amtType == GroupCompensationAmtType.Percent)
 		{
 			Check.assumeNotNull(percentage, "Parameter percentage is not null");
+			
+			this.baseAmt = baseAmt != null ? baseAmt : BigDecimal.ZERO;
 			this.percentage = percentage;
 			this.qty = qty;
 			this.price = price;
@@ -113,6 +113,8 @@ public final class GroupCompensationLine
 		{
 			Check.assumeNotNull(qty, "Parameter qty is not null");
 			Check.assumeNotNull(price, "Parameter price is not null");
+			
+			this.baseAmt = null;
 			this.percentage = null;
 			this.qty = qty;
 			this.price = price;

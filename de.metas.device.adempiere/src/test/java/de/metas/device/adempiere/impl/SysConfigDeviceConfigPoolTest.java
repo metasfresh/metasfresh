@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -67,7 +67,7 @@ public class SysConfigDeviceConfigPoolTest
 					.stream(-1) // any
 					.collect(ImmutableList.toImmutableList());
 
-			final AttributeDeviceAccessor deviceAccessor = ListUtils.singleElement(deviceAccessors);
+			final AttributeDeviceAccessor deviceAccessor = CollectionUtils.singleElement(deviceAccessors);
 
 			// shall be available for ANY warehouse
 			assertAvailableForWarehouse(deviceAccessor, -1, true);
@@ -92,7 +92,7 @@ public class SysConfigDeviceConfigPoolTest
 					.stream(warehouseId)
 					.collect(ImmutableList.toImmutableList());
 
-			final AttributeDeviceAccessor deviceAccessor = ListUtils.singleElement(deviceAccessors);
+			final AttributeDeviceAccessor deviceAccessor = CollectionUtils.singleElement(deviceAccessors);
 
 			// shall be available only for configured warehouse
 			assertAvailableForWarehouse(deviceAccessor, warehouseId, true);

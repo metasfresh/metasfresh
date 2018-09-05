@@ -44,6 +44,19 @@ public class PZN
 		return new PZN(value);
 	}
 
+	public static PZN of(final String valueStr)
+	{
+		try
+		{
+			final long value = Long.parseLong(valueStr);
+			return of(value);
+		}
+		catch (NumberFormatException ex)
+		{
+			throw new RuntimeException("Cannot convert " + valueStr + " to PZN", ex);
+		}
+	}
+
 	private final long valueAsLong;
 
 	private PZN(final long value)

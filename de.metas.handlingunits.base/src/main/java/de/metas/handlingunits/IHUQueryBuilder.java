@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
@@ -357,6 +358,8 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder addOnlyWithAttribute(String attributeName, Object value);
 
+	IHUQueryBuilder addOnlyWithAttribute(AttributeId attributeId, Object value);
+
 	/**
 	 * Filter only those HUs which have <code>attribute</code> with any of the given <code>values</code>.
 	 *
@@ -537,4 +540,6 @@ public interface IHUQueryBuilder
 	 * Ignored if also {@link #setExcludeReservedToOtherThan(OrderLineId)} was called.
 	 */
 	IHUQueryBuilder setExcludeReserved();
+
+	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
 }

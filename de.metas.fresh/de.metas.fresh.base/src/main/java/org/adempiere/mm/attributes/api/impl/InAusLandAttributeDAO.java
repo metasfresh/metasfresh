@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -38,14 +39,14 @@ public class InAusLandAttributeDAO implements IInAusLandAttributeDAO
 	public static final String SYSCONFIG_InAusLandAttribute = "de.metas.fresh.In/AuslandAttribute";
 	
 	@Override
-	public int retrieveInAusLandAttributeId(final int adClientId, final int adOrgId)
+	public AttributeId retrieveInAusLandAttributeId(final int adClientId, final int adOrgId)
 	{
 		final int inAusAttributeId = Services.get(ISysConfigBL.class)
 				.getIntValue(SYSCONFIG_InAusLandAttribute,
 						-1, // defaultValue
 						adClientId,
 						adOrgId);
-		return inAusAttributeId;
+		return AttributeId.ofRepoIdOrNull(inAusAttributeId);
 	}
 
 	@Override
@@ -69,13 +70,13 @@ public class InAusLandAttributeDAO implements IInAusLandAttributeDAO
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
-		final int inAusLandAttributeId = retrieveInAusLandAttributeId(adClientId, adOrgId);
-		if (inAusLandAttributeId <= 0)
+		final AttributeId inAusLandAttributeId = retrieveInAusLandAttributeId(adClientId, adOrgId);
+		if (inAusLandAttributeId == null)
 		{
 			return null;
 		}
 
-		return Services.get(IAttributeDAO.class).retrieveAttributeById(ctx, inAusLandAttributeId);
+		return Services.get(IAttributeDAO.class).getAttributeById(inAusLandAttributeId);
 	}
 
 }

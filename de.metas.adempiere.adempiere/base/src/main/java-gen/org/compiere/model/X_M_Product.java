@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -736944181L;
+	private static final long serialVersionUID = 476144568L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -411,6 +411,22 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getImageURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ImageURL);
+	}
+
+	/** Set Ingredients.
+		@param Ingredients Ingredients	  */
+	@Override
+	public void setIngredients (java.lang.String Ingredients)
+	{
+		set_Value (COLUMNNAME_Ingredients, Ingredients);
+	}
+
+	/** Get Ingredients.
+		@return Ingredients	  */
+	@Override
+	public java.lang.String getIngredients () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Ingredients);
 	}
 
 	/** Set Stückliste.

@@ -4,6 +4,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createList;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.awt.image.BufferedImage;
 
@@ -55,6 +56,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
@@ -66,11 +68,13 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -82,6 +86,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -102,11 +107,8 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
@@ -148,13 +150,13 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		return qtyToMoveTU;
 	}
 
-	@Override
-	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx,
-			final InOutGenerateResult resultInitial,
-			final Set<Integer> selectedHUIds,
-			final boolean createReceiptWithDatePromised)
+	// @Override public
+	private IInOutProducer createInOutProducerFromReceiptScheduleHU(
+			@NonNull final CreateReceiptsParameters parameters,
+			@NonNull final InOutGenerateResult result)
+
 	{
-		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(ctx, resultInitial, selectedHUIds, createReceiptWithDatePromised);
+		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(parameters, result);
 		return producer;
 	}
 
@@ -290,12 +292,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
-	public InOutGenerateResult processReceiptSchedules(final Properties ctx, final List<I_M_ReceiptSchedule> receiptSchedules, final Set<I_M_HU> selectedHUs)
+	public InOutGenerateResult processReceiptSchedules(@NonNull final CreateReceiptsParameters parameters)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 
-		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(ctx, receiptSchedules, selectedHUs));
+		final InOutGenerateResult inoutGenerateResult = trxManager.call(trxName, () -> processReceiptSchedules0(parameters));
 		return inoutGenerateResult;
 	}
 
@@ -303,89 +305,110 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * Actually process receipt schedules.
 	 *
 	 * At this point we assume that we have a thread inherited transaction.
-	 *
-	 * @param ctx
-	 * @param receiptSchedules
-	 * @param selectedHUs
-	 * @param storeReceipts
-	 *
-	 * @return inout generated result
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx,
-			final List<I_M_ReceiptSchedule> receiptSchedules,
-			final Set<I_M_HU> selectedHUs)
+	private final InOutGenerateResult processReceiptSchedules0(@NonNull final CreateReceiptsParameters parameters)
 	{
-		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
-		// assertNoTrxOrIneheritedtrx(receiptSchedules);
-		// assertNoTrxOrIneheritedtrx(selectedHUs);
+		final Set<HuId> selectedHuIds = parameters.getSelectedHuIds();
+		validateHuIds(selectedHuIds);
 
-		//
-		// Validate selectedHUs.
-		// Get M_HU_IDs from selectedHUs.
-		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(Adempiere.getBeansOfType(IHUToReceiveValidator.class));
-		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
-		for (final I_M_HU hu : selectedHUs)
+		// Iterate all selected receipt schedules, get assigned HUs and adjust their Product Storage Qty to WeightNet
+		if (selectedHuIds != null && !selectedHuIds.isEmpty())
 		{
-			if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(parameters.getCtx(), ITrx.TRXNAME_ThreadInherited);
+			huWeightNetAdjuster.setInScopeHU_IDs(selectedHuIds);
+
+			final List<I_M_ReceiptSchedule> receiptSchedules = createList(parameters.getReceiptSchedules(), I_M_ReceiptSchedule.class);
+			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
 			{
-				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
+				// Adjust HU's product storages to their Weight Net Attribute
+				huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
+			}
+		}
+
+		final InOutGenerateResult result = createReceipts(parameters);
+
+		if (parameters.isPrintReceiptLabels())
+		{
+			printReceiptLabels(result);
+		}
+		createMovementsOrDistributionOrders(result, parameters.getDestinationLocatorIdOrNull());
+
+		return result;
+	}
+
+	private void validateHuIds(Set<HuId> huIds)
+	{
+		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(Adempiere.getBeansOfType(IHUToReceiveValidator.class));
+
+		for (final HuId huId : huIds)
+		{
+			final I_M_HU huRecord = load(huId, I_M_HU.class);
+			if (!Services.get(IHUStatusBL.class).isStatusPlanned(huRecord))
+			{
+				throw new HUException("@Invalid@ @HUStatus@: " + huRecord.getValue());
 			}
 
-			huToReceiveValidator.assertValidForReceiving(hu);
-
-			final int huId = hu.getM_HU_ID();
-			selectedHUIds.add(huId);
+			huToReceiveValidator.assertValidForReceiving(huRecord);
 		}
 		//
-		if (selectedHUIds.isEmpty())
+		if (huIds.isEmpty())
 		{
 			throw new HUException("@NoSelection@ @M_HU_ID@");
 		}
+	}
 
-		//
-		// Get the transaction to be used
+	/** Generate receipt from selected receipt schedules and return the result */
+	private InOutGenerateResult createReceipts(@NonNull final CreateReceiptsParameters parameters)
+	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final ITrx threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail);
+		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
-		//
-		// Iterate all selected receipt schedules, get assigned HUs and adjust their Product Storage Qty to WeightNet
-		final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(ctx, threadTrx.getTrxName());
-		huWeightNetAdjuster.setInScopeHU_IDs(selectedHUIds);
-		for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
+		// Get the transaction to be used
+		final ITrx threadTrx;
+		if (parameters.isCommitEachReceiptIndividually())
 		{
-			// Adjust HU's product storages to their Weight Net Attribute
-			huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
+			// this processor shall run with a local transaction, so there will be a commit after each item (i.e. in this case each chunk)
+			threadTrx = ITrx.TRX_None;
+		}
+		else
+		{
+			threadTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail);
 		}
 
-		//
-		// Generate receipt from selected receipt schedules and return the result
-		final InOutGenerateResult result;
-		{
-			// Create result collector
-			result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(true);
+		// Create result collector
+		final InOutGenerateResult result = inOutCandidateBL.createEmptyInOutGenerateResult(true); // storeReceipts=true
 
-			// Create Receipt producer
-			final boolean createReceiptWithDatePromised = false; // create the InOuts with MovementDate = the current login date
-			final IInOutProducer producer = createInOutProducerFromReceiptScheduleHU(ctx, result, selectedHUIds, createReceiptWithDatePromised);
+		// Create Receipt producer
+		final IInOutProducer producer = createInOutProducerFromReceiptScheduleHU(
+				parameters,
+				result);
 
-			// Create executor and generate receipts with it
-			final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
-			final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, threadTrx);
-			executorService.createExecutor(processorCtx, producer)
-					//
-					// Configure executor to fail on first error
-					// NOTE: we expect max. 1 receipt, so it's fine to fail anyways
-					.setExceptionHandler(FailTrxItemExceptionHandler.instance)
-					// Process schedules => receipt(s) will be generated
-					.execute(receiptSchedules.iterator());
+		// Create executor and generate receipts with it
+		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
+		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(parameters.getCtx(), threadTrx);
 
-		}
+		executorService.<de.metas.inoutcandidate.model.I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
+				.setContext(processorCtx)
+				.setProcessor(producer)
+				// Configure executor to fail on first error
+				// NOTE: we expect max. 1 receipt, so it's fine to fail anyways
+				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
+				// Process schedules => receipt(s) will be generated
+				.process(parameters.getReceiptSchedules());
 
-		// https://github.com/metasfresh/metasfresh/issues/1905
-		// Create the material receipt label right here.
-		// We used to create it in ReceiptInOutLineHUAssignmentListener, but there we could not detect the code
-		// being called multiple times in a row, from different transactions.
-		// This happens if there are >1 inout lines sharing the same LU.
+		return result;
+	}
+
+	/**
+	 * Create the material receipt label right here.
+	 * We used to create it in ReceiptInOutLineHUAssignmentListener, but there we could not detect the code
+	 * being called multiple times in a row, from different transactions.
+	 * This happens if there are >1 inout lines sharing the same LU.
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1905
+	 */
+	private void printReceiptLabels(final InOutGenerateResult result)
+	{
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
@@ -411,7 +434,19 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				}
 			}
 		}
-		return result;
+	}
+
+	private void createMovementsOrDistributionOrders(
+			@NonNull final InOutGenerateResult result,
+			@Nullable final LocatorId destinationLocatorId)
+	{
+		final DistributeAndMoveReceiptCreator distributeAndMoveReceiptCreator = Adempiere.getBean(DistributeAndMoveReceiptCreator.class);
+
+		final List<I_M_InOut> receipts = createList(result.getInOuts(), I_M_InOut.class);
+		for (final I_M_InOut receipt : receipts)
+		{
+			distributeAndMoveReceiptCreator.createDocumentsFor(receipt, destinationLocatorId);
+		}
 	}
 
 	/**
@@ -512,14 +547,14 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			huContext.setProperty(Constants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
+		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_CostPrice);
 		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
 
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_PurchaseOrderLine_ID, I_M_Attribute.class);
+			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(Constants.ATTR_PurchaseOrderLine_ID);
 			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 

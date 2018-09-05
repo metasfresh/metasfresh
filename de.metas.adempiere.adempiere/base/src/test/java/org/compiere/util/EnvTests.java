@@ -10,12 +10,12 @@ package org.compiere.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,8 +34,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.collections.IdentityHashSet;
-import org.adempiere.util.collections.ListUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -110,7 +110,7 @@ public class EnvTests
 		{
 			long valueMillis = currentTS;
 			// String millis because setContext is also stripping them
-			valueMillis = ((long)(valueMillis / 1000)) * 1000L;
+			valueMillis = (valueMillis / 1000) * 1000L;
 			final Timestamp value = new Timestamp(valueMillis);
 
 			currentTS += 1000 * 60 * 60 * 24; // next second
@@ -595,7 +595,7 @@ public class EnvTests
 
 	/**
 	 * Makes sure the {@link Properties#propertyNames()} is also returning the properties from the underlying "defaults".
-	 * 
+	 *
 	 * NOTE: {@link Properties#propertyNames()} will fail for non-string keys.
 	 */
 	@Test
@@ -627,7 +627,7 @@ public class EnvTests
 
 		//
 		// Get all properties and add them to an identity set (to make sure we are not removing the duplicates)
-		final Set<String> propertyNames = new IdentityHashSet<String>();
+		final Set<String> propertyNames = new IdentityHashSet<>();
 		for (final Enumeration<?> e = ctx.propertyNames(); e.hasMoreElements();)
 		{
 			final String key = (String)e.nextElement();
@@ -637,7 +637,7 @@ public class EnvTests
 		//
 		// Assert we got all property names, including the ones from parent context
 		assertEquals("All keys shall be present",
-				ListUtils.asSet(key1, key2, key3, key4),
+				CollectionUtils.asSet(key1, key2, key3, key4),
 				propertyNames);
 	}
 

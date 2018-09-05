@@ -10,12 +10,12 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,6 +41,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -88,7 +89,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext _huContextInitial;
-	private Set<Integer> inScopeHU_IDs = null;
+	private Set<HuId> inScopeHU_IDs = null;
 
 	public HUReceiptScheduleWeightNetAdjuster(final Properties ctx, final String trxName)
 	{
@@ -123,7 +124,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		return _huContextInitial.getTrxName();
 	}
 
-	public void setInScopeHU_IDs(final Set<Integer> inScopeHU_IDs)
+	public void setInScopeHU_IDs(final Set<HuId> inScopeHU_IDs)
 	{
 		this.inScopeHU_IDs = inScopeHU_IDs;
 	}
@@ -158,7 +159,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		{
 			adjustHUStorageToWeightNet(vhu, receiptSchedule);
 		}
-		
+
 		logger.debug("Done adjusting the receipt schedule: {}", receiptSchedule);
 	}
 
@@ -174,13 +175,13 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 		//
 		// Build up a map of VHU's M_HU_ID to "SUM of QtyAllocated" (if not ZERO)
-		final Map<Integer, BigDecimal> huId2qtyAllocatedMap = new HashMap<Integer, BigDecimal>();
-		final Map<Integer, I_M_HU> huId2hu = new HashMap<Integer, I_M_HU>();
+		final Map<Integer, BigDecimal> huId2qtyAllocatedMap = new HashMap<>();
+		final Map<Integer, I_M_HU> huId2hu = new HashMap<>();
 		final String trxName = getInitialTrxName();
-		
+
 		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, trxName);
 		logger.debug("Found {} receipt schedule allocations", allocsAll.size());
-		
+
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocsAll)
 		{
 			if (!isEligible(rsa))
@@ -219,7 +220,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 				huId2hu.put(vhuId, vhu);
 			}
 		}
-		
+
 		logger.debug("Collected VHUs to be adjusted: {}", huId2hu);
 		return huId2hu.values();
 	}
@@ -244,7 +245,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		Check.assume(handlingUnitsBL.isVirtual(vhu), "{} is VHU", vhu);
 
 		final IHUContext huContext = createHUContext(trxName);
-		
+
 		logger.debug("HUContext: {}", huContext);
 		logger.debug("VHU: {}", vhu);
 		logger.debug("Receipt schedule: {}", receiptSchedule);
@@ -333,7 +334,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		// Don't transfer the attributes because this will override the ones that were set by the user in Wareneingang-POS (see FRESH-92)
 		huloader.setSkipAttributesTransfer(true);
 		logger.debug("HULoader: {}", huloader);
-		
+
 		final IAllocationResult allocationResult = huloader.load(allocationRequest);
 		logger.debug("Allocation result: {}", allocationRequest);
 
@@ -350,7 +351,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 	private HUListAllocationSourceDestination createSourceOrDestForVHU(final I_M_HU vhu)
 	{
 		final HUListAllocationSourceDestination huListAllocationSourceDestination = HUListAllocationSourceDestination.of(vhu);
-		
+
 		// gh #943: in case of aggregate HUs we *only* want to change the storage. we don't want AggregateHUTrxListener do change the TU-per-CU quantity or do other stuff.
 		huListAllocationSourceDestination.setStoreCUQtyBeforeProcessing(false);
 		return huListAllocationSourceDestination;
@@ -408,6 +409,6 @@ public class HUReceiptScheduleWeightNetAdjuster
 			return true;
 		}
 
-		return inScopeHU_IDs.contains(huId);
+		return inScopeHU_IDs.contains(HuId.ofRepoId(huId));
 	}
 }

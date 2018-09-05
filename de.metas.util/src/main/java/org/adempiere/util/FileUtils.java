@@ -13,15 +13,14 @@ package org.adempiere.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +51,24 @@ public final class FileUtils
 		}
 
 		return null;
+	}
+
+	public static String getFileBaseName(final String filename)
+	{
+		if (filename == null)
+		{
+			return null;
+		}
+
+		final int idx = filename.lastIndexOf(".");
+		if (idx > 0)
+		{
+			return filename.substring(0, idx);
+		}
+		else
+		{
+			return filename;
+		}
 	}
 
 	/**

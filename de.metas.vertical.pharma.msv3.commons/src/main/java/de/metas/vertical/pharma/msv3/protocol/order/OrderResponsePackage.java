@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import lombok.Builder;
 import lombok.NonNull;
@@ -57,6 +58,9 @@ public class OrderResponsePackage
 
 	@JsonProperty("items")
 	List<OrderResponsePackageItem> items;
+	
+	@JsonProperty("faultInfo")
+	FaultInfo faultInfo;
 
 	@Builder
 	private OrderResponsePackage(
@@ -65,7 +69,8 @@ public class OrderResponsePackage
 			@JsonProperty("orderIdentification") @NonNull final String orderIdentification,
 			@JsonProperty("supportId") @NonNull final SupportIDType supportId,
 			@JsonProperty("packingMaterialId") final String packingMaterialId,
-			@JsonProperty("items") @NonNull @Singular final List<OrderResponsePackageItem> items)
+			@JsonProperty("items") @NonNull @Singular final List<OrderResponsePackageItem> items,
+			@JsonProperty("faultInfo") FaultInfo faultInfo)
 	{
 		this.id = id;
 		this.orderType = orderType;
@@ -73,6 +78,7 @@ public class OrderResponsePackage
 		this.supportId = supportId;
 		this.packingMaterialId = packingMaterialId;
 		this.items = ImmutableList.copyOf(items);
+		this.faultInfo = faultInfo;
 	}
 
 }

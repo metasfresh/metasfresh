@@ -39,13 +39,13 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
@@ -221,7 +221,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final String huUnitTypeOverride,
 			final IHUPackingMaterialCollectorSource huPackingMaterialCollectorsource)
 	{
-		if(disabled)
+		if (disabled)
 		{
 			return false;
 		}
@@ -426,7 +426,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 */
 	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
-		if(disabled)
+		if (disabled)
 		{
 			return;
 		}
@@ -499,11 +499,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		else
 		{
 			// retrieve the attribute
-			final I_M_Attribute trackingAttr = attributeDAO.retrieveAttributeByValue(
-					InterfaceWrapperHelper.getCtx(hu, true),
-					I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID,
-					I_M_Attribute.class);
-			final I_M_HU_Attribute huAttribute = huContext.getHUAttributeStorageFactory().getHUAttributesDAO().retrieveAttribute(hu, trackingAttr);
+			final AttributeId trackingAttributeId = attributeDAO.retrieveAttributeIdByValue(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
+			final I_M_HU_Attribute huAttribute = huContext.getHUAttributeStorageFactory().getHUAttributesDAO().retrieveAttribute(hu, trackingAttributeId);
 
 			materialTrackingIdStr = huAttribute == null || huAttribute.getValue() == null ? "-1" : huAttribute.getValue();
 		}
@@ -557,7 +554,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public void releasePackingMaterialForHURecursively(final IQueryBuilder<I_M_HU_Assignment> huAssignmentsQueryBuilder)
 	{
-		if(disabled)
+		if (disabled)
 		{
 			return; // don't bother making the database query
 		}
@@ -592,7 +589,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public void releasePackingMaterialForTUHUsRecursively(@NonNull final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery)
 	{
-		if(disabled)
+		if (disabled)
 		{
 			return; // don't bother making the database query
 		}
@@ -888,7 +885,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> disable()
 	{
-		this.disabled  = true;
+		this.disabled = true;
 		return this;
 
 	}

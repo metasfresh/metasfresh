@@ -85,20 +85,22 @@ public interface IInOutDAO extends ISingletonService
 
 	/**
 	 * Returns all the M_InOutLine IDs of the given inout that have quality issues ( QualityDiscountPercent > 0).
-	 * 
+	 *
 	 * @param inOut
 	 * @return
 	 */
 	List<Integer> retrieveLineIdsWithQualityDiscount(I_M_InOut inOut);
 
 	/**
-	 * 
+	 *
 	 * Retrieve the M_InOutLine that is in dispute (has qty with issues) and is based on the same order line as the inout line given as parameter.
-	 * 
+	 *
 	 * @param originInOutLine
 	 * @return
 	 */
 	I_M_InOutLine retrieveLineWithQualityDiscount(I_M_InOutLine originInOutLine);
 
 	LocalDate getLastInOutDate(BPartnerId bpartnerId, ProductId productId, SOTrx soTrx);
+
+	I_M_InOut retrieveInOut(List<I_M_InOutLine> receiptLines);
 }

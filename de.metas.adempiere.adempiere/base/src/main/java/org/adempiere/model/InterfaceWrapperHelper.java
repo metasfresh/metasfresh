@@ -75,6 +75,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.lang.RepoIdAware;
+import de.metas.lang.RepoIdAwares;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -380,16 +381,18 @@ public class InterfaceWrapperHelper
 
 	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
-		final ImmutableSet<Integer> ids = repoIdAwares
-				.stream()
-				.map(RepoIdAware::getRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public static <T> List<T> loadByIdsOutOfTrx(final Set<Integer> ids, final Class<T> modelClass)
 	{
+		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
+	}
+
+	public static <T> List<T> loadByRepoIdAwaresOutOfTrx(@NonNull final Collection<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
+	{
+		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
 	}
 

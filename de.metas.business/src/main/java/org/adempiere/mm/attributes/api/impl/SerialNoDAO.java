@@ -38,6 +38,6 @@ public class SerialNoDAO implements ISerialNoDAO
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		return attributeDAO.retrieveAttributeByValue(ctx, SerialNoAttribute, I_M_Attribute.class);
+		return attributeDAO.retrieveAttributeByValue(SerialNoAttribute);
 	}	
 }

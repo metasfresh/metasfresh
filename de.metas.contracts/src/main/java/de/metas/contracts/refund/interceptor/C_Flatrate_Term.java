@@ -13,9 +13,8 @@ import org.springframework.stereotype.Component;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.InvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.InvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
 
@@ -45,11 +44,11 @@ import lombok.NonNull;
 @Component
 public class C_Flatrate_Term
 {
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
+	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
 
-	private C_Flatrate_Term(@NonNull final InvoiceCandidateRepository invoiceCandidateRepository)
+	private C_Flatrate_Term(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
 	{
-		this.invoiceCandidateRepository = invoiceCandidateRepository;
+		this.invoiceCandidateRepository = refundInvoiceCandidateRepository;
 	}
 
 	/**
@@ -78,7 +77,7 @@ public class C_Flatrate_Term
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> Services.get(InvoiceCandDAO.class).invalidateCandsFor(query));
+				.registerHandlingMethod(trx -> Services.get(IInvoiceCandDAO.class).invalidateCandsFor(query));
 	}
 
 	private IQuery<I_C_Invoice_Candidate> createInvoiceCandidatesToInvalidQuery(

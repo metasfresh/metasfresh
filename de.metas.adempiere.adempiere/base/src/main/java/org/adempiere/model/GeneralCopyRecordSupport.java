@@ -209,9 +209,10 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	public final void setBase(boolean base)
+	public final GeneralCopyRecordSupport setBase(boolean base)
 	{
 		_base = base;
+		return this;
 	}
 
 	private static final void makeUnique(final PO to, final String columnName)
@@ -685,9 +686,10 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	public final void setParentPO(final PO parentPO)
+	public final GeneralCopyRecordSupport setParentPO(final PO parentPO)
 	{
 		this._parentPO = parentPO;
+		return this;
 	}
 
 	private final PO getParentPO()

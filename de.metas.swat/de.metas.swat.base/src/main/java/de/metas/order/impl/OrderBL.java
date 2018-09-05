@@ -41,7 +41,7 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -270,9 +270,11 @@ public class OrderBL implements IOrderBL
 
 	private BillBPartnerAndShipToLocation extractPriceListBPartnerAndLocation(final I_C_Order order)
 	{
-		final int bpartnerId = order.getC_BPartner_ID();
 		final org.compiere.model.I_C_BPartner_Location shipToLocation = getShipToLocation(order);
 		final int shipBPLocationId = shipToLocation != null ? shipToLocation.getC_BPartner_Location_ID() : -1;
+
+		final int bpartnerId =  shipToLocation != null ? shipToLocation.getC_BPartner_ID() : order.getC_BPartner_ID();
+
 		return new BillBPartnerAndShipToLocation(bpartnerId, shipBPLocationId);
 	}
 
@@ -988,7 +990,7 @@ public class OrderBL implements IOrderBL
 		}
 		else
 		{
-			final org.compiere.model.I_C_Order queriedOrder = ListUtils.singleElement(queryiedOrders);
+			final org.compiere.model.I_C_Order queriedOrder = CollectionUtils.singleElement(queryiedOrders);
 
 			fOrder.setQtyInvoiced(DYNATTR_QtyInvoicedSum.getValue(queriedOrder));
 			fOrder.setQtyMoved(DYNATTR_QtyDeliveredSum.getValue(queriedOrder));

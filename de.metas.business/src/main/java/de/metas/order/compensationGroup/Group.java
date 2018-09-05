@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.Percent;
+import de.metas.lang.SOTrx;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -49,12 +50,12 @@ public class Group
 	@Getter
 	private final GroupId groupId;
 	@Getter
-	private final int groupTemplateId;
+	private final GroupTemplateId groupTemplateId;
 	private final int precision;
 	@Getter
 	private final BPartnerId bpartnerId;
 	@Getter
-	private final boolean isSOTrx;
+	private final SOTrx soTrx;
 	@Getter
 	private final int flatrateConditionsId;
 
@@ -66,10 +67,10 @@ public class Group
 	@Builder
 	private Group(
 			@NonNull final GroupId groupId,
-			final int groupTemplateId,
+			final GroupTemplateId groupTemplateId,
 			final int precision,
 			final BPartnerId bpartnerId,
-			@NonNull final Boolean isSOTrx,
+			@NonNull final SOTrx soTrx,
 			final int flatrateConditionsId,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
 			@NonNull @Singular final List<GroupCompensationLine> compensationLines)
@@ -78,7 +79,7 @@ public class Group
 		this.groupTemplateId = groupTemplateId;
 		this.precision = precision;
 		this.bpartnerId = bpartnerId;
-		this.isSOTrx = isSOTrx;
+		this.soTrx = soTrx;
 		this.flatrateConditionsId = flatrateConditionsId > 0 ? flatrateConditionsId : -1;
 
 		if (regularLines.isEmpty())
@@ -212,10 +213,13 @@ public class Group
 			}
 		}
 
-		if (!manualCompensationLines.isEmpty())
-		{
-			compensationLines.addAll(manualCompensationLines);
-			updateAllPercentageLines();
-		}
+		compensationLines.addAll(manualCompensationLines);
+
+		updateAllPercentageLines();
+	}
+
+	public boolean isBasedOnGroupTemplate()
+	{
+		return getGroupTemplateId() != null;
 	}
 }

@@ -1,24 +1,37 @@
 package de.metas.contracts.refund;
 
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
 import de.metas.document.engine.IDocument;
+import de.metas.lang.Percent;
+import de.metas.money.Money;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -98,7 +111,7 @@ public class RefundContractRepository
 				.createQueryBuilder(I_C_Flatrate_Term.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_Refund)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, X_C_Flatrate_Term.DOCSTATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_StartDate, Operator.LESS_OR_EQUAL, invoicableFromTimestamp)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_EndDate, Operator.GREATER_OR_EQUAL, invoicableFromTimestamp)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Bill_BPartner_ID, billPartnerId)
@@ -125,15 +138,81 @@ public class RefundContractRepository
 
 	public RefundContract ofRecord(@NonNull final I_C_Flatrate_Term contractRecord)
 	{
-		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
-		final RefundConfig refundConfig = refundConfigRepository.getByRefundContractId(flatrateTermId);
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(contractRecord.getC_Flatrate_Conditions_ID());
 
-		return RefundContract
+		final ProductId productId = ProductId.ofRepoIdOrNull(contractRecord.getM_Product_ID());
+
+		final RefundConfigQuery query = RefundConfigQuery.builder()
+				.conditionsId(conditionsId)
+				.productId(productId)
+				.build();
+
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID());
+		final List<RefundConfig> refundConfigs = refundConfigRepository.getByQuery(query);
+
+		Check.assumeNotEmpty(refundConfigs, // otherwise we should not have been called!
+				"C_Flatrate_Conditions_ID={} needs to have at least one config for M_Product_ID={}; C_Flatrate_Term={}",
+				contractRecord.getC_Flatrate_Conditions_ID(), contractRecord.getM_Product_ID(), contractRecord);
+
+		final RefundContractBuilder contractBuilder = RefundContract
 				.builder()
 				.id(flatrateTermId)
-				.refundConfig(refundConfig)
+				.bPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
 				.startDate(TimeUtil.asLocalDate(contractRecord.getStartDate()))
-				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()))
+				.endDate(TimeUtil.asLocalDate(contractRecord.getEndDate()));
+
+		final boolean hasZeroQtyConfig = refundConfigs.stream().anyMatch(config -> config.getMinQty().signum() <= 0);
+		if (!hasZeroQtyConfig)
+		{
+			final RefundConfig template = refundConfigs.get(0);
+
+			final RefundConfig zeroConfig = template
+					.toBuilder()
+					.id(null)
+					.minQty(ZERO)
+					.percent(Percent.ZERO)
+					.amount(Money.toZeroOrNull(template.getAmount()))
+					.build();
+			contractBuilder.refundConfig(zeroConfig);
+		}
+		contractBuilder.refundConfigs(refundConfigs);
+
+		return contractBuilder.build();
+	}
+
+	public RefundContract save(@NonNull final RefundContract contract)
+	{
+		final I_C_Flatrate_Term contractRecord;
+		if (contract.getId() == null)
+		{
+			contractRecord = newInstance(I_C_Flatrate_Term.class);
+		}
+		else
+		{
+			contractRecord = load(contract.getId().getRepoId(), I_C_Flatrate_Term.class);
+		}
+
+		// contractRecord.setM_Product_ID(contract.getProductId().getRepoId());
+
+		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
+		contractRecord.setDocStatus(IDocument.STATUS_Completed);
+		contractRecord.setStartDate(TimeUtil.asTimestamp(contract.getStartDate()));
+		contractRecord.setEndDate(TimeUtil.asTimestamp(contract.getEndDate()));
+		contractRecord.setBill_BPartner_ID(contract.getBPartnerId().getRepoId());
+		final List<RefundConfig> refundConfigs = contract.getRefundConfigs();
+
+		final ConditionsId conditionsId = CollectionUtils.extractSingleElement(refundConfigs, RefundConfig::getConditionsId);
+		contractRecord.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
+
+		final List<RefundConfig> savedConfigs = refundConfigRepository.saveAll(refundConfigs);
+
+		saveRecord(contractRecord);
+
+		return contract
+				.toBuilder()
+				.id(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()))
+				.clearRefundConfigs()
+				.refundConfigs(savedConfigs)
 				.build();
 	}
 }

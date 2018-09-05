@@ -1,8 +1,6 @@
 package de.metas.lang;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,7 +33,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RepoIdAwares
 {
-	public static List<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
+	public static ImmutableList<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
 		return ids
 				.stream()
@@ -43,7 +41,7 @@ public class RepoIdAwares
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static Set<Integer> asRepoIdsSet(@NonNull final Collection<? extends RepoIdAware> ids)
+	public static ImmutableSet<Integer> asRepoIdsSet(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
 		return ids
 				.stream()

@@ -37,7 +37,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -319,7 +319,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 	protected I_M_MovementLine getDDOrderLineMovementLine(final I_DD_OrderLine ddOrderLine, final boolean movementReceipt)
 	{
 		final List<I_M_MovementLine> movementLines = ddOrderDAO.retriveMovementLines(ddOrderLine, I_M_MovementLine.class);
-		return ListUtils.singleElement(movementLines, new Predicate<I_M_MovementLine>()
+		return CollectionUtils.singleElement(movementLines, new Predicate<I_M_MovementLine>()
 		{
 
 			@Override

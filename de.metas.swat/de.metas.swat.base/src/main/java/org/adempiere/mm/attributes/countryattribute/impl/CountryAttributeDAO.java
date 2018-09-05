@@ -25,6 +25,7 @@ package org.adempiere.mm.attributes.countryattribute.impl;
 
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -83,25 +84,24 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
-		final int countryAttributeId = retrieveCountryAttributeId(adClientId, adOrgId);
-		if (countryAttributeId <= 0)
+		final AttributeId countryAttributeId = retrieveCountryAttributeId(adClientId, adOrgId);
+		if (countryAttributeId == null)
 		{
 			return null;
 		}
 
-	
-		return Services.get(IAttributeDAO.class).retrieveAttributeById(ctx, countryAttributeId);
+		return Services.get(IAttributeDAO.class).getAttributeById(countryAttributeId);
 	}
 
 	@Override
-	public int retrieveCountryAttributeId(final int adClientId, final int adOrgId)
+	public AttributeId retrieveCountryAttributeId(final int adClientId, final int adOrgId)
 	{
 		final int countryAttributeId = Services.get(ISysConfigBL.class)
 				.getIntValue(SYSCONFIG_CountryAttribute,
 						-1, // defaultValue
 						adClientId,
 						adOrgId);
-		return countryAttributeId;
+		return AttributeId.ofRepoIdOrNull(countryAttributeId);
 	}
 
 }

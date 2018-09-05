@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.countryattribute.impl;
 
+import org.adempiere.mm.attributes.AttributeId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -39,9 +41,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.product.ProductId;
 
 /**
  * Creates/Updates model's {@link I_M_AttributeInstance}s based on {@link ICountryAware}.
@@ -91,8 +93,8 @@ public class CountryAwareAttributeUpdater
 		//
 		// Get M_Attribute_ID
 		final ICountryAwareAttributeService countryAwareAttributeService = getCountryAwareAttributeService();
-		final int attributeId = countryAwareAttributeService.getM_Attribute_ID(countryAware);
-		if (attributeId <= 0)
+		final AttributeId attributeId = countryAwareAttributeService.getAttributeId(countryAware);
+		if (attributeId == null)
 		{
 			// Attribute was not configured
 			return;
@@ -100,8 +102,8 @@ public class CountryAwareAttributeUpdater
 
 		//
 		// Get M_Attribute, if applies to our product
-		final I_M_Product product = asiAware.getM_Product();
-		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(product, attributeId);
+		final ProductId productId = ProductId.ofRepoId(asiAware.getM_Product_ID());
+		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, attributeId);
 		if (attribute == null)
 		{
 			// The product's attribute set doesn't contain our attribute. Do nothing.

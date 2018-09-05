@@ -8,10 +8,10 @@ import java.sql.Timestamp;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_RequestType;
@@ -104,15 +104,14 @@ public class RequestDAO implements IRequestDAO
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
 
-		final I_M_Attribute qualityNoteAttribute = qualityNoteDAO.getQualityNoteAttribute(Env.getCtx());
-
-		if (qualityNoteAttribute == null)
+		final AttributeId qualityNoteAttributeId = qualityNoteDAO.getQualityNoteAttributeId();
+		if (qualityNoteAttributeId == null)
 		{
 			// nothing to do. Quality Note attribute not defined
 			return null;
 		}
 
-		final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(line.getM_AttributeSetInstance(), qualityNoteAttribute.getM_Attribute_ID());
+		final I_M_AttributeInstance qualityNoteAI = Services.get(IAttributeDAO.class).retrieveAttributeInstance(line.getM_AttributeSetInstance(), qualityNoteAttributeId);
 
 		if (qualityNoteAI == null)
 		{

@@ -72,6 +72,8 @@
 		<module>de.metas.adempiere.adempiere</module>
 
 		<module>de.metas.business</module>
+		
+		<module>de.metas.inbound.mail</module>
 
 		<module>de.metas.jax.rs</module>
 
@@ -163,6 +165,8 @@
 
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>
+		<module>de.metas.vertical.pharma.msv3.schema.v1</module>
+		<module>de.metas.vertical.pharma.msv3.schema.v2</module>
 		<module>de.metas.vertical.pharma.msv3.server</module>
 		<module>de.metas.vertical.pharma.msv3.server-peer</module>
 		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
@@ -316,14 +320,6 @@
 				<groupId>javax.servlet</groupId>
 				<artifactId>jstl</artifactId>
 				<version>1.2</version>
-			</dependency>
-
-			<dependency>
-				<groupId>javax.mail</groupId>
-				<artifactId>mail</artifactId>
-				<!-- Version 1.4.1 would also be available as OSGI bundle for servicemix, 
-					see http://repo1.maven.org/maven2/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail -->
-				<version>1.4.3</version>
 			</dependency>
 
 			<!-- Concordion for acceptance testing -->

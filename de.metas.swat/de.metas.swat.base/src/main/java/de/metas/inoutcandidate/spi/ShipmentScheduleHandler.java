@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.spi;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -29,8 +30,11 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -78,7 +82,8 @@ public abstract class ShipmentScheduleHandler
 		/** mostly to help with debugging */
 		int attributeConfigId;
 
-		int attributeId;
+		@Nullable
+		AttributeId attributeId;
 
 		boolean onlyIfInReferencedRecordAsi;
 	}
@@ -99,7 +104,7 @@ public abstract class ShipmentScheduleHandler
 				.map(attributeConfigRecord -> AttributeConfig.builder()
 						.attributeConfigId(attributeConfigRecord.getM_ShipmentSchedule_AttributeConfig_ID())
 						.orgId(attributeConfigRecord.getAD_Org_ID())
-						.attributeId(attributeConfigRecord.getM_Attribute_ID())
+						.attributeId(AttributeId.ofRepoIdOrNull(attributeConfigRecord.getM_Attribute_ID()))
 						.onlyIfInReferencedRecordAsi(attributeConfigRecord.isOnlyIfInReferencedASI()).build())
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -114,12 +119,8 @@ public abstract class ShipmentScheduleHandler
 	 * <li>The framework will create a {@link I_M_IolCandHandler_Log} record for every object returned by this method.</li>
 	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link IInOutCandHandlerListener}</li>
 	 * </ul>
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
-	public abstract List<Object> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
+	public abstract Iterator<? extends Object> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
 
 	/**
 	 * Creates missing candidates for the given model.
@@ -241,13 +242,13 @@ public abstract class ShipmentScheduleHandler
 
 		final Optional<AttributeConfig> matchingConfigIfPresent = attributeConfigs
 				.stream()
-				.filter(c -> c.getAttributeId() == m_Attribute.getM_Attribute_ID())
+				.filter(c -> AttributeId.toRepoId(c.getAttributeId()) == m_Attribute.getM_Attribute_ID())
 				.sorted(orgComparator)
 				.findFirst();
 
 		final Optional<AttributeConfig> wildCardConfigIfPresent = attributeConfigs
 				.stream()
-				.filter(c -> c.getAttributeId() <= 0)
+				.filter(c -> c.getAttributeId() == null)
 				.sorted(orgComparator)
 				.findFirst();
 

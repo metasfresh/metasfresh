@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.window.api.IADFieldDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -242,7 +241,7 @@ public class AD_Window_CreateUIElements extends JavaProcess
 
 			final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft, 10);
 
-			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(masterTab));
+			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADWindowDAO.class).retrieveFields(masterTab));
 			adFields.sort(ORDERING_AD_Field_BySeqNo);
 
 			final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
@@ -295,7 +294,7 @@ public class AD_Window_CreateUIElements extends JavaProcess
 			final I_AD_UI_Column uiColumn = createUIColumn(uiSection, 10);
 			final I_AD_UI_ElementGroup uiElementGroup = createUIElementGroup(uiColumn, 10);
 
-			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADFieldDAO.class).retrieveFields(detailTab));
+			final List<I_AD_Field> adFields = new ArrayList<>(Services.get(IADWindowDAO.class).retrieveFields(detailTab));
 			adFields.sort(ORDERING_AD_Field_BySeqNoGrid);
 
 			final Map<String, I_AD_UI_Element> uiElementsById = new HashMap<>();
@@ -406,7 +405,7 @@ public class AD_Window_CreateUIElements extends JavaProcess
 
 			uiElement.setIsDisplayed_SideList(false);
 			uiElement.setSeqNo_SideList(0);
-			
+
 			// #1019 set the widget size in the UI element if it was set in the original element
 			final I_AD_Element element = adField.getAD_Column().getAD_Element();
 			uiElement.setWidgetSize(element.getWidgetSize());
