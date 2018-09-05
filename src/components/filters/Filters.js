@@ -15,30 +15,63 @@ class Filters extends Component {
     widgetShown: false,
   };
 
-  componentWillReceiveProps(props) {
-    this.init(props.filtersActive);
+  componentWillReceiveProps() {
+    this.parseActiveFilters();
   }
 
   componentDidMount() {
-    const { filtersActive } = this.props;
-    filtersActive && this.init(filtersActive);
+    this.parseActiveFilters();
   }
-
-  init = filter => {
-    if (filter) {
-      this.parseActiveFilters();
-    } else {
-      this.setState({
-        activeFilter: null,
-        activeFiltersCaptions: {},
-      });
-    }
-  };
 
   // PARSING FILTERS ---------------------------------------------------------
   parseActiveFilters = () => {
-    const { filtersActive, filterData } = this.props;
+    let { filtersActive, filterData } = this.props;
     const activeFiltersCaptions = {};
+
+    // find any filters with default values first and extend
+    // activeFilters with them
+    filterData.forEach((filter, filterId) => {
+      // console.log('filter: ', filterData)
+      filter.parameters &&
+        filter.parameters.forEach(({ defaultValue, parameterName }) => {
+          if (defaultValue) {
+            const isActive = filtersActive.has(filterId);
+
+            console.log('parseActive: ', defaultValue, parameterName, filterId, isActive)
+
+            if (!isActive) {
+              filtersActive = filtersActive.set(filterId, {
+                filterId,
+                parameters: [],
+              });
+            }
+
+            const singleActiveFilter = filtersActive.get(filterId);
+            const paramsArray = singleActiveFilter.parameters;
+            let length = paramsArray.length,
+              extendedParams = [],
+              seen = new Set();
+
+            outer: for (let index = 0; index < length; index += 1) {
+              let name = paramsArray[index].parameterName;
+              if (seen.has(name) || !paramsArray[index].defaultValue) {
+                continue outer;
+              }
+
+              seen.add(name);
+              extendedParams.push({
+                parameterName,
+                value: defaultValue,
+              });
+            }
+
+            filtersActive = filtersActive.set(filterId, {
+              filterId,
+              parameters: extendedParams,
+            });
+          }
+        });
+    });
 
     if (filtersActive.size) {
       filtersActive.forEach((filter, filterId) => {
