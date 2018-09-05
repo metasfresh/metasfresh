@@ -12,7 +12,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.context.IntegrationFlowContext;
-import org.springframework.integration.dsl.mail.Mail;
+import org.springframework.integration.mail.dsl.Mail;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
