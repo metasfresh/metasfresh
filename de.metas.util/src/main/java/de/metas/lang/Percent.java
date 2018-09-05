@@ -136,11 +136,16 @@ public class Percent
 		return valueAsBigDecimal.signum() == 0;
 	}
 
+	public int signum()
+	{
+		return valueAsBigDecimal.signum();
+	}
+
 	public boolean isOneHundred()
 	{
 		return ONE_HUNDRED_VALUE.compareTo(valueAsBigDecimal) == 0;
 	}
-
+	
 	public Percent add(@NonNull final Percent percent)
 	{
 		if (isZero())
