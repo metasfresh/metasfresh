@@ -59,17 +59,17 @@ Leave empty or set the value to "-" if the functionality is not needed',Updated=
 
 -- 2018-09-05T14:21:27.892
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Classname='de.metas.ui.web.order.pricingConditions.process.PricingConditionsView_CopyRowToEditable',Updated=TO_TIMESTAMP('2018-09-05 14:21:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540954
+UPDATE AD_Process SET Classname='de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_CopyRowToEditable',Updated=TO_TIMESTAMP('2018-09-05 14:21:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540954
 ;
 
 -- 2018-09-05T14:21:58.365
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Classname='de.metas.ui.web.order.pricingConditions.process.PricingConditionsView_SaveEditableRow',Updated=TO_TIMESTAMP('2018-09-05 14:21:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540955
+UPDATE AD_Process SET Classname='de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_SaveEditableRow',Updated=TO_TIMESTAMP('2018-09-05 14:21:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540955
 ;
 
 -- 2018-09-05T14:22:22.446
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Classname='de.metas.ui.web.order.pricingConditions.process.WEBUI_SalesOrder_PricingConditionsView_Launcher',Updated=TO_TIMESTAMP('2018-09-05 14:22:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540953
+UPDATE AD_Process SET Classname='de.metas.ui.web.order.pricingconditions.process.WEBUI_SalesOrder_PricingConditionsView_Launcher',Updated=TO_TIMESTAMP('2018-09-05 14:22:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540953
 ;
 
 -- 2018-09-05T14:28:36.093
@@ -104,7 +104,7 @@ UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-09-05 14:34:4
 
 -- 2018-09-05T14:56:51.841
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544776,0,TO_TIMESTAMP('2018-09-05 14:56:51','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y','Zum Geschäftspartner ist kein Rabattschema/Preiskondition hinterlegt','I',TO_TIMESTAMP('2018-09-05 14:56:51','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web.order.pricingConditions.C_BPartnerHasNoPricingConditions')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544776,0,TO_TIMESTAMP('2018-09-05 14:56:51','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y','Zum Geschäftspartner ist kein Rabattschema/Preiskondition hinterlegt','I',TO_TIMESTAMP('2018-09-05 14:56:51','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web.order.pricingconditions.C_BPartnerHasNoPricingConditions')
 ;
 
 -- 2018-09-05T14:56:51.845
