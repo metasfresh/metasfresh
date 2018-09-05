@@ -73,7 +73,14 @@ public class UOMDAO implements IUOMDAO
 	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
 	{
 		UomId uomId = retrieveUomIdByX12DE355(ctx, x12de355, throwExIfNull);
-		return getById(uomId);
+		if (uomId == null)
+		{
+			return null;
+		}
+		else
+		{
+			return getById(uomId);
+		}
 	}
 
 	@Cached(cacheName = I_C_UOM.Table_Name
@@ -103,7 +110,7 @@ public class UOMDAO implements IUOMDAO
 			throw new AdempiereException("@NotFound@ @C_UOM_ID@ (@X12DE355@: " + x12de355 + ")");
 		}
 
-		return UomId.ofRepoId(uomId);
+		return UomId.ofRepoIdOrNull(uomId);
 	}
 
 	@Override
