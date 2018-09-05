@@ -50,6 +50,9 @@ public class PaymentProfitPriceActualComponent implements ProfitPriceActualCompo
 		this.paymentTermId = paymentTermId;
 	}
 
+	/**
+	 * Subtracts the expectable payment discount ("Skonto") from the given input.
+	 */
 	@Override
 	public Money applyToInput(@NonNull final Money input)
 	{

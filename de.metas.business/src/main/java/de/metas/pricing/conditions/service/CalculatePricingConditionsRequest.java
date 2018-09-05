@@ -80,12 +80,12 @@ public class CalculatePricingConditionsRequest
 			final PricingConditionsBreak forcePricingConditionsBreak,
 			final PricingConditionsBreakQuery pricingConditionsBreakQuery)
 	{
-//		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
-//		{
-//			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
-//		}
-//		else
-			if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
+		if (forcePricingConditionsBreak == null && pricingConditionsBreakQuery == null)
+		{
+			// TODO support PricingConditions that are not backed by discount schema breaks
+			throw new AdempiereException("forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified");
+		}
+		else if (forcePricingConditionsBreak != null && pricingConditionsBreakQuery != null)
 		{
 			throw new AdempiereException("Only forcePricingConditionsBreak or pricingConditionsBreakQuery shall be specified but not both");
 		}

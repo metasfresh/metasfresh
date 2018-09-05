@@ -98,12 +98,12 @@ public final class GroupCompensationLine
 
 		this.type = type;
 		this.amtType = amtType;
+		this.baseAmt = baseAmt != null ? baseAmt : BigDecimal.ZERO;
 
 		if (amtType == GroupCompensationAmtType.Percent)
 		{
 			Check.assumeNotNull(percentage, "Parameter percentage is not null");
-			
-			this.baseAmt = baseAmt != null ? baseAmt : BigDecimal.ZERO;
+
 			this.percentage = percentage;
 			this.qty = qty;
 			this.price = price;
@@ -113,8 +113,7 @@ public final class GroupCompensationLine
 		{
 			Check.assumeNotNull(qty, "Parameter qty is not null");
 			Check.assumeNotNull(price, "Parameter price is not null");
-			
-			this.baseAmt = null;
+
 			this.percentage = null;
 			this.qty = qty;
 			this.price = price;
@@ -131,14 +130,8 @@ public final class GroupCompensationLine
 		return amtType == GroupCompensationAmtType.Percent;
 	}
 
-	private void assertPercentageType()
-	{
-		Check.assume(isPercentage(), "Compensation line shall be of type percentage: {}", this);
-	}
-
 	void setBaseAmt(@NonNull final BigDecimal baseAmt)
 	{
-		assertPercentageType();
 		this.baseAmt = baseAmt;
 	}
 

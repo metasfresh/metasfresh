@@ -135,32 +135,32 @@ public class Group
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("None or more then one compensation lines found for id=" + id + " in group " + this)));
 	}
 
-	public void updateAllPercentageLines()
+	public void updateAllCompensationLines()
 	{
 		BigDecimal previousNetAmt = getRegularLinesNetAmt();
 
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
-			if (compensationLine.isPercentage())
-			{
-				updatePercentageLine(compensationLine, previousNetAmt);
-			}
+			updateCompensationLine(compensationLine, previousNetAmt);
 
 			previousNetAmt = previousNetAmt.add(compensationLine.getLineNetAmt());
 		}
 	}
 
-	private void updatePercentageLine(final GroupCompensationLine compensationLine, final BigDecimal baseAmt)
+	private void updateCompensationLine(final GroupCompensationLine compensationLine, final BigDecimal baseAmt)
 	{
 		compensationLine.setBaseAmt(baseAmt);
 
-		final Percent percentage = compensationLine.getPercentage();
-		final GroupCompensationType compensationType = compensationLine.getType();
+		if (compensationLine.isPercentage())
+		{
+			final Percent percentage = compensationLine.getPercentage();
+			final GroupCompensationType compensationType = compensationLine.getType();
 
-		final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
-		final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
+			final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
+			final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
-		compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
+			compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
+		}
 	}
 
 	public void addNewCompensationLine(final GroupCompensationLineCreateRequest request)
@@ -180,10 +180,7 @@ public class Group
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.build();
 
-		if (compensationLine.isPercentage())
-		{
-			updatePercentageLine(compensationLine, getTotalNetAmt());
-		}
+		updateCompensationLine(compensationLine, getTotalNetAmt());
 
 		compensationLines.add(compensationLine);
 	}
@@ -215,7 +212,7 @@ public class Group
 
 		compensationLines.addAll(manualCompensationLines);
 
-		updateAllPercentageLines();
+		updateAllCompensationLines();
 	}
 
 	public boolean isBasedOnGroupTemplate()

@@ -27,11 +27,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -39,6 +39,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
+import lombok.NonNull;
 
 public class UOMDAO implements IUOMDAO
 {
@@ -49,9 +50,37 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355)
+	public I_C_UOM getById(final UomId uomId)
 	{
-		return retrieveByX12DE355(ctx, x12de355, true);
+		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
+	}
+
+	@Override
+	public UomId getUomIdByX12DE355(final String x12de355)
+	{
+		final boolean throwExIfNull = true;
+		return retrieveUomIdByX12DE355(Env.getCtx(), x12de355, throwExIfNull);
+	}
+
+	@Override
+	public I_C_UOM retrieveByX12DE355(final Properties ctx, final String x12de355)
+	{
+		final boolean throwExIfNull = true;
+		return retrieveByX12DE355(ctx, x12de355, throwExIfNull);
+	}
+
+	@Override
+	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
+	{
+		UomId uomId = retrieveUomIdByX12DE355(ctx, x12de355, throwExIfNull);
+		if (uomId == null)
+		{
+			return null;
+		}
+		else
+		{
+			return getById(uomId);
+		}
 	}
 
 	@Cached(cacheName = I_C_UOM.Table_Name
@@ -59,25 +88,29 @@ public class UOMDAO implements IUOMDAO
 			+ "#" + I_C_UOM.COLUMNNAME_X12DE355
 			+ "#" + I_C_UOM.COLUMNNAME_IsDefault
 			+ "#" + I_C_UOM.COLUMNNAME_AD_Client_ID)
-	@Override
-	public I_C_UOM retrieveByX12DE355(@CacheCtx final Properties ctx, final String x12de355, final boolean throwExIfNull)
+	public UomId retrieveUomIdByX12DE355(
+			@CacheCtx final Properties ctx,
+			@NonNull final String x12de355,
+			final boolean throwExIfNull)
 	{
-		final IQueryBuilder<I_C_UOM> queryBuilder = Services.get(IQueryBL.class)
+		final int uomId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_UOM.class, ctx, ITrx.TRXNAME_None)
-				.addInArrayOrAllFilter(I_C_UOM.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, Env.getAD_Client_ID(ctx))
+				.addOnlyContextClientOrSystem()
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, x12de355)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
+				.orderBy()
 				.addColumn(I_C_UOM.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_C_UOM.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last);
+				.addColumn(I_C_UOM.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.firstId();
 
-		final I_C_UOM uom = queryBuilder.create().first(I_C_UOM.class);
-		if (uom == null && throwExIfNull)
+		if (uomId <= 0 && throwExIfNull)
 		{
 			throw new AdempiereException("@NotFound@ @C_UOM_ID@ (@X12DE355@: " + x12de355 + ")");
 		}
-		return uom;
+
+		return UomId.ofRepoIdOrNull(uomId);
 	}
 
 	@Override

@@ -30,6 +30,7 @@ import org.adempiere.util.lang.IContextAware;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.lang.Percent;
 import de.metas.lock.api.ILock;
 
 /**
@@ -103,7 +104,7 @@ public interface IInvoiceCandInvalidUpdater
 	static void updatePriceAndTax(final I_C_Invoice_Candidate ic, final PriceAndTax priceAndTax)
 	{
 		//
-		// Pricing System & Currency 
+		// Pricing System & Currency
 		if (priceAndTax.getPricingSystemId() != null)
 		{
 			ic.setM_PricingSystem_ID(priceAndTax.getPricingSystemId().getRepoId());
@@ -133,7 +134,7 @@ public interface IInvoiceCandInvalidUpdater
 		}
 		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(priceAndTax.getDiscount() != null ? priceAndTax.getDiscount().getValueAsBigDecimal() : null);
+			ic.setDiscount(Percent.getValueOrNull(priceAndTax.getDiscount()));
 		}
 
 		//
@@ -142,7 +143,7 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setIsTaxIncluded(priceAndTax.getTaxIncluded());
 		}
-		
+
 		//
 		// Compensation group
 		if(priceAndTax.getCompensationGroupBaseAmt() != null)

@@ -339,6 +339,17 @@ public final class Check
 		return assumeNotEmpty(collection, defaultExClazz, assumptionMessage, params);
 	}
 
+	public static <T> T assumeNotEmpty(
+			final Optional<T> optional,
+			final String assumptionMessage,
+			final Object... params)
+	{
+		final boolean cond = optional.isPresent();
+
+		assume(cond, defaultExClazz, assumptionMessage, params);
+		return optional.get();
+	}
+
 	/**
 	 * Like {@link #assumeNotEmpty(Collection, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in
 	 * {@link #setDefaultExClass(Class)}.

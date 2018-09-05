@@ -1,6 +1,14 @@
 package org.adempiere.ad.window.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -35,6 +43,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
@@ -42,13 +51,17 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.logging.LogManager;
 
 public class ADWindowDAO implements IADWindowDAO
 {
+	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
 
 	@Override
 	public ITranslatableString retrieveWindowName(final int adWindowId)
@@ -79,17 +92,23 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow)
 	{
+		return retrieveTabsQuery(adWindow)
+				.create()
+				.list(I_AD_Tab.class);
+	}
+
+	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final I_AD_Window window)
+	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 		return queryBL
-				.createQueryBuilder(I_AD_Tab.class, adWindow)
+				.createQueryBuilder(I_AD_Tab.class, window)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, adWindow.getAD_Window_ID())
+				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Window_ID, window.getAD_Window_ID())
 				.orderBy()
 				.addColumn(I_AD_Tab.COLUMN_SeqNo)
 				.addColumn(I_AD_Tab.COLUMN_AD_Tab_ID)
-				.endOrderBy()
-				.create()
-				.list(I_AD_Tab.class);
+				.endOrderBy();
 	}
 
 	@Override
@@ -136,6 +155,13 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public List<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection)
 	{
+		return retrieveUIColumnsQuery(uiSection)
+				.create()
+				.list(I_AD_UI_Column.class);
+	}
+
+	private IQueryBuilder<I_AD_UI_Column> retrieveUIColumnsQuery(final I_AD_UI_Section uiSection)
+	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_Column.class, uiSection)
@@ -144,9 +170,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.orderBy()
 				.addColumn(I_AD_UI_Column.COLUMN_SeqNo)
 				.addColumn(I_AD_UI_Column.COLUMN_AD_UI_Column_ID)
-				.endOrderBy()
-				.create()
-				.list(I_AD_UI_Column.class);
+				.endOrderBy();
 	}
 
 	@Override
@@ -269,7 +293,7 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(uiElementGroup, Boolean.TRUE);
 		uiElementGroup.setAD_UI_Column(toUIColumn);
 		uiElementGroup.setSeqNo(retrieveUIElementGroupsNextSeqNo(toUIColumn));
-		InterfaceWrapperHelper.save(uiElementGroup);
+		save(uiElementGroup);
 	}
 
 	@Override
@@ -287,7 +311,7 @@ public class ADWindowDAO implements IADWindowDAO
 		InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(uiElement, Boolean.TRUE);
 		uiElement.setAD_UI_ElementGroup(toUIElementGroup);
 		uiElement.setSeqNo(retrieveUIElementNextSeqNo(toUIElementGroup));
-		InterfaceWrapperHelper.save(uiElement);
+		save(uiElement);
 	}
 
 	@Override
@@ -300,6 +324,556 @@ public class ADWindowDAO implements IADWindowDAO
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
 				.create()
 				.firstOnly(I_AD_Tab.class);
+	}
+
+	@Override
+	public void copyWindow(final int targetWindowId, final int sourceWindowId)
+	{
+		Check.assumeGreaterThanZero(targetWindowId, "targetProcessId");
+		Check.assumeGreaterThanZero(sourceWindowId, "sourceProcessId");
+
+		final I_AD_Window targetWindow = load(targetWindowId, I_AD_Window.class);
+		final I_AD_Window sourceWindow = load(sourceWindowId, I_AD_Window.class);
+
+		logger.debug("Copying from: {} to: {}", sourceWindow, targetWindow);
+
+		copy()
+				.setSkipCalculatedColumns(true)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
+				.setFrom(sourceWindow)
+				.setTo(targetWindow)
+				.copy();
+
+		save(targetWindow);
+
+		copyWindowTrl(targetWindowId, sourceWindowId);
+
+		copyTabs(targetWindow, sourceWindow);
+	}
+
+	private void copyWindowTrl(final int targetWindowId, final int sourceWindowId)
+	{
+		Check.assumeGreaterThanZero(targetWindowId, "targetWindowId");
+		Check.assumeGreaterThanZero(sourceWindowId, "sourceWindowId");
+
+		final String sqlDelete = "DELETE FROM AD_Window_Trl WHERE AD_Window_ID = " + targetWindowId;
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Window_Trl deleted: {}", countDelete);
+
+		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language, " +
+				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+				" Name, Description, Help, IsTranslated) " +
+				" SELECT " + targetWindowId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
+				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId;
+
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Window_Trl inserted: {}", countInsert);
+	}
+
+	private void copyUISections(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
+	{
+		final Map<String, I_AD_UI_Section> existingUISections = retrieveUISectionsQuery(Env.getCtx(), targetTab.getAD_Tab_ID()).create().map(I_AD_UI_Section.class, I_AD_UI_Section::getValue);
+		final Collection<I_AD_UI_Section> sourceUISections = retrieveUISections(sourceTab);
+
+		for (final I_AD_UI_Section sourceUISection : sourceUISections)
+		{
+			final I_AD_UI_Section existingUISection = existingUISections.get(sourceUISection.getValue());
+			copyUISection(targetTab, existingUISection, sourceUISection);
+		}
+	}
+
+	private void copyUISection(final I_AD_Tab targetTab, final I_AD_UI_Section existingUISection, final I_AD_UI_Section sourceUISection)
+	{
+		logger.debug("Copying UISection {} to {}", sourceUISection, targetTab);
+
+		final I_AD_UI_Section targetUISection = createUpdateUISection(targetTab, existingUISection, sourceUISection);
+
+		copyUISectionTrl(targetUISection.getAD_UI_Section_ID(), sourceUISection.getAD_UI_Section_ID());
+
+		copyUIColumns(targetUISection, sourceUISection);
+	}
+
+	private I_AD_UI_Section createUpdateUISection(final I_AD_Tab targetTab, final I_AD_UI_Section existingUISection, final I_AD_UI_Section sourceUISection)
+	{
+		final I_AD_UI_Section targetUISection = existingUISection != null ? existingUISection : newInstance(I_AD_UI_Section.class);
+
+		copy()
+				.setFrom(sourceUISection)
+				.setTo(targetUISection)
+				.copy();
+
+		targetUISection.setAD_Org_ID(sourceUISection.getAD_Org_ID());
+
+		final int targetTabId = targetTab.getAD_Tab_ID();
+		targetUISection.setAD_Tab_ID(targetTabId);
+
+		if (targetUISection.getSeqNo() <= 0)
+		{
+			final int lastSeqNo = retrieveUISectionLastSeqNo(targetTabId);
+			targetUISection.setSeqNo(lastSeqNo + 10);
+		}
+
+		save(targetUISection);
+
+		return targetUISection;
+	}
+
+	private int retrieveUISectionLastSeqNo(int tabId)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Section.class)
+				.addEqualsFilter(I_AD_UI_Section.COLUMNNAME_AD_Tab_ID, tabId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_AD_UI_Section.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
+		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+
+	private void copyUISectionTrl(final int targetUISectionId, final int sourceUISectionId)
+	{
+		Check.assumeGreaterThanZero(targetUISectionId, "targetUISectionId");
+		Check.assumeGreaterThanZero(sourceUISectionId, "sourceUISectionId");
+
+		final String sqlDelete = "DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + targetUISectionId;
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_UI_Section_Trl deleted: {}", countDelete);
+
+		final String sqlInsert = "INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language, " +
+				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+				" Name, IsTranslated) " +
+				" SELECT " + targetUISectionId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+				" Updated, UpdatedBy, Name, IsTranslated " +
+				" FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + sourceUISectionId;
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_UI_Section_Trl inserted: {}", countInsert);
+	}
+
+	private void copyUIElementGroups(final I_AD_UI_Column targetUIColumn, final I_AD_UI_Column sourceUIColumn)
+	{
+		final Map<String, I_AD_UI_ElementGroup> existingUIElementGroups = retrieveUIElementGroupsQuery(targetUIColumn).create().map(I_AD_UI_ElementGroup.class, I_AD_UI_ElementGroup::getName);
+		final Collection<I_AD_UI_ElementGroup> sourceUIElementGroups = retrieveUIElementGroups(sourceUIColumn);
+
+		for (final I_AD_UI_ElementGroup sourceUIElementGroup : sourceUIElementGroups)
+		{
+			final I_AD_UI_ElementGroup existingUIElementGroup = existingUIElementGroups.get(sourceUIElementGroup.getName());
+			copyUIElementGroup(targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
+		}
+	}
+
+	private void copyUIElementGroup(final I_AD_UI_Column targetUIColumn, final I_AD_UI_ElementGroup existingUIElementGroup, final I_AD_UI_ElementGroup sourceUIElementGroup)
+	{
+		logger.debug("Copying UIElementGroup {} to {}", sourceUIElementGroup, targetUIColumn);
+
+		final I_AD_UI_ElementGroup targetUIElementGroup = createUpdateUIElementGroup(targetUIColumn, existingUIElementGroup, sourceUIElementGroup);
+
+		copyUIElements(targetUIElementGroup, sourceUIElementGroup);
+	}
+
+	private I_AD_UI_ElementGroup createUpdateUIElementGroup(final I_AD_UI_Column targetUIColumn, final I_AD_UI_ElementGroup existingUIElementGroup, final I_AD_UI_ElementGroup sourceUIElementGroup)
+	{
+		final I_AD_UI_ElementGroup targetUIElementGroup = existingUIElementGroup != null ? existingUIElementGroup : newInstance(I_AD_UI_ElementGroup.class);
+
+		copy()
+				.setFrom(sourceUIElementGroup)
+				.setTo(targetUIElementGroup)
+				.copy();
+
+		targetUIElementGroup.setAD_Org_ID(targetUIColumn.getAD_Org_ID());
+		targetUIElementGroup.setAD_UI_Column_ID(targetUIColumn.getAD_UI_Column_ID());
+
+		if (targetUIElementGroup.getSeqNo() <= 0)
+		{
+			final int targetUIColumnId = targetUIColumn.getAD_UI_Column_ID();
+			final int lastSeqNo = retrieveUIElementGroupLastSeqNo(targetUIColumnId);
+			targetUIElementGroup.setSeqNo(lastSeqNo + 10);
+		}
+
+		save(targetUIElementGroup);
+
+		return targetUIElementGroup;
+	}
+
+	private int retrieveUIElementGroupLastSeqNo(int uiColumnId)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_ElementGroup.class)
+				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_Column_ID, uiColumnId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_AD_UI_ElementGroup.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
+		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+
+	private void copyUIElementFields(final I_AD_UI_Element targetUIElement, final I_AD_UI_Element sourceUIElement)
+	{
+		final Map<Integer, I_AD_UI_ElementField> existingTargetUIElementFields = retrieveUIElementFieldsQuery(targetUIElement).create().map(I_AD_UI_ElementField.class, I_AD_UI_ElementField::getSeqNo);
+		final Collection<I_AD_UI_ElementField> sourceUIElementFields = retrieveUIElementFields(sourceUIElement);
+
+		for (final I_AD_UI_ElementField sourceUIElementField : sourceUIElementFields)
+		{
+			final I_AD_UI_ElementField existingTargetElementField = existingTargetUIElementFields.get(sourceUIElementField.getSeqNo());
+			copyUIElementField(targetUIElement, existingTargetElementField, sourceUIElementField);
+		}
+	}
+
+	private void copyUIElementField(final I_AD_UI_Element targetUIElement, final I_AD_UI_ElementField existingTargetElementField, final I_AD_UI_ElementField sourceUIElementField)
+	{
+		logger.debug("Copying UI Element Field {} to {}", sourceUIElementField, targetUIElement);
+
+		createUpdateUIElementField(targetUIElement, existingTargetElementField, sourceUIElementField);
+	}
+
+	private void createUpdateUIElementField(final I_AD_UI_Element targetUIElement, final I_AD_UI_ElementField existingTargetElementField, final I_AD_UI_ElementField sourceUIElementField)
+	{
+		final I_AD_UI_ElementField targetUIElementField = existingTargetElementField != null ? existingTargetElementField : newInstance(I_AD_UI_ElementField.class);
+
+		copy()
+				.setFrom(sourceUIElementField)
+				.setTo(targetUIElementField)
+				.copy();
+
+		targetUIElementField.setAD_Org_ID(targetUIElement.getAD_Org_ID());
+		targetUIElementField.setSeqNo(sourceUIElementField.getSeqNo());
+
+		final int targetUIElementId = targetUIElement.getAD_UI_Element_ID();
+		targetUIElementField.setAD_UI_Element_ID(targetUIElementId);
+
+		final int targetFieldId = getTargetFieldId(sourceUIElementField, targetUIElement);
+		targetUIElementField.setAD_Field_ID(targetFieldId);
+
+		save(targetUIElementField);
+	}
+
+	private int getTargetFieldId(final I_AD_UI_ElementField sourceUIElementField, final I_AD_UI_Element targetElement)
+	{
+		if (sourceUIElementField.getAD_Field_ID() <= 0)
+		{
+			return -1;
+		}
+
+		final I_AD_Field sourceField = sourceUIElementField.getAD_Field();
+
+		final int columnId = sourceField.getAD_Column_ID();
+
+		final I_AD_UI_ElementGroup uiElementGroup = targetElement.getAD_UI_ElementGroup();
+
+		final I_AD_UI_Column uiColumn = uiElementGroup.getAD_UI_Column();
+
+		final I_AD_UI_Section uiSection = uiColumn.getAD_UI_Section();
+
+		final I_AD_Tab tab = uiSection.getAD_Tab();
+
+		final Optional<I_AD_Field> fieldForColumn = retrieveFields(tab)
+				.stream()
+				.filter(field -> field.getAD_Column_ID() == columnId)
+				.findFirst();
+
+		return fieldForColumn.isPresent() ? fieldForColumn.get().getAD_Field_ID() : -1;
+	}
+
+	private void copyUIElements(final I_AD_UI_ElementGroup targetUIElementGroup, final I_AD_UI_ElementGroup sourceUIElementGroup)
+	{
+		final Map<String, I_AD_UI_Element> existingTargetUIElements = retrieveUIElementsQuery(targetUIElementGroup).create().map(I_AD_UI_Element.class, I_AD_UI_Element::getName);
+		final Collection<I_AD_UI_Element> sourceUIElements = retrieveUIElements(sourceUIElementGroup);
+
+		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
+		{
+			final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
+			copyUIElement(targetUIElementGroup, existingTargetElement, sourceUIElement);
+		}
+
+	}
+
+	private void copyUIElement(final I_AD_UI_ElementGroup targetElementGroup, final I_AD_UI_Element existingTargetElement, final I_AD_UI_Element sourceUIElement)
+	{
+		logger.debug("Copying UI Element {} to {}", sourceUIElement, targetElementGroup);
+
+		final I_AD_UI_Element targetUIElement = createUpdateUIElement(targetElementGroup, existingTargetElement, sourceUIElement);
+
+		copyUIElementFields(targetUIElement, sourceUIElement);
+	}
+
+	private I_AD_UI_Element createUpdateUIElement(final I_AD_UI_ElementGroup targetElementGroup, final I_AD_UI_Element existingTargetElement, final I_AD_UI_Element sourceElement)
+	{
+		final int targetElementGroupId = targetElementGroup.getAD_UI_ElementGroup_ID();
+
+		final I_AD_UI_Element targetElement = existingTargetElement != null ? existingTargetElement : newInstance(I_AD_UI_Element.class);
+
+		copy()
+				.setFrom(sourceElement)
+				.setTo(targetElement)
+				.copy();
+
+		targetElement.setAD_Org_ID(targetElementGroup.getAD_Org_ID());
+		targetElement.setAD_UI_ElementGroup_ID(targetElementGroupId);
+
+		final int tabId = getTabId(targetElementGroup);
+		targetElement.setAD_Tab_ID(tabId);
+
+		final int targetFieldId = getTargetFieldId(sourceElement, tabId);
+		targetElement.setAD_Field_ID(targetFieldId);
+
+		if (targetElement.getSeqNo() <= 0)
+		{
+			final int lastSeqNo = retrieveUIElementLastSeqNo(targetElementGroupId);
+			targetElement.setSeqNo(lastSeqNo + 10);
+		}
+
+		save(targetElement);
+
+		return targetElement;
+	}
+
+	private int getTabId(final I_AD_UI_ElementGroup targetElementGroup)
+	{
+		final I_AD_UI_Column uiColumn = targetElementGroup.getAD_UI_Column();
+
+		final I_AD_UI_Section uiSection = uiColumn.getAD_UI_Section();
+
+		return uiSection.getAD_Tab_ID();
+	}
+
+	private int getTargetFieldId(final I_AD_UI_Element sourceElement, final int tabId)
+	{
+		if (sourceElement.getAD_Field_ID() <= 0)
+		{
+			return -1;
+		}
+		final I_AD_Field sourceField = sourceElement.getAD_Field();
+
+		final int columnId = sourceField.getAD_Column_ID();
+
+		final I_AD_Tab tab = load(tabId, I_AD_Tab.class);
+
+		final Optional<I_AD_Field> fieldForColumn = retrieveFields(tab)
+				.stream()
+				.filter(field -> field.getAD_Column_ID() == columnId)
+				.findFirst();
+
+		return fieldForColumn.isPresent() ? fieldForColumn.get().getAD_Field_ID() : -1;
+	}
+
+	private int retrieveUIElementLastSeqNo(int uiElementGroupId)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Element.class)
+				.addEqualsFilter(I_AD_UI_Element.COLUMNNAME_AD_UI_ElementGroup_ID, uiElementGroupId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_AD_UI_Element.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
+		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+
+	private void copyUIColumns(final I_AD_UI_Section targetUISection, final I_AD_UI_Section sourceUISection)
+	{
+		final Map<Integer, I_AD_UI_Column> existingUIColumns = retrieveUIColumnsQuery(targetUISection).create().map(I_AD_UI_Column.class, I_AD_UI_Column::getSeqNo);
+		final Collection<I_AD_UI_Column> sourceUIColumns = retrieveUIColumns(sourceUISection);
+
+		for (final I_AD_UI_Column sourceUIColumn : sourceUIColumns)
+		{
+			final I_AD_UI_Column existingUIColumn = existingUIColumns.get(sourceUIColumn.getSeqNo());
+			copyUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
+		}
+	}
+
+	private void copyUIColumn(final I_AD_UI_Section targetUISection, final I_AD_UI_Column existingUIColumn, final I_AD_UI_Column sourceUIColumn)
+	{
+		logger.debug("Copying UIColumn {} to {}", sourceUIColumn, targetUISection);
+
+		final I_AD_UI_Column targetUIColumn = createUpdateUIColumn(targetUISection, existingUIColumn, sourceUIColumn);
+
+		copyUIElementGroups(targetUIColumn, sourceUIColumn);
+	}
+
+	private I_AD_UI_Column createUpdateUIColumn(final I_AD_UI_Section targetUISection, final I_AD_UI_Column existingUIColumn, final I_AD_UI_Column sourceUIColumn)
+	{
+
+		final I_AD_UI_Column targetUIColumn = existingUIColumn != null ? existingUIColumn : newInstance(I_AD_UI_Column.class);
+
+		copy()
+				.addTargetColumnNameToSkip(I_AD_UI_Column.COLUMNNAME_SeqNo)
+				.setFrom(sourceUIColumn)
+				.setTo(targetUIColumn)
+				.copy();
+
+		targetUIColumn.setAD_Org_ID(targetUISection.getAD_Org_ID());
+		targetUIColumn.setAD_UI_Section_ID(targetUISection.getAD_UI_Section_ID());
+		targetUIColumn.setSeqNo(sourceUIColumn.getSeqNo());
+
+		save(targetUIColumn);
+
+		return targetUIColumn;
+	}
+
+	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
+	{
+		final Map<Integer, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindow).create().map(I_AD_Tab.class, I_AD_Tab::getAD_Table_ID);
+		final Collection<I_AD_Tab> sourceTabs = retrieveTabs(sourceWindow);
+
+		for (final I_AD_Tab sourceTab : sourceTabs)
+		{
+			final I_AD_Tab existingTargetTab = existingTargetTabs.get(sourceTab.getAD_Table_ID());
+			copyTab(targetWindow, existingTargetTab, sourceTab);
+		}
+	}
+
+	private void copyTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
+	{
+		logger.debug("Copying tab {} to {}", sourceTab, targetWindow);
+
+		final I_AD_Tab targetTab = createUpdateTab(targetWindow, existingTargetTab, sourceTab);
+
+		copyTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
+
+		copyFields(targetTab, sourceTab);
+		copyUISections(targetTab, sourceTab);
+	}
+
+	private I_AD_Tab createUpdateTab(final I_AD_Window targetWindow, final I_AD_Tab existingTargetTab, final I_AD_Tab sourceTab)
+	{
+		final int targetWindowId = targetWindow.getAD_Window_ID();
+
+		final I_AD_Tab targetTab = existingTargetTab != null ? existingTargetTab : newInstance(I_AD_Tab.class);
+
+		copy()
+				.setFrom(sourceTab)
+				.setTo(targetTab)
+				.copy();
+
+		targetTab.setAD_Org_ID(targetWindow.getAD_Org_ID());
+		targetTab.setAD_Window_ID(targetWindowId);
+
+		final String entityType = targetWindow.getEntityType();
+		targetTab.setEntityType(entityType);
+
+		if (targetTab.getSeqNo() <= 0)
+		{
+			final int lastSeqNo = retrieveTabLastSeqNo(targetWindowId);
+			targetTab.setSeqNo(lastSeqNo + 10);
+		}
+		save(targetTab);
+
+		return targetTab;
+	}
+
+	private int retrieveTabLastSeqNo(int windowId)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, windowId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_AD_Tab.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
+		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+
+	private void copyTabTrl(final int targetTabId, final int sourceTabId)
+	{
+		Check.assumeGreaterThanZero(targetTabId, "targetTabId");
+		Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");
+
+		final String sqlDelete = "DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = " + targetTabId;
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Tab_Trl deleted: {}", countDelete);
+
+		final String sqlInsert = "INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language, " +
+				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+				" Name, Description, Help, CommitWarning, IsTranslated) " +
+				" SELECT " + targetTabId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+				" Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated " +
+				" FROM AD_Tab_Trl WHERE AD_Tab_ID = " + sourceTabId;
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Tab_Trl inserted: {}", countInsert);
+	}
+
+	private void copyFields(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
+	{
+		final Map<Integer, I_AD_Field> existingTargetFields = retrieveFieldsQuery(targetTab).create().map(I_AD_Field.class, I_AD_Field::getAD_Column_ID);
+		final Collection<I_AD_Field> sourceFields = retrieveFields(sourceTab);
+
+		for (final I_AD_Field sourceField : sourceFields)
+		{
+			final I_AD_Field existingTargetField = existingTargetFields.get(sourceField.getAD_Column_ID());
+			copyField(targetTab, existingTargetField, sourceField);
+		}
+
+	}
+
+	private void copyField(final I_AD_Tab targetTab, final I_AD_Field existingTargetField, final I_AD_Field sourceField)
+	{
+		logger.debug("Copying field {} to {}", sourceField, targetTab);
+
+		final int targetTabId = targetTab.getAD_Tab_ID();
+		final String entityType = targetTab.getEntityType();
+
+		final I_AD_Field targetField = existingTargetField != null ? existingTargetField : newInstance(I_AD_Field.class);
+
+		copy()
+				.setFrom(sourceField)
+				.setTo(targetField)
+				.copy();
+		targetField.setAD_Org_ID(targetTab.getAD_Org_ID());
+		targetField.setAD_Tab_ID(targetTabId);
+		targetField.setEntityType(entityType);
+
+		if (targetField.getSeqNo() <= 0)
+		{
+			final int lastSeqNo = retrieveFieldLastSeqNo(targetTabId);
+			targetField.setSeqNo(lastSeqNo + 10);
+		}
+
+		save(targetField);
+
+		copyFieldTrl(targetField.getAD_Field_ID(), sourceField.getAD_Field_ID());
+	}
+
+	private int retrieveFieldLastSeqNo(int tabId)
+	{
+		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field.class)
+				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_AD_Field.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
+		return lastSeqNo == null ? 0 : lastSeqNo;
+	}
+
+	private void copyFieldTrl(final int targetFieldId, final int sourceFieldId)
+	{
+		Check.assumeGreaterThanZero(targetFieldId, "targetFieldId");
+		Check.assumeGreaterThanZero(sourceFieldId, "sourceFieldId");
+
+		final String sqlDelete = "DELETE FROM AD_Field_Trl WHERE AD_Field_ID = " + targetFieldId;
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Field_Trl deleted: {}", countDelete);
+
+		final String sqlInsert = "INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language, " +
+				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
+				" Name, Description, Help, IsTranslated) " +
+				" SELECT " + targetFieldId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
+				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
+				" FROM AD_Field_Trl WHERE AD_Field_ID = " + sourceFieldId;
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		logger.debug("AD_Field_Trl inserted: {}", countInsert);
+	}
+
+	@Override
+	public List<I_AD_Field> retrieveFields(final I_AD_Tab adTab)
+	{
+
+		return retrieveFieldsQuery(adTab)
+				.create()
+				.list();
+	}
+
+	private IQueryBuilder<I_AD_Field> retrieveFieldsQuery(final I_AD_Tab tab)
+	{
+		Check.assumeNotNull(tab, "adTab not null");
+
+		final IQueryBuilder<I_AD_Field> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Field.class, tab)
+				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tab.getAD_Tab_ID());
+
+		return queryBuilder.orderBy()
+				.addColumn(I_AD_Field.COLUMNNAME_AD_Field_ID)
+				.endOrderBy();
 	}
 
 }

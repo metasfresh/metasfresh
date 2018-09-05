@@ -1,10 +1,15 @@
 package de.metas.contracts.refund;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
+
+import org.adempiere.util.Check;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.lang.Percent;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +38,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class RefundConfig
 {
 	public enum RefundInvoiceType
@@ -41,19 +45,110 @@ public class RefundConfig
 		INVOICE, CREDITMEMO;
 	}
 
-	@NonNull
+	public enum RefundBase
+	{
+		PERCENTAGE, AMOUNT_PER_UNIT;
+	}
+
+	public enum RefundMode
+	{
+		/** The config matching the respective minQty is applied only to the part that exceeds that quantity. */
+		APPLY_TO_EXCEEDING_QTY,
+
+		/** The config matching the respective minQty is applied to all assignments. */
+		APPLY_TO_ALL_QTIES;
+	}
+
+
+	RefundConfigId id;
+
+	/**
+	 *  Why BigDecimal and not Quantity: this config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product.
+	 */
+	BigDecimal minQty;
+
 	RefundInvoiceType refundInvoiceType;
 
-	@NonNull
+	RefundBase refundBase;
+
 	Percent percent;
 
+	Money amount;
+
 	/** {@code null} means that every product is matched. */
-	@Nullable
 	ProductId productId;
 
-	@NonNull
 	InvoiceSchedule invoiceSchedule;
 
-	@NonNull
 	ConditionsId conditionsId;
+
+	boolean useInProfitCalculation;
+
+
+	RefundMode refundMode;
+
+	@Builder(toBuilder = true)
+	public RefundConfig(
+			@Nullable final RefundConfigId id, // may be null if not yet persisted
+			@NonNull final RefundInvoiceType refundInvoiceType,
+			@NonNull final RefundBase refundBase,
+			@Nullable final Percent percent,
+			@Nullable final Money amount,
+			@Nullable final ProductId productId,
+			@Nullable final InvoiceSchedule invoiceSchedule,
+			@NonNull final ConditionsId conditionsId,
+			boolean useInProfitCalculation,
+			@NonNull final BigDecimal minQty,
+			@NonNull final RefundMode refundMode)
+	{
+		this.id = id;
+		this.refundInvoiceType = refundInvoiceType;
+		this.refundBase = refundBase;
+		this.productId = productId;
+		this.invoiceSchedule = invoiceSchedule;
+		this.conditionsId = conditionsId;
+		this.useInProfitCalculation = useInProfitCalculation;
+
+		if (RefundBase.PERCENTAGE.equals(refundBase))
+		{
+			this.amount = null;
+			this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null", RefundBase.PERCENTAGE);
+		}
+		else
+		{
+			this.amount = Check.assumeNotNull(amount, "If parameter 'refundBase'={}, then parameter 'amount' may not be null", RefundBase.AMOUNT_PER_UNIT);
+			this.percent = null;
+		}
+
+		Check.errorIf(minQty.signum() < 0, "Parameter 'minQty' may not be negative; minQty={}", minQty);
+		this.minQty = minQty;
+
+		this.refundMode = refundMode;
+
+		Check.errorIf(invoiceSchedule == null && !isZeroConfig(),
+				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");
+	}
+
+	public boolean isZeroConfig()
+	{
+		return minQty.signum() <= 0
+				&& (amount == null || amount.isZero())
+				&& (percent == null || percent.isZero());
+	}
+
+	/**
+	 * If an {@link AssignmentToRefundCandidate} is created using this config,
+	 * then this method decides if that assignement's quantity shall be part of the sum
+	 * when computing the respective {@link RefundInvoiceCandidate}'s assigned quantity.
+	 *
+	 */
+	public boolean isIncludeAssignmentsWithThisConfigInSum()
+	{
+		if (RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundMode))
+		{
+			return true;
+		}
+
+		return minQty.signum() <= 0;
+	}
 }

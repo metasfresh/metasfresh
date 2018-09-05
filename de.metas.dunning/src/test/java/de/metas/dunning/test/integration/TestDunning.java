@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.dunning.test.integration;
 
@@ -13,12 +13,12 @@ package de.metas.dunning.test.integration;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,6 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
@@ -62,7 +61,7 @@ import de.metas.interfaces.I_C_DocType;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class TestDunning extends DunningTestBase
 {
@@ -219,7 +218,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Assert no invoice shall be wrote-off at this moment (we are still on level1)
-		Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(dunningContext.getCtx(), "writeoff test", NullLoggable.instance);
+		Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(dunningContext.getCtx(), "writeoff test");
 		Assert.assertFalse("Invoice1 - Invalid WriteOff: " + invoice1, invoiceBL.isInvoiceWroteOff(invoice1));
 		Assert.assertFalse("Invoice2 - InvalidWriteOff: " + invoice2, invoiceBL.isInvoiceWroteOff(invoice2));
 	}
@@ -316,7 +315,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Execute writeoff process
-		Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(dunningContext.getCtx(), "writeoff test 2", NullLoggable.instance);
+		Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(dunningContext.getCtx(), "writeoff test 2");
 
 		//
 		// Assert no invoice shall be wrote-off at this moment (we are still on level1)
@@ -458,7 +457,7 @@ public class TestDunning extends DunningTestBase
 	private void loadDunningCandidates()
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		
+
 		candidates1 = dao.retrieveDunningCandidates(dunningContext, adTableDAO.retrieveTableId(I_C_Invoice.Table_Name), invoice1.getC_Invoice_ID());
 		candidate1 = candidates1.get(0);
 

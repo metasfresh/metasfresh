@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1664430908L;
+	private static final long serialVersionUID = -2043605441L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -30,6 +30,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 			setIsDisplayed (true); // Y
 			setIsDisplayed_SideList (false); // N
 			setIsDisplayedGrid (false); // N
+			setIsMultiLine (false); // N
 			setName (null);
 			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_Element WHERE AD_UI_ElementGroup_ID=@AD_UI_ElementGroup_ID@
 			setSeqNo_SideList (0); // 0
@@ -367,6 +368,29 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 		return false;
 	}
 
+	/** Set Multi Line.
+		@param IsMultiLine Multi Line	  */
+	@Override
+	public void setIsMultiLine (boolean IsMultiLine)
+	{
+		set_Value (COLUMNNAME_IsMultiLine, Boolean.valueOf(IsMultiLine));
+	}
+
+	/** Get Multi Line.
+		@return Multi Line	  */
+	@Override
+	public boolean isMultiLine () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsMultiLine);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	@Override
 	public org.compiere.model.I_AD_Field getLabels_Selector_Field() throws RuntimeException
 	{
@@ -449,6 +473,25 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public java.lang.String getMediaTypes () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MediaTypes);
+	}
+
+	/** Set Lines Count.
+		@param MultiLine_LinesCount Lines Count	  */
+	@Override
+	public void setMultiLine_LinesCount (int MultiLine_LinesCount)
+	{
+		set_Value (COLUMNNAME_MultiLine_LinesCount, Integer.valueOf(MultiLine_LinesCount));
+	}
+
+	/** Get Lines Count.
+		@return Lines Count	  */
+	@Override
+	public int getMultiLine_LinesCount () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MultiLine_LinesCount);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Name.

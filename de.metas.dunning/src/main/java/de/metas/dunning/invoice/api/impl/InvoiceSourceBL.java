@@ -1,33 +1,8 @@
 package de.metas.dunning.invoice.api.impl;
 
-/*
- * #%L
- * de.metas.dunning
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,28 +10,33 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
+import org.slf4j.Logger;
 
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningEventDispatcher;
 import de.metas.dunning.interfaces.I_C_Dunning;
+import de.metas.dunning.invoice.InvoiceDueDateProviderService;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
-import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.invoice.InvoiceId;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class InvoiceSourceBL implements IInvoiceSourceBL
 {
 	private final static transient Logger logger = LogManager.getLogger(InvoiceSourceBL.class);
 
 	@Override
-	public boolean setDunningGraceIfAutomatic(final I_C_Invoice invoice)
+	public boolean setDunningGraceIfManaged(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Dunning dunning = getDunningForInvoiceOrNull(invoice);
 		if (dunning == null)
@@ -65,16 +45,18 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 			return false;
 		}
 
-		if (!I_C_Dunning.DUNNINGTIMER_AutomaticGrace.equalsIgnoreCase(dunning.getDunningTimer()))
+		if (!dunning.isManageDunnableDocGraceDate())
 		{
 			// Dunning is not set to update automatically. Skip it
 			return false;
 		}
 
-		final Timestamp dueDate = Services.get(IInvoiceSourceDAO.class).retrieveDueDate(invoice);
-		final Timestamp dunningGraceDate = TimeUtil.addDays(dueDate, dunning.getGraceDays());
-		invoice.setDunningGrace(dunningGraceDate);
+		final InvoiceDueDateProviderService invoiceDueDateProviderService = Adempiere.getBean(InvoiceDueDateProviderService.class);
 
+		final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		final LocalDate dunningGraceDate = dueDate.plusDays(dunning.getGraceDays());
+
+		invoice.setDunningGrace(TimeUtil.asTimestamp(dunningGraceDate));
 		return true;
 	}
 
@@ -95,7 +77,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 	}
 
 	@Override
-	public int writeOffDunningDocs(final Properties ctx, final String writeOffDescription, final ILoggable monitor)
+	public int writeOffDunningDocs(final Properties ctx, final String writeOffDescription)
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -138,10 +120,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 					logger.error(errmsg, e);
 
 					// notify monitor too about this issue
-					if (monitor != null)
-					{
-						monitor.addLog(errmsg);
-					}
+					Loggables.get().addLog(errmsg);
 
 					return true; // rollback
 				}
@@ -158,7 +137,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param candidate
 	 * @param writeOffDescription
 	 * @return true if candidate's invoice was wrote-off
@@ -172,12 +151,12 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IDunningEventDispatcher dunningEventDispatcher = Services.get(IDunningEventDispatcher.class);
-		
+
 		if (candidate.getAD_Table_ID() == adTableDAO.retrieveTableId(I_C_Invoice.Table_Name))
 		{
 			final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_C_Invoice.class, trxName);
 			Check.assumeNotNull(invoice, "No invoice found for candidate {}", candidate);
-			
+
 			invoiceBL.writeOffInvoice(invoice, candidate.getOpenAmt(), writeOffDescription);
 
 			dunningEventDispatcher.fireDunningCandidateEvent(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate);

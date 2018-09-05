@@ -88,7 +88,11 @@ import lombok.NonNull;
 public class PricingConditionsRepository implements IPricingConditionsRepository
 {
 	private final CCache<PricingConditionsId, PricingConditions> //
-	pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> newCache(I_M_DiscountSchema.Table_Name, 10, CCache.EXPIREMINUTES_Never)
+	pricingConditionsById = CCache
+			.<PricingConditionsId, PricingConditions> newCache(
+					I_M_DiscountSchema.Table_Name,
+					10,
+					CCache.EXPIREMINUTES_Never)
 			.addResetForTableName(I_M_DiscountSchemaBreak.Table_Name);
 
 	@Override
@@ -385,7 +389,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		updateSchemaBreakRecordFromPrice(schemaBreak, request.getPrice());
 		if (request.getDiscount() != null)
 		{
-			schemaBreak.setBreakDiscount(request.getDiscount().getValueAsBigDecimal());
+			schemaBreak.setBreakDiscount(request.getDiscount().getValue());
 		}
 
 		if (request.getPaymentTermId() != null)
@@ -397,7 +401,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			final BigDecimal paymentDiscountValue = request
 					.getPaymentDiscount()
-					.map(Percent::getValueAsBigDecimal)
+					.map(Percent::getValue)
 					.orElse(null);
 			schemaBreak.setPaymentDiscount(paymentDiscountValue);
 		}

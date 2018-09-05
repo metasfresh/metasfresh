@@ -1,33 +1,39 @@
 package de.metas.contracts.refund;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
+import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -69,61 +75,75 @@ public class RefundConfigRepository
 				.match();
 	}
 
-	public List<RefundConfig> getByConditionsId(
-			@NonNull final ConditionsId conditionsId)
+	public List<RefundConfig> getByQuery(@NonNull final RefundConfigQuery query)
 	{
-		return createRefundConfigQuery(conditionsId)
-				.stream()
-				.map(this::ofNullableRecord)
+		final IQueryBuilder<I_C_Flatrate_RefundConfig> builder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.isOnlyIfUsedInProfitCalculation())
+		{
+			builder.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_IsUseInProfitCalculation, true);
+		}
+
+		if (query.getConditionsId() != null)
+		{
+			builder.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, query.getConditionsId());
+		}
+
+		if (query.getProductId() != null)
+		{
+			builder.addInArrayFilter(
+					I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
+					null,
+					query.getProductId());
+		}
+
+		if (query.getMinQty() != null)
+		{
+			builder.addCompareFilter(I_C_Flatrate_RefundConfig.COLUMN_MinQty, Operator.LESS_OR_EQUAL, query.getMinQty());
+		}
+
+		final List<I_C_Flatrate_RefundConfig> recordCandidates = builder.create().list();
+
+		final ImmutableListMultimap<Boolean, I_C_Flatrate_RefundConfig> hasProduct2Records = Multimaps.index(recordCandidates, record -> record.getM_Product_ID() > 0);
+		final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithProduct = hasProduct2Records.get(true);
+
+		if (!recordsWithProduct.isEmpty())
+		{
+			return processResultRecordList(query, recordsWithProduct);
+		}
+
+		final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithoutProduct = hasProduct2Records.get(false);
+		return processResultRecordList(query, recordsWithoutProduct);
+	}
+
+	private List<RefundConfig> processResultRecordList(
+			@NonNull final RefundConfigQuery query,
+			@NonNull final ImmutableList<I_C_Flatrate_RefundConfig> recordsWithProductId)
+	{
+		if (query.getMinQty() != null)
+		{
+			final Optional<I_C_Flatrate_RefundConfig> recordToReturn = recordsWithProductId
+					.stream()
+					.max(Comparator.comparing(I_C_Flatrate_RefundConfig::getMinQty));
+			return recordToReturn.isPresent()
+					? ImmutableList.of(ofRecordOrNull(recordToReturn.get()))
+					: ImmutableList.of();
+		}
+		return recordsWithProductId.stream()
+				.map(this::ofRecordOrNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private final CCache<FlatrateTermId, RefundConfig> CACHE = CCache.<FlatrateTermId, RefundConfig> newCache(
-			I_C_Flatrate_RefundConfig.Table_Name + "#by#"
-					+ I_C_Flatrate_RefundConfig.COLUMNNAME_C_Flatrate_Conditions_ID + "#"
-					+ I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
-			0,
-			CCache.EXPIREMINUTES_Never);
-
-	public RefundConfig getByRefundContractId(
-			@NonNull final FlatrateTermId flatrateTermId)
+	public RefundConfig getById(@NonNull final RefundConfigId id)
 	{
-		return CACHE.getOrLoad(flatrateTermId, () -> getByRefundContractIdForCache(flatrateTermId));
-	}
+		final I_C_Flatrate_RefundConfig record = load(id, I_C_Flatrate_RefundConfig.class);
 
-	private RefundConfig getByRefundContractIdForCache(
-			@NonNull final FlatrateTermId flatrateTermId)
-	{
-		final I_C_Flatrate_Term term = Check.assumeNotNull(
-				load(flatrateTermId.getRepoId(), I_C_Flatrate_Term.class),
-				"The C_Flatrate_Term record for flatrateTermId={}, is not null",
-				flatrateTermId);
-
-		final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
-
-		final RefundConfig config = getByConditionsIdAndProductId(conditionsId, productId);
-		return Check.assumeNotNull(config, "The refundConfig for flatrateTermId={} is not null", flatrateTermId);
-	}
-
-	private RefundConfig getByConditionsIdAndProductId(
-			@NonNull final ConditionsId conditionsId,
-			@NonNull final ProductId productId)
-	{
-		final I_C_Flatrate_RefundConfig configRecord = createRefundConfigQueryBuilder(conditionsId)
-				.addInArrayFilter(
-						I_C_Flatrate_RefundConfig.COLUMN_M_Product_ID,
-						null,
-						productId.getRepoId())
-				.orderBy()
-				.addColumn(
-						I_C_Flatrate_RefundConfig.COLUMNNAME_M_Product_ID,
-						Direction.Descending,
-						Nulls.Last)
-				.endOrderBy()
-				.create()
-				.first();
-		return ofNullableRecord(configRecord);
+		return Check.assumeNotNull(
+				ofRecordOrNull(record),
+				"There needs to be a loadable RefundConfig for RefundConfigId={}; I_C_Flatrate_RefundConfig={}",
+				id, record);
 	}
 
 	private IQuery<I_C_Flatrate_RefundConfig> createRefundConfigQuery(
@@ -134,7 +154,7 @@ public class RefundConfigRepository
 	}
 
 	private IQueryBuilder<I_C_Flatrate_RefundConfig> createRefundConfigQueryBuilder(
-			@Nullable final ConditionsId conditionsId)
+			@NonNull final ConditionsId conditionsId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_RefundConfig.class)
@@ -142,43 +162,161 @@ public class RefundConfigRepository
 				.addEqualsFilter(I_C_Flatrate_RefundConfig.COLUMN_C_Flatrate_Conditions_ID, conditionsId.getRepoId());
 	}
 
-	private RefundConfig ofNullableRecord(
-			@Nullable final I_C_Flatrate_RefundConfig record)
+	private RefundConfig ofRecordOrNull(@Nullable final I_C_Flatrate_RefundConfig record)
 	{
 		if (record == null)
 		{
 			return null;
 		}
+		return ofRecord(record);
+	}
 
-		final RefundInvoiceType refundInvoiceType;
-		if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo.equals(record.getRefundInvoiceType()))
+	public RefundConfig ofRecord(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
+
+		final RefundConfigBuilder builder = RefundConfig
+				.builder()
+				.id(RefundConfigId.ofRepoId(record.getC_Flatrate_RefundConfig_ID()))
+				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
+				.refundInvoiceType(extractRefundInvoiceType(record))
+				.invoiceSchedule(invoiceSchedule)
+				.percent(Percent.of(record.getRefundPercent()))
+				.amount(Money.ofOrNull(record.getRefundAmt(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
+				.minQty(record.getMinQty())
+				.refundBase(extractRefundBase(record))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.refundMode(extractRefundMode(record))
+				.useInProfitCalculation(record.isUseInProfitCalculation());
+
+		return builder.build();
+	}
+
+	private RefundInvoiceType extractRefundInvoiceType(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+
+		final String refundInvoiceType = record.getRefundInvoiceType();
+		if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo.equals(refundInvoiceType))
 		{
-			refundInvoiceType = RefundInvoiceType.CREDITMEMO;
+			return RefundInvoiceType.CREDITMEMO;
 		}
-		else if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice.equals(record.getRefundInvoiceType()))
+		else if (X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice.equals(refundInvoiceType))
 		{
-			refundInvoiceType = RefundInvoiceType.INVOICE;
+			return RefundInvoiceType.INVOICE;
+		}
+		Check.fail(
+				"The given C_Flatrate_RefundConfig has an unsupported refundInvoiceType={}; record={}",
+				refundInvoiceType, record);
+		return null;
+	}
+
+	private RefundMode extractRefundMode(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+		final String refundMode = record.getRefundMode();
+		if (X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale.equals(refundMode))
+		{
+			return RefundMode.APPLY_TO_EXCEEDING_QTY;
+		}
+		else if (X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated.equals(refundMode))
+		{
+			return RefundMode.APPLY_TO_ALL_QTIES;
+		}
+		Check.fail("Unsupported C_Flatrate_RefundConfig.RefundMode={}; record={}", refundMode, record);
+		return null;
+	}
+
+	private RefundBase extractRefundBase(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
+		final String refundBase = record.getRefundBase();
+		if (X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage.equals(refundBase))
+		{
+			return RefundBase.PERCENTAGE;
+		}
+		else if (X_C_Flatrate_RefundConfig.REFUNDBASE_Amount.equals(refundBase))
+		{
+			return RefundBase.AMOUNT_PER_UNIT;
+		}
+		Check.fail("Unsupported C_Flatrate_RefundConfig.RefundBase={}; record={}", refundBase, record);
+		return null;
+	}
+
+	public RefundConfig save(@NonNull final RefundConfig refundConfig)
+	{
+		final I_C_Flatrate_RefundConfig configRecord;
+		if (refundConfig.getId() == null)
+		{
+			configRecord = newInstance(I_C_Flatrate_RefundConfig.class);
 		}
 		else
 		{
-			Check.fail(
-					"The given C_Flatrate_RefundConfig has an unsupposed refundInvoiceType={}; record={}",
-					record.getRefundInvoiceType(), record);
-			return null;
+			configRecord = load(refundConfig.getId(), I_C_Flatrate_RefundConfig.class);
 		}
 
-		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
-
-		final RefundConfigBuilder builder = RefundConfig.builder()
-				.conditionsId(ConditionsId.ofRepoId(record.getC_Flatrate_Conditions_ID()))
-				.refundInvoiceType(refundInvoiceType)
-				.invoiceSchedule(invoiceSchedule)
-				.percent(Percent.of(record.getPercent()));
-
-		if (record.getM_Product_ID() > 0)
+		switch (refundConfig.getRefundBase())
 		{
-			builder.productId(ProductId.ofRepoId(record.getM_Product_ID()));
+			case PERCENTAGE:
+				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
+				configRecord.setRefundPercent(refundConfig.getPercent().getValue());
+				configRecord.setRefundAmt(null);
+				break;
+			case AMOUNT_PER_UNIT:
+				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
+				configRecord.setRefundAmt(refundConfig.getAmount().getValue());
+				configRecord.setRefundPercent(null);
+				break;
+			default:
+				Check.fail("Unexpected refundbase={}", refundConfig.getRefundBase());
+				break;
 		}
-		return builder.build();
+
+		final InvoiceSchedule savedInvoiceSchedule = invoiceScheduleRepository.save(refundConfig.getInvoiceSchedule());
+		configRecord.setC_InvoiceSchedule_ID(savedInvoiceSchedule.getId().getRepoId());
+
+		configRecord.setC_Flatrate_Conditions_ID(refundConfig.getConditionsId().getRepoId());
+		configRecord.setMinQty(refundConfig.getMinQty());
+
+		configRecord.setM_Product_ID(ProductId.toRepoId(refundConfig.getProductId()));
+
+		switch (refundConfig.getRefundInvoiceType())
+		{
+			case CREDITMEMO:
+				configRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Creditmemo);
+				break;
+			case INVOICE:
+				configRecord.setRefundInvoiceType(X_C_Flatrate_RefundConfig.REFUNDINVOICETYPE_Invoice);
+				break;
+			default:
+				Check.fail("Unexpected refundInvoiceType={}", refundConfig.getRefundInvoiceType());
+				break;
+		}
+		switch (refundConfig.getRefundMode())
+		{
+			case APPLY_TO_ALL_QTIES:
+				configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_Accumulated);
+				break;
+			case APPLY_TO_EXCEEDING_QTY:
+				configRecord.setRefundMode(X_C_Flatrate_RefundConfig.REFUNDMODE_PerScale);
+				break;
+			default:
+				Check.fail("Unexpected refundMode={}", refundConfig.getRefundMode());
+				break;
+		}
+		saveRecord(configRecord);
+
+		return refundConfig
+				.toBuilder()
+				.id(RefundConfigId.ofRepoId(configRecord.getC_Flatrate_RefundConfig_ID()))
+				.build();
+	}
+
+	public List<RefundConfig> saveAll(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		final ImmutableList.Builder<RefundConfig> result = ImmutableList.builder();
+
+		for (final RefundConfig refundConfig : refundConfigs)
+		{
+			result.add(save(refundConfig));
+		}
+		return result.build();
 	}
 }

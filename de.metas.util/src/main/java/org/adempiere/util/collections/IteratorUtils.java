@@ -10,12 +10,12 @@ package org.adempiere.util.collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,10 +41,7 @@ import com.google.common.base.Throwables;
 public final class IteratorUtils
 {
 	/**
-	 * 
-	 * @param it
-	 * @return
-	 * @deprecated better use {@link org.apache.commons.collections4.IteratorUtils#asIterable(Iterator)}
+	 * @deprecated better follow e.g. http://www.lambdafaq.org/how-can-i-turn-an-iterator-into-an-iterable/
 	 */
 	@Deprecated
 	public static <E> Iterable<E> asIterable(final Iterator<E> it)
@@ -62,9 +59,9 @@ public final class IteratorUtils
 
 	/**
 	 * Converts an {@link Iterator} to a {@link List} by fetching all of its elements.
-	 * 
+	 *
 	 * NOTE: if Iterator is closeable, it will be closed.
-	 * 
+	 *
 	 * @param it
 	 * @return unmodifiable list
 	 */
@@ -215,9 +212,9 @@ public final class IteratorUtils
 
 	/**
 	 * Converts given iterator from one type to another.
-	 * 
+	 *
 	 * Please note, conversion will happen just in time (i.e. when {@link Iterator#next()} method will be invoked)
-	 * 
+	 *
 	 * @param iterator
 	 * @param converter
 	 * @return converted iterator
