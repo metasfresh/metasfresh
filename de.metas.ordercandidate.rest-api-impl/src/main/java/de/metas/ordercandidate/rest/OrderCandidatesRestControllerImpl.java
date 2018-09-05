@@ -70,8 +70,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 		final int adTableId = InterfaceWrapperHelper.getTableId(I_C_OLCand.class);
-		final int recordId = -1; // NEW
-		final String errmsg = userPermissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);
+		final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, adOrgId, adTableId);
 		if (errmsg != null)
 		{
 			throw new AdempiereException(errmsg);
