@@ -191,6 +191,8 @@ public interface IFlatrateDAO extends ISingletonService
 	 */
 	List<I_C_Flatrate_Conditions> retrieveConditions(Properties ctx);
 
+	int getFlatrateConditionsIdByName(String name);
+
 	List<I_C_Flatrate_Transition> retrieveTransitionsForCalendar(I_C_Calendar calendar);
 
 	List<I_C_Flatrate_DataEntry> retrieveDataEntriesForProduct(org.compiere.model.I_M_Product product);
@@ -225,5 +227,4 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 
 	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(I_C_Flatrate_Term contract);
-
 }
