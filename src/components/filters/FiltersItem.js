@@ -28,7 +28,7 @@ class FiltersItem extends Component {
 
     this.state = {
       filter: { ...props.data },
-      activeFilter: active ? { ...activeFilter } : null,
+      activeFilter: activeFilter ? { ...activeFilter } : null,
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -100,7 +100,7 @@ class FiltersItem extends Component {
           this.mergeData(item.parameterName, item.defaultValue, '', true);
         } else {
           this.mergeData(item.parameterName, '');
-        }    
+        }
       });
 
       if (

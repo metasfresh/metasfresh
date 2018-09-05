@@ -35,7 +35,7 @@ class Filters extends Component {
         outerParameters: for (let parameter of filter.parameters) {
           const { defaultValue, parameterName } = parameter;
 
-          if (defaultValue) {
+          if (filtersActive && defaultValue) {
             const isActive = filtersActive.has(filterId);
 
             if (isActive) {
@@ -110,9 +110,13 @@ class Filters extends Component {
             case 'Text':
               captionName = value;
 
+              if (!value) {
+                captionName = '';
+                itemCaption = '';
+              }
               break;
             case 'List':
-              captionName = value.caption;
+              captionName = value && value.caption;
               break;
             case 'Labels':
               captionName = value.values.reduce((caption, item) => {
@@ -122,19 +126,29 @@ class Filters extends Component {
             case 'YesNo':
             case 'Switch':
             default:
+              if (!value) {
+                captionName = '';
+                itemCaption = '';
+              }
               break;
           }
 
-          captionsArray[0] = captionsArray[0]
-            ? `${captionsArray[0]}, ${captionName}`
-            : captionName;
+          if (captionName) {
+            captionsArray[0] = captionsArray[0]
+              ? `${captionsArray[0]}, ${captionName}`
+              : captionName;
+          }
 
-          captionsArray[1] = captionsArray[1]
-            ? `${captionsArray[1]}, ${itemCaption}`
-            : itemCaption;
+          if (itemCaption) {
+            captionsArray[1] = captionsArray[1]
+              ? `${captionsArray[1]}, ${itemCaption}`
+              : itemCaption;
+          }
         });
 
-        activeFiltersCaptions[filterId] = captionsArray;
+        if (captionsArray.join('').length) {
+          activeFiltersCaptions[filterId] = captionsArray;
+        }
       });
 
       this.setState({
@@ -267,12 +281,14 @@ class Filters extends Component {
         item => item.filterId !== filterToClear.filterId
       );
 
+      const filtersMap = filtersToMap(newFilter);
+
       this.setState(
         {
           activeFilter: newFilter,
         },
         () => {
-          updateDocList(newFilter);
+          updateDocList(filtersMap);
         }
       );
     }
