@@ -149,14 +149,14 @@ public class Percent
 
 	public int signum()
 	{
-		return valueAsBigDecimal.signum();
+		return value.signum();
 	}
 
 	public boolean isOneHundred()
 	{
 		return ONE_HUNDRED_VALUE.compareTo(value) == 0;
 	}
-	
+
 	public Percent add(@NonNull final Percent percent)
 	{
 		if (isZero())
