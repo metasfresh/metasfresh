@@ -593,7 +593,12 @@ export function patch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
       );
 
-      if (dataItem && dataItem.validStatus && !dataItem.validStatus.valid) {
+      if (
+        dataItem &&
+        dataItem.validStatus &&
+        !dataItem.validStatus.valid &&
+        property === dataItem.validStatus.fieldName
+      ) {
         await dispatch(indicatorState('error'));
         await dispatch({ type: PATCH_FAILURE, symbol });
         const errorMessage = dataItem.validStatus.reason;
