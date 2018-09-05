@@ -166,7 +166,7 @@ public class PriceAndDiscount
 	public void applyTo(final I_C_OrderLine orderLine)
 	{
 		orderLine.setPriceEntered(priceEntered);
-		orderLine.setDiscount(discount.getValueAsBigDecimal());
+		orderLine.setDiscount(discount.getValue());
 		orderLine.setPriceActual(priceActual);
 		orderLine.setPriceLimit(priceLimit);
 	}

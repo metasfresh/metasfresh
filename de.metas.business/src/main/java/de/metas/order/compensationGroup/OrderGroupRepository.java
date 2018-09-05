@@ -394,7 +394,7 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setIsGroupCompensationLine(true);
 		compensationLinePO.setGroupCompensationType(compensationLine.getType().getAdRefListValue());
 		compensationLinePO.setGroupCompensationAmtType(compensationLine.getAmtType().getAdRefListValue());
-		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage() != null ? compensationLine.getPercentage().getValueAsBigDecimal() : null);
+		compensationLinePO.setGroupCompensationPercentage(compensationLine.getPercentage() != null ? compensationLine.getPercentage().getValue() : null);
 		compensationLinePO.setGroupCompensationBaseAmt(compensationLine.getBaseAmt());
 
 		compensationLinePO.setM_Product_ID(compensationLine.getProductId().getRepoId());
