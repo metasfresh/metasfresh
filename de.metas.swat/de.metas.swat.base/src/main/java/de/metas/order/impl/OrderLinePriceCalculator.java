@@ -167,7 +167,7 @@ class OrderLinePriceCalculator
 			final PricingConditionsBreak pricingConditionsBreak = pricingConditionsResult.getPricingConditionsBreak();
 
 			paymentDiscount = pricingConditionsBreak != null
-					? pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValueAsBigDecimal()
+					? pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValue()
 					: null;
 
 			if (pricingConditionsBreak != null

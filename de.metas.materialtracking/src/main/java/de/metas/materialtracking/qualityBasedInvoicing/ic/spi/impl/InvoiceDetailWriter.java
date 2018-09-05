@@ -147,7 +147,7 @@ public class InvoiceDetailWriter
 		{
 			priceUOMId = pricingResult.getPrice_UOM_ID();
 			price = pricingResult.getPriceStd();
-			discount = pricingResult.getDiscount().getValueAsBigDecimal();
+			discount = pricingResult.getDiscount().getValue();
 		}
 		else
 		{
