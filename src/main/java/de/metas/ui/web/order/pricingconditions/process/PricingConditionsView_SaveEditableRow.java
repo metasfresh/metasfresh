@@ -1,10 +1,11 @@
-package de.metas.ui.web.order.sales.pricingConditions.process;
+package de.metas.ui.web.order.pricingconditions.process;
 
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -12,8 +13,8 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowActions;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowActions;
 import lombok.NonNull;
 
 /*
@@ -40,6 +41,7 @@ import lombok.NonNull;
 
 public class PricingConditionsView_SaveEditableRow extends PricingConditionsViewBasedProcess
 {
+	private static final String MSG_BPARTNER_HAS_NO_PRICING_CONDITIONS = "de.metas.ui.web.order.pricingConditions.C_BPartnerHasNoPricingConditions";
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Override
@@ -63,7 +65,8 @@ public class PricingConditionsView_SaveEditableRow extends PricingConditionsView
 
 		if (row.getPricingConditionsId() == null)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("row does not have pricing conditions defined; saving will fail later");
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_BPARTNER_HAS_NO_PRICING_CONDITIONS);
+			return ProcessPreconditionsResolution.reject(msg);
 		}
 
 		return ProcessPreconditionsResolution.accept();

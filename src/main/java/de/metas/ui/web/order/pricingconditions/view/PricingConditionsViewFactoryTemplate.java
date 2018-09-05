@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.sales.pricingConditions.view;
+package de.metas.ui.web.order.pricingconditions.view;
 
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -15,10 +15,10 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.order.sales.pricingConditions.process.PricingConditionsView_CopyRowToEditable;
-import de.metas.ui.web.order.sales.pricingConditions.process.PricingConditionsView_SaveEditableRow;
-import de.metas.ui.web.order.sales.pricingConditions.process.WEBUI_SalesOrder_PricingConditionsView_Launcher;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowsLoader.PricingConditionsRowsLoaderBuilder;
+import de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_CopyRowToEditable;
+import de.metas.ui.web.order.pricingconditions.process.PricingConditionsView_SaveEditableRow;
+import de.metas.ui.web.order.pricingconditions.process.WEBUI_SalesOrder_PricingConditionsView_Launcher;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowsLoader.PricingConditionsRowsLoaderBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;

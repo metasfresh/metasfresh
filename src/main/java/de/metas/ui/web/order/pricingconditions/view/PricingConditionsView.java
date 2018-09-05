@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.sales.pricingConditions.view;
+package de.metas.ui.web.order.pricingconditions.view;
 
 import java.util.List;
 
@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -183,12 +184,12 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 
 			orderLineRecord.setIsManualDiscount(true);
-			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValueAsBigDecimal());
+			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValue());
 
 			orderLineRecord.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
 			final int paymentTermRepoId = PaymentTermId.getRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
 			orderLineRecord.setC_PaymentTerm_Override_ID(paymentTermRepoId);
-			orderLineRecord.setPaymentDiscount(pricingConditionsBreak.getPaymentDiscountOverrideOrNull().getValueAsBigDecimal());
+			orderLineRecord.setPaymentDiscount(Percent.getValueOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
 		}
 		else
 		{

@@ -1,9 +1,9 @@
-package de.metas.ui.web.order.sales.pricingConditions.process;
+package de.metas.ui.web.order.pricingconditions.process;
 
 import de.metas.process.IProcessPrecondition;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsView;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
