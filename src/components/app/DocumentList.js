@@ -492,29 +492,31 @@ class DocumentList extends Component {
       );
 
       if (this.mounted) {
-        this.setState(
-          {
-            data: {
-              ...response.data,
-              result,
-            },
-            pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-            filtersActive: filtersToMap(response.data.filters),
+        const newState = {
+          data: {
+            ...response.data,
+            result,
           },
-          () => {
-            if (forceSelection && response.data && result && result.size > 0) {
-              const selection = [result.get(0).id];
+          pageColumnInfosByFieldName: pageColumnInfosByFieldName,
+        };
 
-              dispatch(
-                selectTableItems({
-                  windowType,
-                  viewId,
-                  ids: selection,
-                })
-              );
-            }
+        if (response.data.filters) {
+          newState.filtersActive = filtersToMap(response.data.filters);
+        }
+
+        this.setState({ ...newState }, () => {
+          if (forceSelection && response.data && result && result.size > 0) {
+            const selection = [result.get(0).id];
+
+            dispatch(
+              selectTableItems({
+                windowType,
+                viewId,
+                ids: selection,
+              })
+            );
           }
-        );
+        });
       }
 
       dispatch(indicatorState('saved'));
