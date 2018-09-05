@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.sales.pricingConditions.process;
+package de.metas.ui.web.order.pricingConditions.process;
 
 import java.util.Set;
 
@@ -14,7 +14,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.sales.pricingConditions.view.OrderLinePricingConditionsViewFactory;
+import de.metas.ui.web.order.pricingConditions.view.OrderLinePricingConditionsViewFactory;
 
 /*
  * #%L
@@ -50,11 +50,7 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
 
-		// NOTE we allow sales and purchase orders too (see https://github.com/metasfresh/metasfresh/issues/4017)
-		// if (!salesOrder.isSOTrx())
-		// {
-		// return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
-		// }
+		// NOTE: we allow sales and purchase orders too; see https://github.com/metasfresh/metasfresh/issues/4017
 
 		final String docStatus = salesOrder.getDocStatus();
 		if (!IDocument.STATUS_Drafted.equals(docStatus))

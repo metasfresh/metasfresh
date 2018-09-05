@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.sales.pricingConditions.view;
+package de.metas.ui.web.order.pricingConditions.view;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -228,7 +228,7 @@ public class PricingConditionsRow implements IViewRow
 
 		paymentDiscountOverride = Optional
 				.ofNullable(pricingConditionsBreak.getPaymentDiscountOverrideOrNull())
-				.map(Percent::getValueAsBigDecimal)
+				.map(Percent::getValue)
 				.orElse(null);
 
 		final PriceOverride price = pricingConditionsBreak.getPriceOverride();
@@ -236,7 +236,7 @@ public class PricingConditionsRow implements IViewRow
 		basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
 		basePriceAddAmt = price.getBasePriceAddAmt();
 
-		discount = pricingConditionsBreak.getDiscount().getValueAsBigDecimal();
+		discount = pricingConditionsBreak.getDiscount().getValue();
 
 		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
 

@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.sales.pricingConditions.process;
+package de.metas.ui.web.order.pricingConditions.process;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -14,9 +14,9 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRow;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest;
-import de.metas.ui.web.order.sales.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
+import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRow;
+import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest;
+import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
 import lombok.NonNull;
 
 /*

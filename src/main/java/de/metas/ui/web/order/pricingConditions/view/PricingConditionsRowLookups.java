@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.sales.pricingConditions.view;
+package de.metas.ui.web.order.pricingConditions.view;
 
 import java.awt.Color;
 
