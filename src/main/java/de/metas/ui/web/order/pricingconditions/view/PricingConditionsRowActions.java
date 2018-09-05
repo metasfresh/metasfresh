@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.pricingConditions.view;
+package de.metas.ui.web.order.pricingconditions.view;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,9 +10,9 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PricingConditionsRowChangeRequestBuilder;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;

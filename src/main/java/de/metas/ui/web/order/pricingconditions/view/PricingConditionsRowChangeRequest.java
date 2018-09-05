@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.pricingConditions.view;
+package de.metas.ui.web.order.pricingconditions.view;
 
 import java.math.BigDecimal;
 import java.util.Optional;

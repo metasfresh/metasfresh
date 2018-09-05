@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.pricingConditions.process;
+package de.metas.ui.web.order.pricingconditions.process;
 
 import java.util.Optional;
 
@@ -13,8 +13,8 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.PricingConditionsBreakChangeRequestBuilder;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRow;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowActions;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowActions;
 import lombok.NonNull;
 
 /*

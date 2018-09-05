@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.pricingConditions.process;
+package de.metas.ui.web.order.pricingconditions.process;
 
 import java.util.Set;
 
@@ -14,7 +14,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.order.pricingConditions.view.OrderLinePricingConditionsViewFactory;
+import de.metas.ui.web.order.pricingconditions.view.OrderLinePricingConditionsViewFactory;
 
 /*
  * #%L

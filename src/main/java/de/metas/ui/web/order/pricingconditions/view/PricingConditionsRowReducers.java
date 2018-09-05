@@ -1,4 +1,4 @@
-package de.metas.ui.web.order.pricingConditions.view;
+package de.metas.ui.web.order.pricingconditions.view;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -17,9 +17,9 @@ import de.metas.pricing.conditions.PriceOverride;
 import de.metas.pricing.conditions.PriceOverrideType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreak.PricingConditionsBreakBuilder;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
-import de.metas.ui.web.order.pricingConditions.view.PricingConditionsRowChangeRequest.PriceChange;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange;
+import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PriceChange;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
