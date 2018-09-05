@@ -41,7 +41,7 @@ import lombok.NonNull;
 
 public class PricingConditionsView_SaveEditableRow extends PricingConditionsViewBasedProcess
 {
-	private static final String MSG_BPARTNER_HAS_NO_PRICING_CONDITIONS = "de.metas.ui.web.order.pricingConditions.C_BPartnerHasNoPricingConditions";
+	private static final String MSG_BPARTNER_HAS_NO_PRICING_CONDITIONS = "de.metas.ui.web.order.pricingconditions.C_BPartnerHasNoPricingConditions";
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Override
