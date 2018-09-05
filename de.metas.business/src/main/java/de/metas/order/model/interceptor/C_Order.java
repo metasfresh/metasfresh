@@ -88,6 +88,7 @@ public class C_Order
 			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
 			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Order.COLUMNNAME_DropShip_Location_ID,
+			I_C_Order.COLUMNNAME_DropShip_User_ID,
 			I_C_Order.COLUMNNAME_M_PriceList_ID,
 			I_C_Order.COLUMNNAME_IsSOTrx,
 			I_C_Order.COLUMNNAME_C_Currency_ID })
