@@ -51,6 +51,18 @@ public class JsonOLCandCreateRequestTest
 								.code("bp1")
 								.name("bp1 name")
 								.build())
+						.location(JsonBPartnerLocation.builder()
+								.address1("address1")
+								.address2("address2")
+								.postal("12345")
+								.city("city")
+								.countryCode("DE")
+								.build())
+						.contact(JsonBPartnerContact.builder()
+								.name("john doe")
+								.email("john@doe.com")
+								.phone("+123456789")
+								.build())
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
 				.build());
@@ -62,9 +74,9 @@ public class JsonOLCandCreateRequestTest
 		final String json = jsonObjectMapper.writeValueAsString(obj);
 		System.out.println("json: " + json);
 
-		final JsonOLCandCreateRequest obj2 = jsonObjectMapper.readValue(json, JsonOLCandCreateRequest.class);
-		System.out.println("object deserialized: " + obj2);
+		final JsonOLCandCreateRequest objDeserialized = jsonObjectMapper.readValue(json, JsonOLCandCreateRequest.class);
+		System.out.println("object deserialized: " + objDeserialized);
 
-		Assert.assertEquals(obj, obj2);
+		Assert.assertEquals(obj, objDeserialized);
 	}
 }
