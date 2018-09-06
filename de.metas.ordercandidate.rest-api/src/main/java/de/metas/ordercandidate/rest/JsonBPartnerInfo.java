@@ -33,7 +33,7 @@ import lombok.Data;
 @Builder
 public final class JsonBPartnerInfo
 {
-	private JsonCreateBPartner bpartner;
-	private JsonCreateBPartnerLocation location;
-	private JsonCreateBPartnerContact contact;
+	private JsonBPartner bpartner;
+	private JsonBPartnerLocation location;
+	private JsonBPartnerContact contact;
 }

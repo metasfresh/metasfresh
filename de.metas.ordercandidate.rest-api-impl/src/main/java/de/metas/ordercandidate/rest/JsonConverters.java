@@ -153,15 +153,15 @@ public class JsonConverters
 				.build();
 	}
 
-	private static JsonCreateBPartner toJson(final I_C_BPartner bpartnerRecord)
+	private static JsonBPartner toJson(final I_C_BPartner bpartnerRecord)
 	{
-		return JsonCreateBPartner.builder()
+		return JsonBPartner.builder()
 				.code(bpartnerRecord.getValue())
 				.name(bpartnerRecord.getName())
 				.build();
 	}
 
-	private JsonCreateBPartnerLocation toJson(final I_C_BPartner_Location bpLocationRecord)
+	private JsonBPartnerLocation toJson(final I_C_BPartner_Location bpLocationRecord)
 	{
 		if (bpLocationRecord == null)
 		{
@@ -172,7 +172,7 @@ public class JsonConverters
 
 		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
 
-		return JsonCreateBPartnerLocation.builder()
+		return JsonBPartnerLocation.builder()
 				.code(convertBPartnerLocationIdToCode(bpLocationRecord.getC_BPartner_Location_ID()))
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
@@ -204,14 +204,14 @@ public class JsonConverters
 		}
 	}
 
-	private JsonCreateBPartnerContact toJson(I_AD_User bpContactRecord)
+	private JsonBPartnerContact toJson(I_AD_User bpContactRecord)
 	{
 		if (bpContactRecord == null)
 		{
 			return null;
 		}
 
-		return JsonCreateBPartnerContact.builder()
+		return JsonBPartnerContact.builder()
 				.code(convertBPartnerContactIdToCode(bpContactRecord.getAD_User_ID()))
 				.name(bpContactRecord.getName())
 				.email(bpContactRecord.getEMail())

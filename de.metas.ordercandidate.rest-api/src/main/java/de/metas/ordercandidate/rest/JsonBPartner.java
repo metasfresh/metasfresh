@@ -31,13 +31,8 @@ import lombok.Data;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
 @Builder
-public class JsonCreateBPartnerLocation
+public class JsonBPartner
 {
 	String code;
-
-	String address1;
-	String address2;
-	String postal;
-	String city;
-	String countryCode;
+	String name;
 }

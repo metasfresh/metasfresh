@@ -47,7 +47,7 @@ public class JsonOLCandCreateRequestTest
 	{
 		testSerializeDeserialize(JsonOLCandCreateRequest.builder()
 				.bpartner(JsonBPartnerInfo.builder()
-						.bpartner(JsonCreateBPartner.builder()
+						.bpartner(JsonBPartner.builder()
 								.code("bp1")
 								.name("bp1 name")
 								.build())
