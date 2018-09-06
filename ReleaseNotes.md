@@ -10,10 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 # metasfresh 5.74
-## Feautures
+## Features
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
     * New feature that expands multiline fields when the row is selected.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
+    * Fixes the cursor hovering magnifying glass icon. Now shown as default cursor.
 
 # metasfresh 5.73
 ## Features
