@@ -19,6 +19,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
     * Fixes the cursor hovering magnifying glass icon. Now shown as default cursor.
+  * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
+    * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
 
 # metasfresh 5.73
 ## Features
