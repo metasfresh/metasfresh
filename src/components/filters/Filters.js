@@ -402,6 +402,8 @@ class Filters extends Component {
 
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
+  // this should be an immutable Map
+  filtersActive: PropTypes.any,
 };
 
 export default Filters;

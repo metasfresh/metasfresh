@@ -387,6 +387,8 @@ class FiltersItem extends Component {
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
   filtersWrapper: PropTypes.any,
+  panelCaption: PropTypes.string,
+  active: PropTypes.array,
 };
 
 export default connect()(FiltersItem);

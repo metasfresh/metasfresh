@@ -152,6 +152,7 @@ FiltersNotFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
+  activeFiltersCaptions: PropTypes.array,
 };
 
 const mapStateToProps = state => {
