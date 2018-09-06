@@ -220,7 +220,6 @@ class QuickActions extends Component {
 
                 this.handleClick(actions[0]);
               }}
-              title={actions[0].caption}
             >
               {listTooltip && (
                 <Tooltips
