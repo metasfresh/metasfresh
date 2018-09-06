@@ -63,14 +63,12 @@ class FiltersNotFrequent extends Component {
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
-    let captions =
-      activeFilter && activeFiltersCaptions[activeFilter.filterId]
-        ? activeFiltersCaptions[activeFilter.filterId]
-        : 'Filter';
+    const captions =
+      (activeFilter && activeFiltersCaptions[activeFilter.filterId]) || [];
     let panelCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
     let buttonCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
 
-    if (captions.splice) {
+    if (captions.length) {
       buttonCaption = captions[0];
       panelCaption = captions[1];
     }
@@ -84,7 +82,7 @@ class FiltersNotFrequent extends Component {
             'btn-distance btn-sm',
             {
               'btn-select': isOpenDropdown,
-              'btn-active': activeFilters.length > 0,
+              'btn-active': captions.length,
             }
           )}
           title={buttonCaption}
