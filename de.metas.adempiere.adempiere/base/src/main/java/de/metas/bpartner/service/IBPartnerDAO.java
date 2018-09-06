@@ -37,6 +37,7 @@ import org.compiere.model.I_M_Shipper;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
@@ -66,6 +67,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
+	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
 
 	default List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
@@ -87,22 +90,16 @@ public interface IBPartnerDAO extends ISingletonService
 	}
 
 	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param ctx
-	 * @param partnerId
-	 * @param trxName
-	 * @return
+	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(Properties ctx, int partnerId, String trxName);
 
 	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param bpartner
-	 * @return
+	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
+
+	I_AD_User getContactById(BPartnerContactId contactId);
 
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
