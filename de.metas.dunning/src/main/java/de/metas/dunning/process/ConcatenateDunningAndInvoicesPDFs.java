@@ -8,10 +8,13 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 
 import com.lowagie.text.Document;
@@ -19,7 +22,6 @@ import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 
 import de.metas.document.archive.model.IArchiveAware;
-import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -40,36 +42,28 @@ public class ConcatenateDunningAndInvoicesPDFs extends JavaProcess implements IP
 {
 	private final static String MSG_NOARCHIVE = "ArchivedNone";
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final String contentType = "application/pdf";
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(
 			@NonNull final IProcessPreconditionsContext context)
 	{
-		final Object model = context.getSelectedModel(Object.class);
-		final IArchiveAware archiveAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IArchiveAware.class);
-		if (archiveAware == null)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NOARCHIVE));
-		}
 
-		final int archiveId = archiveAware.getAD_Archive_ID();
-		if (archiveId <= 0)
+		final List<I_AD_Archive> archives = archiveDAO.retrieveLastArchives(getCtx(), TableRecordReference.of(getRecord(I_C_DunningDoc.class)), 1);
+		if (archives.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NOARCHIVE));
+			return ProcessPreconditionsResolution.reject(msgBL.translatable(MSG_NOARCHIVE));
 		}
-
+		
 		return ProcessPreconditionsResolution
 				.acceptIf(I_C_DunningDoc.Table_Name.equals(getTableName()));
-
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-
 		final DunningService dunningService = Adempiere.getBean(DunningService.class);
-
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(DunningDocId.ofRepoId(getRecord_ID()));
 		final byte[] data = concatenate(dunnedInvoices);
 
@@ -95,8 +89,7 @@ public class ConcatenateDunningAndInvoicesPDFs extends JavaProcess implements IP
 
 		try
 		{
-			final IArchiveAware dunningArchiveAware = getRecord(IArchiveAware.class);
-			final I_AD_Archive dunningArchive = dunningArchiveAware.getAD_Archive();
+
 
 			// get dunning data
 			final byte[] dunningData = archiveBL.getBinaryData(dunningArchive);
