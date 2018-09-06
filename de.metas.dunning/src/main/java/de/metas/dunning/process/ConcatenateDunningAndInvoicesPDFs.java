@@ -89,10 +89,10 @@ public class ConcatenateDunningAndInvoicesPDFs extends JavaProcess implements IP
 
 		try
 		{
-
+			final List<I_AD_Archive> dunningArchives = archiveDAO.retrieveLastArchives(getCtx(), TableRecordReference.of(getRecord(I_C_DunningDoc.class)), 1);
 
 			// get dunning data
-			final byte[] dunningData = archiveBL.getBinaryData(dunningArchive);
+			final byte[] dunningData = archiveBL.getBinaryData(dunningArchives.get(0));
 			PdfReader reader = new PdfReader(dunningData);
 
 			for (int page = 0; page < reader.getNumberOfPages();)
