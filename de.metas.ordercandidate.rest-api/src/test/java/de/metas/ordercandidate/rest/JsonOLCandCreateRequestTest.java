@@ -47,7 +47,10 @@ public class JsonOLCandCreateRequestTest
 	{
 		testSerializeDeserialize(JsonOLCandCreateRequest.builder()
 				.bpartner(JsonBPartnerInfo.builder()
-						.bpartnerId(1)
+						.bpartner(JsonCreateBPartner.builder()
+								.code("bp1")
+								.name("bp1 name")
+								.build())
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
 				.build());

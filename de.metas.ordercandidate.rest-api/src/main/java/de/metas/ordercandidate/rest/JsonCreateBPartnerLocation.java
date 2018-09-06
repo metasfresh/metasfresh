@@ -3,6 +3,7 @@ package de.metas.ordercandidate.rest;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import lombok.Builder;
 import lombok.Data;
 
 /*
@@ -29,12 +30,14 @@ import lombok.Data;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
+@Builder
 public class JsonCreateBPartnerLocation
 {
 	String code;
 
 	String address1;
 	String address2;
+	String postal;
 	String city;
 	String countryCode;
 }

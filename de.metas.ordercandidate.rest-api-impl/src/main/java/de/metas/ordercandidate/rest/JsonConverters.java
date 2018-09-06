@@ -2,17 +2,24 @@ package de.metas.ordercandidate.rest;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.adempiere.service.ICountryDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
 import de.metas.ordercandidate.api.OLCand;
@@ -56,6 +63,7 @@ public class JsonConverters
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	public final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
@@ -112,11 +120,13 @@ public class JsonConverters
 		}
 
 		final BPartnerId bpartnerId = bpartnersRepo.getBPartnerIdByValue(json.getBpartner().getCode());
+		final int bpartnerLocationId = convertCodeToBPartnerLocationId(json.getLocation().getCode());
+		final int bpartnerContactId = convertCodeToBPartnerContactId(json.getContact().getCode());
 
 		return OLCandBPartnerInfo.builder()
 				.bpartnerId(bpartnerId.getRepoId())
-				.bpartnerLocationId(json.getBpartnerLocationId())
-				.contactId(json.getContactId())
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(bpartnerContactId)
 				.build();
 	}
 
@@ -128,16 +138,107 @@ public class JsonConverters
 		}
 
 		final int bpartnerId = bpartnerInfo.getBpartnerId();
-		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
+
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerInfo.getBpartnerLocationId());
+		final I_C_BPartner_Location bpLocationRecord = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+
+		final BPartnerContactId contactId = bpartnerInfo.getContactId() > 0 ? BPartnerContactId.ofRepoId(bpartnerId, bpartnerInfo.getContactId()) : null;
+		final I_AD_User bpContactRecord = contactId != null ? bpartnersRepo.getContactById(contactId) : null;
 
 		return JsonBPartnerInfo.builder()
-				.bpartner(JsonCreateBPartner.builder()
-						.code(bpartner.getValue())
-						.name(bpartner.getName())
-						.build())
-				.bpartnerLocationId(bpartner.getBpartnerLocationId())
-				.contactId(bpartner.getContactId())
+				.bpartner(toJson(bpartnerRecord))
+				.location(toJson(bpLocationRecord))
+				.contact(toJson(bpContactRecord))
 				.build();
+	}
+
+	private static JsonCreateBPartner toJson(final I_C_BPartner bpartnerRecord)
+	{
+		return JsonCreateBPartner.builder()
+				.code(bpartnerRecord.getValue())
+				.name(bpartnerRecord.getName())
+				.build();
+	}
+
+	private JsonCreateBPartnerLocation toJson(final I_C_BPartner_Location bpLocationRecord)
+	{
+		if (bpLocationRecord == null)
+		{
+			return null;
+		}
+
+		final I_C_Location location = bpLocationRecord.getC_Location();
+
+		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
+
+		return JsonCreateBPartnerLocation.builder()
+				.code(convertBPartnerLocationIdToCode(bpLocationRecord.getC_BPartner_Location_ID()))
+				.address1(location.getAddress1())
+				.address2(location.getAddress2())
+				.postal(location.getPostal())
+				.city(location.getCity())
+				.countryCode(countryCode)
+				.build();
+	}
+
+	private static final String convertBPartnerLocationIdToCode(final int bpartnerLocationId)
+	{
+		return String.valueOf(bpartnerLocationId);
+	}
+
+	private static final int convertCodeToBPartnerLocationId(final String code)
+	{
+		if (code == null || code.isEmpty())
+		{
+			return -1;
+		}
+
+		try
+		{
+			return Integer.parseInt(code);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid BPartner Location code: " + code, ex);
+		}
+	}
+
+	private JsonCreateBPartnerContact toJson(I_AD_User bpContactRecord)
+	{
+		if (bpContactRecord == null)
+		{
+			return null;
+		}
+
+		return JsonCreateBPartnerContact.builder()
+				.code(convertBPartnerContactIdToCode(bpContactRecord.getAD_User_ID()))
+				.name(bpContactRecord.getName())
+				.email(bpContactRecord.getEMail())
+				.phone(bpContactRecord.getPhone())
+				.build();
+	}
+
+	private static String convertBPartnerContactIdToCode(final int bpContactId)
+	{
+		return String.valueOf(bpContactId);
+	}
+
+	private static final int convertCodeToBPartnerContactId(final String code)
+	{
+		if (code == null || code.isEmpty())
+		{
+			return -1;
+		}
+
+		try
+		{
+			return Integer.parseInt(code);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid BPartner Contact code: " + code, ex);
+		}
 	}
 
 	public JsonOLCand toJson(final OLCand olCand)
