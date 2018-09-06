@@ -116,9 +116,24 @@ public final class DocumentFilterParamDescriptor
 		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
 
+	public Object getDefaultValueConverted()
+	{
+		return convertValueToFieldType(getDefaultValue());
+	}
+
+	public Object getDefaultValueToConverted()
+	{
+		return convertValueToFieldType(getDefaultValueTo());
+	}
+
 	public Object convertValueFromJson(final Object jsonValue)
 	{
-		return DocumentFieldDescriptor.convertToValueClass(getFieldName(), jsonValue, getWidgetType(), getValueClass(), getLookupDataSourceOrNull());
+		return convertValueFromJson(jsonValue);
+	}
+
+	private Object convertValueToFieldType(final Object value)
+	{
+		return DocumentFieldDescriptor.convertToValueClass(getFieldName(), value, getWidgetType(), getValueClass(), getLookupDataSourceOrNull());
 	}
 
 	public boolean isAutoFilter()

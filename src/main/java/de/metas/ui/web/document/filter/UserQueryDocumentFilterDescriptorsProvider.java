@@ -30,7 +30,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 import lombok.NonNull;
 
 /*
@@ -189,7 +188,6 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		private final String fieldName;
 		private final ITranslatableString displayName;
 		private final DocumentFieldWidgetType widgetType;
-		private final Class<?> valueClass;
 		private final LookupDescriptor lookupDescriptor;
 
 		private UserQueryField(final DocumentFieldDescriptor field)
@@ -199,7 +197,6 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 			fieldName = field.getFieldName();
 			displayName = field.getCaption();
 			widgetType = field.getWidgetType();
-			valueClass = field.getValueClass();
 			lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 		}
 
@@ -243,7 +240,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 		@Override
 		public Object convertValueToFieldType(final Object valueObj)
 		{
-			return DocumentFieldDescriptor.convertToValueClass(fieldName, valueObj, widgetType, valueClass, NullLookupDataSource.instance);
+			return valueObj;
 		}
 
 		public LookupDescriptor getLookupDescriptor()

@@ -108,15 +108,15 @@ import lombok.ToString;
 		widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
 		rangeParameter = param.isRange();
 
-		defaultValue = Values.valueToJsonObject(param.getDefaultValue());
-		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueTo());
+		defaultValue = Values.valueToJsonObject(param.getDefaultValueConverted());
+		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueToConverted());
 
 		mandatory = param.isMandatory();
 		displayed = true;
 		readonly = false;
 
 		type = toJSONLayoutType(widgetType);
-		
+
 		showIncrementDecrementButtons = param.isShowIncrementDecrementButtons() ? Boolean.TRUE : null;
 	}
 
