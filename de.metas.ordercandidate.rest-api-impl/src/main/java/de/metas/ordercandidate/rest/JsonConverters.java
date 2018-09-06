@@ -65,7 +65,7 @@ public class JsonConverters
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
-	public final OLCandCreateRequestBuilder toOLCandCreateRequest(final JsonOLCandCreateRequest request)
+	public final OLCandCreateRequestBuilder fromJson(final JsonOLCandCreateRequest request)
 	{
 		final ProductId productId = productsRepo.retrieveProductIdByValue(request.getProductCode());
 

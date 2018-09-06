@@ -43,7 +43,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
  */
 
 @RestController
-@RequestMapping(value = OrderCandidatesRestEndpoint.ENDPOINT)
+@RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
@@ -79,7 +79,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	private OLCandCreateRequest toOLCandCreateRequest(final JsonOLCandCreateRequest request)
 	{
-		return jsonConverters.toOLCandCreateRequest(request)
+		return jsonConverters.fromJson(request)
 				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
 				.build();
 	}
@@ -93,7 +93,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
 				.stream()
-				.map(request -> toOLCandCreateRequest(request))
+				.map(this::toOLCandCreateRequest)
 				.collect(ImmutableList.toImmutableList());
 
 		final List<OLCand> olCands = olCandRepo.create(requests);
