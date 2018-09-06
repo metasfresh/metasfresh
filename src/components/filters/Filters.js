@@ -155,6 +155,11 @@ class Filters extends Component {
         activeFilter: filtersActive.toIndexedSeq().toArray(),
         activeFiltersCaptions,
       });
+    } else {
+      this.setState({
+        activeFilter: [],
+        activeFiltersCaptions: [],
+      });
     }
   };
 
