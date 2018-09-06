@@ -58,7 +58,7 @@ public class GroupTests
 				.compensationLine(percentageDiscountLine(10).build())
 				.build();
 
-		group.updateAllPercentageLines();
+		group.updateAllCompensationLines();
 		// System.out.println(group);
 
 		//

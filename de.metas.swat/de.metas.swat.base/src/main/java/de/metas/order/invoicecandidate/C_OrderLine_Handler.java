@@ -364,7 +364,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final GroupId groupId = groupsRepo.extractGroupId(ic);
 			final Group group = groupsRepo.retrieveGroup(groupId);
-			group.updateAllPercentageLines();
+			group.updateAllCompensationLines();
 
 			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(ic));
 			priceAndTax.priceEntered(compensationLine.getPrice());

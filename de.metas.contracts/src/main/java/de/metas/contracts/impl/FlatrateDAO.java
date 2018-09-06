@@ -742,6 +742,24 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	public int getFlatrateConditionsIdByName(@NonNull final String name)
+	{
+		final int flatrateConditionsId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_Name, name)
+				.create()
+				.firstIdOnly();
+
+		if (flatrateConditionsId <= 0)
+		{
+			throw new AdempiereException("@NotFound@ @C_Flatrate_Conditions_ID@ (@Name@: " + name + ")");
+		}
+
+		return flatrateConditionsId;
+	}
+
+	@Override
 	public List<I_C_Flatrate_Transition> retrieveTransitionsForCalendar(final I_C_Calendar calendar)
 	{
 		final Properties ctx = getCtx(calendar);
@@ -853,10 +871,10 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
 				.fetchInvoiceCandidates(
-				getCtx(contract),
-				I_C_Flatrate_Term.Table_Name,
-				contract.getC_Flatrate_Term_ID(),
-				getTrxName(contract));
+						getCtx(contract),
+						I_C_Flatrate_Term.Table_Name,
+						contract.getC_Flatrate_Term_ID(),
+						getTrxName(contract));
 
 		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
 				.stream()
