@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -43,9 +45,23 @@ public class JsonOLCandCreateRequestTest
 	}
 
 	@Test
-	public void test() throws Exception
+	public void test_JsonOLCandCreateRequest() throws Exception
 	{
-		testSerializeDeserialize(JsonOLCandCreateRequest.builder()
+		testSerializeDeserialize(createDummyJsonOLCandCreateRequest());
+	}
+
+	@Test
+	public void test_JsonOLCandCreateBulkRequest() throws Exception
+	{
+		testSerializeDeserialize(JsonOLCandCreateBulkRequest.builder()
+				.request(createDummyJsonOLCandCreateRequest())
+				.request(createDummyJsonOLCandCreateRequest())
+				.build());
+	}
+
+	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()
+	{
+		return JsonOLCandCreateRequest.builder()
 				.bpartner(JsonBPartnerInfo.builder()
 						.bpartner(JsonBPartner.builder()
 								.code("bp1")
@@ -65,16 +81,16 @@ public class JsonOLCandCreateRequestTest
 								.build())
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
-				.build());
+				.build();
 	}
 
-	private void testSerializeDeserialize(final JsonOLCandCreateRequest obj) throws IOException
+	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException
 	{
 		System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
 		System.out.println("json: " + json);
 
-		final JsonOLCandCreateRequest objDeserialized = jsonObjectMapper.readValue(json, JsonOLCandCreateRequest.class);
+		final Object objDeserialized = jsonObjectMapper.readValue(json, obj.getClass());
 		System.out.println("object deserialized: " + objDeserialized);
 
 		Assert.assertEquals(obj, objDeserialized);

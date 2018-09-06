@@ -268,7 +268,7 @@ public class JsonConverters
 				.build();
 	}
 
-	public JsonOLCandCreateBulkResponse toJsonOLCandCreateBulkResponse(@NonNull final List<OLCand> olCands)
+	public JsonOLCandCreateBulkResponse toJson(@NonNull final List<OLCand> olCands)
 	{
 		return JsonOLCandCreateBulkResponse.of(olCands.stream()
 				.map(olCand -> toJson(olCand))

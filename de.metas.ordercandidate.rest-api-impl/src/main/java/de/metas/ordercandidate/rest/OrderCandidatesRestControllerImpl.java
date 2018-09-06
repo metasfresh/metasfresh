@@ -57,10 +57,23 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	@Override
 	public JsonOLCand createOrder(@RequestBody final JsonOLCandCreateRequest request)
 	{
+		return createOrders(JsonOLCandCreateBulkRequest.of(request)).getSingleResult();
+	}
+
+	@PostMapping(PATH_BULK)
+	@Override
+	public JsonOLCandCreateBulkResponse createOrders(@RequestBody final JsonOLCandCreateBulkRequest bulkRequest)
+	{
 		assertCanCreateNewOLCand();
 
-		final OLCand olCand = olCandRepo.create(toOLCandCreateRequest(request));
-		return jsonConverters.toJson(olCand);
+		final List<OLCandCreateRequest> requests = bulkRequest
+				.getRequests()
+				.stream()
+				.map(this::fromJson)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<OLCand> olCands = olCandRepo.create(requests);
+		return jsonConverters.toJson(olCands);
 	}
 
 	private void assertCanCreateNewOLCand()
@@ -77,26 +90,10 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		}
 	}
 
-	private OLCandCreateRequest toOLCandCreateRequest(final JsonOLCandCreateRequest request)
+	private OLCandCreateRequest fromJson(final JsonOLCandCreateRequest request)
 	{
 		return jsonConverters.fromJson(request)
 				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
 				.build();
-	}
-
-	@PostMapping(PATH_BULK)
-	@Override
-	public JsonOLCandCreateBulkResponse createOrders(@RequestBody final JsonOLCandCreateBulkRequest bulkRequest)
-	{
-		assertCanCreateNewOLCand();
-
-		final List<OLCandCreateRequest> requests = bulkRequest
-				.getRequests()
-				.stream()
-				.map(this::toOLCandCreateRequest)
-				.collect(ImmutableList.toImmutableList());
-
-		final List<OLCand> olCands = olCandRepo.create(requests);
-		return jsonConverters.toJsonOLCandCreateBulkResponse(olCands);
 	}
 }

@@ -2,6 +2,8 @@ package de.metas.ordercandidate.rest;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -48,5 +50,14 @@ public class JsonOLCandCreateBulkResponse
 	private JsonOLCandCreateBulkResponse(@JsonProperty("result") final List<JsonOLCand> olCands)
 	{
 		this.result = ImmutableList.copyOf(olCands);
+	}
+
+	public JsonOLCand getSingleResult()
+	{
+		if (result.size() != 1)
+		{
+			throw new AdempiereException("Expected single result but we got: " + result);
+		}
+		return result.get(0);
 	}
 }
