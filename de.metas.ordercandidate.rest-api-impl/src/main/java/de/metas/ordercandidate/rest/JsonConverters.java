@@ -2,34 +2,21 @@ package de.metas.ordercandidate.rest;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.service.ICountryDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -58,44 +45,23 @@ import lombok.NonNull;
 @Service
 public class JsonConverters
 {
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IProductBL productsBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-
-	public final OLCandCreateRequestBuilder fromJson(final JsonOLCandCreateRequest request)
+	public final OLCandCreateRequestBuilder fromJson(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final ProductId productId = productsRepo.retrieveProductIdByValue(request.getProductCode());
-
-		final UomId uomId;
-		if (!Check.isEmpty(request.getUomCode(), true))
-		{
-			uomId = uomsRepo.getUomIdByX12DE355(request.getUomCode());
-		}
-		else
-		{
-			uomId = UomId.ofRepoId(productsBL.getStockingUOMId(productId));
-		}
-
-		PricingSystemId pricingSystemId;
-		if (!Check.isEmpty(request.getPricingSystemCode(), true))
-		{
-			pricingSystemId = priceListsRepo.getPricingSystemIdByValue(request.getPricingSystemCode());
-		}
-		else
-		{
-			pricingSystemId = null;
-		}
+		final ProductId productId = masterdataProvider.getProductIdByValue(request.getProductCode());
+		final UomId uomId = masterdataProvider.getProductUOMId(productId, request.getUomCode());
+		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
 		return OLCandCreateRequest.builder()
 				.externalId(request.getExternalId())
 				//
-				.bpartner(toOLCandBPartnerInfo(request.getBpartner()))
-				.billBPartner(toOLCandBPartnerInfo(request.getBillBPartner()))
-				.dropShipBPartner(toOLCandBPartnerInfo(request.getDropShipBPartner()))
-				.handOverBPartner(toOLCandBPartnerInfo(request.getHandOverBPartner()))
+				.orgId(masterdataProvider.getCreateOrgId(request.getOrg()))
+				//
+				.bpartner(toOLCandBPartnerInfo(request.getBpartner(), masterdataProvider))
+				.billBPartner(toOLCandBPartnerInfo(request.getBillBPartner(), masterdataProvider))
+				.dropShipBPartner(toOLCandBPartnerInfo(request.getDropShipBPartner(), masterdataProvider))
+				.handOverBPartner(toOLCandBPartnerInfo(request.getHandOverBPartner(), masterdataProvider))
 				.poReference(request.getPoReference())
 				//
 				.dateRequired(request.getDateRequired())
@@ -112,145 +78,56 @@ public class JsonConverters
 				.discount(Percent.ofNullable(request.getDiscount()));
 	}
 
-	private final OLCandBPartnerInfo toOLCandBPartnerInfo(final JsonBPartnerInfo json)
+	private final OLCandBPartnerInfo toOLCandBPartnerInfo(
+			final JsonBPartnerInfo json,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		if (json == null)
 		{
 			return null;
 		}
 
-		final BPartnerId bpartnerId = bpartnersRepo.getBPartnerIdByValue(json.getBpartner().getCode());
-		final int bpartnerLocationId = convertCodeToBPartnerLocationId(json.getLocation().getCode());
-		final int bpartnerContactId = convertCodeToBPartnerContactId(json.getContact().getCode());
+		final BPartnerId bpartnerId = masterdataProvider.getCreateBPartnerId(json.getBpartner());
+		final BPartnerLocationId bpartnerLocationId = masterdataProvider.getCreateBPartnerLocationId(bpartnerId, json.getLocation());
+		final BPartnerContactId bpartnerContactId = masterdataProvider.getCreateBPartnerContactId(bpartnerId, json.getContact());
 
 		return OLCandBPartnerInfo.builder()
 				.bpartnerId(bpartnerId.getRepoId())
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(bpartnerContactId)
+				.bpartnerLocationId(bpartnerLocationId.getRepoId())
+				.contactId(BPartnerContactId.toRepoId(bpartnerContactId))
 				.build();
 	}
 
-	private final JsonBPartnerInfo toJson(final OLCandBPartnerInfo bpartnerInfo)
+	private final JsonBPartnerInfo toJson(
+			final OLCandBPartnerInfo bpartnerInfo,
+			final MasterdataProvider masterdataProvider)
 	{
 		if (bpartnerInfo == null)
 		{
 			return null;
 		}
 
-		final int bpartnerId = bpartnerInfo.getBpartnerId();
-		final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
-
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerInfo.getBpartnerLocationId());
-		final I_C_BPartner_Location bpLocationRecord = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
-
-		final BPartnerContactId contactId = bpartnerInfo.getContactId() > 0 ? BPartnerContactId.ofRepoId(bpartnerId, bpartnerInfo.getContactId()) : null;
-		final I_AD_User bpContactRecord = contactId != null ? bpartnersRepo.getContactById(contactId) : null;
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerInfo.getBpartnerId());
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerInfo.getBpartnerLocationId());
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, bpartnerInfo.getContactId());
 
 		return JsonBPartnerInfo.builder()
-				.bpartner(toJson(bpartnerRecord))
-				.location(toJson(bpLocationRecord))
-				.contact(toJson(bpContactRecord))
+				.bpartner(masterdataProvider.getJsonBPartnerById(bpartnerId))
+				.location(masterdataProvider.getJsonBPartnerLocationById(bpartnerLocationId))
+				.contact(masterdataProvider.getJsonBPartnerContactById(contactId))
 				.build();
 	}
 
-	private static JsonBPartner toJson(final I_C_BPartner bpartnerRecord)
-	{
-		return JsonBPartner.builder()
-				.code(bpartnerRecord.getValue())
-				.name(bpartnerRecord.getName())
-				.build();
-	}
-
-	private JsonBPartnerLocation toJson(final I_C_BPartner_Location bpLocationRecord)
-	{
-		if (bpLocationRecord == null)
-		{
-			return null;
-		}
-
-		final I_C_Location location = bpLocationRecord.getC_Location();
-
-		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
-
-		return JsonBPartnerLocation.builder()
-				.code(convertBPartnerLocationIdToCode(bpLocationRecord.getC_BPartner_Location_ID()))
-				.address1(location.getAddress1())
-				.address2(location.getAddress2())
-				.postal(location.getPostal())
-				.city(location.getCity())
-				.countryCode(countryCode)
-				.build();
-	}
-
-	private static final String convertBPartnerLocationIdToCode(final int bpartnerLocationId)
-	{
-		return String.valueOf(bpartnerLocationId);
-	}
-
-	private static final int convertCodeToBPartnerLocationId(final String code)
-	{
-		if (code == null || code.isEmpty())
-		{
-			return -1;
-		}
-
-		try
-		{
-			return Integer.parseInt(code);
-		}
-		catch (Exception ex)
-		{
-			throw new AdempiereException("Invalid BPartner Location code: " + code, ex);
-		}
-	}
-
-	private JsonBPartnerContact toJson(I_AD_User bpContactRecord)
-	{
-		if (bpContactRecord == null)
-		{
-			return null;
-		}
-
-		return JsonBPartnerContact.builder()
-				.code(convertBPartnerContactIdToCode(bpContactRecord.getAD_User_ID()))
-				.name(bpContactRecord.getName())
-				.email(bpContactRecord.getEMail())
-				.phone(bpContactRecord.getPhone())
-				.build();
-	}
-
-	private static String convertBPartnerContactIdToCode(final int bpContactId)
-	{
-		return String.valueOf(bpContactId);
-	}
-
-	private static final int convertCodeToBPartnerContactId(final String code)
-	{
-		if (code == null || code.isEmpty())
-		{
-			return -1;
-		}
-
-		try
-		{
-			return Integer.parseInt(code);
-		}
-		catch (Exception ex)
-		{
-			throw new AdempiereException("Invalid BPartner Contact code: " + code, ex);
-		}
-	}
-
-	public JsonOLCand toJson(final OLCand olCand)
+	private JsonOLCand toJson(final OLCand olCand, final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCand.builder()
 				.id(olCand.getId())
 				.externalId(olCand.getExternalId())
 				//
-				.bpartner(toJson(olCand.getBPartnerInfo()))
-				.billBPartner(toJson(olCand.getBillBPartnerInfo()))
-				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo()))
-				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo()))
+				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
+				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
+				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
+				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo(), masterdataProvider))
 				//
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
@@ -268,10 +145,12 @@ public class JsonConverters
 				.build();
 	}
 
-	public JsonOLCandCreateBulkResponse toJson(@NonNull final List<OLCand> olCands)
+	public JsonOLCandCreateBulkResponse toJson(
+			@NonNull final List<OLCand> olCands,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCandCreateBulkResponse.of(olCands.stream()
-				.map(olCand -> toJson(olCand))
+				.map(olCand -> toJson(olCand, masterdataProvider))
 				.collect(ImmutableList.toImmutableList()));
 	}
 }

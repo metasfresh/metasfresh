@@ -85,6 +85,25 @@ public class BPartnerDAO implements IBPartnerDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
+	public void save(@NonNull final I_C_BPartner bpartner)
+	{
+		InterfaceWrapperHelper.saveRecord(bpartner);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
+		InterfaceWrapperHelper.saveRecord(bpartnerLocation);
+	}
+
+	@Override
+	public void save(@NonNull final I_AD_User bpartnerContact)
+	{
+		Check.assume(bpartnerContact.getC_BPartner_ID() > 0, "C_BPartner_ID shall be set for {}", bpartnerContact);
+		InterfaceWrapperHelper.saveRecord(bpartnerContact);
+	}
+
+	@Override
 	public I_C_BPartner getById(final int bpartnerId)
 	{
 		return getById(BPartnerId.ofRepoId(bpartnerId), I_C_BPartner.class);
@@ -125,7 +144,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
 
-		final String wc = I_AD_User.COLUMNNAME_IsDefaultContact + "=" + DB.TO_STRING("Y") + " AND " +
+		final String wc = org.compiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + "=" + DB.TO_STRING("Y") + " AND " +
 				org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + "=?";
 
 		final T result = new Query(ctx, org.compiere.model.I_AD_User.Table_Name, wc, trxName)
@@ -290,21 +309,21 @@ public class BPartnerDAO implements IBPartnerDAO
 		// Sales
 		if (isSOTrx)
 		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact, true);
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact_Default, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default, true);
 
 		}
 		// Purchase
 		else
 		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact, true);
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default, true);
 		}
 
 		queryBuilder.orderBy()
 				// #928: DefaultContact is no longer relevant in contact retrieval. The Sales and Purchase defaults are used instead
 				// .addColumn(I_AD_User.COLUMNNAME_IsDefaultContact, Direction.Descending, Nulls.Last)
-				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.Last);
+				.addColumn(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.Last);
 
 		return queryBuilder.create().first();
 
@@ -426,7 +445,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	private I_M_Shipper retrieveDefaultShipper()
 	{
 		final Properties ctx = Env.getCtx();
-		return new Query(ctx, I_M_Shipper.Table_Name, de.metas.interfaces.I_M_Shipper.COLUMNNAME_IsDefault + "=?", null)
+		return new Query(ctx, I_M_Shipper.Table_Name, I_M_Shipper.COLUMNNAME_IsDefault + "=?", null)
 				.setParameters(true)
 				.setClient_ID()
 				.firstOnly(de.metas.interfaces.I_M_Shipper.class);
@@ -450,8 +469,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
 				.addOnlyContextClient()
 				.create()
 				.match();

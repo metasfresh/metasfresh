@@ -47,6 +47,12 @@ import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	void save(I_C_BPartner bpartner);
+
+	void save(I_C_BPartner_Location bpartnerLocation);
+
+	void save(I_AD_User bpartnerContact);
+
 	I_C_BPartner getById(final int bpartnerId);
 
 	<T extends I_C_BPartner> T getById(int bpartnerId, Class<T> modelClass);

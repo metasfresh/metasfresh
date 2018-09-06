@@ -29,7 +29,7 @@ import lombok.Data;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
-public class JsonCreateOrganization
+public class JsonOrganization
 {
 	String code;
 	String name;

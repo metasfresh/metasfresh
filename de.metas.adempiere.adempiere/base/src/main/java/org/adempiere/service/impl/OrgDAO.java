@@ -92,7 +92,7 @@ public class OrgDAO implements IOrgDAO
 				.setClient_ID()
 				.firstOnly(I_AD_Org.class);
 	}
-
+	
 	@Override
 	public List<I_AD_Org> retrieveChildOrgs(final Properties ctx, final int parentOrgId, final int adTreeOrgId)
 	{

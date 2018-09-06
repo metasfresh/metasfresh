@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
 import org.adempiere.util.Check;
 
@@ -41,7 +42,9 @@ import lombok.Value;
 public class OLCandCreateRequest
 {
 	private String externalId;
-	
+
+	private OrgId orgId;
+
 	private OLCandBPartnerInfo bpartner;
 	private OLCandBPartnerInfo billBPartner;
 	private OLCandBPartnerInfo dropShipBPartner;
@@ -68,6 +71,7 @@ public class OLCandCreateRequest
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalId,
+			final OrgId orgId,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
@@ -92,6 +96,7 @@ public class OLCandCreateRequest
 		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
 		this.externalId = externalId;
+		this.orgId = orgId;
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;

@@ -37,7 +37,7 @@ import lombok.Data;
 @Builder
 public final class JsonOLCandCreateRequest
 {
-	private JsonCreateOrganization org;
+	private JsonOrganization org;
 	
 	private JsonBPartnerInfo bpartner;
 	private JsonBPartnerInfo billBPartner;

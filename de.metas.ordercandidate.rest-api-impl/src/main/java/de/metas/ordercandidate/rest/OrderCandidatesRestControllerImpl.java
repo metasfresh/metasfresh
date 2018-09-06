@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +21,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -62,18 +65,25 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	@PostMapping(PATH_BULK)
 	@Override
-	public JsonOLCandCreateBulkResponse createOrders(@RequestBody final JsonOLCandCreateBulkRequest bulkRequest)
+	public JsonOLCandCreateBulkResponse createOrders(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
 		assertCanCreateNewOLCand();
 
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(() -> creatOrdersInTrx(bulkRequest));
+	}
+
+	private JsonOLCandCreateBulkResponse creatOrdersInTrx(final JsonOLCandCreateBulkRequest bulkRequest)
+	{
+		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance();
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
 				.stream()
-				.map(this::fromJson)
+				.map(request -> fromJson(request, masterdataProvider))
 				.collect(ImmutableList.toImmutableList());
 
 		final List<OLCand> olCands = olCandRepo.create(requests);
-		return jsonConverters.toJson(olCands);
+		return jsonConverters.toJson(olCands, masterdataProvider);
 	}
 
 	private void assertCanCreateNewOLCand()
@@ -90,9 +100,11 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		}
 	}
 
-	private OLCandCreateRequest fromJson(final JsonOLCandCreateRequest request)
+	private OLCandCreateRequest fromJson(
+			final JsonOLCandCreateRequest request,
+			final MasterdataProvider masterdataProvider)
 	{
-		return jsonConverters.fromJson(request)
+		return jsonConverters.fromJson(request, masterdataProvider)
 				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
 				.build();
 	}

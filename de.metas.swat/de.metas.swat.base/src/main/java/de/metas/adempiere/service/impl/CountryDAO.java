@@ -220,9 +220,15 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public I_C_Country retrieveCountryByCountryCode(String countryCode)
+	public I_C_Country retrieveCountryByCountryCode(final String countryCode)
 	{
 		return getIndexedCountries().getByCountryCode(countryCode);
+	}
+
+	@Override
+	public int getCountryIdByCountryCode(final String countryCode)
+	{
+		return getIndexedCountries().getIdByCountryCode(countryCode);
 	}
 
 	@Override
@@ -305,5 +311,11 @@ public class CountryDAO implements ICountryDAO
 			}
 			return country;
 		}
+
+		public int getIdByCountryCode(final String countryCode)
+		{
+			return getByCountryCode(countryCode).getC_Country_ID();
+		}
+
 	}
 }

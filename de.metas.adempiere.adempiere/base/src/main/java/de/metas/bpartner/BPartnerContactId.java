@@ -46,9 +46,19 @@ public class BPartnerContactId implements RepoIdAware
 		return new BPartnerContactId(BPartnerId.ofRepoId(bpartnerId), contactId);
 	}
 
+	public static BPartnerContactId ofRepoIdOrNull(@NonNull final BPartnerId bpartnerId, final int contactId)
+	{
+		return contactId > 0 ? ofRepoId(bpartnerId, contactId) : null;
+	}
+
 	private BPartnerContactId(@NonNull final BPartnerId bpartnerId, final int contactId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(contactId, "contactId");
 		this.bpartnerId = bpartnerId;
+	}
+
+	public static int toRepoId(final BPartnerContactId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 }
