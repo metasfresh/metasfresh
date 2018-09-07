@@ -67,6 +67,7 @@ class Filters extends Component {
               extendedParams.push({
                 parameterName,
                 value: defaultValue,
+                defaultVal: true,
               });
               seen.add(parameterName);
             }
@@ -82,6 +83,7 @@ class Filters extends Component {
               extendedParams.push({
                 parameterName,
                 value: defaultValue,
+                defaultVal: true,
               });
             }
 
@@ -98,51 +100,55 @@ class Filters extends Component {
       filtersActive.forEach((filter, filterId) => {
         const captionsArray = ['', ''];
 
-        filter.parameters.forEach(({ value, parameterName }) => {
-          const parentFilter = filterData.get(filterId);
-          const filterParameter = parentFilter.parameters.find(
-            param => param.parameterName === parameterName
-          );
-          let captionName = filterParameter.caption;
-          let itemCaption = filterParameter.caption;
+        filter.parameters.forEach(({ value, parameterName, defaultVal }) => {
+          // we don't want to show captions, nor show filter button as active
+          // for default values
+          if (!defaultVal) {
+            const parentFilter = filterData.get(filterId);
+            const filterParameter = parentFilter.parameters.find(
+              param => param.parameterName === parameterName
+            );
+            let captionName = filterParameter.caption;
+            let itemCaption = filterParameter.caption;
 
-          switch (filterParameter.widgetType) {
-            case 'Text':
-              captionName = value;
+            switch (filterParameter.widgetType) {
+              case 'Text':
+                captionName = value;
 
-              if (!value) {
-                captionName = '';
-                itemCaption = '';
-              }
-              break;
-            case 'List':
-              captionName = value && value.caption;
-              break;
-            case 'Labels':
-              captionName = value.values.reduce((caption, item) => {
-                return `${caption}, ${item.caption}`;
-              }, '');
-              break;
-            case 'YesNo':
-            case 'Switch':
-            default:
-              if (!value) {
-                captionName = '';
-                itemCaption = '';
-              }
-              break;
-          }
+                if (!value) {
+                  captionName = '';
+                  itemCaption = '';
+                }
+                break;
+              case 'List':
+                captionName = value && value.caption;
+                break;
+              case 'Labels':
+                captionName = value.values.reduce((caption, item) => {
+                  return `${caption}, ${item.caption}`;
+                }, '');
+                break;
+              case 'YesNo':
+              case 'Switch':
+              default:
+                if (!value) {
+                  captionName = '';
+                  itemCaption = '';
+                }
+                break;
+            }
 
-          if (captionName) {
-            captionsArray[0] = captionsArray[0]
-              ? `${captionsArray[0]}, ${captionName}`
-              : captionName;
-          }
+            if (captionName) {
+              captionsArray[0] = captionsArray[0]
+                ? `${captionsArray[0]}, ${captionName}`
+                : captionName;
+            }
 
-          if (itemCaption) {
-            captionsArray[1] = captionsArray[1]
-              ? `${captionsArray[1]}, ${itemCaption}`
-              : itemCaption;
+            if (itemCaption) {
+              captionsArray[1] = captionsArray[1]
+                ? `${captionsArray[1]}, ${itemCaption}`
+                : itemCaption;
+            }
           }
         });
 
