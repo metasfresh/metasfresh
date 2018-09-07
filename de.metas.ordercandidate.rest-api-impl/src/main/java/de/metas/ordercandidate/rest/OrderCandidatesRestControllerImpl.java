@@ -178,6 +178,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	}
 
 	@PostMapping("/{id}/attachments")
+	@Override
 	public void attachFile(
 			@PathVariable("id") final String olCandIdStr,
 			@RequestParam("file") @NonNull final MultipartFile file)
