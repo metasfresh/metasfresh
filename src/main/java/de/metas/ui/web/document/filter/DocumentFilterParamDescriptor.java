@@ -128,7 +128,7 @@ public final class DocumentFilterParamDescriptor
 
 	public Object convertValueFromJson(final Object jsonValue)
 	{
-		return convertValueFromJson(jsonValue);
+		return convertValueToFieldType(jsonValue);
 	}
 
 	private Object convertValueToFieldType(final Object value)
