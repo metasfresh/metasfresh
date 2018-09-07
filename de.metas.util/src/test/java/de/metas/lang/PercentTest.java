@@ -68,20 +68,20 @@ public class PercentTest
 		final Percent percent = Percent.of(new BigDecimal("50.15678"));
 		final BigDecimal base = BigDecimal.valueOf(100);
 		final int precision = 2;
-		
+
 		assertThat(percent.multiply(base, precision)).isEqualByComparingTo(new BigDecimal("50.16"));
 	}
-	
+
 	@Test
 	public void multiply_base_scale_greater_than_precision()
 	{
 		final Percent percent = Percent.of(new BigDecimal("10"));
 		final BigDecimal base = new BigDecimal("50.16678");
 		final int precision = 2;
-		
+
 		assertThat(percent.multiply(base, precision)).isEqualByComparingTo(new BigDecimal("5.02"));
 	}
-	
+
 	@Test
 	public void subtractFromBase()
 	{
@@ -100,21 +100,21 @@ public class PercentTest
 	@Test
 	public void of_two_params()
 	{
-		assertThat(Percent.of(new BigDecimal("1"), new BigDecimal("4")).getValueAsBigDecimal()).isEqualByComparingTo("25");
-		assertThat(Percent.of(new BigDecimal("4"), new BigDecimal("1")).getValueAsBigDecimal()).isEqualByComparingTo("400");
+		assertThat(Percent.of(new BigDecimal("1"), new BigDecimal("4")).getValue()).isEqualByComparingTo("25");
+		assertThat(Percent.of(new BigDecimal("4"), new BigDecimal("1")).getValue()).isEqualByComparingTo("400");
 
 		assertThat(Percent.of(new BigDecimal("4"), new BigDecimal("0")).isZero()).isTrue();
 		assertThat(Percent.of(new BigDecimal("0"), new BigDecimal("4")).isZero()).isTrue();
 
-		assertThat(Percent.of(new BigDecimal("3"), new BigDecimal("10")).getValueAsBigDecimal()).isEqualByComparingTo("30");
-		assertThat(Percent.of(new BigDecimal("1"), new BigDecimal("3")).getValueAsBigDecimal()).isEqualByComparingTo("33.33");
+		assertThat(Percent.of(new BigDecimal("3"), new BigDecimal("10")).getValue()).isEqualByComparingTo("30");
+		assertThat(Percent.of(new BigDecimal("1"), new BigDecimal("3")).getValue()).isEqualByComparingTo("33.33");
 	}
 
 	@Test
 	public void roundToHalf()
 	{
-		assertThat(Percent.of(new BigDecimal("10.01")).roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal()).isEqualByComparingTo("10.0");
-		assertThat(Percent.of(new BigDecimal("10.32")).roundToHalf(RoundingMode.HALF_UP).getValueAsBigDecimal()).isEqualByComparingTo("10.5");
+		assertThat(Percent.of(new BigDecimal("10.01")).roundToHalf(RoundingMode.HALF_UP).getValue()).isEqualByComparingTo("10.0");
+		assertThat(Percent.of(new BigDecimal("10.32")).roundToHalf(RoundingMode.HALF_UP).getValue()).isEqualByComparingTo("10.5");
 	}
 
 	@Test
@@ -137,8 +137,8 @@ public class PercentTest
 	@Test
 	public void ofDelta()
 	{
-		assertThat(Percent.ofDelta(ONE, new BigDecimal("1.2")).getValueAsBigDecimal()).isEqualByComparingTo("20");
-		assertThat(Percent.ofDelta(ONE, new BigDecimal("0.75")).getValueAsBigDecimal()).isEqualByComparingTo("-25");
-		assertThat(Percent.ofDelta(new BigDecimal("0.75"), new BigDecimal("0.750")).getValueAsBigDecimal()).isEqualByComparingTo("0");
+		assertThat(Percent.ofDelta(ONE, new BigDecimal("1.2")).getValue()).isEqualByComparingTo("20");
+		assertThat(Percent.ofDelta(ONE, new BigDecimal("0.75")).getValue()).isEqualByComparingTo("-25");
+		assertThat(Percent.ofDelta(new BigDecimal("0.75"), new BigDecimal("0.750")).getValue()).isEqualByComparingTo("0");
 	}
 }
