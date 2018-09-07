@@ -431,7 +431,8 @@ import lombok.NonNull;
 		}
 
 		// Update packing materials info, if there is "one" info
-		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse));
+	//	shipmentLine.setIsManualPackingMaterial(manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse));
+		shipmentLine.setIsManualPackingMaterial(getCandidates().get(0).isForPicked());
 
 		// https://github.com/metasfresh/metasfresh/issues/3503
 		if (packingMaterial_huPIItemProducts != null && packingMaterial_huPIItemProducts.size() == 1)
@@ -440,7 +441,8 @@ import lombok.NonNull;
 			shipmentLine.setM_HU_PI_Item_Product_Override(piipForShipmentLine); // this field is currently displayed in the swing client, so we set it, even if it's redundant
 			shipmentLine.setM_HU_PI_Item_Product_Calculated(piipForShipmentLine);
 
-			if (manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
+			// if (manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
+			if (getCandidates().get(0).isForPicked())
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
@@ -517,34 +519,33 @@ import lombok.NonNull;
 	{
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run((IHUContextProcessor)huContext ->
-			{
+		executor.run((IHUContextProcessor)huContext -> {
 
-				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-				final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
-				final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
-				// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have
-				// included also the packagingItemTemplate's attributes.
-				// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
-				final IAttributeStorage shipmentLineAttributeStorageTo = //
-						ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
+			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
+			// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have
+			// included also the packagingItemTemplate's attributes.
+			// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
+			final IAttributeStorage shipmentLineAttributeStorageTo = //
+					ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
 
-				final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-				final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-				final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-						.setProduct(product)
-						.setQty(shipmentLine.getMovementQty())
-						.setUOM(product.getC_UOM())
-						.setAttributeStorageFrom(huAttributeStorageFrom)
-						.setAttributeStorageTo(shipmentLineAttributeStorageTo)
-						.setHUStorageFrom(huStorageFrom);
+			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
+					.setProduct(product)
+					.setQty(shipmentLine.getMovementQty())
+					.setUOM(product.getC_UOM())
+					.setAttributeStorageFrom(huAttributeStorageFrom)
+					.setAttributeStorageTo(shipmentLineAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom);
 
-				final IHUAttributeTransferRequest request = requestBuilder.create();
-				trxAttributesBuilder.transferAttributes(request);
+			final IHUAttributeTransferRequest request = requestBuilder.create();
+			trxAttributesBuilder.transferAttributes(request);
 
-				return IHUContextProcessor.NULL_RESULT;
-			});
+			return IHUContextProcessor.NULL_RESULT;
+		});
 	}
 
 	public List<ShipmentScheduleWithHU> getCandidates()

@@ -94,7 +94,7 @@ public class ShipmentScheduleWithHU
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
 	{
-		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked);
+		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, true);
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class ShipmentScheduleWithHU
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked);
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, false);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
@@ -129,9 +129,12 @@ public class ShipmentScheduleWithHU
 
 	private I_M_InOutLine shipmentLine = null;
 
+	private boolean isForPicked = false;
+
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc,
+			final boolean isForPicked)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -144,6 +147,9 @@ public class ShipmentScheduleWithHU
 		this.vhu = shipmentScheduleAlloc.getVHU_ID() > 0 ? shipmentScheduleAlloc.getVHU() : null;
 		this.tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
 		this.luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
+
+		this.setForPicked(isForPicked);
+
 	}
 
 	/**
@@ -156,7 +162,8 @@ public class ShipmentScheduleWithHU
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final BigDecimal qtyPicked)
+			@NonNull final BigDecimal qtyPicked,
+			final boolean isForPickingOnly)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -170,6 +177,8 @@ public class ShipmentScheduleWithHU
 		vhu = null; // no VHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
+
+		this.setForPicked(isForPickingOnly);
 	}
 
 	@Override
@@ -489,5 +498,15 @@ public class ShipmentScheduleWithHU
 
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
+	}
+
+	public boolean isForPicked()
+	{
+		return isForPicked;
+	}
+
+	public void setForPicked(boolean isForPicked)
+	{
+		this.isForPicked = isForPicked;
 	}
 }
