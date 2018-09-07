@@ -187,7 +187,7 @@ FiltersFrequent.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
   filtersWrapper: PropTypes.any,
-  activeFiltersCaptions: PropTypes.array,
+  activeFiltersCaptions: PropTypes.object,
 };
 
 const mapStateToProps = state => {
