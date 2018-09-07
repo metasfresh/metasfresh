@@ -10,7 +10,7 @@ import FiltersNotFrequent from './FiltersNotFrequent';
 class Filters extends Component {
   state = {
     activeFilter: null,
-    activeFiltersCaptions: {},
+    activeFiltersCaptions: null,
     notValidFields: null,
     widgetShown: false,
   };
@@ -89,6 +89,7 @@ class Filters extends Component {
 
             filtersActive = filtersActive.set(filterId, {
               filterId,
+              defaultVal: true,
               parameters: extendedParams,
             });
           }
@@ -97,6 +98,8 @@ class Filters extends Component {
     });
 
     if (filtersActive.size) {
+      const removeDefault = {};
+
       filtersActive.forEach((filter, filterId) => {
         const captionsArray = ['', ''];
 
@@ -104,6 +107,7 @@ class Filters extends Component {
           // we don't want to show captions, nor show filter button as active
           // for default values
           if (!defaultVal) {
+            removeDefault[filterId] = true;
             const parentFilter = filterData.get(filterId);
             const filterParameter = parentFilter.parameters.find(
               param => param.parameterName === parameterName
@@ -157,14 +161,20 @@ class Filters extends Component {
         }
       });
 
+      if (Object.keys(removeDefault).length) {
+        for (let key of Object.keys(removeDefault)) {
+          filtersActive = filtersActive.set(key, { defaultVal: false });
+        }
+      }
+
       this.setState({
         activeFilter: filtersActive.toIndexedSeq().toArray(),
         activeFiltersCaptions,
       });
     } else {
       this.setState({
-        activeFilter: [],
-        activeFiltersCaptions: [],
+        activeFilter: null,
+        activeFiltersCaptions: null,
       });
     }
   };
@@ -202,7 +212,9 @@ class Filters extends Component {
     const { activeFilter } = this.state;
 
     if (activeFilter) {
-      const active = activeFilter.find(item => item.filterId === filterId);
+      const active = activeFilter.find(
+        item => item.filterId === filterId && !item.defaultVal
+      );
 
       return typeof active !== 'undefined';
     }
