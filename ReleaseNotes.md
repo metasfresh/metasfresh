@@ -38,11 +38,11 @@ Here come the actual release notes:
   * [#4535](https://github.com/metasfresh/metasfresh/issues/4535) Set Sales Order Line's ProductDescription as Product BOM's description
     * Enhanced Feature for Cable Trade Verticals. Now adding the BOM Components in Prodtct Description Field in Sales Orderline.
   * [#4536](https://github.com/metasfresh/metasfresh/issues/4536) Introduce AD_Table.IsEnableRemoteCacheInvalidation
-    * New Configuration Feture in Application dictionary. It is now possible to enable/ disable the Remote Cache Invalidation for a Table.
+    * New Configuration Feature in Application dictionary. It is now possible to enable/ disable the Remote Cache Invalidation for a Table.
 
 metasfresh-webui-api
   * [#1032](https://github.com/metasfresh/metasfresh-webui-api/issues/1032) Window layout API shall provide text multilineText and multilineTextLines properties
-    * 
+    * New Multiline Fature in WebUI Frontend. When selecting grid lines with multiline Fields, than the lineheight is automatically expanded.
 
 ## Fixes
 * metasfresh
@@ -58,7 +58,7 @@ metasfresh-webui-api
     * New Window that allows to maintain Request Type Translations in WebUI.
 
 * metasfresh-webui-api
-  * [#438](https://github.com/metasfresh/metasfresh-webui-api/issues/438) minor: error for wizard with no picture
+  * [#438](https://github.com/metasfresh/metasfresh-webui-api/issues/438) Minor: error for wizard with no picture
     * Fixes a Bug in Organisation Setup Wizard when no Logo Image is present.
 
 # metasfresh 5.72
