@@ -65,6 +65,11 @@ public class OLCandRepository
 	{
 		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
 
+		if (request.getOrgId() != null)
+		{
+			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
+		}
+
 		{
 			final OLCandBPartnerInfo bpartner = request.getBpartner();
 			olCandPO.setC_BPartner_ID(bpartner.getBpartnerId());

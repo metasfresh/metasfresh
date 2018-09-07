@@ -287,21 +287,27 @@ final class MasterdataProvider
 
 	public OrgId getCreateOrgId(final JsonOrganization org)
 	{
-		if(org == null)
+		if (org == null)
 		{
 			return null;
 		}
-		
-		String code = org.getCode();
-		if(!Check.isEmpty(code, true))
+
+		final String code = org.getCode();
+		Check.assumeNotEmpty(code, "Organization code shall be set: {}", org);
+		final OrgId orgId = orgsRepo.getOrgIdByValue(code).orElse(null);
+		if (orgId != null)
 		{
-			// TODO return orgsRepo.getOrgIdByValue(code);
+			return orgId;
 		}
 
+		final String orgName = org.getName();
+		Check.assumeNotEmpty(orgName, "Organization Name shall be set: {}", org);
+
 		final I_AD_Org orgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-		
-		// TODO Auto-generated method stub
-		
-		return null;
+		orgRecord.setValue(code);
+		orgRecord.setName(orgName);
+		orgsRepo.save(orgRecord);
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 }
