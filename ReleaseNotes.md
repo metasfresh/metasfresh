@@ -28,14 +28,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4475](https://github.com/metasfresh/metasfresh/issues/4475) Refund contract - add further options
+    * Extended Functionality added to Refund contracts enabling enhanced calculations.
   * [#4511](https://github.com/metasfresh/metasfresh/issues/4511) Implement support for MSV3 version 1
+    * Extended MSV3 Functionality. Now allowing the usage of MSV3 version 1 too.
   * [#4521](https://github.com/metasfresh/metasfresh/issues/4521) Don't create subscription shipment schedules for products that are no items
+    * Enhanced subscription handling. Not creating shipment schedules anymore for non item Products.
   * [#4530](https://github.com/metasfresh/metasfresh/issues/4530) WebUI Adjustments for Country, Postal and City Window
+    * New Window in WebUI, allowing to maintain Country, Postals and Cities.
   * [#4535](https://github.com/metasfresh/metasfresh/issues/4535) Set Sales Order Line's ProductDescription as Product BOM's description
+    * Enhanced Feature for Cable Trade Verticals. Now adding the BOM Components in Prodtct Description Field in Sales Orderline.
   * [#4536](https://github.com/metasfresh/metasfresh/issues/4536) Introduce AD_Table.IsEnableRemoteCacheInvalidation
+    * New Configuration Feture in Application dictionary. It is now possible to enable/ disable the Remote Cache Invalidation for a Table.
 
 metasfresh-webui-api
   * [#1032](https://github.com/metasfresh/metasfresh-webui-api/issues/1032) Window layout API shall provide text multilineText and multilineTextLines properties
+    * 
 
 ## Fixes
 * metasfresh
