@@ -14,7 +14,7 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -427476289L;
+	private static final long serialVersionUID = 744039719L;
 
     /** Standard Constructor */
     public X_AD_UI_ElementField (Properties ctx, int AD_UI_ElementField_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
         {
 			setAD_Field_ID (0);
 			setAD_UI_ElementField_ID (0);
-			setSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_ElementField WHERE AD_UI_Element_ID=@AD_UI_Element_ID@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_ElementField WHERE AD_UI_Element_ID=@AD_UI_Element_ID@
+			setType (null); // widget
         } */
     }
 
@@ -81,6 +81,28 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
 		return ii.intValue();
 	}
 
+	/** Set UI Element field.
+		@param AD_UI_ElementField_ID UI Element field	  */
+	@Override
+	public void setAD_UI_ElementField_ID (int AD_UI_ElementField_ID)
+	{
+		if (AD_UI_ElementField_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_UI_ElementField_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_UI_ElementField_ID, Integer.valueOf(AD_UI_ElementField_ID));
+	}
+
+	/** Get UI Element field.
+		@return UI Element field	  */
+	@Override
+	public int getAD_UI_ElementField_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UI_ElementField_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_AD_UI_Element getAD_UI_Element() throws RuntimeException
 	{
@@ -115,28 +137,6 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
 		return ii.intValue();
 	}
 
-	/** Set UI Element field.
-		@param AD_UI_ElementField_ID UI Element field	  */
-	@Override
-	public void setAD_UI_ElementField_ID (int AD_UI_ElementField_ID)
-	{
-		if (AD_UI_ElementField_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_UI_ElementField_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_UI_ElementField_ID, Integer.valueOf(AD_UI_ElementField_ID));
-	}
-
-	/** Get UI Element field.
-		@return UI Element field	  */
-	@Override
-	public int getAD_UI_ElementField_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UI_ElementField_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Reihenfolge.
 		@param SeqNo 
 		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
@@ -157,5 +157,55 @@ public class X_AD_UI_ElementField extends org.compiere.model.PO implements I_AD_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * TooltipIconName AD_Reference_ID=540912
+	 * Reference name: TooltipIcon
+	 */
+	public static final int TOOLTIPICONNAME_AD_Reference_ID=540912;
+	/** text = text */
+	public static final String TOOLTIPICONNAME_Text = "text";
+	/** Set Tooltip Icon Name.
+		@param TooltipIconName Tooltip Icon Name	  */
+	@Override
+	public void setTooltipIconName (java.lang.String TooltipIconName)
+	{
+
+		set_Value (COLUMNNAME_TooltipIconName, TooltipIconName);
+	}
+
+	/** Get Tooltip Icon Name.
+		@return Tooltip Icon Name	  */
+	@Override
+	public java.lang.String getTooltipIconName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TooltipIconName);
+	}
+
+	/** 
+	 * Type AD_Reference_ID=540910
+	 * Reference name: Type_AD_UI_ElementField
+	 */
+	public static final int TYPE_AD_Reference_ID=540910;
+	/** widget = widget */
+	public static final String TYPE_Widget = "widget";
+	/** tooltip = tooltip */
+	public static final String TYPE_Tooltip = "tooltip";
+	/** Set Art.
+		@param Type Art	  */
+	@Override
+	public void setType (java.lang.String Type)
+	{
+
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	/** Get Art.
+		@return Art	  */
+	@Override
+	public java.lang.String getType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Type);
 	}
 }
