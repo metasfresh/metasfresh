@@ -106,8 +106,11 @@ class Filters extends Component {
         filter.parameters.forEach(({ value, parameterName, defaultVal }) => {
           // we don't want to show captions, nor show filter button as active
           // for default values
-          if (!defaultVal) {
+          if (value) {
             removeDefault[filterId] = true;
+          }
+
+          if (!defaultVal) {
             const parentFilter = filterData.get(filterId);
             const filterParameter = parentFilter.parameters.find(
               param => param.parameterName === parameterName
@@ -163,7 +166,7 @@ class Filters extends Component {
 
       if (Object.keys(removeDefault).length) {
         for (let key of Object.keys(removeDefault)) {
-          filtersActive = filtersActive.set(key, { defaultVal: false });
+          filtersActive = filtersActive.setIn([key, 'defaultVal'], false);
         }
       }
 
