@@ -112,6 +112,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<version>${itext.version}</version>
 			</dependency>
 
+			<!-- this also contains the javax.annotations -->
+			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>annotations</artifactId>
+				<version>2.0.1</version>
+			</dependency>
+			
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 			<dependency>
 				<groupId>jp.osdn.ocra</groupId>
