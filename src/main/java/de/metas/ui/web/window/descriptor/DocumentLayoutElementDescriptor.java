@@ -524,9 +524,8 @@ public final class DocumentLayoutElementDescriptor
 			return _advancedField;
 		}
 
-		public Builder addField(final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
+		public Builder addField(@NonNull final DocumentLayoutElementFieldDescriptor.Builder fieldBuilder)
 		{
-			Check.assumeNotNull(fieldBuilder, "Parameter fieldBuilder is not null");
 			final DocumentLayoutElementFieldDescriptor.Builder previousFieldBuilder = _fieldsBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
 			if (previousFieldBuilder != null)
 			{

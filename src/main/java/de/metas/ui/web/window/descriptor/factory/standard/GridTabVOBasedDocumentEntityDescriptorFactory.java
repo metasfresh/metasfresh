@@ -23,6 +23,8 @@ import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.X_AD_UI_ElementField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.client.Client;
@@ -43,6 +45,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Builder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchLookupDescriptorProvider;
@@ -260,6 +263,18 @@ import lombok.NonNull;
 	{
 		final String fieldName = _adFieldId2columnName.get(adFieldId);
 		return documentField(fieldName);
+	}
+
+	public DocumentFieldDescriptor.Builder documentFieldByAD_UI_ElementField(@NonNull final I_AD_UI_ElementField elementFieldRecord)
+	{
+		final Builder builder = documentFieldByAD_Field_ID(elementFieldRecord.getAD_Field_ID());
+		if(X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
+		{
+			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
+					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
+			builder.setTooltipIconName(tooltipIconName);
+		}
+		return builder;
 	}
 
 	DocumentFieldDescriptor.Builder documentField(final String fieldName)
