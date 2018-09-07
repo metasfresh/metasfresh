@@ -766,6 +766,10 @@ public final class DocumentFieldDescriptor
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
+		/** See {@link #setTooltipIconName(String)}. */
+		@Getter
+		private String tooltipIconName = null;
+
 		//
 		// Default filtering options
 		private DocumentFieldDefaultFilterDescriptor defaultFilterInfo = null;
@@ -1421,6 +1425,16 @@ public final class DocumentFieldDescriptor
 		public Builder setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
 		{
 			this.defaultFilterInfo = defaultFilterInfo;
+			return this;
+		}
+
+		/**
+		 * Setting this to a non-{@code null} value means that this field is a tooltip field,
+		 * i.e. it represents a tooltip that is attached to some other field.
+		 */
+		public Builder setTooltipIconName(@Nullable final String tooltipIconName)
+		{
+			this.tooltipIconName = tooltipIconName;
 			return this;
 		}
 
