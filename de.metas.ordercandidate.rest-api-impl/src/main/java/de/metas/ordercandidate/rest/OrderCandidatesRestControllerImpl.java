@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.rest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -13,15 +14,19 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
@@ -170,5 +175,18 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		return jsonConverters.fromJson(request, masterdataProvider)
 				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
 				.build();
+	}
+
+	@PostMapping("/{id}/attachments")
+	public void attachFile(
+			@PathVariable("id") final String olCandIdStr,
+			@RequestParam("file") @NonNull final MultipartFile file)
+			throws IOException
+	{
+		final int olCandId = Integer.parseInt(olCandIdStr);
+		final String filename = file.getOriginalFilename();
+		final byte[] data = file.getBytes();
+
+		Services.get(IOLCandBL.class).addAttachment(olCandId, filename, data);
 	}
 }

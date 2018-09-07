@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
@@ -37,6 +38,8 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
@@ -240,5 +243,17 @@ public class OLCandBL implements IOLCandBL
 		pricingResult.setDiscount(discount);
 
 		return pricingResult;
+	}
+	
+	@Override
+	public AttachmentEntry addAttachment(final int olCandId, final String filename, final byte[] data)
+	{
+		Check.assumeGreaterThanZero(olCandId, "olCandId");
+		Check.assumeNotEmpty(filename, "filename is not empty");
+		
+		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
+		
+		TableRecordReference olCandRef = TableRecordReference.of(I_C_OLCand.Table_Name, olCandId);
+		return attachmentsBL.addEntry(olCandRef, filename, data);
 	}
 }
