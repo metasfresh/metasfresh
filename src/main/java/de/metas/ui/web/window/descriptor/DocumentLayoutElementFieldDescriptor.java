@@ -52,16 +52,12 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	}
 
 	/**
-	 * If one {@link DocumentLayoutElementDescriptor} has multiple fields,
-	 * then this tells the frontend how to render each particular "sub-widget".
-	 *
 	 * Please keep in sync with {@link JSONLookupSource}.
 	 */
 	public static enum LookupSource
 	{
 		lookup, list,
 
-		/** This one is used for fields that are tooltips. */
 		text
 	};
 

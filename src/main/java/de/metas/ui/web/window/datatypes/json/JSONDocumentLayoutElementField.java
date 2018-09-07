@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -111,11 +112,19 @@ public final class JSONDocumentLayoutElementField implements Serializable
 
 	}
 
-	/** Please keep in sync with {@link LookupSource}. */
+	/**
+	 * If one {@link DocumentLayoutElementDescriptor} has multiple fields,
+	 * then this tells the frontend how to render each particular "sub-widget".
+	 *
+	 * Please keep in sync with {@link LookupSource}.
+	 */
 	@ApiModel("lookup-source")
 	public static enum JSONLookupSource
 	{
-		lookup, list;
+		lookup, list,
+
+		/** This one is used for fields that are tooltips. Also see {@link FieldType#Tooltip}. */
+		text;
 
 		public static JSONLookupSource fromNullable(@Nullable final LookupSource lookupSource)
 		{
@@ -134,6 +143,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 		private static final Map<LookupSource, JSONLookupSource> lookupSource2json = ImmutableMap.<LookupSource, JSONLookupSource> builder()
 				.put(LookupSource.list, list)
 				.put(LookupSource.lookup, lookup)
+				.put(LookupSource.text, text)
 				.build();
 	}
 
