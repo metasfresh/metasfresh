@@ -55,7 +55,7 @@ public class ConcatenateDunningAndInvoicesPDFs extends JavaProcess implements IP
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.translatable(MSG_NOARCHIVE));
 		}
-		
+
 		return ProcessPreconditionsResolution
 				.acceptIf(I_C_DunningDoc.Table_Name.equals(getTableName()));
 	}
@@ -105,10 +105,13 @@ public class ConcatenateDunningAndInvoicesPDFs extends JavaProcess implements IP
 			for (final I_C_Invoice invoice : dunnedInvoices)
 			{
 
-				final IArchiveAware archiveAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(invoice, IArchiveAware.class);
-				final I_AD_Archive archive = archiveAware.getAD_Archive();
-
-				final byte[] data = archiveBL.getBinaryData(archive);
+				final List<I_AD_Archive> invoiceArchives = archiveDAO.retrieveLastArchives(getCtx(), TableRecordReference.of(invoice), 1);
+				if (invoiceArchives.isEmpty())
+				{
+					continue;
+				}
+				
+				final byte[] data = archiveBL.getBinaryData(invoiceArchives.get(0));
 
 				reader = new PdfReader(data);
 
