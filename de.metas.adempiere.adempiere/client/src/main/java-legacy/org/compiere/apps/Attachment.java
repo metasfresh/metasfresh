@@ -60,6 +60,7 @@ import com.google.common.io.Files;
 import de.metas.adempiere.Constants;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.i18n.IMsgBL;
@@ -595,7 +596,7 @@ public final class Attachment extends CDialog implements ActionListener
 			return new AttachmentEntryItem(entry.getId(), entry.getName(), entry.getFilename());
 		}
 
-		private final int attachmentEntryId;
+		private final AttachmentEntryId attachmentEntryId;
 		private final String displayName;
 		private final String filename;
 
@@ -608,7 +609,7 @@ public final class Attachment extends CDialog implements ActionListener
 		@Override
 		public int hashCode()
 		{
-			return attachmentEntryId;
+			return attachmentEntryId.hashCode();
 		}
 		
 		@Override

@@ -85,13 +85,13 @@ public interface IAttachmentBL extends ISingletonService
 	 */
 	List<AttachmentEntry> addEntriesFromFiles(Object model, Collection<File> files);
 
-	AttachmentEntry getEntryById(Object model, int attachmentEntryId);
+	AttachmentEntry getEntryById(Object model, AttachmentEntryId attachmentEntryId);
 
 	AttachmentEntry getEntryByFilenameOrNull(Object model, String filename);
 
 	byte[] getEntryByFilenameAsBytesOrNull(Object model, String filename);
 
-	byte[] getEntryByIdAsBytes(Object model, int attachmentEntryId);
+	byte[] getEntryByIdAsBytes(Object model, AttachmentEntryId attachmentEntryId);
 
 	/**
 	 * Method to get data as bytes from the first entry
@@ -111,9 +111,9 @@ public interface IAttachmentBL extends ISingletonService
 	 * @param model see class documentation
 	 * @param attachmentEntryId
 	 */
-	void deleteEntryForModel(Object model, int attachmentEntryId);
+	void deleteEntryForModel(Object model, AttachmentEntryId attachmentEntryId);
 
-	void deleteEntryById(Object model, int attachmentEntryId);
+	void deleteEntryById(Object model, AttachmentEntryId attachmentEntryId);
 
 	void deleteAttachment(Object model);
 
