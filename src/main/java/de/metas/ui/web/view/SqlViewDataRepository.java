@@ -263,7 +263,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		final Set<DocumentId> rootRowIds = new HashSet<>();
 		while (rs.next())
 		{
-			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAD_Language());
+			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAdLanguage());
 			if (rowBuilder == null)
 			{
 				continue;
