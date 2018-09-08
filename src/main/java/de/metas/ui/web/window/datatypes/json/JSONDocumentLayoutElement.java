@@ -206,13 +206,15 @@ public final class JSONDocumentLayoutElement
 		restrictToMediaTypes = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
-				fieldName, (JSONFieldType)null // type
-				, (JSONLookupSource)null // lookupSource
-				, "no " + fieldName // emptyText
-				, (List<JSONDeviceDescriptor>)null // devices
-				, (String)null // newRecordWindowId
-				, (String)null // newRecordCaption
-				, widgetType.isSupportZoomInto() // supportZoomInfo
+				fieldName,
+				(JSONFieldType)null,
+				(String)null, // tooltipIconName
+				(JSONLookupSource)null,
+				"no " + fieldName, // emptyText
+				(List<JSONDeviceDescriptor>)null,
+				(String)null, // newRecordWindowId
+				(String)null, // newRecordCaption
+				widgetType.isSupportZoomInto()
 		));
 	}
 
