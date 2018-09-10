@@ -1,6 +1,9 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { Map } from 'immutable';
+
+import _ from 'lodash';
 
 import { filtersToMap } from '../../utils/documentListHelper';
 import TableCell from '../table/TableCell';
@@ -15,7 +18,8 @@ class Filters extends Component {
     widgetShown: false,
   };
 
-  componentWillReceiveProps() {
+  componentWillReceiveProps(nextProps) {
+    // console.log('NEXTPROPS: ', nextProps);
     this.parseActiveFilters();
   }
 
@@ -26,91 +30,138 @@ class Filters extends Component {
   // PARSING FILTERS ---------------------------------------------------------
   parseActiveFilters = () => {
     let { filtersActive, filterData } = this.props;
+    let activeFilters = _.clone(filtersActive);
     const activeFiltersCaptions = {};
+
+    console.info('PARSEACTIVE: ', _.cloneDeep(activeFilters));
 
     // find any filters with default values first and extend
     // activeFilters with them
     filterData.forEach((filter, filterId) => {
       if (filter.parameters) {
+        let paramsArray = [];
+
         outerParameters: for (let parameter of filter.parameters) {
           const { defaultValue, parameterName } = parameter;
 
-          if (filtersActive && defaultValue) {
-            const isActive = filtersActive.has(filterId);
-
-            if (isActive) {
-              //look for existing parameterName in parameters array
-              // skip if found as they override defaultValue ALWAYS
-              const filterActive = filtersActive.get(filterId);
-
-              if (filterActive.parameters) {
-                for (let activeParameter of filterActive.parameters) {
-                  if (activeParameter.parameterName === parameterName) {
-                    continue outerParameters;
-                  }
-                }
-              }
-            } else {
-              filtersActive = filtersActive.set(filterId, {
+          if (!defaultValue) {
+            continue;
+          } else if (defaultValue && (!activeFilters || !activeFilters.size)) {
+            // console.log('no active filters yet: ', parameterName, defaultValue);
+            activeFilters = Map({
+              [`${filterId}`]: {
                 filterId,
                 parameters: [],
-              });
-            }
-
-            const singleActiveFilter = filtersActive.get(filterId);
-            const paramsArray = singleActiveFilter.parameters;
-            let length = paramsArray.length,
-              extendedParams = [],
-              seen = new Set();
-
-            if (!paramsArray.length) {
-              extendedParams.push({
-                parameterName,
-                value: defaultValue,
-                defaultVal: true,
-              });
-              seen.add(parameterName);
-            }
-
-            innerParameters: for (let index = 0; index < length; index += 1) {
-              let name = paramsArray[index].parameterName;
-
-              if (seen.has(name) || !paramsArray[index].defaultValue) {
-                continue innerParameters;
-              }
-
-              seen.add(name);
-              extendedParams.push({
-                parameterName,
-                value: defaultValue,
-                defaultVal: true,
-              });
-            }
-
-            filtersActive = filtersActive.set(filterId, {
-              filterId,
-              defaultVal: true,
-              parameters: extendedParams,
+              },
             });
           }
+
+          // if (activeFilters && defaultValue) {
+          const isActive = activeFilters.has(filterId);
+
+          if (isActive) {
+            //look for existing parameterName in parameters array
+            // skip if found as they override defaultValue ALWAYS
+            const filterActive = activeFilters.get(filterId);
+
+            // console.log('filterActive: ', filterActive, parameterName);
+
+// if activeFilter has
+// paramName already
+//   Y -> return
+
+            if (filterActive.parameters) {
+              for (let activeParameter of filterActive.parameters) {
+                // if (activeParameter.parameterName === parameterName || activeParameter.defaultValue) {
+                if (activeParameter.parameterName === parameterName) {
+                  // console.log('parameters equal: ', parameterName, activeParameter.parameterName)
+                  continue outerParameters;
+                }
+              }
+            }
+          }
+          // else {
+          //   console.log('notactive')
+          //   activeFilters = activeFilters.set(filterId, {
+          //     filterId,
+          //     parameters: [],
+          //   });
+          // }
+
+          const singleActiveFilter = activeFilters.get(filterId);
+          paramsArray = singleActiveFilter.parameters;
+          // let length = paramsArray.length,
+          //   extendedParams = [],
+          //   seen = new Set();
+
+          // if (!paramsArray.length) {
+          //   console.log('create extendedParams: ', parameterName)
+          //   extendedParams.push({
+          //     parameterName,
+          //     value: defaultValue,
+          //     defaultVal: true,
+          //   });
+          //   seen.add(parameterName);
+          // }
+
+          // innerParameters: for (let index = 0; index < length; index += 1) {
+          //   let name = paramsArray[index].parameterName;
+
+          //   console.log('innerParameters: ', parameterName, seen.has(name), paramsArray[index])
+
+          //   if (seen.has(name) || !paramsArray[index].defaultValue) {
+          //     continue innerParameters;
+          //   }
+
+          //   seen.add(name);
+            // extendedParams.push({
+          paramsArray.push({
+            parameterName,
+            value: defaultValue,
+            // defaultVal: true,
+            defaultValue: defaultValue,
+          });
+          // }
+
+          activeFilters = activeFilters.set(filterId, {
+            filterId,
+            defaultVal: true,
+            // parameters: extendedParams,
+            parameters: paramsArray,
+          });
+        // }
+
+
         }
+
+        // activeFilters = activeFilters.set(filterId, {
+        //   filterId,
+        //   defaultVal: true,
+        //   // parameters: extendedParams,
+        //   parameters: paramsArray,
+        // });
       }
     });
 
-    if (filtersActive.size) {
+    if (activeFilters.size) {
       const removeDefault = {};
 
-      filtersActive.forEach((filter, filterId) => {
+      // console.info('activeFilterssize: ', activeFilters)
+
+      activeFilters.forEach((filter, filterId) => {
         const captionsArray = ['', ''];
 
-        filter.parameters.forEach(({ value, parameterName, defaultVal }) => {
+        filter.parameters.forEach((filterParameter) => {
+          const { value, parameterName, defaultValue } = filterParameter;
+          const valueExists = filterParameter.hasOwnProperty('value');
           // we don't want to show captions, nor show filter button as active
           // for default values
-          if (value) {
+          if (valueExists && !defaultValue) {
+            // console.log('TA ?: ', value, parameterName)
             removeDefault[filterId] = true;
           }
 
-          if (!defaultVal) {
+          if (!defaultValue) {
             const parentFilter = filterData.get(filterId);
             const filterParameter = parentFilter.parameters.find(
               param => param.parameterName === parameterName
@@ -165,21 +216,24 @@ class Filters extends Component {
       });
 
       if (Object.keys(removeDefault).length) {
+        // console.log('remove ?: ', removeDefault, activeFilters)
         for (let key of Object.keys(removeDefault)) {
-          filtersActive = filtersActive.setIn([key, 'defaultVal'], false);
+          activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
         }
       }
 
+      console.info('ACTIVE: ',  _.cloneDeep(activeFilters), _.cloneDeep(filtersActive));
+
       this.setState({
-        activeFilter: filtersActive.toIndexedSeq().toArray(),
+        activeFilter: activeFilters.toIndexedSeq().toArray(),
         activeFiltersCaptions,
       });
-    } else {
-      this.setState({
-        activeFilter: null,
-        activeFiltersCaptions: null,
-      });
-    }
+    // } else {
+    //   this.setState({
+    //     activeFilter: null,
+    //     activeFiltersCaptions: null,
+    //   });
+    // }
   };
 
   sortFilters = data => {
@@ -226,10 +280,41 @@ class Filters extends Component {
   };
 
   parseToPatch = params => {
-    return params.map(param => ({
-      ...param,
-      value: param.value === '' ? null : param.value,
-    }));
+    // return params.map(param => {
+    //   let value = null;
+
+    //   if (!param.defaultValue || param.defaultValue !== param.value) {
+    //     value = param.value === '' ? null : param.value;
+    //   }
+
+    //   return {
+    //     ...param,
+    //     value,
+    //   };
+    // });
+    // console.log('PARSETOPATCH: ', params)
+
+    return params.reduce((acc, param) => {
+      // let value = null;
+
+      if (
+        !param.defaultValue ||
+        JSON.stringify(param.defaultValue) !== JSON.stringify(param.value)
+      ) {
+        // console.log('PARSE: ', {...param})
+        // value = param.value === '' ? null : param.value;
+        acc.push({
+          ...param,
+          value: param.value === '' ? null : param.value,
+        });
+      }
+
+      // return {
+      //   ...param,
+      //   value,
+      // };
+      return acc;
+    }, []);
   };
 
   // SETTING FILTERS  --------------------------------------------------------
@@ -276,16 +361,22 @@ class Filters extends Component {
       newFilter = [filterToAdd];
     }
 
+    console.log('FILTER TO ADD: ', _.cloneDeep(newFilter));
+
+    // console.log('NEWFILTER: ', [...newFilter])
+
     const filtersMap = filtersToMap(newFilter);
 
-    this.setState(
-      {
-        activeFilter: newFilter,
-      },
-      () => {
+    console.log('AAAND FILTER MAP ? ', filtersMap, _.cloneDeep(filtersMap));
+
+    // this.setState(
+    //   {
+    //     activeFilter: newFilter,
+    //   },
+    //   () => {
         updateDocList(filtersMap);
-      }
-    );
+      // }
+    // );
   };
 
   /*
