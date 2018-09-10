@@ -71,7 +71,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityToUse;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
@@ -128,7 +128,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 		final String quantityTypeToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
-		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
 
 		final boolean onlyUsePicked = quantityTypeToUse.isOnlyUsePicked();
 
@@ -244,7 +244,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
-		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
 
 		final boolean onlyUsePickedQty = quantityTypeToUse.isOnlyUsePicked();
 		final boolean onlyUseQtyToDeliver = quantityTypeToUse.isOnlyUseToDeliver();
@@ -285,7 +285,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return candidates;
 	}
 
-	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityToUse quantityTypeToUse)
+	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
 	{
 		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
@@ -298,7 +298,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 	private Collection<? extends ShipmentScheduleWithHU> createCandidatesForPick(@NonNull final I_M_ShipmentSchedule schedule,
 			final IHUContext huContext,
-			final M_ShipmentSchedule_QuantityToUse quantityTypeToUse)
+			final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
 	{
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 		if (qtyPickedRecords.isEmpty())
@@ -442,7 +442,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
-		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityTypeToUseCode);
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.forCode(quantityTypeToUseCode);
 
 		final boolean onlyUseQtyToDeliver = quantityTypeToUse.isOnlyUseToDeliver();
 

@@ -199,7 +199,7 @@ public class ShipmentScheduleEnqueuer
 
 				workpackageBuilder
 						.parameters()
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_Quantity, workPackageParameters.quantityToUse)
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_Quantity, workPackageParameters.quantityTypeToUse)
 						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.completeShipments)
 						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday);
 
@@ -325,7 +325,7 @@ public class ShipmentScheduleEnqueuer
 
 		@NonNull
 		private IQueryFilter<I_M_ShipmentSchedule> queryFilters;
-		private String quantityToUse;
+		private String quantityTypeToUse;
 		private boolean completeShipments;
 		private boolean isShipmentDateToday;
 	}

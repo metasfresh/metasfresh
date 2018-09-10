@@ -130,7 +130,7 @@ public class ShipmentScheduleWithHU
 	private I_M_InOutLine shipmentLine = null;
 
 
-	private M_ShipmentSchedule_QuantityToUse qtyTypeToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // keep old functionality as default
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // keep old functionality as default
 	private boolean isForPickedQty = false;
 
 	private ShipmentScheduleWithHU(
@@ -514,12 +514,12 @@ public class ShipmentScheduleWithHU
 		this.isForPickedQty = isForPicked;
 	}
 
-	public M_ShipmentSchedule_QuantityToUse getQtyTypeToUse()
+	public M_ShipmentSchedule_QuantityTypeToUse getQtyTypeToUse()
 	{
 		return qtyTypeToUse;
 	}
 
-	public void setQtyTypeToUse(M_ShipmentSchedule_QuantityToUse qtyToUse)
+	public void setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse qtyToUse)
 	{
 		this.qtyTypeToUse = qtyToUse;
 	}

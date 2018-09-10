@@ -78,7 +78,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityToUse;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -136,7 +136,7 @@ import lombok.NonNull;
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<Integer> alreadyAssignedTUIds = null; // to be configured by called
 
-	private M_ShipmentSchedule_QuantityToUse qtyToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D;
+	private M_ShipmentSchedule_QuantityTypeToUse qtyToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D;
 
 	//
 	// Manual packing materials related:
@@ -157,7 +157,7 @@ import lombok.NonNull;
 		currentShipment = shipment;
 	}
 
-	public M_ShipmentSchedule_QuantityToUse getQtyToUse()
+	public M_ShipmentSchedule_QuantityTypeToUse getQtyToUse()
 	{
 		return qtyToUse;
 	}
@@ -581,7 +581,7 @@ import lombok.NonNull;
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
 	}
 
-	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityToUse qtyToUse)
+	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyToUse)
 	{
 		this.qtyToUse = qtyToUse;
 	}

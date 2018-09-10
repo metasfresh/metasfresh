@@ -55,7 +55,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 {
 
 	@Param(parameterName = "Quantity", mandatory = true)
-	private String quantityToUse;
+	private String quantityTypeToUse;
 
 	@Param(parameterName = "IsCompleteShipments", mandatory = true)
 	private boolean isCompleteShipments;
@@ -90,7 +90,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(getAD_PInstance_ID())
 				.queryFilters(queryFilters)
-				.quantityToUse(quantityToUse)
+				.quantityTypeToUse(quantityTypeToUse)
 				.completeShipments(isCompleteShipments)
 				.isShipmentDateToday(isShipToday)
 				.build();

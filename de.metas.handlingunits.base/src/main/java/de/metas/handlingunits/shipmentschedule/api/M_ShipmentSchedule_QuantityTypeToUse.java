@@ -31,7 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum M_ShipmentSchedule_QuantityToUse
+public enum M_ShipmentSchedule_QuantityTypeToUse
 {
 
 	TYPE_P("P"), //
@@ -41,24 +41,24 @@ public enum M_ShipmentSchedule_QuantityToUse
 	@Getter
 	private final String code;
 
-	private M_ShipmentSchedule_QuantityToUse(final String code)
+	private M_ShipmentSchedule_QuantityTypeToUse(final String code)
 	{
 		this.code = code;
 	}
 
-	public static M_ShipmentSchedule_QuantityToUse forCode(@NonNull final String code)
+	public static M_ShipmentSchedule_QuantityTypeToUse forCode(@NonNull final String code)
 	{
-		final M_ShipmentSchedule_QuantityToUse type = code2type.get(code);
+		final M_ShipmentSchedule_QuantityTypeToUse type = code2type.get(code);
 
 		if (type == null)
 		{
-			throw new AdempiereException("No " + M_ShipmentSchedule_QuantityToUse.class + " found for code: " + code);
+			throw new AdempiereException("No " + M_ShipmentSchedule_QuantityTypeToUse.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final Map<String, M_ShipmentSchedule_QuantityToUse> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(M_ShipmentSchedule_QuantityToUse::getCode));
+	private static final Map<String, M_ShipmentSchedule_QuantityTypeToUse> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(M_ShipmentSchedule_QuantityTypeToUse::getCode));
 
 	public boolean isUseBoth()
 	{

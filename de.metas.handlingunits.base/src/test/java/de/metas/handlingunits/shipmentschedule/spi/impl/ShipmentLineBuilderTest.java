@@ -21,7 +21,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityToUse;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -112,7 +112,7 @@ public class ShipmentLineBuilderTest
 		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(shipmentSchedule, ONE);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
-		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityToUse.TYPE_PD);
+		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PD);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
