@@ -58,10 +58,10 @@ public class JsonConverters
 				//
 				.orgId(masterdataProvider.getCreateOrgId(request.getOrg()))
 				//
-				.bpartner(toOLCandBPartnerInfo(request.getBpartner(), masterdataProvider))
-				.billBPartner(toOLCandBPartnerInfo(request.getBillBPartner(), masterdataProvider))
-				.dropShipBPartner(toOLCandBPartnerInfo(request.getDropShipBPartner(), masterdataProvider))
-				.handOverBPartner(toOLCandBPartnerInfo(request.getHandOverBPartner(), masterdataProvider))
+				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner()))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner()))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner()))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner()))
 				.poReference(request.getPoReference())
 				//
 				.dateRequired(request.getDateRequired())
@@ -76,26 +76,6 @@ public class JsonConverters
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
 				.discount(Percent.ofNullable(request.getDiscount()));
-	}
-
-	private final OLCandBPartnerInfo toOLCandBPartnerInfo(
-			final JsonBPartnerInfo json,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		if (json == null)
-		{
-			return null;
-		}
-
-		final BPartnerId bpartnerId = masterdataProvider.getCreateBPartnerId(json.getBpartner());
-		final BPartnerLocationId bpartnerLocationId = masterdataProvider.getCreateBPartnerLocationId(bpartnerId, json.getLocation());
-		final BPartnerContactId bpartnerContactId = masterdataProvider.getCreateBPartnerContactId(bpartnerId, json.getContact());
-
-		return OLCandBPartnerInfo.builder()
-				.bpartnerId(bpartnerId.getRepoId())
-				.bpartnerLocationId(bpartnerLocationId.getRepoId())
-				.contactId(BPartnerContactId.toRepoId(bpartnerContactId))
-				.build();
 	}
 
 	private final JsonBPartnerInfo toJson(

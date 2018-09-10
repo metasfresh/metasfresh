@@ -24,6 +24,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -69,7 +70,7 @@ final class MasterdataProvider
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
-	private final Map<String, BPartnerId> bpartnerIdsByCode = new HashMap<>();
+	private final Map<JsonBPartner, BPartnerId> bpartnerIdsByJson = new HashMap<>();
 	private final Map<String, BPartnerLocationId> bpartnerLocationIdsByCode = new HashMap<>();
 	private final Map<String, BPartnerContactId> bpartnerContactIdsByCode = new HashMap<>();
 
@@ -100,9 +101,27 @@ final class MasterdataProvider
 		return priceListsRepo.getPricingSystemIdByValue(pricingSystemCode);
 	}
 
-	public BPartnerId getCreateBPartnerId(final JsonBPartner json)
+	public final OLCandBPartnerInfo getCreateBPartnerInfo(final JsonBPartnerInfo json)
 	{
-		return bpartnerIdsByCode.computeIfAbsent(json.getCode(), code -> retrieveOrCreateBPartnerId(json));
+		if (json == null)
+		{
+			return null;
+		}
+
+		final BPartnerId bpartnerId = getCreateBPartnerId(json.getBpartner());
+		final BPartnerLocationId bpartnerLocationId = getCreateBPartnerLocationId(bpartnerId, json.getLocation());
+		final BPartnerContactId bpartnerContactId = getCreateBPartnerContactId(bpartnerId, json.getContact());
+
+		return OLCandBPartnerInfo.builder()
+				.bpartnerId(bpartnerId.getRepoId())
+				.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
+				.contactId(BPartnerContactId.toRepoId(bpartnerContactId))
+				.build();
+	}
+
+	private BPartnerId getCreateBPartnerId(@NonNull final JsonBPartner json)
+	{
+		return bpartnerIdsByJson.computeIfAbsent(json, this::retrieveOrCreateBPartnerId);
 	}
 
 	private BPartnerId retrieveOrCreateBPartnerId(final JsonBPartner json)
@@ -142,7 +161,7 @@ final class MasterdataProvider
 
 		bpartnerRecord.setName(name);
 		bpartnerRecord.setIsCustomer(true);
-		// bpartnerRecord.setC_BP_Group_ID(C_BP_Group_ID); // TODO
+		// bpartnerRecord.setC_BP_Group_ID(C_BP_Group_ID);
 		bpartnersRepo.save(bpartnerRecord);
 
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
@@ -151,6 +170,7 @@ final class MasterdataProvider
 	public JsonBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(bpartnerId);
+		Check.assumeNotNull(bpartnerRecord, "bpartner shall exist for {}", bpartnerId);
 
 		return JsonBPartner.builder()
 				.code(bpartnerRecord.getValue())
@@ -158,7 +178,7 @@ final class MasterdataProvider
 				.build();
 	}
 
-	public BPartnerLocationId getCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
+	private BPartnerLocationId getCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
 	{
 		if (json == null)
 		{
@@ -170,13 +190,18 @@ final class MasterdataProvider
 
 	private BPartnerLocationId retrieveOrCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
 	{
-		final BPartnerLocationId bpartnerLocationId = convertCodeToBPartnerLocationId(bpartnerId, json.getCode());
-		if (bpartnerLocationId != null)
-		{
-			return bpartnerLocationId;
-		}
+		return getExistingBPartnerLocationId(bpartnerId, json.getCode())
+				.orElseGet(() -> createBPartnerLocationId(bpartnerId, json));
+	}
 
-		final int countryId = countryRepo.getCountryIdByCountryCode(json.getCountryCode());
+	private BPartnerLocationId createBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
+	{
+		final String countryCode = json.getCountryCode();
+		if (Check.isEmpty(countryCode))
+		{
+			throw new AdempiereException("@FillMandatory@ @CountryCode@: " + json);
+		}
+		final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 		final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 		locationRecord.setAddress1(json.getAddress1());
@@ -196,11 +221,11 @@ final class MasterdataProvider
 		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 	}
 
-	private final BPartnerLocationId convertCodeToBPartnerLocationId(final BPartnerId bpartnerId, final String code)
+	private final Optional<BPartnerLocationId> getExistingBPartnerLocationId(final BPartnerId bpartnerId, final String code)
 	{
 		if (code == null || code.isEmpty())
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final int bpartnerLocationIdInt;
@@ -219,7 +244,7 @@ final class MasterdataProvider
 			throw new AdempiereException("BPartner Location does not exist: " + bpartnerLocationId);
 		}
 
-		return bpartnerLocationId;
+		return Optional.of(bpartnerLocationId);
 	}
 
 	private static final String convertBPartnerLocationIdToCode(final BPartnerLocationId bpartnerLocationId)
@@ -253,7 +278,7 @@ final class MasterdataProvider
 				.build();
 	}
 
-	public BPartnerContactId getCreateBPartnerContactId(final BPartnerId bpartnerId, final JsonBPartnerContact json)
+	private BPartnerContactId getCreateBPartnerContactId(final BPartnerId bpartnerId, final JsonBPartnerContact json)
 	{
 		if (json == null)
 		{

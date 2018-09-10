@@ -12,6 +12,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,18 +80,20 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	@Override
 	public JsonOLCandCreateBulkResponse createOrders(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
-		final Set<OrgId> orgIds = getCreateOrganizations(bulkRequest);
+		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance();
+
+		final Set<OrgId> orgIds = getCreateOrganizations(bulkRequest, masterdataProvider);
+		createBPartners(bulkRequest, masterdataProvider);
+
 		assertCanCreateNewOLCands(orgIds);
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(() -> creatOrdersInTrx(bulkRequest));
+		return trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
 	}
 
-	private Set<OrgId> getCreateOrganizations(final JsonOLCandCreateBulkRequest bulkRequest)
+	private Set<OrgId> getCreateOrganizations(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
 	{
 		assertCanCreateNewOrganizations();
-
-		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance();
 
 		final Set<OrgId> orgIds = bulkRequest.getRequests()
 				.stream()
@@ -110,10 +115,25 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		return masterdataProvider.getCreateOrgId(org);
 	}
 
-	private JsonOLCandCreateBulkResponse creatOrdersInTrx(final JsonOLCandCreateBulkRequest bulkRequest)
+	private void createBPartners(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
 	{
-		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance();
+		assertCanCreateNewBPartnersWithLocationAndContact();
 
+		bulkRequest.getRequests()
+				.stream()
+				.forEach(request -> createBPartners(request, masterdataProvider));
+	}
+
+	private static void createBPartners(final JsonOLCandCreateRequest json, final MasterdataProvider masterdataProvider)
+	{
+		masterdataProvider.getCreateBPartnerInfo(json.getBpartner());
+		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner());
+		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner());
+		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner());
+	}
+
+	private JsonOLCandCreateBulkResponse creatOrdersInTrx(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
+	{
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
 				.stream()
@@ -134,6 +154,37 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		if (errmsg != null)
 		{
 			throw new AdempiereException(errmsg);
+		}
+	}
+
+	private void assertCanCreateNewBPartnersWithLocationAndContact()
+	{
+		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
+		final Properties ctx = Env.getCtx();
+		final int adClientId = Env.getAD_Client_ID(ctx);
+
+		{
+			final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), InterfaceWrapperHelper.getTableId(I_C_BPartner.class));
+			if (errmsg != null)
+			{
+				throw new AdempiereException(errmsg);
+			}
+		}
+
+		{
+			final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class));
+			if (errmsg != null)
+			{
+				throw new AdempiereException(errmsg);
+			}
+		}
+
+		{
+			final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), InterfaceWrapperHelper.getTableId(I_AD_User.class));
+			if (errmsg != null)
+			{
+				throw new AdempiereException(errmsg);
+			}
 		}
 	}
 
