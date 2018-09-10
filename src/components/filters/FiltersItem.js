@@ -25,7 +25,6 @@ class FiltersItem extends Component {
     let activeFilter = null;
     if (active) {
       activeFilter = active.find(item => item.filterId === data.filterId);
-      // activeFilter = _.cloneDeep(activeFilter);
     }
 
     this.state = {
@@ -98,11 +97,7 @@ class FiltersItem extends Component {
 
     if (filter.parameters) {
       filter.parameters.map(item => {
-        // if (item.defaultValue !== undefined) {
-        //   this.mergeData(item.parameterName, '', '', true);
-        // } else {
-          this.mergeData(item.parameterName, '');
-        // }
+        this.mergeData(item.parameterName, '');
       });
 
       if (
@@ -123,10 +118,10 @@ class FiltersItem extends Component {
     }
   };
 
-  setValue = (filterId, defaultValue, property, value, id, valueTo) => {
+  setValue = (property, value, id, valueTo='', filterId, defaultValue) => {
     const { resetInitialValues } = this.props;
 
-    if (defaultValue !== undefined) {
+    if (defaultValue != null) {
       resetInitialValues(filterId, property);
     }
 
@@ -153,12 +148,11 @@ class FiltersItem extends Component {
     return value;
   };
 
-  mergeData = (property, value, valueTo, updateActive, activeValue) => { //updateActive) => {
+  mergeData = (property, value, valueTo, updateActive, activeValue) => {
     let { activeFilter, filter } = this.state;
 
     // update values for active filters, as we then bubble them up to parent
     // components which use this data in PATCH requests
-    // if (updateActive) {
     if (updateActive) {
       let paramExists = false;
 
@@ -176,7 +170,6 @@ class FiltersItem extends Component {
           return {
             ...param,
             value: this.parseDateToReadable(param.widgetType, activeValue),
-            // valueTo: this.parseDateToReadable(param.widgetType, valueTo),
           };
         } else {
           return param;
@@ -187,7 +180,6 @@ class FiltersItem extends Component {
         updatedParameters.push({
           parameterName: property,
           value: activeValue,
-          // valueTo,
         });
       }
 
@@ -197,36 +189,11 @@ class FiltersItem extends Component {
       };
     }
 
-    // console.log('mergeData activeFilter: ', {...activeFilter});
-    console.log('FI mergeData')
-
     this.setState(prevState => ({
       filter: {
         ...prevState.filter,
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
-          // if (param.defaultValue) {
-          //   console.log('merging: ', param, value, property)
-          // }
-          // if (param.defaultValue && param.defaultValue === value) {
-          //   return param;
-          // }
-          /*
-            const nulledFilter = initialValuesNulled.get(filterId);
-
-            if (!defaultValue || (nulledFilter && nulledFilter.has(parameterName))) {
-              continue;
-            } else if (defaultValue && (!activeFilters || !activeFilters.size)) {
-              // console.log('no active filters yet: ', parameterName, defaultValue);
-              activeFilters = Map({
-                [`${filterId}`]: {
-                  filterId,
-                  parameters: [],
-                },
-              });
-            }
-            */
-
             return {
               ...param,
               value: this.parseDateToReadable(param.widgetType, value),
@@ -264,8 +231,6 @@ class FiltersItem extends Component {
     ) {
       return this.handleClear();
     }
-
-    console.log('handleapply')
 
     applyFilters(activeFilter, () => {
       closeFilterMenu();
@@ -354,13 +319,25 @@ class FiltersItem extends Component {
                       subentity="filter"
                       subentityId={filter.filterId}
                       handlePatch={(property, value, id, valueTo) =>
-                        this.setValue(filter.filterId, item.defaultValue, property, value, id, valueTo)
+                        this.setValue(
+                          property,
+                          value,
+                          id,
+                          valueTo,
+                          filter.filterId,
+                          item.defaultValue
+                        )
                       }
                       handleChange={(property, value, id, valueTo) =>
-                        this.setValue(filter.filterId, item.defaultValue, property, value, id, valueTo)
+                        this.setValue(
+                          property,
+                          value,
+                          id,
+                          valueTo,
+                          filter.filterId,
+                          item.defaultValue
+                        )
                       }
-                      _handlePatch={this.setValue}
-                      _handleChange={this.setValue}
                       widgetType={item.widgetType}
                       fields={[item]}
                       type={item.type}

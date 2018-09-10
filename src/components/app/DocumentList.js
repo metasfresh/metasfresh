@@ -6,8 +6,6 @@ import { push } from 'react-router-redux';
 import { Map, List, Set } from 'immutable';
 import currentDevice from 'current-device';
 
-import _ from 'lodash';
-
 import {
   getViewLayout,
   browseViewRequest,
@@ -153,7 +151,6 @@ class DocumentList extends Component {
           location.hash === '#notification')) ||
       nextRefId !== refId
     ) {
-      // console.error('RESET EVERYWTHING')
       this.setState(
         {
           data: null,
@@ -410,14 +407,11 @@ class DocumentList extends Component {
 
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
-    const { page, sort, _filtersActive, filtersActive, viewId } = this.state;
-
-    console.log('DocumentList filterView: ', _.cloneDeep(filtersActive), _.cloneDeep(_filtersActive));
+    const { page, sort, filtersActive, viewId } = this.state;
 
     filterViewRequest(
       windowType,
       viewId,
-      // _filtersActive ? _filtersActive.toIndexedSeq().toArray() : filtersActive.toIndexedSeq().toArray()
       filtersActive.toIndexedSeq().toArray()
     ).then(response => {
       const viewId = response.data.viewId;
@@ -512,8 +506,6 @@ class DocumentList extends Component {
           newState.filtersActive = filtersToMap(response.data.filters);
         }
 
-        console.log('response already ? ', {...newState}, response.data);
-
         this.setState({ ...newState }, () => {
           if (forceSelection && response.data && result && result.size > 0) {
             const selection = [result.get(0).id];
@@ -576,11 +568,8 @@ class DocumentList extends Component {
   };
 
   handleFilterChange = activeFilters => {
-    console.log('HANDLEFILTERCHANGE: ', _.cloneDeep(activeFilters));
-
     this.setState(
       {
-        // filtersActive: _.cloneDeep(activeFilters),
         filtersActive: activeFilters,
         page: 1,
       },
@@ -596,9 +585,9 @@ class DocumentList extends Component {
 
     if (!filterParams) {
       filterParams = Set([parameterName]);
+    } else {
+      filterParams = filterParams.add(parameterName);
     }
-
-    console.warn('DL resetInitialFilters: ', filterId, parameterName);
 
     initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
 

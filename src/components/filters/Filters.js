@@ -2,7 +2,6 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Map } from 'immutable';
-
 import _ from 'lodash';
 
 import TableCell from '../table/TableCell';
@@ -17,7 +16,7 @@ class Filters extends Component {
     widgetShown: false,
   };
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps() {
     this.parseActiveFilters();
   }
 
@@ -26,13 +25,11 @@ class Filters extends Component {
   }
 
   // PARSING FILTERS ---------------------------------------------------------
-  parseActiveFilters = (cb) => {
+  parseActiveFilters = () => {
     let { filtersActive, filterData, initialValuesNulled } = this.props;
     let activeFilters = _.cloneDeep(filtersActive);
     let filtersData = Map(filterData);
     const activeFiltersCaptions = {};
-
-    console.info('PARSEACTIVE: ', activeFilters.toJSON(), _.cloneDeep(filtersActive.toJS()));
 
     // find any filters with default values first and extend
     // activeFilters with them
@@ -55,8 +52,10 @@ class Filters extends Component {
 
           const isActive = activeFilters.has(filterId);
 
-          if (!defaultValue || (nulledFilter && nulledFilter.has(parameterName))) {
-            // console.log('filterActive1: ', isActive, activeFilters.get(filterId), parameterName);
+          if (
+            !defaultValue ||
+            (nulledFilter && nulledFilter.has(parameterName))
+          ) {
             if (isActive) {
               activeFilters = activeFilters.set(filterId, {
                 defaultVal: false,
@@ -71,7 +70,6 @@ class Filters extends Component {
             //look for existing parameterName in parameters array
             // skip if found as they override defaultValue ALWAYS
             const filterActive = activeFilters.get(filterId);
-            // console.log('filterActive2: ', isActive, filterActive, parameterName);
 
             if (filterActive.parameters) {
               for (let activeParameter of filterActive.parameters) {
@@ -85,11 +83,10 @@ class Filters extends Component {
           const singleActiveFilter = activeFilters.get(filterId);
           paramsArray = singleActiveFilter ? singleActiveFilter.parameters : [];
 
-          console.log('adding to active: ', parameterName, _.cloneDeep(activeFilters))
-
           activeFilters = activeFilters.set(filterId, {
             filterId,
-            defaultVal: singleActiveFilter && singleActiveFilter.defaultVal !== undefined ? singleActiveFilter.defaultVal : true,
+            // this parameter tells us if filter has defaultValues defined
+            defaultVal: true,
             parameters: [
               ...paramsArray,
               {
@@ -100,84 +97,98 @@ class Filters extends Component {
             ],
           });
         }
-      } else {
-        activeFilters = activeFilters.delete(filterId);
       }
     });
 
     if (activeFilters.size) {
+      const removeDefault = {};
+
       activeFilters.forEach((filter, filterId) => {
         const captionsArray = ['', ''];
 
-        filter.parameters.forEach(filterParameter => {
-          const { value, parameterName, defaultValue } = filterParameter;
+        if (filter.parameters && filter.parameters.length) {
+          filter.parameters.forEach(filterParameter => {
+            const { value, parameterName, defaultValue } = filterParameter;
 
-          if (!defaultValue) {
-            const parentFilter = filtersData.get(filterId);
-            const filterParameter = parentFilter.parameters.find(
-              param => param.parameterName === parameterName
-            );
-            let captionName = filterParameter.caption;
-            let itemCaption = filterParameter.caption;
+            if (!defaultValue) {
+              // we don't want to show captions, nor show filter button as active
+              // for default values
+              removeDefault[filterId] = true;
 
-            switch (filterParameter.widgetType) {
-              case 'Text':
-                captionName = value;
+              const parentFilter = filtersData.get(filterId);
+              const filterParameter = parentFilter.parameters.find(
+                param => param.parameterName === parameterName
+              );
+              let captionName = filterParameter.caption;
+              let itemCaption = filterParameter.caption;
 
-                if (!value) {
-                  captionName = '';
-                  itemCaption = '';
-                }
-                break;
-              case 'Lookup':
-              case 'List':
-                captionName = value && value.caption;
-                break;
-              case 'Labels':
-                captionName = value.values.reduce((caption, item) => {
-                  return `${caption}, ${item.caption}`;
-                }, '');
-                break;
-              case 'YesNo':
-              case 'Switch':
-              default:
-                if (!value) {
-                  captionName = '';
-                  itemCaption = '';
-                }
-                break;
+              switch (filterParameter.widgetType) {
+                case 'Text':
+                  captionName = value;
+
+                  if (!value) {
+                    captionName = '';
+                    itemCaption = '';
+                  }
+                  break;
+                case 'Lookup':
+                case 'List':
+                  captionName = value && value.caption;
+                  break;
+                case 'Labels':
+                  captionName = value.values.reduce((caption, item) => {
+                    return `${caption}, ${item.caption}`;
+                  }, '');
+                  break;
+                case 'YesNo':
+                case 'Switch':
+                default:
+                  if (!value) {
+                    captionName = '';
+                    itemCaption = '';
+                  }
+                  break;
+              }
+
+              if (captionName) {
+                captionsArray[0] = captionsArray[0]
+                  ? `${captionsArray[0]}, ${captionName}`
+                  : captionName;
+              }
+
+              if (itemCaption) {
+                captionsArray[1] = captionsArray[1]
+                  ? `${captionsArray[1]}, ${itemCaption}`
+                  : itemCaption;
+              }
             }
-
-            if (captionName) {
-              captionsArray[0] = captionsArray[0]
-                ? `${captionsArray[0]}, ${captionName}`
-                : captionName;
-            }
-
-            if (itemCaption) {
-              captionsArray[1] = captionsArray[1]
-                ? `${captionsArray[1]}, ${itemCaption}`
-                : itemCaption;
-            }
-          }
-        });
+          });
+        } else {
+          activeFilters = activeFilters.delete(filterId);
+        }
 
         if (captionsArray.join('').length) {
           activeFiltersCaptions[filterId] = captionsArray;
         }
       });
 
-      console.info('ACTIVE: ',  _.cloneDeep(activeFilters), _.cloneDeep(filtersActive));
+      // if filter has defaultValues but also some user defined ones,
+      // we should still include it in active filters
+      if (Object.keys(removeDefault).length) {
+        for (let key of Object.keys(removeDefault)) {
+          activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
+        }
+      }
 
       this.setState({
         activeFilter: activeFilters.toIndexedSeq().toArray(),
         activeFiltersCaptions,
-      }, () => cb && cb());
+      });
     } else {
       this.setState({
         activeFilter: null,
         activeFiltersCaptions: null,
-      }, () => cb && cb());
+      });
     }
   };
 
@@ -225,39 +236,17 @@ class Filters extends Component {
   };
 
   parseToPatch = params => {
-    // return params.map(param => {
-    //   let value = null;
-
-    //   if (!param.defaultValue || param.defaultValue !== param.value) {
-    //     value = param.value === '' ? null : param.value;
-    //   }
-
-    //   return {
-    //     ...param,
-    //     value,
-    //   };
-    // });
-    // console.log('PARSETOPATCH: ', params)
-
     return params.reduce((acc, param) => {
-      // let value = null;
-
       if (
         !param.defaultValue ||
         JSON.stringify(param.defaultValue) !== JSON.stringify(param.value)
       ) {
-        // console.log('PARSE: ', {...param})
-        // value = param.value === '' ? null : param.value;
         acc.push({
           ...param,
           value: param.value === '' ? null : param.value,
         });
       }
 
-      // return {
-      //   ...param,
-      //   value,
-      // };
       return acc;
     }, []);
   };
@@ -298,7 +287,9 @@ class Filters extends Component {
     let { filtersActive } = this.props;
     let activeFilters = Map(filtersActive);
 
-    activeFilters = activeFilters.filter((item, id) => id !== filterToAdd.filterId)
+    activeFilters = activeFilters.filter(
+      (item, id) => id !== filterToAdd.filterId
+    );
     activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
 
     updateDocList(activeFilters);
@@ -321,7 +312,9 @@ class Filters extends Component {
     let activeFilters = Map(filtersActive);
 
     if (filtersActive.size) {
-      activeFilters = activeFilters.filter((item, id) => id !== filterToClear.filterId)
+      activeFilters = activeFilters.filter(
+        (item, id) => id !== filterToClear.filterId
+      );
       updateDocList(activeFilters);
     }
   };
