@@ -60,7 +60,7 @@ public class OrgId implements RepoIdAware
 
 	public static Optional<OrgId> optionalOfRepoId(final int repoId)
 	{
-		return Optional.ofNullable(ofRepoId(repoId));
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final OrgId orgId)
