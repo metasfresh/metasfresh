@@ -118,7 +118,7 @@ class FiltersItem extends Component {
     }
   };
 
-  setValue = (property, value, id, valueTo ='', filterId, defaultValue) => {
+  setValue = (property, value, id, valueTo = '', filterId, defaultValue) => {
     const { resetInitialValues } = this.props;
 
     if (defaultValue != null) {

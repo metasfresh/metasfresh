@@ -3,8 +3,6 @@ import Moment from 'moment';
 import { getQueryString } from '../utils';
 import { DATE_FORMAT } from '../constants/Constants';
 
-import _ from 'lodash';
-
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return get(
     `${config.API_URL}/documentView/${windowId}/layout?viewType=${viewType}${
@@ -82,8 +80,6 @@ export function filterViewRequest(windowId, viewId, filters) {
         }
       });
   });
-
-  console.log('filterViewRequest: ', _.cloneDeep(filters));
 
   return post(`${config.API_URL}/documentView/${windowId}/${viewId}/filter`, {
     filters: filters,
