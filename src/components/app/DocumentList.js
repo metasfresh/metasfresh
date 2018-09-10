@@ -3,8 +3,10 @@ import classnames from 'classnames';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 import currentDevice from 'current-device';
+
+import _ from 'lodash';
 
 import {
   getViewLayout,
@@ -76,6 +78,7 @@ class DocumentList extends Component {
       page: defaultPage || 1,
       sort: defaultSort,
       filtersActive: Map(),
+      initialValuesNulled: Map(),
       clickOutsideLock: false,
       isShowIncluded: false,
       hasShowIncluded: false,
@@ -150,11 +153,13 @@ class DocumentList extends Component {
           location.hash === '#notification')) ||
       nextRefId !== refId
     ) {
+      // console.error('RESET EVERYWTHING')
       this.setState(
         {
           data: null,
           layout: null,
           filtersActive: Map(),
+          initialValuesNulled: Map(),
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
         },
@@ -405,11 +410,14 @@ class DocumentList extends Component {
 
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
-    const { page, sort, filtersActive, viewId } = this.state;
+    const { page, sort, _filtersActive, filtersActive, viewId } = this.state;
+
+    console.log('DocumentList filterView: ', _.cloneDeep(filtersActive), _.cloneDeep(_filtersActive));
 
     filterViewRequest(
       windowType,
       viewId,
+      // _filtersActive ? _filtersActive.toIndexedSeq().toArray() : filtersActive.toIndexedSeq().toArray()
       filtersActive.toIndexedSeq().toArray()
     ).then(response => {
       const viewId = response.data.viewId;
@@ -504,6 +512,8 @@ class DocumentList extends Component {
           newState.filtersActive = filtersToMap(response.data.filters);
         }
 
+        console.log('response already ? ', {...newState}, response.data);
+
         this.setState({ ...newState }, () => {
           if (forceSelection && response.data && result && result.size > 0) {
             const selection = [result.get(0).id];
@@ -566,8 +576,11 @@ class DocumentList extends Component {
   };
 
   handleFilterChange = activeFilters => {
+    console.log('HANDLEFILTERCHANGE: ', _.cloneDeep(activeFilters));
+
     this.setState(
       {
+        // filtersActive: _.cloneDeep(activeFilters),
         filtersActive: activeFilters,
         page: 1,
       },
@@ -575,6 +588,23 @@ class DocumentList extends Component {
         this.fetchLayoutAndData(true);
       }
     );
+  };
+
+  resetInitialFilters = (filterId, parameterName) => {
+    let { initialValuesNulled } = this.state;
+    let filterParams = initialValuesNulled.get(filterId);
+
+    if (!filterParams) {
+      filterParams = Set([parameterName]);
+    }
+
+    console.warn('DL resetInitialFilters: ', filterId, parameterName);
+
+    initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+
+    this.setState({
+      initialValuesNulled,
+    });
   };
 
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
@@ -703,6 +733,7 @@ class DocumentList extends Component {
       supportAttribute,
       toggleWidth,
       rowEdited,
+      initialValuesNulled,
     } = this.state;
     const { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -784,9 +815,10 @@ class DocumentList extends Component {
 
                 {layout.filters && (
                   <Filters
-                    {...{ windowType, viewId, filtersActive }}
+                    {...{ windowType, viewId, filtersActive, initialValuesNulled }}
                     filterData={filtersToMap(layout.filters)}
                     updateDocList={this.handleFilterChange}
+                    resetInitialValues={this.resetInitialFilters}
                   />
                 )}
 

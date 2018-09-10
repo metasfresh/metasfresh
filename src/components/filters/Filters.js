@@ -29,11 +29,12 @@ class Filters extends Component {
 
   // PARSING FILTERS ---------------------------------------------------------
   parseActiveFilters = () => {
-    let { filtersActive, filterData } = this.props;
-    let activeFilters = _.clone(filtersActive);
+    let { filtersActive, filterData, initialValuesNulled } = this.props;
+    let activeFilters = _.cloneDeep(filtersActive);
     const activeFiltersCaptions = {};
 
-    console.info('PARSEACTIVE: ', _.cloneDeep(activeFilters));
+    // console.info('PARSEACTIVE: ', _.cloneDeep(activeFilters), initialValuesNulled.toJS());
+    console.info('PARSEACTIVE: ', activeFilters.toJSON(), _.cloneDeep(filtersActive.toJS()));
 
     // find any filters with default values first and extend
     // activeFilters with them
@@ -43,8 +44,15 @@ class Filters extends Component {
 
         outerParameters: for (let parameter of filter.parameters) {
           const { defaultValue, parameterName } = parameter;
+          const nulledFilter = initialValuesNulled.get(filterId);
 
-          if (!defaultValue) {
+          // if (filterId.includes('userquery')) {
+          //   console.log('NULLEDFILTER: ', nulledFilter && nulledFilter.toJSON(), filterId);
+          //   console.log('NULLEDPARAM: ', nulledFilter && nulledFilter.has(parameterName));
+          // }
+          if (!defaultValue || (nulledFilter && nulledFilter.has(parameterName))) {
+
+
             continue;
           } else if (defaultValue && (!activeFilters || !activeFilters.size)) {
             // console.log('no active filters yet: ', parameterName, defaultValue);
@@ -55,7 +63,6 @@ class Filters extends Component {
               },
             });
           }
-
           // if (activeFilters && defaultValue) {
           const isActive = activeFilters.has(filterId);
 
@@ -63,7 +70,6 @@ class Filters extends Component {
             //look for existing parameterName in parameters array
             // skip if found as they override defaultValue ALWAYS
             const filterActive = activeFilters.get(filterId);
-
             // console.log('filterActive: ', filterActive, parameterName);
 
 // if activeFilter has
@@ -106,32 +112,37 @@ class Filters extends Component {
 
           // innerParameters: for (let index = 0; index < length; index += 1) {
           //   let name = paramsArray[index].parameterName;
-
           //   console.log('innerParameters: ', parameterName, seen.has(name), paramsArray[index])
-
           //   if (seen.has(name) || !paramsArray[index].defaultValue) {
           //     continue innerParameters;
           //   }
-
           //   seen.add(name);
             // extendedParams.push({
-          paramsArray.push({
-            parameterName,
-            value: defaultValue,
-            // defaultVal: true,
-            defaultValue: defaultValue,
-          });
+          // paramsArray.push({
+          //   parameterName,
+          //   value: defaultValue,
+          //   // defaultVal: true,
+          //   defaultValue: defaultValue,
+          // });
           // }
+          console.log('adding to active: ', parameterName, _.cloneDeep(activeFilters))
 
           activeFilters = activeFilters.set(filterId, {
             filterId,
             defaultVal: true,
             // parameters: extendedParams,
-            parameters: paramsArray,
+            // parameters: paramsArray,
+            parameters: [
+              ...paramsArray,
+              {
+                parameterName,
+                value: defaultValue,
+                // defaultVal: true,
+                defaultValue: defaultValue,
+              },
+            ],
           });
         // }
-
-
         }
 
         // activeFilters = activeFilters.set(filterId, {
@@ -140,6 +151,8 @@ class Filters extends Component {
         //   // parameters: extendedParams,
         //   parameters: paramsArray,
         // });
+      } else {
+        activeFilters = activeFilters.delete(filterId);
       }
     });
 
@@ -151,7 +164,7 @@ class Filters extends Component {
       activeFilters.forEach((filter, filterId) => {
         const captionsArray = ['', ''];
 
-        filter.parameters.forEach((filterParameter) => {
+        filter.parameters.forEach(filterParameter => {
           const { value, parameterName, defaultValue } = filterParameter;
           const valueExists = filterParameter.hasOwnProperty('value');
           // we don't want to show captions, nor show filter button as active
@@ -216,7 +229,7 @@ class Filters extends Component {
       });
 
       if (Object.keys(removeDefault).length) {
-        // console.log('remove ?: ', removeDefault, activeFilters)
+        console.log('remove ?: ', removeDefault, activeFilters)
         for (let key of Object.keys(removeDefault)) {
           activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
         }
@@ -228,12 +241,12 @@ class Filters extends Component {
         activeFilter: activeFilters.toIndexedSeq().toArray(),
         activeFiltersCaptions,
       });
-    // } else {
-    //   this.setState({
-    //     activeFilter: null,
-    //     activeFiltersCaptions: null,
-    //   });
-    // }
+    } else {
+      this.setState({
+        activeFilter: null,
+        activeFiltersCaptions: null,
+      });
+    }
   };
 
   sortFilters = data => {
@@ -360,15 +373,10 @@ class Filters extends Component {
     } else {
       newFilter = [filterToAdd];
     }
-
-    console.log('FILTER TO ADD: ', _.cloneDeep(newFilter));
-
+    // console.log('FILTER TO ADD: ', _.cloneDeep(newFilter));
     // console.log('NEWFILTER: ', [...newFilter])
-
     const filtersMap = filtersToMap(newFilter);
-
-    console.log('AAAND FILTER MAP ? ', filtersMap, _.cloneDeep(filtersMap));
-
+    // console.log('AAAND FILTER MAP ? ', filtersMap, _.cloneDeep(filtersMap));
     // this.setState(
     //   {
     //     activeFilter: newFilter,
@@ -450,7 +458,7 @@ class Filters extends Component {
   // RENDERING FILTERS -------------------------------------------------------
 
   render() {
-    const { filterData, windowType, viewId } = this.props;
+    const { filterData, windowType, viewId, resetInitialValues } = this.props;
     const { frequentFilters, notFrequentFilters } = this.sortFilters(
       filterData
     );
@@ -496,6 +504,7 @@ class Filters extends Component {
                 notValidFields,
                 viewId,
                 widgetShown,
+                resetInitialValues,
               }}
               data={notFrequentFilters}
               handleShow={this.handleShow}
@@ -514,8 +523,11 @@ class Filters extends Component {
 
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
+  resetInitialValues: PropTypes.func.isRequired,
+
   // this should be an immutable Map
   filtersActive: PropTypes.any,
+  initialValuesNulled: PropTypes.any,
 };
 
 export default Filters;

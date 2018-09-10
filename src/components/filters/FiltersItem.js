@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
@@ -24,11 +25,12 @@ class FiltersItem extends Component {
     let activeFilter = null;
     if (active) {
       activeFilter = active.find(item => item.filterId === data.filterId);
+      // activeFilter = _.cloneDeep(activeFilter);
     }
 
     this.state = {
-      filter: { ...props.data },
-      activeFilter: activeFilter ? { ...activeFilter } : null,
+      filter: _.cloneDeep(props.data),
+      activeFilter: activeFilter ? _.cloneDeep(activeFilter) : null,
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -96,11 +98,11 @@ class FiltersItem extends Component {
 
     if (filter.parameters) {
       filter.parameters.map(item => {
-        if (item.defaultValue != null) {
-          this.mergeData(item.parameterName, item.defaultValue, '', true);
-        } else {
+        // if (item.defaultValue !== undefined) {
+        //   this.mergeData(item.parameterName, '', '', true);
+        // } else {
           this.mergeData(item.parameterName, '');
-        }
+        // }
       });
 
       if (
@@ -112,24 +114,32 @@ class FiltersItem extends Component {
           this.mergeData(
             item.parameterName,
             item.value != null ? item.value : '',
-            item.valueTo != null ? item.valueTo : ''
+            item.valueTo != null ? item.valueTo : '',
+            true,
+            item.defaultValue
           );
         });
       }
     }
   };
 
-  setValue = (property, value, id, valueTo) => {
+  setValue = (filterId, defaultValue, property, value, id, valueTo) => {
+    const { resetInitialValues } = this.props;
+
+    if (defaultValue !== undefined) {
+      resetInitialValues(filterId, property);
+    }
+
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
     // IT HAS TO BE UNIFIED
     //
     // OVERWORKED WORKAROUND
     if (Array.isArray(property)) {
       property.map(item => {
-        this.mergeData(item.parameterName, value, valueTo, true);
+        this.mergeData(item.parameterName, value, valueTo, true, value);
       });
     } else {
-      this.mergeData(property, value, valueTo, true);
+      this.mergeData(property, value, valueTo, true, value);
     }
   };
 
@@ -143,9 +153,12 @@ class FiltersItem extends Component {
     return value;
   };
 
-  mergeData = (property, value, valueTo, updateActive) => {
+  mergeData = (property, value, valueTo, updateActive, activeValue) => { //updateActive) => {
     let { activeFilter, filter } = this.state;
 
+    // update values for active filters, as we then bubble them up to parent
+    // components which use this data in PATCH requests
+    // if (updateActive) {
     if (updateActive) {
       let paramExists = false;
 
@@ -162,8 +175,8 @@ class FiltersItem extends Component {
 
           return {
             ...param,
-            value: this.parseDateToReadable(param.widgetType, value),
-            valueTo: this.parseDateToReadable(param.widgetType, valueTo),
+            value: this.parseDateToReadable(param.widgetType, activeValue),
+            // valueTo: this.parseDateToReadable(param.widgetType, valueTo),
           };
         } else {
           return param;
@@ -173,8 +186,8 @@ class FiltersItem extends Component {
       if (!paramExists) {
         updatedParameters.push({
           parameterName: property,
-          value,
-          valueTo,
+          value: activeValue,
+          // valueTo,
         });
       }
 
@@ -184,11 +197,36 @@ class FiltersItem extends Component {
       };
     }
 
+    // console.log('mergeData activeFilter: ', {...activeFilter});
+    console.log('FI mergeData')
+
     this.setState(prevState => ({
       filter: {
         ...prevState.filter,
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
+          // if (param.defaultValue) {
+          //   console.log('merging: ', param, value, property)
+          // }
+          // if (param.defaultValue && param.defaultValue === value) {
+          //   return param;
+          // }
+          /*
+            const nulledFilter = initialValuesNulled.get(filterId);
+
+            if (!defaultValue || (nulledFilter && nulledFilter.has(parameterName))) {
+              continue;
+            } else if (defaultValue && (!activeFilters || !activeFilters.size)) {
+              // console.log('no active filters yet: ', parameterName, defaultValue);
+              activeFilters = Map({
+                [`${filterId}`]: {
+                  filterId,
+                  parameters: [],
+                },
+              });
+            }
+            */
+
             return {
               ...param,
               value: this.parseDateToReadable(param.widgetType, value),
@@ -226,6 +264,8 @@ class FiltersItem extends Component {
     ) {
       return this.handleClear();
     }
+
+    console.log('handleapply')
 
     applyFilters(activeFilter, () => {
       closeFilterMenu();
@@ -312,8 +352,14 @@ class FiltersItem extends Component {
                       entity="documentView"
                       subentity="filter"
                       subentityId={filter.filterId}
-                      handlePatch={this.setValue}
-                      handleChange={this.setValue}
+                      handlePatch={(property, value, id, valueTo) =>
+                        this.setValue(filter.filterId, item.defaultValue, property, value, id, valueTo)
+                      }
+                      handleChange={(property, value, id, valueTo) =>
+                        this.setValue(filter.filterId, item.defaultValue, property, value, id, valueTo)
+                      }
+                      _handlePatch={this.setValue}
+                      _handleChange={this.setValue}
                       widgetType={item.widgetType}
                       fields={[item]}
                       type={item.type}
@@ -386,6 +432,7 @@ class FiltersItem extends Component {
 
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  resetInitialValues: PropTypes.func.isRequired,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,
   active: PropTypes.array,
