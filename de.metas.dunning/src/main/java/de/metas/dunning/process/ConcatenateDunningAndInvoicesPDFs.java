@@ -48,14 +48,14 @@ public class ConcatenateDunningAndInvoicesPDFs extends JavaProcess implements IP
 			@NonNull final IProcessPreconditionsContext context)
 	{
 
-		final List<I_AD_Archive> archives = archiveDAO.retrieveLastArchives(getCtx(), TableRecordReference.of(getRecord(I_C_DunningDoc.class)), 1);
+		final List<I_AD_Archive> archives = archiveDAO.retrieveLastArchives(getCtx(), TableRecordReference.of(context.getSelectedModel(I_C_DunningDoc.class)), 1);
 		if (archives.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.translatable(MSG_NOARCHIVE));
 		}
 
 		return ProcessPreconditionsResolution
-				.acceptIf(I_C_DunningDoc.Table_Name.equals(getTableName()));
+				.acceptIf(I_C_DunningDoc.Table_Name.equals(context.getTableName()));
 	}
 
 	@Override

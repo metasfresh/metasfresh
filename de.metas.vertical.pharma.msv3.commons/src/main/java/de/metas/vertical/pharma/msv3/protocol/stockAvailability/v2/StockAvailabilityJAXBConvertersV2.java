@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability.v2;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 
 import com.google.common.collect.ImmutableList;
@@ -223,7 +224,7 @@ public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityClien
 		return StockAvailabilityResponseItem.builder()
 				.pzn(PZN.of(soap.getAnfragePzn()))
 				.qty(Quantity.of(soap.getAnfrageMenge()))
-				.substitution(fromJAXB(soap.getSubstitution()))
+				.substitution(fromJAXBorNull(soap.getSubstitution()))
 				.parts(soap.getAnteile().stream()
 						.map(this::fromJAXB)
 						.collect(ImmutableList.toImmutableList()))
@@ -244,8 +245,12 @@ public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityClien
 		return soap;
 	}
 
-	private StockAvailabilitySubstitution fromJAXB(final VerfuegbarkeitSubstitution soap)
+	private StockAvailabilitySubstitution fromJAXBorNull(@Nullable final VerfuegbarkeitSubstitution soap)
 	{
+		if (soap == null)
+		{
+			return null;
+		}
 		return StockAvailabilitySubstitution.builder()
 				.pzn(PZN.of(soap.getLieferPzn()))
 				.reason(StockAvailabilitySubstitutionReason.fromV2SoapCode(soap.getGrund()))
@@ -265,7 +270,7 @@ public class StockAvailabilityJAXBConvertersV2 implements StockAvailabilityClien
 		return soap;
 	}
 
-	private StockAvailabilityResponseItemPart fromJAXB(final VerfuegbarkeitAnteil soap)
+	private StockAvailabilityResponseItemPart fromJAXB(@NonNull final VerfuegbarkeitAnteil soap)
 	{
 		return StockAvailabilityResponseItemPart.builder()
 				.qty(Quantity.of(soap.getMenge()))
