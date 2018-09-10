@@ -134,6 +134,8 @@ class TableCell extends PureComponent {
   render() {
     const {
       isEdited,
+      cellExtended,
+      extendLongText,
       widgetData,
       item,
       type,
@@ -168,6 +170,13 @@ class TableCell extends PureComponent {
     const isDateField = DATE_FIELD_FORMATS[item.widgetType]
       ? TableCell.getDateFormat(item.widgetType)
       : false;
+    let style = {};
+
+    if (cellExtended) {
+      style = {
+        height: extendLongText * 20,
+      };
+    }
 
     return (
       <td
@@ -220,7 +229,9 @@ class TableCell extends PureComponent {
           <div
             className={classnames('cell-text-wrapper', {
               [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
+              extended: cellExtended,
             })}
+            style={style}
             title={
               item.widgetType === 'YesNo' ||
               item.widgetType === 'Switch' ||
@@ -238,11 +249,14 @@ class TableCell extends PureComponent {
 }
 
 TableCell.propTypes = {
+  cellExtended: PropTypes.bool,
+  extendLongText: PropTypes.number,
   handleRightClick: PropTypes.func,
   handleKeyDown: PropTypes.func,
   handleDoubleClick: PropTypes.func,
   onClickOutside: PropTypes.func,
   onCellChange: PropTypes.func,
+  onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
 };
 

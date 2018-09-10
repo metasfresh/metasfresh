@@ -85,7 +85,10 @@
     }
 
     td {
-        width: 75px;
+        /* This causes weird things in the layout so we should
+         * setting this width arbitrary
+        */
+        /*width: 75px;*/
         position: relative;
         cursor: pointer;
         border-top: 0;
@@ -107,7 +110,25 @@
         }
 
         &.LongText {
+            position: relative;
             max-width: 350px;
+
+            .extend-text-button {
+                position: absolute;
+                z-index: 2;
+                top: 1px;
+                right: 1px;
+                width: 0; 
+                height: 0;
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-top: 8px solid $brand-font-color;
+
+                &.extended {
+                    border-top: none;
+                    border-bottom: 8px solid $brand-font-color;
+                }
+            }
         }
     }
 
@@ -138,6 +159,21 @@
             display: flex;
             align-items: center;
             flex-direction: column;
+        }
+
+        &.longtext-cell {
+            white-space: pre;
+            height: 21px;
+        }
+
+        &.extended {
+            height: 60px;
+
+            &.longtext-cell {
+                word-wrap: break-word;
+                overflow-y: scroll;
+                position: relative;
+            }
         }
     }
 }

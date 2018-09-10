@@ -13,7 +13,8 @@ import QuickActionsDropdown from './QuickActionsDropdown';
 const initialState = {
   actions: [],
   isDropdownOpen: false,
-  isTooltip: false,
+  btnTooltip: false,
+  listTooltip: false,
   loading: false,
 };
 
@@ -32,6 +33,8 @@ class QuickActions extends Component {
     inModal: PropTypes.bool,
     disabled: PropTypes.bool,
     stopShortcutPropagation: PropTypes.bool,
+
+    processStatus: PropTypes.string,
   };
 
   unmounted = false;
@@ -178,14 +181,20 @@ class QuickActions extends Component {
     });
   };
 
-  toggleTooltip = visible => {
+  toggleTooltip = (type, visible) => {
     this.setState({
-      isTooltip: visible,
+      [type]: visible,
     });
   };
 
   render() {
-    const { actions, isDropdownOpen, isTooltip, loading } = this.state;
+    const {
+      actions,
+      isDropdownOpen,
+      btnTooltip,
+      listTooltip,
+      loading,
+    } = this.state;
     const { shouldNotUpdate, processStatus, disabled } = this.props;
     const disabledDuringProcessing = processStatus === 'pending' || loading;
 
@@ -204,13 +213,21 @@ class QuickActions extends Component {
                   ? 'tag-default '
                   : 'pointer ')
               }
+              onMouseEnter={() => this.toggleTooltip('listTooltip', true)}
+              onMouseLeave={() => this.toggleTooltip('listTooltip', false)}
               onClick={e => {
                 e.preventDefault();
 
                 this.handleClick(actions[0]);
               }}
-              title={actions[0].caption}
             >
+              {listTooltip && (
+                <Tooltips
+                  name={keymap.QUICK_ACTION_POS}
+                  action={'Run action'}
+                  type={''}
+                />
+              )}
               {actions[0].caption}
             </div>
             <div
@@ -221,14 +238,14 @@ class QuickActions extends Component {
                   ? 'btn-disabled '
                   : '')
               }
-              onMouseEnter={() => this.toggleTooltip(true)}
-              onMouseLeave={() => this.toggleTooltip(false)}
+              onMouseEnter={() => this.toggleTooltip('btnTooltip', true)}
+              onMouseLeave={() => this.toggleTooltip('btnTooltip', false)}
               onClick={() => {
                 this.toggleDropdown(!isDropdownOpen);
               }}
             >
               <i className="meta-icon-down-1" />
-              {isTooltip && (
+              {btnTooltip && (
                 <Tooltips
                   name={keymap.QUICK_ACTION_TOGGLE}
                   action={'Toggle list'}

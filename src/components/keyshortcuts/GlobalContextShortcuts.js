@@ -146,7 +146,11 @@ export default class GlobalContextShortcuts extends Component {
 
       const activeElement = document.activeElement;
 
-      if (activeElement && activeElement.nodeName === 'INPUT') {
+      if (
+        activeElement &&
+        activeElement.nodeName === 'INPUT' &&
+        activeElement.type === 'text'
+      ) {
         this.setCaretPosition(activeElement, activeElement.value.length);
 
         return true;
