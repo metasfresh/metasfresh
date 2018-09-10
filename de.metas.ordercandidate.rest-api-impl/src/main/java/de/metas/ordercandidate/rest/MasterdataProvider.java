@@ -2,6 +2,7 @@ package de.metas.ordercandidate.rest;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -106,15 +107,40 @@ final class MasterdataProvider
 
 	private BPartnerId retrieveOrCreateBPartnerId(final JsonBPartner json)
 	{
+		return retrieveExistingBPartnerId(json)
+				.orElseGet(() -> createBPartnerId(json));
+	}
+
+	private final Optional<BPartnerId> retrieveExistingBPartnerId(final JsonBPartner json)
+	{
 		final String code = json.getCode();
 		if (!Check.isEmpty(code, true))
 		{
-			return bpartnersRepo.getBPartnerIdByValue(code);
+			return bpartnersRepo.getBPartnerIdByValueIfExists(code);
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	private final BPartnerId createBPartnerId(final JsonBPartner json)
+	{
+		final String code = json.getCode();
+		final String name = json.getName();
+		if (Check.isEmpty(name, true))
+		{
+			throw new AdempiereException("@FillMandatory@ @Name@: " + json);
 		}
 
 		final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bpartnerRecord.setValue(code);
-		bpartnerRecord.setName(json.getName());
+
+		if (!Check.isEmpty(code, true))
+		{
+			bpartnerRecord.setValue(code);
+		}
+
+		bpartnerRecord.setName(name);
 		bpartnerRecord.setIsCustomer(true);
 		// bpartnerRecord.setC_BP_Group_ID(C_BP_Group_ID); // TODO
 		bpartnersRepo.save(bpartnerRecord);
@@ -170,7 +196,7 @@ final class MasterdataProvider
 		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 	}
 
-	private static final BPartnerLocationId convertCodeToBPartnerLocationId(final BPartnerId bpartnerId, final String code)
+	private final BPartnerLocationId convertCodeToBPartnerLocationId(final BPartnerId bpartnerId, final String code)
 	{
 		if (code == null || code.isEmpty())
 		{
@@ -187,7 +213,13 @@ final class MasterdataProvider
 			throw new AdempiereException("Invalid BPartner Location code: " + code, ex);
 		}
 
-		return BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationIdInt);
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationIdInt);
+		if (!bpartnersRepo.exists(bpartnerLocationId))
+		{
+			throw new AdempiereException("BPartner Location does not exist: " + bpartnerLocationId);
+		}
+
+		return bpartnerLocationId;
 	}
 
 	private static final String convertBPartnerLocationIdToCode(final BPartnerLocationId bpartnerLocationId)
