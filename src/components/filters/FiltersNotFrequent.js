@@ -56,6 +56,7 @@ class FiltersNotFrequent extends Component {
       active,
       modalVisible,
       activeFiltersCaptions,
+      resetInitialValues,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -122,20 +123,23 @@ class FiltersNotFrequent extends Component {
               </ul>
             ) : (
               <FiltersItem
+                {...{
+                  panelCaption,
+                  windowType,
+                  active,
+                  viewId,
+                  resetInitialValues,
+                  applyFilters,
+                  clearFilters,
+                }}
                 captionValue={activeFilter.captionValue}
-                panelCaption={panelCaption}
-                windowType={windowType}
                 data={activeFilter.isActive ? activeFilter : openFilter}
                 closeFilterMenu={() => this.toggleDropdown(false)}
                 returnBackToDropdown={() => this.toggleFilter(null)}
-                clearFilters={clearFilters}
-                applyFilters={applyFilters}
                 notValidFields={notValidFields}
                 isActive={activeFilter.isActive}
-                active={active}
                 onShow={() => handleShow(true)}
                 onHide={() => handleShow(false)}
-                viewId={viewId}
                 outsideClick={this.outsideClick}
                 openedFilter={true}
                 filtersWrapper={this.props.filtersWrapper}
@@ -150,13 +154,14 @@ class FiltersNotFrequent extends Component {
 
 FiltersNotFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
+  resetInitialValues: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,
 };
 
-const mapStateToProps = state => {
-  const { allowOutsideClick, modal } = state.windowHandler;
+const mapStateToProps = ({ windowHandler }) => {
+  const { allowOutsideClick, modal } = windowHandler;
 
   return {
     allowOutsideClick,
