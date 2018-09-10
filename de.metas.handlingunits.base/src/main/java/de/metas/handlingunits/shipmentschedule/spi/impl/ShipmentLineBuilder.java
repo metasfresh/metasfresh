@@ -136,7 +136,7 @@ import lombok.NonNull;
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<Integer> alreadyAssignedTUIds = null; // to be configured by called
 
-	private M_ShipmentSchedule_QuantityTypeToUse qtyToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D;
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
 
 	//
 	// Manual packing materials related:
@@ -157,9 +157,9 @@ import lombok.NonNull;
 		currentShipment = shipment;
 	}
 
-	public M_ShipmentSchedule_QuantityTypeToUse getQtyToUse()
+	public M_ShipmentSchedule_QuantityTypeToUse getQtyTypeToUse()
 	{
-		return qtyToUse;
+		return qtyTypeToUse;
 	}
 
 	/**
@@ -452,7 +452,7 @@ import lombok.NonNull;
 				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
 
 
-				if (qtyTU != null && !getQtyToUse().isUseBoth())
+				if (qtyTU != null && !getQtyTypeToUse().isUseBoth())
 				{
 					shipmentLine.setQtyTU_Override(qtyTU);
 				}
@@ -581,8 +581,8 @@ import lombok.NonNull;
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
 	}
 
-	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyToUse)
+	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		this.qtyToUse = qtyToUse;
+		this.qtyTypeToUse = qtyTypeToUse;
 	}
 }
