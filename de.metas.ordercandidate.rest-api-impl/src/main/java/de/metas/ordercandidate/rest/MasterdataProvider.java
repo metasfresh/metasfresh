@@ -134,6 +134,11 @@ final class MasterdataProvider
 
 	public BPartnerLocationId getCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
 	{
+		if (json == null)
+		{
+			return null;
+		}
+
 		return bpartnerLocationIdsByCode.computeIfAbsent(json.getCode(), code -> retrieveOrCreateBPartnerLocationId(bpartnerId, json));
 	}
 
@@ -218,6 +223,11 @@ final class MasterdataProvider
 
 	public BPartnerContactId getCreateBPartnerContactId(final BPartnerId bpartnerId, final JsonBPartnerContact json)
 	{
+		if (json == null)
+		{
+			return null;
+		}
+
 		return bpartnerContactIdsByCode.computeIfAbsent(json.getCode(), code -> retrieveOrCreateBPartnerContactId(bpartnerId, json));
 	}
 
