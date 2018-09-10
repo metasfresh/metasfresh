@@ -11,21 +11,46 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.74
 ## Features
+
+* metasfresh
+  * [#4411](https://github.com/metasfresh/metasfresh/issues/4411) New Dunning trigger for flatrate terms
+  * [#4516](https://github.com/metasfresh/metasfresh/issues/4516) New Action "Copy Window"
+  * [#4524](https://github.com/metasfresh/metasfresh/issues/4524) Implement inbound E-Mail support
+  * [#4541](https://github.com/metasfresh/metasfresh/issues/4541) Return also URL using function de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
+  * [#4550](https://github.com/metasfresh/metasfresh/issues/4550) Show Pricing Condition Indicator in Purchase Orders
+  * [#4554](https://github.com/metasfresh/metasfresh/issues/4554) process to create dunning-PDF with concatenated invoice-PDFs
+  * [#4561](https://github.com/metasfresh/metasfresh/issues/4561) QueryStatisticsLogger shall use logger instead of stderr
+
+* metasfresh-webui-api
+  * [#1035](https://github.com/metasfresh/metasfresh-webui-api/issues/1035) Implement CORS support
+  * [#1037](https://github.com/metasfresh/metasfresh-webui-api/issues/1037) Advanced tooltip support
+
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
     * New feature that expands multiline fields when the row is selected.
 
 ## Fixes
+
+* metasfresh
+  * [#4528](https://github.com/metasfresh/metasfresh/issues/4528) Can not add new scale price on 5.71
+  * [#4552](https://github.com/metasfresh/metasfresh/issues/4552) AD_User is wrong in shipment schedule when using isDropShip
+  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) msv3 related fixes
+
+* metasfresh-webui-api
+  * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
+
 * metasfresh-webui-frontend
   * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
     * Fixes the cursor hovering magnifying glass icon. Now shown as default cursor.
   * [#1931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1931) Hint for shortcut [alt]+u not displayed anymore when hovering over the resp. button
     * Now shows the Quickaction Tooltip again.
+  * [#1932](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1932) Mandatory Field not filled Error too early
   * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
     * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
 
 # metasfresh 5.73
 ## Features
+
 * metasfresh
   * [#4475](https://github.com/metasfresh/metasfresh/issues/4475) Refund contract - add further options
     * Extended Functionality added to Refund contracts enabling enhanced calculations.
