@@ -140,7 +140,7 @@ final class MasterdataProvider
 	private BPartnerLocationId retrieveOrCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
 	{
 		final BPartnerLocationId bpartnerLocationId = convertCodeToBPartnerLocationId(bpartnerId, json.getCode());
-		if (bpartnerLocationId == null)
+		if (bpartnerLocationId != null)
 		{
 			return bpartnerLocationId;
 		}
