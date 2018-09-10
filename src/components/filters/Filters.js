@@ -5,7 +5,7 @@ import { Map } from 'immutable';
 
 import _ from 'lodash';
 
-import { filtersToMap } from '../../utils/documentListHelper';
+// import { filtersToMap } from '../../utils/documentListHelper';
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
@@ -28,7 +28,7 @@ class Filters extends Component {
   }
 
   // PARSING FILTERS ---------------------------------------------------------
-  parseActiveFilters = () => {
+  parseActiveFilters = (cb) => {
     let { filtersActive, filterData, initialValuesNulled } = this.props;
     let activeFilters = _.cloneDeep(filtersActive);
     const activeFiltersCaptions = {};
@@ -95,7 +95,7 @@ class Filters extends Component {
           // }
 
           const singleActiveFilter = activeFilters.get(filterId);
-          paramsArray = singleActiveFilter.parameters;
+          paramsArray = singleActiveFilter ? singleActiveFilter.parameters : [];
           // let length = paramsArray.length,
           //   extendedParams = [],
           //   seen = new Set();
@@ -157,7 +157,7 @@ class Filters extends Component {
     });
 
     if (activeFilters.size) {
-      const removeDefault = {};
+      // const removeDefault = {};
 
       // console.info('activeFilterssize: ', activeFilters)
 
@@ -166,13 +166,14 @@ class Filters extends Component {
 
         filter.parameters.forEach(filterParameter => {
           const { value, parameterName, defaultValue } = filterParameter;
-          const valueExists = filterParameter.hasOwnProperty('value');
+          // const valueExists = filterParameter.hasOwnProperty('value');
+
           // we don't want to show captions, nor show filter button as active
           // for default values
-          if (valueExists && !defaultValue) {
-            // console.log('TA ?: ', value, parameterName)
-            removeDefault[filterId] = true;
-          }
+          // if (valueExists && !defaultValue) {
+          //   // console.log('TA ?: ', value, parameterName)
+          //   removeDefault[filterId] = true;
+          // }
 
           if (!defaultValue) {
             const parentFilter = filterData.get(filterId);
@@ -228,24 +229,24 @@ class Filters extends Component {
         }
       });
 
-      if (Object.keys(removeDefault).length) {
-        console.log('remove ?: ', removeDefault, activeFilters)
-        for (let key of Object.keys(removeDefault)) {
-          activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
-        }
-      }
+      // if (Object.keys(removeDefault).length) {
+      //   console.log('remove ?: ', removeDefault, activeFilters)
+      //   for (let key of Object.keys(removeDefault)) {
+      //     activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
+      //   }
+      // }
 
       console.info('ACTIVE: ',  _.cloneDeep(activeFilters), _.cloneDeep(filtersActive));
 
       this.setState({
         activeFilter: activeFilters.toIndexedSeq().toArray(),
         activeFiltersCaptions,
-      });
+      }, () => cb && cb());
     } else {
       this.setState({
         activeFilter: null,
         activeFiltersCaptions: null,
-      });
+      }, () => cb && cb());
     }
   };
 
@@ -362,29 +363,43 @@ class Filters extends Component {
 
   setFilterActive = filterToAdd => {
     const { updateDocList } = this.props;
-    const { activeFilter } = this.state;
-    let newFilter;
+    // const { activeFilter } = this.state;
 
-    if (activeFilter) {
-      newFilter = activeFilter.filter(
-        item => item.filterId !== filterToAdd.filterId
-      );
-      newFilter.push(filterToAdd);
-    } else {
-      newFilter = [filterToAdd];
-    }
+    let { filtersActive } = this.props;
+    let activeFilters = Map(filtersActive);
+    // let newFilter;
+
+    // console.log('ACTIVE FILTERS: ', {...filterToAdd}, _.cloneDeep(activeFilters));
+
+    activeFilters = activeFilters.filter((item, id) => id !== filterToAdd.filterId)
+    activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
+
+
+    // if (activeFilter) {
+    //   newFilter = _.cloneDeep(activeFilter);
+    //   newFilter = newFilter.filter(
+    //     item => item.filterId !== filterToAdd.filterId
+    //   );
+    //   newFilter.push(filterToAdd);
+    // } else {
+    //   newFilter = [filterToAdd];
+    // }
     // console.log('FILTER TO ADD: ', _.cloneDeep(newFilter));
     // console.log('NEWFILTER: ', [...newFilter])
-    const filtersMap = filtersToMap(newFilter);
+    // const filtersMap = filtersToMap(newFilter);
     // console.log('AAAND FILTER MAP ? ', filtersMap, _.cloneDeep(filtersMap));
+
     // this.setState(
     //   {
     //     activeFilter: newFilter,
     //   },
     //   () => {
-        updateDocList(filtersMap);
+    //     this.parseActiveFilters(updateDocList(filtersMap));
+        // updateDocList(filtersMap);
+
       // }
     // );
+    updateDocList(activeFilters);
   };
 
   /*
@@ -399,24 +414,47 @@ class Filters extends Component {
 
   clearFilters = filterToClear => {
     const { updateDocList } = this.props;
-    const { activeFilter } = this.state;
+    // const { activeFilter } = this.state;
 
-    if (activeFilter) {
-      let newFilter = activeFilter.filter(
-        item => item.filterId !== filterToClear.filterId
-      );
+    let { filtersActive } = this.props;
+    let activeFilters = Map(filtersActive);
+    // let newFilter;
 
-      const filtersMap = filtersToMap(newFilter);
+    // console.log('ACTIVE FILTERS: ', {...filterToAdd}, _.cloneDeep(activeFilters));
 
-      this.setState(
-        {
-          activeFilter: newFilter,
-        },
-        () => {
-          updateDocList(filtersMap);
-        }
-      );
+    // activeFilters = activeFilters.filter((item, id) => id !== filterToAdd.filterId)
+    // activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
+
+    if (filtersActive.size) {
+      activeFilters = activeFilters.filter((item, id) => id !== filterToClear.filterId)
+      // activeFilters = activeFilters.set(filterToClear.filterId, filterToClear);
+
+      // this.setState(
+      //   {
+      //     activeFilter: newFilter,
+      //   },
+        // () => {
+          updateDocList(activeFilters);
+        // }
+      // );
     }
+
+    // if (activeFilter) {
+    //   let newFilter = activeFilter.filter(
+    //     item => item.filterId !== filterToClear.filterId
+    //   );
+
+    //   const filtersMap = filtersToMap(newFilter);
+
+    //   this.setState(
+    //     {
+    //       activeFilter: newFilter,
+    //     },
+    //     () => {
+    //       updateDocList(filtersMap);
+    //     }
+    //   );
+    // }
   };
 
   dropdownToggled = () => {
