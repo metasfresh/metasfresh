@@ -120,8 +120,18 @@ public class OLCandRepository
 		{
 			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId().getRepoId());
 		}
-		olCandPO.setPriceEntered(request.getPrice());
-		olCandPO.setDiscount(request.getDiscount() != null ? request.getDiscount().getValueAsBigDecimal() : null);
+
+		if (request.getPrice() != null)
+		{
+			olCandPO.setIsManualPrice(true);
+			olCandPO.setPriceEntered(request.getPrice());
+		}
+
+		if (request.getDiscount() != null)
+		{
+			olCandPO.setIsManualDiscount(true);
+			olCandPO.setDiscount(request.getDiscount().getValueAsBigDecimal());
+		}
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 		olCandPO.setAD_InputDataSource_ID(Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(request.getAdInputDataSourceInternalName()));

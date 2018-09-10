@@ -91,8 +91,8 @@ public class OLCandCreateRequest
 			final String adInputDataSourceInternalName)
 	{
 		Check.assume(qty.signum() > 0, "qty > 0");
-		Check.assume(price == null || price.signum() >= 0, "price >= 0");
-		Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
+		// Check.assume(price == null || price.signum() >= 0, "price >= 0");
+		// Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
 		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
 		this.externalId = externalId;
