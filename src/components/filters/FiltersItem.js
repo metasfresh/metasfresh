@@ -118,7 +118,7 @@ class FiltersItem extends Component {
     }
   };
 
-  setValue = (property, value, id, valueTo='', filterId, defaultValue) => {
+  setValue = (property, value, id, valueTo ='', filterId, defaultValue) => {
     const { resetInitialValues } = this.props;
 
     if (defaultValue != null) {
@@ -410,6 +410,7 @@ class FiltersItem extends Component {
 
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  applyFilters: PropTypes.func.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,

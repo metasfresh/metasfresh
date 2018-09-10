@@ -804,7 +804,12 @@ class DocumentList extends Component {
 
                 {layout.filters && (
                   <Filters
-                    {...{ windowType, viewId, filtersActive, initialValuesNulled }}
+                    {...{
+                      windowType,
+                      viewId,
+                      filtersActive,
+                      initialValuesNulled,
+                    }}
                     filterData={filtersToMap(layout.filters)}
                     updateDocList={this.handleFilterChange}
                     resetInitialValues={this.resetInitialFilters}

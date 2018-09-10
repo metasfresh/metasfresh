@@ -424,9 +424,11 @@ class Filters extends Component {
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
+  viewId: PropTypes.string,
 
   // this should be an immutable Map
   filtersActive: PropTypes.any,
+  filterData: PropTypes.any,
   initialValuesNulled: PropTypes.any,
 };
 
