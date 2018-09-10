@@ -115,7 +115,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private boolean processShipments = true;
 
 	private boolean createPackingLines = false;
-	private boolean manualPackingMaterial = false;
+
 	private boolean shipmentDateToday = false;
 
 
@@ -552,13 +552,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
+		final boolean isManualPackingMaterial = !candidate.isForPicked();
+
 		//
 		// If we don't have an active shipment line builder
 		// then create one
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(!candidate.isForPicked());
+			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
 			currentShipmentLineBuilder.setQtyTOUse(candidate.getQtyToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
 
@@ -586,13 +588,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setCreatePackingLines(final boolean createPackingLines)
 	{
 		this.createPackingLines = createPackingLines;
-		return this;
-	}
-
-	@Override
-	public InOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(final boolean manualPackingMaterial)
-	{
-		this.manualPackingMaterial = manualPackingMaterial;
 		return this;
 	}
 

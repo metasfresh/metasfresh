@@ -130,7 +130,7 @@ public class ShipmentScheduleWithHU
 	private I_M_InOutLine shipmentLine = null;
 
 
-	private M_ShipmentSchedule_QuantityToUse qtyToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // as before
+	private M_ShipmentSchedule_QuantityToUse qtyToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // keep old functionality as default
 	private boolean isForPicked = false;
 
 	private ShipmentScheduleWithHU(
@@ -166,7 +166,7 @@ public class ShipmentScheduleWithHU
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked,
-			final boolean isForPickingOnly)
+			final boolean isForPicked)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -181,7 +181,7 @@ public class ShipmentScheduleWithHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
 
-		this.setForPicked(isForPickingOnly);
+		this.setForPicked(isForPicked);
 	}
 
 	@Override
@@ -196,6 +196,7 @@ public class ShipmentScheduleWithHU
 				+ "\n    attributesAggregationKey=" + (attributesAggregationKey == null ? "<NOT BUILT>" : attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleQtyPicked
 				+ "\n    shipmentLine=" + shipmentLine
+				+ "\n	 qtyToUse="+ qtyToUse
 				+ "\n]";
 	}
 

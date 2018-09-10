@@ -257,8 +257,6 @@ import lombok.NonNull;
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
 		uom = shipmentScheduleBL.getUomOfProduct(candidate.getM_ShipmentSchedule());
 
-		final M_ShipmentSchedule_QuantityToUse qtyToUse  = candidate.getQtyToUse();
-		final boolean isForBoth = qtyToUse.isUseBoth();
 		//
 		// Order Line Link (retrieved from current Shipment)
 		orderLineId = candidate.getC_OrderLine_ID();

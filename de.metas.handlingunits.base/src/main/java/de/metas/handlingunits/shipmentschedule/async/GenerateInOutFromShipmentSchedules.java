@@ -128,19 +128,16 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 		final String quantityToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
-
 		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
 
 		final boolean onlyUsePicked = quantityToUse.isOnlyUsePicked();
 
 		final boolean isCreatPackingLines = !onlyUsePicked;
-		final boolean isManualPackingMaterial = !onlyUsePicked;
 
 		final InOutGenerateResult result = Services.get(IHUShipmentScheduleBL.class)
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatPackingLines)
-				.setManualPackingMaterial(isManualPackingMaterial)
 				.computeShipmentDate(isShipmentDateToday)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
@@ -288,6 +285,17 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		return candidates;
 	}
 
+	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	{
+		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
+		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
+		final ShipmentScheduleWithHU candidate = //
+				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
+		candidate.setQtyToUse(quantityToUse);
+
+		return candidate;
+	}
+
 	private Collection<? extends ShipmentScheduleWithHU> createCandidatesForPick(@NonNull final I_M_ShipmentSchedule schedule,
 			final IHUContext huContext,
 			final M_ShipmentSchedule_QuantityToUse quantityToUse)
@@ -343,17 +351,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		return candidatesForPick;
 
-	}
-
-	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityToUse quantityToUse)
-	{
-		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
-		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
-		final ShipmentScheduleWithHU candidate = //
-				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
-		candidate.setQtyToUse(quantityToUse);
-
-		return candidate;
 	}
 
 	/**
