@@ -320,4 +320,18 @@ final class MasterdataProvider
 
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
+
+	public JsonOrganization getJsonOrganizationById(final int orgId)
+	{
+		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId);
+		if (orgRecord == null)
+		{
+			return null;
+		}
+
+		return JsonOrganization.builder()
+				.code(orgRecord.getValue())
+				.name(orgRecord.getName())
+				.build();
+	}
 }

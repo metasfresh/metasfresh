@@ -124,6 +124,8 @@ public class JsonConverters
 				.id(olCand.getId())
 				.externalId(olCand.getExternalId())
 				//
+				.org(masterdataProvider.getJsonOrganizationById(olCand.getAD_Org_ID()))
+				//
 				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
 				.dropShipBPartner(toJson(olCand.getDropShipBPartnerInfo(), masterdataProvider))
