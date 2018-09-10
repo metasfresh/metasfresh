@@ -168,6 +168,11 @@ public class RefundConfigRepository
 		{
 			return null;
 		}
+		return ofRecord(record);
+	}
+
+	public RefundConfig ofRecord(@NonNull final I_C_Flatrate_RefundConfig record)
+	{
 		final InvoiceSchedule invoiceSchedule = invoiceScheduleRepository.ofRecord(record.getC_InvoiceSchedule());
 
 		final RefundConfigBuilder builder = RefundConfig
@@ -251,7 +256,7 @@ public class RefundConfigRepository
 		{
 			case PERCENTAGE:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
-				configRecord.setRefundPercent(refundConfig.getPercent().getValueAsBigDecimal());
+				configRecord.setRefundPercent(refundConfig.getPercent().getValue());
 				configRecord.setRefundAmt(null);
 				break;
 			case AMOUNT_PER_UNIT:

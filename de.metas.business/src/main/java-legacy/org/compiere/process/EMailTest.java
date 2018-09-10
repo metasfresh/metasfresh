@@ -19,7 +19,6 @@ package org.compiere.process;
 import java.io.File;
 
 import org.compiere.model.MClient;
-import org.compiere.model.MStore;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -74,14 +73,6 @@ public class EMailTest extends JavaProcess
 				addLog("Found Directory: " + client.getDocumentDir());
 			else
 				addLog("Not Found Directory: " + client.getDocumentDir());
-		}
-
-		//
-		// Test WebStores
-		for (final MStore store : MStore.getOfClient(client))
-		{
-			String test = store.testEMail();
-			addLog(0, null, null, store.getName() + ": " + test);
 		}
 		
 		return MSG_OK;

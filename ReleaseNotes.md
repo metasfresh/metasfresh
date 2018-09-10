@@ -9,16 +9,57 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.74
+## Features
+* metasfresh-webui-frontend
+  * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
+    * New feature that expands multiline fields when the row is selected.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
+    * Fixes the cursor hovering magnifying glass icon. Now shown as default cursor.
+  * [#1931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1931) Hint for shortcut [alt]+u not displayed anymore when hovering over the resp. button
+    * Now shows the Quickaction Tooltip again.
+  * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
+    * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
 
 # metasfresh 5.73
+## Features
+* metasfresh
+  * [#4475](https://github.com/metasfresh/metasfresh/issues/4475) Refund contract - add further options
+    * Extended Functionality added to Refund contracts enabling enhanced calculations.
+  * [#4511](https://github.com/metasfresh/metasfresh/issues/4511) Implement support for MSV3 version 1
+    * Extended MSV3 Functionality. Now allowing the usage of MSV3 version 1 too.
+  * [#4521](https://github.com/metasfresh/metasfresh/issues/4521) Don't create subscription shipment schedules for products that are no items
+    * Enhanced subscription handling. Not creating shipment schedules anymore for non item Products.
+  * [#4530](https://github.com/metasfresh/metasfresh/issues/4530) WebUI Adjustments for Country, Postal and City Window
+    * New Window in WebUI, allowing to maintain Country, Postals and Cities.
+  * [#4535](https://github.com/metasfresh/metasfresh/issues/4535) Set Sales Order Line's ProductDescription as Product BOM's description
+    * Enhanced Feature for Cable Trade Verticals. Now adding the BOM Components in Prodtct Description Field in Sales Orderline.
+  * [#4536](https://github.com/metasfresh/metasfresh/issues/4536) Introduce AD_Table.IsEnableRemoteCacheInvalidation
+    * New Configuration Feature in Application dictionary. It is now possible to enable/ disable the Remote Cache Invalidation for a Table.
+
+metasfresh-webui-api
+  * [#1032](https://github.com/metasfresh/metasfresh-webui-api/issues/1032) Window layout API shall provide text multilineText and multilineTextLines properties
+    * New Multiline Fature in WebUI Frontend. When selecting grid lines with multiline Fields, than the lineheight is automatically expanded.
+
 ## Fixes
 * metasfresh
   * [#4520](https://github.com/metasfresh/metasfresh/issues/4520) Requests cannot be saved
     * Fixes a Bug in Requests, now being able to save Requests again in WebUI.
   * [#4523](https://github.com/metasfresh/metasfresh/issues/4523) Fix problems with invoice candidate creation from subscription flatrate terms
     * Bugfix in subscription contract handling, now creating corresponding invoice candidates again.
+  * [#4526](https://github.com/metasfresh/metasfresh/issues/4526) Filter for attributes in picking terminal shall be set by default
+    * Bugfix for the extended User Filter Features. Now possible to set default user filter parms again.
+  * [#4537](https://github.com/metasfresh/metasfresh/issues/4537) Invoice candiate handler BL creates lock with non-unique owner
+    * Internal Bugfix for the Invoice Candidate handler Business Logic.
   * [#4538](https://github.com/metasfresh/metasfresh/issues/4538) WebUI: New Translation Window for R_RequestType
     * New Window that allows to maintain Request Type Translations in WebUI.
+
+* metasfresh-webui-api
+  * [#438](https://github.com/metasfresh/metasfresh-webui-api/issues/438) Minor: error for wizard with no picture
+    * Fixes a Bug in Organisation Setup Wizard when no Logo Image is present.
 
 # metasfresh 5.72
 ## Features

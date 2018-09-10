@@ -153,7 +153,7 @@ public class C_Invoice_Candidate
 		final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
 
 		final Group group = groupsRepo.createPartialGroupFromCompensationLine(ic);
-		group.updateAllPercentageLines();
+		group.updateAllCompensationLines();
 
 		final InvoiceCandidatesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(ic);
 		groupsRepo.saveGroup(group, orderLinesStorage);

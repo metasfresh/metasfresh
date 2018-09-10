@@ -3,6 +3,8 @@ package de.metas.lang;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 
@@ -43,7 +45,7 @@ public class Percent
 		{
 			return ZERO;
 		}
-		else if (ONE_HUNDRED.getValueAsBigDecimal().compareTo(value) == 0)
+		else if (ONE_HUNDRED.getValue().compareTo(value) == 0)
 		{
 			return ONE_HUNDRED;
 		}
@@ -116,6 +118,15 @@ public class Percent
 		return Percent.of(percentValue);
 	}
 
+	public static BigDecimal getValueOrNull(@Nullable final Percent paymentDiscountOverrideOrNull)
+	{
+		if (paymentDiscountOverrideOrNull == null)
+		{
+			return null;
+		}
+		return paymentDiscountOverrideOrNull.getValue();
+	}
+
 	private static final BigDecimal ONE_HUNDRED_VALUE = BigDecimal.valueOf(100);
 	public static final Percent ONE_HUNDRED = new Percent(ONE_HUNDRED_VALUE);
 
@@ -123,22 +134,27 @@ public class Percent
 
 	public static final Percent ZERO = new Percent(BigDecimal.ZERO);
 
-	private final BigDecimal valueAsBigDecimal;
+	private final BigDecimal value;
 
 	private Percent(@NonNull final BigDecimal valueAsBigDecimal)
 	{
 		// NOTE: important to strip the trailing zeros, else the hashCode and equals might have different results
-		this.valueAsBigDecimal = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
+		this.value = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
 	public boolean isZero()
 	{
-		return valueAsBigDecimal.signum() == 0;
+		return value.signum() == 0;
+	}
+
+	public int signum()
+	{
+		return value.signum();
 	}
 
 	public boolean isOneHundred()
 	{
-		return ONE_HUNDRED_VALUE.compareTo(valueAsBigDecimal) == 0;
+		return ONE_HUNDRED_VALUE.compareTo(value) == 0;
 	}
 
 	public Percent add(@NonNull final Percent percent)
@@ -153,7 +169,7 @@ public class Percent
 		}
 		else
 		{
-			return of(valueAsBigDecimal.add(percent.valueAsBigDecimal));
+			return of(value.add(percent.value));
 		}
 	}
 
@@ -163,7 +179,7 @@ public class Percent
 		{
 			return this;
 		}
-		return of(this.valueAsBigDecimal.subtract(percent.valueAsBigDecimal));
+		return of(this.value.subtract(percent.value));
 	}
 
 	/**
@@ -190,7 +206,7 @@ public class Percent
 			return base
 					.setScale(precision + 2, RoundingMode.HALF_UP)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.HALF_UP)
-					.multiply(valueAsBigDecimal)
+					.multiply(value)
 					.setScale(precision, RoundingMode.HALF_UP);
 		}
 	}
@@ -222,7 +238,7 @@ public class Percent
 			return baseToUse
 					.setScale(precision + 2)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
-					.multiply(ONE_HUNDRED_VALUE.subtract(valueAsBigDecimal))
+					.multiply(ONE_HUNDRED_VALUE.subtract(value))
 					.setScale(precision, RoundingMode.HALF_UP);
 		}
 	}
@@ -232,7 +248,7 @@ public class Percent
 	 */
 	public Percent roundToHalf(@NonNull final RoundingMode roundingMode)
 	{
-		final BigDecimal newPercentValue = getValueAsBigDecimal()
+		final BigDecimal newPercentValue = getValue()
 				.multiply(TWO_VALUE)
 				.setScale(0, roundingMode)
 				.divide(TWO_VALUE)

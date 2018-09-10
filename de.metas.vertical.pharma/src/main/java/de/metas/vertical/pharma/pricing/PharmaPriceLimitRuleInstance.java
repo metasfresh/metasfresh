@@ -201,7 +201,7 @@ class PharmaPriceLimitRuleInstance
 
 		return paymentTermsRepo
 				.getPaymentTermDiscount(PaymentTermId.ofRepoId(paymentTermId))
-				.getValueAsBigDecimal();
+				.getValue();
 	}
 
 	@lombok.Value

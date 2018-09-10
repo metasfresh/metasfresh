@@ -50,6 +50,8 @@ public interface IPriceListDAO extends ISingletonService
 
 	I_M_PricingSystem getPricingSystemById(PricingSystemId pricingSystemId);
 
+	PricingSystemId getPricingSystemIdByValue(String value);
+
 	I_M_PriceList getById(PriceListId priceListId);
 
 	I_M_PriceList getById(int priceListId);
@@ -127,6 +129,6 @@ public interface IPriceListDAO extends ISingletonService
 	String getPriceListName(final PriceListId priceListId);
 
 	Set<Integer> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
-	
+
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 }

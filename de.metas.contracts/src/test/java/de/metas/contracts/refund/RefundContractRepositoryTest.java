@@ -69,8 +69,9 @@ public class RefundContractRepositoryTest
 		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
 		saveRecord(conditionsRecord);
 
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID());
 		final List<I_C_Flatrate_RefundConfig> //
-		refundConfigRecords = RefundConfigRepositoryTest.createThreeRefundConfigRecords(ConditionsId.ofRepoId(conditionsRecord.getC_Flatrate_Conditions_ID()));
+		refundConfigRecords = RefundConfigRepositoryTest.createThreeRefundConfigRecords(conditionsId);
 
 		// make sure that we don't have a record with qty=zero (needed for the test further down)
 		final I_C_Flatrate_RefundConfig configWithZeroQty = refundConfigRecords

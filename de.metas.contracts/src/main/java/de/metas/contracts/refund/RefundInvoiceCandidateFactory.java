@@ -159,9 +159,20 @@ public class RefundInvoiceCandidateFactory
 		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
 		refundInvoiceCandidateRecord.setC_InvoiceSchedule_ID(invoiceSchedule.getId().getRepoId());
 
-		final LocalDate dateToInvoice = invoiceSchedule.calculateNextDateToInvoice(assignableCandidate.getInvoiceableFrom());
-		refundInvoiceCandidateRecord.setDateOrdered(TimeUtil.asTimestamp(dateToInvoice));
-		refundInvoiceCandidateRecord.setDeliveryDate(TimeUtil.asTimestamp(dateToInvoice));
+		final LocalDate dateToInvoiceFromInvoiceSchedule = invoiceSchedule.calculateNextDateToInvoice(assignableCandidate.getInvoiceableFrom());
+		final Timestamp dateForRefundCandidate;
+		if (dateToInvoiceFromInvoiceSchedule.isAfter(refundContract.getEndDate()))
+		{
+			// make sure the refund candidate's dateToInvoice is not *after* the contract's actual ending.
+			// otherwise RefundInvoiceCandidateRepository.getRefundInvoiceCandidates() won't find the invoice candidate record later.
+			dateForRefundCandidate = TimeUtil.asTimestamp(refundContract.getEndDate());
+		}
+		else
+		{
+			dateForRefundCandidate = TimeUtil.asTimestamp(dateToInvoiceFromInvoiceSchedule);
+		}
+		refundInvoiceCandidateRecord.setDateOrdered(dateForRefundCandidate);
+		refundInvoiceCandidateRecord.setDeliveryDate(dateForRefundCandidate);
 
 		final RefundInvoiceType refundInvoiceType = extractSingleElement(refundConfigs, RefundConfig::getRefundInvoiceType);
 		try

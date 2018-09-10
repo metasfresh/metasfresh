@@ -1,10 +1,16 @@
-package org.adempiere.ad.window.api;
+package de.metas.inbound.mail;
+
+import java.nio.file.Path;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.inbound.mail
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,15 +29,14 @@ package org.adempiere.ad.window.api;
  */
 
 
-import java.util.List;
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-
-public interface IADFieldDAO extends ISingletonService
+@Value
+@Builder
+public final class InboundEMailAttachment
 {
-
-	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
-
+	@NonNull 
+	String filename;
+	@NonNull 
+	String contentType;
+	@NonNull 
+	Path tempFile;
 }

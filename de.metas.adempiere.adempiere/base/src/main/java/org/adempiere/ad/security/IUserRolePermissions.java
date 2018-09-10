@@ -198,6 +198,8 @@ public interface IUserRolePermissions
 	 **/
 	String checkCanUpdate(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID, int Record_ID);
 
+	String checkCanCreateNewRecord(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID);
+
 	// boolean isRecordAccess(int AD_Table_ID, int Record_ID, boolean ro);
 
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, boolean ro);

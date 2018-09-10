@@ -964,6 +964,14 @@ class UserRolePermissions implements IUserRolePermissions
 		final boolean accessReadWrite = false;
 		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
 	}
+	
+	@Override
+	public String checkCanCreateNewRecord(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID)
+	{
+		final boolean accessReadWrite = true;
+		final int Record_ID = -1;
+		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+	}
 
 	@Override
 	public String checkCanUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)

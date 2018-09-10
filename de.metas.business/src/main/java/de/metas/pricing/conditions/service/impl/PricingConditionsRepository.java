@@ -389,7 +389,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		updateSchemaBreakRecordFromPrice(schemaBreak, request.getPrice());
 		if (request.getDiscount() != null)
 		{
-			schemaBreak.setBreakDiscount(request.getDiscount().getValueAsBigDecimal());
+			schemaBreak.setBreakDiscount(request.getDiscount().getValue());
 		}
 
 		if (request.getPaymentTermId() != null)
@@ -401,7 +401,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			final BigDecimal paymentDiscountValue = request
 					.getPaymentDiscount()
-					.map(Percent::getValueAsBigDecimal)
+					.map(Percent::getValue)
 					.orElse(null);
 			schemaBreak.setPaymentDiscount(paymentDiscountValue);
 		}

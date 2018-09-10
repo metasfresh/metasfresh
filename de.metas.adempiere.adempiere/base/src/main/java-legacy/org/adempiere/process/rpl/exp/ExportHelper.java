@@ -751,8 +751,7 @@ public class ExportHelper
 				data = (byte[])value;
 			}
 
-			final byte[] dataEncoded = Util.encodeBase64(data);
-			valueString = new String(dataEncoded);
+			valueString = Util.encodeBase64(data);
 		}
 		else if (DisplayType.isDate(displayType))
 		{
