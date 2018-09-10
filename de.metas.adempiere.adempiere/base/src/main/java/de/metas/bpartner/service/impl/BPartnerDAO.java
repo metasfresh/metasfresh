@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -164,6 +165,12 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public boolean exists(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return getBPartnerLocationById(bpartnerLocationId) != null;
 	}
 
 	@Override
@@ -781,6 +788,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public BPartnerId getBPartnerIdByValue(@NonNull final String bpartnerValue)
 	{
+		return getBPartnerIdByValueIfExists(bpartnerValue)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue));
+	}
+
+	@Override
+	public Optional<BPartnerId> getBPartnerIdByValueIfExists(@NonNull final String bpartnerValue)
+	{
 		final int bpartnerRepoId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMN_Value, bpartnerValue)
@@ -788,11 +802,6 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.firstIdOnly();
 
-		if (bpartnerRepoId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue);
-		}
-
-		return BPartnerId.ofRepoId(bpartnerRepoId);
+		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 }

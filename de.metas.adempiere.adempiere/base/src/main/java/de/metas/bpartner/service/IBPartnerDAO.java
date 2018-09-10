@@ -24,6 +24,7 @@ package de.metas.bpartner.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -72,6 +73,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
+
+	boolean exists(BPartnerLocationId bpartnerLocationId);
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
@@ -256,4 +259,6 @@ public interface IBPartnerDAO extends ISingletonService
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdByValueIfExists(final String bpartnerValue);
 }
