@@ -55,6 +55,4 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
-
-	IInOutProducerFromShipmentScheduleWithHU setQuantityToUse(M_ShipmentSchedule_QuantityToUse quantityToUse);
 }

@@ -129,6 +129,8 @@ public class ShipmentScheduleWithHU
 
 	private I_M_InOutLine shipmentLine = null;
 
+
+	private M_ShipmentSchedule_QuantityToUse qtyToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // as before
 	private boolean isForPicked = false;
 
 	private ShipmentScheduleWithHU(
@@ -149,6 +151,7 @@ public class ShipmentScheduleWithHU
 		this.luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
 
 		this.setForPicked(isForPicked);
+		this.setQtyToUse(qtyToUse);
 
 	}
 
@@ -508,5 +511,15 @@ public class ShipmentScheduleWithHU
 	public void setForPicked(boolean isForPicked)
 	{
 		this.isForPicked = isForPicked;
+	}
+
+	public M_ShipmentSchedule_QuantityToUse getQtyToUse()
+	{
+		return qtyToUse;
+	}
+
+	public void setQtyToUse(M_ShipmentSchedule_QuantityToUse qtyToUse)
+	{
+		this.qtyToUse = qtyToUse;
 	}
 }

@@ -60,4 +60,18 @@ public enum M_ShipmentSchedule_QuantityToUse
 	private static final Map<String, M_ShipmentSchedule_QuantityToUse> code2type = Stream.of(values())
 			.collect(GuavaCollectors.toImmutableMapByKey(M_ShipmentSchedule_QuantityToUse::getCode));
 
+	public boolean isUseBoth()
+	{
+		return TYPE_PD.equals(forCode(code));
+	}
+
+	public boolean isOnlyUsePicked()
+	{
+		return TYPE_P.equals(forCode(code));
+	}
+
+	public boolean isOnlyUseToDeliver()
+	{
+		return TYPE_D.equals(forCode(code));
+	}
 }

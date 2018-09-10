@@ -136,16 +136,17 @@ import lombok.NonNull;
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<Integer> alreadyAssignedTUIds = null; // to be configured by called
 
+	private M_ShipmentSchedule_QuantityToUse qtyToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D;
+
 	//
 	// Manual packing materials related:
 	private boolean manualPackingMaterial = false;
-
-	private M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // default as before
 
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
 	private final TreeSet<IAttributeValue> attributeValues = //
 			new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+
 
 	/**
 	 *
@@ -154,6 +155,11 @@ import lombok.NonNull;
 	public ShipmentLineBuilder(@NonNull final I_M_InOut shipment)
 	{
 		currentShipment = shipment;
+	}
+
+	public M_ShipmentSchedule_QuantityToUse getQtyToUse()
+	{
+		return qtyToUse;
 	}
 
 	/**
@@ -251,6 +257,8 @@ import lombok.NonNull;
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
 		uom = shipmentScheduleBL.getUomOfProduct(candidate.getM_ShipmentSchedule());
 
+		final M_ShipmentSchedule_QuantityToUse qtyToUse  = candidate.getQtyToUse();
+		final boolean isForBoth = qtyToUse.isUseBoth();
 		//
 		// Order Line Link (retrieved from current Shipment)
 		orderLineId = candidate.getC_OrderLine_ID();
@@ -289,7 +297,7 @@ import lombok.NonNull;
 		packingMaterial_huPIItemProducts.add(piip);
 
 		// collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs.
-		if (manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
+		if (manualPackingMaterial)
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
@@ -431,8 +439,7 @@ import lombok.NonNull;
 		}
 
 		// Update packing materials info, if there is "one" info
-	//	shipmentLine.setIsManualPackingMaterial(manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse));
-		shipmentLine.setIsManualPackingMaterial(getCandidates().get(0).isForPicked());
+		shipmentLine.setIsManualPackingMaterial(manualPackingMaterial);
 
 		// https://github.com/metasfresh/metasfresh/issues/3503
 		if (packingMaterial_huPIItemProducts != null && packingMaterial_huPIItemProducts.size() == 1)
@@ -441,12 +448,13 @@ import lombok.NonNull;
 			shipmentLine.setM_HU_PI_Item_Product_Override(piipForShipmentLine); // this field is currently displayed in the swing client, so we set it, even if it's redundant
 			shipmentLine.setM_HU_PI_Item_Product_Calculated(piipForShipmentLine);
 
-			// if (manualPackingMaterial || M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
-			if (getCandidates().get(0).isForPicked())
+			if (manualPackingMaterial)
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
-				if (qtyTU != null)
+
+
+				if (qtyTU != null && !getQtyToUse().isUseBoth())
 				{
 					shipmentLine.setQtyTU_Override(qtyTU);
 				}
@@ -505,7 +513,7 @@ import lombok.NonNull;
 		}
 
 		// Guard: while generating shipment line from candidates, we shall have HUs for them
-		if (!haveHUAssigments && !manualPackingMaterial && !M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse))
+		if (!haveHUAssigments && !manualPackingMaterial)
 		{
 			throw new HUException("No HUs to assign and manualPackingMaterial==false."
 					+ "\n @M_InOutLine_ID@: " + shipmentLine
@@ -575,9 +583,8 @@ import lombok.NonNull;
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
 	}
 
-	public void setQuantityToUse(final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	public void setQtyTOUse(final M_ShipmentSchedule_QuantityToUse qtyToUse)
 	{
-		this.quantityToUse = quantityToUse;
-
+		this.qtyToUse = qtyToUse;
 	}
 }

@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.async;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -126,31 +127,20 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 		final String quantityToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
-		final boolean createPackingLines;
-		final boolean manualPackingMaterial;
+
 
 		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
 
-		final boolean onlyUseQtyToDeliver = M_ShipmentSchedule_QuantityToUse.TYPE_D.equals(quantityToUse);
+		final boolean onlyUsePicked = quantityToUse.isOnlyUsePicked();
 
-		if (!onlyUseQtyToDeliver)
-		{
-			// In case of using the qty Picked entries, the logic will be similar with shipment creation from HU, therefore the packinglines and manualPackingMaterial flags will be disabled (task FRESH-251)
-			createPackingLines = false; // the packing lines shall only be created when the shipments are completed
-			manualPackingMaterial = false; // use the HUs!
-		}
-		else
-		{
-			createPackingLines = true; // task 08138: the packing lines shall be created directly, and shall be user-editable.
-			manualPackingMaterial = true;
-		}
+		final boolean isCreatPackingLines = !onlyUsePicked;
+		final boolean isManualPackingMaterial = !onlyUsePicked;
 
 		final InOutGenerateResult result = Services.get(IHUShipmentScheduleBL.class)
 				.createInOutProducerFromShipmentSchedule()
-				.setQuantityToUse(quantityToUse)
 				.setProcessShipments(isCompleteShipments)
-				.setCreatePackingLines(createPackingLines)
-				.setManualPackingMaterial(manualPackingMaterial)
+				.setCreatePackingLines(isCreatPackingLines)
+				.setManualPackingMaterial(isManualPackingMaterial)
 				.computeShipmentDate(isShipmentDateToday)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
@@ -252,9 +242,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		//
-		// Load all QtyPicked records that have no InOutLine yet
-		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 
 		final String quantityToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
@@ -262,22 +249,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
 
-		final boolean onlyUsePickedQty = M_ShipmentSchedule_QuantityToUse.TYPE_P.equals(quantityToUse);
-		final boolean onlyUseQtyToDeliver = M_ShipmentSchedule_QuantityToUse.TYPE_D.equals(quantityToUse);
-		final boolean useAllQtys = M_ShipmentSchedule_QuantityToUse.TYPE_PD.equals(quantityToUse);
+		final boolean onlyUsePickedQty = quantityToUse.isOnlyUsePicked();
+		final boolean onlyUseQtyToDeliver = quantityToUse.isOnlyUseToDeliver();
 
-		if (onlyUseQtyToDeliver || useAllQtys)
+		if (onlyUseQtyToDeliver)
 		{
-			// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
-			final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
-			final ShipmentScheduleWithHU candidate = //
-					ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
-
-			candidates.add(candidate);
+			candidates.add(createCandidateForDeliver(schedule, quantityToUse));
 		}
-		if (qtyPickedRecords.isEmpty())
+		else if (onlyUsePickedQty)
 		{
-			if (onlyUsePickedQty)
+			final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createCandidatesForPick(schedule, huContext, quantityToUse);
+
+			if (Check.isEmpty(candidatesForPick))
 			{
 				// the parameter insists that we use qtyPicked records, but there aren't any
 				// => nothing to do, basically
@@ -285,7 +268,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				// If we got no qty picked records just because they were already delivered,
 				// don't fail this workpackage but just log the issue (task 09048)
 				final boolean wereDelivered = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsQuery(schedule).create().match();
-				if (wereDelivered && onlyUsePickedQty)
+				if (wereDelivered)
 				{
 					Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped shipment schedule because it was already delivered: {}", schedule);
 					return Collections.emptyList();
@@ -294,51 +277,83 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				final String errorMsg = Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(schedule), MSG_NoQtyPicked);
 				throw new AdempiereException(errorMsg);
 			}
+			candidates.addAll(candidatesForPick);
 		}
-
-		if (useAllQtys || onlyUsePickedQty)
+		else
 		{
-			//
-			// Create necessary LUs (if any)
-			createLUs(schedule);
-
-			// retrieve the qty picked entries again, some new ones might have been created on LU creation
-			qtyPickedRecords = retrieveQtyPickedRecords(schedule);
-
-			//
-			// Iterate all QtyPicked records and create candidates from them
-
-			for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
-			{
-				final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
-
-				// guard: Skip inactive records.
-				if (!qtyPickedRecordHU.isActive())
-				{
-					Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
-					continue;
-				}
-
-				// Considering only those lines which have an LU
-				// NOTE: this shall not happen because we already created the LUs
-				// Task FRESH-251 : In case the qty Picked are used, only add the LU if it was required by the qty picked
-				if (qtyPickedRecordHU.getM_LU_HU_ID() <= 0 && onlyUseQtyToDeliver)
-				{
-					final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
-					logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
-					Loggables.get().addLog("WARN: {} [Skipped]", ex.getLocalizedMessage());
-					continue;
-				}
-
-				//
-				// Create ShipmentSchedule+HU candidate and add it to our list
-				final ShipmentScheduleWithHU candidate = //
-						ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext);
-				candidates.add(candidate);
-			}
+			candidates.add(createCandidateForDeliver(schedule, quantityToUse));
+			candidates.addAll(createCandidatesForPick(schedule, huContext, quantityToUse));
 		}
 
 		return candidates;
+	}
+
+	private Collection<? extends ShipmentScheduleWithHU> createCandidatesForPick(@NonNull final I_M_ShipmentSchedule schedule,
+			final IHUContext huContext,
+			final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	{
+		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
+		if (qtyPickedRecords.isEmpty())
+		{
+			return Collections.emptyList();
+
+		}
+
+		final List<ShipmentScheduleWithHU> candidatesForPick = new ArrayList<>();
+
+		//
+		// Create necessary LUs (if any)
+		createLUs(schedule);
+
+		// retrieve the qty picked entries again, some new ones might have been created on LU creation
+		qtyPickedRecords = retrieveQtyPickedRecords(schedule);
+
+		//
+		// Iterate all QtyPicked records and create candidates from them
+
+		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
+		{
+			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
+
+			// guard: Skip inactive records.
+			if (!qtyPickedRecordHU.isActive())
+			{
+				Loggables.get().withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
+				continue;
+			}
+
+			// Considering only those lines which have an LU
+			// NOTE: this shall not happen because we already created the LUs
+			// Task FRESH-251 : In case the qty Picked are used, only add the LU if it was required by the qty picked
+			if (qtyPickedRecordHU.getM_LU_HU_ID() <= 0)
+			{
+				final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
+				logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
+				Loggables.get().addLog("WARN: {} [Skipped]", ex.getLocalizedMessage());
+				continue;
+			}
+
+			//
+			// Create ShipmentSchedule+HU candidate and add it to our list
+			final ShipmentScheduleWithHU candidate = //
+					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext);
+			candidate.setQtyToUse(quantityToUse);
+			candidatesForPick.add(candidate);
+		}
+
+		return candidatesForPick;
+
+	}
+
+	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	{
+		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
+		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
+		final ShipmentScheduleWithHU candidate = //
+				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
+		candidate.setQtyToUse(quantityToUse);
+
+		return candidate;
 	}
 
 	/**
@@ -428,9 +443,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		// in case of using the isUseQtyPicked, create the LUs
 
-		final String quantityToUse = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
+		final String quantityToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
-		final boolean onlyUseQtyToDeliver = M_ShipmentSchedule_QuantityToUse.TYPE_D.equals(quantityToUse);
+		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
+
+		final boolean onlyUseQtyToDeliver = quantityToUse.isOnlyUseToDeliver();
 
 		if (HUConstants.isQuickShipment() && onlyUseQtyToDeliver)
 		{
@@ -449,7 +466,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		//
 		// Case: this shipment schedule line was at least partial picked
 		// => take all TUs which does not have an LU and add them to LUs
-		else if (onlyUseQtyToDeliver)
+		else // if (onlyUseQtyToDeliver)
 		{
 			createLUsForTUs(schedule, qtyPickedRecords);
 		}
