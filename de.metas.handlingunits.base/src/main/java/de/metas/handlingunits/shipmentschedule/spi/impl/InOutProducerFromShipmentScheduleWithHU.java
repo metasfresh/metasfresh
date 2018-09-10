@@ -552,7 +552,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
-		final boolean isManualPackingMaterial = !candidate.isForPicked();
+		final boolean isManualPackingMaterial = !candidate.isForPickedQty();
 
 		//
 		// If we don't have an active shipment line builder
@@ -561,7 +561,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
 			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
-			currentShipmentLineBuilder.setQtyTOUse(candidate.getQtyToUse());
+			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
 
 		}

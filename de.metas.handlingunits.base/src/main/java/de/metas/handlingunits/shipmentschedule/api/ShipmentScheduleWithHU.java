@@ -130,8 +130,8 @@ public class ShipmentScheduleWithHU
 	private I_M_InOutLine shipmentLine = null;
 
 
-	private M_ShipmentSchedule_QuantityToUse qtyToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // keep old functionality as default
-	private boolean isForPicked = false;
+	private M_ShipmentSchedule_QuantityToUse qtyTypeToUse = M_ShipmentSchedule_QuantityToUse.TYPE_D; // keep old functionality as default
+	private boolean isForPickedQty = false;
 
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
@@ -150,8 +150,8 @@ public class ShipmentScheduleWithHU
 		this.tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
 		this.luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
 
-		this.setForPicked(isForPicked);
-		this.setQtyToUse(qtyToUse);
+		this.setForPickedQty(isForPicked);
+		this.setQtyTypeToUse(qtyTypeToUse);
 
 	}
 
@@ -181,7 +181,7 @@ public class ShipmentScheduleWithHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
 
-		this.setForPicked(isForPicked);
+		this.setForPickedQty(isForPicked);
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class ShipmentScheduleWithHU
 				+ "\n    attributesAggregationKey=" + (attributesAggregationKey == null ? "<NOT BUILT>" : attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleQtyPicked
 				+ "\n    shipmentLine=" + shipmentLine
-				+ "\n	 qtyToUse="+ qtyToUse
+				+ "\n	 qtyToUse="+ qtyTypeToUse
 				+ "\n]";
 	}
 
@@ -504,23 +504,23 @@ public class ShipmentScheduleWithHU
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 
-	public boolean isForPicked()
+	public boolean isForPickedQty()
 	{
-		return isForPicked;
+		return isForPickedQty;
 	}
 
-	public void setForPicked(boolean isForPicked)
+	public void setForPickedQty(boolean isForPicked)
 	{
-		this.isForPicked = isForPicked;
+		this.isForPickedQty = isForPicked;
 	}
 
-	public M_ShipmentSchedule_QuantityToUse getQtyToUse()
+	public M_ShipmentSchedule_QuantityToUse getQtyTypeToUse()
 	{
-		return qtyToUse;
+		return qtyTypeToUse;
 	}
 
-	public void setQtyToUse(M_ShipmentSchedule_QuantityToUse qtyToUse)
+	public void setQtyTypeToUse(M_ShipmentSchedule_QuantityToUse qtyToUse)
 	{
-		this.qtyToUse = qtyToUse;
+		this.qtyTypeToUse = qtyToUse;
 	}
 }

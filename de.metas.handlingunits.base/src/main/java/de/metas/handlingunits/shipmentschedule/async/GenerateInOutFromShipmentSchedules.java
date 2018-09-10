@@ -244,18 +244,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
-		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
+		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
 
-		final boolean onlyUsePickedQty = quantityToUse.isOnlyUsePicked();
-		final boolean onlyUseQtyToDeliver = quantityToUse.isOnlyUseToDeliver();
+		final boolean onlyUsePickedQty = quantityTypeToUse.isOnlyUsePicked();
+		final boolean onlyUseQtyToDeliver = quantityTypeToUse.isOnlyUseToDeliver();
 
 		if (onlyUseQtyToDeliver)
 		{
-			candidates.add(createCandidateForDeliver(schedule, quantityToUse));
+			candidates.add(createCandidateForDeliver(schedule, quantityTypeToUse));
 		}
 		else if (onlyUsePickedQty)
 		{
-			final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createCandidatesForPick(schedule, huContext, quantityToUse);
+			final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createCandidatesForPick(schedule, huContext, quantityTypeToUse);
 
 			if (Check.isEmpty(candidatesForPick))
 			{
@@ -278,27 +278,27 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		}
 		else
 		{
-			candidates.add(createCandidateForDeliver(schedule, quantityToUse));
-			candidates.addAll(createCandidatesForPick(schedule, huContext, quantityToUse));
+			candidates.add(createCandidateForDeliver(schedule, quantityTypeToUse));
+			candidates.addAll(createCandidatesForPick(schedule, huContext, quantityTypeToUse));
 		}
 
 		return candidates;
 	}
 
-	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityToUse quantityToUse)
+	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityToUse quantityTypeToUse)
 	{
 		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
 		final ShipmentScheduleWithHU candidate = //
 				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
-		candidate.setQtyToUse(quantityToUse);
+		candidate.setQtyTypeToUse(quantityTypeToUse);
 
 		return candidate;
 	}
 
 	private Collection<? extends ShipmentScheduleWithHU> createCandidatesForPick(@NonNull final I_M_ShipmentSchedule schedule,
 			final IHUContext huContext,
-			final M_ShipmentSchedule_QuantityToUse quantityToUse)
+			final M_ShipmentSchedule_QuantityToUse quantityTypeToUse)
 	{
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 		if (qtyPickedRecords.isEmpty())
@@ -345,7 +345,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			// Create ShipmentSchedule+HU candidate and add it to our list
 			final ShipmentScheduleWithHU candidate = //
 					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext);
-			candidate.setQtyToUse(quantityToUse);
+			candidate.setQtyTypeToUse(quantityTypeToUse);
 			candidatesForPick.add(candidate);
 		}
 

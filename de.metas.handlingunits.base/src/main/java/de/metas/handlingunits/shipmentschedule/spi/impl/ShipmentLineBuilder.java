@@ -581,7 +581,7 @@ import lombok.NonNull;
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
 	}
 
-	public void setQtyTOUse(final M_ShipmentSchedule_QuantityToUse qtyToUse)
+	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityToUse qtyToUse)
 	{
 		this.qtyToUse = qtyToUse;
 	}

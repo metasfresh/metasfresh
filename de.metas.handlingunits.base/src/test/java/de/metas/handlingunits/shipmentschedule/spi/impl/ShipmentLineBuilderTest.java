@@ -112,7 +112,7 @@ public class ShipmentLineBuilderTest
 		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(shipmentSchedule, ONE);
 
 		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
-		shipmentLineBuilder.setQtyTOUse(M_ShipmentSchedule_QuantityToUse.TYPE_PD);
+		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityToUse.TYPE_PD);
 		shipmentLineBuilder.setManualPackingMaterial(true);
 
 		// invoke the methods under test
