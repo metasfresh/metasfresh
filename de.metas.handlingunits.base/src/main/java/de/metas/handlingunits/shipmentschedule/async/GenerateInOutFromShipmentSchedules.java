@@ -126,11 +126,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final IParams parameters = getParameters();
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final String quantityToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
+		final String quantityTypeToUseCode = parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
-		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
+		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityTypeToUseCode);
 
-		final boolean onlyUsePicked = quantityToUse.isOnlyUsePicked();
+		final boolean onlyUsePicked = quantityTypeToUse.isOnlyUsePicked();
 
 		final boolean isCreatPackingLines = !onlyUsePicked;
 
@@ -240,11 +240,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			@NonNull final I_M_ShipmentSchedule schedule)
 	{
 
-		final String quantityToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
+		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
 		final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
-		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
+		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityTypeToUseCode);
 
 		final boolean onlyUsePickedQty = quantityTypeToUse.isOnlyUsePicked();
 		final boolean onlyUseQtyToDeliver = quantityTypeToUse.isOnlyUseToDeliver();
@@ -440,11 +440,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		// in case of using the isUseQtyPicked, create the LUs
 
-		final String quantityToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
+		final String quantityTypeToUseCode = getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_Quantity);
 
-		final M_ShipmentSchedule_QuantityToUse quantityToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityToUseCode);
+		final M_ShipmentSchedule_QuantityToUse quantityTypeToUse = M_ShipmentSchedule_QuantityToUse.forCode(quantityTypeToUseCode);
 
-		final boolean onlyUseQtyToDeliver = quantityToUse.isOnlyUseToDeliver();
+		final boolean onlyUseQtyToDeliver = quantityTypeToUse.isOnlyUseToDeliver();
 
 		if (HUConstants.isQuickShipment() && onlyUseQtyToDeliver)
 		{
