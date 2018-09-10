@@ -254,7 +254,7 @@ class FiltersItem extends Component {
   };
 
   handleApply = () => {
-    const { applyFilters, closeFilterMenu } = this.props;
+    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
     const { filter, activeFilter } = this.state;
 
     if (
@@ -269,6 +269,7 @@ class FiltersItem extends Component {
 
     applyFilters(activeFilter, () => {
       closeFilterMenu();
+      returnBackToDropdown();
     });
   };
 
