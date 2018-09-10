@@ -2,19 +2,10 @@ package de.metas.ordercandidate.rest;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,15 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import lombok.NonNull;
 
 /*
@@ -80,56 +68,35 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	@Override
 	public JsonOLCandCreateBulkResponse createOrders(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
-		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance();
+		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance(Env.getCtx());
 
-		final Set<OrgId> orgIds = getCreateOrganizations(bulkRequest, masterdataProvider);
-		createBPartners(bulkRequest, masterdataProvider);
-
-		assertCanCreateNewOLCands(orgIds);
+		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		return trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
 	}
 
-	private Set<OrgId> getCreateOrganizations(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
+	private void assertCanCreate(final JsonOLCandCreateRequest request, final MasterdataProvider masterdataProvider)
 	{
-		assertCanCreateNewOrganizations();
-
-		final Set<OrgId> orgIds = bulkRequest.getRequests()
-				.stream()
-				.map(request -> getCreateOrganization(request, masterdataProvider))
-				.filter(Predicates.notNull())
-				.collect(ImmutableSet.toImmutableSet());
-
-		return orgIds;
+		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
-	private OrgId getCreateOrganization(final JsonOLCandCreateRequest request, final MasterdataProvider masterdataProvider)
+	private void createOrUpdateMasterdata(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
 	{
-		final JsonOrganization org = request.getOrg();
-		if (org == null)
-		{
-			return null;
-		}
-
-		return masterdataProvider.getCreateOrgId(org);
-	}
-
-	private void createBPartners(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
-	{
-		assertCanCreateNewBPartnersWithLocationAndContact();
-
 		bulkRequest.getRequests()
 				.stream()
-				.forEach(request -> createBPartners(request, masterdataProvider));
+				.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
 	}
 
-	private static void createBPartners(final JsonOLCandCreateRequest json, final MasterdataProvider masterdataProvider)
+	private void createOrUpdateMasterdata(final JsonOLCandCreateRequest json, final MasterdataProvider masterdataProvider)
 	{
-		masterdataProvider.getCreateBPartnerInfo(json.getBpartner());
-		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner());
-		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner());
-		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner());
+		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
+
+		masterdataProvider.getCreateBPartnerInfo(json.getBpartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getBillBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getDropShipBPartner(), orgId);
+		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrdersInTrx(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
@@ -137,86 +104,12 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
 				.stream()
+				.peek(request -> assertCanCreate(request, masterdataProvider))
 				.map(request -> fromJson(request, masterdataProvider))
 				.collect(ImmutableList.toImmutableList());
 
 		final List<OLCand> olCands = olCandRepo.create(requests);
 		return jsonConverters.toJson(olCands, masterdataProvider);
-	}
-
-	private void assertCanCreateNewOrganizations()
-	{
-		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
-		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adTableId = InterfaceWrapperHelper.getTableId(I_AD_Org.class);
-		final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), adTableId);
-		if (errmsg != null)
-		{
-			throw new AdempiereException(errmsg);
-		}
-	}
-
-	private void assertCanCreateNewBPartnersWithLocationAndContact()
-	{
-		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
-		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-
-		{
-			final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), InterfaceWrapperHelper.getTableId(I_C_BPartner.class));
-			if (errmsg != null)
-			{
-				throw new AdempiereException(errmsg);
-			}
-		}
-
-		{
-			final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class));
-			if (errmsg != null)
-			{
-				throw new AdempiereException(errmsg);
-			}
-		}
-
-		{
-			final String errmsg = userPermissions.checkCanCreateNewRecord(adClientId, OrgId.ANY.getRepoId(), InterfaceWrapperHelper.getTableId(I_AD_User.class));
-			if (errmsg != null)
-			{
-				throw new AdempiereException(errmsg);
-			}
-		}
-	}
-
-	private void assertCanCreateNewOLCands(final Set<OrgId> orgIds)
-	{
-		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
-		final Properties ctx = Env.getCtx();
-		final int contextClientId = Env.getAD_Client_ID(ctx);
-		final int adTableId = InterfaceWrapperHelper.getTableId(I_C_OLCand.class);
-
-		final OrgId contextOrgId = OrgId.ofRepoIdOrNull(Env.getAD_Org_ID(ctx));
-		final Set<OrgId> orgIdsEffective;
-		if (contextOrgId != null && !orgIds.contains(contextOrgId))
-		{
-			orgIdsEffective = ImmutableSet.<OrgId> builder()
-					.addAll(orgIds)
-					.add(contextOrgId)
-					.build();
-		}
-		else
-		{
-			orgIdsEffective = orgIds;
-		}
-
-		for (final OrgId orgId : orgIdsEffective)
-		{
-			final String errmsg = userPermissions.checkCanCreateNewRecord(contextClientId, orgId.getRepoId(), adTableId);
-			if (errmsg != null)
-			{
-				throw new AdempiereException(errmsg);
-			}
-		}
 	}
 
 	private OLCandCreateRequest fromJson(
@@ -228,17 +121,17 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				.build();
 	}
 
-	@PostMapping("/{id}/attachments")
+	@PostMapping("/{externalId}/attachments")
 	@Override
 	public void attachFile(
-			@PathVariable("id") final String olCandIdStr,
+			@PathVariable("externalId") final String olCandExternalId,
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{
-		final int olCandId = Integer.parseInt(olCandIdStr);
+		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);
+
 		final String filename = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
-
-		Services.get(IOLCandBL.class).addAttachment(olCandId, filename, data);
+		olCandsService.addAttachment(olCandExternalId, filename, data);
 	}
 }

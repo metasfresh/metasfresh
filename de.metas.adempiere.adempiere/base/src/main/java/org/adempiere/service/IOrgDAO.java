@@ -32,6 +32,8 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
+import lombok.NonNull;
+
 public interface IOrgDAO extends ISingletonService
 {
 	void save(I_AD_Org orgRecord);
@@ -39,6 +41,11 @@ public interface IOrgDAO extends ISingletonService
 	Optional<OrgId> getOrgIdByValue(String value);
 
 	I_AD_Org retrieveOrg(Properties ctx, int adOrgId);
+
+	default I_AD_Org getById(@NonNull final OrgId orgId)
+	{
+		return retrieveOrg(Env.getCtx(), orgId.getRepoId());
+	}
 
 	default I_AD_Org retrieveOrg(final int adOrgId)
 	{

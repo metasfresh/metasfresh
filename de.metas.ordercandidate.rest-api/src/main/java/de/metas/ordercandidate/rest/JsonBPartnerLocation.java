@@ -30,10 +30,10 @@ import lombok.Data;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class JsonBPartnerLocation
 {
-	String code;
+	String externalId;
 
 	String address1;
 	String address2;

@@ -33,7 +33,8 @@ import lombok.Data;
 @Builder
 public class JsonBPartnerContact
 {
-	String code;
+	String externalId;
+	
 	String name;
 	String email;
 	String phone;

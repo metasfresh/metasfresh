@@ -74,9 +74,11 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
-	boolean exists(BPartnerLocationId bpartnerLocationId);
+	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+
+	boolean exists(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
 
@@ -107,6 +109,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
+
+	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, String externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
 

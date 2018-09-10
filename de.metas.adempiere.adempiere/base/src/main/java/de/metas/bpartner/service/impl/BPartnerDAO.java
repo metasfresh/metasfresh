@@ -130,6 +130,16 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public Optional<BPartnerContactId> getContactIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	{
+		return retrieveContacts(bpartnerId)
+				.stream()
+				.filter(contact -> externalId.equals(contact.getExternalId()))
+				.findFirst()
+				.map(record -> BPartnerContactId.ofRepoId(bpartnerId, record.getAD_User_ID()));
+	}
+
+	@Override
 	public I_AD_User getContactById(@NonNull final BPartnerContactId contactId)
 	{
 		return retrieveContacts(contactId.getBpartnerId())
@@ -155,6 +165,16 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(clazz);
 
 		return result;
+	}
+
+	@Override
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(bpLocation -> externalId.equals(bpLocation.getExternalId()))
+				.findFirst()
+				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 	}
 
 	@Override

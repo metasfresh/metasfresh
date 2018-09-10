@@ -1,9 +1,14 @@
 package de.metas.ordercandidate.rest;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
@@ -16,6 +21,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
@@ -25,6 +31,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -56,9 +63,9 @@ import lombok.NonNull;
 
 final class MasterdataProvider
 {
-	public static final MasterdataProvider newInstance()
+	public static final MasterdataProvider newInstance(final Properties ctx)
 	{
-		return new MasterdataProvider();
+		return new MasterdataProvider(ctx);
 	}
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -69,10 +76,86 @@ final class MasterdataProvider
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
 
+	private final OrgId defaultOrgId;
+
+	private final UserRolePermissionsKey userRolePermissionsKey;
+	private final Set<PermissionRequest> permissionsGranted = new HashSet<>();
+
+	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 	private final Map<JsonBPartner, BPartnerId> bpartnerIdsByJson = new HashMap<>();
-	private final Map<String, BPartnerLocationId> bpartnerLocationIdsByCode = new HashMap<>();
-	private final Map<String, BPartnerContactId> bpartnerContactIdsByCode = new HashMap<>();
+	private final Map<String, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
+	private final Map<String, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
+
+	private MasterdataProvider(final Properties ctx)
+	{
+		userRolePermissionsKey = UserRolePermissionsKey.of(ctx);
+		defaultOrgId = OrgId.optionalOfRepoId(Env.getAD_Org_ID(ctx)).orElse(OrgId.ANY);
+	}
+
+	public void assertCanCreateNewOLCand(final OrgId orgId)
+	{
+		assertPermission(PermissionRequest.builder()
+				.orgId(orgId)
+				.adTableId(InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+				.build());
+	}
+
+	private void assertCanCreateOrUpdate(final Object record)
+	{
+		final OrgId orgId = InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY);
+		final int adTableId = InterfaceWrapperHelper.getModelTableId(record);
+		final int recordId;
+		if (InterfaceWrapperHelper.isNew(record))
+		{
+			recordId = -1;
+		}
+		else
+		{
+			recordId = InterfaceWrapperHelper.getId(record);
+		}
+
+		assertPermission(PermissionRequest.builder()
+				.orgId(orgId)
+				.adTableId(adTableId)
+				.recordId(recordId)
+				.build());
+	}
+
+	private void assertPermission(@NonNull final PermissionRequest request)
+	{
+		if (permissionsGranted.contains(request))
+		{
+			return;
+		}
+
+		final IUserRolePermissions userPermissions = userRolePermissionsRepo.retrieveUserRolePermissions(userRolePermissionsKey);
+
+		final String errmsg;
+		if (request.getRecordId() >= 0)
+		{
+			errmsg = userPermissions.checkCanUpdate(
+					userPermissions.getAD_Client_ID(),
+					request.getOrgId().getRepoId(),
+					request.getAdTableId(),
+					request.getRecordId());
+		}
+		else
+		{
+			errmsg = userPermissions.checkCanCreateNewRecord(
+					userPermissions.getAD_Client_ID(),
+					request.getOrgId().getRepoId(),
+					request.getAdTableId());
+		}
+
+		if (errmsg != null)
+		{
+			throw new PermissionNotGrantedException(errmsg);
+		}
+
+		permissionsGranted.add(request);
+	}
 
 	public ProductId getProductIdByValue(final String value)
 	{
@@ -101,16 +184,19 @@ final class MasterdataProvider
 		return priceListsRepo.getPricingSystemIdByValue(pricingSystemCode);
 	}
 
-	public final OLCandBPartnerInfo getCreateBPartnerInfo(final JsonBPartnerInfo json)
+	public final OLCandBPartnerInfo getCreateBPartnerInfo(final JsonBPartnerInfo json, final OrgId orgId)
 	{
 		if (json == null)
 		{
 			return null;
 		}
 
-		final BPartnerId bpartnerId = getCreateBPartnerId(json.getBpartner());
-		final BPartnerLocationId bpartnerLocationId = getCreateBPartnerLocationId(bpartnerId, json.getLocation());
-		final BPartnerContactId bpartnerContactId = getCreateBPartnerContactId(bpartnerId, json.getContact());
+		Context context = Context.ofOrg(orgId);
+		final BPartnerId bpartnerId = getCreateBPartnerId(json.getBpartner(), context);
+
+		context = context.with(bpartnerId);
+		final BPartnerLocationId bpartnerLocationId = getCreateBPartnerLocationId(json.getLocation(), context);
+		final BPartnerContactId bpartnerContactId = getCreateBPartnerContactId(json.getContact(), context);
 
 		return OLCandBPartnerInfo.builder()
 				.bpartnerId(bpartnerId.getRepoId())
@@ -119,52 +205,78 @@ final class MasterdataProvider
 				.build();
 	}
 
-	private BPartnerId getCreateBPartnerId(@NonNull final JsonBPartner json)
+	private BPartnerId getCreateBPartnerId(@NonNull final JsonBPartner json, final Context context)
 	{
-		return bpartnerIdsByJson.computeIfAbsent(json, this::retrieveOrCreateBPartnerId);
+		return bpartnerIdsByJson.compute(json, (existingJson, existingBPartnerId) -> createOrUpdateBPartnerId(json, context.with(existingBPartnerId)));
 	}
 
-	private BPartnerId retrieveOrCreateBPartnerId(final JsonBPartner json)
+	private BPartnerId createOrUpdateBPartnerId(final JsonBPartner json, final Context context)
 	{
-		return retrieveExistingBPartnerId(json)
-				.orElseGet(() -> createBPartnerId(json));
-	}
-
-	private final Optional<BPartnerId> retrieveExistingBPartnerId(final JsonBPartner json)
-	{
-		final String code = json.getCode();
-		if (!Check.isEmpty(code, true))
+		final BPartnerId existingBPartnerId;
+		if (context.getBpartnerId() != null)
 		{
-			return bpartnersRepo.getBPartnerIdByValueIfExists(code);
+			existingBPartnerId = context.getBpartnerId();
+		}
+		else if (json.getCode() != null)
+		{
+			existingBPartnerId = bpartnersRepo.getBPartnerIdByValueIfExists(json.getCode()).orElse(null);
 		}
 		else
 		{
-			return Optional.empty();
+			existingBPartnerId = null;
 		}
+
+		final I_C_BPartner bpartnerRecord;
+		if (existingBPartnerId != null)
+		{
+			bpartnerRecord = bpartnersRepo.getById(existingBPartnerId);
+		}
+		else
+		{
+			bpartnerRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			bpartnerRecord.setAD_Org_ID(context.getOrgId().getRepoId());
+		}
+
+		try
+		{
+			updateBPartnerRecord(bpartnerRecord, json);
+			assertCanCreateOrUpdate(bpartnerRecord);
+			bpartnersRepo.save(bpartnerRecord);
+		}
+		catch (final PermissionNotGrantedException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		}
+
+		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
-	private final BPartnerId createBPartnerId(final JsonBPartner json)
+	private final void updateBPartnerRecord(final I_C_BPartner bpartnerRecord, final JsonBPartner from)
 	{
-		final String code = json.getCode();
-		final String name = json.getName();
-		if (Check.isEmpty(name, true))
-		{
-			throw new AdempiereException("@FillMandatory@ @Name@: " + json);
-		}
+		final boolean isNew = InterfaceWrapperHelper.isNew(bpartnerRecord);
 
-		final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-
+		final String code = from.getCode();
 		if (!Check.isEmpty(code, true))
 		{
 			bpartnerRecord.setValue(code);
 		}
 
-		bpartnerRecord.setName(name);
+		final String name = from.getName();
+		if (!Check.isEmpty(name, true))
+		{
+			bpartnerRecord.setName(name);
+		}
+		else if (isNew)
+		{
+			throw new AdempiereException("@FillMandatory@ @Name@: " + from);
+		}
+
 		bpartnerRecord.setIsCustomer(true);
 		// bpartnerRecord.setC_BP_Group_ID(C_BP_Group_ID);
-		bpartnersRepo.save(bpartnerRecord);
-
-		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
 	public JsonBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
@@ -178,78 +290,96 @@ final class MasterdataProvider
 				.build();
 	}
 
-	private BPartnerLocationId getCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
+	private BPartnerLocationId getCreateBPartnerLocationId(final JsonBPartnerLocation json, final Context context)
 	{
 		if (json == null)
 		{
 			return null;
 		}
 
-		return bpartnerLocationIdsByCode.computeIfAbsent(json.getCode(), code -> retrieveOrCreateBPartnerLocationId(bpartnerId, json));
+		return bpartnerLocationIdsByExternalId.compute(json.getExternalId(), (externalId, existingBPLocationId) -> createOrUpdateBPartnerLocationId(json, context.with(existingBPLocationId)));
 	}
 
-	private BPartnerLocationId retrieveOrCreateBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
+	private BPartnerLocationId createOrUpdateBPartnerLocationId(
+			@NonNull final JsonBPartnerLocation json,
+			final Context context)
 	{
-		return getExistingBPartnerLocationId(bpartnerId, json.getCode())
-				.orElseGet(() -> createBPartnerLocationId(bpartnerId, json));
-	}
+		final BPartnerId bpartnerId = context.getBpartnerId();
 
-	private BPartnerLocationId createBPartnerLocationId(final BPartnerId bpartnerId, final JsonBPartnerLocation json)
-	{
-		final String countryCode = json.getCountryCode();
-		if (Check.isEmpty(countryCode))
+		BPartnerLocationId existingBPLocationId;
+		if (context.getLocationId() != null)
 		{
-			throw new AdempiereException("@FillMandatory@ @CountryCode@: " + json);
+			existingBPLocationId = context.getLocationId();
 		}
-		final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
+		else if (json.getExternalId() != null)
+		{
+			existingBPLocationId = bpartnersRepo.getBPartnerLocationIdByExternalId(bpartnerId, json.getExternalId()).orElse(null);
+		}
+		else
+		{
+			existingBPLocationId = null;
+		}
 
-		final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		locationRecord.setAddress1(json.getAddress1());
-		locationRecord.setAddress2(json.getAddress2());
-		locationRecord.setPostal(locationRecord.getPostal());
-		locationRecord.setCity(locationRecord.getCity());
-		locationRecord.setC_Country_ID(countryId);
-		locationsRepo.save(locationRecord);
+		I_C_BPartner_Location bpLocationRecord;
+		if (existingBPLocationId != null)
+		{
+			bpLocationRecord = bpartnersRepo.getBPartnerLocationById(existingBPLocationId);
+		}
+		else
+		{
+			bpLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+			bpLocationRecord.setAD_Org_ID(context.getOrgId().getRepoId());
+		}
 
-		final I_C_BPartner_Location bpLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-		bpLocationRecord.setIsShipTo(true);
-		bpLocationRecord.setIsBillTo(true);
-		bpLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
-		bpartnersRepo.save(bpLocationRecord);
+		try
+		{
+			updateBPartnerLocationRecord(bpLocationRecord, bpartnerId, json);
+			assertCanCreateOrUpdate(bpLocationRecord);
+			bpartnersRepo.save(bpLocationRecord);
+		}
+		catch (final PermissionNotGrantedException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		}
 
 		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 	}
 
-	private final Optional<BPartnerLocationId> getExistingBPartnerLocationId(final BPartnerId bpartnerId, final String code)
+	private void updateBPartnerLocationRecord(
+			@NonNull final I_C_BPartner_Location bpLocationRecord,
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final JsonBPartnerLocation json)
 	{
-		if (code == null || code.isEmpty())
+		final boolean isNew = InterfaceWrapperHelper.isNew(bpLocationRecord);
+
+		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpLocationRecord.setIsShipTo(true);
+		bpLocationRecord.setIsBillTo(true);
+
+		if (isNew || !json.equals(toJsonBPartnerLocation(bpLocationRecord)))
 		{
-			return Optional.empty();
+			final String countryCode = json.getCountryCode();
+			if (Check.isEmpty(countryCode))
+			{
+				throw new AdempiereException("@FillMandatory@ @CountryCode@: " + json);
+			}
+			final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
+
+			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+			locationRecord.setAddress1(json.getAddress1());
+			locationRecord.setAddress2(json.getAddress2());
+			locationRecord.setPostal(locationRecord.getPostal());
+			locationRecord.setCity(locationRecord.getCity());
+			locationRecord.setC_Country_ID(countryId);
+			locationsRepo.save(locationRecord);
+
+			bpLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
 
-		final int bpartnerLocationIdInt;
-		try
-		{
-			bpartnerLocationIdInt = Integer.parseInt(code);
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Invalid BPartner Location code: " + code, ex);
-		}
-
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationIdInt);
-		if (!bpartnersRepo.exists(bpartnerLocationId))
-		{
-			throw new AdempiereException("BPartner Location does not exist: " + bpartnerLocationId);
-		}
-
-		return Optional.of(bpartnerLocationId);
-	}
-
-	private static final String convertBPartnerLocationIdToCode(final BPartnerLocationId bpartnerLocationId)
-	{
-		return bpartnerLocationId != null ? String.valueOf(bpartnerLocationId.getRepoId()) : null;
 	}
 
 	public JsonBPartnerLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
@@ -265,11 +395,16 @@ final class MasterdataProvider
 			return null;
 		}
 
+		return toJsonBPartnerLocation(bpLocationRecord);
+	}
+
+	private JsonBPartnerLocation toJsonBPartnerLocation(@NonNull final I_C_BPartner_Location bpLocationRecord)
+	{
 		final I_C_Location location = bpLocationRecord.getC_Location();
 		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
 
 		return JsonBPartnerLocation.builder()
-				.code(convertBPartnerLocationIdToCode(bpartnerLocationId))
+				.externalId(bpLocationRecord.getExternalId())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.postal(location.getPostal())
@@ -278,57 +413,72 @@ final class MasterdataProvider
 				.build();
 	}
 
-	private BPartnerContactId getCreateBPartnerContactId(final BPartnerId bpartnerId, final JsonBPartnerContact json)
+	private BPartnerContactId getCreateBPartnerContactId(final JsonBPartnerContact json, final Context context)
 	{
 		if (json == null)
 		{
 			return null;
 		}
 
-		return bpartnerContactIdsByCode.computeIfAbsent(json.getCode(), code -> retrieveOrCreateBPartnerContactId(bpartnerId, json));
+		return bpartnerContactIdsByExternalId.compute(json.getExternalId(), (externalId, existingContactId) -> createOrUpdateBPartnerContactId(json, context.with(existingContactId)));
 	}
 
-	private BPartnerContactId retrieveOrCreateBPartnerContactId(final BPartnerId bpartnerId, final JsonBPartnerContact json)
+	private BPartnerContactId createOrUpdateBPartnerContactId(
+			@NonNull final JsonBPartnerContact json,
+			@NonNull final Context context)
 	{
-		final BPartnerContactId bpartnerContactId = convertCodeToBPartnerContactId(bpartnerId, json.getCode());
-		if (bpartnerContactId != null)
+		final BPartnerId bpartnerId = context.getBpartnerId();
+
+		final BPartnerContactId existingContactId;
+		if (context.getContactId() != null)
 		{
-			return bpartnerContactId;
+			existingContactId = context.getContactId();
+		}
+		else if (json.getExternalId() != null)
+		{
+			existingContactId = bpartnersRepo.getContactIdByExternalId(bpartnerId, json.getExternalId()).orElse(null);
+		}
+		else
+		{
+			existingContactId = null;
 		}
 
-		final I_AD_User bpContactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		//
+		I_AD_User contactRecord;
+		if (existingContactId != null)
+		{
+			contactRecord = bpartnersRepo.getContactById(existingContactId);
+		}
+		else
+		{
+			contactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			contactRecord.setAD_Org_ID(context.getOrgId().getRepoId());
+		}
+
+		try
+		{
+			updateBPartnerContactRecord(contactRecord, bpartnerId, json);
+			assertCanCreateOrUpdate(contactRecord);
+			bpartnersRepo.save(contactRecord);
+		}
+		catch (final PermissionNotGrantedException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		}
+
+		return BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID());
+	}
+
+	private void updateBPartnerContactRecord(final I_AD_User bpContactRecord, final BPartnerId bpartnerId, final JsonBPartnerContact json)
+	{
 		bpContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpContactRecord.setName(json.getName());
 		bpContactRecord.setEMail(json.getEmail());
 		bpContactRecord.setPhone(json.getPhone());
-		bpartnersRepo.save(bpContactRecord);
-
-		return BPartnerContactId.ofRepoId(bpartnerId, bpContactRecord.getAD_User_ID());
-	}
-
-	private static final BPartnerContactId convertCodeToBPartnerContactId(final BPartnerId bpartnerId, final String code)
-	{
-		if (code == null || code.isEmpty())
-		{
-			return null;
-		}
-
-		final int contactId;
-		try
-		{
-			contactId = Integer.parseInt(code);
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Invalid BPartner Contact code: " + code, ex);
-		}
-
-		return BPartnerContactId.ofRepoId(bpartnerId, contactId);
-	}
-
-	private static String convertBPartnerContactIdToCode(final BPartnerContactId bpContactId)
-	{
-		return bpContactId != null ? String.valueOf(bpContactId.getRepoId()) : null;
 	}
 
 	public JsonBPartnerContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
@@ -345,37 +495,68 @@ final class MasterdataProvider
 		}
 
 		return JsonBPartnerContact.builder()
-				.code(convertBPartnerContactIdToCode(bpartnerContactId))
+				.externalId(bpContactRecord.getExternalId())
 				.name(bpContactRecord.getName())
 				.email(bpContactRecord.getEMail())
 				.phone(bpContactRecord.getPhone())
 				.build();
 	}
 
-	public OrgId getCreateOrgId(final JsonOrganization org)
+	public OrgId getCreateOrgId(final JsonOrganization json)
 	{
-		if (org == null)
+		if (json == null)
 		{
-			return null;
+			return defaultOrgId;
 		}
 
-		final String code = org.getCode();
-		Check.assumeNotEmpty(code, "Organization code shall be set: {}", org);
-		final OrgId orgId = orgsRepo.getOrgIdByValue(code).orElse(null);
-		if (orgId != null)
+		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgId(json, existingOrgId));
+	}
+
+	private OrgId createOrUpdateOrgId(final JsonOrganization json, OrgId existingOrgId)
+	{
+		if (existingOrgId == null)
 		{
-			return orgId;
+			final String code = json.getCode();
+			if (Check.isEmpty(code, true))
+			{
+				throw new AdempiereException("Organization code shall be set: " + json);
+			}
+
+			existingOrgId = orgsRepo.getOrgIdByValue(code).orElse(null);
 		}
 
-		final String orgName = org.getName();
-		Check.assumeNotEmpty(orgName, "Organization Name shall be set: {}", org);
+		I_AD_Org orgRecord;
+		if (existingOrgId != null)
+		{
+			orgRecord = orgsRepo.getById(existingOrgId);
+		}
+		else
+		{
+			orgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+		}
 
-		final I_AD_Org orgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-		orgRecord.setValue(code);
-		orgRecord.setName(orgName);
-		orgsRepo.save(orgRecord);
+		try
+		{
+			updateOrgRecord(orgRecord, json);
+			assertCanCreateOrUpdate(orgRecord);
+			orgsRepo.save(orgRecord);
+		}
+		catch (final PermissionNotGrantedException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		}
 
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+	}
+
+	private void updateOrgRecord(final I_AD_Org orgRecord, final JsonOrganization json)
+	{
+		orgRecord.setValue(json.getCode());
+		orgRecord.setName(json.getName());
 	}
 
 	public JsonOrganization getJsonOrganizationById(final int orgId)
@@ -390,5 +571,56 @@ final class MasterdataProvider
 				.code(orgRecord.getValue())
 				.name(orgRecord.getName())
 				.build();
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	private static class PermissionRequest
+	{
+		@lombok.NonNull
+		OrgId orgId;
+		int adTableId;
+		@lombok.Builder.Default
+		int recordId = -1;
+	}
+
+	@lombok.Value
+	@lombok.Builder(toBuilder = true)
+	private static class Context
+	{
+		public static Context ofOrg(final OrgId orgId)
+		{
+			return builder().orgId(orgId).build();
+		}
+
+		@lombok.NonNull
+		OrgId orgId;
+		BPartnerId bpartnerId;
+		BPartnerLocationId locationId;
+		BPartnerContactId contactId;
+
+		public Context with(final BPartnerId bpartnerId)
+		{
+			return toBuilder().bpartnerId(bpartnerId).build();
+		}
+
+		public Context with(final BPartnerLocationId locationId)
+		{
+			return toBuilder().locationId(locationId).build();
+		}
+
+		public Context with(final BPartnerContactId contactId)
+		{
+			return toBuilder().contactId(contactId).build();
+		}
+	}
+
+	@SuppressWarnings("serial")
+	private static class PermissionNotGrantedException extends AdempiereException
+	{
+		public PermissionNotGrantedException(String message)
+		{
+			super(message);
+		}
 	}
 }

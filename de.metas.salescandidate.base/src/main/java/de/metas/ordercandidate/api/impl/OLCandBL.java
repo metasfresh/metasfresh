@@ -48,6 +48,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
@@ -244,16 +245,19 @@ public class OLCandBL implements IOLCandBL
 
 		return pricingResult;
 	}
-	
+
 	@Override
-	public AttachmentEntry addAttachment(final int olCandId, final String filename, final byte[] data)
+	public AttachmentEntry addAttachment(@NonNull final String olCandExternalId, final String filename, final byte[] data)
 	{
-		Check.assumeGreaterThanZero(olCandId, "olCandId");
 		Check.assumeNotEmpty(filename, "filename is not empty");
-		
+
 		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
-		
-		TableRecordReference olCandRef = TableRecordReference.of(I_C_OLCand.Table_Name, olCandId);
+		final IOLCandDAO olCandsRepo = Services.get(IOLCandDAO.class);
+
+		final int olCandId = olCandsRepo.getOLCandIdByExternalId(olCandExternalId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_OLCand_ID@: @ExternalId@=" + olCandExternalId));
+
+		final TableRecordReference olCandRef = TableRecordReference.of(I_C_OLCand.Table_Name, olCandId);
 		return attachmentsBL.addEntry(olCandRef, filename, data);
 	}
 }

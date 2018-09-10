@@ -38,5 +38,5 @@ public interface OrderCandidatesRestEndpoint
 
 	JsonOLCandCreateBulkResponse createOrders(JsonOLCandCreateBulkRequest bulkRequest);
 
-	void attachFile(String olCandId, MultipartFile file) throws IOException;
+	void attachFile(String olCandExternalId, MultipartFile file) throws IOException;
 }

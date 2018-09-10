@@ -88,5 +88,5 @@ public interface IOLCandBL extends ISingletonService
 	 */
 	PricingSystemId getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
 
-	AttachmentEntry addAttachment(int olCandId, String filename, byte[] data);
+	AttachmentEntry addAttachment(String olCandExternalId, String filename, byte[] data);
 }

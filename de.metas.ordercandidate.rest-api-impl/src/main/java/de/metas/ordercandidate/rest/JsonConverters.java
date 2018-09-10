@@ -2,7 +2,10 @@ package de.metas.ordercandidate.rest;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
+import org.adempiere.util.Check;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -49,19 +52,29 @@ public class JsonConverters
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		// POReference shall be mandatory, else we would have problems later,
+		// when we will aggregate the invoice candidates by POReference
+		if (Check.isEmpty(request.getPoReference(), true))
+		{
+			throw new AdempiereException("@FillMandatory@ @POReference@: " + request);
+		}
+
 		final ProductId productId = masterdataProvider.getProductIdByValue(request.getProductCode());
 		final UomId uomId = masterdataProvider.getProductUOMId(productId, request.getUomCode());
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
+		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+
 		return OLCandCreateRequest.builder()
 				.externalId(request.getExternalId())
 				//
-				.orgId(masterdataProvider.getCreateOrgId(request.getOrg()))
+				.orgId(orgId)
 				//
-				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner()))
-				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner()))
-				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner()))
-				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner()))
+				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
+				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
+				.dropShipBPartner(masterdataProvider.getCreateBPartnerInfo(request.getDropShipBPartner(), orgId))
+				.handOverBPartner(masterdataProvider.getCreateBPartnerInfo(request.getHandOverBPartner(), orgId))
+				//
 				.poReference(request.getPoReference())
 				//
 				.dateRequired(request.getDateRequired())
