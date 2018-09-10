@@ -92,4 +92,14 @@ DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=540702
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET SeqNo=10,Updated=TO_TIMESTAMP('2018-08-29 15:45:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541336
 ;
+-- 2018-09-10T17:12:26.574
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-09-10 17:12:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541336
+;
+
+-- 2018-09-10T17:15:35.832
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='D',Updated=TO_TIMESTAMP('2018-09-10 17:15:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541336
+;
+
 
