@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
 
 import keymap from '../../shortcuts/keymap';
 import OverlayField from '../app/OverlayField';
@@ -20,8 +21,15 @@ class FiltersItem extends Component {
   constructor(props) {
     super(props);
 
+    const { active, data } = props;
+    let activeFilter = null;
+    if (active) {
+      activeFilter = active.find(item => item.filterId === data.filterId);
+    }
+
     this.state = {
-      filter: { ...props.data },
+      filter: _.cloneDeep(props.data),
+      activeFilter: activeFilter ? _.cloneDeep(activeFilter) : null,
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
@@ -85,17 +93,17 @@ class FiltersItem extends Component {
   }
 
   init = () => {
-    const { active, data } = this.props;
-    const { filter } = this.state;
-    let activeFilter;
-
-    if (active) {
-      activeFilter = active.find(item => item.filterId === data.filterId);
-    }
+    const { filter, activeFilter } = this.state;
 
     if (filter.parameters) {
       filter.parameters.map(item => {
-        this.mergeData(item.parameterName, '');
+        this.mergeData(
+          item.parameterName,
+          '',
+          '',
+          item.defaultValue ? true : false,
+          item.defaultValue
+        );
       });
 
       if (
@@ -107,24 +115,32 @@ class FiltersItem extends Component {
           this.mergeData(
             item.parameterName,
             item.value != null ? item.value : '',
-            item.valueTo != null ? item.valueTo : ''
+            item.valueTo != null ? item.valueTo : '',
+            true,
+            item.value !== undefined ? item.value : item.defaultValue
           );
         });
       }
     }
   };
 
-  setValue = (property, value, id, valueTo) => {
+  setValue = (property, value, id, valueTo = '', filterId, defaultValue) => {
+    const { resetInitialValues } = this.props;
+
+    if (defaultValue != null) {
+      resetInitialValues(filterId, property);
+    }
+
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
     // IT HAS TO BE UNIFIED
     //
     // OVERWORKED WORKAROUND
     if (Array.isArray(property)) {
       property.map(item => {
-        this.mergeData(item.parameterName, value, valueTo);
+        this.mergeData(item.parameterName, value, valueTo, true, value);
       });
     } else {
-      this.mergeData(property, value, valueTo);
+      this.mergeData(property, value, valueTo, true, value);
     }
   };
 
@@ -138,7 +154,52 @@ class FiltersItem extends Component {
     return value;
   };
 
-  mergeData = (property, value, valueTo) => {
+  mergeData = (property, value, valueTo, updateActive, activeValue) => {
+    let { activeFilter, filter } = this.state;
+
+    // update values for active filters, as we then bubble them up to parent
+    // components which use this data in PATCH requests
+    if (updateActive) {
+      let paramExists = false;
+
+      if (!activeFilter) {
+        activeFilter = {
+          filterId: filter.filterId,
+          parameters: [],
+        };
+      }
+
+      const updatedParameters = activeFilter.parameters.map(param => {
+        if (param.parameterName === property) {
+          paramExists = true;
+
+          return {
+            ...param,
+            value: this.parseDateToReadable(param.widgetType, activeValue),
+            defaultValue: null,
+          };
+        } else {
+          return {
+            ...param,
+            defaultValue: null,
+          };
+        }
+      });
+
+      if (!paramExists) {
+        updatedParameters.push({
+          parameterName: property,
+          value: activeValue,
+          defaultValue: null,
+        });
+      }
+
+      activeFilter = {
+        ...activeFilter,
+        parameters: updatedParameters,
+      };
+    }
+
     this.setState(prevState => ({
       filter: {
         ...prevState.filter,
@@ -154,6 +215,7 @@ class FiltersItem extends Component {
           }
         }),
       },
+      activeFilter,
     }));
   };
 
@@ -170,8 +232,8 @@ class FiltersItem extends Component {
   };
 
   handleApply = () => {
-    const { applyFilters, closeFilterMenu } = this.props;
-    const { filter } = this.state;
+    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const { filter, activeFilter } = this.state;
 
     if (
       filter &&
@@ -181,15 +243,22 @@ class FiltersItem extends Component {
       return this.handleClear();
     }
 
-    applyFilters(filter, () => {
+    applyFilters(activeFilter, () => {
       closeFilterMenu();
+      returnBackToDropdown();
     });
   };
 
   handleClear = () => {
-    const { clearFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const {
+      clearFilters,
+      closeFilterMenu,
+      returnBackToDropdown,
+      resetInitialValues,
+    } = this.props;
     const { filter } = this.state;
 
+    resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();
@@ -213,6 +282,7 @@ class FiltersItem extends Component {
       outsideClick,
       captionValue,
       openedFilter,
+      panelCaption,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
@@ -245,7 +315,7 @@ class FiltersItem extends Component {
             <div className="filter-controls">
               <div>
                 {counterpart.translate('window.activeFilter.caption')}:
-                <span className="filter-active">{data.caption}</span>
+                <span className="filter-active">{panelCaption}</span>
               </div>
               {isActive && (
                 <span
@@ -265,8 +335,26 @@ class FiltersItem extends Component {
                       entity="documentView"
                       subentity="filter"
                       subentityId={filter.filterId}
-                      handlePatch={this.setValue}
-                      handleChange={this.setValue}
+                      handlePatch={(property, value, id, valueTo) =>
+                        this.setValue(
+                          property,
+                          value,
+                          id,
+                          valueTo,
+                          filter.filterId,
+                          item.defaultValue
+                        )
+                      }
+                      handleChange={(property, value, id, valueTo) =>
+                        this.setValue(
+                          property,
+                          value,
+                          id,
+                          valueTo,
+                          filter.filterId,
+                          item.defaultValue
+                        )
+                      }
                       widgetType={item.widgetType}
                       fields={[item]}
                       type={item.type}
@@ -339,7 +427,12 @@ class FiltersItem extends Component {
 
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  applyFilters: PropTypes.func.isRequired,
+  resetInitialValues: PropTypes.func.isRequired,
+  clearFilters: PropTypes.func,
   filtersWrapper: PropTypes.any,
+  panelCaption: PropTypes.string,
+  active: PropTypes.array,
 };
 
 export default connect()(FiltersItem);
