@@ -80,9 +80,8 @@ public class WebRestApiApplication
 
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
-			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 			Ini.setRunMode(RunMode.WEBUI);
-			Adempiere.instance.startup(RunMode.BACKEND);
+			Adempiere.instance.startup(RunMode.WEBUI);
 
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
