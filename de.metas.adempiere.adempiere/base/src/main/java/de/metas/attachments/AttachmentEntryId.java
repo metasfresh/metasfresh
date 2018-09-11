@@ -1,41 +1,54 @@
-package de.metas.adempiere.service;
+package de.metas.attachments;
 
-import java.util.Properties;
+import org.adempiere.util.Check;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_City;
-import org.compiere.model.I_C_Location;
+import de.metas.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface ILocationDAO extends ISingletonService
+@Value
+public class AttachmentEntryId implements RepoIdAware
 {
-	void save(I_C_Location location);
+	public static AttachmentEntryId ofRepoId(final int repoId)
+	{
+		return new AttachmentEntryId(repoId);
+	}
 
-	/**
-	 * @return cities filter by country and by regionId (if set)
-	 */
-	IQueryBuilder<I_C_City> retrieveCitiesByCountryOrRegionQuery(Properties ctx, int countryId, int regionId);
+	public static AttachmentEntryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
 
+	public static int getRepoId(final AttachmentEntryId attachmentEntryId)
+	{
+		return attachmentEntryId != null ? attachmentEntryId.getRepoId() : -1;
+	}
+
+	int repoId;
+
+	private AttachmentEntryId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }

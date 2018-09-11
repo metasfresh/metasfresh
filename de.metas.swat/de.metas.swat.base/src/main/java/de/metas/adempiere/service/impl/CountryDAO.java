@@ -28,7 +28,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
-import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
@@ -78,12 +77,15 @@ public class CountryDAO implements ICountryDAO
 	{
 		final I_C_Country country = getDefault(ctx);
 
-		final I_AD_User_SaveCustomInfo info = new Query(Env.getCtx(), I_AD_User_SaveCustomInfo.Table_Name, I_AD_User_SaveCustomInfo.COLUMNNAME_C_Country_ID + " = ?", trxName)
-				.setParameters(country.getC_Country_ID())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_AD_User_SaveCustomInfo.COLUMNNAME_Created + " DESC")
-				.first(I_AD_User_SaveCustomInfo.class);
+		final I_AD_User_SaveCustomInfo info = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_SaveCustomInfo.class, Env.getCtx(), trxName)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User_SaveCustomInfo.COLUMNNAME_C_Country_ID, country.getC_Country_ID())
+				.orderByDescending(I_AD_User_SaveCustomInfo.COLUMNNAME_Created)
+				.create()
+				.first();
+
 		if (info != null)
 		{
 			return new CountryCustomInfoImpl(info.getCaptureSequence(), info.getC_Country_ID());
@@ -218,9 +220,15 @@ public class CountryDAO implements ICountryDAO
 	}
 
 	@Override
-	public I_C_Country retrieveCountryByCountryCode(String countryCode)
+	public I_C_Country retrieveCountryByCountryCode(final String countryCode)
 	{
 		return getIndexedCountries().getByCountryCode(countryCode);
+	}
+
+	@Override
+	public int getCountryIdByCountryCode(final String countryCode)
+	{
+		return getIndexedCountries().getIdByCountryCode(countryCode);
 	}
 
 	@Override
@@ -303,5 +311,11 @@ public class CountryDAO implements ICountryDAO
 			}
 			return country;
 		}
+
+		public int getIdByCountryCode(final String countryCode)
+		{
+			return getByCountryCode(countryCode).getC_Country_ID();
+		}
+
 	}
 }
