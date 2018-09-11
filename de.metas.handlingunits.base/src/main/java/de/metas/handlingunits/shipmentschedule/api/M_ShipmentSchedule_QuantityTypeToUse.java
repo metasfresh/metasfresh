@@ -33,9 +33,13 @@ import lombok.NonNull;
 
 public enum M_ShipmentSchedule_QuantityTypeToUse
 {
+	/** only use the shipment schedule's picked qty (which is based on the actually picked HUs). */
+	TYPE_P("P"),
 
-	TYPE_P("P"), //
-	TYPE_D("D"), //
+	/** only use the shipment schedule's qty to deliver. */
+	TYPE_D("D"),
+
+	/** use both picked and shipment schedule's qty to deliver. */
 	TYPE_PD("PD");
 
 	@Getter
