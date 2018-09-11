@@ -359,6 +359,7 @@ final class MasterdataProvider
 		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
+		bpLocationRecord.setExternalId(json.getExternalId());
 
 		if (isNew || !json.equals(toJsonBPartnerLocation(bpLocationRecord)))
 		{
@@ -369,7 +370,8 @@ final class MasterdataProvider
 			}
 			final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
-			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
+			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Location.class);
 			locationRecord.setAddress1(json.getAddress1());
 			locationRecord.setAddress2(json.getAddress2());
 			locationRecord.setPostal(locationRecord.getPostal());
@@ -479,6 +481,7 @@ final class MasterdataProvider
 		bpContactRecord.setName(json.getName());
 		bpContactRecord.setEMail(json.getEmail());
 		bpContactRecord.setPhone(json.getPhone());
+		bpContactRecord.setExternalId(json.getExternalId());
 	}
 
 	public JsonBPartnerContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
