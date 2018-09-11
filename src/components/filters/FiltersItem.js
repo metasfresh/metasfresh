@@ -418,6 +418,7 @@ FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
   applyFilters: PropTypes.func.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
+  clearFilters: PropTypes.func,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,
   active: PropTypes.array,
