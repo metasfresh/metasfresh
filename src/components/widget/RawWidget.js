@@ -816,6 +816,7 @@ class RawWidget extends Component {
   render() {
     const {
       caption,
+      description,
       captionElement,
       fields,
       type,
@@ -870,7 +871,8 @@ class RawWidget extends Component {
       >
         {captionElement || null}
         {!noLabel &&
-          caption && (
+          caption &&
+          description && (
             <div
               key="title"
               className={
@@ -879,7 +881,7 @@ class RawWidget extends Component {
                   ? 'col-sm-12 panel-title'
                   : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-3 ')
               }
-              title={caption}
+              title={description}
             >
               {fields[0].supportZoomInto ? (
                 <span
