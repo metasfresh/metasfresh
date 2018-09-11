@@ -10,12 +10,12 @@ package de.metas.dunning.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,16 +24,15 @@ package de.metas.dunning.spi.impl;
 
 
 import java.util.Iterator;
-import java.util.function.Predicate;
 
 import org.adempiere.util.collections.FilterIterator;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.spi.IDunnableSource;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractDunnableSource implements IDunnableSource
 {
@@ -45,20 +44,14 @@ public abstract class AbstractDunnableSource implements IDunnableSource
 	public final Iterator<IDunnableDoc> iterator(final IDunningContext context)
 	{
 		final Iterator<IDunnableDoc> sourceIterator = createRawSourceIterator(context);
-		final Iterator<IDunnableDoc> filteredSourceIterator = new FilterIterator<IDunnableDoc>(sourceIterator, new Predicate<IDunnableDoc>()
-		{
 
-			@Override
-			public boolean test(IDunnableDoc value)
-			{
-				return isEligible(context, value);
-			}
-		});
+		final Iterator<IDunnableDoc> filteredSourceIterator = new FilterIterator<>(sourceIterator, value -> isEligible(context, value));
+
 		return filteredSourceIterator;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param dunnableDoc
 	 * @return true if dunnableDoc is eligible for creating a candidate
 	 */

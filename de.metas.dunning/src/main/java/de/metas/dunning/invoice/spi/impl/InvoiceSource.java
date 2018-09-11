@@ -51,9 +51,8 @@ public class InvoiceSource extends AbstractDunnableSource
 	{
 		final Iterator<I_C_Dunning_Candidate_Invoice_v1> it = Services.get(IInvoiceSourceDAO.class).retrieveDunningCandidateInvoices(context);
 
-		return new ConvertIteratorWrapper<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>(it, new Converter<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>()
+		return new ConvertIteratorWrapper<>(it, new Converter<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>()
 		{
-
 			@Override
 			public IDunnableDoc convert(I_C_Dunning_Candidate_Invoice_v1 value)
 			{
