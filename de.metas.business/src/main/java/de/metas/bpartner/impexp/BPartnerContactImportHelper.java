@@ -201,10 +201,10 @@ import lombok.NonNull;
 
 	private static void setUserMemoFields(@NonNull final I_I_BPartner importRecord, @NonNull final I_AD_User user)
 	{
-		setUserMemo(user, importRecord.getMemo());
-		setUserMemo(user, importRecord.getMemo1());
-		setUserMemo(user, importRecord.getMemo2());
-		setUserMemo(user, importRecord.getMemo3());
+		setUserMemo(user, importRecord.getAD_User_Memo1());
+		setUserMemo(user, importRecord.getAD_User_Memo2());
+		setUserMemo(user, importRecord.getAD_User_Memo3());
+		setUserMemo(user, importRecord.getAD_User_Memo4());
 	}
 
 	private static void setUserMemo(@NonNull final I_AD_User user, final String newMemoText)
