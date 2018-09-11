@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.logging.LogManager;
@@ -94,7 +95,7 @@ public class AttachmentDAO implements IAttachmentDAO
 	}
 
 	@Override
-	public AttachmentEntry retrieveAttachmentEntryById(final int attachmentId, final int attachmentEntryId)
+	public AttachmentEntry retrieveAttachmentEntryById(final int attachmentId, final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(attachmentEntryId, I_AD_AttachmentEntry.class);
 
@@ -161,7 +162,7 @@ public class AttachmentDAO implements IAttachmentDAO
 	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
 		return AttachmentEntry.builder()
-				.id(entryRecord.getAD_AttachmentEntry_ID())
+				.id(AttachmentEntryId.ofRepoId(entryRecord.getAD_AttachmentEntry_ID()))
 				.name(entryRecord.getFileName())
 				.type(toAttachmentEntryTypeFromADRefListValue(entryRecord.getType()))
 				.filename(entryRecord.getFileName())
@@ -231,7 +232,7 @@ public class AttachmentDAO implements IAttachmentDAO
 	}
 
 	@Override
-	public boolean deleteAttachmentEntryById(final int attachmentId, final int attachmentEntryId)
+	public boolean deleteAttachmentEntryById(final int attachmentId, final AttachmentEntryId attachmentEntryId)
 	{
 		final int deleteCount = Services.get(IQueryBL.class).createQueryBuilder(I_AD_AttachmentEntry.class)
 				.addEqualsFilter(I_AD_AttachmentEntry.COLUMNNAME_AD_Attachment_ID, attachmentId)
@@ -328,8 +329,8 @@ public class AttachmentDAO implements IAttachmentDAO
 	@Override
 	public byte[] retrieveData(@NonNull final AttachmentEntry entry)
 	{
-		final int entryId = entry.getId();
-		if (entryId <= 0)
+		final AttachmentEntryId entryId = entry.getId();
+		if (entryId == null)
 		{
 			return null;
 		}

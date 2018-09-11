@@ -142,6 +142,11 @@ public class Percent
 		this.value = NumberUtils.stripTrailingDecimalZeros(valueAsBigDecimal);
 	}
 
+	public BigDecimal getValueAsBigDecimal()
+	{
+		return value;
+	}
+
 	public boolean isZero()
 	{
 		return value.signum() == 0;

@@ -65,6 +65,11 @@ public class OLCandRepository
 	{
 		final I_C_OLCand olCandPO = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
 
+		if (request.getOrgId() != null)
+		{
+			olCandPO.setAD_Org_ID(request.getOrgId().getRepoId());
+		}
+
 		{
 			final OLCandBPartnerInfo bpartner = request.getBpartner();
 			olCandPO.setC_BPartner_ID(bpartner.getBpartnerId());
@@ -108,15 +113,25 @@ public class OLCandRepository
 		olCandPO.setM_Product_ID(request.getProductId().getRepoId());
 		olCandPO.setProductDescription(request.getProductDescription());
 		olCandPO.setQty(request.getQty());
-		olCandPO.setC_UOM_ID(request.getUomId());
+		olCandPO.setC_UOM_ID(request.getUomId().getRepoId());
 		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
 
-		if (request.getPricingSystemId() > 0)
+		if (request.getPricingSystemId() != null)
 		{
-			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId());
+			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId().getRepoId());
 		}
-		olCandPO.setPriceEntered(request.getPrice());
-		olCandPO.setDiscount(request.getDiscount());
+
+		if (request.getPrice() != null)
+		{
+			olCandPO.setIsManualPrice(true);
+			olCandPO.setPriceEntered(request.getPrice());
+		}
+
+		if (request.getDiscount() != null)
+		{
+			olCandPO.setIsManualDiscount(true);
+			olCandPO.setDiscount(request.getDiscount().getValueAsBigDecimal());
+		}
 
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 		olCandPO.setAD_InputDataSource_ID(Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceId(request.getAdInputDataSourceInternalName()));

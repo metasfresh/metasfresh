@@ -50,6 +50,7 @@ import org.springframework.core.io.Resource;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.attachments.IAttachmentDAO;
@@ -115,7 +116,7 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public void deleteEntryForModel(final Object model, final int id)
+	public void deleteEntryForModel(final Object model, final AttachmentEntryId id)
 	{
 		final I_AD_Attachment attachment = getAttachment(model);
 		if (attachment == null)
@@ -127,7 +128,7 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public void deleteEntryById(final Object model, final int attachmentEntryId)
+	public void deleteEntryById(final Object model, final AttachmentEntryId attachmentEntryId)
 	{
 		final int attachmentId = getAttachmentId(model);
 		Services.get(IAttachmentDAO.class).deleteAttachmentEntryById(attachmentId, attachmentEntryId);
@@ -284,7 +285,7 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public byte[] getEntryByIdAsBytes(final Object model, final int id)
+	public byte[] getEntryByIdAsBytes(final Object model, final AttachmentEntryId id)
 	{
 		final AttachmentEntry entry = getEntryById(model, id);
 		if (entry == null)
@@ -296,9 +297,9 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public AttachmentEntry getEntryById(@NonNull final Object model, final int attachmentEntryId)
+	public AttachmentEntry getEntryById(@NonNull final Object model, final AttachmentEntryId attachmentEntryId)
 	{
-		if (attachmentEntryId <= 0)
+		if (attachmentEntryId == null)
 		{
 			return null;
 		}

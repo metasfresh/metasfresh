@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.impexp.FileImportReader;
@@ -21,6 +20,7 @@ import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.util.Env;
 
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -153,13 +153,17 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 	private byte[] getData()
 	{
-		Check.assume(p_AD_AttachmentEntry_ID > 0, "AD_AttachmentEntry_ID > 0");
-		return attachmentBL.getEntryByIdAsBytes(getDataImport(), p_AD_AttachmentEntry_ID);
+		return attachmentBL.getEntryByIdAsBytes(getDataImport(), getAttachmentEntryId());
 	}
 
 	private void deleteAttachmentEntry()
 	{
-		attachmentBL.deleteEntryById(getDataImport(), p_AD_AttachmentEntry_ID);
+		attachmentBL.deleteEntryById(getDataImport(), getAttachmentEntryId());
+	}
+
+	private AttachmentEntryId getAttachmentEntryId()
+	{
+		return AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID);
 	}
 
 	public Charset getCharset()

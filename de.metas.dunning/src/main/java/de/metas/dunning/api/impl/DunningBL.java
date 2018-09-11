@@ -189,7 +189,6 @@ public class DunningBL implements IDunningBL
 
 		for (final IDunnableSource source : sources)
 		{
-
 			final Iterator<IDunnableDoc> dunnableDocs = source.iterator(context);
 			try
 			{
