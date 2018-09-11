@@ -101,8 +101,8 @@ class FiltersItem extends Component {
           item.parameterName,
           '',
           '',
-          item.defaultValue ? true: false,
-          item.defaultValue,
+          item.defaultValue ? true : false,
+          item.defaultValue
         );
       });
 
@@ -117,7 +117,7 @@ class FiltersItem extends Component {
             item.value != null ? item.value : '',
             item.valueTo != null ? item.valueTo : '',
             true,
-            item.value !== undefined ? item.value : item.defaultValue,
+            item.value !== undefined ? item.value : item.defaultValue
           );
         });
       }
