@@ -97,7 +97,13 @@ class FiltersItem extends Component {
 
     if (filter.parameters) {
       filter.parameters.map(item => {
-        this.mergeData(item.parameterName, '');
+        this.mergeData(
+          item.parameterName,
+          '',
+          '',
+          item.defaultValue ? true: false,
+          item.defaultValue,
+        );
       });
 
       if (
@@ -111,7 +117,7 @@ class FiltersItem extends Component {
             item.value != null ? item.value : '',
             item.valueTo != null ? item.valueTo : '',
             true,
-            item.defaultValue
+            item.value !== undefined ? item.value : item.defaultValue,
           );
         });
       }
@@ -170,9 +176,13 @@ class FiltersItem extends Component {
           return {
             ...param,
             value: this.parseDateToReadable(param.widgetType, activeValue),
+            defaultValue: null,
           };
         } else {
-          return param;
+          return {
+            ...param,
+            defaultValue: null,
+          };
         }
       });
 
@@ -180,6 +190,7 @@ class FiltersItem extends Component {
         updatedParameters.push({
           parameterName: property,
           value: activeValue,
+          defaultValue: null,
         });
       }
 
