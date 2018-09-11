@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.availability;
 
+import static java.math.BigDecimal.ONE;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +103,10 @@ public class AvailabilityCheckService
 	private static AvailabilityRequestItem createAvailabilityRequestItem(final TrackingId trackingId, final PurchaseCandidatesGroup purchaseCandidatesGroup)
 	{
 		final Quantity qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
-		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidatesGroup.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(
+				purchaseCandidatesGroup.getVendorProductNo(),
+				qtyToPurchase.getAsBigDecimal().max(ONE), // check availability for at least one, even if qtyToPurchase is still zero
+				qtyToPurchase.getUOMId());
 
 		return AvailabilityRequestItem.builder()
 				.trackingId(trackingId)
