@@ -53,6 +53,8 @@ Here come the actual release notes:
   * [#1932](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1932) Mandatory Field not filled Error too early
   * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
     * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
+  * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
+    * Fixes the initial settings of filter parameters in webui.
 
 # metasfresh 5.73
 ## Features
