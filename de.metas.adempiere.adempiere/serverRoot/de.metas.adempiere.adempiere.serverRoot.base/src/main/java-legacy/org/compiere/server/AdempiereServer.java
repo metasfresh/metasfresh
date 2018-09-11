@@ -53,7 +53,7 @@ import de.metas.logging.LogManager;
 public abstract class AdempiereServer extends Thread
 {
 	/**
-	 * Create New Server Thead
+	 * Create New Server Thread
 	 *
 	 * @param model model
 	 * @return server tread or null
