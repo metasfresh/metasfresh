@@ -58,7 +58,6 @@ class FiltersFrequent extends PureComponent {
       clearFilters,
       active,
       modalVisible,
-      activeFiltersCaptions,
     } = this.props;
     const { openFilterId } = this.state;
 
@@ -76,11 +75,6 @@ class FiltersFrequent extends PureComponent {
             DATE_FIELD_TYPES.includes(filterType) &&
             !TIME_FIELD_TYPES.includes(filterType);
 
-          const isActive =
-            item.isActive && activeFiltersCaptions[item.filterId]
-              ? activeFiltersCaptions[item.filterId]
-              : null;
-
           if (item.inlineRenderMode === 'button') {
             return (
               <div className="filter-wrapper" key={index}>
@@ -96,7 +90,7 @@ class FiltersFrequent extends PureComponent {
                   onClick={() => this.toggleFilter(item.filterId)}
                   className={cx(classes, {
                     ['btn-select']: openFilterId === index,
-                    ['btn-active']: isActive,
+                    ['btn-active']: item.isActive,
                     ['btn-distance']: !dateStepper,
                   })}
                   tabIndex={modalVisible ? -1 : 0}
@@ -187,7 +181,6 @@ FiltersFrequent.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
   active: PropTypes.array,
   filtersWrapper: PropTypes.any,
-  activeFiltersCaptions: PropTypes.object,
 };
 
 const mapStateToProps = state => {
