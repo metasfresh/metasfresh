@@ -56,6 +56,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -143,9 +144,10 @@ public class ESRImportBL implements IESRImportBL
 		//
 		// Fetch data to be imported from attachment
 		final byte[] data;
-		if (esrImport.getAD_AttachmentEntry_ID() > 0)
+		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImport.getAD_AttachmentEntry_ID());
+		if (attachmentEntryId != null)
 		{
-			data = Services.get(IAttachmentBL.class).getEntryByIdAsBytes(esrImport, esrImport.getAD_AttachmentEntry_ID());
+			data = Services.get(IAttachmentBL.class).getEntryByIdAsBytes(esrImport, attachmentEntryId);
 		}
 		// Fallback: usually that shall not happen or it might happen for old/legacy data
 		else

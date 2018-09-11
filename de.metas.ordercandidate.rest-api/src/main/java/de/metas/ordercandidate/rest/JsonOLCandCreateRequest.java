@@ -37,6 +37,8 @@ import lombok.Data;
 @Builder
 public final class JsonOLCandCreateRequest
 {
+	private JsonOrganization org;
+	
 	private JsonBPartnerInfo bpartner;
 	private JsonBPartnerInfo billBPartner;
 	private JsonBPartnerInfo dropShipBPartner;
@@ -49,10 +51,10 @@ public final class JsonOLCandCreateRequest
 	private String productCode;
 	private String productDescription;
 	private BigDecimal qty;
-	private int uomId;
-	private int huPIItemProductId;
+	private String uomCode;
+	private int packingMaterialId;
 
-	private int pricingSystemId;
+	private String pricingSystemCode;
 	private BigDecimal price;
 	private BigDecimal discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList

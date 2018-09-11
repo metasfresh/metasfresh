@@ -13,22 +13,24 @@ package org.adempiere.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
@@ -39,9 +41,30 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import lombok.NonNull;
 
 public class OrgDAO implements IOrgDAO
 {
+	@Override
+	public void save(@NonNull final I_AD_Org orgRecord)
+	{
+		InterfaceWrapperHelper.save(orgRecord);
+	}
+
+	@Override
+	public Optional<OrgId> getOrgIdByValue(@NonNull final String value)
+	{
+		final String valueFixed = value.trim();
+
+		final int orgIdInt = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, valueFixed)
+				.create()
+				.firstIdOnly();
+
+		return OrgId.optionalOfRepoId(orgIdInt);
+	}
+
 	@Override
 	@Cached(cacheName = I_AD_Org.Table_Name + "#by#" + I_AD_Org.COLUMNNAME_AD_Client_ID)
 	public List<I_AD_Org> retrieveClientOrgs(@CacheCtx final Properties ctx, final int adClientId)

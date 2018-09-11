@@ -24,6 +24,7 @@ package de.metas.bpartner.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import org.compiere.model.I_M_Shipper;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
@@ -46,6 +48,12 @@ import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	void save(I_C_BPartner bpartner);
+
+	void save(I_C_BPartner_Location bpartnerLocation);
+
+	void save(I_AD_User bpartnerContact);
+
 	I_C_BPartner getById(final int bpartnerId);
 
 	<T extends I_C_BPartner> T getById(int bpartnerId, Class<T> modelClass);
@@ -65,6 +73,12 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
+
+	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
+
+	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+
+	boolean exists(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(final int bpartnerId);
 
@@ -87,22 +101,18 @@ public interface IBPartnerDAO extends ISingletonService
 	}
 
 	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param ctx
-	 * @param partnerId
-	 * @param trxName
-	 * @return
+	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(Properties ctx, int partnerId, String trxName);
 
 	/**
-	 * Contacts of the partner, ordered by ad_user_ID, ascending
-	 *
-	 * @param bpartner
-	 * @return
+	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
+
+	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, String externalId);
+
+	I_AD_User getContactById(BPartnerContactId contactId);
 
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.
@@ -253,4 +263,6 @@ public interface IBPartnerDAO extends ISingletonService
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdByValueIfExists(final String bpartnerValue);
 }

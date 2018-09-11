@@ -41,6 +41,9 @@ public class JsonOLCand
 	private int id;
 	private String externalId;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private JsonOrganization org;
+
 	private JsonBPartnerInfo bpartner;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JsonBPartnerInfo billBPartner;

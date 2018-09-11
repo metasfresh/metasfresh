@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.compiere.util.Util;
 
+import de.metas.attachments.AttachmentEntryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,5 +46,5 @@ public final class ESRImportEnqueuerDataSource
 	@NonNull
 	private final String filename;
 	private final byte[] content;
-	private final int attachmentEntryId;
+	private final AttachmentEntryId attachmentEntryId;
 }

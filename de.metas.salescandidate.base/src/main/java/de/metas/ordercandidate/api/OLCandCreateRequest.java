@@ -5,8 +5,12 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 import org.adempiere.util.Check;
 
+import de.metas.lang.Percent;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,7 +42,9 @@ import lombok.Value;
 public class OLCandCreateRequest
 {
 	private String externalId;
-	
+
+	private OrgId orgId;
+
 	private OLCandBPartnerInfo bpartner;
 	private OLCandBPartnerInfo billBPartner;
 	private OLCandBPartnerInfo dropShipBPartner;
@@ -52,12 +58,12 @@ public class OLCandCreateRequest
 	private ProductId productId;
 	private String productDescription;
 	private BigDecimal qty;
-	private int uomId;
+	private UomId uomId;
 	private int huPIItemProductId;
 
-	private int pricingSystemId;
+	private PricingSystemId pricingSystemId;
 	private BigDecimal price;
-	private BigDecimal discount;
+	private Percent discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList
 
 	private String adInputDataSourceInternalName;
@@ -65,6 +71,7 @@ public class OLCandCreateRequest
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalId,
+			final OrgId orgId,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
@@ -75,22 +82,21 @@ public class OLCandCreateRequest
 			@NonNull final ProductId productId,
 			final String productDescription,
 			@NonNull final BigDecimal qty,
-			final int uomId,
+			@NonNull final UomId uomId,
 			final int huPIItemProductId,
-			final int pricingSystemId,
+			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
-			final BigDecimal discount,
+			final Percent discount,
 			//
 			final String adInputDataSourceInternalName)
 	{
-		Check.assume(uomId > 0, "uomId is set");
-		// Check.assume(pricingSystemId > 0, "pricingSystemId is set");
 		Check.assume(qty.signum() > 0, "qty > 0");
-		Check.assume(price == null || price.signum() >= 0, "price >= 0");
-		Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
+		// Check.assume(price == null || price.signum() >= 0, "price >= 0");
+		// Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
 		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
 
 		this.externalId = externalId;
+		this.orgId = orgId;
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
