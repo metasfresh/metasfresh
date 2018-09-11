@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -106,7 +107,7 @@ final class DocumentAttachments
 	{
 		final Stream<IDocumentAttachmentEntry> attachments = attachmentsBL.getEntries(recordRef)
 				.stream()
-				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId()), entry));
+				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
 		final Stream<DocumentArchiveEntry> archives = Services.get(IArchiveDAO.class).retrieveLastArchives(Env.getCtx(), recordRef, 10)
 				.stream()
@@ -143,7 +144,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final AttachmentEntry entry = attachmentsBL.getEntryById(recordRef, entryId);
+			final AttachmentEntry entry = attachmentsBL.getEntryById(recordRef, AttachmentEntryId.ofRepoId(entryId));
 			if (entry == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -173,7 +174,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			attachmentsBL.deleteEntryForModel(recordRef, entryId);
+			attachmentsBL.deleteEntryForModel(recordRef, AttachmentEntryId.ofRepoId(entryId));
 			notifyRelatedDocumentTabsChanged();
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
@@ -205,9 +206,9 @@ final class DocumentAttachments
 		return ImmutablePair.of(idPrefix, entryId);
 	}
 
-	private static final DocumentId buildId(final String idPrefix, final int entryId)
+	private static final DocumentId buildId(final String idPrefix, final int id)
 	{
-		return DocumentId.ofString(ID_Joiner.join(idPrefix, entryId));
+		return DocumentId.ofString(ID_Joiner.join(idPrefix, id));
 	}
 
 	/**
