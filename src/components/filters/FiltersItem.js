@@ -239,9 +239,15 @@ class FiltersItem extends Component {
   };
 
   handleClear = () => {
-    const { clearFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const {
+      clearFilters,
+      closeFilterMenu,
+      returnBackToDropdown,
+      resetInitialValues,
+    } = this.props;
     const { filter } = this.state;
 
+    resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();

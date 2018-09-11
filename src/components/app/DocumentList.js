@@ -583,13 +583,17 @@ class DocumentList extends Component {
     let { initialValuesNulled } = this.state;
     let filterParams = initialValuesNulled.get(filterId);
 
-    if (!filterParams) {
+    if (!filterParams && parameterName) {
       filterParams = Set([parameterName]);
-    } else {
+    } else if (filterParams && parameterName) {
       filterParams = filterParams.add(parameterName);
     }
 
-    initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+    if (!parameterName) {
+      initialValuesNulled = initialValuesNulled.delete(filterId);
+    } else {
+      initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+    }
 
     this.setState({
       initialValuesNulled,
