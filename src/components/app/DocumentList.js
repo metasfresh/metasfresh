@@ -1,10 +1,9 @@
 import counterpart from 'counterpart';
 import classnames from 'classnames';
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 import currentDevice from 'current-device';
 
 import {
@@ -29,15 +28,25 @@ import {
 import {
   connectWS,
   disconnectWS,
-  getItemsByProperty,
   getRowsData,
   indicatorState,
-  mapIncluded,
   parseToDisplay,
   selectTableItems,
   removeSelectedTableItems,
 } from '../../actions/WindowActions';
-import { getSelection, getSelectionDirect } from '../../reducers/windowHandler';
+import { getSelectionDirect } from '../../reducers/windowHandler';
+import {
+  DLpropTypes,
+  DLcontextTypes,
+  DLmapStateToProps,
+  NO_SELECTION,
+  NO_VIEW,
+  PANEL_WIDTHS,
+  getSortingQuery,
+  redirectToNewDocument,
+  doesSelectionExist,
+  filtersToMap,
+} from '../../utils/documentListHelper';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 import Filters from '../filters/Filters';
@@ -46,31 +55,7 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 
-const NO_SELECTION = [];
-const NO_VIEW = {};
-const PANEL_WIDTHS = ['1', '.2', '4'];
-
 class DocumentList extends Component {
-  static propTypes = {
-    // from parent
-    windowType: PropTypes.string.isRequired,
-
-    // from <DocList>
-    updateParentSelectedIds: PropTypes.func,
-
-    // from @connect
-    dispatch: PropTypes.func.isRequired,
-    selections: PropTypes.object.isRequired,
-    childSelected: PropTypes.array.isRequired,
-    parentSelected: PropTypes.array.isRequired,
-    selected: PropTypes.array.isRequired,
-    isModal: PropTypes.bool,
-  };
-
-  static contextTypes = {
-    store: PropTypes.object.isRequired,
-  };
-
   constructor(props) {
     super(props);
 
@@ -87,14 +72,12 @@ class DocumentList extends Component {
       layout: null,
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
-
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
-      filters: null,
-
+      filtersActive: Map(),
+      initialValuesNulled: Map(),
       clickOutsideLock: false,
-
       isShowIncluded: false,
       hasShowIncluded: false,
 
@@ -172,7 +155,8 @@ class DocumentList extends Component {
         {
           data: null,
           layout: null,
-          filters: null,
+          filtersActive: Map(),
+          initialValuesNulled: Map(),
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
         },
@@ -237,7 +221,7 @@ class DocumentList extends Component {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
             const rows = mergeRows({
-              toRows: this.state.data.result.toArray(),
+              toRows: this.state.data.result,
               fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
             });
@@ -302,45 +286,6 @@ class DocumentList extends Component {
         supportAttribute: false,
       });
     }
-  };
-
-  doesSelectionExist({ data, selected, hasIncluded = false } = {}) {
-    // When the rows are changing we should ensure
-    // that selection still exist
-    if (hasIncluded) {
-      return true;
-    }
-
-    if (selected && selected[0] === 'all') {
-      return true;
-    }
-
-    let rows = [];
-
-    data &&
-      data.result &&
-      data.result.map(item => {
-        rows = rows.concat(mapIncluded(item));
-      });
-
-    return (
-      data &&
-      data.size &&
-      data.result &&
-      selected &&
-      selected[0] &&
-      getItemsByProperty(rows, 'id', selected[0]).length
-    );
-  }
-
-  getTableData = data => {
-    return data;
-  };
-
-  redirectToNewDocument = () => {
-    const { dispatch, windowType } = this.props;
-
-    dispatch(push(`/window/${windowType}/new`));
   };
 
   setClickOutsideLock = value => {
@@ -435,12 +380,12 @@ class DocumentList extends Component {
       refTabId,
       refRowIds,
     } = this.props;
-    const { page, sort, filters } = this.state;
+    const { page, sort, filtersActive } = this.state;
 
     createViewRequest({
       windowId: windowType,
       viewType: type,
-      filters,
+      filters: filtersActive.toIndexedSeq().toArray(),
       refDocType: refType,
       refDocId: refId,
       refTabId,
@@ -462,9 +407,13 @@ class DocumentList extends Component {
 
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
-    const { page, sort, filters, viewId } = this.state;
+    const { page, sort, filtersActive, viewId } = this.state;
 
-    filterViewRequest(windowType, viewId, filters).then(response => {
+    filterViewRequest(
+      windowType,
+      viewId,
+      filtersActive.toIndexedSeq().toArray()
+    ).then(response => {
       const viewId = response.data.viewId;
 
       if (isIncluded) {
@@ -526,7 +475,7 @@ class DocumentList extends Component {
         response.data &&
         result.size > 0 &&
         (selection.length === 0 ||
-          !this.doesSelectionExist({
+          !doesSelectionExist({
             data: {
               ...response.data,
               result,
@@ -545,29 +494,31 @@ class DocumentList extends Component {
       );
 
       if (this.mounted) {
-        this.setState(
-          {
-            data: {
-              ...response.data,
-              result,
-            },
-            pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-            filters: response.data.filters,
+        const newState = {
+          data: {
+            ...response.data,
+            result,
           },
-          () => {
-            if (forceSelection && response.data && result && result.size > 0) {
-              const selection = [result.get(0).id];
+          pageColumnInfosByFieldName: pageColumnInfosByFieldName,
+        };
 
-              dispatch(
-                selectTableItems({
-                  windowType,
-                  viewId,
-                  ids: selection,
-                })
-              );
-            }
+        if (response.data.filters) {
+          newState.filtersActive = filtersToMap(response.data.filters);
+        }
+
+        this.setState({ ...newState }, () => {
+          if (forceSelection && response.data && result && result.size > 0) {
+            const selection = [result.get(0).id];
+
+            dispatch(
+              selectTableItems({
+                windowType,
+                viewId,
+                ids: selection,
+              })
+            );
           }
-        );
+        });
       }
 
       dispatch(indicatorState('saved'));
@@ -603,35 +554,50 @@ class DocumentList extends Component {
     );
   };
 
-  getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
-
   sortData = (asc, field, startPage) => {
     const { viewId, page } = this.state;
 
     this.setState(
       {
-        sort: this.getSortingQuery(asc, field),
+        sort: getSortingQuery(asc, field),
       },
       () => {
-        this.getData(
-          viewId,
-          startPage ? 1 : page,
-          this.getSortingQuery(asc, field)
-        );
+        this.getData(viewId, startPage ? 1 : page, getSortingQuery(asc, field));
       }
     );
   };
 
-  handleFilterChange = filters => {
+  handleFilterChange = activeFilters => {
     this.setState(
       {
-        filters: filters,
+        filtersActive: activeFilters,
         page: 1,
       },
       () => {
         this.fetchLayoutAndData(true);
       }
     );
+  };
+
+  resetInitialFilters = (filterId, parameterName) => {
+    let { initialValuesNulled } = this.state;
+    let filterParams = initialValuesNulled.get(filterId);
+
+    if (!filterParams && parameterName) {
+      filterParams = Set([parameterName]);
+    } else if (filterParams && parameterName) {
+      filterParams = filterParams.add(parameterName);
+    }
+
+    if (!parameterName) {
+      initialValuesNulled = initialValuesNulled.delete(filterId);
+    } else {
+      initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+    }
+
+    this.setState({
+      initialValuesNulled,
+    });
   };
 
   // END OF MANAGING SORT, PAGINATION, FILTERS -------------------------------
@@ -744,6 +710,7 @@ class DocumentList extends Component {
       inModal,
       updateParentSelectedIds,
       modal,
+      dispatch,
     } = this.props;
 
     const {
@@ -752,13 +719,14 @@ class DocumentList extends Component {
       viewId,
       clickOutsideLock,
       page,
-      filters,
+      filtersActive,
       isShowIncluded,
       hasShowIncluded,
       refreshSelection,
       supportAttribute,
       toggleWidth,
       rowEdited,
+      initialValuesNulled,
     } = this.state;
     const { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -777,7 +745,7 @@ class DocumentList extends Component {
       includedView.windowType &&
       includedView.viewId;
 
-    const selectionValid = this.doesSelectionExist({
+    const selectionValid = doesSelectionExist({
       data,
       selected,
       hasIncluded,
@@ -828,7 +796,9 @@ class DocumentList extends Component {
                   !isModal && (
                     <button
                       className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
-                      onClick={() => this.redirectToNewDocument()}
+                      onClick={() =>
+                        redirectToNewDocument(dispatch, windowType)
+                      }
                       title={layout.newRecordCaption}
                     >
                       <i className="meta-icon-add" />
@@ -838,10 +808,15 @@ class DocumentList extends Component {
 
                 {layout.filters && (
                   <Filters
-                    {...{ windowType, viewId }}
-                    filterData={layout.filters}
-                    filtersActive={filters}
+                    {...{
+                      windowType,
+                      viewId,
+                      filtersActive,
+                      initialValuesNulled,
+                    }}
+                    filterData={filtersToMap(layout.filters)}
                     updateDocList={this.handleFilterChange}
+                    resetInitialValues={this.resetInitialFilters}
                   />
                 )}
 
@@ -972,31 +947,9 @@ class DocumentList extends Component {
   }
 }
 
-const mapStateToProps = (state, props) => ({
-  selections: state.windowHandler.selections,
-  selected: getSelection({
-    state,
-    windowType: props.windowType,
-    viewId: props.defaultViewId,
-  }),
-  childSelected:
-    props.includedView && props.includedView.windowType
-      ? getSelection({
-          state,
-          windowType: props.includedView.windowType,
-          viewId: props.includedView.viewId,
-        })
-      : NO_SELECTION,
-  parentSelected: props.parentWindowType
-    ? getSelection({
-        state,
-        windowType: props.parentWindowType,
-        viewId: props.parentDefaultViewId,
-      })
-    : NO_SELECTION,
-  modal: state.windowHandler.modal,
-});
+DocumentList.propTypes = { ...DLpropTypes };
+DocumentList.contextTypes = { ...DLcontextTypes };
 
-export default connect(mapStateToProps, null, null, { withRef: true })(
+export default connect(DLmapStateToProps, null, null, { withRef: true })(
   DocumentList
 );
