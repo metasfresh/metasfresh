@@ -1,8 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Map } from 'immutable';
-import _ from 'lodash';
 
 import TableCell from '../table/TableCell';
 import FiltersFrequent from './FiltersFrequent';
@@ -10,245 +8,26 @@ import FiltersNotFrequent from './FiltersNotFrequent';
 
 class Filters extends Component {
   state = {
-    activeFilter: null,
-    activeFiltersCaptions: null,
+    filter: null,
     notValidFields: null,
     widgetShown: false,
   };
 
-  componentWillReceiveProps() {
-    this.parseActiveFilters();
+  componentWillReceiveProps(props) {
+    const { filtersActive } = props;
+
+    this.init(filtersActive ? filtersActive : null);
   }
 
   componentDidMount() {
-    this.parseActiveFilters();
+    const { filtersActive } = this.props;
+    filtersActive && this.init(filtersActive);
   }
 
-  // PARSING FILTERS ---------------------------------------------------------
-  parseActiveFilters = () => {
-    let { filtersActive, filterData, initialValuesNulled } = this.props;
-    let activeFilters = _.cloneDeep(filtersActive);
-    let filtersData = Map(filterData);
-    const activeFiltersCaptions = {};
-
-    // find any filters with default values first and extend
-    // activeFilters with them
-    filtersData.forEach((filter, filterId) => {
-      if (filter.parameters) {
-        let paramsArray = [];
-
-        outerParameters: for (let parameter of filter.parameters) {
-          const { defaultValue, parameterName } = parameter;
-          const nulledFilter = initialValuesNulled.get(filterId);
-
-          if (defaultValue && (!activeFilters || !activeFilters.size)) {
-            activeFilters = Map({
-              [`${filterId}`]: {
-                filterId,
-                parameters: [],
-              },
-            });
-          }
-
-          const isActive = activeFilters.has(filterId);
-
-          if (
-            !defaultValue ||
-            (nulledFilter && nulledFilter.has(parameterName))
-          ) {
-            if (isActive) {
-              activeFilters = activeFilters.set(filterId, {
-                defaultVal: false,
-                filterId,
-                parameters: activeFilters.get(filterId).parameters,
-              });
-            }
-            continue;
-          }
-
-          if (isActive) {
-            //look for existing parameterName in parameters array
-            // skip if found as they override defaultValue ALWAYS
-            const filterActive = activeFilters.get(filterId);
-
-            if (filterActive.parameters) {
-              for (let activeParameter of filterActive.parameters) {
-                if (activeParameter.parameterName === parameterName) {
-                  continue outerParameters;
-                }
-              }
-            }
-          }
-
-          const singleActiveFilter = activeFilters.get(filterId);
-          paramsArray = singleActiveFilter ? singleActiveFilter.parameters : [];
-
-          activeFilters = activeFilters.set(filterId, {
-            filterId,
-            // this parameter tells us if filter has defaultValues defined
-            defaultVal: true,
-            parameters: [
-              ...paramsArray,
-              {
-                parameterName,
-                value: defaultValue,
-                defaultValue: defaultValue,
-              },
-            ],
-          });
-        }
-      }
+  init = filter => {
+    this.setState({
+      filter: filter,
     });
-
-    if (activeFilters.size) {
-      const removeDefault = {};
-
-      activeFilters.forEach((filter, filterId) => {
-        const captionsArray = ['', ''];
-
-        if (filter.parameters && filter.parameters.length) {
-          filter.parameters.forEach(filterParameter => {
-            const { value, parameterName, defaultValue } = filterParameter;
-
-            if (!defaultValue) {
-              // we don't want to show captions, nor show filter button as active
-              // for default values
-              removeDefault[filterId] = true;
-
-              const parentFilter = filtersData.get(filterId);
-              const filterParameter = parentFilter.parameters.find(
-                param => param.parameterName === parameterName
-              );
-              let captionName = filterParameter.caption;
-              let itemCaption = filterParameter.caption;
-
-              switch (filterParameter.widgetType) {
-                case 'Text':
-                  captionName = value;
-
-                  if (!value) {
-                    captionName = '';
-                    itemCaption = '';
-                  }
-                  break;
-                case 'Lookup':
-                case 'List':
-                  captionName = value && value.caption;
-                  break;
-                case 'Labels':
-                  captionName = value.values.reduce((caption, item) => {
-                    return `${caption}, ${item.caption}`;
-                  }, '');
-                  break;
-                case 'YesNo':
-                case 'Switch':
-                default:
-                  if (!value) {
-                    captionName = '';
-                    itemCaption = '';
-                  }
-                  break;
-              }
-
-              if (captionName) {
-                captionsArray[0] = captionsArray[0]
-                  ? `${captionsArray[0]}, ${captionName}`
-                  : captionName;
-              }
-
-              if (itemCaption) {
-                captionsArray[1] = captionsArray[1]
-                  ? `${captionsArray[1]}, ${itemCaption}`
-                  : itemCaption;
-              }
-            }
-          });
-        } else {
-          activeFilters = activeFilters.delete(filterId);
-        }
-
-        if (captionsArray.join('').length) {
-          activeFiltersCaptions[filterId] = captionsArray;
-        }
-      });
-
-      // if filter has defaultValues but also some user defined ones,
-      // we should still include it in active filters
-      if (Object.keys(removeDefault).length) {
-        for (let key of Object.keys(removeDefault)) {
-          activeFilters = activeFilters.setIn([key, 'defaultVal'], false);
-        }
-      }
-
-      this.setState({
-        activeFilter: activeFilters.toIndexedSeq().toArray(),
-        activeFiltersCaptions,
-      });
-    } else {
-      this.setState({
-        activeFilter: null,
-        activeFiltersCaptions: null,
-      });
-    }
-  };
-
-  sortFilters = data => {
-    return {
-      frequentFilters: this.annotateFilters(
-        data
-          .filter(filter => filter.frequent)
-          .toIndexedSeq()
-          .toArray()
-      ),
-      notFrequentFilters: this.annotateFilters(
-        data
-          .filter(filter => !filter.frequent && !filter.static)
-          .toIndexedSeq()
-          .toArray()
-      ),
-      staticFilters: this.annotateFilters(data.filter(filter => filter.static))
-        .toIndexedSeq()
-        .toArray(),
-    };
-  };
-
-  isFilterValid = filters => {
-    if (filters.parameters) {
-      return !filters.parameters.filter(item => item.mandatory && !item.value)
-        .length;
-    }
-
-    return true;
-  };
-
-  isFilterActive = filterId => {
-    const { activeFilter } = this.state;
-
-    if (activeFilter) {
-      const active = activeFilter.find(
-        item => item.filterId === filterId && !item.defaultVal
-      );
-
-      return typeof active !== 'undefined';
-    }
-
-    return false;
-  };
-
-  parseToPatch = params => {
-    return params.reduce((acc, param) => {
-      if (
-        !param.defaultValue ||
-        JSON.stringify(param.defaultValue) !== JSON.stringify(param.value)
-      ) {
-        acc.push({
-          ...param,
-          value: param.value === '' ? null : param.value,
-        });
-      }
-
-      return acc;
-    }, []);
   };
 
   // SETTING FILTERS  --------------------------------------------------------
@@ -267,10 +46,9 @@ class Filters extends Component {
       () => {
         if (valid) {
           const parsedFilter = filter.parameters
-            ? {
-                ...filter,
+            ? Object.assign({}, filter, {
                 parameters: this.parseToPatch(filter.parameters),
-              }
+              })
             : filter;
 
           this.setFilterActive(parsedFilter);
@@ -283,20 +61,28 @@ class Filters extends Component {
 
   setFilterActive = filterToAdd => {
     const { updateDocList } = this.props;
+    const { filter } = this.state;
+    let newFilter;
 
-    let { filtersActive } = this.props;
-    let activeFilters = Map(filtersActive);
+    if (filter) {
+      newFilter = filter.filter(item => item.filterId !== filterToAdd.filterId);
+      newFilter.push(filterToAdd);
+    } else {
+      newFilter = [filterToAdd];
+    }
 
-    activeFilters = activeFilters.filter(
-      (item, id) => id !== filterToAdd.filterId
+    this.setState(
+      {
+        filter: newFilter,
+      },
+      () => {
+        updateDocList(newFilter);
+      }
     );
-    activeFilters = activeFilters.set(filterToAdd.filterId, filterToAdd);
-
-    updateDocList(activeFilters);
   };
 
   /*
-     *  Method to lock backdrop, to do not close on click onClickOutside
+     *  Mehod to lock backdrop, to do not close on click onClickOutside
      *  widgets that are bigger than filter wrapper
      */
   handleShow = value => {
@@ -307,15 +93,21 @@ class Filters extends Component {
 
   clearFilters = filterToClear => {
     const { updateDocList } = this.props;
+    const { filter } = this.state;
 
-    let { filtersActive } = this.props;
-    let activeFilters = Map(filtersActive);
-
-    if (filtersActive.size) {
-      activeFilters = activeFilters.filter(
-        (item, id) => id !== filterToClear.filterId
+    if (filter) {
+      let newFilter = filter.filter(
+        item => item.filterId !== filterToClear.filterId
       );
-      updateDocList(activeFilters);
+
+      this.setState(
+        {
+          filter: newFilter,
+        },
+        () => {
+          updateDocList(newFilter);
+        }
+      );
     }
   };
 
@@ -326,15 +118,15 @@ class Filters extends Component {
   };
 
   annotateFilters = unannotatedFilters => {
-    const { activeFilter } = this.state;
+    const { filter } = this.state;
 
     return unannotatedFilters.map(unannotatedFilter => {
       const parameter =
         unannotatedFilter.parameters && unannotatedFilter.parameters[0];
       const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
-      const currentFilter = activeFilter
-        ? activeFilter.find(f => f.filterId === unannotatedFilter.filterId)
+      const currentFilter = filter
+        ? filter.find(f => f.filterId === unannotatedFilter.filterId)
         : null;
       const activeParameter =
         parameter && isActive && currentFilter && currentFilter.parameters[0];
@@ -355,19 +147,56 @@ class Filters extends Component {
     });
   };
 
+  // PARSING FILTERS ---------------------------------------------------------
+
+  sortFilters = data => {
+    return {
+      frequentFilters: this.annotateFilters(
+        data.filter(filter => filter.frequent)
+      ),
+      notFrequentFilters: this.annotateFilters(
+        data.filter(filter => !filter.frequent && !filter.static)
+      ),
+      staticFilters: this.annotateFilters(data.filter(filter => filter.static)),
+    };
+  };
+
+  isFilterValid = filters => {
+    if (filters.parameters) {
+      return !filters.parameters.filter(item => item.mandatory && !item.value)
+        .length;
+    }
+
+    return true;
+  };
+
+  isFilterActive = filterId => {
+    const { filter } = this.state;
+
+    if (filter) {
+      const activeFilter = filter.find(item => item.filterId === filterId);
+      return typeof activeFilter !== 'undefined';
+    }
+
+    return false;
+  };
+
+  parseToPatch = params => {
+    return params.map(param =>
+      Object.assign({}, param, {
+        value: param.value === '' ? null : param.value,
+      })
+    );
+  };
+
   // RENDERING FILTERS -------------------------------------------------------
 
   render() {
-    const { filterData, windowType, viewId, resetInitialValues } = this.props;
+    const { filterData, windowType, viewId } = this.props;
     const { frequentFilters, notFrequentFilters } = this.sortFilters(
       filterData
     );
-    const {
-      notValidFields,
-      widgetShown,
-      activeFilter,
-      activeFiltersCaptions,
-    } = this.state;
+    const { notValidFields, widgetShown, filter } = this.state;
 
     return (
       <div
@@ -380,37 +209,30 @@ class Filters extends Component {
         <div className="filter-wrapper">
           {!!frequentFilters.length && (
             <FiltersFrequent
-              {...{
-                activeFiltersCaptions,
-                windowType,
-                notValidFields,
-                viewId,
-                widgetShown,
-              }}
+              windowType={windowType}
               data={frequentFilters}
+              notValidFields={notValidFields}
+              viewId={viewId}
               handleShow={this.handleShow}
+              widgetShown={widgetShown}
               applyFilters={this.applyFilters}
               clearFilters={this.clearFilters}
-              active={activeFilter}
+              active={filter}
               dropdownToggled={this.dropdownToggled}
               filtersWrapper={this.filtersWrapper}
             />
           )}
           {!!notFrequentFilters.length && (
             <FiltersNotFrequent
-              {...{
-                activeFiltersCaptions,
-                windowType,
-                notValidFields,
-                viewId,
-                widgetShown,
-                resetInitialValues,
-              }}
+              windowType={windowType}
               data={notFrequentFilters}
+              notValidFields={notValidFields}
+              viewId={viewId}
               handleShow={this.handleShow}
+              widgetShown={widgetShown}
               applyFilters={this.applyFilters}
               clearFilters={this.clearFilters}
-              active={activeFilter}
+              active={filter}
               dropdownToggled={this.dropdownToggled}
               filtersWrapper={this.filtersWrapper}
             />
@@ -423,13 +245,6 @@ class Filters extends Component {
 
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
-  resetInitialValues: PropTypes.func.isRequired,
-  viewId: PropTypes.string,
-
-  // this should be an immutable Map
-  filtersActive: PropTypes.any,
-  filterData: PropTypes.any,
-  initialValuesNulled: PropTypes.any,
 };
 
 export default Filters;
