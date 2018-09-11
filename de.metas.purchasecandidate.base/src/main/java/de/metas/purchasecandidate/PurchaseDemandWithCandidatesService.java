@@ -4,8 +4,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -24,9 +28,11 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.bpartner.BPartnerId;
@@ -89,15 +95,15 @@ public class PurchaseDemandWithCandidatesService
 	{
 		//
 		// Get pre-existing purchase candidates to the result
-		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
+		final ImmutableMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
 		existingCandidatesGroups = getExistingPurchaseCandidatesGroups(demands);
 
 		//
 		// create and add new purchase candidates
-		final Set<BPartnerId> alreadySeenVendorIds = extractVendorIds(existingCandidatesGroups.values());
+		final Map<PurchaseDemand, Set<BPartnerId>> demand2AlreadySeenVendorIds = extractVendorIds(existingCandidatesGroups);
 
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
-		newCandidatesGroups = createMissingPurchaseCandidatesGroups(demands, alreadySeenVendorIds);
+		newCandidatesGroups = createMissingPurchaseCandidatesGroups(demands, demand2AlreadySeenVendorIds);
 
 		//
 		// Assemble both multimaps and preserve demands order
@@ -111,13 +117,34 @@ public class PurchaseDemandWithCandidatesService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ImmutableSet<BPartnerId> extractVendorIds(@NonNull final Collection<PurchaseCandidatesGroup> candidatesGroups)
+	private static Map<PurchaseDemand, Set<BPartnerId>> extractVendorIds(
+			@NonNull final ImmutableMultimap<PurchaseDemand, PurchaseCandidatesGroup> candidatesGroups)
 	{
-		return candidatesGroups
-				.stream()
-				.filter(g -> !g.isReadonly()) // don't count readOnly, because their respective purchase candidtes are process or locked, than the user won't be able to work with them.
-				.map(PurchaseCandidatesGroup::getVendorId)
-				.collect(ImmutableSet.toImmutableSet());
+		final HashMap<PurchaseDemand, Set<BPartnerId>> result = new HashMap<>();
+
+		final ImmutableCollection<Entry<PurchaseDemand, PurchaseCandidatesGroup>> entries = candidatesGroups.entries();
+		for (final Entry<PurchaseDemand, PurchaseCandidatesGroup> entry : entries)
+		{
+			final PurchaseCandidatesGroup purchaseCandidatesGroup = entry.getValue();
+			if (purchaseCandidatesGroup.isReadonly())
+			{
+				// don't count readOnly, because their respective purchase candidates are processed or locked, so the user won't be able to work with them.
+				continue;
+			}
+
+			final PurchaseDemand purchaseDemand = entry.getKey();
+			final BPartnerId vendorId = purchaseCandidatesGroup.getVendorId();
+
+			Set<BPartnerId> set = result.get(purchaseDemand);
+			if (set == null)
+			{
+				set = new HashSet<>();
+				result.put(purchaseDemand, set);
+			}
+			set.add(vendorId);
+		}
+
+		return ImmutableMap.copyOf(result);
 	}
 
 	@VisibleForTesting
@@ -247,12 +274,14 @@ public class PurchaseDemandWithCandidatesService
 	@VisibleForTesting
 	ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(
 			@NonNull final List<PurchaseDemand> demands,
-			@NonNull final Set<BPartnerId> vendorIdsToExclude)
+			@NonNull final Map<PurchaseDemand, Set<BPartnerId>> demand2vendorIdsToExclude)
 	{
 		final ImmutableListMultimap.Builder<PurchaseDemand, PurchaseCandidatesGroup> candidatesByDemandId = ImmutableListMultimap.builder();
 
 		for (final PurchaseDemand demand : demands)
 		{
+			final Set<BPartnerId> vendorIdsToExclude = demand2vendorIdsToExclude.get(demand);
+
 			final List<PurchaseCandidatesGroup> demandCandidates = createMissingPurchaseCandidatesGroups(demand, vendorIdsToExclude);
 			if (demandCandidates.isEmpty())
 			{
@@ -266,14 +295,14 @@ public class PurchaseDemandWithCandidatesService
 
 	private ImmutableList<PurchaseCandidatesGroup> createMissingPurchaseCandidatesGroups(
 			@NonNull final PurchaseDemand demand,
-			@NonNull final Set<BPartnerId> vendorIdsToExclude)
+			@Nullable final Set<BPartnerId> vendorIdsToExclude)
 	{
 		final Collection<VendorProductInfo> vendorProductInfos = vendorProductInfoService.getVendorProductInfos(demand.getProductId(), demand.getOrgId());
 
 		final ImmutableList<PurchaseCandidatesGroup> candidatesGroups = vendorProductInfos.stream()
 
 				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorIdsToExclude.contains(vendorProductInfo.getVendorId()))
+				.filter(vendorProductInfo -> vendorIdsToExclude == null || !vendorIdsToExclude.contains(vendorProductInfo.getVendorId()))
 
 				// create and collect them
 				.map(vendorProductInfo -> createNewPurchaseCandidatesGroup(demand, vendorProductInfo))

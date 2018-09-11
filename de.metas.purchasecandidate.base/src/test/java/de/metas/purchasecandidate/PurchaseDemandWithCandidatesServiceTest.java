@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -270,7 +270,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 	{
 		// invoke the method under test
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
-		result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableSet.of());
+		result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableMap.of());
 
 		assertThat(result).isNotNull();
 
@@ -289,7 +289,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfoOrNull();
 		assertThat(profitInfo).isNotNull();
 		assertThat(profitInfo.getCommonCurrency()).isEqualTo(currencyId);
-		assertThat(profitInfo.getPurchasePriceActual().isPresent());
+		assertThat(profitInfo.getPurchasePriceActual()).isPresent();
 		assertThat(profitInfo.getPurchasePriceActual()).hasValue(Money.of(TEN, currencyId)); // coming from the discount schema break
 		assertThat(profitInfo.getProfitSalesPriceActual()).isPresent();
 		assertThat(profitInfo.getProfitSalesPriceActual()).hasValue(Money.of(TWENTY, currencyId)); // coming from the sales order line record
