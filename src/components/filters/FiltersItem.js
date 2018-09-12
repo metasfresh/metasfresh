@@ -156,7 +156,14 @@ class FiltersItem extends Component {
     return value;
   };
 
-  mergeData = (property, value, valueTo, updateActive, activeValue, activeValueTo) => {
+  mergeData = (
+    property,
+    value,
+    valueTo,
+    updateActive,
+    activeValue,
+    activeValueTo
+  ) => {
     let { activeFilter, filter } = this.state;
 
     // update values for active filters, as we then bubble them up to parent
