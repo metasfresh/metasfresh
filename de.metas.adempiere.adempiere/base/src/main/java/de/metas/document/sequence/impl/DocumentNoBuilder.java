@@ -45,6 +45,7 @@ import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.slf4j.Logger;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 
 import de.metas.document.DocTypeSequenceMap;
@@ -122,7 +123,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		//
 		// Get the sequence number that we shall use
 		final String sequenceNo = getSequenceNoToUse();
-		if (NO_DOCUMENTNO.equals(sequenceNo))
+		if (Objects.equal(NO_DOCUMENTNO, sequenceNo))
 		{
 			return NO_DOCUMENTNO;
 		}
@@ -480,11 +481,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	@Override
 	public DocumentNoBuilder setSequenceNo(@NonNull final String sequenceNo)
 	{
-		if (stringCanBeParsedAsInt(sequenceNo))
-		{
-			Check.assumeGreaterThanZero(Integer.parseInt(sequenceNo), DocumentNoBuilderException.class, "sequenceNo");
-		}
-
 		_sequenceNo = Check.assumeNotEmpty(sequenceNo, DocumentNoBuilderException.class, "sequenceNo");
 		return this;
 	}
