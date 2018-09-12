@@ -76,13 +76,6 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	List<I_M_AttributeInstance> retrieveAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
 
-	/**
-	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_Attribute_ID.
-	 *         If you want the instances to be ordered by M_AttributeUse.SeqNo,
-	 *         please use {@link #retrieveAttributeInstances(I_M_AttributeSetInstance)}
-	 */
-	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId asiId);
-
 	I_M_AttributeInstance retrieveAttributeInstance(I_M_AttributeSetInstance attributeSetInstance, AttributeId attributeId);
 
 	/**

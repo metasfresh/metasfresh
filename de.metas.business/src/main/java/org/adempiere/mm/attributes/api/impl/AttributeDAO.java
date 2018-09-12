@@ -275,8 +275,7 @@ public class AttributeDAO implements IAttributeDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Override
-	public List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
+	private List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
 	{
 		return retrieveAttributeInstances(Env.getCtx(), asiId, ITrx.TRXNAME_ThreadInherited);
 	}
