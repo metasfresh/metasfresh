@@ -75,7 +75,8 @@ public class OrderResponsePackageItemPart
 			return this.equals(KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
 					|| this.equals(KEINE_LIEFERUNG_ABER_NACHLIEFERUNG_MOEGLICH)
 					|| this.equals(KEINE_LIEFERUNG_ABER_NORMAL_MOEGLICH)
-					|| this.equals(KEINE_LIEFERUNG_ABER_VERBUND_MOEGLICH);
+					|| this.equals(KEINE_LIEFERUNG_ABER_VERBUND_MOEGLICH)
+					|| this.equals(NICHT_LIEFERBAR);
 		}
 
 		private static final Map<String, Type> MAP = ImmutableMap
