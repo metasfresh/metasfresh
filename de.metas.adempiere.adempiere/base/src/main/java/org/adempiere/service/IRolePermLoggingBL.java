@@ -27,6 +27,8 @@ import org.adempiere.exceptions.DBForeignKeyConstraintException;
 
 import org.adempiere.util.ISingletonService;
 
+import de.metas.document.DocTypeId;
+
 public interface IRolePermLoggingBL extends ISingletonService
 {
 	/**
@@ -62,7 +64,7 @@ public interface IRolePermLoggingBL extends ISingletonService
 	/**
 	 * @throws NoSuchForeignKeyException if there is no DB record for the given {@code C_DocType_ID}.
 	 */
-	public void logDocActionAccess(int AD_Role_ID, int C_DocType_ID, String docAction, Boolean access);
+	public void logDocActionAccess(int AD_Role_ID, DocTypeId docTypeId, String docAction, Boolean access);
 
 	/**
 	 * Thrown by the {@code log*()} methods if the respective given {@code id} does not reference an actually existing record.
