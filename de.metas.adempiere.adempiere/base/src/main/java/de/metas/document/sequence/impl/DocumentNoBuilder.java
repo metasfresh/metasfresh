@@ -53,6 +53,9 @@ import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -64,9 +67,11 @@ import lombok.NonNull;
  */
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
+	private static final String PROVIDER_NOT_APPLICABLE = "de.metas.document.CustomSequenceNotProviderNoApplicable";
 	// services
 	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+	final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
@@ -76,7 +81,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private Object _documentModel;
 	private Supplier<DocumentSequenceInfo> _documentSeqInfoSupplier;
 
-	private Integer _sequenceNo = null;
+	private String _sequenceNo = null;
 	private boolean _failOnError = false; // default=false, for backward compatibility
 	private boolean _usePreliminaryDocumentNo = false; // default=false, for backward compatibility
 
@@ -114,11 +119,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	private final String build0() throws Exception
 	{
-
 		//
 		// Get the sequence number that we shall use
-		final int sequenceNo = getSequenceNoToUse();
-		if (sequenceNo < 0)
+		final String sequenceNo = getSequenceNoToUse();
+		if (NO_DOCUMENTNO.equals(sequenceNo))
 		{
 			return NO_DOCUMENTNO;
 		}
@@ -139,12 +143,12 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		//
 		// DocumentNo - SequenceNo
 		final String decimalPattern = docSeqInfo.getDecimalPattern();
-		final String sequenceNoStr;
-		if (decimalPattern != null && decimalPattern.length() > 0)
+		final String sequenceNoFinal;
+		if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(sequenceNo))
 		{
 			try
 			{
-				sequenceNoStr = new DecimalFormat(decimalPattern).format(sequenceNo);
+				sequenceNoFinal = new DecimalFormat(decimalPattern).format(sequenceNo);
 			}
 			catch (final Exception e)
 			{
@@ -153,9 +157,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 		else
 		{
-			sequenceNoStr = String.valueOf(sequenceNo);
+			sequenceNoFinal = String.valueOf(sequenceNo);
 		}
-		documentNo.append(sequenceNoStr);
+		documentNo.append(sequenceNoFinal);
 
 		//
 		// DocumentNo - Suffix
@@ -169,7 +173,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		// Append preliminary markers if needed
 		if (isUsePreliminaryDocumentNo())
 		{
-			documentNo.insert(0, IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_BEGIN).append(IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_END);
+			documentNo
+					.insert(0, IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_BEGIN)
+					.append(IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_END);
 		}
 
 		//
@@ -197,7 +203,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	/**
 	 * @return sequenceNo to be used or <code>-1</code> in case the DocumentNo generation shall be skipped.
 	 */
-	private int getSequenceNoToUse()
+	private String getSequenceNoToUse()
 	{
 		// If manual sequenceNo was provided, then used
 		if (_sequenceNo != null)
@@ -208,22 +214,39 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		//
 		// Don't increment sequence number if it's not Auto
 		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
+
+		final CustomSequenceNoProvider customSequenceNoProvider = docSeqInfo.getCustomSequenceNoProvider();
+		if (customSequenceNoProvider != null)
+		{
+			if (!customSequenceNoProvider.isApplicable(_documentModel))
+			{
+				final ITranslatableString msg = msgBL.getTranslatableMsgText(PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
+				throw new DocumentNoBuilderException(msg)
+						.appendParametersToMessage()
+						.setParameter("documentModel", _documentModel);
+			}
+
+			return customSequenceNoProvider.provideSequenceNo(_documentModel);
+		}
+
 		if (!docSeqInfo.isAutoSequence())
 		{
 			logger.info("Skip getting and incrementing the sequence because it's not an auto sequence: {}", docSeqInfo);
-			return -1;
+			return NO_DOCUMENTNO;
 		}
 
 		//
 		// Get and increment sequence number from database
+		final int sequenceNo;
 		if (isUsePreliminaryDocumentNo())
 		{
-			return retrieveSequenceCurrentNext(docSeqInfo);
+			sequenceNo = retrieveSequenceCurrentNext(docSeqInfo);
 		}
 		else
 		{
-			return retrieveAndIncrementSequenceCurrentNext(docSeqInfo);
+			sequenceNo = retrieveAndIncrementSequenceCurrentNext(docSeqInfo);
 		}
+		return Integer.toString(sequenceNo);
 	}
 
 	private int retrieveAndIncrementSequenceCurrentNext(final DocumentSequenceInfo docSeqInfo)
@@ -235,7 +258,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		{
 			sql = "UPDATE AD_Sequence SET CurrentNextSys = CurrentNextSys + ? WHERE AD_Sequence_ID=? RETURNING CurrentNextSys - ?";
 			sqlParams.add(docSeqInfo.getIncrementNo());
-			sqlParams.add(docSeqInfo.getAD_Sequence_ID());
+			sqlParams.add(docSeqInfo.getAdSequenceId());
 			sqlParams.add(docSeqInfo.getIncrementNo());
 		}
 		else if (docSeqInfo.isStartNewYear())
@@ -244,7 +267,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 			sql = "UPDATE AD_Sequence_No SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? AND CalendarYear = ? RETURNING CurrentNext - ?";
 			sqlParams.add(docSeqInfo.getIncrementNo());
-			sqlParams.add(docSeqInfo.getAD_Sequence_ID());
+			sqlParams.add(docSeqInfo.getAdSequenceId());
 			sqlParams.add(calendarYear);
 			sqlParams.add(docSeqInfo.getIncrementNo());
 
@@ -253,7 +276,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		{
 			sql = "UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?";
 			sqlParams.add(docSeqInfo.getIncrementNo());
-			sqlParams.add(docSeqInfo.getAD_Sequence_ID());
+			sqlParams.add(docSeqInfo.getAdSequenceId());
 			sqlParams.add(docSeqInfo.getIncrementNo());
 		}
 
@@ -277,7 +300,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	private int retrieveSequenceCurrentNext(final DocumentSequenceInfo docSeqInfo)
 	{
-		final int adSequenceId = docSeqInfo.getAD_Sequence_ID();
+		final int adSequenceId = docSeqInfo.getAdSequenceId();
 		final String trxName = getTrxName();
 
 		if (isAdempiereSys())
@@ -376,6 +399,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return this;
 	}
 
+	/**
+	 * @param useDefiniteSequence if {@code true}, then the doc type's {@code DefiniteSequence_ID} is used.
+	 */
 	public DocumentNoBuilder setDocumentSequenceByDocTypeId(final int C_DocType_ID, final boolean useDefiniteSequence)
 	{
 		setDocumentSequenceInfo(() -> retrieveDocumentSequenceInfoByDocTypeId(C_DocType_ID, useDefiniteSequence));
@@ -452,11 +478,20 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	}
 
 	@Override
-	public DocumentNoBuilder setSequenceNo(final int sequenceNo)
+	public DocumentNoBuilder setSequenceNo(@NonNull final String sequenceNo)
 	{
-		Check.assume(sequenceNo >= 0, DocumentNoBuilderException.class, "sequenceNo >= 0");
-		_sequenceNo = sequenceNo;
+		if (stringCanBeParsedAsInt(sequenceNo))
+		{
+			Check.assumeGreaterThanZero(Integer.parseInt(sequenceNo), DocumentNoBuilderException.class, "sequenceNo");
+		}
+
+		_sequenceNo = Check.assumeNotEmpty(sequenceNo, DocumentNoBuilderException.class, "sequenceNo");
 		return this;
+	}
+
+	private boolean stringCanBeParsedAsInt(@NonNull final String string)
+	{
+		return string.matches("\\d+");
 	}
 
 	@Override

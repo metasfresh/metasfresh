@@ -1,5 +1,7 @@
 package de.metas.javaclasses.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,15 +29,23 @@ import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import lombok.NonNull;
 
 public class JavaClassBL implements IJavaClassBL
 {
 	@Override
-	public <T> T newInstance(final I_AD_JavaClass javaClassDef)
+	public <T> T newInstance(@NonNull final JavaClassId javaClassId)
 	{
-		Check.assumeNotNull(javaClassDef, "Param 'javaClassdef' is not null");
+		final I_AD_JavaClass javaClassRecord = loadOutOfTrx(javaClassId, I_AD_JavaClass.class);
+		return newInstance(javaClassRecord);
+	}
+
+	@Override
+	public <T> T newInstance(@NonNull final I_AD_JavaClass javaClassDef)
+	{
 		Check.errorIf(javaClassDef.isInterface(), "Param {} may not be an interface", javaClassDef);
 
 		final Class<?> javaClass = verifyClassName(javaClassDef);
@@ -62,6 +72,7 @@ public class JavaClassBL implements IJavaClassBL
 		return classInstance;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Class<?> verifyClassName(final I_AD_JavaClass javaClassDef)
 	{
