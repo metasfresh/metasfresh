@@ -35,6 +35,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
+import de.metas.document.DocTypeId;
 import lombok.NonNull;
 
 /**
@@ -108,9 +109,9 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		logAccess(AD_Role_ID, COLUMNNAME_AD_Workflow_ID, id, null, null, access, null);
 	}
 
-	public static void logDocActionAccess(final int AD_Role_ID, final int C_DocType_ID, final String docAction, final Boolean access)
+	public static void logDocActionAccess(final int AD_Role_ID, final DocTypeId docTypeId, final String docAction, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_C_DocType_ID, C_DocType_ID, COLUMNNAME_DocAction, docAction, access, null);
+		logAccess(AD_Role_ID, COLUMNNAME_C_DocType_ID, docTypeId.getRepoId(), COLUMNNAME_DocAction, docAction, access, null);
 	}
 
 	private static void logAccess(final int AD_Role_ID, final String type, final Object value, final String type2, final Object value2, final Boolean access, final String description)
