@@ -110,7 +110,7 @@ public class HUTraceRepositoryTests
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
 		assertThat(result.get(0).getHuTraceEventId().isPresent(), is(true));
-		assertThat(result.get(0).getVhuId(), is(12));
+		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
 		assertThat(result.get(0).getOrgId(), is(13));
 
 		// add an equal event, again
@@ -153,9 +153,9 @@ public class HUTraceRepositoryTests
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
 		assertThat(result.size(), is(1));
 
-		assertThat(result.get(0).getTopLevelHuId(), is(2));
-		assertThat(result.get(0).getVhuId(), is(12));
-		assertThat(result.get(0).getVhuSourceId(), is(13));
+		assertThat(result.get(0).getTopLevelHuId().getRepoId(), is(2));
+		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
+		assertThat(result.get(0).getVhuSourceId().getRepoId(), is(13));
 	}
 
 	/**

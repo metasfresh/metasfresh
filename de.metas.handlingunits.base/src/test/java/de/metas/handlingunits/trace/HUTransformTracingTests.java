@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -101,9 +102,9 @@ public class HUTransformTracingTests
 			final HUTraceEvent huTraceEvent = traceEvents.get(0);
 			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
 
-			assertThat(huTraceEvent.getVhuId(), is(result.getInput().getM_HU_ID()));
-			assertThat(huTraceEvent.getVhuSourceId(), is(0));
-			assertThat(huTraceEvent.getTopLevelHuId(), is(result.getInititalParent().getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getInput().getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuSourceId(), nullValue());
+			assertThat(huTraceEvent.getTopLevelHuId().getRepoId(), is(result.getInititalParent().getM_HU_ID()));
 			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE.negate()));
 		}
 
@@ -111,8 +112,8 @@ public class HUTransformTracingTests
 			final HUTraceEvent huTraceEvent = traceEvents.get(1);
 			assertThat(huTraceEvent.getType(), is(HUTraceType.TRANSFORM_LOAD));
 
-			assertThat(huTraceEvent.getVhuId(), is(result.getOutput().get(0).getM_HU_ID()));
-			assertThat(huTraceEvent.getVhuSourceId(), is(result.getInput().getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getOutput().get(0).getM_HU_ID()));
+			assertThat(huTraceEvent.getVhuSourceId().getRepoId(), is(result.getInput().getM_HU_ID()));
 			assertThat(huTraceEvent.getTopLevelHuId(), is(huTraceEvent.getVhuId()));
 			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE));
 		}
