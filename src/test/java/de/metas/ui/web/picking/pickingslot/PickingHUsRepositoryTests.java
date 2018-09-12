@@ -17,6 +17,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
@@ -50,7 +52,7 @@ import lombok.NonNull;
 
 public class PickingHUsRepositoryTests
 {
-	private static final int M_SHIPMENT_SCHEDULE_ID = 123;
+	private static final ShipmentScheduleId M_SHIPMENT_SCHEDULE_ID = ShipmentScheduleId.ofRepoId(123);
 
 	@Before
 	public void init()
@@ -107,7 +109,7 @@ public class PickingHUsRepositoryTests
 
 	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus, final boolean pickingRackSystem)
 	{
-		final int pickingSlotId = createPickingSlot(pickingRackSystem).getM_PickingSlot_ID();
+		final PickingSlotId pickingSlotId = createPickingSlot(pickingRackSystem);
 
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -115,9 +117,9 @@ public class PickingHUsRepositoryTests
 		final int huId = hu.getM_HU_ID();
 
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID);
+		pickingCandidate.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID.getRepoId());
 		pickingCandidate.setM_HU_ID(huId);
-		pickingCandidate.setM_PickingSlot_ID(pickingSlotId);
+		pickingCandidate.setM_PickingSlot_ID(pickingSlotId.getRepoId());
 		pickingCandidate.setStatus(pickingCandidateStatus);
 		save(pickingCandidate);
 
@@ -136,7 +138,7 @@ public class PickingHUsRepositoryTests
 		}
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository);
-		final ListMultimap<Integer, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
+		final ListMultimap<PickingSlotId, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
 
 		if (expectNoRows)
 		{
@@ -165,11 +167,11 @@ public class PickingHUsRepositoryTests
 		assertThat(sourceHUs).isEmpty();
 	}
 
-	private static final I_M_PickingSlot createPickingSlot(final boolean pickingRackSystem)
+	private static final PickingSlotId createPickingSlot(final boolean pickingRackSystem)
 	{
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		pickingSlot.setIsPickingRackSystem(pickingRackSystem);
 		save(pickingSlot);
-		return pickingSlot;
+		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 	}
 }

@@ -1,7 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,10 +35,14 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
@@ -129,24 +132,25 @@ public class PickingHURowsRepository
 	@VisibleForTesting
 	static MatchingSourceHusQuery createMatchingSourceHusQuery(@NonNull final PickingSlotRepoQuery query)
 	{
-		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() > 0 ? load(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class) : null;
-		final List<Integer> productIds;
-		final Set<Integer> allShipmentScheduleIds = query.getShipmentScheduleIds();
+		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+		
+		final I_M_ShipmentSchedule currentShipmentSchedule = query.getCurrentShipmentScheduleId() != null
+				? shipmentSchedulesRepo.getById(query.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class)
+				: null;
+				
+		final Set<ProductId> productIds;
+		final Set<ShipmentScheduleId> allShipmentScheduleIds = query.getShipmentScheduleIds();
 		if (allShipmentScheduleIds.isEmpty())
 		{
-			productIds = ImmutableList.of();
+			productIds = ImmutableSet.of();
 		}
 		else if (allShipmentScheduleIds.size() == 1)
 		{
-			productIds = ImmutableList.of(currentShipmentSchedule.getM_Product_ID());
+			productIds = ImmutableSet.of(ProductId.ofRepoId(currentShipmentSchedule.getM_Product_ID()));
 		}
 		else
 		{
-			productIds = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_ShipmentSchedule.class)
-					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, allShipmentScheduleIds)
-					.create()
-					.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class);
+			productIds = shipmentSchedulesRepo.getProductIdsByShipmentScheduleIds(allShipmentScheduleIds);
 		}
 
 		final MatchingSourceHusQueryBuilder builder = MatchingSourceHusQuery.builder()
@@ -154,7 +158,7 @@ public class PickingHURowsRepository
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final int effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : -1;
-		builder.warehouseId(effectiveWarehouseId);
+		builder.warehouseId(WarehouseId.ofRepoIdOrNull(effectiveWarehouseId));
 		return builder.build();
 	}
 
@@ -165,7 +169,7 @@ public class PickingHURowsRepository
 	 *
 	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows which also contain with the respective {@code M_Picking_Candidate}s' {@code processed} states.
 	 */
-	public ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
+	public ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
 	{
 		final List<I_M_Picking_Candidate> pickingCandidates = retrievePickingCandidates(pickingSlotRowQuery);
 		return retrievePickedHUsIndexedByPickingSlotId(pickingCandidates);
@@ -233,27 +237,28 @@ public class PickingHURowsRepository
 				.list();
 	}
 
-	private ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_Picking_Candidate> pickingCandidates)
+	private ListMultimap<PickingSlotId, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_Picking_Candidate> pickingCandidates)
 	{
-		final Map<Integer, PickedHUEditorRow> huId2huRow = new HashMap<>();
+		final Map<HuId, PickedHUEditorRow> huId2huRow = new HashMap<>();
 
-		final Builder<Integer, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
+		final Builder<PickingSlotId, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
 
 		for (final I_M_Picking_Candidate pickingCandidate : pickingCandidates)
 		{
-			final int huId = pickingCandidate.getM_HU_ID();
+			final HuId huId = HuId.ofRepoId(pickingCandidate.getM_HU_ID());
 			if (huId2huRow.containsKey(huId))
 			{
 				continue;
 			}
 
-			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(HuId.ofRepoId(huId));
+			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
 			final boolean pickingCandidateProcessed = isPickingCandidateProcessed(pickingCandidate);
 			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
 
 			huId2huRow.put(huId, row);
 
-			builder.put(pickingCandidate.getM_PickingSlot_ID(), row);
+			final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingCandidate.getM_PickingSlot_ID());
+			builder.put(pickingSlotId, row);
 		}
 
 		return builder.build();
@@ -280,10 +285,10 @@ public class PickingHURowsRepository
 		}
 	}
 
-	public ListMultimap<Integer, PickedHUEditorRow> //
+	public ListMultimap<PickingSlotId, PickedHUEditorRow> //
 			retrieveAllPickedHUsIndexedByPickingSlotId(@NonNull final List<I_M_PickingSlot> pickingSlots)
 	{
-		final SetMultimap<Integer, HuId> //
+		final SetMultimap<PickingSlotId, HuId> //
 		huIdsByPickingSlotId = Services.get(IHUPickingSlotDAO.class).retrieveAllHUIdsIndexedByPickingSlotId(pickingSlots);
 
 		huEditorRepo.warmUp(ImmutableSet.copyOf(huIdsByPickingSlotId.values()));
@@ -292,7 +297,7 @@ public class PickingHURowsRepository
 				.entries()
 				.stream()
 				.map(pickingSlotAndHU -> {
-					final int pickingSlotId = pickingSlotAndHU.getKey();
+					final PickingSlotId pickingSlotId = pickingSlotAndHU.getKey();
 					final HuId huId = pickingSlotAndHU.getValue();
 
 					final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);

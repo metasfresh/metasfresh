@@ -8,6 +8,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -96,7 +97,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU extends PickingS
 				.tuToExistingLU(tuHU, qtyTU, luHU);
 
 		// Remove from picking slots all destroyed HUs
-		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);
+		pickingCandidateService.inactivateForHUIds(HuId.fromRepoIds(huIdsDestroyedCollector));
 
 		return MSG_OK;
 	}

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
@@ -115,10 +115,10 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 
 	private void closePickingCandidatesFromRackSystemPickingSlots()
 	{
-		final List<Integer> shipmentScheduleIds = getRows()
+		final Set<ShipmentScheduleId> shipmentScheduleIds = getRows()
 				.stream()
 				.map(PackageableRow::getShipmentScheduleId)
-				.collect(Collectors.toList());
+				.collect(ImmutableSet.toImmutableSet());
 
 		// Close all picking candidates which are on a rack system picking slot (gh2740)
 		pickingCandidateService.prepareCloseForShipmentSchedules(shipmentScheduleIds)

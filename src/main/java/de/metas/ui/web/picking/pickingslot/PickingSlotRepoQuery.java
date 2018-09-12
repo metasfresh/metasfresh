@@ -27,8 +27,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -42,7 +44,7 @@ import lombok.Value;
 public class PickingSlotRepoQuery
 {
 	@VisibleForTesting
-	public static PickingSlotRepoQuery of(final int shipmentScheduleId)
+	public static PickingSlotRepoQuery of(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return builder().currentShipmentScheduleId(shipmentScheduleId).shipmentScheduleId(shipmentScheduleId).build();
 	}
@@ -70,19 +72,19 @@ public class PickingSlotRepoQuery
 		ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM,
 	}
 
-	int currentShipmentScheduleId;
-	ImmutableSet<Integer> shipmentScheduleIds;
+	ShipmentScheduleId currentShipmentScheduleId;
+	ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 	PickingCandidate pickingCandidates;
 	String pickingSlotBarcode;
 
 	@Builder
 	private PickingSlotRepoQuery(
-			final int currentShipmentScheduleId,
-			@Singular final Set<Integer> shipmentScheduleIds,
+			final ShipmentScheduleId currentShipmentScheduleId,
+			@Singular final Set<ShipmentScheduleId> shipmentScheduleIds,
 			final PickingCandidate pickingCandidates,
 			final String pickingSlotBarcode)
 	{
-		if (currentShipmentScheduleId > 0 && !shipmentScheduleIds.contains(currentShipmentScheduleId))
+		if (currentShipmentScheduleId != null && !shipmentScheduleIds.contains(currentShipmentScheduleId))
 		{
 			throw new IllegalArgumentException("Current shipment schedule " + currentShipmentScheduleId + " is not in all shipment schedules list: " + shipmentScheduleIds);
 		}

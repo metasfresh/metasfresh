@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -102,9 +103,10 @@ public class WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU extends
 				.unloadAllFromSource();
 
 		// If the source HU was destroyed, then "remove" it from picking slots
-		final ImmutableSet<Integer> destroyedHUIds = fromHUs.stream()
+		final ImmutableSet<HuId> destroyedHUIds = fromHUs.stream()
 				.filter(handlingUnitsBL::isDestroyedRefreshFirst)
 				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (!destroyedHUIds.isEmpty())
 		{

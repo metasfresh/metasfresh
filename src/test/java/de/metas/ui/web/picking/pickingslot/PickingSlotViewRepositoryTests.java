@@ -17,6 +17,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
@@ -68,14 +69,13 @@ public class PickingSlotViewRepositoryTests
 	@Test
 	public void testRetrievePickingSlotRows_No_HUs_show_PickingSlotsOnly()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		save(shipmentSchedule);
+		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		pickingSlot.setIsPickingRackSystem(true);
 		save(pickingSlot);
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
 		// @formatter:off return an empty list
 		new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
@@ -92,18 +92,24 @@ public class PickingSlotViewRepositoryTests
 		assertThat(pickingSlotRow.getType()).isEqualTo(PickingSlotRowType.forPickingSlotRow());
 	}
 
-	@Test
-	public void testRetrievePickingSlotRows_One_TU_with_CU()
+	private ShipmentScheduleId createShipmentSchedule()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentSchedule);
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+	}
+
+	@Test
+	public void testRetrievePickingSlotRows_One_TU_with_CU()
+	{
+		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		save(pickingSlot);
 
 		final boolean pickingSlotRowProcessed = false;
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
 		// set up a picked TU with a CU to be returned by the pickingHUsRepo.
 		{

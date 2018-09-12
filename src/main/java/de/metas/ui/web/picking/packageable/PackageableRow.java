@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderLineId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -99,7 +99,7 @@ public final class PackageableRow implements IViewRow
 	})
 	private final java.util.Date preparationDate;
 
-	private final int shipmentScheduleId;
+	private final ShipmentScheduleId shipmentScheduleId;
 
 	private final Optional<OrderLineId> salesOrderLineId;
 
@@ -112,19 +112,19 @@ public final class PackageableRow implements IViewRow
 		return (PackageableRow)row;
 	}
 
-	public static DocumentId createRowIdFromShipmentScheduleId(final int shipmentScheduleId)
+	public static DocumentId createRowIdFromShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
 	{
-		return DocumentId.of(shipmentScheduleId);
+		return DocumentId.of(shipmentScheduleId.getRepoId());
 	}
 
-	public static TableRecordReference createTableRecordReferenceFromShipmentScheduleId(final int shipmentScheduleId)
+	public static TableRecordReference createTableRecordReferenceFromShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
 	{
 		return TableRecordReference.of(I_M_Packageable_V.Table_Name, shipmentScheduleId);
 	}
 
 	@Builder
 	private PackageableRow(
-			final int shipmentScheduleId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final Optional<OrderLineId> salesOrderLineId,
 			@NonNull final ViewId viewId,
 			final LookupValue order,
@@ -144,7 +144,7 @@ public final class PackageableRow implements IViewRow
 		this.qtyPicked = qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
-		this.shipmentScheduleId = Check.assumeGreaterThanZero(shipmentScheduleId, "shipmentScheduleId");
+		this.shipmentScheduleId = shipmentScheduleId;
 		this.salesOrderLineId = salesOrderLineId;
 
 		// create the included view's ID
@@ -216,7 +216,7 @@ public final class PackageableRow implements IViewRow
 		return includedViewId;
 	}
 
-	public int getShipmentScheduleId()
+	public ShipmentScheduleId getShipmentScheduleId()
 	{
 		return shipmentScheduleId;
 	}

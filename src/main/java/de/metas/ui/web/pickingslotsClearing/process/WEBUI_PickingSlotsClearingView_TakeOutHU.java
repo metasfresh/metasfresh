@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -136,7 +137,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 
 		//
 		// Inactive all those picking candidates
-		pickingCandidateService.inactivateForHUId(hu.getM_HU_ID());
+		pickingCandidateService.inactivateForHUId(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		husExtractedEvents.add(HUExtractedFromPickingSlotEvent.builder()
 				.huId(hu.getM_HU_ID())

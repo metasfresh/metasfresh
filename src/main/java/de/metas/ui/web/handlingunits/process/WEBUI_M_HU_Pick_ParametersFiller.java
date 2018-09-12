@@ -21,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
@@ -66,7 +67,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 
 	private final int salesOrderLineId;
 	private final LookupDataSource shipmentScheduleDataSource;
-	private final int shipmentScheduleId;
+	private final ShipmentScheduleId shipmentScheduleId;
 
 	@Builder(builderClassName = "DefaultFillerBuilder", builderMethodName = "defaultFillerBuilder")
 	private WEBUI_M_HU_Pick_ParametersFiller(
@@ -75,11 +76,11 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 	{
 		this.salesOrderLineId = salesOrderLineId;
 		this.shipmentScheduleDataSource = createShipmentScheduleDataSource(huId);
-		this.shipmentScheduleId = -1;
+		this.shipmentScheduleId = null;
 	}
 
 	@Builder(builderClassName = "PickingSlotFillerBuilder", builderMethodName = "pickingSlotFillerBuilder")
-	private WEBUI_M_HU_Pick_ParametersFiller(final int shipmentScheduleId)
+	private WEBUI_M_HU_Pick_ParametersFiller(final ShipmentScheduleId shipmentScheduleId)
 	{
 		this.salesOrderLineId = -1;
 		this.shipmentScheduleDataSource = null;
@@ -155,13 +156,13 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 
 	public LookupValuesList getPickingSlotValues(@NonNull final LookupDataSourceContext context)
 	{
-		if (shipmentScheduleId <= 0)
+		if (shipmentScheduleId == null)
 		{
 			return LookupValuesList.EMPTY;
 		}
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.availableForBPartnerId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))

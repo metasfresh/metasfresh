@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
@@ -392,10 +393,18 @@ public class PPOrderLineRow implements IViewRow
 		return product;
 	}
 
+	@Deprecated
 	public int getM_Product_ID()
 	{
 		final JSONLookupValue product = getProduct();
 		return product == null ? -1 : product.getKeyAsInt();
+	}
+	
+	public ProductId getProductId()
+	{
+		final JSONLookupValue product = getProduct();
+		return product != null ? ProductId.ofRepoIdOrNull(product.getKeyAsInt()) : null;
+		
 	}
 
 	public JSONLookupValue getUOM()

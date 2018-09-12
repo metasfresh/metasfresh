@@ -5,6 +5,7 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -77,7 +78,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess extends PickingSlotView
 	protected String doIt()
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
-		final int huId = rowToProcess.getHuId();
+		final HuId huId = rowToProcess.getHuId();
 		pickingCandidateService.unprocessForHUId(huId);
 
 		return MSG_OK;

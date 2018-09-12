@@ -17,6 +17,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderLineId;
 import de.metas.ui.web.view.ViewId;
@@ -120,11 +121,11 @@ public class PackageableViewRepository
 	private PackageableRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
 		final BigDecimal qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
-		final OrderLineId ofRepoIdOrNull = OrderLineId.ofRepoIdOrNull(packageable.getC_OrderLineSO_ID());
+		final Optional<OrderLineId> orderLineId = OrderLineId.optionalOfRepoId(packageable.getC_OrderLineSO_ID());
 
 		return PackageableRow.builder()
-				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
-				.salesOrderLineId(Optional.ofNullable(ofRepoIdOrNull))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(packageable.getM_ShipmentSchedule_ID()))
+				.salesOrderLineId(orderLineId)
 				.viewId(viewId)
 				//
 				.order(orderLookup.get().findById(packageable.getC_OrderSO_ID()))

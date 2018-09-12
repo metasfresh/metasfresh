@@ -7,6 +7,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -124,7 +125,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 		// If the source HU was destroyed, then "remove" it from picking slots
 		if (handlingUnitsBL.isDestroyedRefreshFirst(fromHU))
 		{
-			pickingCandidateService.inactivateForHUId(fromHU.getM_HU_ID());
+			pickingCandidateService.inactivateForHUId(HuId.ofRepoId(fromHU.getM_HU_ID()));
 		}
 
 		return MSG_OK;

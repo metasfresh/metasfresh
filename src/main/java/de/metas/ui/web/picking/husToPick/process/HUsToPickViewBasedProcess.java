@@ -17,7 +17,9 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -258,9 +260,9 @@ import lombok.NonNull;
 	{
 		final PickingSlotView pickingSlotsView = getPickingSlotView();
 		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
+		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
+		final ShipmentScheduleId shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		pickingCandidateService.addHUToPickingSlot(huId.getRepoId(), pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
 	}
 }

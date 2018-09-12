@@ -17,6 +17,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,7 +29,9 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -145,7 +148,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 			pickingCandidateService.addQtyToHU()
 					.qtyCU(qtyCU)
-					.targetHUId(hu.getM_HU_ID())
+					.targetHUId(HuId.ofRepoId(hu.getM_HU_ID()))
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 					.isAllowOverdelivery(isAllowOverdelivery)
@@ -162,10 +165,10 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final I_M_HU hu = createTU(huPIItemProduct, pickingSlotLocator);
 
 		// Add the TU to picking slot (as candidate)
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
+		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
+		final ShipmentScheduleId shipmentScheduleId = getView().getCurrentShipmentScheduleId();
 
-		pickingCandidateService.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.addHUToPickingSlot(HuId.ofRepoId(hu.getM_HU_ID()), pickingSlotId, shipmentScheduleId);
 
 		return hu;
 	}

@@ -104,7 +104,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 
 	private boolean checkSourceHuPreconditionIncludingEmptyHUs()
 	{
-		final HuId huId = HuId.ofRepoId(getSingleSelectedRow().getHuId());
+		final HuId huId = getSingleSelectedRow().getHuId();
 		final Collection<HuId> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUIds(huId);
 		return !sourceHUs.isEmpty();
 	}
