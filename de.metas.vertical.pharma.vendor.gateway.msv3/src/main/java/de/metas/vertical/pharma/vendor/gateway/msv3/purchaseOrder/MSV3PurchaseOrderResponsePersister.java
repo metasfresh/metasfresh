@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Optional;
@@ -15,6 +15,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.common.Msv3SubstitutionDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_BestellungAnteil;
@@ -97,7 +98,7 @@ public class MSV3PurchaseOrderResponsePersister
 
 	private I_MSV3_BestellungAntwort createRecord(@NonNull final OrderResponse response)
 	{
-		final I_MSV3_BestellungAntwort record = newInstance(I_MSV3_BestellungAntwort.class);
+		final I_MSV3_BestellungAntwort record = newInstanceOutOfTrx(I_MSV3_BestellungAntwort.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setMSV3_BestellSupportId(response.getSupportId().getValueAsInt());
 		record.setMSV3_Id(response.getOrderId().getValueAsString());
@@ -108,7 +109,7 @@ public class MSV3PurchaseOrderResponsePersister
 
 	private I_MSV3_BestellungAntwortAuftrag createRecord(@NonNull final OrderResponsePackage responseOrder)
 	{
-		final I_MSV3_BestellungAntwortAuftrag record = newInstance(I_MSV3_BestellungAntwortAuftrag.class);
+		final I_MSV3_BestellungAntwortAuftrag record = newInstanceOutOfTrx(I_MSV3_BestellungAntwortAuftrag.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setMSV3_Auftragsart(responseOrder.getOrderType().getV2SoapCode().value());
 		record.setMSV3_Auftragskennung(responseOrder.getOrderIdentification());
@@ -126,7 +127,7 @@ public class MSV3PurchaseOrderResponsePersister
 
 	private I_MSV3_BestellungAntwortPosition createRecord(@NonNull final OrderResponsePackageItem responseItem)
 	{
-		final I_MSV3_BestellungAntwortPosition record = newInstance(I_MSV3_BestellungAntwortPosition.class);
+		final I_MSV3_BestellungAntwortPosition record = newInstanceOutOfTrx(I_MSV3_BestellungAntwortPosition.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setMSV3_BestellLiefervorgabe(responseItem.getDeliverySpecifications().getV2SoapCode().value());
 		record.setMSV3_BestellMenge(responseItem.getQty().getValueAsInt());
@@ -142,7 +143,7 @@ public class MSV3PurchaseOrderResponsePersister
 
 	private I_MSV3_BestellungAnteil createRecord(@NonNull final OrderResponsePackageItemPart anteil)
 	{
-		final I_MSV3_BestellungAnteil bestellungAnteilRecord = newInstance(I_MSV3_BestellungAnteil.class);
+		final I_MSV3_BestellungAnteil bestellungAnteilRecord = newInstanceOutOfTrx(I_MSV3_BestellungAnteil.class);
 		bestellungAnteilRecord.setAD_Org_ID(orgId.getRepoId());
 
 		Optional.ofNullable(anteil.getDefectReason())
@@ -152,7 +153,7 @@ public class MSV3PurchaseOrderResponsePersister
 		bestellungAnteilRecord.setMSV3_Lieferzeitpunkt(TimeUtil.asTimestamp(anteil.getDeliveryDate()));
 		bestellungAnteilRecord.setMSV3_Menge(anteil.getQty().getValueAsInt());
 		bestellungAnteilRecord.setMSV3_Tourabweichung(anteil.isTourDeviation());
-		bestellungAnteilRecord.setMSV3_Typ(anteil.getType());
+		bestellungAnteilRecord.setMSV3_Typ(Type.getValueOrNull(anteil.getType()));
 
 		return bestellungAnteilRecord;
 	}
