@@ -20,6 +20,7 @@ import org.compiere.model.MOrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageSegment;
 
 /**
@@ -30,6 +31,10 @@ import de.metas.storage.IStorageSegment;
  */
 public interface IShipmentSchedulePA extends ISingletonService
 {
+	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
+
+	<T extends I_M_ShipmentSchedule> T getById(ShipmentScheduleId id, Class<T> modelClass);
+
 	/**
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
 	 */
@@ -247,4 +252,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
 
 	void deleteAllForReference(TableRecordReference referencedRecord);
+
+	Set<ProductId> getProductIdsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
 }

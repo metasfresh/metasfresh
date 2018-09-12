@@ -105,7 +105,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.deliveryDate(record.getDeliveryDate()); // 01676
 		packageable.preparationDate(record.getPreparationDate());
 
-		packageable.shipmentScheduleId(ShipmentScheduleId.offRepoId(record.getM_ShipmentSchedule_ID()));
+		packageable.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()));
 
 		packageable.displayed(record.isDisplayed());
 

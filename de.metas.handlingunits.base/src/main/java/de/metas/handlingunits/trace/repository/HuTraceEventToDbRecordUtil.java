@@ -6,6 +6,7 @@ import java.util.OptionalInt;
 
 import org.compiere.util.TimeUtil;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
@@ -44,13 +45,13 @@ public class HuTraceEventToDbRecordUtil
 				.ppOrderId(dbRecord.getPP_Order_ID())
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
-				.vhuId(dbRecord.getVHU_ID())
+				.vhuId(HuId.ofRepoId(dbRecord.getVHU_ID()))
 				.productId(dbRecord.getM_Product_ID())
 				.qty(dbRecord.getQty())
 				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
 				.vhuStatus(dbRecord.getVHUStatus())
-				.topLevelHuId(dbRecord.getM_HU_ID())
-				.vhuSourceId(dbRecord.getVHU_Source_ID())
+				.topLevelHuId(HuId.ofRepoId(dbRecord.getM_HU_ID()))
+				.vhuSourceId(HuId.ofRepoIdOrNull(dbRecord.getVHU_Source_ID()))
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
@@ -86,13 +87,13 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
-		dbRecord.setVHU_ID(huTraceRecord.getVhuId());
+		dbRecord.setVHU_ID(huTraceRecord.getVhuId().getRepoId());
 		dbRecord.setM_Product_ID(huTraceRecord.getProductId());
 		dbRecord.setQty(huTraceRecord.getQty());
 		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
-		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId());
-		dbRecord.setVHU_Source_ID(huTraceRecord.getVhuSourceId());
+		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId().getRepoId());
+		dbRecord.setVHU_Source_ID(HuId.toRepoId(huTraceRecord.getVhuSourceId()));
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
 		dbRecord.setM_ShipmentSchedule_ID(huTraceRecord.getShipmentScheduleId());

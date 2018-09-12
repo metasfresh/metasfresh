@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -193,7 +194,7 @@ public class HUTraceEventsService
 			logger.info("Given shipmentScheduleQtyPicked has HUs, but they are not \"physical\"; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
 			return; // there is no top level HU with the correct status; this means that the HU is still in the planning status.
 		}
-		builder.topLevelHuId(topLevelHuId);
+		builder.topLevelHuId(HuId.ofRepoId(topLevelHuId));
 
 		// the one or more VHU that are assigned
 		final List<I_M_HU> vhus;
@@ -297,8 +298,8 @@ public class HUTraceEventsService
 				Check.errorIf(vhuTopLevelHuId <= 0, "vhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", vhuTopLevelHuId, vhu);
 
 				traceEventBuilder
-						.vhuId(vhu.getM_HU_ID())
-						.topLevelHuId(vhuTopLevelHuId)
+						.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
+						.topLevelHuId(HuId.ofRepoId(vhuTopLevelHuId))
 						.productId(productAndQty.get().getLeft().getM_Product_ID())
 						.qty(productAndQty.get().getRight())
 						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
@@ -314,7 +315,7 @@ public class HUTraceEventsService
 						continue;
 					}
 
-					traceEventBuilder.vhuSourceId(sourceVhu.getM_HU_ID());
+					traceEventBuilder.vhuSourceId(HuId.ofRepoId(sourceVhu.getM_HU_ID()));
 
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
@@ -335,9 +336,9 @@ public class HUTraceEventsService
 					final HUTraceEvent splitSourceEvent = traceEventBuilder
 							.orgId(sourceTrxLine.getAD_Org_ID())
 							.huTrxLineId(sourceTrxLine.getM_HU_Trx_Line_ID())
-							.vhuId(sourceVhu.getM_HU_ID())
-							.topLevelHuId(sourceVhuTopLevelHuId)
-							.vhuSourceId(0)
+							.vhuId(HuId.ofRepoId(sourceVhu.getM_HU_ID()))
+							.topLevelHuId(HuId.ofRepoId(sourceVhuTopLevelHuId))
+							.vhuSourceId(null)
 							.qty(productAndQty.get().getRight().negate())
 							.build();
 
@@ -411,19 +412,19 @@ public class HUTraceEventsService
 				.eventTime(Instant.now());
 
 		final List<I_M_HU> vhus = huAccessService.retrieveVhus(hu);
-		final int newTopLevelHuId = huAccessService.retrieveTopLevelHuId(hu);
+		final HuId newTopLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(hu));
 
-		final int oldTopLevelHuId;
+		final HuId oldTopLevelHuId;
 		if (parentHUItemOld == null)
 		{
 			// the given 'hu' had no parent and was therefore our top level HU
-			oldTopLevelHuId = hu.getM_HU_ID();
-			Check.errorIf(oldTopLevelHuId <= 0, "oldTopLevelHuId returned by hu.getM_HU_ID() has to be >0, but is {}; hu={}", oldTopLevelHuId, hu);
+			oldTopLevelHuId = HuId.ofRepoIdOrNull(hu.getM_HU_ID());
+			Check.errorIf(oldTopLevelHuId == null, "oldTopLevelHuId returned by hu.getM_HU_ID() has to be >0, but is {}; hu={}", oldTopLevelHuId, hu);
 		}
 		else
 		{
-			oldTopLevelHuId = huAccessService.retrieveTopLevelHuId(parentHUItemOld.getM_HU());
-			Check.errorIf(oldTopLevelHuId <= 0, "oldTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; parentHUItemOld={}", oldTopLevelHuId, parentHUItemOld);
+			oldTopLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(parentHUItemOld.getM_HU()));
+			Check.errorIf(oldTopLevelHuId == null, "oldTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; parentHUItemOld={}", oldTopLevelHuId, parentHUItemOld);
 		}
 
 		for (final I_M_HU vhu : vhus)
@@ -435,7 +436,7 @@ public class HUTraceEventsService
 				continue;
 			}
 
-			builder.vhuId(vhu.getM_HU_ID())
+			builder.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 					.vhuStatus(vhu.getHUStatus())
 					.productId(productAndQty.get().getLeft().getM_Product_ID())
 					.topLevelHuId(oldTopLevelHuId)
@@ -473,8 +474,8 @@ public class HUTraceEventsService
 					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
 				}
 
-				final int topLevelHuId = huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU());
-				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
+				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU()));
+				Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 
 				builder.orgId(huAssignment.getAD_Org_ID())
 						.eventTime(huAssignment.getUpdated().toInstant())
@@ -517,7 +518,7 @@ public class HUTraceEventsService
 		Check.errorUnless(productAndQty.isPresent(), "Missing product and quantity for vhu={}", vhu);
 
 		return builder
-				.vhuId(vhu.getM_HU_ID())
+				.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.productId(productAndQty.get().getLeft().getM_Product_ID())
 				.qty(productAndQty.get().getRight());
 	}

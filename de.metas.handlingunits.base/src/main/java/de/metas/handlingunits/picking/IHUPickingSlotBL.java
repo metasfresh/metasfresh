@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
+import de.metas.picking.api.PickingSlotId;
 import lombok.Builder.Default;
 import lombok.NonNull;
 
@@ -144,7 +145,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
 
-	void releasePickingSlotIfPossible(int pickingSlotId);
+	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId);
 
 	/**
 	 * Ad-Hoc and simple return type for above methods

@@ -1,24 +1,23 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -35,8 +34,11 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -67,12 +69,14 @@ public class AddQtyToHUCommand
 {
 	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
 
+	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final BigDecimal qtyCU;
-	private final int targetHUId;
-	private final int pickingSlotId;
-	private final int shipmentScheduleId;
+	private final HuId targetHUId;
+	private final PickingSlotId pickingSlotId;
+	private final ShipmentScheduleId shipmentScheduleId;
 	private final boolean isAllowOverdelivery;
 
 	@Builder
@@ -80,13 +84,10 @@ public class AddQtyToHUCommand
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final BigDecimal qtyCU,
 			final boolean isAllowOverdelivery,
-			final int targetHUId,
-			final int pickingSlotId,
-			final int shipmentScheduleId)
+			final HuId targetHUId,
+			final PickingSlotId pickingSlotId,
+			final ShipmentScheduleId shipmentScheduleId)
 	{
-		Check.assume(targetHUId > 0, "targetHuId > 0");
-		Check.assume(pickingSlotId > 0, "pickingSlotId > 0");
-		Check.assume(shipmentScheduleId > 0, "shipmentScheduleId > 0");
 		if (qtyCU.signum() <= 0)
 		{
 			throw new AdempiereException("@Invalid@ @QtyCU@");
@@ -106,8 +107,7 @@ public class AddQtyToHUCommand
 	 */
 	public Quantity performAndGetQtyPicked()
 	{
-
-		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final boolean overdeliveryError = !isAllowOverdelivery && isOverdelivery();
 
 		if (overdeliveryError)
@@ -171,9 +171,9 @@ public class AddQtyToHUCommand
 		return source;
 	}
 
-	private IAllocationDestination createAllocationDestination(final int huId)
+	private IAllocationDestination createAllocationDestination(final HuId huId)
 	{
-		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
 		// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -211,7 +211,7 @@ public class AddQtyToHUCommand
 
 	private boolean isOverdelivery()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
 		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null ? BigDecimal.ZERO : qtyPickedPlanned);
 

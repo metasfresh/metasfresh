@@ -72,6 +72,7 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.impl.PickingSlotBL;
 import lombok.NonNull;
 
@@ -582,7 +583,7 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public void releasePickingSlotIfPossible(final int pickingSlotId)
+	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId)
 	{
 		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
 		releasePickingSlotIfPossible(pickingSlot);

@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingSlotId;
 import lombok.NonNull;
 
 /*
@@ -86,7 +89,7 @@ public class PickingCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public List<I_M_Picking_Candidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<Integer> huIds)
+	public List<I_M_Picking_Candidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<HuId> huIds)
 	{
 		// tolerate empty
 		if (huIds.isEmpty())
@@ -103,7 +106,10 @@ public class PickingCandidateRepository
 		return result;
 	}
 
-	public I_M_Picking_Candidate getCreateCandidate(final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	public I_M_Picking_Candidate getCreateCandidate(
+			@NonNull final HuId huId,
+			@NonNull final PickingSlotId pickingSlotId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		I_M_Picking_Candidate pickingCandidate = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
@@ -117,9 +123,9 @@ public class PickingCandidateRepository
 		if (pickingCandidate == null)
 		{
 			pickingCandidate = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
-			pickingCandidate.setM_ShipmentSchedule_ID(shipmentScheduleId);
-			pickingCandidate.setM_PickingSlot_ID(pickingSlotId);
-			pickingCandidate.setM_HU_ID(huId);
+			pickingCandidate.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
+			pickingCandidate.setM_PickingSlot_ID(pickingSlotId.getRepoId());
+			pickingCandidate.setM_HU_ID(huId.getRepoId());
 			pickingCandidate.setQtyPicked(BigDecimal.ZERO); // will be updated later
 			pickingCandidate.setC_UOM(null); // will be updated later
 			save(pickingCandidate);
@@ -137,9 +143,14 @@ public class PickingCandidateRepository
 	}
 
 	public List<I_M_Picking_Candidate> retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
-			@NonNull final List<Integer> shipmentScheduleIds,
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
 			@NonNull final String status)
 	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()

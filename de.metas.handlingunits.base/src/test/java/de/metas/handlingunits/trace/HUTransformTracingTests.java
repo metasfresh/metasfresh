@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
@@ -134,13 +135,13 @@ public class HUTransformTracingTests
 
 		// retrieve the events that were added to the repo and make sure they are as expected
 
-		final HUTraceEventQuery tuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(parentTU.getM_HU_ID()).build();
+		final HUTraceEventQuery tuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID())).build();
 		final List<HUTraceEvent> tuTraceEvents = huTraceRepository.query(tuTraceQuery);
 		assertThat(tuTraceEvents.size(), is(1));
 
 		final HUTraceEventBuilder common = HUTraceEvent.builder()
 				.orgId(cuToSplit.getAD_Org_ID())
-				.vhuId(cuToSplit.getM_HU_ID())
+				.vhuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 				.vhuStatus(cuToSplit.getHUStatus())
 				.eventTime(tuTraceEvents.get(0).getEventTime())
 				.productId(tuTraceEvents.get(0).getProductId())
@@ -151,10 +152,10 @@ public class HUTransformTracingTests
 		assertThat(tuTraceEventToCompareWith,
 				is(common
 						.qty(new BigDecimal("-3"))
-						.topLevelHuId(parentTU.getM_HU_ID())
+						.topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
 						.build()));
 
-		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(cuToSplit.getM_HU_ID()).build();
+		final HUTraceEventQuery cuTraceQuery = HUTraceEventQuery.builder().topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID())).build();
 		final List<HUTraceEvent> cuTraceEvents = huTraceRepository.query(cuTraceQuery);
 		assertThat(cuTraceEvents.size(), is(1));
 
@@ -163,7 +164,7 @@ public class HUTransformTracingTests
 		assertThat(cuTraceEventToCompareWith,
 				is(common
 						.qty(new BigDecimal("3"))
-						.topLevelHuId(cuToSplit.getM_HU_ID())
+						.topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 						.build()));
 	}
 

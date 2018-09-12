@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.OptionalInt;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -52,7 +53,7 @@ public class HUTraceEvent
 	Instant eventTime;
 
 	@NonNull
-	Integer vhuId;
+	HuId vhuId;
 
 	int productId;
 
@@ -66,9 +67,9 @@ public class HUTraceEvent
 	 * The topmost HU as seen from the vhu.
 	 */
 	@NonNull
-	Integer topLevelHuId;
+	HuId topLevelHuId;
 
-	int vhuSourceId;
+	HuId vhuSourceId;
 
 	int inOutId;
 

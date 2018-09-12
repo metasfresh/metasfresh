@@ -2,15 +2,17 @@ package de.metas.handlingunits.picking;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
@@ -24,7 +26,9 @@ import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCo
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand.RemoveQtyFromHUCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import lombok.NonNull;
 
 /*
@@ -54,7 +58,7 @@ public class PickingCandidateService
 {
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
-	
+
 	@Autowired
 	private PickingConfigRepository pickingConfigRepository;
 
@@ -66,7 +70,7 @@ public class PickingCandidateService
 		this.pickingCandidateRepository = pickingCandidateRepository;
 	}
 
-	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	public void addHUToPickingSlot(final HuId huId, final PickingSlotId pickingSlotId, final ShipmentScheduleId shipmentScheduleId)
 	{
 		AddHUToPickingSlotCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
@@ -90,7 +94,7 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository);
 	}
 
-	public void removeHUFromPickingSlot(final int huId)
+	public void removeHUFromPickingSlot(final HuId huId)
 	{
 		RemoveHUFromPickingSlotCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
@@ -108,7 +112,10 @@ public class PickingCandidateService
 	 * No model interceptors etc will be fired.</li>
 	 * </ul>
 	 */
-	public void processForHUIds(@NonNull final List<Integer> huIds, final int pickingSlotId, final OptionalInt shipmentScheduleId)
+	public void processForHUIds(
+			@NonNull final Set<HuId> huIds,
+			final PickingSlotId pickingSlotId,
+			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
 		//
 		// Process those picking candidates
@@ -118,7 +125,7 @@ public class PickingCandidateService
 				.pickingConfigRepository(pickingConfigRepository)
 				.huIds(huIds)
 				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(shipmentScheduleId.orElse(-1))
+				.shipmentScheduleId(shipmentScheduleId)
 				.build();
 		processCmd.perform();
 
@@ -131,7 +138,7 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public void unprocessForHUId(final int huId)
+	public void unprocessForHUId(final HuId huId)
 	{
 		UnProcessPickingCandidateCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
@@ -141,20 +148,19 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final List<Integer> shipmentScheduleIds)
+	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
 		return ClosePickingCandidateCommand.builder()
 				.pickingCandidates(pickingCandidates);
 	}
 
-	public void inactivateForHUId(final int huId)
+	public void inactivateForHUId(@NonNull final HuId huId)
 	{
-		Check.assume(huId > 0, "huId > 0");
-		inactivateForHUIds(ImmutableList.of(huId));
+		inactivateForHUIds(ImmutableSet.of(huId));
 	}
 
-	public void inactivateForHUIds(final Collection<Integer> huIds)
+	public void inactivateForHUIds(final Collection<HuId> huIds)
 	{
 		pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
 				.forEach(this::inactivate);

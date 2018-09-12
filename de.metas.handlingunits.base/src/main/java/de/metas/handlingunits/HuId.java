@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
@@ -58,6 +59,16 @@ public class HuId implements RepoIdAware
 	public static Set<Integer> toRepoIds(final Collection<HuId> huIds)
 	{
 		return huIds.stream().map(HuId::getRepoId).collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static Set<HuId> fromRepoIds(final Collection<Integer> huRepoIds)
+	{
+		if (huRepoIds == null || huRepoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return huRepoIds.stream().map(HuId::ofRepoIdOrNull).filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
 	}
 
 	int repoId;

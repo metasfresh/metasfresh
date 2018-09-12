@@ -20,6 +20,7 @@ import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -89,6 +90,7 @@ public class ClosePickingCandidateCommand
 		// Release the picking slots
 		pickingCandidates.stream()
 				.map(I_M_Picking_Candidate::getM_PickingSlot_ID)
+				.map(PickingSlotId::ofRepoId)
 				.distinct()
 				.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
 	}

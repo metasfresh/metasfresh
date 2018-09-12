@@ -169,7 +169,7 @@ public class FreshPackingMdTest
 				.deliveryDate(deliveryDate)
 				.preparationDate(preparationDate)
 				.displayed(true)
-				.shipmentScheduleId(ShipmentScheduleId.offRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
 				.productId(ProductId.ofRepoId(20))
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(0))

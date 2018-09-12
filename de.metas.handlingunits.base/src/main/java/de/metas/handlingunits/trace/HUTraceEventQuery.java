@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.OptionalInt;
 
+import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -86,7 +87,7 @@ public class HUTraceEventQuery
 
 	HUTraceType type;
 
-	int vhuId;
+	HuId vhuId;
 
 	int productId;
 
@@ -94,9 +95,9 @@ public class HUTraceEventQuery
 
 	String vhuStatus;
 
-	int topLevelHuId;
+	HuId topLevelHuId;
 
-	int vhuSourceId;
+	HuId vhuSourceId;
 
 	int inOutId;
 

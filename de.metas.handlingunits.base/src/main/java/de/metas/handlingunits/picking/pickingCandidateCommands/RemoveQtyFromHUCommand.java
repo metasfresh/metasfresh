@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -31,6 +32,9 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -68,7 +72,7 @@ public class RemoveQtyFromHUCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final BigDecimal qtyCU;
-	private final int huId;
+	private final HuId huId;
 	private final I_M_Product product;
 
 	@Builder
@@ -76,11 +80,9 @@ public class RemoveQtyFromHUCommand
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final BigDecimal qtyCU,
-			final int huId,
-			final int productId)
+			@NonNull final HuId huId,
+			@NonNull final ProductId productId)
 	{
-		Check.assume(huId > 0, "huId > 0");
-		Check.assume(productId > 0, "productId > 0");
 		if (qtyCU.signum() <= 0)
 		{
 			throw new AdempiereException("@Invalid@ @QtyCU@");
@@ -90,7 +92,7 @@ public class RemoveQtyFromHUCommand
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.qtyCU = qtyCU;
 		this.huId = huId;
-		this.product = load(productId, I_M_Product.class);
+		this.product = Services.get(IProductDAO.class).getById(productId);
 		Check.assumeNotNull(product, "Parameter product is not null");
 	}
 
@@ -128,8 +130,9 @@ public class RemoveQtyFromHUCommand
 		final I_M_HU hu = load(huId, I_M_HU.class);
 		if (handlingUnitsBL.isDestroyed(hu))
 		{
-			final ImmutableSet<Integer> pickingSlotIds = candidates.stream()
+			final ImmutableSet<PickingSlotId> pickingSlotIds = candidates.stream()
 					.map(I_M_Picking_Candidate::getM_PickingSlot_ID)
+					.map(PickingSlotId::ofRepoId)
 					.distinct()
 					.collect(ImmutableSet.toImmutableSet());
 
@@ -145,7 +148,7 @@ public class RemoveQtyFromHUCommand
 
 	private IAllocationDestination createAllocationDestinationAsSourceHUs()
 	{
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(ImmutableList.of(huId));
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(ImmutableSet.of(huId));
 		if (sourceHUs.isEmpty())
 		{
 			throw new AdempiereException("No source HUs found for M_HU_ID=" + huId);

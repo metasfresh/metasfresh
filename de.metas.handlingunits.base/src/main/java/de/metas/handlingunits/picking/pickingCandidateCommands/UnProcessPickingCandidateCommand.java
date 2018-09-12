@@ -12,10 +12,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -72,7 +72,7 @@ public class UnProcessPickingCandidateCommand
 
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
-	private final int huId;
+	private final HuId _huId;
 
 	private I_M_HU _hu = null; // lazy
 
@@ -80,19 +80,20 @@ public class UnProcessPickingCandidateCommand
 	public UnProcessPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			final int huId)
+			@NonNull final HuId huId)
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
-		Preconditions.checkArgument(huId > 0, "huId > 0");
-		this.huId = huId;
+		this._huId = huId;
 	}
 
 	public void perform()
 	{
 		final I_M_HU hu = getM_HU();
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableList.of(hu.getM_HU_ID()));
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		
+		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableSet.of(huId));
 
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = retrieveQtyPickedRecords(pickingCandidates);
 
@@ -104,7 +105,7 @@ public class UnProcessPickingCandidateCommand
 		qtyPickedList.forEach(InterfaceWrapperHelper::delete);
 		updateHUStatusToActive(hu);
 
-		restoreHUsFromSourceHUs(hu.getM_HU_ID());
+		restoreHUsFromSourceHUs(huId);
 
 		pickingCandidates.forEach(this::markCandidateAsInProgress);
 	}
@@ -114,7 +115,7 @@ public class UnProcessPickingCandidateCommand
 	{
 		if (_hu == null)
 		{
-			_hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			_hu = Services.get(IHandlingUnitsDAO.class).getById(_huId);
 		}
 		return _hu;
 	}
@@ -207,18 +208,19 @@ public class UnProcessPickingCandidateCommand
 		handlingUnitsDAO.saveHU(hu);
 	}
 
-	private void restoreHUsFromSourceHUs(final int huId)
+	private void restoreHUsFromSourceHUs(final HuId huId)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final SourceHUsService sourceHUsService = SourceHUsService.get();
 
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(ImmutableList.of(huId));
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(ImmutableSet.of(huId));
 		for (final I_M_HU sourceHU : sourceHUs)
 		{
 			if (!handlingUnitsBL.isDestroyed(sourceHU))
 			{
 				continue;
 			}
-			SourceHUsService.get().restoreHuFromSourceHuMarkerIfPossible(sourceHU);
+			sourceHUsService.restoreHuFromSourceHuMarkerIfPossible(sourceHU);
 		}
 	}
 

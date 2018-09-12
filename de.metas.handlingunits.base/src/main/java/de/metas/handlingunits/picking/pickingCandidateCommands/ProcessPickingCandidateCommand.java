@@ -1,12 +1,13 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,7 +20,9 @@ import org.slf4j.Logger;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
@@ -28,9 +31,12 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
@@ -84,31 +90,29 @@ public class ProcessPickingCandidateCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final PickingConfigRepository pickingConfigRepository;
 
-	private final List<Integer> huIds;
-	private final int pickingSlotId;
-	private final int shipmentScheduleId;
+	private final Set<HuId> huIds;
+	private final PickingSlotId pickingSlotId;
+	private final ShipmentScheduleId shipmentScheduleId;
 
-	private ImmutableListMultimap<Integer, I_M_Picking_Candidate> pickingCandidatesByHUId = null; // lazy
+	private ImmutableListMultimap<HuId, I_M_Picking_Candidate> pickingCandidatesByHUId = null; // lazy
 
 	@Builder
 	private ProcessPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final PickingConfigRepository pickingConfigRepository,
-			@NonNull @Singular final List<Integer> huIds,
-			final int pickingSlotId,
-			final int shipmentScheduleId)
+			@NonNull @Singular final List<HuId> huIds,
+			@NonNull final PickingSlotId pickingSlotId,
+			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
+		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
+		
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.pickingConfigRepository = pickingConfigRepository;
 
-		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
-		this.huIds = ImmutableList.copyOf(huIds);
-
-		Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
+		this.huIds = ImmutableSet.copyOf(huIds);
 		this.pickingSlotId = pickingSlotId;
-
 		this.shipmentScheduleId = shipmentScheduleId; // might not be set
 	}
 
@@ -135,14 +139,14 @@ public class ProcessPickingCandidateCommand
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
 	{
-		final IFreshPackingItem itemToPack = createItemToPack(hu.getM_HU_ID());
+		final IFreshPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		final PackingItemsMap packingItemsMap = new PackingItemsMap();
 		packingItemsMap.addUnpackedItem(itemToPack);
 
 		final IPackingContext packingContext = packingService.createPackingContext(Env.getCtx());
 		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(pickingSlotId);
+		packingContext.setPackingItemsMapKey(pickingSlotId.getRepoId());
 
 		final boolean isAllowOverdelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
 
@@ -155,15 +159,15 @@ public class ProcessPickingCandidateCommand
 				.allocate();
 	}
 
-	private IFreshPackingItem createItemToPack(final int huId)
+	private IFreshPackingItem createItemToPack(final HuId huId)
 	{
 		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new IdentityHashMap<>();
 
 		final List<I_M_Picking_Candidate> pickingCandidates = getPickingCandidatesForHUId(huId);
 		for (final I_M_Picking_Candidate pc : pickingCandidates)
 		{
-			final int shipmentScheduleId = pc.getM_ShipmentSchedule_ID();
-			final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(pc.getM_ShipmentSchedule_ID());
+			final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
 			final BigDecimal qty = pc.getQtyPicked();
 			scheds2Qtys.put(shipmentSchedule, Quantity.of(qty, pc.getC_UOM()));
 		}
@@ -172,19 +176,19 @@ public class ProcessPickingCandidateCommand
 		return itemToPack;
 	}
 
-	private List<I_M_Picking_Candidate> getPickingCandidatesForHUId(final int huId)
+	private List<I_M_Picking_Candidate> getPickingCandidatesForHUId(final HuId huId)
 	{
 		return getPickingCandidatesIndexedByHUId().get(huId);
 	}
 
-	private ImmutableListMultimap<Integer, I_M_Picking_Candidate> getPickingCandidatesIndexedByHUId()
+	private ImmutableListMultimap<HuId, I_M_Picking_Candidate> getPickingCandidatesIndexedByHUId()
 	{
 		if (pickingCandidatesByHUId == null)
 		{
 			pickingCandidatesByHUId = pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
 					.stream()
-					.filter(pc -> shipmentScheduleId <= 0 || shipmentScheduleId == pc.getM_ShipmentSchedule_ID())
-					.collect(GuavaCollectors.toImmutableListMultimap(I_M_Picking_Candidate::getM_HU_ID));
+					.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.getRepoId() == pc.getM_ShipmentSchedule_ID())
+					.collect(GuavaCollectors.toImmutableListMultimap(pc -> HuId.ofRepoId(pc.getM_HU_ID())));
 		}
 		return pickingCandidatesByHUId;
 	}
