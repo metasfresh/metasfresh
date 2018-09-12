@@ -9,6 +9,7 @@ import { getItemsByProperty } from '../../../actions/WindowActions';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
+import WidgetTooltip from './WidgetTooltip';
 
 class Lookup extends Component {
   rawLookupsState = {};
@@ -21,6 +22,7 @@ class Lookup extends Component {
       props.properties.forEach(item => {
         lookupWidgets[`${item.field}`] = {
           dropdownOpen: false,
+          tooltipOpen: false,
           fireClickOutside: false,
           fireDropdownList: false,
           isFocused: false,
@@ -193,6 +195,14 @@ class Lookup extends Component {
         }
       }
     });
+  };
+
+  widgetTooltipToggle = (field, value) => {
+    // const { onFocus, onBlur } = this.props;
+    const curVal = this.getLookupWidget(field).tooltipOpen;
+    const newVal = value != null ? value : !curVal
+
+    this._changeWidgetProperty(field, 'tooltipOpen', newVal);
   };
 
   resetLocalClearing = () => {
@@ -524,6 +534,22 @@ class Lookup extends Component {
                       property,
                       tabIndex,
                     }}
+                  />
+                </div>
+              );
+            } else if (item.widgetType === 'Tooltip') {
+              return (
+                <div
+                  key={item.field}
+                  className={classnames(
+                    'raw-lookup-wrapper raw-lookup-wrapper-bcg',
+                  )}
+                >
+                  <WidgetTooltip
+                    properties={[item]}
+                    onClickHandler={val =>
+                      this.widgetTooltipToggle(item.field, val)
+                    }
                   />
                 </div>
               );
