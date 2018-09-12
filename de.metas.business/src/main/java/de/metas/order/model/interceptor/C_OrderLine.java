@@ -225,14 +225,20 @@ public class C_OrderLine
 		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
 	}
 
-	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
-	public void onGroupCompensationPercentageChanged(final I_C_OrderLine orderLine)
+	@CalloutMethod(columnNames = {
+			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationType,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType
+	})
+	public void onGroupCompensationLineChanged(final I_C_OrderLine orderLine)
 	{
 		groupChangesHandler.updateCompensationLineNoSave(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_LineNetAmt,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationType,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType,
 			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage
 	}, skipIfCopying = true)
 	public void handleCompensantionGroupChange(final I_C_OrderLine orderLine)
