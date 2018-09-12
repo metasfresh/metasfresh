@@ -119,7 +119,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getDocTypeId().getAsInt()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
 		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
-		assertThat(huTraceQuery.getTopLevelHuId()).isEqualTo(60);
+		assertThat(huTraceQuery.getTopLevelHuId().getRepoId()).isEqualTo(60);
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(90);
@@ -128,8 +128,8 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getShipmentScheduleId()).isEqualTo(120);
 		assertThat(huTraceQuery.getPpCostCollectorId()).isEqualTo(130);
 		assertThat(huTraceQuery.getPpOrderId()).isEqualTo(140);
-		assertThat(huTraceQuery.getVhuId()).isEqualTo(160);
-		assertThat(huTraceQuery.getVhuSourceId()).isEqualTo(170);
+		assertThat(huTraceQuery.getVhuId().getRepoId()).isEqualTo(160);
+		assertThat(huTraceQuery.getVhuSourceId().getRepoId()).isEqualTo(170);
 		assertThat(huTraceQuery.getVhuStatus()).isEqualTo(X_M_HU_Trace.VHUSTATUS_Active);
 		assertThat(huTraceQuery.getEventTime()).isEqualTo(TimeUtil.parseTimestamp("2017-10-13").toInstant());
 	}

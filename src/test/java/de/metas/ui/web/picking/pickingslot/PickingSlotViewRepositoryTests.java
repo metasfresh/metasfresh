@@ -18,6 +18,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
@@ -104,8 +105,7 @@ public class PickingSlotViewRepositoryTests
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
-		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
-		save(pickingSlot);
+		final PickingSlotId pickingSlotId = createPickingSlot();
 
 		final boolean pickingSlotRowProcessed = false;
 
@@ -113,8 +113,8 @@ public class PickingSlotViewRepositoryTests
 
 		// set up a picked TU with a CU to be returned by the pickingHUsRepo.
 		{
-			final ListMultimap<Integer, PickedHUEditorRow> husIndexedByPickingSlotId = ImmutableListMultimap.of(
-					pickingSlot.getM_PickingSlot_ID(),
+			final ListMultimap<PickingSlotId, PickedHUEditorRow> husIndexedByPickingSlotId = ImmutableListMultimap.of(
+					pickingSlotId,
 					new PickedHUEditorRow(
 							HUEditorRow
 									.builder(WindowId.of(423))
@@ -135,7 +135,7 @@ public class PickingSlotViewRepositoryTests
 			// @formatter:on
 		}
 
-		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
 		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(rowsByShipmentScheduleId.size(), is(1));
@@ -148,16 +148,23 @@ public class PickingSlotViewRepositoryTests
 		final PickingSlotRow tuRow = pickingSlotRow.getIncludedRows().get(0);
 		assertThat(tuRow.isPickingSlotRow(), is(false));
 		assertThat(tuRow.isPickedHURow(), is(true));
-		assertThat(tuRow.getHuId(), is(100));
+		assertThat(tuRow.getHuId().getRepoId(), is(100));
 
 		assertThat(tuRow.getIncludedRows().size(), is(1));
 		final PickingSlotRow whuRow = tuRow.getIncludedRows().get(0);
 		assertThat(whuRow.isPickingSlotRow(), is(false));
 		assertThat(whuRow.isPickedHURow(), is(true));
-		assertThat(whuRow.getHuId(), is(101));
+		assertThat(whuRow.getHuId().getRepoId(), is(101));
 	}
 
-	private PickingSlotViewRepository createPickingSllotViewRepository()
+	private PickingSlotId createPickingSlot()
+	{
+		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
+		save(pickingSlot);
+		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
+	}
+
+	private PickingSlotViewRepository createPickingSlotViewRepository()
 	{
 		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
 

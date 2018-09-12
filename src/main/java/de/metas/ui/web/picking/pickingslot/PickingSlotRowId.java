@@ -112,7 +112,7 @@ public final class PickingSlotRowId
 		if (id == null)
 		{
 			final String idStr = DOCUMENT_ID_JOINER.join(
-					pickingSlotId.getRepoId(),
+					pickingSlotId != null ? pickingSlotId.getRepoId() : 0,
 					huId != null ? huId.getRepoId() : null,
 					huStorageProductId > 0 ? huStorageProductId : null);
 
@@ -137,30 +137,5 @@ public final class PickingSlotRowId
 	public boolean isPickingSourceHURow()
 	{
 		return getPickingSlotId() == null && getHuId() != null;
-	}
-
-	public String[] toPartsArray()
-	{
-		if (huStorageProductId > 0)
-		{
-			return new String[] {
-					String.valueOf(pickingSlotId.getRepoId()),
-					String.valueOf(huId.getRepoId()),
-					String.valueOf(huStorageProductId)
-			};
-		}
-		else if (huId != null)
-		{
-			return new String[] {
-					String.valueOf(pickingSlotId.getRepoId()),
-					String.valueOf(huStorageProductId)
-			};
-		}
-		else
-		{
-			return new String[] {
-					String.valueOf(pickingSlotId.getRepoId()),
-			};
-		}
 	}
 }
