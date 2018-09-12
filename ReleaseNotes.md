@@ -34,6 +34,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
     * New feature that expands multiline fields when the row is selected.
+  * [#1953](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1953) Show field-description in tool-tip instead of field-caption
+    * New Feature that shows the Field Description instead of Caption when hovering in webui.
 
 ## Fixes
 
@@ -53,6 +55,8 @@ Here come the actual release notes:
   * [#1932](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1932) Mandatory Field not filled Error too early
   * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
     * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
+  * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
+    * Fixes the initial settings of filter parameters in webui.
 
 # metasfresh 5.73
 ## Features
