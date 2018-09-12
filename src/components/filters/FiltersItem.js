@@ -130,7 +130,7 @@ class FiltersItem extends Component {
     const { resetInitialValues } = this.props;
 
     if (defaultValue != null) {
-      resetInitialValues(filterId, property);
+      resetInitialValues && resetInitialValues(filterId, property);
     }
 
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
@@ -265,7 +265,7 @@ class FiltersItem extends Component {
     } = this.props;
     const { filter } = this.state;
 
-    resetInitialValues(filter.filterId);
+    resetInitialValues && resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();
