@@ -157,7 +157,7 @@ public class SqlViewFactory implements IViewFactory
 		return ImmutableMap.copyOf(map);
 	}
 
-	private CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
+	private static CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
 			final List<DefaultViewProfileIdProvider> providers,
 			final List<SqlViewCustomizer> viewCustomizersToExtractFallbacks)
 	{
@@ -186,7 +186,7 @@ public class SqlViewFactory implements IViewFactory
 		}
 	}
 
-	private ImmutableMap<WindowId, IViewInvalidationAdvisor> makeViewInvalidationAdvisorsMap(final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
+	private static ImmutableMap<WindowId, IViewInvalidationAdvisor> makeViewInvalidationAdvisorsMap(final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
 	{
 		try
 		{
