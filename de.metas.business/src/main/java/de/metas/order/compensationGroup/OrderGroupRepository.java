@@ -407,6 +407,8 @@ public class OrderGroupRepository implements GroupRepository
 		compensationLinePO.setPriceActual(compensationLine.getPrice());
 
 		compensationLinePO.setC_CompensationGroup_SchemaLine_ID(GroupTemplateLineId.toRepoId(compensationLine.getGroupTemplateLineId()));
+		
+		Services.get(IOrderLineBL.class).updateLineNetAmt(compensationLinePO);
 	}
 
 	@Override
