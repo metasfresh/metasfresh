@@ -359,7 +359,7 @@ public class OrderJAXBConvertersV1 implements OrderClientJAXBConverters, OrderSe
 		return soapItem;
 	}
 
-	private OrderResponsePackageItemPart fromJAXB(final BestellungAnteil soap)
+	private OrderResponsePackageItemPart fromJAXB(@NonNull final BestellungAnteil soap)
 	{
 		return OrderResponsePackageItemPart.builder()
 				.qty(Quantity.of(soap.getMenge()))
