@@ -225,11 +225,6 @@ public class OrderGroupRepository implements GroupRepository
 		return ATTR_IsRepoUpdate.isSet(orderLine);
 	}
 
-	private static void markAsRepositoryUpdate(final I_C_OrderLine orderLine)
-	{
-		ATTR_IsRepoUpdate.setValue(orderLine, Boolean.TRUE);
-	}
-
 	private Group createGroupFromOrderLines(final List<I_C_OrderLine> groupOrderLines)
 	{
 		Check.assumeNotEmpty(groupOrderLines, "groupOrderLines is not empty");
@@ -599,7 +594,15 @@ public class OrderGroupRepository implements GroupRepository
 
 			if (performDatabaseChanges)
 			{
-				InterfaceWrapperHelper.save(compensationLinePO);
+				ATTR_IsRepoUpdate.setValue(compensationLinePO, Boolean.TRUE);
+				try
+				{
+					InterfaceWrapperHelper.save(compensationLinePO);
+				}
+				finally
+				{
+					ATTR_IsRepoUpdate.reset(compensationLinePO);
+				}
 			}
 		}
 
@@ -638,8 +641,15 @@ public class OrderGroupRepository implements GroupRepository
 
 		private void deleteOrderLineRecord(final I_C_OrderLine orderLine)
 		{
-			markAsRepositoryUpdate(orderLine);
-			InterfaceWrapperHelper.delete(orderLine);
+			ATTR_IsRepoUpdate.setValue(orderLine, Boolean.TRUE);
+			try
+			{
+				InterfaceWrapperHelper.delete(orderLine);
+			}
+			finally
+			{
+				ATTR_IsRepoUpdate.reset(orderLine);
+			}
 		}
 	}
 
