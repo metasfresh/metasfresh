@@ -83,7 +83,6 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private LocalDateTime purchaseDatePromisedInitial;
 
-	// @Getter(AccessLevel.NONE)
 	private final Duration reminderTime;
 
 	@Getter(AccessLevel.PRIVATE)

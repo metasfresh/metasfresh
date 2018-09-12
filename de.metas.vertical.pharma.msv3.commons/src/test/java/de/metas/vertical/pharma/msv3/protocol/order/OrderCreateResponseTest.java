@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.Id;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
@@ -71,7 +72,7 @@ public class OrderCreateResponseTest
 										.purchaseCandidateId(MSV3PurchaseCandidateId.ofRepoId(1234))
 										.part(OrderResponsePackageItemPart.builder()
 												.qty(Quantity.of(66))
-												.type("dummy")
+												.type(Type.KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
 												.defectReason(OrderDefectReason.MANUFACTURER_NOT_AVAILABLE)
 												.deliveryDate(LocalDateTime.now())
 												.tour("tour")
