@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -194,7 +193,7 @@ public class PickingSlotViewRepository
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
-				.warehouseId(WarehouseId.ofRepoId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule)))
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.barcode(repoQuery.getPickingSlotBarcode())
 				.build();
 

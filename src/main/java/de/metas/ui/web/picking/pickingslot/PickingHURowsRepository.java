@@ -157,8 +157,8 @@ public class PickingHURowsRepository
 				.productIds(productIds);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final int effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : -1;
-		builder.warehouseId(WarehouseId.ofRepoIdOrNull(effectiveWarehouseId));
+		final WarehouseId effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : null;
+		builder.warehouseId(effectiveWarehouseId);
 		return builder.build();
 	}
 
