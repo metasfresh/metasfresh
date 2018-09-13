@@ -36,7 +36,7 @@ public interface IAttachmentDAO extends ISingletonService
 
 	List<AttachmentEntry> retrieveAttachmentEntries(I_AD_Attachment attachment);
 
-	AttachmentEntry retrieveAttachmentEntryById(int attachmentId, int attachmentEntryId);
+	AttachmentEntry retrieveAttachmentEntryById(int attachmentId, AttachmentEntryId attachmentEntryId);
 
 	/**
 	 * 
@@ -54,7 +54,7 @@ public interface IAttachmentDAO extends ISingletonService
 
 	void saveAttachmentEntryData(AttachmentEntry entry, byte[] data);
 
-	boolean deleteAttachmentEntryById(int attachmentId, int attachmentEntryId);
+	boolean deleteAttachmentEntryById(int attachmentId, AttachmentEntryId attachmentEntryId);
 
 	boolean hasAttachmentEntries(int attachmentId);
 

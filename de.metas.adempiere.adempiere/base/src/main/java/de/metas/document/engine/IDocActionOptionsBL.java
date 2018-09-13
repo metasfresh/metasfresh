@@ -32,5 +32,5 @@ import org.adempiere.util.ISingletonService;
  */
 public interface IDocActionOptionsBL extends ISingletonService
 {
-	void updateDocActions(IDocActionOptionsContext optionsCtx);
+	void updateDocActions(DocActionOptionsContext optionsCtx);
 }

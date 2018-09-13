@@ -11,18 +11,18 @@ import org.compiere.util.MimeType;
 import com.google.common.base.Preconditions;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Attachment entry
  * 
  * @author metas-dev <dev@metasfresh.com>
  */
-@Data
+@Value
 public final class AttachmentEntry
 {
-	private final int id;
+	private final AttachmentEntryId id;
 	private final String name;
 	private final AttachmentEntryType type;
 	private final String filename;
@@ -31,7 +31,7 @@ public final class AttachmentEntry
 
 	@Builder
 	private AttachmentEntry(
-			final int id,
+			@Nullable final AttachmentEntryId id,
 			@Nullable final String name,
 			@NonNull final AttachmentEntryType type,
 			@Nullable final String filename,

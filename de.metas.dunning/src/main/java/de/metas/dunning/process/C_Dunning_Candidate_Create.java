@@ -10,12 +10,12 @@ package de.metas.dunning.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,14 +36,14 @@ import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.spi.IDunnableSource;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Process responsible for generating dunning candidates for all configured {@link IDunnableSource}s
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class C_Dunning_Candidate_Create extends JavaProcess
 {
@@ -52,7 +52,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 
 	private static final String PARAM_IsFullUpdate = "IsFullUpdate";
 	private boolean p_IsFullUpdate = false;
-	
+
 	final private ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
@@ -97,7 +97,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			}
 		}
 
-		return "OK";
+		return MSG_OK;
 	}
 
 	private void generateCandidates(final I_C_DunningLevel dunningLevel)
@@ -118,9 +118,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 
 				final int countCreateUpdate = dunningBL.createDunningCandidates(context);
 				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countCreateUpdate + " record(s) created/updated");
-
 			}
 		});
-
 	}
 }

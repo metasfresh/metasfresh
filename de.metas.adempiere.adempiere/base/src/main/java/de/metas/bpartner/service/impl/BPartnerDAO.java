@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -67,6 +68,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
@@ -84,24 +86,42 @@ public class BPartnerDAO implements IBPartnerDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
+	public void save(@NonNull final I_C_BPartner bpartner)
+	{
+		InterfaceWrapperHelper.saveRecord(bpartner);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_BPartner_Location bpartnerLocation)
+	{
+		InterfaceWrapperHelper.saveRecord(bpartnerLocation);
+	}
+
+	@Override
+	public void save(@NonNull final I_AD_User bpartnerContact)
+	{
+		Check.assume(bpartnerContact.getC_BPartner_ID() > 0, "C_BPartner_ID shall be set for {}", bpartnerContact);
+		InterfaceWrapperHelper.saveRecord(bpartnerContact);
+	}
+
+	@Override
 	public I_C_BPartner getById(final int bpartnerId)
 	{
 		return getById(BPartnerId.ofRepoId(bpartnerId), I_C_BPartner.class);
 	}
-	
+
 	@Override
 	public <T extends I_C_BPartner> T getById(final int bpartnerId, final Class<T> modelClass)
 	{
 		return getById(BPartnerId.ofRepoId(bpartnerId), modelClass);
 	}
 
-
 	@Override
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return getById(bpartnerId, I_C_BPartner.class);
 	}
-	
+
 	@Override
 	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, final Class<T> modelClass)
 	{
@@ -109,6 +129,25 @@ public class BPartnerDAO implements IBPartnerDAO
 		return bpartner;
 	}
 
+	@Override
+	public Optional<BPartnerContactId> getContactIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	{
+		return retrieveContacts(bpartnerId)
+				.stream()
+				.filter(contact -> externalId.equals(contact.getExternalId()))
+				.findFirst()
+				.map(record -> BPartnerContactId.ofRepoId(bpartnerId, record.getAD_User_ID()));
+	}
+
+	@Override
+	public I_AD_User getContactById(@NonNull final BPartnerContactId contactId)
+	{
+		return retrieveContacts(contactId.getBpartnerId())
+				.stream()
+				.filter(contact -> contact.getAD_User_ID() == contactId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)
@@ -116,7 +155,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
 
-		final String wc = I_AD_User.COLUMNNAME_IsDefaultContact + "=" + DB.TO_STRING("Y") + " AND " +
+		final String wc = org.compiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + "=" + DB.TO_STRING("Y") + " AND " +
 				org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + "=?";
 
 		final T result = new Query(ctx, org.compiere.model.I_AD_User.Table_Name, wc, trxName)
@@ -126,6 +165,32 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(clazz);
 
 		return result;
+	}
+
+	@Override
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(bpLocation -> externalId.equals(bpLocation.getExternalId()))
+				.findFirst()
+				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
+	}
+
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId())
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Override
+	public boolean exists(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return getBPartnerLocationById(bpartnerLocationId) != null;
 	}
 
 	@Override
@@ -192,7 +257,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner_Location getDefaultShipToLocation(final BPartnerId bpartnerId)
 	{
-		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(bpartnerId);
 		if (bpLocations.isEmpty())
 		{
 			return null;
@@ -222,16 +287,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
 	public List<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_AD_User> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId);
-
-		queryBuilder.orderBy()
-				.addColumn(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID);
-
-		return queryBuilder.create().list();
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class, ctx, trxName)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.orderBy(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
+				.create()
+				.listImmutable(I_AD_User.class);
 	}
 
 	@Override
@@ -241,6 +302,11 @@ public class BPartnerDAO implements IBPartnerDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(bpartner);
 		final int bpartnerId = bpartner.getC_BPartner_ID();
 		return retrieveContacts(ctx, bpartnerId, trxName);
+	}
+
+	public List<I_AD_User> retrieveContacts(@NonNull final BPartnerId bpartnerId)
+	{
+		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
 	}
 
 	@Override
@@ -270,21 +336,21 @@ public class BPartnerDAO implements IBPartnerDAO
 		// Sales
 		if (isSOTrx)
 		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact, true);
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsSalesContact_Default, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default, true);
 
 		}
 		// Purchase
 		else
 		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact, true);
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact, true);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default, true);
 		}
 
 		queryBuilder.orderBy()
 				// #928: DefaultContact is no longer relevant in contact retrieval. The Sales and Purchase defaults are used instead
 				// .addColumn(I_AD_User.COLUMNNAME_IsDefaultContact, Direction.Descending, Nulls.Last)
-				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.Last);
+				.addColumn(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, Direction.Ascending, Nulls.Last);
 
 		return queryBuilder.create().first();
 
@@ -406,7 +472,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	private I_M_Shipper retrieveDefaultShipper()
 	{
 		final Properties ctx = Env.getCtx();
-		return new Query(ctx, I_M_Shipper.Table_Name, de.metas.interfaces.I_M_Shipper.COLUMNNAME_IsDefault + "=?", null)
+		return new Query(ctx, I_M_Shipper.Table_Name, I_M_Shipper.COLUMNNAME_IsDefault + "=?", null)
 				.setParameters(true)
 				.setClient_ID()
 				.firstOnly(de.metas.interfaces.I_M_Shipper.class);
@@ -430,8 +496,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID())
 				.addOnlyContextClient()
 				.create()
 				.match();
@@ -742,6 +808,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public BPartnerId getBPartnerIdByValue(@NonNull final String bpartnerValue)
 	{
+		return getBPartnerIdByValueIfExists(bpartnerValue)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue));
+	}
+
+	@Override
+	public Optional<BPartnerId> getBPartnerIdByValueIfExists(@NonNull final String bpartnerValue)
+	{
 		final int bpartnerRepoId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMN_Value, bpartnerValue)
@@ -749,11 +822,6 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.firstIdOnly();
 
-		if (bpartnerRepoId <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @C_BPartner_ID@: @Value@=" + bpartnerValue);
-		}
-
-		return BPartnerId.ofRepoId(bpartnerRepoId);
+		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 }

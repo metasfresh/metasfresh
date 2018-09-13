@@ -44,12 +44,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,7 +57,7 @@ import lombok.experimental.UtilityClass;
  */
 /**
  * This class contains methods useful to any ESR data loader.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -97,7 +97,7 @@ public class ESRDataLoaderUtil
 	/**
 	 * This method evaluates the given ESR reference number string and updates the given {@code importLine} accordingly.
 	 * The ESR reference number string can come from a {@code .v11} file or a camt.54 {@code .xml} file.
-	 * 
+	 *
 	 * @param importLine
 	 * @param completeEsrReferenceNumberStr
 	 */
@@ -183,7 +183,7 @@ public class ESRDataLoaderUtil
 	/**
 	 * This method evaluated the ESR reference string, and matches/verifies that everything is consistent with the system.<br>
 	 * Any problems are logged to {@link I_ESR_ImportLine#COLUMN_MatchErrorMsg}.
-	 * 
+	 *
 	 * @param importLine
 	 * @param completeEsrReferenceNumberStr
 	 */
@@ -211,8 +211,12 @@ public class ESRDataLoaderUtil
 		// Get BPartner id
 		// try to format the value
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-		final String formattedBPValue = documentNoFactory.forTableName(I_C_BPartner.Table_Name, importLine.getAD_Client_ID(), importLine.getAD_Org_ID())
-				.setSequenceNo(Integer.valueOf(bpValue))
+		final String formattedBPValue = documentNoFactory
+				.forTableName(
+						I_C_BPartner.Table_Name,
+						importLine.getAD_Client_ID(),
+						importLine.getAD_Org_ID())
+				.setSequenceNo(bpValue)
 				.setFailOnError(false)
 				.build();
 
@@ -340,7 +344,7 @@ public class ESRDataLoaderUtil
 
 	/**
 	 * Method to remove the left zeros from a string.
-	 * 
+	 *
 	 * @param value
 	 * @return the initial String if it's made of only zeros; the string without the left zeros otherwise.
 	 */

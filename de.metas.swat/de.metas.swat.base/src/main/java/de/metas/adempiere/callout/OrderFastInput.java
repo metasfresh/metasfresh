@@ -284,7 +284,7 @@ public class OrderFastInput extends CalloutEngine
 			ol.setC_BPartner_ID(C_BPartner_ID);
 
 			final BPartnerLocationId bpLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(bpLocationId, -1));
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpLocationId));
 
 			final int AD_User_ID = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 			ol.setAD_User_ID(AD_User_ID);

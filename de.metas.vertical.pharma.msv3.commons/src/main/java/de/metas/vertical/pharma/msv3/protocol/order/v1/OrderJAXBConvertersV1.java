@@ -20,6 +20,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage.OrderResponsePackageBuilder;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemSubstitution;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderServerJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderSubstitutionReason;
@@ -60,12 +61,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -358,11 +359,11 @@ public class OrderJAXBConvertersV1 implements OrderClientJAXBConverters, OrderSe
 		return soapItem;
 	}
 
-	private OrderResponsePackageItemPart fromJAXB(final BestellungAnteil soap)
+	private OrderResponsePackageItemPart fromJAXB(@NonNull final BestellungAnteil soap)
 	{
 		return OrderResponsePackageItemPart.builder()
 				.qty(Quantity.of(soap.getMenge()))
-				.type(soap.getTyp() != null ? soap.getTyp().value() : null)
+				.type(Type.ofStringValueOrNull(soap.getTyp().value()))
 				.deliveryDate(JAXBDateUtils.toLocalDateTime(soap.getLieferzeitpunkt()))
 				.defectReason(OrderDefectReason.fromV1SoapCode(soap.getGrund()))
 				.tour(soap.getTour())
@@ -375,7 +376,11 @@ public class OrderJAXBConvertersV1 implements OrderClientJAXBConverters, OrderSe
 	{
 		final BestellungAnteil soap = jaxbObjectFactory.createBestellungAnteil();
 		soap.setMenge(itemPart.getQty().getValueAsInt());
-		soap.setTyp(BestellungRueckmeldungTyp.fromValue(itemPart.getType()));
+		final String type = Type.getValueOrNull(itemPart.getType());
+		if (type != null)
+		{
+			soap.setTyp(BestellungRueckmeldungTyp.fromValue(type));
+		}
 		soap.setLieferzeitpunkt(JAXBDateUtils.toXMLGregorianCalendar(itemPart.getDeliveryDate()));
 		soap.setGrund(itemPart.getDefectReason().getV1SoapCode());
 		soap.setTour(itemPart.getTour());

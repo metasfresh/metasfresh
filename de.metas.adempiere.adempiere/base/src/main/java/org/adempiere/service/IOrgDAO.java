@@ -23,6 +23,7 @@ package org.adempiere.service;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -31,9 +32,20 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
+import lombok.NonNull;
+
 public interface IOrgDAO extends ISingletonService
 {
+	void save(I_AD_Org orgRecord);
+
+	Optional<OrgId> getOrgIdByValue(String value);
+
 	I_AD_Org retrieveOrg(Properties ctx, int adOrgId);
+
+	default I_AD_Org getById(@NonNull final OrgId orgId)
+	{
+		return retrieveOrg(Env.getCtx(), orgId.getRepoId());
+	}
 
 	default I_AD_Org retrieveOrg(final int adOrgId)
 	{
@@ -63,12 +75,11 @@ public interface IOrgDAO extends ISingletonService
 	I_AD_Org retrieveOrganizationByValue(Properties ctx, String value);
 
 	List<I_AD_Org> retrieveClientOrgs(Properties ctx, int adClientId);
-	
+
 	default List<I_AD_Org> retrieveClientOrgs(final int adClientId)
 	{
 		return retrieveClientOrgs(Env.getCtx(), adClientId);
 	}
-
 
 	List<I_AD_Org> retrieveChildOrgs(Properties ctx, int parentOrgId, int adTreeOrgId);
 }

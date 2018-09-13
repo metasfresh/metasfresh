@@ -19,6 +19,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
@@ -110,8 +111,8 @@ public class ESRImportEnqueuer
 		// Create attachment (03928)
 		// attaching the file first, so that it's available for our support, if anything goes wrong
 		{
-			final int fromAttachmentEntryId;
-			if (fromDataSource.getAttachmentEntryId() <= 0)
+			final AttachmentEntryId fromAttachmentEntryId;
+			if (fromDataSource.getAttachmentEntryId() == null)
 			{
 				final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).addEntry(esrImport, fromDataSource.getFilename(), fromDataSource.getContent());
 				fromAttachmentEntryId = attachmentEntry.getId();
@@ -121,7 +122,7 @@ public class ESRImportEnqueuer
 				fromAttachmentEntryId = fromDataSource.getAttachmentEntryId();
 			}
 
-			esrImport.setAD_AttachmentEntry_ID(fromAttachmentEntryId);
+			esrImport.setAD_AttachmentEntry_ID(fromAttachmentEntryId.getRepoId());
 			InterfaceWrapperHelper.save(esrImport);
 		}
 

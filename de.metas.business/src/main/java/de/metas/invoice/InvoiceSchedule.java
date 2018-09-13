@@ -63,6 +63,7 @@ public class InvoiceSchedule
 	/** ignored unless frequency=monthly; if bigger than the respective month's last day, then the last day is used instead */
 	int invoiceDayOfMonth;
 
+	/** number of units (the value of #frequency) between two invoices */
 	int invoiceDistance;
 
 	@Builder(toBuilder=true)
@@ -154,7 +155,10 @@ public class InvoiceSchedule
 		return dateToInvoice;
 	}
 
-	private LocalDate computeNextMonthlyInvoiceDate(@NonNull final LocalDate deliveryDate, final int offset)
+	private LocalDate computeNextMonthlyInvoiceDate(
+
+			@NonNull final LocalDate deliveryDate,
+			final int offset)
 	{
 		final LocalDate dateToInvoice;
 		final int invoiceDayOfMonthToUse = Integer.min(deliveryDate.lengthOfMonth(), getInvoiceDayOfMonth());

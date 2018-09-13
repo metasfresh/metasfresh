@@ -42,6 +42,8 @@ public interface IDocumentNoBuilderFactory extends ISingletonService
 
 	/**
 	 * Convenient method to create and prepare the builder for a given DocType.
+	 *
+	 * @param useDefiniteSequence if {@code true}, then the doc type's {@code DefiniteSequence_ID} is used.
 	 */
 	IDocumentNoBuilder forDocType(int C_DocType_ID, boolean useDefiniteSequence);
 

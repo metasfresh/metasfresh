@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.service.OrgId;
@@ -72,7 +72,7 @@ public class MSV3PurchaseOrderRequestPersister
 
 	private I_MSV3_Bestellung createRecord(@NonNull final OrderCreateRequest request)
 	{
-		final I_MSV3_Bestellung record = newInstance(I_MSV3_Bestellung.class);
+		final I_MSV3_Bestellung record = newInstanceOutOfTrx(I_MSV3_Bestellung.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setMSV3_BestellSupportId(request.getSupportId().getValueAsInt());
 		record.setMSV3_Id(request.getOrderId().getValueAsString());
@@ -82,7 +82,7 @@ public class MSV3PurchaseOrderRequestPersister
 
 	private I_MSV3_BestellungAuftrag createRecord(@NonNull final OrderCreateRequestPackage requestOrder)
 	{
-		final I_MSV3_BestellungAuftrag record = newInstance(I_MSV3_BestellungAuftrag.class);
+		final I_MSV3_BestellungAuftrag record = newInstanceOutOfTrx(I_MSV3_BestellungAuftrag.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setMSV3_Auftragsart(requestOrder.getOrderType().getV2SoapCode().value());
 		record.setMSV3_Auftragskennung(requestOrder.getOrderIdentification());
@@ -95,7 +95,7 @@ public class MSV3PurchaseOrderRequestPersister
 
 	private I_MSV3_BestellungPosition createRecord(@NonNull final OrderCreateRequestPackageItem requestItem)
 	{
-		final I_MSV3_BestellungPosition record = newInstance(I_MSV3_BestellungPosition.class);
+		final I_MSV3_BestellungPosition record = newInstanceOutOfTrx(I_MSV3_BestellungPosition.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setMSV3_Liefervorgabe(requestItem.getDeliverySpecifications().getV2SoapCode().value());
 		record.setMSV3_Menge(requestItem.getQty().getValueAsInt());

@@ -247,7 +247,7 @@ public class OrderLineBL implements IOrderLineBL
 			ol.setC_BPartner_ID(bpartnerId);
 
 			final BPartnerLocationId deliveryLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(deliveryLocationId, -1));
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryLocationId));
 
 			final int contactId = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 			ol.setAD_User_ID(contactId);
@@ -291,13 +291,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(@NonNull final I_C_OrderLine orderLine)
+	public void updateLineNetAmt(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		updateLineNetAmt(orderLine, getQtyEntered(orderLine));
 	}
 
 	void updateLineNetAmt(
-			@NonNull final I_C_OrderLine ol,
+			@NonNull final org.compiere.model.I_C_OrderLine ol,
 			@NonNull final Quantity qty)
 	{
 		final Quantity qtyInPriceUOM = convertToPriceUOM(qty, ol);
