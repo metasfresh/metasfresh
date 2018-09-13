@@ -7,12 +7,9 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -117,27 +114,17 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		return MSG_OK;
 	}
 
-	/**
-	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
-	 */
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (!Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		{
+			return retrieveQtyToPick();
+		}
+		else
 		{
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
-		if (qtyPickedPlanned == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
-
-		return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
 	}
-
 }

@@ -28,7 +28,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
-import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
@@ -189,26 +188,12 @@ public class WEBUI_Picking_PickQtyToNewHU
 				true); // includeVirtualItem = true..similar case as with production
 	}
 
-	/**
-	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
-	 */
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-
-			final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
-			if (qtyPickedPlanned == null)
-			{
-				return BigDecimal.ZERO;
-			}
-
-			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
-
-			return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
-
+			return retrieveQtyToPick();
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
 		{
@@ -221,8 +206,10 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 			return IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
 		}
-
-		return DEFAULT_VALUE_NOTAVAILABLE;
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
 	}
 
 	private static final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
