@@ -36,6 +36,7 @@ import java.util.List;
 import javax.swing.JFrame;
 
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -351,9 +352,9 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 		{
 			if (I_M_Warehouse.Table_Name.equals(key.getTableName()))
 			{
-				final int warehouseId = key.getValue().getKey();
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(key.getValue().getKey());
 				final PickingOKPanel pickingOKPanel = getPickingOKPanel();
-				pickingOKPanel.getModel().setM_Warehouse_ID(warehouseId);
+				pickingOKPanel.getModel().setWarehouseId(warehouseId);
 				refreshLines(ResetFilters.Yes);
 			}
 		}

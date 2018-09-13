@@ -41,6 +41,7 @@ import javax.swing.ListSelectionModel;
 import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
@@ -245,7 +246,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 				// Force Target WarehouseId the one which is selected in Kommissionier Terminal
 				{
 					final FreshSwingPickingTerminalPanel basePanel = getPickingTerminalPanel();
-					final int selectedWarehouseId = basePanel.getSelectedWarehouseId();
+					final WarehouseId selectedWarehouseId = basePanel.getSelectedWarehouseId();
 					form.setWarehouseOverrideId(selectedWarehouseId);
 				}
 

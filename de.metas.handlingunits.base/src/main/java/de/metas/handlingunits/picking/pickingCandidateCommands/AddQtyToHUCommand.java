@@ -212,7 +212,7 @@ public class AddQtyToHUCommand
 	private boolean isOverdelivery()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentScheduleId);
 		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null ? BigDecimal.ZERO : qtyPickedPlanned);
 
 		return qtyCU.compareTo(qtytoDeliver) > 0;

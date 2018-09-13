@@ -32,9 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.picking.terminal.Utils;
 import de.metas.shipping.interfaces.I_M_Package;
 
@@ -44,7 +46,7 @@ import de.metas.shipping.interfaces.I_M_Package;
  */
 public class PackingTreeBL
 {
-	public static I_M_PackagingTree getPackingTree(final int bp_id, final int warehouseDestID, final BigDecimal qty)
+	public static I_M_PackagingTree getPackingTree(final BPartnerId bpartnerId, final WarehouseId warehouseDestId, final BigDecimal qty)
 	{
 		if (Utils.disableSavePickingTree) // cg : task 05659 Picking Terminal: Disable Persistency
 		{
@@ -56,12 +58,12 @@ public class PackingTreeBL
 		
 		String whereClause = I_M_PackagingTree.COLUMNNAME_C_BPartner_ID + " = ?  AND " +  I_M_PackagingTree.COLUMNNAME_Processed + " = ? ";
 		final List<Object> params = new ArrayList<>();
-		params.add(bp_id);
+		params.add(bpartnerId);
 		params.add(false);
-		if (warehouseDestID > 0)
+		if (warehouseDestId != null)
 		{
 			whereClause += " AND " + I_M_PackagingTree.COLUMNNAME_M_Warehouse_Dest_ID + " = ?";
-			params.add(warehouseDestID);
+			params.add(warehouseDestId);
 		}
 		whereClause = whereClause
 				+ " AND ? = (select sum(pi.qty) from m_packagingtreeitem pi "

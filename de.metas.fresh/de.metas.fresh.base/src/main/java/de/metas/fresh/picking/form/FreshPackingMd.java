@@ -25,7 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
@@ -34,8 +34,11 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.PackingMd;
@@ -56,12 +59,12 @@ public class FreshPackingMd extends PackingMd
 	{
 		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
 
-		final int bpartnerId = item.getBpartnerId();
-		keyBuilder.bpartnerId(bpartnerId);
+		final BPartnerId bpartnerId = item.getBpartnerId();
+		keyBuilder.bpartnerId(bpartnerId.getRepoId());
 
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
-		final int bpartnerLocationId = item.getBpartnerLocationId();
+		final BPartnerLocationId bpartnerLocationId = item.getBpartnerLocationId();
 		final String bPartnerAddress = item.getBpartnerAddress();
 		keyBuilder.bpartnerAddress(Check.isEmpty(bPartnerAddress, true) ? null : bPartnerAddress.trim());
 
@@ -103,7 +106,7 @@ public class FreshPackingMd extends PackingMd
 
 		final String deliveryVia = item.getDeliveryVia();
 
-		final Timestamp deliveryDate = item.getDeliveryDate(); // customer01676
+		final LocalDateTime deliveryDate = item.getDeliveryDate(); // customer01676
 		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
 		final String bpartnerValue = item.getBpartnerValue();
 		final String bpartnerName = item.getBpartnerName();
@@ -129,10 +132,12 @@ public class FreshPackingMd extends PackingMd
 			key = getCreateTableRowKey(keyBuilder);
 		}
 		final TableRow row = TableRow.builder()
-				.bpartnerLocationId(bpartnerLocationId)
 				.shipmentScheduleId(shipmentScheduleId)
 				.qtyToDeliver(qtyToDeliver)
-				.bpartnerId(bpartnerId).bpartnerValue(bpartnerValue).bpartnerName(bpartnerName)
+				.bpartnerId(bpartnerId.getRepoId())
+				.bpartnerValue(bpartnerValue)
+				.bpartnerName(bpartnerName)
+				.bpartnerLocationId(bpartnerLocationId.getRepoId())
 				.bpartnerLocationName(bPartnerLocationName)
 				.warehouseName(warehouseName)
 				.deliveryVia(deliveryVia)
@@ -144,8 +149,8 @@ public class FreshPackingMd extends PackingMd
 				.warehouseDestName(warehouseDestName)
 				.productId(productId)
 				.productName(productName)
-				.deliveryDate(deliveryDate)
-				.preparationDate(item.getPreparationDate())
+				.deliveryDate(TimeUtil.asTimestamp(deliveryDate))
+				.preparationDate(TimeUtil.asTimestamp(item.getPreparationDate()))
 				.build();
 
 		return row;

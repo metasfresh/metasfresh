@@ -1,5 +1,7 @@
 package de.metas.fresh.picking;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -26,10 +28,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.adempiere.util.Check;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -46,30 +47,30 @@ public class DeliveryDateKeyLayout extends DefaultKeyLayout
 	/**
 	 * Currently set dates
 	 */
-	private Set<Date> _deliveryDates = Collections.emptySet();
+	private Set<LocalDate> _deliveryDates = Collections.emptySet();
 
 	/**
 	 * Create keys and set them from given {@link Date}s set.
 	 *
 	 * @param deliveryDates
 	 */
-	public void createAndSetKeysFromDates(final Set<Date> deliveryDates)
+	public void createAndSetKeysFromDates(final Set<LocalDate> deliveryDates)
 	{
 		//
 		// Normalize and sort new Delivery Dates
-		final Set<Date> deliveryDatesSorted;
+		final Set<LocalDate> deliveryDatesSorted;
 		if (deliveryDates == null || deliveryDates.isEmpty())
 		{
 			deliveryDatesSorted = Collections.emptySet();
 		}
 		else
 		{
-			deliveryDatesSorted = new TreeSet<Date>(deliveryDates);
+			deliveryDatesSorted = new TreeSet<>(deliveryDates);
 		}
 
 		//
 		// Check if there will be an actual change
-		if (Check.equals(_deliveryDates, deliveryDatesSorted))
+		if (Objects.equals(_deliveryDates, deliveryDatesSorted))
 		{
 			return;
 		}
@@ -78,11 +79,11 @@ public class DeliveryDateKeyLayout extends DefaultKeyLayout
 		disposeCreateDetachReverences(
 				() -> {
 
-					final List<ITerminalKey> deliveryDateKeys = new ArrayList<ITerminalKey>(deliveryDatesSorted.size());
+					final List<ITerminalKey> deliveryDateKeys = new ArrayList<>(deliveryDatesSorted.size());
 
 					//
 					// Create new DeliveryDate Keys
-					for (final Date deliveryDate : deliveryDatesSorted)
+					for (final LocalDate deliveryDate : deliveryDatesSorted)
 					{
 						final DeliveryDateKey deliveryDateKey = new DeliveryDateKey(getTerminalContext(), deliveryDate);
 						deliveryDateKeys.add(deliveryDateKey);

@@ -23,7 +23,8 @@ package de.metas.picking.legacy.form;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,9 +57,11 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 
 import de.metas.adempiere.service.IPackagingBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IPackageable;
-import de.metas.inoutcandidate.api.IPackageableQuery;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
 
@@ -83,9 +86,9 @@ public class PackingMd extends MvcMdGenForm
 
 	//
 	// Search filters
-	private int warehouseId;
-	private List<Integer> bpartnerIds;
-	private Date deliveryDate = null;
+	private WarehouseId warehouseId;
+	private Set<BPartnerId> bpartnerIds;
+	private LocalDate deliveryDate = null;
 	private ITableRowSearchSelectionMatcher tableRowSearchSelectionMatcher = NullTableRowSearchSelectionMatcher.instance;
 
 	/**
@@ -163,18 +166,18 @@ public class PackingMd extends MvcMdGenForm
 		_requeryNeeded = true;
 	}
 
-	public int getM_Warehouse_ID()
+	public WarehouseId getWarehouseId()
 	{
 		return warehouseId;
 	}
 
-	public void setM_Warehouse_ID(final int warehouseId)
+	public void setWarehouseId(final WarehouseId warehouseId)
 	{
 		this.warehouseId = warehouseId;
 		setRequeryNeeded();
 	}
 
-	public List<Integer> getBPartnerIds()
+	public Set<BPartnerId> getBPartnerIds()
 	{
 		return bpartnerIds;
 	}
@@ -184,7 +187,7 @@ public class PackingMd extends MvcMdGenForm
 	 *
 	 * @param bpartnerIds
 	 */
-	public void setBPartnerIds(final List<Integer> bpartnerIds)
+	public void setBPartnerIds(final Set<BPartnerId> bpartnerIds)
 	{
 		this.bpartnerIds = bpartnerIds;
 	}
@@ -447,7 +450,7 @@ public class PackingMd extends MvcMdGenForm
 	 *
 	 * @return DeliveryDates from selected rows; never return null
 	 */
-	public Set<Date> getSelectedDeliveryDates()
+	public Set<LocalDate> getSelectedDeliveryDates()
 	{
 		final int[] selectedRows = getSelectedRowIndices();
 
@@ -464,7 +467,7 @@ public class PackingMd extends MvcMdGenForm
 			getTableRows(selectedRows, deliveryDatesCollector);
 		}
 
-		final Set<Date> deliveryDates = deliveryDatesCollector.getDeliveryDates();
+		final Set<LocalDate> deliveryDates = deliveryDatesCollector.getDeliveryDates();
 		return deliveryDates;
 	}
 
@@ -592,36 +595,36 @@ public class PackingMd extends MvcMdGenForm
 		rows.add(row);
 	}
 
-	/**
-	 * Build up the {@link IPackageableQuery} to be used when selecting {@link IPackageable} items.
-	 *
-	 * @return query
-	 */
-	private IPackageableQuery createPackageableQuery()
+	private PackageableQuery createPackageableQuery()
 	{
-		final IPackageableQuery query = packagingDAO.createPackageableQuery();
-		query.setWarehouseId(getM_Warehouse_ID());
-		query.setIsDisplayTodayEntriesOnly(isDisplayTodayEntriesOnly());
+		final WarehouseId warehouseId = getWarehouseId();
+		if (warehouseId == null)
+		{
+			return null;
+		}
 
-		return query;
+		return PackageableQuery.builder()
+				.warehouseId(warehouseId)
+				.displayTodayEntriesOnly(isDisplayTodayEntriesOnly())
+				.build();
 	}
 
 	protected TableRow createTableRow(final IPackageable item)
 	{
-		final int bpartnerId = item.getBpartnerId();
-		final int M_Warehouse_Dest_ID = 0; // M_Warehouse_Dest is gone for a long time by now
+		final BPartnerId bpartnerId = item.getBpartnerId();
+		final WarehouseId warehouseDestId = null; // M_Warehouse_Dest is gone for a long time by now
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
-		final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, M_Warehouse_Dest_ID, qtyToDeliver);
+		final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, warehouseDestId, qtyToDeliver);
 		if (tree != null && tree.getCreatedBy() != packingUserId && tree.getCreatedBy() != 0)
 		{
 			return null;
 		}
 
 		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
-		keyBuilder.bpartnerId(bpartnerId > 0 ? bpartnerId : -1);
+		keyBuilder.bpartnerId(BPartnerId.toRepoIdOr(bpartnerId, -1));
 
-		final int bpartnerLocationId = item.getBpartnerLocationId();
+		final BPartnerLocationId bpartnerLocationId = item.getBpartnerLocationId();
 		final String bPartnerAddress = item.getBpartnerAddress();
 		keyBuilder.bpartnerAddress(bPartnerAddress);
 
@@ -629,7 +632,6 @@ public class PackingMd extends MvcMdGenForm
 		keyBuilder.warehouseId(warehouseId.getRepoId());
 		final String warehouseName = item.getWarehouseName();
 
-		final int warehouseDestId;
 		final String warehouseDestName;
 		if (groupByWarehouseDest)
 		{
@@ -637,7 +639,7 @@ public class PackingMd extends MvcMdGenForm
 		}
 		else
 		{
-			warehouseDestId = 0;
+			// warehouseDestId = 0;
 			warehouseDestName = null;
 			keyBuilder.warehouseDestId(-1);
 		}
@@ -664,7 +666,7 @@ public class PackingMd extends MvcMdGenForm
 		final String deliveryVia = item.getDeliveryVia();
 		// final String deliveryViaName = item.getDeliveryViaName();
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
-		final Timestamp deliveryDate = item.getDeliveryDate(); // 01676
+		final LocalDateTime deliveryDate = item.getDeliveryDate(); // 01676
 		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
 		final String bpartnerValue = item.getBpartnerValue();
 		final String bpartnerName = item.getBpartnerName();
@@ -679,10 +681,12 @@ public class PackingMd extends MvcMdGenForm
 
 		final TableRowKey key = getCreateTableRowKey(keyBuilder);
 		final TableRow row = TableRow.builder()
-				.bpartnerLocationId(bpartnerLocationId)
 				.shipmentScheduleId(shipmentScheduleId)
 				.qtyToDeliver(qtyToDeliver)
-				.bpartnerId(bpartnerId).bpartnerValue(bpartnerValue).bpartnerName(bpartnerName)
+				.bpartnerId(bpartnerId.getRepoId())
+				.bpartnerValue(bpartnerValue)
+				.bpartnerName(bpartnerName)
+				.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
 				.bpartnerLocationName(bPartnerLocationName)
 				.warehouseName(warehouseName)
 				.deliveryVia(deliveryVia)
@@ -690,12 +694,12 @@ public class PackingMd extends MvcMdGenForm
 				.displayed(isDisplayed)
 				.key(key)
 				//
-				.warehouseDestId(warehouseDestId)
+				.warehouseDestId(WarehouseId.toRepoId(warehouseDestId))
 				.warehouseDestName(warehouseDestName)
 				.productId(productId)
 				.productName(productName)
-				.preparationDate(item.getPreparationDate())
-				.deliveryDate(deliveryDate)
+				.preparationDate(TimeUtil.asTimestamp(item.getPreparationDate()))
+				.deliveryDate(TimeUtil.asTimestamp(deliveryDate))
 				//
 				.build();
 
@@ -754,7 +758,7 @@ public class PackingMd extends MvcMdGenForm
 		// Filter by BPartner
 		if (bpartnerIds != null && !bpartnerIds.isEmpty())
 		{
-			final int bpartnerId = packageableItem.getBpartnerId();
+			final BPartnerId bpartnerId = packageableItem.getBpartnerId();
 			if (!bpartnerIds.contains(bpartnerId))
 			{
 				return false;
@@ -763,12 +767,11 @@ public class PackingMd extends MvcMdGenForm
 
 		//
 		// Filter by DeliveryDate
-		final Date deliveryDate = getDeliveryDate();
+		final LocalDate deliveryDate = getDeliveryDate();
 		if (deliveryDate != null)
 		{
-			final Timestamp deliveryDateDay = TimeUtil.trunc(deliveryDate, TimeUtil.TRUNC_DAY);
-			final Timestamp packageableDeliveryDateDay = TimeUtil.trunc(packageableItem.getDeliveryDate(), TimeUtil.TRUNC_DAY);
-			if (!deliveryDateDay.equals(packageableDeliveryDateDay))
+			final LocalDate packageableDeliveryDateDay = packageableItem.getDeliveryDate().toLocalDate();
+			if (!deliveryDate.equals(packageableDeliveryDateDay))
 			{
 				return false;
 			}
@@ -781,8 +784,15 @@ public class PackingMd extends MvcMdGenForm
 	{
 		if (_packageableItemsAll == null || _requeryNeeded)
 		{
-			final IPackageableQuery query = createPackageableQuery();
-			_packageableItemsAll = packagingDAO.retrievePackableLines(query);
+			final PackageableQuery query = createPackageableQuery();
+			if (query == null)
+			{
+				_packageableItemsAll = ImmutableList.of();
+			}
+			else
+			{
+				_packageableItemsAll = packagingDAO.retrievePackableLines(query);
+			}
 
 			_requeryNeeded = false;
 		}
@@ -864,12 +874,12 @@ public class PackingMd extends MvcMdGenForm
 		return tableRowSearchSelectionMatcher;
 	}
 
-	public void setDeliveryDate(final Date deliveryDate)
+	public void setDeliveryDate(final LocalDate deliveryDate)
 	{
 		this.deliveryDate = deliveryDate;
 	}
 
-	public Date getDeliveryDate()
+	public LocalDate getDeliveryDate()
 	{
 		return deliveryDate;
 	}

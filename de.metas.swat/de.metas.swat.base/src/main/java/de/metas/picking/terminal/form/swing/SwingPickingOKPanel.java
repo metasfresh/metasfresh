@@ -33,9 +33,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +45,9 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.Waiting;
 import org.compiere.apps.form.FormFrame;
@@ -57,14 +56,12 @@ import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.I_M_PackagingTreeItem;
-import org.compiere.model.MBPartner;
 import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.adempiere.exception.NoContainerException;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
@@ -78,11 +75,10 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalTable;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.AvailableBins;
-import de.metas.picking.legacy.form.BinPacker;
-import de.metas.picking.legacy.form.IBinPacker;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
@@ -99,7 +95,6 @@ import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
-import de.metas.product.IStoragePA;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -238,25 +233,27 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 				return null;
 			}
 
-			String value = "";
+			String bpValue = "";
 			BigDecimal qtyToDeliver = BigDecimal.ZERO;
-			int warehouseDestId = 0;
+			WarehouseId warehouseDestId = null;
 
 			// restrict the searching;
 			for (int i = 1; i < 4; i++)
 			{
 				if (table.getColumnName(i).equals(COLUMNNAME_BPValue))
-					value = (String)table.getValueAt(row, i);
+					bpValue = (String)table.getValueAt(row, i);
 				if (table.getColumnName(i).equals(COLUMNNAME_Qty))
 					qtyToDeliver = (BigDecimal)table.getValueAt(row, i);
 				if (table.getColumnName(i).equals(COLUMNNAME_M_Warehouse_Dest_ID))
-					warehouseDestId = (Integer)table.getValueAt(row, i);
+					warehouseDestId = WarehouseId.ofRepoIdOrNull((Integer)table.getValueAt(row, i));
 
 			}
 
-			final int bp_id = MBPartner.get(Env.getCtx(), value).getC_BPartner_ID();
+			final BPartnerId bpartnerId = Services.get(IBPartnerDAO.class)
+					.getBPartnerIdByValueIfExists(bpValue)
+					.orElse(null);
 
-			final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bp_id, warehouseDestId, qtyToDeliver);
+			final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, warehouseDestId, qtyToDeliver);
 
 			PackingStates state = PackingStates.unpacked;
 			if (tree != null)
@@ -400,84 +397,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
-		final PackingMd model = getModel();
-
-		final IStoragePA storagePA = Services.get(IStoragePA.class);
-
-		final Collection<AvailableBins> containers = new ArrayList<>();
-
-		final int warehouseId = model.getM_Warehouse_ID();
-		final List<I_M_PackagingContainer> pcs = packagingDAO.retrieveContainers(warehouseId, ITrx.TRXNAME_None);
-
-		if (pcs.isEmpty())
-		{
-			throw new NoContainerException(warehouseId, false, false);
-		}
-
-		for (final I_M_PackagingContainer pc : pcs)
-		{
-			final BigDecimal qtyAvail = storagePA.retrieveQtyAvailable(
-					warehouseId, // M_Warehouse_ID
-					0, // M_Locator_ID
-					pc.getM_Product_ID(),
-					0, // M_AttributeSetInstance_ID
-					ITrx.TRXNAME_None);
-
-			final AvailableBins bin = new AvailableBins(ctx, pc, qtyAvail.intValue(), null);
-			containers.add(bin);
-		}
-
-		BigDecimal unpackedQty = BigDecimal.ZERO;
-		for (final IPackingItem item : unallocatedLines)
-		{
-			final BigDecimal qtySum = Utils.convertToItemUOM(item, item.getQtySum());
-			unpackedQty = unpackedQty.add(qtySum);
-		}
-
-		final int bpId;
-		final int C_BPartner_Location_ID;
-		final PackingDetailsMd detailsModel;
-		if (getModel().isGroupByProduct())
-		{
-			// create the tree
-			bpId = -1;
-			C_BPartner_Location_ID = -1;
-			detailsModel = new PackingDetailsMd(unallocatedLines, containers, true, nonItemScheds, bpId, C_BPartner_Location_ID, -1, false);
-		}
-		else
-		{
-			bpId = model.getBPartnerIdForRow(rows[0]); // in this case is only one row selected
-			C_BPartner_Location_ID = model.getBPartnerLocationIdForRow(rows[0]); // in this case is only one row selected
-			final int M_Warehouse_Dest_ID = model.getWarehouseDestIdForRow(rows[0]); // in this case is only one row selected
-			final I_M_PackagingTree savedTree = PackingTreeBL.getPackingTree(bpId, M_Warehouse_Dest_ID, unpackedQty);
-			//
-			if (savedTree != null)
-			{
-				detailsModel = new PackingDetailsMd(ctx, savedTree, true, C_BPartner_Location_ID, M_Warehouse_Dest_ID, getModel().isGroupByWarehouseDest());
-			}
-			else
-			{
-				// No matched tree for given Qty found, so it's better to recreate it again
-				detailsModel = new PackingDetailsMd(unallocatedLines, containers, true, nonItemScheds, bpId, C_BPartner_Location_ID, M_Warehouse_Dest_ID, getModel().isGroupByWarehouseDest());
-			}
-		}
-
-		final int shipperId = model.getShipperIdForRow(rows[0]); // in this case is only one row selected
-		if (shipperId > 0)
-		{
-			detailsModel.selectedShipperId = shipperId;
-		}
-
-		final IBinPacker binPacker = new BinPacker();
-		detailsModel.packer = binPacker;
-
-		// create a suggested solution
-		detailsModel.getPackingTreeModel().setBp_id(bpId);
-		detailsModel.getPackingTreeModel().setC_BPartner_Location_ID(C_BPartner_Location_ID);
-
-		executePacking(detailsModel);
-
-		return detailsModel;
+		// shall be implemented by extending classes
+		throw new UnsupportedOperationException();
 	}
 
 	protected PackingMd createPackingModel(final ITerminalTable lines)
@@ -864,7 +785,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	}
 
 	@Override
-	public Set<Date> getSelectedDeliveryDates()
+	public Set<LocalDate> getSelectedDeliveryDates()
 	{
 		return getModel().getSelectedDeliveryDates();
 	}

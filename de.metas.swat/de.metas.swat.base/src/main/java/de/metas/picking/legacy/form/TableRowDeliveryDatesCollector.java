@@ -1,33 +1,13 @@
 package de.metas.picking.legacy.form;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Collect DeliveryDates for {@link TableRow}s
@@ -37,7 +17,7 @@ import org.compiere.util.TimeUtil;
  */
 /* package */class TableRowDeliveryDatesCollector implements Predicate<TableRow>
 {
-	private Set<Date> deliveryDates = new TreeSet<Date>();
+	private Set<LocalDate> deliveryDates = new TreeSet<>();
 
 	/**
 	 * Returns always <code>false</code>, but if the given <code>tableRow</code> has a <code>DeliveryDate</code>,
@@ -48,15 +28,12 @@ import org.compiere.util.TimeUtil;
 	@Override
 	public boolean test(final TableRow tableRow)
 	{
-		Date deliveryDate = tableRow.getDeliveryDate();
+		LocalDate deliveryDate = TimeUtil.asLocalDate(tableRow.getDeliveryDate());
 		if (deliveryDate == null)
 		{
 			// shall not happen, but skip it
 			return false;
 		}
-
-		// make sure is truncated to date
-		deliveryDate = TimeUtil.getDay(deliveryDate);
 
 		deliveryDates.add(deliveryDate);
 
@@ -67,8 +44,8 @@ import org.compiere.util.TimeUtil;
 	 *
 	 * @return collected DeliveryDates
 	 */
-	public Set<Date> getDeliveryDates()
+	public Set<LocalDate> getDeliveryDates()
 	{
-		return deliveryDates;
+		return ImmutableSet.copyOf(deliveryDates);
 	}
 }

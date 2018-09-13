@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.ddorder.form;
 
+import org.adempiere.warehouse.WarehouseId;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -50,7 +52,7 @@ public class DDOrderHUSelectForm extends AbstractHUSelectForm<DDOrderHUSelectMod
 		framePanel.setContextManufacturingOrder(pp_Order);
 	}
 
-	public void setWarehouseOverrideId(final int warehouseOverrideId)
+	public void setWarehouseOverrideId(final WarehouseId warehouseOverrideId)
 	{
 		final DDOrderHUSelectFrame framePanel = (DDOrderHUSelectFrame)getFramePanel();
 		framePanel.setWarehouseOverrideId(warehouseOverrideId);

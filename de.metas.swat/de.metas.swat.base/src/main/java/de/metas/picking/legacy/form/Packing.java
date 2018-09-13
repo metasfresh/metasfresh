@@ -44,35 +44,29 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.PackingTreeBL;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.adempiere.exception.NoContainerException;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.i18n.Msg;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.terminal.Utils;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
-import de.metas.product.IStoragePA;
 import de.metas.quantity.Quantity;
 
 /**
@@ -86,10 +80,9 @@ public abstract class Packing extends MvcGenForm
 	protected final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private static final String MSG_DOING_PACKAGING = "Verarbeite Kommsionierung";
+	// private static final String MSG_DOING_PACKAGING = "Verarbeite Kommsionierung";
 	private static final String MSG_SHIP_TO_ADDRESS = "Lieferanschrift";
 
 	public static final String PROP_M_WAREHOUSE_ID = "M_Warehouse_ID";
@@ -134,13 +127,13 @@ public abstract class Packing extends MvcGenForm
 		getModel().setReportEngineType(ReportEngine.SHIPMENT);
 		getModel().setAskPrintMsg("PrintShipments");
 
-		final int loginWarehouse = Env.getContextAsInt(ctx, "#M_Warehouse_ID");
-		if (loginWarehouse > 0)
+		final WarehouseId loginWarehouse = WarehouseId.ofRepoIdOrNull(Env.getContextAsInt(ctx, Env.CTXNAME_M_Warehouse_ID));
+		if (loginWarehouse != null)
 		{
-			getModel().setM_Warehouse_ID(loginWarehouse);
+			getModel().setWarehouseId(loginWarehouse);
 
 			final IPackingView view = (IPackingView)getView();
-			view.setSelectedWarehouseId(loginWarehouse);
+			view.setSelectedWarehouseId(loginWarehouse.getRepoId());
 			executeQuery();
 			view.focusOnNextOneButton();
 		}
@@ -283,7 +276,7 @@ public abstract class Packing extends MvcGenForm
 		{
 			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@");
 		}
-		if (model.getM_Warehouse_ID() <= 0)
+		if (model.getWarehouseId() == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@");
 		}
@@ -313,7 +306,6 @@ public abstract class Packing extends MvcGenForm
 
 		final boolean displayNonItems = Services.get(IPackagingBL.class).isDisplayNonItemsEnabled(ctx);
 
-		final IPackingDetailsModel detailsModel;
 		try
 		{
 			// prepare our "problem" description
@@ -330,8 +322,8 @@ public abstract class Packing extends MvcGenForm
 				}
 			}
 
-			detailsModel = createPackingDetailsModel(ctx, rows, unallocatedLines, nonItemScheds);
-			}
+			createPackingDetailsModel(ctx, rows, unallocatedLines, nonItemScheds);
+		}
 		catch (final Throwable t)
 		{
 			unlockShipmentSchedules();
@@ -393,84 +385,13 @@ public abstract class Packing extends MvcGenForm
 			final Collection<IPackingItem> unallocatedLines,
 			final List<I_M_ShipmentSchedule> nonItemScheds)
 	{
-		final PackingMd model = getModel();
-
-		final IStoragePA storagePA = Services.get(IStoragePA.class);
-
-		final Collection<AvailableBins> containers = new ArrayList<>();
-
-		final int warehouseId = model.getM_Warehouse_ID();
-		final List<I_M_PackagingContainer> pcs = packagingDAO.retrieveContainers(warehouseId, ITrx.TRXNAME_None);
-
-		if (pcs.isEmpty())
-		{
-			throw new NoContainerException(warehouseId, false, false);
-		}
-
-		for (final I_M_PackagingContainer pc : pcs)
-		{
-			final BigDecimal qtyAvail = storagePA.retrieveQtyAvailable(
-					warehouseId,  // M_Warehouse_ID
-					0,  // M_Locator_ID
-					pc.getM_Product_ID(),
-					0,  // M_AttributeSetInstance_ID
-					ITrx.TRXNAME_None);
-
-			final AvailableBins bin = new AvailableBins(ctx, pc, qtyAvail.intValue(), null);
-			containers.add(bin);
-		}
-
-		BigDecimal qty = Env.ZERO;
-		for (final IPackingItem item : unallocatedLines)
-		{
-			qty = qty.add(Utils.convertToItemUOM(item, item.getQtySum()));
-		}
-		//
-		final int bpId = model.getBPartnerIdForRow(rows[0]); // in this case is only one row selected
-		final int C_BPartner_Location_ID = model.getBPartnerLocationIdForRow(rows[0]); // in this case is only one row selected
-		final int warehouseDestId = model.getWarehouseDestIdForRow(rows[0]); // in this case is only one row selected
-		final I_M_PackagingTree savedTree = PackingTreeBL.getPackingTree(bpId, warehouseDestId, qty);
-		//
-		final PackingDetailsMd detailsModel;
-		if (savedTree != null)
-		{
-			detailsModel = new PackingDetailsMd(ctx, savedTree, model.isRowUsesShipper(rows[0]), C_BPartner_Location_ID, warehouseDestId, false); // in this case is only one row selected
-		}
-		else
-		{
-			// No matched tree for given Qty found, so it's better to recreate it again
-			detailsModel = new PackingDetailsMd(unallocatedLines, containers, model.isRowUsesShipper(rows[0]), nonItemScheds, bpId, C_BPartner_Location_ID, warehouseDestId, false); // in this case is only one row selected
-		}
-
-		final int shipperId = model.getShipperIdForRow(rows[0]);
-		if (shipperId > 0)
-		{
-			detailsModel.selectedShipperId = shipperId;
-		}
-
-		final IBinPacker binPacker = new BinPacker();
-		detailsModel.packer = binPacker;
-
-		//
-		// create a suggested solution
-		final PackingTreeModel packingTreeModel = detailsModel.getPackingTreeModel();
-		packingTreeModel.setBp_id(bpId);
-
-		if (savedTree == null)
-		{
-			// Tree was not found or not matched the Qty, so we do the packing again
-			binPacker.pack(ctx, packingTreeModel, ITrx.TRXNAME_None);
-		}
-
-		executePacking(detailsModel);
-
-		return detailsModel;
+		throw new UnsupportedOperationException();
 	}
 
 	/**
 	 * Unlock all shipment schedules which were locked in {@link #createPackingDetails(Properties, int)}
 	 */
-	public void unlockShipmentSchedules()
+	protected void unlockShipmentSchedules()
 	{
 		final int adUserId = Env.getAD_User_ID(ctx);
 
@@ -484,29 +405,6 @@ public abstract class Packing extends MvcGenForm
 					updateOnlyLocked,
 					localTrxName);
 		});
-	}
-
-	private void invokeProcess(final IPackingDetailsModel model)
-	{
-		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
-		// NOTE assume this is not called
-		throw new UnsupportedOperationException();
-
-		// final int processId = processPA.retrieveProcessId(PerformPackaging.class, ITrx.TRXNAME_None);
-		//
-		// final ProcessInfo pi = new ProcessInfo(MSG_DOING_PACKAGING, processId);
-		// pi.setTitle("Kommisionierungsbelege");
-		// pi.setWindowNo(getModel().getWindowNo());
-		// pi.setParameter(new ProcessInfoParameter[] {
-		// new ProcessInfoParameter("selection", model.getPackingTreeModel().getUsedBins(), null, "pipSelectection", null) //
-		// , new ProcessInfoParameter("shipper", model.getSelectedShipper(), null, "pipShipper", null) //
-		// , new ProcessInfoParameter("nonItems", model.getNonItems(), null, "pipNonItems", null) //
-		// });
-		//
-		// return ProcessCtl.builder()
-		// .setAsyncParent(this)
-		// .setProcessInfo(pi)
-		// .execute();
 	}
 
 	@Override

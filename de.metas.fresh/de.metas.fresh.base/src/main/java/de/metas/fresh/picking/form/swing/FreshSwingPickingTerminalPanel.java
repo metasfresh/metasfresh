@@ -16,22 +16,20 @@ package de.metas.fresh.picking.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -40,8 +38,11 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.util.Check;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.util.KeyNamePair;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -54,6 +55,7 @@ import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.fresh.picking.BPartnerKey;
 import de.metas.fresh.picking.BPartnerKeyLayout;
 import de.metas.fresh.picking.DeliveryDateKey;
@@ -253,40 +255,40 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		//
 		// Update DeliveryDate Keys
 		{
-			final Set<Date> deliveryDates = pickingOKPanel.getSelectedDeliveryDates();
+			final Set<LocalDate> deliveryDates = pickingOKPanel.getSelectedDeliveryDates();
 			deliveryDateKeyLayout.createAndSetKeysFromDates(deliveryDates);
 		}
 	}
 
-	public int getSelectedWarehouseId()
+	public WarehouseId getSelectedWarehouseId()
 	{
 		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
 		final PackingMd model = pickingOKPanel.getModel();
-		return model.getM_Warehouse_ID();
+		return model.getWarehouseId();
 	}
 
-	private List<Integer> getSelectedBPartnerIds()
+	private Set<BPartnerId> getSelectedBPartnerIds()
 	{
 		final BPartnerKey bpartnerKey = bpartnerKeyLayout
 				.getKeyLayoutSelectionModel()
 				.getSelectedKeyOrNull(BPartnerKey.class);
 		if (bpartnerKey == null)
 		{
-			return Collections.emptyList();
+			return ImmutableSet.of();
 		}
 
-		final int bpartnerId = bpartnerKey.getC_BPartner_ID();
-		return Collections.singletonList(bpartnerId);
+		final BPartnerId bpartnerId = bpartnerKey.getBpartnerId();
+		return bpartnerId != null ? ImmutableSet.of(bpartnerId) : ImmutableSet.of();
 	}
 
-	private void setSelectedBPartnerId(final int bpartnerId)
+	private void setSelectedBPartnerId(final BPartnerId bpartnerId)
 	{
 		final BPartnerKey bpartnerKey = bpartnerKeyLayout.getKeyByBPartnerId(bpartnerId);
 		final IKeyLayoutSelectionModel selectionModel = bpartnerKeyLayout.getKeyLayoutSelectionModel();
 		selectionModel.setSelectedKey(bpartnerKey);
 	}
 
-	private Date getSelectedDeliveryDate()
+	private LocalDate getSelectedDeliveryDate()
 	{
 		final DeliveryDateKey deliveryDateKey = deliveryDateKeyLayout
 				.getKeyLayoutSelectionModel()
@@ -305,7 +307,6 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 	{
 		// When user presses the "Warehouse button" we shall reset all other filters
 		// NOTE: "Warehouse button" shall be considered something like a master filters reset
-
 
 		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
 		final PackingMd packingMd = pickingOKPanel.getModel();
@@ -333,10 +334,10 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
 		final PackingMd model = pickingOKPanel.getModel();
 
-		final List<Integer> bpartnerIds = getSelectedBPartnerIds();
+		final Set<BPartnerId> bpartnerIds = getSelectedBPartnerIds();
 		model.setBPartnerIds(bpartnerIds);
 
-		final Date deliveryDate = getSelectedDeliveryDate();
+		final LocalDate deliveryDate = getSelectedDeliveryDate();
 		model.setDeliveryDate(deliveryDate);
 
 		super.refreshLines();
@@ -411,7 +412,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 
 		final Properties ctx = getCtx();
 
-		final int warehouseId = getSelectedWarehouseId();
+		final int warehouseId = WarehouseId.toRepoId(getSelectedWarehouseId());
 
 		//
 		// Build a list of matchers that needs to be checked
@@ -423,8 +424,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 				// Check if given barcode is an HU internal barcode
 				, new BarcodeHUTableRowSearchSelectionMatcher(ctx, barcode, warehouseId)
 				// Fallback: null matcher
-				, NullTableRowSearchSelectionMatcher.instance
-				);
+				, NullTableRowSearchSelectionMatcher.instance);
 
 		//
 		// Pick the first matcher
@@ -440,8 +440,8 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 			// We found a valid matcher => push it to model
 
 			// Filter by BPartner if our matcher is BP specific
-			final int matcherBPartnerId = matcher.getC_BPartner_ID();
-			if (matcherBPartnerId > 0)
+			final BPartnerId matcherBPartnerId = BPartnerId.ofRepoIdOrNull(matcher.getC_BPartner_ID());
+			if (matcherBPartnerId != null)
 			{
 				setSelectedBPartnerId(matcherBPartnerId);
 			}
