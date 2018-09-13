@@ -113,7 +113,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		}
 
 		return warehouseDAO
-				.retrieveLocators(warehouseId())
+				.getLocators(warehouseId())
 				.stream()
 				.map(locator -> IntegerLookupValue.of(locator.getM_Locator_ID(), locator.getValue()))
 				.collect(LookupValuesList.collect());
