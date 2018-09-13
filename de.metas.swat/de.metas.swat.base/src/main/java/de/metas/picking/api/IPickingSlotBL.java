@@ -13,31 +13,28 @@ package de.metas.picking.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.picking.model.I_M_PickingSlot;
 
 public interface IPickingSlotBL extends ISingletonService
 {
 	/**
-	 * Returns <code>true</code> if the given picking slot has no partner assigned.
-	 * 
-	 * @param pickingSlot
-	 * @return
+	 * @return <code>true</code> if the given picking slot has no partner assigned.
 	 */
 	boolean isAvailableForAnyBPartner(I_M_PickingSlot pickingSlot);
 
-	boolean isAvailableForBPartnerID(I_M_PickingSlot pickingSlot, int bpartnerId);
+	boolean isAvailableForBPartnerId(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId);
 
-	boolean isAvailableForBPartnerAndLocation(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+	boolean isAvailableForBPartnerAndLocation(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, int bpartnerLocationId);
 }

@@ -38,6 +38,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
@@ -45,6 +46,7 @@ import de.metas.picking.legacy.form.PackingTreeModel;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
+import de.metas.product.ProductId;
 
 /**
  * 
@@ -72,7 +74,7 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 
 		Check.assumeNotNull(unallocatedLines, "unallocatedLines not null");
 		Check.assume(!unallocatedLines.isEmpty(), "unallocatedLines not empty");
-		this.unallocatedLines = Collections.unmodifiableCollection(new ArrayList<IPackingItem>(unallocatedLines));
+		this.unallocatedLines = Collections.unmodifiableCollection(new ArrayList<>(unallocatedLines));
 
 		Check.assumeNotNull(nonItemScheds, "nonItemScheds not null");
 		this.nonItemScheds = nonItemScheds;
@@ -84,8 +86,8 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 		{
 			final IFreshPackingItem freshPackingItem = FreshPackingItemHelper.cast(pi);
 
-			final int productId = freshPackingItem.getProductId();
-			final int bpartnerId = freshPackingItem.getC_BPartner_ID();
+			final ProductId productId = ProductId.ofRepoIdOrNull(freshPackingItem.getProductId());
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(freshPackingItem.getC_BPartner_ID());
 			final int bpartnerLocationId = freshPackingItem.getC_BPartner_Location_ID();
 			final Set<Integer> warehouseIds = freshPackingItem.getWarehouseIds();
 

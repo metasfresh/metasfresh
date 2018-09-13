@@ -1,53 +1,22 @@
 package de.metas.picking.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.adempiere.util.Check;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.model.I_M_PickingSlot;
+import lombok.NonNull;
 
 public class PickingSlotBL implements IPickingSlotBL
 {
 	@Override
-	public boolean isAvailableForAnyBPartner(final I_M_PickingSlot pickingSlot)
+	public boolean isAvailableForAnyBPartner(@NonNull final I_M_PickingSlot pickingSlot)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
 		final int pickingSlotBPartnerId = pickingSlot.getC_BPartner_ID();
-		if (pickingSlotBPartnerId <= 0)
-		{
-			return true;
-		}
-
-		return false;
+		return pickingSlotBPartnerId <= 0;
 	}
 
 	@Override
-	public boolean isAvailableForBPartnerID(final I_M_PickingSlot pickingSlot, final int bpartnerId)
+	public boolean isAvailableForBPartnerId(@NonNull final I_M_PickingSlot pickingSlot, final BPartnerId bpartnerId)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
-
 		//
 		// General use Picking Slot, accept it right away
 		if (isAvailableForAnyBPartner(pickingSlot))
@@ -57,20 +26,20 @@ public class PickingSlotBL implements IPickingSlotBL
 
 		//
 		// Check BPartner
-		final int pickingSlotBPartnerId = pickingSlot.getC_BPartner_ID();
+		final BPartnerId pickingSlotBPartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
 		// Any BPartner Picking Slot
-		if (pickingSlotBPartnerId <= 0)
+		if (pickingSlotBPartnerId == null)
 		{
 			// accept any partner
 		}
 		// Picking slot specific for BP
 		else
 		{
-			if (bpartnerId <= 0)
+			if (bpartnerId == null)
 			{
 				// no particular partner was requested, (i.e. M_HU_PI_Item_Product does not have a BP set), accept it
 			}
-			else if (bpartnerId == pickingSlotBPartnerId)
+			else if (bpartnerId.equals(pickingSlotBPartnerId))
 			{
 				// same BP, accept it
 			}
@@ -86,12 +55,11 @@ public class PickingSlotBL implements IPickingSlotBL
 	}
 
 	@Override
-	public boolean isAvailableForBPartnerAndLocation(final I_M_PickingSlot pickingSlot,
-			final int bpartnerId,
+	public boolean isAvailableForBPartnerAndLocation(
+			@NonNull final I_M_PickingSlot pickingSlot,
+			final BPartnerId bpartnerId,
 			final int bpartnerLocationId)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
-
 		//
 		// General use Picking Slot, accept it right away
 		if (isAvailableForAnyBPartner(pickingSlot))
@@ -101,7 +69,7 @@ public class PickingSlotBL implements IPickingSlotBL
 
 		//
 		// Check if is available for BPartner
-		if (!isAvailableForBPartnerID(pickingSlot, bpartnerId))
+		if (!isAvailableForBPartnerId(pickingSlot, bpartnerId))
 		{
 			return false;
 		}

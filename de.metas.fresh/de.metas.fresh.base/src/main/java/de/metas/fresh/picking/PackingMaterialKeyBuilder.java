@@ -36,13 +36,13 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -51,7 +51,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BPartner;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 public class PackingMaterialKeyBuilder
 {
@@ -82,14 +83,15 @@ public class PackingMaterialKeyBuilder
 	 * @param bpartnerLocationId
 	 * @throws AdempiereException if no {@link PackingMaterialKey} was added for this request
 	 */
-	public void addProduct(final int productId,
-			final int bpartnerId,
+	public void addProduct(
+			final ProductId productId,
+			final BPartnerId bpartnerId,
 			final int bpartnerLocationId // will be used in future
 	)
 	{
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
-		queryVO.setC_BPartner_ID(bpartnerId);
-		queryVO.setM_Product_ID(productId);
+		queryVO.setC_BPartner_ID(BPartnerId.toRepoIdOr(bpartnerId, -1));
+		queryVO.setM_Product_ID(ProductId.toRepoId(productId));
 		queryVO.setDate(date);
 		queryVO.setAllowAnyProduct(true);
 
@@ -116,10 +118,8 @@ public class PackingMaterialKeyBuilder
 		{
 			final String translatedErrMsgWithParams = Services.get(IMsgBL.class).parseTranslation(ctx, "@HU_PI_NotFoundFor_ProductAndPartner@");
 
-			final I_M_Product product = productId <= 0 ? null : InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
-			final String productValue = product == null ? "*" : product.getValue() + "_" + product.getName();
-			final I_C_BPartner bpartner = bpartnerId <= 0 ? null : InterfaceWrapperHelper.create(ctx, bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-			final String partnerValue = bpartner == null ? "*" : bpartner.getValue() + "_" + bpartner.getName();
+			final String productValue = Services.get(IProductBL.class).getProductValueAndName(productId);
+			final String partnerValue = Services.get(IBPartnerBL.class).getBPartnerValueAndName(bpartnerId);
 
 			final String exceptionMessage = MessageFormat.format(translatedErrMsgWithParams, productValue, partnerValue);
 			throw new AdempiereException(exceptionMessage);

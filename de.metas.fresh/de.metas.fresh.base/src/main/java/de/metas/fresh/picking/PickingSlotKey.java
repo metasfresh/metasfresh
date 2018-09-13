@@ -44,6 +44,7 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -570,7 +571,7 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if bpartner/location is accepted
-		final int bpartnerId = productKey.getC_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(productKey.getC_BPartner_ID());
 		final int bpartnerLocationId = productKey.getC_BPartner_Location_ID();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
@@ -608,7 +609,7 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if picking slot accepts packingItem's BPartner and Location
-		final int bpartnerId = packingItem.getC_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(packingItem.getC_BPartner_ID());
 		final int bpartnerLocationId = packingItem.getC_BPartner_Location_ID();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{

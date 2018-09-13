@@ -48,6 +48,7 @@ import org.compiere.util.TrxRunnable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -503,11 +504,11 @@ public class HUPickingSlotBL
 	{
 		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
 
-		final int bpartnerId = itemProduct.getC_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(itemProduct.getC_BPartner_ID());
 
 		//
 		// NOTE: itemProduct does not have BP Location so we cannot validate for Location
-		if (!Services.get(IHUPickingSlotBL.class).isAvailableForBPartnerID(pickingSlot, bpartnerId))
+		if (!Services.get(IHUPickingSlotBL.class).isAvailableForBPartnerId(pickingSlot, bpartnerId))
 		{
 			return false;
 		}

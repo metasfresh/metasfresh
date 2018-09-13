@@ -25,8 +25,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import lombok.NonNull;
 

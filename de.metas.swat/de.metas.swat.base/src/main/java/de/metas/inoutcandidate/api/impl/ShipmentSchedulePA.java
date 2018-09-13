@@ -1323,7 +1323,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
 				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class)
 				.stream()

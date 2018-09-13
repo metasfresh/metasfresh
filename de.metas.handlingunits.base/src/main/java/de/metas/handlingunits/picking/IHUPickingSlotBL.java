@@ -118,7 +118,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 
 	/**
 	 * @return <code>true</code> if the given <code>itemProduct</code> references no <code>C_BPartner</code> or if the referenced BPartner fits with the given <code>pickingSlot</code>.
-	 * @see #isAvailableForBPartnerID(de.metas.picking.model.I_M_PickingSlot, int)
+	 * @see #isAvailableForBPartnerId(de.metas.picking.model.I_M_PickingSlot, int)
 	 */
 	boolean isAvailableForProduct(I_M_PickingSlot pickingSlot, I_M_HU_PI_Item_Product itemProduct);
 

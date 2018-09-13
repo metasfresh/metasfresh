@@ -1,7 +1,5 @@
 package de.metas.fresh.picking;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.text.MessageFormat;
 
 /*
@@ -39,14 +37,15 @@ import org.adempiere.util.Services;
 import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import lombok.NonNull;
 
@@ -82,7 +81,7 @@ public class PickingSlotKeyBuilder
 		this.terminalContext = terminalContext;
 	}
 
-	public void addBPartner(final int bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
+	public void addBPartner(final BPartnerId bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
 	{
 		final PickingSlotQuery pickingSlotRequest = PickingSlotQuery.builder()
 				.availableForBPartnerId(bpartnerId)
@@ -97,7 +96,7 @@ public class PickingSlotKeyBuilder
 			addIfValid(pickingSlot, allowedWarehouseIds);
 		}
 	}
-	
+
 	private void assertPickingSlotsListNotEmpty(@NonNull final List<I_M_PickingSlot> result, @NonNull final PickingSlotQuery query)
 	{
 		if (!result.isEmpty())
@@ -105,14 +104,12 @@ public class PickingSlotKeyBuilder
 			return;
 		}
 
-		final int bpartnerId = query.getAvailableForBPartnerId();
-		final int bpartnerLocationId = query.getAvailableForBPartnerLocationId();
+		final BPartnerId bpartnerId = query.getAvailableForBPartnerId();
+		final BPartnerLocationId bpartnerLocationId = bpartnerId != null ? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, query.getAvailableForBPartnerLocationId()) : null;
 
-		final I_C_BPartner bpartner = bpartnerId <= 0 ? null : loadOutOfTrx(bpartnerId, I_C_BPartner.class);
-		final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();
-
-		final I_C_BPartner_Location bparterLocation = bpartnerLocationId <= 0 ? null : loadOutOfTrx(bpartnerLocationId, I_C_BPartner_Location.class);
-		final String bpartnerLocationStr = bparterLocation == null ? "<" + bpartnerLocationId + ">" : bparterLocation.getAddress();
+		final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
+		final String bpartnerStr = bpartnersService.getBPartnerValue(bpartnerId);
+		final String bpartnerLocationStr = bpartnersService.getAddressStringByBPartnerLocationId(bpartnerLocationId);
 
 		final String translatedErrMsgWithParams = Services.get(IMsgBL.class).parseTranslation(Env.getCtx(), "@PickingSlot_NotFoundFor_PartnerAndLocation@");
 
@@ -120,7 +117,6 @@ public class PickingSlotKeyBuilder
 		throw new AdempiereException(exceptionMessage)
 				.setParameter("query", query);
 	}
-
 
 	private void addIfValid(
 			@NonNull final I_M_PickingSlot pickingSlot,
