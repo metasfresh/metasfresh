@@ -54,7 +54,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		implements IProcessPrecondition
 {
 
-	@Param(parameterName = "Quantity", mandatory = true)
+	@Param(parameterName = "QuantityTypeToUse", mandatory = true)
 	private String quantityTypeToUse;
 
 	@Param(parameterName = "IsCompleteShipments", mandatory = true)
