@@ -32,10 +32,8 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -76,13 +74,6 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	{
 		final String deliveryRule = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
 		return deliveryRule;
-	}
-
-	@Override
-	public I_M_Warehouse getWarehouse(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final WarehouseId warehouseId = getWarehouseId(sched);
-		return Services.get(IWarehouseDAO.class).getById(warehouseId);
 	}
 
 	@Override

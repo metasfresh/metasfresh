@@ -65,7 +65,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final List<I_M_Locator> locators = warehouseDAO.retrieveLocators(warehouseId);
+		final List<I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
 		int activeLocatorsCount = 0;
 		if (!locators.isEmpty())
 		{

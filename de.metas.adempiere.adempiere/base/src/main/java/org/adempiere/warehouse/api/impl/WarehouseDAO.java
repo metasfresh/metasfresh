@@ -1,6 +1,7 @@
 package org.adempiere.warehouse.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
@@ -33,7 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,6 +44,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
@@ -53,6 +54,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
+import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.eevolution.model.I_M_Warehouse_Routing;
 
@@ -65,6 +67,8 @@ import lombok.NonNull;
 
 public class WarehouseDAO implements IWarehouseDAO
 {
+	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.newCache(I_M_Locator.Table_Name + "#by#M_Warehouse_ID", 10, CCache.EXPIREMINUTES_Never);
+
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
 	{
@@ -118,29 +122,38 @@ public class WarehouseDAO implements IWarehouseDAO
 		return false;
 	}
 
-	@Override
-	public List<I_M_Locator> retrieveLocators(@NonNull final WarehouseId warehouseId)
+	public List<I_M_Locator> getLocatorByIds(final Collection<LocatorId> locatorIds)
 	{
-		final Properties ctx = Env.getCtx();
-		final String trxName = ITrx.TRXNAME_None; // this is master data so let's load it out of trx
-
-		return retrieveLocators(ctx, warehouseId.getRepoId(), trxName);
+		return loadByRepoIdAwaresOutOfTrx(locatorIds, I_M_Locator.class);
 	}
 
-	@Cached(cacheName = I_M_Locator.Table_Name + "#By#M_Warehouse_ID")
-	/* package */List<I_M_Locator> retrieveLocators(@CacheCtx final Properties ctx, final int warehouseId, @CacheTrx final String trxName)
+	@Override
+	public List<I_M_Locator> getLocators(@NonNull final WarehouseId warehouseId)
 	{
-		final IQueryOrderBy orderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_Locator.class)
-				.addColumn(I_M_Locator.COLUMNNAME_X)
-				.addColumn(I_M_Locator.COLUMNNAME_Y)
-				.addColumn(I_M_Locator.COLUMNNAME_Z)
-				.createQueryOrderBy();
+		final List<LocatorId> locatorIds = getLocatorIds(warehouseId);
+		return getLocatorByIds(locatorIds);
+	}
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class, ctx, trxName)
-				.filter(new EqualsQueryFilter<I_M_Locator>(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId))
+	@Override
+	public List<LocatorId> getLocatorIds(@NonNull final WarehouseId warehouseId)
+	{
+		return locatorIdsByWarehouseId.getOrLoad(warehouseId, this::retrieveLocatorIds);
+	}
+
+	private ImmutableList<LocatorId> retrieveLocatorIds(final WarehouseId warehouseId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Locator.class)
+				.addEqualsFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseId)
+				.orderBy(I_M_Locator.COLUMN_X)
+				.orderBy(I_M_Locator.COLUMN_Y)
+				.orderBy(I_M_Locator.COLUMN_Z)
+				.orderBy(I_M_Locator.COLUMN_M_Locator_ID)
 				.create()
-				.setOrderBy(orderBy)
-				.list(I_M_Locator.class);
+				.listIds()
+				.stream()
+				.map(locatorRepoId -> LocatorId.ofRepoId(warehouseId, locatorRepoId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

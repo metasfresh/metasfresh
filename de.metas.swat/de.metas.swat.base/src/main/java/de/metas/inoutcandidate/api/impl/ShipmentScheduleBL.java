@@ -66,7 +66,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Util;
@@ -74,7 +73,6 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
@@ -1026,10 +1024,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 
 		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
-		final List<I_M_Warehouse> warehouses = warehouseIds
-				.stream()
-				.map(id -> InterfaceWrapperHelper.loadOutOfTrx(id, I_M_Warehouse.class))
-				.collect(ImmutableList.toImmutableList());
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
@@ -1037,7 +1031,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
 
 		storageQuery.addProduct(sched.getM_Product());
-		warehouses.forEach(storageQuery::addWarehouse);
+		storageQuery.addWarehouseIds(warehouseIds);
 		storageQuery.addPartner(bpartner);
 
 		// Add query attributes

@@ -157,12 +157,12 @@ public class MWarehouse extends X_M_Warehouse
 	 *	@param reload if true reload
 	 *	@return array of locators
 	 *
-	 * @deprecated Please use {@link IWarehouseDAO#retrieveLocators(WarehouseId)}
+	 * @deprecated Please use {@link IWarehouseDAO#getLocators(WarehouseId)}
 	 */
 	@Deprecated
 	public MLocator[] getLocators(boolean reload)
 	{
-		final List<I_M_Locator> locators = Services.get(IWarehouseDAO.class).retrieveLocators(WarehouseId.ofRepoId(getM_Warehouse_ID()));
+		final List<I_M_Locator> locators = Services.get(IWarehouseDAO.class).getLocators(WarehouseId.ofRepoId(getM_Warehouse_ID()));
 		return LegacyAdapters.convertToPOArray(locators, MLocator.class);
 	}	//	getLocators
 

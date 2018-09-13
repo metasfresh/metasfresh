@@ -29,7 +29,6 @@ import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
@@ -45,8 +44,6 @@ import de.metas.interfaces.I_C_BPartner;
 // TODO 06178: clean up the method names (both ID and Object getters are fine, but the names should be alligned)
 public interface IShipmentScheduleEffectiveBL extends ISingletonService
 {
-	I_M_Warehouse getWarehouse(I_M_ShipmentSchedule sched);
-
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule sched);
 
 	LocatorId getDefaultLocatorId(I_M_ShipmentSchedule sched);

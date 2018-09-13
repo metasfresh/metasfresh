@@ -202,7 +202,7 @@ public class M_ShipmentSchedule
 				.addC_BPartner_ID(BPartnerId.toRepoId(newBPartnerId))
 				.addC_BPartner_ID(BPartnerId.toRepoId(oldBpartnerId))
 				.addM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID())
-				.addM_Warehouse(shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule))
+				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
 		Services.get(IShipmentSchedulePA.class).invalidate(ImmutableList.of(storageSegment));

@@ -15,9 +15,9 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -166,39 +166,6 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	}
 
 	@Override
-	public Set<I_M_Warehouse> getWarehouses()
-	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
-		if (shipmentSchedules.isEmpty())
-		{
-			return Collections.emptySet();
-		}
-
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final Set<Integer> warehouseIds = new HashSet<>();
-		final Set<I_M_Warehouse> warehouses = new HashSet<>();
-		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-		{
-			final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule);
-			if (warehouse == null)
-			{
-				// shall not be the case, but just to make sure
-				continue;
-			}
-
-			final int warehouseId = warehouse.getM_Warehouse_ID();
-			if (!warehouseIds.add(warehouseId))
-			{
-				// already added
-			}
-			warehouses.add(warehouse);
-		}
-
-		return warehouses;
-	}
-
-	@Override
 	public Set<Integer> getWarehouseIds()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
@@ -212,15 +179,14 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 		final Set<Integer> warehouseIds = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(shipmentSchedule);
-			if (warehouse == null)
+			final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule);
+			if (warehouseId == null)
 			{
 				// shall not be the case, but just to make sure
 				continue;
 			}
 
-			final int warehouseId = warehouse.getM_Warehouse_ID();
-			warehouseIds.add(warehouseId);
+			warehouseIds.add(warehouseId.getRepoId());
 		}
 
 		return warehouseIds;

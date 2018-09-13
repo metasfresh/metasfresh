@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -69,8 +68,6 @@ public interface IFreshPackingItem extends IPackingItem
 	 * @return the <i>effective</i> <code>C_BPartner_Location_ID</code> (can be the override value) where the item is supposed to be shipped.
 	 */
 	int getC_BPartner_Location_ID();
-
-	Set<I_M_Warehouse> getWarehouses();
 
 	Set<Integer> getWarehouseIds();
 

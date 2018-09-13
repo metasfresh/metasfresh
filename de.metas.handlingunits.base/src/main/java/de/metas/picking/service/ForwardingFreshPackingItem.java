@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -127,12 +126,6 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	public int getC_BPartner_Location_ID()
 	{
 		return getDelegate().getC_BPartner_Location_ID();
-	}
-
-	@Override
-	public Set<I_M_Warehouse> getWarehouses()
-	{
-		return getDelegate().getWarehouses();
 	}
 
 	@Override

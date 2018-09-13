@@ -85,7 +85,7 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
-		final List<org.compiere.model.I_M_Locator> locators = warehouseDAO.retrieveLocators(warehouseId);
+		final List<org.compiere.model.I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
 
 		for (final org.compiere.model.I_M_Locator currentLocator : locators)
 		{

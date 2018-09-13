@@ -40,6 +40,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -61,8 +62,8 @@ import org.eevolution.model.X_DD_Order;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -113,11 +114,11 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_Warehouse warehouse = getM_Warehouse();
+		final WarehouseId warehouseId = getWarehouseId();
 
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
-		storageQuery.addWarehouse(warehouse);
+		storageQuery.addWarehouseId(warehouseId);
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 
 		//
@@ -202,15 +203,9 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		return MSG_OK;
 	}
 
-	private final I_M_Warehouse getM_Warehouse()
+	private final WarehouseId getWarehouseId()
 	{
-		if (_warehouse == null)
-		{
-			_warehouse = InterfaceWrapperHelper.create(getCtx(), p_M_Warehouse_ID, I_M_Warehouse.class, ITrx.TRXNAME_None);
-			Check.assumeNotNull(_warehouse, "warehouse not null");
-		}
-
-		return _warehouse;
+		return WarehouseId.ofRepoId(p_M_Warehouse_ID);
 	}
 
 	private final ArrayKey mkDDOrderLineCandidateKey(final IStorageRecord storageRecord)

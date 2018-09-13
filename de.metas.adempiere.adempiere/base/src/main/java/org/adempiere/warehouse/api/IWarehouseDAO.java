@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.model.I_C_DocType;
@@ -53,7 +54,9 @@ public interface IWarehouseDAO extends ISingletonService
 	 */
 	boolean isDocTypeAllowed(final Properties ctx, final int warehouseId, final I_C_DocType docType, final String trxName);
 
-	List<I_M_Locator> retrieveLocators(WarehouseId warehouseId);
+	List<I_M_Locator> getLocators(WarehouseId warehouseId);
+
+	List<LocatorId> getLocatorIds(WarehouseId warehouseId);
 
 	/**
 	 * Retrieve warehouses for a specific docBaseType

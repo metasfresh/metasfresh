@@ -21,14 +21,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -166,16 +165,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(subscriptionLine.getM_ShipmentSchedule());
-		final ImmutableSet<Integer> locatorIds = warehouseDAO.retrieveLocators(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.stream()
-				.map(I_M_Locator::getM_Locator_ID)
-				.collect(ImmutableSet.toImmutableSet());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
+		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
 		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
 				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
 				.C_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID())
-				.M_Locator_IDs(locatorIds)
+				.M_Locator_IDs(LocatorId.toRepoIds(locatorIds))
 				.build();
 		return segment;
 	}
