@@ -290,8 +290,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
 		final ShipmentScheduleWithHU candidate = //
-				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver);
-		candidate.setQtyTypeToUse(quantityTypeToUse);
+				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver, quantityTypeToUse);
 
 		return candidate;
 	}
@@ -344,8 +343,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			//
 			// Create ShipmentSchedule+HU candidate and add it to our list
 			final ShipmentScheduleWithHU candidate = //
-					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext);
-			candidate.setQtyTypeToUse(quantityTypeToUse);
+					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext, quantityTypeToUse);
 			candidatesForPick.add(candidate);
 		}
 

@@ -88,6 +88,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Capacity;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -136,6 +137,7 @@ import lombok.NonNull;
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<Integer> alreadyAssignedTUIds = null; // to be configured by called
 
+	@Getter
 	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
 
 	//
@@ -155,11 +157,6 @@ import lombok.NonNull;
 	public ShipmentLineBuilder(@NonNull final I_M_InOut shipment)
 	{
 		currentShipment = shipment;
-	}
-
-	public M_ShipmentSchedule_QuantityTypeToUse getQtyTypeToUse()
-	{
-		return qtyTypeToUse;
 	}
 
 	/**
