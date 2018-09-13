@@ -54,8 +54,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 		implements IProcessPrecondition
 {
 
-	@Param(parameterName = "QuantityTypeToUse", mandatory = true)
-	private String quantityTypeToUse;
+	@Param(parameterName = "QuantityType", mandatory = true)
+	private String quantityType;
 
 	@Param(parameterName = "IsCompleteShipments", mandatory = true)
 	private boolean isCompleteShipments;
@@ -90,7 +90,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(getAD_PInstance_ID())
 				.queryFilters(queryFilters)
-				.quantityTypeToUse(quantityTypeToUse)
+				.quantityType(quantityType)
 				.completeShipments(isCompleteShipments)
 				.isShipmentDateToday(isShipToday)
 				.build();
