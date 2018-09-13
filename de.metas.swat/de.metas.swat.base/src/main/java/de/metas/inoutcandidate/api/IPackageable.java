@@ -13,22 +13,24 @@ package de.metas.inoutcandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 
@@ -40,7 +42,7 @@ import de.metas.product.ProductId;
  */
 public interface IPackageable
 {
-	int getBpartnerId();
+	BPartnerId getBpartnerId();
 
 	String getProductName();
 
@@ -50,7 +52,7 @@ public interface IPackageable
 
 	String getFreightCostRule();
 
-	Timestamp getDeliveryDate();
+	LocalDateTime getDeliveryDate();
 
 	String getDocumentNo();
 
@@ -72,13 +74,13 @@ public interface IPackageable
 
 	ShipmentScheduleId getShipmentScheduleId();
 
-	int getBpartnerLocationId();
+	BPartnerLocationId getBpartnerLocationId();
 
 	String getBpartnerAddress();
 
 	WarehouseId getWarehouseId();
 
-	int getOrderId();
+	OrderId getOrderId();
 
 	OrderLineId getOrderLineIdOrNull();
 
@@ -86,7 +88,5 @@ public interface IPackageable
 
 	String getDocSubType();
 
-	Timestamp getPreparationDate();
-
-
+	LocalDateTime getPreparationDate();
 }

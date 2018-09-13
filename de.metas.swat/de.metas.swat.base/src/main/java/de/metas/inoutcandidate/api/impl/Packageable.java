@@ -23,7 +23,7 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
@@ -32,8 +32,11 @@ import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -45,19 +48,17 @@ import lombok.Value;
 @Builder
 public class Packageable implements IPackageable
 {
-	int bpartnerLocationId;
-
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 
 	BigDecimal qtyToDeliver;
 
-	int bpartnerId;
+	BPartnerId bpartnerId;
 	String bpartnerValue;
 	String bpartnerName;
 
+	BPartnerLocationId bpartnerLocationId;
 	String bpartnerLocationName;
-
 	String bpartnerAddress;
 
 	@NonNull
@@ -73,8 +74,8 @@ public class Packageable implements IPackageable
 
 	String documentNo;
 
-	Timestamp deliveryDate;
-	Timestamp preparationDate;
+	LocalDateTime deliveryDate;
+	LocalDateTime preparationDate;
 
 	String freightCostRule;
 
@@ -85,7 +86,7 @@ public class Packageable implements IPackageable
 	@NonNull
 	AttributeSetInstanceId asiId;
 
-	int orderId;
+	OrderId orderId;
 	String docSubType;
 
 	@Nullable
