@@ -17,11 +17,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.impl.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -31,7 +31,7 @@ import lombok.NonNull;
 public class PackagingDAO implements IPackagingDAO
 {
 	@Override
-	public List<IPackageable> retrievePackableLines(final PackageableQuery query)
+	public List<Packageable> retrievePackableLines(final PackageableQuery query)
 	{
 		return createQuery(query)
 				.stream(I_M_Packageable_V.class)
@@ -67,7 +67,7 @@ public class PackagingDAO implements IPackagingDAO
 	}
 
 	@Override
-	public IPackageable getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	public Packageable getByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final I_M_Packageable_V record = retrievePackageableRecordByShipmentScheduleId(shipmentScheduleId);
 		if (record == null)
@@ -77,7 +77,7 @@ public class PackagingDAO implements IPackagingDAO
 		return createPackageable(record);
 	}
 
-	private IPackageable createPackageable(@NonNull final I_M_Packageable_V record)
+	private Packageable createPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 

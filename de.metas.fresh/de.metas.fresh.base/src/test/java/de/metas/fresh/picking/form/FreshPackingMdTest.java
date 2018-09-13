@@ -44,11 +44,10 @@ import org.junit.Test;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
-import de.metas.inoutcandidate.api.impl.Packageable;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.product.ProductId;
@@ -77,7 +76,7 @@ public class FreshPackingMdTest
 	@Test
 	public void testTableRowAggregation_StandardCase() throws Exception
 	{
-		final List<IPackageable> packageables = Arrays.asList(
+		final List<Packageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_12, date_2014_01_13),
 				createPackageable(2, date_2014_01_10, date_2014_01_15),
 				createPackageable(3, date_2014_01_11, date_2014_01_14));
@@ -91,7 +90,7 @@ public class FreshPackingMdTest
 	@Test
 	public void testTableRowAggregation_Null_PreparationDate() throws Exception
 	{
-		final List<IPackageable> packageables = Arrays.asList(
+		final List<Packageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_12, date_2014_01_13),
 				createPackageable(2, date_2014_01_10, null),
 				createPackageable(3, date_2014_01_11, date_2014_01_14));
@@ -105,7 +104,7 @@ public class FreshPackingMdTest
 	@Test
 	public void testTableRowAggregation_Null_Same_DeliveryDate_Take_Min_PreparationDate() throws Exception
 	{
-		final List<IPackageable> packageables = Arrays.asList(
+		final List<Packageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_10, date_2014_01_15),
 				createPackageable(2, date_2014_01_11, null),
 				createPackageable(3, date_2014_01_10, date_2014_01_14));
@@ -116,7 +115,7 @@ public class FreshPackingMdTest
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
 
-	private void testTableRowAggregation(final List<IPackageable> packageables,
+	private void testTableRowAggregation(final List<Packageable> packageables,
 			int expectedQtyToDeliver,
 			LocalDateTime expectedDeliveryDate,
 			LocalDateTime expectedPreparationDate)
@@ -161,7 +160,7 @@ public class FreshPackingMdTest
 		return model;
 	}
 
-	private IPackageable createPackageable(int qtyToDeliver, LocalDateTime deliveryDate, LocalDateTime preparationDate)
+	private Packageable createPackageable(int qtyToDeliver, LocalDateTime deliveryDate, LocalDateTime preparationDate)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentScheduleRecord);

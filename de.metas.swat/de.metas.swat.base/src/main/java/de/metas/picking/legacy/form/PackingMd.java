@@ -60,8 +60,8 @@ import com.google.common.collect.MultimapBuilder;
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
@@ -114,7 +114,7 @@ public class PackingMd extends MvcMdGenForm
 	private boolean groupByProduct = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.adempiere.form.PackingMd.groupByProduct", false);
 
 	/**
-	 * Requery {@link IPackageable} items from database
+	 * Requery {@link #_packageableItemsAll} items from database
 	 */
 	private boolean _requeryNeeded = false;
 
@@ -610,7 +610,7 @@ public class PackingMd extends MvcMdGenForm
 				.build();
 	}
 
-	protected TableRow createTableRow(final IPackageable item)
+	protected TableRow createTableRow(final Packageable item)
 	{
 		final BPartnerId bpartnerId = item.getBpartnerId();
 		final WarehouseId warehouseDestId = null; // M_Warehouse_Dest is gone for a long time by now
@@ -733,7 +733,7 @@ public class PackingMd extends MvcMdGenForm
 	{
 		//
 		// Get all packageable items
-		final List<IPackageable> packageableItemsAll = getAllPackageableItems();
+		final List<Packageable> packageableItemsAll = getAllPackageableItems();
 
 		//
 		// Clear Model
@@ -748,7 +748,7 @@ public class PackingMd extends MvcMdGenForm
 				.forEach(this::addTableRow);
 	}
 
-	private boolean isPackageableItemAccepted(final IPackageable packageableItem)
+	private boolean isPackageableItemAccepted(final Packageable packageableItem)
 	{
 		if (packageableItem == null)
 		{
@@ -781,7 +781,7 @@ public class PackingMd extends MvcMdGenForm
 		return true;
 	}
 
-	private List<IPackageable> getAllPackageableItems()
+	private List<Packageable> getAllPackageableItems()
 	{
 		if (_packageableItemsAll == null || _requeryNeeded)
 		{
@@ -801,7 +801,7 @@ public class PackingMd extends MvcMdGenForm
 		return _packageableItemsAll;
 	}
 
-	private List<IPackageable> _packageableItemsAll = null;
+	private List<Packageable> _packageableItemsAll = null;
 
 	/**
 	 *

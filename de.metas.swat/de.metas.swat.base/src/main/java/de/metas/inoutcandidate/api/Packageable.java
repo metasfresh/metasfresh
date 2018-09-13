@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.api.impl;
+package de.metas.inoutcandidate.api;
 
 /*
  * #%L
@@ -30,12 +30,8 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.api.IPackageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -43,10 +39,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@VisibleForTesting
 @Value
 @Builder
-public class Packageable implements IPackageable
+public class Packageable
 {
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
