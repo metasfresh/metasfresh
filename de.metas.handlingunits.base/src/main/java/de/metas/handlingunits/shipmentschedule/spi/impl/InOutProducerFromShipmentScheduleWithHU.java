@@ -552,7 +552,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
-		final boolean isManualPackingMaterial = !candidate.isForPickedQty();
+		final boolean isManualPackingMaterial = candidate.isCreateManualPackingMaterial();
 
 		//
 		// If we don't have an active shipment line builder

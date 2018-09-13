@@ -80,6 +80,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 public class ShipmentScheduleWithHU
 {
@@ -94,7 +95,7 @@ public class ShipmentScheduleWithHU
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
 	{
-		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, true);
+		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, false);
 	}
 
 	/**
@@ -106,7 +107,7 @@ public class ShipmentScheduleWithHU
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, false);
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
@@ -129,14 +130,21 @@ public class ShipmentScheduleWithHU
 
 	private I_M_InOutLine shipmentLine = null;
 
-
+	@Getter
+	@Setter
 	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // keep old functionality as default
-	private boolean isForPickedQty = false;
+	/**
+	 * Tells us if the candidate is supposed to receive a manual packing material (in the case when we have a quick shipment, with no picking)
+	 *  #4507 leave default as before: if nothing is specified, create the shipments based on qtyToDeliver and create the packing materials
+	 */
+	@Getter
+	@Setter
+	private boolean createManualPackingMaterial = true;
 
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc,
-			final boolean isForPicked)
+			final boolean createManualPackingMaterial)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -150,7 +158,7 @@ public class ShipmentScheduleWithHU
 		this.tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
 		this.luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
 
-		this.setForPickedQty(isForPicked);
+		this.setCreateManualPackingMaterial(createManualPackingMaterial);
 		this.setQtyTypeToUse(qtyTypeToUse);
 
 	}
@@ -166,7 +174,7 @@ public class ShipmentScheduleWithHU
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked,
-			final boolean isForPicked)
+			final boolean createManualPackingMaterial)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -181,7 +189,7 @@ public class ShipmentScheduleWithHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
 
-		this.setForPickedQty(isForPicked);
+		this.setCreateManualPackingMaterial(createManualPackingMaterial);
 	}
 
 	@Override
@@ -196,7 +204,7 @@ public class ShipmentScheduleWithHU
 				+ "\n    attributesAggregationKey=" + (attributesAggregationKey == null ? "<NOT BUILT>" : attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleQtyPicked
 				+ "\n    shipmentLine=" + shipmentLine
-				+ "\n	 qtyToUse="+ qtyTypeToUse
+				+ "\n	 qtyToUse=" + qtyTypeToUse
 				+ "\n]";
 	}
 
@@ -504,23 +512,4 @@ public class ShipmentScheduleWithHU
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
 
-	public boolean isForPickedQty()
-	{
-		return isForPickedQty;
-	}
-
-	public void setForPickedQty(boolean isForPicked)
-	{
-		this.isForPickedQty = isForPicked;
-	}
-
-	public M_ShipmentSchedule_QuantityTypeToUse getQtyTypeToUse()
-	{
-		return qtyTypeToUse;
-	}
-
-	public void setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse qtyToUse)
-	{
-		this.qtyTypeToUse = qtyToUse;
-	}
 }
