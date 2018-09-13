@@ -102,7 +102,8 @@ class FiltersItem extends Component {
           '',
           '',
           item.defaultValue ? true : false,
-          item.defaultValue
+          item.defaultValue,
+          item.defaultValueTo
         );
       });
 
@@ -117,7 +118,8 @@ class FiltersItem extends Component {
             item.value != null ? item.value : '',
             item.valueTo != null ? item.valueTo : '',
             true,
-            item.value !== undefined ? item.value : item.defaultValue
+            item.value !== undefined ? item.value : item.defaultValue,
+            item.valueTo !== undefined ? item.valueTo : item.defaultValueTo
           );
         });
       }
@@ -128,7 +130,7 @@ class FiltersItem extends Component {
     const { resetInitialValues } = this.props;
 
     if (defaultValue != null) {
-      resetInitialValues(filterId, property);
+      resetInitialValues && resetInitialValues(filterId, property);
     }
 
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
@@ -154,7 +156,14 @@ class FiltersItem extends Component {
     return value;
   };
 
-  mergeData = (property, value, valueTo, updateActive, activeValue) => {
+  mergeData = (
+    property,
+    value,
+    valueTo,
+    updateActive,
+    activeValue,
+    activeValueTo
+  ) => {
     let { activeFilter, filter } = this.state;
 
     // update values for active filters, as we then bubble them up to parent
@@ -176,12 +185,15 @@ class FiltersItem extends Component {
           return {
             ...param,
             value: this.parseDateToReadable(param.widgetType, activeValue),
+            valueTo: this.parseDateToReadable(param.widgetType, activeValueTo),
             defaultValue: null,
+            defaultValueTo: null,
           };
         } else {
           return {
             ...param,
             defaultValue: null,
+            defaultValueTo: null,
           };
         }
       });
@@ -190,7 +202,9 @@ class FiltersItem extends Component {
         updatedParameters.push({
           parameterName: property,
           value: activeValue,
+          valueTo: activeValueTo,
           defaultValue: null,
+          defaultValueTo: null,
         });
       }
 
@@ -245,7 +259,7 @@ class FiltersItem extends Component {
 
     applyFilters(activeFilter, () => {
       closeFilterMenu();
-      returnBackToDropdown();
+      returnBackToDropdown && returnBackToDropdown();
     });
   };
 
@@ -258,7 +272,7 @@ class FiltersItem extends Component {
     } = this.props;
     const { filter } = this.state;
 
-    resetInitialValues(filter.filterId);
+    resetInitialValues && resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();
@@ -428,7 +442,7 @@ class FiltersItem extends Component {
 FiltersItem.propTypes = {
   dispatch: PropTypes.func.isRequired,
   applyFilters: PropTypes.func.isRequired,
-  resetInitialValues: PropTypes.func.isRequired,
+  resetInitialValues: PropTypes.func,
   clearFilters: PropTypes.func,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,

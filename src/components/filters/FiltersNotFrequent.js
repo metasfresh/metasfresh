@@ -66,7 +66,7 @@ class FiltersNotFrequent extends Component {
 
     const captions =
       (activeFilter && activeFiltersCaptions[activeFilter.filterId]) || [];
-    let panelCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
+    let panelCaption = activeFilter.isActive ? activeFilter.caption : '';
     let buttonCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
 
     if (captions.length) {
