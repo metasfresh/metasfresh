@@ -5,6 +5,10 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
@@ -32,11 +36,13 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class WarehouseId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static WarehouseId ofRepoId(final int repoId)
 	{
 		return new WarehouseId(repoId);
@@ -63,5 +69,12 @@ public class WarehouseId implements RepoIdAware
 	private WarehouseId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
