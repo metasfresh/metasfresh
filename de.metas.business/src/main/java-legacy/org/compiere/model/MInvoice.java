@@ -1902,7 +1902,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (dt.isOverwriteDateOnComplete())
 		{
-			setDateInvoiced(SystemTime.asTimestamp());  // metas: use SystemTime
+			setDateInvoiced(SystemTime.asTimestamp());
 		}
 		if (dt.isOverwriteSeqOnComplete())
 		{

@@ -1,10 +1,15 @@
 package de.metas.javaclasses;
 
+import org.adempiere.util.Check;
+
+import de.metas.lang.RepoIdAware;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,21 +27,18 @@ package de.metas.javaclasses;
  * #L%
  */
 
-import org.adempiere.util.ISingletonService;
-
-import de.metas.javaclasses.model.I_AD_JavaClass;
-
-public interface IJavaClassBL extends ISingletonService
+@Value
+public class JavaClassId implements RepoIdAware
 {
-	/**
-	 * Creates a new instance of the given class definition
-	 *
-	 * @param javaClassDef
-	 * @return
-	 */
-	<T> T newInstance(I_AD_JavaClass javaClassDef);
+	public static JavaClassId ofRepoId(final int repoId)
+	{
+		return new JavaClassId(repoId);
+	}
 
-	<T> T newInstance(JavaClassId javaClassId);
+	int repoId;
 
-	<T> Class<T> verifyClassName(I_AD_JavaClass javaClassDef);
+	private JavaClassId(int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 }
