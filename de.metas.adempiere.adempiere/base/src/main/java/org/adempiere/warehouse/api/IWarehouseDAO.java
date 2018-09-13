@@ -37,6 +37,8 @@ import org.compiere.model.I_M_Warehouse;
 
 public interface IWarehouseDAO extends ISingletonService
 {
+	I_M_Warehouse getById(WarehouseId warehouseId);
+	
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
 
 	/**

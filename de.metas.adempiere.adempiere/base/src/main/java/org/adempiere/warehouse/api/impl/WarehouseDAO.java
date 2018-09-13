@@ -1,6 +1,7 @@
 package org.adempiere.warehouse.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
 
@@ -65,6 +66,12 @@ import lombok.NonNull;
 public class WarehouseDAO implements IWarehouseDAO
 {
 	@Override
+	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
+	{
+		return loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+	}
+
+	@Override
 	public List<I_M_Warehouse> getByIds(final Collection<WarehouseId> warehouseIds)
 	{
 		return loadByIdsOutOfTrx(WarehouseId.toRepoIds(warehouseIds), I_M_Warehouse.class);
@@ -114,7 +121,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public List<I_M_Locator> retrieveLocators(@NonNull final WarehouseId warehouseId)
 	{
-		final Properties ctx =Env.getCtx();
+		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_None; // this is master data so let's load it out of trx
 
 		return retrieveLocators(ctx, warehouseId.getRepoId(), trxName);
