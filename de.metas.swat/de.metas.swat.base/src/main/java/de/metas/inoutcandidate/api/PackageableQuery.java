@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api;
 
+import java.time.LocalDate;
+
 import org.adempiere.warehouse.WarehouseId;
 
 import lombok.Builder;
@@ -12,5 +14,5 @@ public class PackageableQuery
 {
 	@NonNull
 	private WarehouseId warehouseId;
-	private boolean displayTodayEntriesOnly;
+	private LocalDate deliveryDate;
 }

@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
@@ -605,7 +606,7 @@ public class PackingMd extends MvcMdGenForm
 
 		return PackageableQuery.builder()
 				.warehouseId(warehouseId)
-				.displayTodayEntriesOnly(isDisplayTodayEntriesOnly())
+				.deliveryDate(isDisplayTodayEntriesOnly() ? SystemTime.asLocalDate() : null)
 				.build();
 	}
 

@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -10,7 +9,6 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
@@ -56,13 +54,12 @@ public class PackagingDAO implements IPackagingDAO
 		queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_ID, query.getWarehouseId());
 
 		//
-		// Filter: today's entries only
-		if (query.isDisplayTodayEntriesOnly())
+		// Filter: DeliveryDate
+		if (query.getDeliveryDate() != null)
 		{
-			final Timestamp deliveryDateDay = SystemTime.asDayTimestamp();
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, deliveryDateDay, DateTruncQueryFilterModifier.DAY)
+					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, query.getDeliveryDate(), DateTruncQueryFilterModifier.DAY)
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
 		}
 
