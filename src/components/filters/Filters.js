@@ -50,7 +50,7 @@ class Filters extends Component {
             });
           }
 
-          const isActive = activeFilters.has(filterId);
+          const isActive = filtersActive.has(filterId);
 
           if (
             !defaultValue ||
