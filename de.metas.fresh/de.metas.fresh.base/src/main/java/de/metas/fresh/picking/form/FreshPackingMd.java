@@ -1,7 +1,5 @@
 package de.metas.fresh.picking.form;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
 /*
  * #%L
  * de.metas.fresh.base
@@ -27,19 +25,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IClientOrgAware;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.api.IPackageable;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.TableRow;
@@ -48,6 +45,8 @@ import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
 
 public class FreshPackingMd extends PackingMd
 {
+	private static final String SYSCONFIG_GroupByShipmentSchedule = "de.metas.fresh.picking.form.FreshPackingMd.groupByShipmentSchedule";
+
 	public FreshPackingMd(final ITerminalContext terminalContext)
 	{
 		super(terminalContext.getWindowNo(),
@@ -55,7 +54,7 @@ public class FreshPackingMd extends PackingMd
 	}
 
 	@Override
-	protected TableRow createTableRow(final IPackageable item)
+	protected TableRow createTableRow(final Packageable item)
 	{
 		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
 
@@ -107,7 +106,7 @@ public class FreshPackingMd extends PackingMd
 		final String deliveryVia = item.getDeliveryVia();
 
 		final LocalDateTime deliveryDate = item.getDeliveryDate(); // customer01676
-		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
+		final ShipmentScheduleId shipmentScheduleId = item.getShipmentScheduleId();
 		final String bpartnerValue = item.getBpartnerValue();
 		final String bpartnerName = item.getBpartnerName();
 		final String bPartnerLocationName = item.getBpartnerLocationName();
@@ -117,14 +116,14 @@ public class FreshPackingMd extends PackingMd
 
 		final boolean groupByShipmentSchedule;
 
-		final IClientOrgAware sched = create(Env.getCtx(), I_M_ShipmentSchedule.Table_Name, shipmentScheduleId, IClientOrgAware.class, ITrx.TRXNAME_ThreadInherited);
-		groupByShipmentSchedule = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.fresh.picking.form.FreshPackingMd.groupByShipmentSchedule", false, sched.getAD_Client_ID(), sched.getAD_Org_ID());
+		final I_M_ShipmentSchedule sched = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
+		groupByShipmentSchedule = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_GroupByShipmentSchedule, false, sched.getAD_Client_ID(), sched.getAD_Org_ID());
 
 		final TableRowKey key;
 		if (groupByShipmentSchedule)
 		{
 			key = keyBuilder
-					.shipmentScheduleId(shipmentScheduleId)
+					.shipmentScheduleId(shipmentScheduleId.getRepoId())
 					.build();
 		}
 		else
@@ -132,7 +131,7 @@ public class FreshPackingMd extends PackingMd
 			key = getCreateTableRowKey(keyBuilder);
 		}
 		final TableRow row = TableRow.builder()
-				.shipmentScheduleId(shipmentScheduleId)
+				.shipmentScheduleId(shipmentScheduleId.getRepoId())
 				.qtyToDeliver(qtyToDeliver)
 				.bpartnerId(bpartnerId.getRepoId())
 				.bpartnerValue(bpartnerValue)
