@@ -199,7 +199,7 @@ public class ShipmentScheduleEnqueuer
 
 				workpackageBuilder
 						.parameters()
-						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_Quantity, workPackageParameters.quantityTypeToUse)
+						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityTypeToUse, workPackageParameters.quantityTypeToUse)
 						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.completeShipments)
 						.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday);
 
@@ -317,7 +317,7 @@ public class ShipmentScheduleEnqueuer
 	@Value
 	public static class ShipmentScheduleWorkPackageParameters
 	{
-		public static final String PARAM_Quantity = "Quantity";
+		public static final String PARAM_QuantityTypeToUse = "QuantityType";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 
