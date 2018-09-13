@@ -24,7 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -165,7 +165,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
-				.availableForBPartnerId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
 				.build();
 		final List<I_M_PickingSlot> availablePickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(pickingSlotQuery);

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,8 +21,8 @@ import com.google.common.collect.ListMultimap;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.ProductId;
@@ -191,9 +192,9 @@ public class PickingSlotViewRepository
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
-				.availableForBPartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
+				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
-				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.warehouseId(WarehouseId.ofRepoId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule)))
 				.barcode(repoQuery.getPickingSlotBarcode())
 				.build();
 

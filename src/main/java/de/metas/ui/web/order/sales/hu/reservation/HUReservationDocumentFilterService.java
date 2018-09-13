@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inoutcandidate.api.IPackageable;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
@@ -85,7 +85,7 @@ public class HUReservationDocumentFilterService
 		return HUIdsFilterHelper.createFilter(huQuery);
 	}
 
-	public DocumentFilter createDocumentFilterIgnoreAttributes(@NonNull final IPackageable packageable)
+	public DocumentFilter createDocumentFilterIgnoreAttributes(@NonNull final Packageable packageable)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);

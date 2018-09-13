@@ -38,8 +38,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.ProductId;
@@ -213,7 +213,7 @@ public class PickingHURowsRepository
 		if (!Check.isEmpty(pickingSlotBarcode, true))
 		{
 			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-			final List<Integer> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
+			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
 					.barcode(pickingSlotBarcode)
 					.build());
 			if (pickingSlotIds.isEmpty())

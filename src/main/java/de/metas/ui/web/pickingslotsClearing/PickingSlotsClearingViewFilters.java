@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingslotsClearing;
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -75,8 +76,8 @@ public class PickingSlotsClearingViewFilters
 		return PickingSlotViewFilters.getPickingSlotBarcode(filters);
 	}
 
-	public static int getBPartnerId(final DocumentFiltersList filters)
+	public static BPartnerId getBPartnerId(final DocumentFiltersList filters)
 	{
-		return filters.getParamValueAsInt(FILTER_ID_BPartner, PARAM_C_BPartner_ID, -1);
+		return BPartnerId.ofRepoIdOrNull(filters.getParamValueAsInt(FILTER_ID_BPartner, PARAM_C_BPartner_ID, -1));
 	}
 }

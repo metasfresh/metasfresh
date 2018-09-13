@@ -8,8 +8,8 @@ import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -91,7 +91,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setParentRowId(pickingSlotRowId.toDocumentId())
 				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId);
 
-		final IPackageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
+		final Packageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
 
 		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);
 		builder.addStickyFilters(stickyFilter);
