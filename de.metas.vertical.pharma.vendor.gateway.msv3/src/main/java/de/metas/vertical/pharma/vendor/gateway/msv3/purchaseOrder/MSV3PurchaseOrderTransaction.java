@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.ad.service.IErrorManager;
@@ -75,7 +75,7 @@ public class MSV3PurchaseOrderTransaction
 	{
 		final MSV3PurchaseOrderRequestPersister purchaseOrderRequestPersister = MSV3PurchaseOrderRequestPersister.createNewForOrgId(orgId);
 
-		final I_MSV3_Bestellung_Transaction transactionRecord = newInstance(I_MSV3_Bestellung_Transaction.class);
+		final I_MSV3_Bestellung_Transaction transactionRecord = newInstanceOutOfTrx(I_MSV3_Bestellung_Transaction.class);
 		transactionRecord.setAD_Org_ID(orgId.getRepoId());
 
 		final I_MSV3_Bestellung requestRecord = purchaseOrderRequestPersister.storePurchaseOrderRequest(request);

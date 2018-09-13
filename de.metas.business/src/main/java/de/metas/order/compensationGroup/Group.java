@@ -137,8 +137,9 @@ public class Group
 
 	public void updateAllCompensationLines()
 	{
-		BigDecimal previousNetAmt = getRegularLinesNetAmt();
+		moveAllManualCompensationLinesToEnd();
 
+		BigDecimal previousNetAmt = getRegularLinesNetAmt();
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
 			updateCompensationLine(compensationLine, previousNetAmt);
@@ -197,7 +198,7 @@ public class Group
 		}
 	}
 
-	public void moveAllManualCompensationLinesToEnd()
+	private void moveAllManualCompensationLinesToEnd()
 	{
 		final ArrayList<GroupCompensationLine> manualCompensationLines = new ArrayList<>();
 		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext();)
@@ -211,8 +212,6 @@ public class Group
 		}
 
 		compensationLines.addAll(manualCompensationLines);
-
-		updateAllCompensationLines();
 	}
 
 	public boolean isBasedOnGroupTemplate()
