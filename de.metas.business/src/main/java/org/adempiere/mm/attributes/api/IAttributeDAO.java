@@ -23,6 +23,7 @@ package org.adempiere.mm.attributes.api;
  */
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -176,4 +177,6 @@ public interface IAttributeDAO extends ISingletonService
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
+
+	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds, Set<AttributeId> attributeIds);
 }
