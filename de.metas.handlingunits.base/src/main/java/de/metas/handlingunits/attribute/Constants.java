@@ -76,6 +76,9 @@ public final class Constants
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
+	public static final String ATTR_Locked = "HU_Locked";
+	public static final String ATTR_Locked_Value_Locked = "locked";
+
 	public static final String ATTR_TE = AttributeConstants.ATTR_TE;
 	public static final String ATTR_DateReceived = AttributeConstants.ATTR_DateReceived;
 
