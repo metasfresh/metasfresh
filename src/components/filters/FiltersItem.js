@@ -101,6 +101,8 @@ class FiltersItem extends Component {
           item.parameterName,
           '',
           '',
+          // if filter has defaultValue, update local filters data to include
+          // it for displaying
           item.defaultValue ? true : false,
           item.defaultValue,
           item.defaultValueTo
@@ -118,6 +120,7 @@ class FiltersItem extends Component {
             item.value != null ? item.value : '',
             item.valueTo != null ? item.valueTo : '',
             true,
+            // if filter has value property, use it instead of defaultValue
             item.value !== undefined ? item.value : item.defaultValue,
             item.valueTo !== undefined ? item.valueTo : item.defaultValueTo
           );
@@ -129,6 +132,8 @@ class FiltersItem extends Component {
   setValue = (property, value, id, valueTo = '', filterId, defaultValue) => {
     const { resetInitialValues } = this.props;
 
+    // if user changed field value and  defaultValue is not null, then we need
+    // to reset it's initial value so that it won't be set
     if (defaultValue != null) {
       resetInitialValues && resetInitialValues(filterId, property);
     }
@@ -139,10 +144,17 @@ class FiltersItem extends Component {
     // OVERWORKED WORKAROUND
     if (Array.isArray(property)) {
       property.map(item => {
-        this.mergeData(item.parameterName, value, valueTo, true, value);
+        this.mergeData(
+          item.parameterName,
+          value,
+          valueTo,
+          true,
+          value,
+          valueTo
+        );
       });
     } else {
-      this.mergeData(property, value, valueTo, true, value);
+      this.mergeData(property, value, valueTo, true, value, valueTo);
     }
   };
 
@@ -166,8 +178,8 @@ class FiltersItem extends Component {
   ) => {
     let { activeFilter, filter } = this.state;
 
-    // update values for active filters, as we then bubble them up to parent
-    // components which use this data in PATCH requests
+    // update values for active filters, as we then bubble them up to use
+    // this data in PATCH request updating them on the server
     if (updateActive) {
       let paramExists = false;
 
