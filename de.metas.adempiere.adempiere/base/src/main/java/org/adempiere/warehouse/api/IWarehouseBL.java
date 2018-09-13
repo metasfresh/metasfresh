@@ -38,6 +38,8 @@ public interface IWarehouseBL extends ISingletonService
 	@Deprecated
 	I_M_Locator getDefaultLocator(I_M_Warehouse warehouse);
 
+	I_M_Locator getDefaultLocator(WarehouseId warehouseId);
+
 	/**
 	 * Get the first default locatorId.
 	 *

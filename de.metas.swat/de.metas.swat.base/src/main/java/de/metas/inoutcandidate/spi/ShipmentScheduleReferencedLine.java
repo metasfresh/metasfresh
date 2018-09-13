@@ -2,8 +2,11 @@ package de.metas.inoutcandidate.spi;
 
 import java.sql.Timestamp;
 
+import org.adempiere.warehouse.WarehouseId;
+
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.DocumentLineDescriptor;
+import de.metas.shipping.api.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,10 +55,10 @@ public class ShipmentScheduleReferencedLine
 	 * Might be zero.
 	 */
 	@NonNull
-	Integer shipperId;
+	ShipperId shipperId;
 
 	@NonNull
-	Integer warehouseId;
+	WarehouseId warehouseId;
 
 	@NonNull
 	DocumentLineDescriptor documentLineDescriptor;

@@ -26,15 +26,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
-import lombok.NonNull;
 
 /**
  * Returns the "effective" values for a given shipment schedules when it has both an "original" and an "override" column.
@@ -47,24 +47,16 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 {
 	I_M_Warehouse getWarehouse(I_M_ShipmentSchedule sched);
 
-	int getWarehouseId(I_M_ShipmentSchedule sched);
+	WarehouseId getWarehouseId(I_M_ShipmentSchedule sched);
 
-	I_M_Locator getDefaultLocator(I_M_ShipmentSchedule sched);
+	LocatorId getDefaultLocatorId(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner_Location getBPartnerLocation(I_M_ShipmentSchedule sched);
 
 	/**
-	 * return the "effective" C_BPartner_ID (either C_BPartner_ID or if set C_BPartner_Override_ID)
-	 *
-	 * @param sched
-	 * @return
+	 * @return the "effective" C_BPartner_ID (either C_BPartner_ID or if set C_BPartner_Override_ID)
 	 */
-	int getC_BPartner_ID(I_M_ShipmentSchedule sched);
-
-	default BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		return BPartnerId.ofRepoId(getC_BPartner_ID(sched));
-	}
+	BPartnerId getBPartnerId(I_M_ShipmentSchedule sched);
 
 	String getDeliveryRule(I_M_ShipmentSchedule sched);
 

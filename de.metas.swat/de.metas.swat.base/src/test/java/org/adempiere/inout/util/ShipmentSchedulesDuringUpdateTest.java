@@ -9,11 +9,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.shipping.api.ShipperId;
 
 /*
  * #%L
@@ -51,8 +53,8 @@ public class ShipmentSchedulesDuringUpdateTest
 		AdempiereTestHelper.get().init();
 		group = DeliveryGroupCandidate.builder()
 				.groupId(20)
-				.shipperId(30)
-				.warehouseId(40)
+				.shipperId(ShipperId.ofRepoId(30))
+				.warehouseId(WarehouseId.ofRepoId(40))
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 

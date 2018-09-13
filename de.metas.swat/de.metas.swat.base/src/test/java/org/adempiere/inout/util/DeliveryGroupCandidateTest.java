@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.shipping.api.ShipperId;
 
 /*
  * #%L
@@ -45,8 +47,8 @@ public class DeliveryGroupCandidateTest
 	{
 		final DeliveryGroupCandidate group = DeliveryGroupCandidate.builder()
 				.groupId(10)
-				.warehouseId(20)
-				.shipperId(0)
+				.warehouseId(WarehouseId.ofRepoId(20))
+				.shipperId(ShipperId.ofRepoId(1))
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 

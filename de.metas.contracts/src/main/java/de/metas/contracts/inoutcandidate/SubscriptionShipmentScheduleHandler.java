@@ -141,7 +141,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
-		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId());
+		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId().getRepoId());
 		newSched.setPreparationDate(subscriptionFromgressInfos.getPreparationDate());
 		newSched.setDeliveryDate(subscriptionFromgressInfos.getDeliveryDate());
 	}

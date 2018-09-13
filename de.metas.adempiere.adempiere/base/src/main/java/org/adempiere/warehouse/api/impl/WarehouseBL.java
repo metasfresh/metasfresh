@@ -50,7 +50,13 @@ public class WarehouseBL implements IWarehouseBL
 	@Override
 	public I_M_Locator getDefaultLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		final LocatorId defaultLocator = getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return getDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+	}
+
+	@Override
+	public I_M_Locator getDefaultLocator(@NonNull final WarehouseId warehouseId)
+	{
+		final LocatorId defaultLocator = getDefaultLocatorId(warehouseId);
 		return load(defaultLocator, I_M_Locator.class);
 	}
 

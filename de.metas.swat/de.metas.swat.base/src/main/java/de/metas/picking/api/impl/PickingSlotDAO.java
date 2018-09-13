@@ -1,5 +1,7 @@
 package de.metas.picking.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -27,6 +29,18 @@ import lombok.NonNull;
 
 public class PickingSlotDAO implements IPickingSlotDAO
 {
+	@Override
+	public I_M_PickingSlot getById(final PickingSlotId pickingSlotId)
+	{
+		return getById(pickingSlotId, I_M_PickingSlot.class);
+	}
+
+	@Override
+	public <T extends I_M_PickingSlot> T getById(@NonNull final PickingSlotId pickingSlotId, final Class<T> modelClass)
+	{
+		return load(pickingSlotId, modelClass);
+	}
+
 	@Override
 	@Cached(cacheName = I_M_PickingSlot.Table_Name)
 	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx String trxName)

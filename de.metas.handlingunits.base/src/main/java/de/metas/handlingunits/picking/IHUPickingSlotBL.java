@@ -28,6 +28,7 @@ import org.adempiere.util.ISingletonService;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -132,9 +133,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, int bpartnerLocationId);
 
-	void allocatePickingSlotIfPossible(int pickingSlotId, int bpartnerId, int bpartnerLocationId);
+	void allocatePickingSlotIfPossible(PickingSlotId pickingSlotId, BPartnerId bpartnerId, int bpartnerLocationId);
 
 	/**
 	 * Release the given dynamic picking slot.<br>

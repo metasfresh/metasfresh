@@ -10,6 +10,10 @@ import de.metas.picking.model.I_M_PickingSlot;
 
 public interface IPickingSlotDAO extends ISingletonService
 {
+	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
+
+	<T extends I_M_PickingSlot> T getById(PickingSlotId pickingSlotId, Class<T> modelType);
+
 	/**
 	 * Retrieve all picking slots for current tenant/client.
 	 * 

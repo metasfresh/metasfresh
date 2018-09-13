@@ -49,6 +49,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -1487,7 +1488,7 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public int getWarehouseId(final I_C_Flatrate_Term term)
+	public WarehouseId getWarehouseId(final I_C_Flatrate_Term term)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 
@@ -1507,7 +1508,8 @@ public class FlatrateBL implements IFlatrateBL
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();
 		}
-		return warehouseId;
+
+		return WarehouseId.ofRepoIdOrNull(warehouseId);
 	}
 
 	@Override

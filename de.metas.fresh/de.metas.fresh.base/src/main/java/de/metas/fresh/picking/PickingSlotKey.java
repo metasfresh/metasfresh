@@ -641,7 +641,7 @@ public class PickingSlotKey extends TerminalKey
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	public void allocateDynamicPickingSlotIfPossible(final int bpartnerId, final int bpartnerLocationId)
+	public void allocateDynamicPickingSlotIfPossible(final BPartnerId bpartnerId, final int bpartnerLocationId)
 	{
 		final I_M_PickingSlot pickingSlot = getM_PickingSlot();
 		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);

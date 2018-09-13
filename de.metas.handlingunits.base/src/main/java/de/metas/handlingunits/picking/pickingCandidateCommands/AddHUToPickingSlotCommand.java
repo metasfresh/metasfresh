@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -94,9 +95,9 @@ public class AddHUToPickingSlotCommand
 		//
 		// Try allocating the picking slot
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule);
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId.getRepoId(), bpartnerId, bpartnerLocationId);
+		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
 
 		pickingCandidateRepository.save(pickingCandidate);
 	}

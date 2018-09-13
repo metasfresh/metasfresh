@@ -306,7 +306,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// BPartner, Location & Contact
 		{
-			shipment.setC_BPartner_ID(shipmentScheduleEffectiveValuesBL.getC_BPartner_ID(shipmentSchedule));
+			shipment.setC_BPartner_ID(shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule).getRepoId());
 			shipment.setC_BPartner_Location_ID(shipmentScheduleEffectiveValuesBL.getBPartnerLocation(shipmentSchedule).getC_BPartner_Location_ID());
 			shipment.setAD_User_ID(shipmentScheduleEffectiveValuesBL.getAD_User_ID(shipmentSchedule));
 		}
@@ -321,7 +321,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Warehouse
 		{
-			shipment.setM_Warehouse_ID(shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule));
+			shipment.setM_Warehouse_ID(shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule).getRepoId());
 		}
 
 		//

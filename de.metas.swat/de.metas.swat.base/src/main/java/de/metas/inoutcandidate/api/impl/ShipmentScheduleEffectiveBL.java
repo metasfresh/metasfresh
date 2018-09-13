@@ -29,14 +29,18 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
@@ -55,15 +59,15 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public int getC_BPartner_ID(@NonNull final I_M_ShipmentSchedule sched)
+	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		if (sched.getC_BPartner_Override_ID() <= 0)
 		{
-			return sched.getC_BPartner_ID();
+			return BPartnerId.ofRepoId(sched.getC_BPartner_ID());
 		}
 		else
 		{
-			return sched.getC_BPartner_Override_ID();
+			return BPartnerId.ofRepoId(sched.getC_BPartner_Override_ID());
 		}
 	}
 
@@ -77,30 +81,25 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_M_Warehouse getWarehouse(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID))
-		{
-			return sched.getM_Warehouse_Override();
-		}
-		return sched.getM_Warehouse();
+		final WarehouseId warehouseId = getWarehouseId(sched);
+		return Services.get(IWarehouseDAO.class).getById(warehouseId);
 	}
 
 	@Override
-	public int getWarehouseId(final I_M_ShipmentSchedule sched)
+	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "sched not null");
 		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID))
 		{
-			return sched.getM_Warehouse_Override_ID();
+			return WarehouseId.ofRepoId(sched.getM_Warehouse_Override_ID());
 		}
-		return sched.getM_Warehouse_ID();
+		return WarehouseId.ofRepoId(sched.getM_Warehouse_ID());
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(final I_M_ShipmentSchedule sched)
+	public LocatorId getDefaultLocatorId(final I_M_ShipmentSchedule sched)
 	{
-		final I_M_Warehouse warehouse = getWarehouse(sched);
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-		return locator;
+		final WarehouseId warehouseId = getWarehouseId(sched);
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -117,10 +116,8 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(
-				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
-				I_C_BPartner.class);
-		return bPartner;
+		final BPartnerId bpartnerId = getBPartnerId(sched);
+		return Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override

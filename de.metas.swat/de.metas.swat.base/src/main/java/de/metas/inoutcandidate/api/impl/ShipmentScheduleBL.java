@@ -78,6 +78,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -751,7 +752,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		DeliveryGroupCandidate candidate = null;
 
-		final int warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
+		final WarehouseId warehouseId = Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(sched);
 		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(partner, true);
 		if (consolidateAllowed)
 		{
@@ -812,18 +813,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			recordId = 0;
 		}
 
-		final int bpartnerId;
+		final BPartnerId bpartnerId;
 		final int bpLocId;
 		if (includeBPartner)
 		{
 			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-			bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
+			bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 			bpLocId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
 		}
 		else
 		{
-			bpartnerId = 0;
+			bpartnerId = null;
 			bpLocId = 0;
 		}
 
@@ -837,10 +838,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 */
 	private static void updateWarehouseId(final I_M_ShipmentSchedule sched)
 	{
-		final int warehouseId = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class)
+		final WarehouseId warehouseId = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class)
 				.createFor(sched)
 				.getWarehouseId();
-		sched.setM_Warehouse_ID(warehouseId);
+		sched.setM_Warehouse_ID(warehouseId.getRepoId());
 	}
 
 	/**
@@ -1022,9 +1023,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// Create storage query
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
 
-		final I_M_Warehouse shipmentScheduleWarehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-		Check.assumeNotNull(shipmentScheduleWarehouse, "The given shipmentSchedule references a warehouse; shipmentSchedule={}", sched);
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentScheduleWarehouse.getM_Warehouse_ID());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 
 		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 		final List<I_M_Warehouse> warehouses = warehouseIds

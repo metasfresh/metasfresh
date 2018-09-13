@@ -1,4 +1,4 @@
-package de.metas.bpartner;
+package de.metas.shipping.api;
 
 import java.util.Optional;
 
@@ -14,7 +14,7 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,12 +22,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,37 +36,37 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class BPartnerId implements RepoIdAware
+public class ShipperId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static BPartnerId ofRepoId(final int repoId)
+	public static ShipperId ofRepoId(final int repoId)
 	{
-		return new BPartnerId(repoId);
+		return new ShipperId(repoId);
 	}
 
-	public static BPartnerId ofRepoIdOrNull(final int repoId)
+	public static ShipperId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new BPartnerId(repoId) : null;
+		return repoId > 0 ? new ShipperId(repoId) : null;
 	}
 
-	public static Optional<BPartnerId> optionalOfRepoId(final int repoId)
+	public static Optional<ShipperId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final BPartnerId bpartnerId)
+	public static int toRepoId(final ShipperId shipperId)
 	{
-		return toRepoIdOr(bpartnerId, -1);
+		return toRepoIdOr(shipperId, -1);
 	}
 
-	public static int toRepoIdOr(final BPartnerId bpartnerId, final int defaultValue)
+	public static int toRepoIdOr(final ShipperId shipperId, final int defaultValue)
 	{
-		return bpartnerId != null ? bpartnerId.getRepoId() : defaultValue;
+		return shipperId != null ? shipperId.getRepoId() : defaultValue;
 	}
 
-	private BPartnerId(final int repoId)
+	private ShipperId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

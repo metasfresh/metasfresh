@@ -7,6 +7,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
@@ -48,6 +49,11 @@ public interface IFreshPackingItem extends IPackingItem
 	I_C_BPartner getC_BPartner();
 
 	int getC_BPartner_ID();
+	
+	default BPartnerId getBPartnerId()
+	{
+		return BPartnerId.ofRepoIdOrNull(getC_BPartner_ID());
+	}
 
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 

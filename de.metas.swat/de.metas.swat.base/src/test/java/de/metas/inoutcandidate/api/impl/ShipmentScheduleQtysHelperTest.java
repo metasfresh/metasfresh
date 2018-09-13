@@ -11,6 +11,7 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +21,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.shipping.api.ShipperId;
 
 /*
  * #%L
@@ -115,7 +117,12 @@ public class ShipmentScheduleQtysHelperTest
 		final BigDecimal qtyOrdered = new BigDecimal("14");
 		final I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(qtyOrdered);
 
-		final DeliveryGroupCandidate deliveryGroupCandidate = DeliveryGroupCandidate.builder().bPartnerAddress("bPartnerAddress").groupId(10).shipperId(20).warehouseId(30).build();
+		final DeliveryGroupCandidate deliveryGroupCandidate = DeliveryGroupCandidate.builder()
+				.bPartnerAddress("bPartnerAddress")
+				.groupId(10)
+				.shipperId(ShipperId.ofRepoId(20))
+				.warehouseId(WarehouseId.ofRepoId(30))
+				.build();
 		final DeliveryLineCandidate deliveryLineCandidate = deliveryGroupCandidate.addLine(sched, CompleteStatus.OK);
 		deliveryLineCandidate.setQtyToDeliver(BigDecimal.TEN);
 

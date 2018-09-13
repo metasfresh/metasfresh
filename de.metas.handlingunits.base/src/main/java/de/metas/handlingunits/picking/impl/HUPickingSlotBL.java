@@ -40,10 +40,10 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable;
 
 import com.google.common.collect.ImmutableList;
@@ -73,6 +73,7 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.impl.PickingSlotBL;
 import lombok.NonNull;
@@ -149,8 +150,7 @@ public class HUPickingSlotBL
 						huBuilder.setM_HU_Item_Parent(null); // no parent
 						huBuilder.setM_HU_PI_Item_Product(itemProduct);
 
-						final I_M_Warehouse warehouse = pickingSlot.getM_Warehouse();
-						huBuilder.setM_Locator(getCurrentLocator(warehouse));
+						huBuilder.setM_Locator(getLocator(pickingSlot));
 
 						// We are creating the new HUs on picking slot as picked, to avoid some allocation business logic to consider them
 						huBuilder.setHUStatus(X_M_HU.HUSTATUS_Picked);
@@ -171,9 +171,10 @@ public class HUPickingSlotBL
 		return new QueueActionResult(pickingSlotTrx, null);
 	}
 
-	private I_M_Locator getCurrentLocator(final I_M_Warehouse warehouse)
+	private I_M_Locator getLocator(final I_M_PickingSlot pickingSlot)
 	{
-		return Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
+		return Services.get(IWarehouseBL.class).getDefaultLocator(warehouseId);
 	}
 
 	@Override
@@ -517,7 +518,7 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public void allocatePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final int bpartnerId, final int bpartnerLocationId)
+	public void allocatePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final BPartnerId bpartnerId, final int bpartnerLocationId)
 	{
 		//
 		// Not dynamic picking slot; gtfo
@@ -533,16 +534,16 @@ public class HUPickingSlotBL
 			return;
 		}
 
-		pickingSlot.setC_BPartner_ID(bpartnerId);
+		pickingSlot.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		pickingSlot.setC_BPartner_Location_ID(bpartnerLocationId);
 
 		InterfaceWrapperHelper.save(pickingSlot);
 	}
 
 	@Override
-	public void allocatePickingSlotIfPossible(final int pickingSlotId, final int bpartnerId, final int bpartnerLocationId)
+	public void allocatePickingSlotIfPossible(final PickingSlotId pickingSlotId, final BPartnerId bpartnerId, final int bpartnerLocationId)
 	{
-		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
+		final I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId, I_M_PickingSlot.class);
 		allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);
 	}
 
