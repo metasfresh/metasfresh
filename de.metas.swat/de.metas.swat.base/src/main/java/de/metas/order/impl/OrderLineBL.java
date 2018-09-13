@@ -291,13 +291,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(@NonNull final I_C_OrderLine orderLine)
+	public void updateLineNetAmt(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		updateLineNetAmt(orderLine, getQtyEntered(orderLine));
 	}
 
 	void updateLineNetAmt(
-			@NonNull final I_C_OrderLine ol,
+			@NonNull final org.compiere.model.I_C_OrderLine ol,
 			@NonNull final Quantity qty)
 	{
 		final Quantity qtyInPriceUOM = convertToPriceUOM(qty, ol);

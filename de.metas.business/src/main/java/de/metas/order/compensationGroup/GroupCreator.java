@@ -81,9 +81,9 @@ public final class GroupCreator
 				.map(templateLine -> compensationLineCreateRequestFactory.createGroupCompensationLineCreateRequest(templateLine, group))
 				.forEach(group::addNewCompensationLine);
 
-		group.moveAllManualCompensationLinesToEnd();
-
+		group.updateAllCompensationLines();
 		groupsRepo.saveGroup(group);
+		
 		return group;
 	}
 

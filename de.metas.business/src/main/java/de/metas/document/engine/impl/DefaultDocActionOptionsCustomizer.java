@@ -21,9 +21,9 @@ import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -66,7 +66,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 	}
 
 	@Override
-	public void customizeValidActions(final IDocActionOptionsContext optionsCtx)
+	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
 	{
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
 		Check.assume(docActions.isEmpty(), "options not initialized");
@@ -121,7 +121,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 				|| IDocument.STATUS_Voided.equals(docStatus)
 				|| IDocument.STATUS_Reversed.equals(docStatus))
 		{
-			optionsCtx.setDocActions(ImmutableList.of());
+			optionsCtx.setDocActions(ImmutableSet.of());
 			return;
 		}
 
@@ -140,7 +140,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 				// Draft Sales Order Quote/Proposal - Process
 
 				final String orderType = optionsCtx.getOrderType();
-				if (optionsCtx.isSOTrx()
+				if (optionsCtx.getSoTrx().isSales()
 						&& (X_C_DocType.DOCSUBTYPE_Quotation.equals(orderType) || X_C_DocType.DOCSUBTYPE_Proposal.equals(orderType)))
 				{
 					optionsCtx.setDocActionToUse(IDocument.ACTION_Prepare);
@@ -346,6 +346,6 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 		
 		//
 		// Set configured options in the context
-		optionsCtx.setDocActions(docActions);
+		optionsCtx.setDocActions(ImmutableSet.copyOf(docActions));
 	}
 }

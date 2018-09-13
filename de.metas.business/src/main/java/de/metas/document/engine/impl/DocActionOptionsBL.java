@@ -1,20 +1,22 @@
 package de.metas.document.engine.impl;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
-import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.logging.LogManager;
 
@@ -25,7 +27,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 	private final Supplier<Map<String, IDocActionOptionsCustomizer>> _docActionOptionsCustomizerByTableName = Suppliers.memoize(() -> retrieveDocActionOptionsCustomizer());
 
 	@Override
-	public void updateDocActions(final IDocActionOptionsContext optionsCtx)
+	public void updateDocActions(final DocActionOptionsContext optionsCtx)
 	{
 		//
 		// First, run the default customizer
@@ -42,11 +44,11 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 
 		//
 		// Apply role access
-		final int docTypeId = optionsCtx.getC_DocType_ID();
-		if (docTypeId > 0)
+		final DocTypeId docTypeId = optionsCtx.getDocTypeId();
+		if (docTypeId != null)
 		{
-			final Properties ctx = optionsCtx.getCtx();
-			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
+			final UserRolePermissionsKey permissionsKey = optionsCtx.getUserRolePermissionsKey();
+			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
 			role.applyActionAccess(optionsCtx);
 		}
 	}

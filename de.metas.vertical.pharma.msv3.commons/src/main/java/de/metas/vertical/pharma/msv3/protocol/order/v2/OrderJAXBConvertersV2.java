@@ -20,6 +20,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage.OrderResponsePackageBuilder;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemSubstitution;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderServerJAXBConverters;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderSubstitutionReason;
@@ -358,11 +359,11 @@ public class OrderJAXBConvertersV2 implements OrderClientJAXBConverters, OrderSe
 		return soapItem;
 	}
 
-	private OrderResponsePackageItemPart fromJAXB(final BestellungAnteil soap)
+	private OrderResponsePackageItemPart fromJAXB(@NonNull final BestellungAnteil soap)
 	{
 		return OrderResponsePackageItemPart.builder()
 				.qty(Quantity.of(soap.getMenge()))
-				.type(soap.getTyp() != null ? soap.getTyp().value() : null)
+				.type(Type.ofStringValueOrNull(soap.getTyp().value()))
 				.deliveryDate(JAXBDateUtils.toLocalDateTime(soap.getLieferzeitpunkt()))
 				.defectReason(OrderDefectReason.fromV2SoapCode(soap.getGrund()))
 				.tour(soap.getTour())
@@ -375,7 +376,11 @@ public class OrderJAXBConvertersV2 implements OrderClientJAXBConverters, OrderSe
 	{
 		final BestellungAnteil soap = jaxbObjectFactory.createBestellungAnteil();
 		soap.setMenge(itemPart.getQty().getValueAsInt());
-		soap.setTyp(BestellungRueckmeldungTyp.fromValue(itemPart.getType()));
+		final String type = Type.getValueOrNull(itemPart.getType());
+		if (type != null)
+		{
+			soap.setTyp(BestellungRueckmeldungTyp.fromValue(type));
+		}
 		soap.setLieferzeitpunkt(JAXBDateUtils.toXMLGregorianCalendar(itemPart.getDeliveryDate()));
 		soap.setGrund(itemPart.getDefectReason().getV2SoapCode());
 		soap.setTour(itemPart.getTour());
