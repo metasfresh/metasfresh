@@ -7,11 +7,14 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
@@ -26,6 +29,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -54,6 +58,8 @@ import mockit.Mocked;
 
 public class PickingSlotViewRepositoryTests
 {
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(2);
+
 	@Mocked
 	private PickingHURowsRepository pickingHUsRepo;
 
@@ -72,9 +78,9 @@ public class PickingSlotViewRepositoryTests
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
-		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
-		pickingSlot.setIsPickingRackSystem(true);
-		save(pickingSlot);
+		createPickingSlot(pickingSlot -> {
+			pickingSlot.setIsPickingRackSystem(true);
+		});
 
 		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
@@ -82,22 +88,13 @@ public class PickingSlotViewRepositoryTests
 		new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
 		// @formatter:on
 
-		final NullLookupDataSource nullDS = NullLookupDataSource.instance;
-
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDS, () -> nullDS, () -> nullDS);
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
 		final List<PickingSlotRow> pickingSlotRows = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(pickingSlotRows.size(), is(1)); // even if there are no HUs, there shall still be a row for our picking slot.
 
 		final PickingSlotRow pickingSlotRow = pickingSlotRows.get(0);
 		assertThat(pickingSlotRow.getType()).isEqualTo(PickingSlotRowType.forPickingSlotRow());
-	}
-
-	private ShipmentScheduleId createShipmentSchedule()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		save(shipmentSchedule);
-		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	@Test
@@ -157,18 +154,35 @@ public class PickingSlotViewRepositoryTests
 		assertThat(whuRow.getHuId().getRepoId(), is(101));
 	}
 
+	private ShipmentScheduleId createShipmentSchedule()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setC_BPartner_ID(1);
+		shipmentSchedule.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+		save(shipmentSchedule);
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+	}
+
 	private PickingSlotId createPickingSlot()
 	{
+		return createPickingSlot(pickingSlot -> {
+		});
+	}
+
+	private PickingSlotId createPickingSlot(final Consumer<I_M_PickingSlot> customizer)
+	{
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
+		pickingSlot.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+		customizer.accept(pickingSlot);
 		save(pickingSlot);
 		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 	}
 
 	private PickingSlotViewRepository createPickingSlotViewRepository()
 	{
-		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
+		final Supplier<LookupDataSource> nullDataSourceSupplier = () -> NullLookupDataSource.instance;
 
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
+		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, nullDataSourceSupplier, nullDataSourceSupplier, nullDataSourceSupplier);
 		return pickingSlotViewRepository;
 	}
 
