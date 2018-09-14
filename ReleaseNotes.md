@@ -58,7 +58,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
+    * Bugfix in WebUI. Views with #AD_User_ID context are now not failing anymore.
   * [#1043](https://github.com/metasfresh/metasfresh-webui-api/issues/1043) Open PDF from Printing Queue stopped working
+    * Fixes a Bug when opening a PDF from Printing Queue. Nw the PDF is opened again.
 
 * metasfresh-webui-frontend
   * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
@@ -66,6 +68,7 @@ Here come the actual release notes:
   * [#1931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1931) Hint for shortcut [alt]+u not displayed anymore when hovering over the resp. button
     * Now shows the Quickaction Tooltip again.
   * [#1932](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1932) Mandatory Field not filled Error too early
+    * Fixes the UI Error Handling for mandatory Fields.
   * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
     * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
   * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
