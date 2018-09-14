@@ -91,4 +91,5 @@ public class Packageable
 
 	@Nullable
 	OrderLineId salesOrderLineIdOrNull;
+	BigDecimal salesOrderLineNetAmt;
 }
