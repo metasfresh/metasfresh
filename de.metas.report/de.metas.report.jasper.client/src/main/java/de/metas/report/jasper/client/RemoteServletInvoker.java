@@ -1,4 +1,4 @@
-package de.metas.adempiere.report.jasper.server;
+package de.metas.report.jasper.client;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import de.metas.adempiere.report.jasper.IJasperServer;
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.OutputType;
 
-public class RemoteServletServer implements IJasperServer
+public class RemoteServletInvoker implements IJasperServer
 {
 	public static final String SYSCONFIG_JRServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
 	public static final String SYSCONFIG_JRServerServlet_DEFAULT = "http://localhost:8080/adempiereJasper/ReportServlet";
@@ -62,7 +62,7 @@ public class RemoteServletServer implements IJasperServer
 	 */
 	public final int readTimeout = 5000;
 
-	public RemoteServletServer()
+	public RemoteServletInvoker()
 	{
 		jrServlet = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_JRServerServlet, SYSCONFIG_JRServerServlet_DEFAULT);
 
