@@ -115,8 +115,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private boolean processShipments = true;
 
 	private boolean createPackingLines = false;
-	private boolean manualPackingMaterial = false;
+
 	private boolean shipmentDateToday = false;
+
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -551,13 +552,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
+		final boolean isManualPackingMaterial = candidate.isCreateManualPackingMaterial();
+
 		//
 		// If we don't have an active shipment line builder
 		// then create one
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
+			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
+			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
 
 		}
@@ -588,13 +592,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public InOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(final boolean manualPackingMaterial)
-	{
-		this.manualPackingMaterial = manualPackingMaterial;
-		return this;
-	}
-
-	@Override
 	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
 	{
 		this.shipmentDateToday = forceDateToday;
@@ -610,5 +607,4 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
-
 }

@@ -13,11 +13,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MClient;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
@@ -73,6 +74,7 @@ public class DefaultModelArchiver
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultModelArchiver.class);
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
+	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -313,11 +315,11 @@ public class DefaultModelArchiver
 			final Integer adClientId = InterfaceWrapperHelper.<Integer> getValue(record, COLUMNNAME_AD_Client_ID).orElse(-1);
 			if (adClientId != null && adClientId >= 0)
 			{
-				final MClient adClient = MClient.get(ctx, adClientId);
-				language = adClient.getLanguage();
+								final I_AD_Client client = clientDAO.retriveClient(ctx, adClientId);
+					language = Language.getLanguage(client.getAD_Language());
 				if (language != null)
 				{
-					logger.debug("Using {}'s language: {}", adClient, language);
+					logger.debug("Using {}'s language: {}", client, language);
 					return language;
 				}
 			}

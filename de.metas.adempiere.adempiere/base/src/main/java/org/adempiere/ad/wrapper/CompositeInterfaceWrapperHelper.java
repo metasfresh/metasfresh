@@ -302,4 +302,10 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		return getHelperThatCanHandle(model).isCopy(model);
 	}
+	
+	@Override
+	public boolean isCopying(@NonNull final Object model)
+	{
+		return getHelperThatCanHandle(model).isCopying(model);
+	}
 }

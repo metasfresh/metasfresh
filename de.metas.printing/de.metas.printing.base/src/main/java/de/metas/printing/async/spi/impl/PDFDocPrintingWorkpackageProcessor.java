@@ -22,7 +22,6 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PrintInfo;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -44,6 +43,7 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.report.jasper.client.JRClient;
 
 /**
  * This processor process the enqueued <code>C_Print_Job_Instructions</code>
