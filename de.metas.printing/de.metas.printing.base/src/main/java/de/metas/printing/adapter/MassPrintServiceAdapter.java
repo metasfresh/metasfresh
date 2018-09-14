@@ -28,47 +28,43 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.PrintInfo;
-import org.compiere.report.AbstractJasperService;
-import org.compiere.report.IJasperService;
+import org.compiere.report.AbstractPrintService;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.print.IPrintService;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.ProcessInfo;
-import net.sf.jasperreports.engine.JRExporter;
-import net.sf.jasperreports.engine.JasperPrint;
+import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
+import lombok.NonNull;
 
 /**
- * Adapt the old school Jasper Printing Service ( {@link IJasperService}) to our printing module.
- *
- * @author tsa
- *
+ * Adapt the Printing Service ( {@link IPrintService}) to our printing module.
  */
-public final class JasperServiceAdapter extends AbstractJasperService
+public final class MassPrintServiceAdapter extends AbstractPrintService
 {
-	public static final transient JasperServiceAdapter instance = new JasperServiceAdapter();
+	private static final Logger logger = LogManager.getLogger(MassPrintServiceAdapter.class);
 
-	private JasperServiceAdapter()
+	public static final transient MassPrintServiceAdapter INSTANCE = new MassPrintServiceAdapter();
+
+	private MassPrintServiceAdapter()
 	{
-		super();
 	}
 
 	/**
 	 * Exports the given data to PDF and creates an <code>AD_Archive</code> with <code>IsDirectPrint='Y'</code> (to trigger a <code>C_Printing_Queue</code> record being created) and
 	 * <code>IsCreatePrintJob='Y'</code> to also trigger a direct <code>C_PrintJob</code> creation.
-	 *
 	 */
 	@Override
-	public void print(final JasperPrint jasperPrint, final ProcessInfo pi, final boolean displayDialog)
+	public void print(
+			@NonNull final ExecuteReportResult executeReportResult,
+			@NonNull final ProcessInfo processInfo)
 	{
-		Check.assumeNotNull(jasperPrint, "jasperPrint not null");
-		Check.assumeNotNull(pi, "pi not null");
-
 		// services
 		final IArchiveBL archiveService = Services.get(IArchiveBL.class);
 
-		final PrintInfo printInfo = extractPrintInfo(pi);
-
-		final byte[] exportData = exportToPdf(jasperPrint);
+		final PrintInfo printInfo = extractPrintInfo(processInfo);
 
 		//
 		// Create the archive
@@ -82,9 +78,18 @@ public final class JasperServiceAdapter extends AbstractJasperService
 
 		final String trxName = ITrx.TRXNAME_None;
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
-				archiveService.archive(exportData, printInfo, forceArchiving, save, trxName),
+				archiveService.archive(
+						executeReportResult.getReportData(),
+						printInfo,
+						forceArchiving,
+						save,
+						trxName),
 				I_AD_Archive.class);
-		Check.assumeNotNull(archive, "archive not null");
+
+		Check.assumeNotNull(archive,
+				"archive not null; executeReportResult={}; processInfo={}",
+				executeReportResult, processInfo);
+
 		//
 		// Ask our printing service to printing it right now
 		archive.setIsDirectEnqueue(true);
@@ -99,11 +104,5 @@ public final class JasperServiceAdapter extends AbstractJasperService
 		// Save archive. This will trigger the printing...
 		InterfaceWrapperHelper.save(archive);
 		logger.debug("Archive: {}", archive);
-	}
-
-	@Override
-	public void setJrPrintExporter(final JRExporter jrExporter)
-	{
-		throw new UnsupportedOperationException();
 	}
 }

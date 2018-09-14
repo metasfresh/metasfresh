@@ -231,8 +231,8 @@ public final class ProcessExecutor
 				//
 				// Prepare report
 				final boolean isReport = pi.isReportingProcess();
-				final boolean isJasperReport = pi.getReportTemplate().isPresent();
-				if (isJasperReport)
+				final boolean hasProcessClass = !Check.isEmpty(pi.getClassName());
+				if (isReport && hasProcessClass)
 				{
 					// nothing do to, the Jasper process class implementation is responsible for triggering the report preview if any
 					return;
@@ -714,7 +714,7 @@ public final class ProcessExecutor
 			this.onErrorThrowException = true;
 			return this;
 		}
-		
+
 		public Builder onErrorThrowException(final boolean onErrorThrowException)
 		{
 			this.onErrorThrowException = onErrorThrowException;
