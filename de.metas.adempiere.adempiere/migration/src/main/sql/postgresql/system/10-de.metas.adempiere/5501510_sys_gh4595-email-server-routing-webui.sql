@@ -289,3 +289,23 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-09-14 17:26:10'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-09-14 17:26:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=545250 AND AD_Language='en_US'
 ;
 
+-- 2018-09-14T18:08:58.004
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,541168,541879,TO_TIMESTAMP('2018-09-14 18:08:57','YYYY-MM-DD HH24:MI:SS'),100,'Y','matching',20,TO_TIMESTAMP('2018-09-14 18:08:57','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-09-14T18:09:13.872
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541879, SeqNo=10,Updated=TO_TIMESTAMP('2018-09-14 18:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=553803
+;
+
+-- 2018-09-14T18:09:21.386
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541879, SeqNo=20,Updated=TO_TIMESTAMP('2018-09-14 18:09:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=553805
+;
+
+-- 2018-09-14T18:09:27.309
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541879, SeqNo=30,Updated=TO_TIMESTAMP('2018-09-14 18:09:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=553806
+;
+
