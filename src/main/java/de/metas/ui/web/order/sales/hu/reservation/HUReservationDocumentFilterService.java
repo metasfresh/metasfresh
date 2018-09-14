@@ -1,6 +1,6 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
-import java.util.List;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -68,7 +68,7 @@ public class HUReservationDocumentFilterService
 		Check.assumeNotNull(orderLineWarehouse,
 				"For the current sales order line, there needs to be a warehouse; salesOrderLine={}", salesOrderLine);
 
-		final List<WarehouseId> //
+		final Set<WarehouseId> //
 		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(orderLineWarehouse.getM_Warehouse_ID()));
 
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
@@ -90,7 +90,7 @@ public class HUReservationDocumentFilterService
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-		final List<WarehouseId> //
+		final Set<WarehouseId> //
 		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(packageable.getWarehouseId());
 
 		final IHUQueryBuilder huQuery = handlingUnitsDAO
