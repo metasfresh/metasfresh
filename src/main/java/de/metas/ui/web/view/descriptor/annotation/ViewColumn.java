@@ -61,7 +61,8 @@ public @interface ViewColumn
 	/**
 	 * Column layout profiles.
 	 *
-	 * If empty, the column won't be displayed in any of {@link JSONViewDataType} profiles.
+	 * If empty, and no defaults like {@link #seqNo()} were defined
+	 * then the column won't be displayed in any of {@link JSONViewDataType} profiles.
 	 */
 	ViewColumnLayout[] layouts() default {};
 
