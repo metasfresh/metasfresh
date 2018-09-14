@@ -50,8 +50,11 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4528](https://github.com/metasfresh/metasfresh/issues/4528) Can not add new scale price on 5.71
+    * Fixes a Bug in Product Prices when recording Scale Prices.
   * [#4552](https://github.com/metasfresh/metasfresh/issues/4552) AD_User is wrong in shipment schedule when using isDropShip
+    * Fixes the Shipment Contact User when using Drop Shipment in Sales Order.
   * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) msv3 related fixes
+    * Fixes different Pharma MSV3 related issues.
 
 * metasfresh-webui-api
   * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
