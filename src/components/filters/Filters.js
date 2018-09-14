@@ -25,6 +25,27 @@ class Filters extends Component {
   }
 
   // PARSING FILTERS ---------------------------------------------------------
+
+  /*
+   * parseActiveFilters - this function does two things:
+   *  - creates a local copy of active filters object including filters that
+   *    only have defaultValues set. `defaultVal` flag tells us, that this
+   *    filter has only defaultValues, and no values set by the user. We need
+   *    this to ble able to differentiate between filters that should be
+   *    indicated as active on load, or not.
+   *  - creates an object with captions of each active parameter per filter
+   *
+   * So first we traverse all filters data and perform actions in this order:
+   *  - if filter is in active filters and parameter has no defaultValue,
+   *    or defaultValue has been nullified by user's selection we add it
+   *    local active filters and set the `defaultVal` flag to false
+   *    (as it obviously was already set).
+   *  - if filter is active check if current loop parameter is set in the
+   *    active filters. If yes, do nothing as it'll always override the
+   *    defaultValue
+   *  - otherwise add parameter and filter to local active filters and set
+   *    the `defaultVal` to true as apparently there are no values set
+   */
   parseActiveFilters = () => {
     let { filtersActive, filterData, initialValuesNulled } = this.props;
     let activeFilters = _.cloneDeep(filtersActive);
@@ -225,6 +246,7 @@ class Filters extends Component {
     const { activeFilter } = this.state;
 
     if (activeFilter) {
+      // filters with only defaultValues shouldn't be set to active
       const active = activeFilter.find(
         item => item.filterId === filterId && !item.defaultVal
       );
@@ -238,6 +260,7 @@ class Filters extends Component {
   parseToPatch = params => {
     return params.reduce((acc, param) => {
       if (
+        // filters with only defaltValue shouldn't be sent to server
         !param.defaultValue ||
         JSON.stringify(param.defaultValue) !== JSON.stringify(param.value)
       ) {
@@ -254,8 +277,8 @@ class Filters extends Component {
   // SETTING FILTERS  --------------------------------------------------------
 
   /*
-     *   This method should update docList
-     */
+   * This method should update docList
+   */
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = this.isFilterValid(filter);
