@@ -149,7 +149,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		{
 			try
 			{
-				sequenceNoFinal = new DecimalFormat(decimalPattern).format(sequenceNo);
+				final int seqNoAsInt = Integer.parseInt(sequenceNo);
+				sequenceNoFinal = new DecimalFormat(decimalPattern).format(seqNoAsInt);
 			}
 			catch (final Exception e)
 			{

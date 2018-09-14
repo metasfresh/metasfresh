@@ -20,16 +20,25 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4411](https://github.com/metasfresh/metasfresh/issues/4411) New Dunning trigger for flatrate terms
+    * Extended Dunning Feature, now calculating the invoice due date from flatrate terms due date.
   * [#4516](https://github.com/metasfresh/metasfresh/issues/4516) New Action "Copy Window"
+    * Enhance Application Dictionary Feature allowing to copy window configurations for webui.
   * [#4524](https://github.com/metasfresh/metasfresh/issues/4524) Implement inbound E-Mail support
+    * New Feature that supports inbound eMail communication now.
   * [#4541](https://github.com/metasfresh/metasfresh/issues/4541) Return also URL using function de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
+    * Enhancing the function Docs_Generics_Org_Report, now returning the URL too.
   * [#4550](https://github.com/metasfresh/metasfresh/issues/4550) Show Pricing Condition Indicator in Purchase Orders
-  * [#4554](https://github.com/metasfresh/metasfresh/issues/4554) process to create dunning-PDF with concatenated invoice-PDFs
+    * Including the Pricing Condition Indicator, known from Sales Orderline, in Purchase Orderline too.
+  * [#4554](https://github.com/metasfresh/metasfresh/issues/4554) Process to create dunning-PDF with concatenated invoice-PDFs
+    * New Process that allows to concatenate Dunning Documents with invoice PDF's.
   * [#4561](https://github.com/metasfresh/metasfresh/issues/4561) QueryStatisticsLogger shall use logger instead of stderr
+    * Now Logging out SQL infos instead of printing them to stderr. 
 
 * metasfresh-webui-api
   * [#1035](https://github.com/metasfresh/metasfresh-webui-api/issues/1035) Implement CORS support
+    * New feature, now supporting cross origin ressource sharing.
   * [#1037](https://github.com/metasfresh/metasfresh-webui-api/issues/1037) Advanced tooltip support
+    * New Functionality now suppoting advanced tooltips in webui.
 
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
@@ -41,11 +50,17 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4528](https://github.com/metasfresh/metasfresh/issues/4528) Can not add new scale price on 5.71
+    * Fixes a Bug in Product Prices when recording Scale Prices.
   * [#4552](https://github.com/metasfresh/metasfresh/issues/4552) AD_User is wrong in shipment schedule when using isDropShip
+    * Fixes the Shipment Contact User when using Drop Shipment in Sales Order.
   * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) msv3 related fixes
+    * Fixes different Pharma MSV3 related issues.
 
 * metasfresh-webui-api
   * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
+    * Bugfix in WebUI. Views with #AD_User_ID context are now not failing anymore.
+  * [#1043](https://github.com/metasfresh/metasfresh-webui-api/issues/1043) Open PDF from Printing Queue stopped working
+    * Fixes a Bug when opening a PDF from Printing Queue. Nw the PDF is opened again.
 
 * metasfresh-webui-frontend
   * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
@@ -53,6 +68,7 @@ Here come the actual release notes:
   * [#1931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1931) Hint for shortcut [alt]+u not displayed anymore when hovering over the resp. button
     * Now shows the Quickaction Tooltip again.
   * [#1932](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1932) Mandatory Field not filled Error too early
+    * Fixes the UI Error Handling for mandatory Fields.
   * [#1935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1935) Tab shall be usable to navigate through the dropdown sequence in combined Business Partner Lookups
     * Bugfix for the Tab Handling in combined Lookup Fields. Now it's possible to navigate with [tab] again.
   * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
