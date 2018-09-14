@@ -1,7 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +16,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
@@ -186,7 +185,7 @@ public class PickingSlotViewRepository
 	 */
 	private static List<I_M_PickingSlot> retrievePickingSlotsForShipmentSchedule(@NonNull final PickingSlotRepoQuery repoQuery)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(repoQuery.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(repoQuery.getCurrentShipmentScheduleId());
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
