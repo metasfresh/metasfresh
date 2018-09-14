@@ -1,4 +1,4 @@
-package de.metas.adempiere.report.jasper.client;
+package de.metas.report.jasper.client;
 
 /*
  * #%L

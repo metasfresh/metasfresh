@@ -11,8 +11,8 @@ import com.google.common.io.Files;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.report.jasper.client.JRClientUtil;
 import de.metas.process.ProcessInfo;
+import de.metas.report.jasper.client.JRClientUtil;
 
 /*
  * #%L

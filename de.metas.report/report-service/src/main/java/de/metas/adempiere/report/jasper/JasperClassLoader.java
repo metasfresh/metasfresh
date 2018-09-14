@@ -47,6 +47,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
 import de.metas.logging.LogManager;
+import de.metas.util.FileUtil;
 
 /**
  * Jasper class loader: basically it will resolve {@link #PLACEHOLDER} from resource names and will fetch the resources from remote HTTP servers.
@@ -171,7 +172,7 @@ public final class JasperClassLoader extends ClassLoader
 
 			// copy the stream data to a local stream
 			final ByteArrayOutputStream out = new ByteArrayOutputStream();
-			JasperUtil.copy(is, out);
+			FileUtil.copy(is, out);
 			is.close();
 			jasperFile.close();
 
