@@ -39,6 +39,7 @@ import lombok.NonNull;
 
 public class ShipperDAO implements IShipperDAO
 {
+	@Override
 	public I_M_Shipper getById(@NonNull final ShipperId id)
 	{
 		return loadOutOfTrx(id, I_M_Shipper.class);
