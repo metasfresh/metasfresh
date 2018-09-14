@@ -34,6 +34,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehousePickingGroup;
 import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -103,4 +105,6 @@ public interface IWarehouseDAO extends ISingletonService
 	I_M_Locator getOrCreateLocatorByCoordinates(WarehouseId warehouseId, String value, String x, String y, String z);
 
 	LocatorId createDefaultLocator(WarehouseId warehouseId);
+
+	WarehouseType getWarehouseTypeById(WarehouseTypeId id);
 }

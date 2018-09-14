@@ -38,6 +38,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -47,10 +48,13 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehousePickingGroup;
 import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
+import org.compiere.model.I_M_Warehouse_Type;
 import org.compiere.util.CCache;
 import org.eevolution.model.I_M_Warehouse_Routing;
 import org.slf4j.Logger;
@@ -59,6 +63,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -68,6 +73,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 	private final CCache<WarehouseId, ImmutableList<LocatorId>> locatorIdsByWarehouseId = CCache.newCache(I_M_Locator.Table_Name + "#by#M_Warehouse_ID", 10, CCache.EXPIREMINUTES_Never);
 	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.newCache(I_M_Warehouse_Routing.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, WarehouseTypesIndex> allWarehouseTypes = CCache.newCache(I_M_Warehouse_Type.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -427,5 +433,40 @@ public class WarehouseDAO implements IWarehouseDAO
 
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		return warehouse != null ? warehouse.getName() : "<" + warehouseId.getRepoId() + ">";
+	}
+
+	@Override
+	public WarehouseType getWarehouseTypeById(final WarehouseTypeId id)
+	{
+		return getWarehouseTypesIndex().getById(id);
+	}
+
+	private WarehouseTypesIndex getWarehouseTypesIndex()
+	{
+		return allWarehouseTypes.getOrLoad(0, this::retrieveWarehouseTypesIndex);
+	}
+
+	private WarehouseTypesIndex retrieveWarehouseTypesIndex()
+	{
+		final List<WarehouseType> warehouseTypes = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Warehouse_Type.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::toWarehouseType)
+				.collect(ImmutableList.toImmutableList());
+
+		return WarehouseTypesIndex.of(warehouseTypes);
+	}
+
+	private WarehouseType toWarehouseType(final I_M_Warehouse_Type record)
+	{
+		final ITranslatableString name = InterfaceWrapperHelper.getModelTranslationMap(record)
+				.getColumnTrl(I_M_Warehouse_Type.COLUMNNAME_Name, record.getName());
+
+		return WarehouseType.builder()
+				.id(WarehouseTypeId.ofRepoId(record.getM_Warehouse_Type_ID()))
+				.name(name)
+				.build();
 	}
 }
