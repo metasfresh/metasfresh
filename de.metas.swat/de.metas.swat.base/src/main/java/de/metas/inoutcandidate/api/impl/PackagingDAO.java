@@ -1,7 +1,9 @@
 package de.metas.inoutcandidate.api.impl;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -79,19 +81,46 @@ public class PackagingDAO implements IPackagingDAO
 		return toPackageable(record);
 	}
 
+	@Override
+	public List<Packageable> getByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return retrievePackageableRecordsByShipmentScheduleIds(shipmentScheduleIds)
+				.stream()
+				.map(record -> toPackageable(record))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Stream<Packageable> streamAll()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Packageable_V.class)
+				.create()
+				.stream(I_M_Packageable_V.class)
+				.map(record -> toPackageable(record));
+	}
+
 	private static Packageable toPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 
 		final PackageableBuilder packageable = Packageable.builder();
-		packageable.bpartnerId(bpartnerId);
-		packageable.bpartnerValue(record.getBPartnerValue());
-		packageable.bpartnerName(record.getBPartnerName());
-		packageable.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
-		packageable.bpartnerLocationName(record.getBPartnerLocationName());
-		packageable.bpartnerAddress(record.getBPartnerAddress_Override());
+		packageable.customerId(bpartnerId);
+		packageable.customerBPValue(record.getBPartnerValue());
+		packageable.customerName(record.getBPartnerName());
+		packageable.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
+		packageable.customerBPLocationName(record.getBPartnerLocationName());
+		packageable.customerAddress(record.getBPartnerAddress_Override());
 
+		packageable.qtyOrdered(record.getQtyOrdered());
 		packageable.qtyToDeliver(record.getQtyToDeliver());
+		packageable.qtyPicked(record.getQtyPicked());
+		packageable.qtyPickedPlanned(record.getQtyPickedPlanned());
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());
@@ -113,11 +142,11 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.displayed(record.isDisplayed());
 
-		packageable.orderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()));
-		packageable.orderDocumentNo(record.getOrderDocumentNo());
-		packageable.orderDocSubType(record.getDocSubType());
+		packageable.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()));
+		packageable.salesOrderDocumentNo(record.getOrderDocumentNo());
+		packageable.salesOrderDocSubType(record.getDocSubType());
 
-		packageable.orderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
+		packageable.salesOrderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
 
 		packageable.freightCostRule(record.getFreightCostRule());
 
@@ -136,11 +165,25 @@ public class PackagingDAO implements IPackagingDAO
 
 	}
 
+	@Override
+	public List<I_M_Packageable_V> retrievePackageableRecordsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Packageable_V.class)
+				.addInArrayFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.list(I_M_Packageable_V.class);
+	}
+
 	private I_M_Packageable_V retrievePackageableRecordByShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Packageable_V.class)
-				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
 				.firstOnly(I_M_Packageable_V.class);

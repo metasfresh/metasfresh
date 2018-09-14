@@ -613,7 +613,7 @@ public class PackingMd extends MvcMdGenForm
 
 	protected TableRow createTableRow(final Packageable item)
 	{
-		final BPartnerId bpartnerId = item.getBpartnerId();
+		final BPartnerId bpartnerId = item.getCustomerId();
 		final WarehouseId warehouseDestId = null; // M_Warehouse_Dest is gone for a long time by now
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
@@ -626,8 +626,8 @@ public class PackingMd extends MvcMdGenForm
 		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
 		keyBuilder.bpartnerId(BPartnerId.toRepoIdOr(bpartnerId, -1));
 
-		final BPartnerLocationId bpartnerLocationId = item.getBpartnerLocationId();
-		final String bPartnerAddress = item.getBpartnerAddress();
+		final BPartnerLocationId bpartnerLocationId = item.getCustomerLocationId();
+		final String bPartnerAddress = item.getCustomerAddress();
 		keyBuilder.bpartnerAddress(bPartnerAddress);
 
 		final WarehouseId warehouseId = item.getWarehouseId();
@@ -670,9 +670,9 @@ public class PackingMd extends MvcMdGenForm
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final LocalDateTime deliveryDate = item.getDeliveryDate(); // 01676
 		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
-		final String bpartnerValue = item.getBpartnerValue();
-		final String bpartnerName = item.getBpartnerName();
-		final String bPartnerLocationName = item.getBpartnerLocationName();
+		final String bpartnerValue = item.getCustomerBPValue();
+		final String bpartnerName = item.getCustomerName();
+		final String bPartnerLocationName = item.getCustomerBPLocationName();
 		final String shipper = item.getShipperName();
 
 		// metas-ts: we need the shipper-ID to be in PackingDetailsMd (see PAcking.createPackingDetailsModel() ), because it needs to be displayed in PackingDetailsV (see
@@ -760,7 +760,7 @@ public class PackingMd extends MvcMdGenForm
 		// Filter by BPartner
 		if (bpartnerIds != null && !bpartnerIds.isEmpty())
 		{
-			final BPartnerId bpartnerId = packageableItem.getBpartnerId();
+			final BPartnerId bpartnerId = packageableItem.getCustomerId();
 			if (!bpartnerIds.contains(bpartnerId))
 			{
 				return false;

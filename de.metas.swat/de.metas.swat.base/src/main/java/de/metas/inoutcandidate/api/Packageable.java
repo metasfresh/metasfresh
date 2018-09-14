@@ -48,15 +48,18 @@ public class Packageable
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 
+	BigDecimal qtyOrdered;
 	BigDecimal qtyToDeliver;
+	BigDecimal qtyPicked;
+	BigDecimal qtyPickedPlanned;
 
-	BPartnerId bpartnerId;
-	String bpartnerValue;
-	String bpartnerName;
+	BPartnerId customerId;
+	String customerBPValue;
+	String customerName;
 
-	BPartnerLocationId bpartnerLocationId;
-	String bpartnerLocationName;
-	String bpartnerAddress;
+	BPartnerLocationId customerLocationId;
+	String customerBPLocationName;
+	String customerAddress;
 
 	@NonNull
 	WarehouseId warehouseId;
@@ -82,10 +85,10 @@ public class Packageable
 	@NonNull
 	AttributeSetInstanceId asiId;
 
-	OrderId orderId;
-	String orderDocumentNo;
-	String orderDocSubType;
+	OrderId salesOrderId;
+	String salesOrderDocumentNo;
+	String salesOrderDocSubType;
 
 	@Nullable
-	OrderLineId orderLineIdOrNull;
+	OrderLineId salesOrderLineIdOrNull;
 }
