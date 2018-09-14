@@ -2,6 +2,9 @@ package de.metas.inoutcandidate.api;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
@@ -30,16 +33,28 @@ import lombok.Value;
 @Value
 public class ShipmentScheduleId implements RepoIdAware
 {
-
+	@JsonCreator
 	public static ShipmentScheduleId ofRepoId(final int repoId)
 	{
 		return new ShipmentScheduleId(repoId);
 	}
 
+	public static ShipmentScheduleId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
-	private ShipmentScheduleId(final int repoId)
+	private ShipmentScheduleId(final int shipmentScheduleRepoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(shipmentScheduleRepoId, "shipmentScheduleRepoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
