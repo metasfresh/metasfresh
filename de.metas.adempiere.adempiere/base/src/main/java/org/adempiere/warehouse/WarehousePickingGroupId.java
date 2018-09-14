@@ -1,4 +1,4 @@
-package org.adempiere.warehouse.model;
+package org.adempiere.warehouse;
 
 import java.util.Optional;
 

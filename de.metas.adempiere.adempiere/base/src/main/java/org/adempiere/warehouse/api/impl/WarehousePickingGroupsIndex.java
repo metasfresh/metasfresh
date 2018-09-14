@@ -6,8 +6,8 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
-import org.adempiere.warehouse.model.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

@@ -32,8 +32,8 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.model.WarehousePickingGroup;
-import org.adempiere.warehouse.model.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 

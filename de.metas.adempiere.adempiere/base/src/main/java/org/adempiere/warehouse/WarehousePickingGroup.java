@@ -1,6 +1,4 @@
-package org.adempiere.warehouse.model;
-
-import org.adempiere.warehouse.WarehouseId;
+package org.adempiere.warehouse;
 
 import com.google.common.collect.ImmutableSet;
 
