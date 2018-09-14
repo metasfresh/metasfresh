@@ -43,7 +43,6 @@ import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
@@ -66,6 +65,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
+import de.metas.shipping.ShipperId;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using
@@ -143,13 +143,14 @@ public class OrderFastInput extends CalloutEngine
 			return true;
 		}
 
-		if (order.getC_BPartner_ID() > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
 			// try to set the shipperId using BPartner
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(order.getC_BPartner_ID(), ITrx.TRXNAME_None);
-			if (shipper != null)
+			final ShipperId shipperId = Services.get(IBPartnerDAO.class).getShipperId(bpartnerId);
+			if (shipperId != null)
 			{
-				order.setM_Shipper(shipper);
+				order.setM_Shipper_ID(shipperId.getRepoId());
 				return true;
 			}
 		}

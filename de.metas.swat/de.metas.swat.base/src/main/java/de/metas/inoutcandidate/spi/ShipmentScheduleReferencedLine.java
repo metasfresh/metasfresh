@@ -6,7 +6,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.DocumentLineDescriptor;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

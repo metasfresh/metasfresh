@@ -134,7 +134,6 @@ public interface IQuery<T>
 		return mapById(getModelClass());
 	}
 
-
 	int firstId();
 
 	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
@@ -149,6 +148,11 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	int firstIdOnly() throws DBException;
+
+	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return idMapper.apply(firstIdOnly());
+	}
 
 	<ET extends T> ET first() throws DBException;
 
@@ -422,12 +426,11 @@ public interface IQuery<T>
 	 * @return list of record Ids
 	 */
 	List<Integer> listIds();
-	
+
 	default <ID extends RepoIdAware> Set<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
 	}
-
 
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.

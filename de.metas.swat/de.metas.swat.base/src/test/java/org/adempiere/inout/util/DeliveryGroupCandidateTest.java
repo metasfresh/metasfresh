@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 
 /*
  * #%L

@@ -42,7 +42,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 /**

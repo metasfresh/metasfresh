@@ -33,7 +33,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_Shipper;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -44,6 +43,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
@@ -134,7 +134,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
 
-	I_M_Shipper retrieveShipper(int bPartnerId, String trxName);
+	ShipperId getShipperId(BPartnerId bpartnerId);
 
 	/**
 	 * @param address

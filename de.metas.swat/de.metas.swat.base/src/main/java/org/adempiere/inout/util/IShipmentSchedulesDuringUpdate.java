@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 
 public interface IShipmentSchedulesDuringUpdate
 {

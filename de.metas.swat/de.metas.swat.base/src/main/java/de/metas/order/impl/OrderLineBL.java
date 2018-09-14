@@ -45,13 +45,13 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeBL;
@@ -74,6 +74,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
 
@@ -191,24 +192,22 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			logger.debug("Looking for M_Shipper_ID via ship-to-bpartner of {}", order);
 
-			final int bPartnerID = order.getC_BPartner_ID();
-			if (bPartnerID <= 0)
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+			if (bpartnerId == null)
 			{
 				logger.warn("{} has no ship-to-bpartner", order);
 				return;
 			}
 
-			final I_M_Shipper shipper = Services.get(IBPartnerDAO.class).retrieveShipper(bPartnerID, ITrx.TRXNAME_None);
-			if (shipper == null)
+			final ShipperId shipperId = Services.get(IBPartnerDAO.class).getShipperId(bpartnerId);
+			if (shipperId == null)
 			{
 				// task 07034: nothing to do
 				return;
 			}
 
-			final int bPartnerShipperId = shipper.getM_Shipper_ID();
-
-			logger.debug("Setting M_Shipper_ID={} from ship-to-bpartner", bPartnerShipperId);
-			ol.setM_Shipper_ID(bPartnerShipperId);
+			logger.debug("Setting M_Shipper_ID={} from ship-to-bpartner", shipperId);
+			ol.setM_Shipper_ID(shipperId.getRepoId());
 		}
 	}
 

@@ -1,4 +1,6 @@
-package de.metas.shipping.api;
+package de.metas.shipping;
+
+import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -13,19 +15,20 @@ package de.metas.shipping.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ITranslatableString;
 
 /**
  * 
@@ -36,11 +39,14 @@ public interface IShipperDAO extends ISingletonService
 {
 
 	/**
-	 * Retrieves the first active {@link I_M_Shipper} which has the given <code>bpartner</code> and same client with the given bpartner. If there is any default {@link I_M_Shipper} it will take that one.
-	 * 
-	 * @param bpartner
 	 * @return shipper; if no shippers found it will return an error message
 	 */
-	I_M_Shipper retrieveForShipperBPartner(I_C_BPartner bpartner);
+	ShipperId getShipperIdByShipperPartnerId(BPartnerId shipperPartnerId);
+
+	ShipperId getDefault(ClientId clientId);
+
+	ITranslatableString getShipperName(ShipperId shipperId);
+
+	I_M_Shipper getById(ShipperId id);
 
 }

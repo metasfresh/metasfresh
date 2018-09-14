@@ -7,7 +7,7 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;

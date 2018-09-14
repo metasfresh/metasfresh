@@ -65,7 +65,7 @@ import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 
 public class PackingMd extends MvcMdGenForm
 {

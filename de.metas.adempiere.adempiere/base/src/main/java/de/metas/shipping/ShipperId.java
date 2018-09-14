@@ -1,4 +1,4 @@
-package de.metas.shipping.api;
+package de.metas.shipping;
 
 import java.util.Optional;
 

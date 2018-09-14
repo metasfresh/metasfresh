@@ -15,7 +15,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 /*

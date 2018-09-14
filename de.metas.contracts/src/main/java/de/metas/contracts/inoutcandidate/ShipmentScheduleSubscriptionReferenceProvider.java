@@ -13,7 +13,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 /*

@@ -28,7 +28,7 @@ import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;

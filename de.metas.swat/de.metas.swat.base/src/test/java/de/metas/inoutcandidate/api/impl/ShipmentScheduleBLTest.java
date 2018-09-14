@@ -21,7 +21,7 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.shipping.api.ShipperId;
+import de.metas.shipping.ShipperId;
 
 public class ShipmentScheduleBLTest
 {
