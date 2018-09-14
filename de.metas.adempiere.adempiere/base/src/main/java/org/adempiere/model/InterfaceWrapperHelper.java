@@ -1726,4 +1726,9 @@ public class InterfaceWrapperHelper
 	{
 		return helpers.isCopy(model);
 	}
+	
+	public static boolean isCopying(final Object model)
+	{
+		return helpers.isCopying(model);
+	}
 }
