@@ -10,6 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
@@ -93,6 +94,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());
+		packageable.warehouseTypeId(WarehouseTypeId.ofRepoIdOrNull(record.getM_Warehouse_Type_ID()));
 
 		packageable.productId(ProductId.ofRepoId(record.getM_Product_ID()));
 		packageable.productName(record.getProductName());

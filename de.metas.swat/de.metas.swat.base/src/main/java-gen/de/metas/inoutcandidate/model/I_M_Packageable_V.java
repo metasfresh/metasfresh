@@ -277,6 +277,35 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM>(I_M_Packageable_V.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -305,35 +334,6 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User>(I_M_Packageable_V.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM>(I_M_Packageable_V.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Auftragsdatum.
@@ -646,6 +646,33 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Warehouse>(I_M_Packageable_V.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Warehouse Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID);
+
+	/**
+	 * Get Warehouse Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_Type_ID();
+
+	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type();
+
+	public void setM_Warehouse_Type(org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type);
+
+    /** Column definition for M_Warehouse_Type_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Warehouse_Type> COLUMN_M_Warehouse_Type_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_M_Warehouse_Type>(I_M_Packageable_V.class, "M_Warehouse_Type_ID", org.compiere.model.I_M_Warehouse_Type.class);
+    /** Column name M_Warehouse_Type_ID */
+    public static final String COLUMNNAME_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
 
 	/**
 	 * Set Order Document No.

@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1085603347L;
+	private static final long serialVersionUID = 739716783L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -665,6 +665,40 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public int getM_Warehouse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class);
+	}
+
+	@Override
+	public void setM_Warehouse_Type(org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class, M_Warehouse_Type);
+	}
+
+	/** Set Warehouse Type.
+		@param M_Warehouse_Type_ID Warehouse Type	  */
+	@Override
+	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID)
+	{
+		if (M_Warehouse_Type_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, Integer.valueOf(M_Warehouse_Type_ID));
+	}
+
+	/** Get Warehouse Type.
+		@return Warehouse Type	  */
+	@Override
+	public int getM_Warehouse_Type_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_Type_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

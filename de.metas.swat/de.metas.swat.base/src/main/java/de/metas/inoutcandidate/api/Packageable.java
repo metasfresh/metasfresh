@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseTypeId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -59,6 +60,7 @@ public class Packageable
 	@NonNull
 	WarehouseId warehouseId;
 	String warehouseName;
+	WarehouseTypeId warehouseTypeId;
 
 	String deliveryVia;
 
