@@ -59,8 +59,7 @@ public final class MassPrintServiceAdapter extends AbstractPrintService
 	@Override
 	public void print(
 			@NonNull final ExecuteReportResult executeReportResult,
-			@NonNull final ProcessInfo processInfo,
-			final boolean displayDialog)
+			@NonNull final ProcessInfo processInfo)
 	{
 		// services
 		final IArchiveBL archiveService = Services.get(IArchiveBL.class);
@@ -88,8 +87,8 @@ public final class MassPrintServiceAdapter extends AbstractPrintService
 				I_AD_Archive.class);
 
 		Check.assumeNotNull(archive,
-				"archive not null; executeReportResult={}; displayDialog={}; processInfo={}",
-				executeReportResult, displayDialog, processInfo);
+				"archive not null; executeReportResult={}; processInfo={}",
+				executeReportResult, processInfo);
 
 		//
 		// Ask our printing service to printing it right now

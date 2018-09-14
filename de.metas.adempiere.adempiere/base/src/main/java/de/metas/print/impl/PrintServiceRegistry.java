@@ -10,7 +10,7 @@ public class PrintServiceRegistry implements IPrintServiceRegistry
 	private IPrintService service;
 
 	@Override
-	public IPrintService getJasperService()
+	public IPrintService getPrintService()
 	{
 		Check.errorIf(service == null, "Missing IJasperService implementation");
 		return service;

@@ -124,9 +124,8 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(pi, OutputType.PDF);
 
-		final IPrintService printService = printServiceRegistry.getJasperService();
-		final boolean displayPrintDialog = false;
-		printService.print(result, pi, displayPrintDialog);
+		final IPrintService printService = printServiceRegistry.getPrintService();
+		printService.print(result, pi);
 	}
 
 	private void startProcessPrintPreview(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
