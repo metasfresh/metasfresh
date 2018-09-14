@@ -37,7 +37,7 @@ public class PackagingDAO implements IPackagingDAO
 	{
 		return createQuery(query)
 				.stream(I_M_Packageable_V.class)
-				.map(this::createPackageable)
+				.map(record -> toPackageable(record))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -76,10 +76,10 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			throw new AdempiereException("@NotFound@ @M_Packageable_V@ (@M_ShipmentSchedule_ID@=" + shipmentScheduleId + ")");
 		}
-		return createPackageable(record);
+		return toPackageable(record);
 	}
 
-	private Packageable createPackageable(@NonNull final I_M_Packageable_V record)
+	private static Packageable toPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 
@@ -114,7 +114,8 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.displayed(record.isDisplayed());
 
 		packageable.orderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()));
-		packageable.docSubType(record.getDocSubType());
+		packageable.orderDocumentNo(record.getOrderDocumentNo());
+		packageable.orderDocSubType(record.getDocSubType());
 
 		packageable.orderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
 

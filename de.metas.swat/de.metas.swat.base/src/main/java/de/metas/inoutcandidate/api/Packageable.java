@@ -70,8 +70,6 @@ public class Packageable
 
 	boolean displayed;
 
-	String documentNo;
-
 	LocalDateTime deliveryDate;
 	LocalDateTime preparationDate;
 
@@ -85,7 +83,8 @@ public class Packageable
 	AttributeSetInstanceId asiId;
 
 	OrderId orderId;
-	String docSubType;
+	String orderDocumentNo;
+	String orderDocSubType;
 
 	@Nullable
 	OrderLineId orderLineIdOrNull;
