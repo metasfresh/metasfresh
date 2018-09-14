@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.shipping.api.ShipperId;
 import lombok.NonNull;
 
 public class PackagingDAO implements IPackagingDAO
@@ -102,7 +103,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.deliveryVia(record.getDeliveryViaRule());
 
-		packageable.shipperId(record.getM_Shipper_ID());
+		packageable.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()));
 		packageable.shipperName(record.getShipperName());
 
 		packageable.deliveryDate(TimeUtil.asLocalDateTime(record.getDeliveryDate())); // 01676

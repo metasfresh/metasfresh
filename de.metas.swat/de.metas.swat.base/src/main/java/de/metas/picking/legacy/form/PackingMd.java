@@ -65,6 +65,7 @@ import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
+import de.metas.shipping.api.ShipperId;
 
 public class PackingMd extends MvcMdGenForm
 {
@@ -676,7 +677,7 @@ public class PackingMd extends MvcMdGenForm
 
 		// metas-ts: we need the shipper-ID to be in PackingDetailsMd (see PAcking.createPackingDetailsModel() ), because it needs to be displayed in PackingDetailsV (see
 		// VPackaging.validateSuggestion())
-		keyBuilder.shipperId(item.getShipperId());
+		keyBuilder.shipperId(ShipperId.toRepoId(item.getShipperId()));
 
 		final boolean isDisplayed = item.isDisplayed();
 
