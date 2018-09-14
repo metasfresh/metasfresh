@@ -431,6 +431,18 @@ public final class Check
 		return valueInt;
 	}
 
+	public static int assumeGreaterThanZero(
+			final int valueInt,
+			final Class<? extends RuntimeException> exceptionClass,
+			final String valueName)
+	{
+		if (valueInt <= 0)
+		{
+			throwOrLogEx(exceptionClass, "Assumption failure: " + valueName + " > 0 but it was " + valueInt);
+		}
+		return valueInt;
+	}
+
 	public static long assumeGreaterThanZero(final long valueLong, final String valueName)
 	{
 		if (valueLong <= 0)

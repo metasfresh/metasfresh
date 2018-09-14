@@ -1,10 +1,10 @@
-package de.metas.javaclasses;
+package de.metas.document.sequenceno;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,21 +22,9 @@ package de.metas.javaclasses;
  * #L%
  */
 
-import org.adempiere.util.ISingletonService;
-
-import de.metas.javaclasses.model.I_AD_JavaClass;
-
-public interface IJavaClassBL extends ISingletonService
+public interface CustomSequenceNoProvider
 {
-	/**
-	 * Creates a new instance of the given class definition
-	 *
-	 * @param javaClassDef
-	 * @return
-	 */
-	<T> T newInstance(I_AD_JavaClass javaClassDef);
+	boolean isApplicable(Object documentModel);
 
-	<T> T newInstance(JavaClassId javaClassId);
-
-	<T> Class<T> verifyClassName(I_AD_JavaClass javaClassDef);
+	String provideSequenceNo(Object _documentModel);
 }
