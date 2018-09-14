@@ -20,16 +20,25 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4411](https://github.com/metasfresh/metasfresh/issues/4411) New Dunning trigger for flatrate terms
+    * Extended Dunning Feature, now calculating the invoice due date from flatrate terms due date.
   * [#4516](https://github.com/metasfresh/metasfresh/issues/4516) New Action "Copy Window"
+    * Enhance Application Dictionary Feature allowing to copy window configurations for webui.
   * [#4524](https://github.com/metasfresh/metasfresh/issues/4524) Implement inbound E-Mail support
+    * New Feature that supports inbound eMail communication now.
   * [#4541](https://github.com/metasfresh/metasfresh/issues/4541) Return also URL using function de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
+    * Enhancing the function Docs_Generics_Org_Report, now returning the URL too.
   * [#4550](https://github.com/metasfresh/metasfresh/issues/4550) Show Pricing Condition Indicator in Purchase Orders
-  * [#4554](https://github.com/metasfresh/metasfresh/issues/4554) process to create dunning-PDF with concatenated invoice-PDFs
+    * Including the Pricing Condition Indicator, known from Sales Orderline, in Purchase Orderline too.
+  * [#4554](https://github.com/metasfresh/metasfresh/issues/4554) Process to create dunning-PDF with concatenated invoice-PDFs
+    * New Process that allows to concatenate Dunning Documents with invoice PDF's.
   * [#4561](https://github.com/metasfresh/metasfresh/issues/4561) QueryStatisticsLogger shall use logger instead of stderr
+    * Now Logging out SQL infos instead of printing them to stderr. 
 
 * metasfresh-webui-api
   * [#1035](https://github.com/metasfresh/metasfresh-webui-api/issues/1035) Implement CORS support
+    * New feature, now supporting cross origin ressource sharing.
   * [#1037](https://github.com/metasfresh/metasfresh-webui-api/issues/1037) Advanced tooltip support
+    * New Functionality now suppoting advanced tooltips in webui.
 
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
