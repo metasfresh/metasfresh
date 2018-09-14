@@ -53,7 +53,7 @@ Here come the actual release notes:
     * Fixes a Bug in Product Prices when recording Scale Prices.
   * [#4552](https://github.com/metasfresh/metasfresh/issues/4552) AD_User is wrong in shipment schedule when using isDropShip
     * Fixes the Shipment Contact User when using Drop Shipment in Sales Order.
-  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) msv3 related fixes
+  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) MSV3 related fixes
     * Fixes different Pharma MSV3 related issues.
   * [#4572](https://github.com/metasfresh/metasfresh/issues/4572) Texts missing in cloned sales quotation
     * Bugfix for Document Line descriptions when closing Sales Orders/ Quotations.
