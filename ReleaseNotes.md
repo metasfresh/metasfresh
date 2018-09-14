@@ -46,6 +46,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
+  * [#1043](https://github.com/metasfresh/metasfresh-webui-api/issues/1043) Open PDF from Printing Queue stopped working
 
 * metasfresh-webui-frontend
   * [#1898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1898) No results when clicking on the looking glass button
