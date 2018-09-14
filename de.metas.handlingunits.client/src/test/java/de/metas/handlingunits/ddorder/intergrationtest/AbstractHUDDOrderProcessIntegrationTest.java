@@ -193,7 +193,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		posHelper.getTerminalContext().registerService(IPOSFiltering.class, ddOrderPOSService);
 
 		// Show all Warehouse Keys in our HU Select POSes
-		final List<I_M_Warehouse> warehousesAll = Services.get(IWarehouseDAO.class).retrieveWarehousesForCtx(helper.ctx);
+		final List<I_M_Warehouse> warehousesAll = Services.get(IWarehouseDAO.class).getAllWarehouses();
 		Check.assumeNotEmpty(warehousesAll, "warehousesAll not empty");
 		posHelper.getPOSAccessBL().setAvailableWarehouses(warehousesAll);
 	}

@@ -29,11 +29,12 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MDocType;
-import org.compiere.model.MLocator;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -528,15 +529,18 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 */
 	private void reserveStock(MDDOrderLine[] lines)
 	{
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
 
 		// Always check and (un) Reserve Inventory
-		for (MDDOrderLine line2 : lines)
+		for (MDDOrderLine line : lines)
 		{
-			MDDOrderLine line = line2;
-			MLocator locator_from = MLocator.get(getCtx(), line.getM_Locator_ID());
-			MLocator locator_to = MLocator.get(getCtx(), line.getM_LocatorTo_ID());
+			final int fromLocatorId = line.getM_Locator_ID();
+			final WarehouseId fromWarehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(fromLocatorId);
+			final int toLocatorId = line.getM_LocatorTo_ID();
+			final WarehouseId toWarehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(toLocatorId);
 			BigDecimal reserved_ordered = line.getQtyOrdered()
 					.subtract(line.getQtyReserved())
 					.subtract(line.getQtyDelivered());
@@ -551,10 +555,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				continue;
 			}
 
-			log.debug("Line=" + line.getLine()
-					+ " - Ordered=" + line.getQtyOrdered()
-					+ ",Reserved=" + line.getQtyReserved() + ",Delivered=" + line.getQtyDelivered());
-
 			// Check Product - Stocked and Item
 			final I_M_Product product = line.getM_Product();
 			if (product != null)
@@ -563,7 +563,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				{
 					// Update Storage
 					final IStorageBL storageBL = Services.get(IStorageBL.class);
-					if (!storageBL.add(getCtx(), locator_from.getM_Warehouse_ID(), locator_from.getM_Locator_ID(),
+					if (!storageBL.add(getCtx(),
+							fromWarehouseId.getRepoId(),
+							fromLocatorId,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO, reserved_ordered, BigDecimal.ZERO, get_TrxName()))
@@ -571,7 +573,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 						throw new AdempiereException();
 					}
 
-					if (!storageBL.add(getCtx(), locator_to.getM_Warehouse_ID(), locator_to.getM_Locator_ID(),
+					if (!storageBL.add(getCtx(), 
+							toWarehouseId.getRepoId(), 
+							toLocatorId,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO, BigDecimal.ZERO, reserved_ordered, get_TrxName()))

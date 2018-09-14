@@ -34,6 +34,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
@@ -1467,6 +1470,9 @@ public class MOrder extends X_C_Order implements IDocument
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
 
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 		// Always check and (un) Reserve Inventory
 		for (final MOrderLine line : lines)
 		{
@@ -1515,7 +1521,7 @@ public class MOrder extends X_C_Order implements IDocument
 				{
 					final BigDecimal ordered = isSOTrx ? BigDecimal.ZERO : difference;
 					final BigDecimal reserved = isSOTrx ? difference : BigDecimal.ZERO;
-					final int lineWarehouseId = (line.getM_Warehouse_ID() > 0 ? line.getM_Warehouse_ID() : Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line).getM_Warehouse_ID());
+					final WarehouseId lineWarehouseId = WarehouseId.ofRepoId(line.getM_Warehouse_ID() > 0 ? line.getM_Warehouse_ID() : Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line).getM_Warehouse_ID());
 					int M_Locator_ID = 0;
 					// Get Locator to reserve
 					if (line.getM_AttributeSetInstance_ID() != 0)  	// Get existing Location
@@ -1525,31 +1531,30 @@ public class MOrder extends X_C_Order implements IDocument
 								ordered, get_TrxName());
 					}
 					// Get default Location
-					if (M_Locator_ID == 0)
+					if (M_Locator_ID <= 0)
 					{
 						// try to take default locator for product first
 						// if it is from the selected warehouse
-						final MWarehouse wh = MWarehouse.get(getCtx(), lineWarehouseId);
 						M_Locator_ID = product.getM_Locator_ID();
-						if (M_Locator_ID != 0)
+						if (M_Locator_ID > 0)
 						{
-							final MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
+							final I_M_Locator locator = warehousesRepo.getLocatorByRepoId(M_Locator_ID);
 							// product has default locator defined but is not from the order warehouse
-							if (locator.getM_Warehouse_ID() != wh.get_ID())
+							if (locator.getM_Warehouse_ID() != lineWarehouseId.getRepoId())
 							{
-								M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+								M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
 							}
 						}
 						else
 						{
-							M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+							M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
 						}
 					}
 					// Update Storage
 					// task 08999: update it async
 					Services.get(IStorageBL.class).addAsync(
 							getCtx(),
-							lineWarehouseId,
+							lineWarehouseId.getRepoId(),
 							M_Locator_ID,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(),
@@ -1897,10 +1902,9 @@ public class MOrder extends X_C_Order implements IDocument
 			int M_Locator_ID = MStorage.getM_Locator_ID(warehouseId,
 					oLine.getM_Product_ID(), oLine.getM_AttributeSetInstance_ID(),
 					MovementQty, get_TrxName());
-			if (M_Locator_ID == 0)  		// Get default Location
+			if (M_Locator_ID <= 0 && warehouseId > 0)  		// Get default Location
 			{
-				final MWarehouse wh = MWarehouse.get(getCtx(), warehouseId);
-				M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouseId)).getRepoId();
 			}
 			//
 			ioLine.setOrderLine(oLine, M_Locator_ID, MovementQty);

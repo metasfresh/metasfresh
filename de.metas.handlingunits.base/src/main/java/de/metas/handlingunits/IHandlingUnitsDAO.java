@@ -369,14 +369,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 
 	/**
-	 * Retrieve all the warehouses that contain the HUs in the given list
-	 *
-	 * @param hus
-	 * @return
-	 */
-	List<I_M_Warehouse> retrieveWarehousesForHUs(List<I_M_HU> hus);
-
-	/**
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
 	 *
 	 * @param hus

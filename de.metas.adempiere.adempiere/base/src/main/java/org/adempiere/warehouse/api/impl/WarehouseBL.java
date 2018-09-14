@@ -1,9 +1,5 @@
 package org.adempiere.warehouse.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -56,16 +52,16 @@ public class WarehouseBL implements IWarehouseBL
 	@Override
 	public I_M_Locator getDefaultLocator(@NonNull final WarehouseId warehouseId)
 	{
-		final LocatorId defaultLocator = getDefaultLocatorId(warehouseId);
-		return load(defaultLocator, I_M_Locator.class);
+		final LocatorId defaultLocatorId = getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseDAO.class).getLocatorById(defaultLocatorId);
 	}
 
 	@Override
 	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
-		final List<I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
+		final List<I_M_Locator> locators = warehousesRepo.getLocators(warehouseId);
 		int activeLocatorsCount = 0;
 		if (!locators.isEmpty())
 		{
@@ -102,7 +98,8 @@ public class WarehouseBL implements IWarehouseBL
 				// Log a warning, in case there are more then one active locators.
 				if (activeLocatorsCount > 1)
 				{
-					logger.warn("No default locator for warehouse {}. Returning the first one: {}", loadWarehouse(warehouseId).getName(), locatorFirst);
+					final String warehouseName = warehousesRepo.getWarehouseName(warehouseId);
+					logger.warn("No default locator for warehouse {}. Returning the first one: {}", warehouseName, locatorFirst);
 				}
 
 				return LocatorId.ofRecordOrNull(locatorFirst);
@@ -112,27 +109,7 @@ public class WarehouseBL implements IWarehouseBL
 		//
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
-		final I_M_Warehouse warehouse = loadWarehouse(warehouseId);
-		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
-
-		locatorNew.setAD_Org_ID(warehouse.getAD_Org_ID());
-		locatorNew.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		locatorNew.setValue("Standard");
-		locatorNew.setX("0");
-		locatorNew.setY("0");
-		locatorNew.setZ("0");
-		locatorNew.setIsDefault(true);
-		save(locatorNew);
-		if (logger.isInfoEnabled())
-		{
-			logger.info("Created default locator for " + warehouse.getName());
-		}
-		return LocatorId.ofRecordOrNull(locatorNew);
-	}
-
-	private I_M_Warehouse loadWarehouse(@NonNull final WarehouseId warehouseId)
-	{
-		return load(warehouseId, I_M_Warehouse.class);
+		return warehousesRepo.createDefaultLocator(warehouseId);
 	}
 
 	@Override

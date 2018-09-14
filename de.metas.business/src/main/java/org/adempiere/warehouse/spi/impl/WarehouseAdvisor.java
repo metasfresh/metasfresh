@@ -29,8 +29,10 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_OrgInfo;
@@ -86,7 +88,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	protected I_M_Warehouse findOrderWarehouse(@NonNull final I_C_Order order)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final int adOrgId = order.getAD_Org_ID();
+		final OrgId adOrgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
 		if (order.isDropShip() && !order.isSOTrx())
 		{
@@ -95,7 +97,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			// For a sales order, "dropship" means that the order's receiver is someone other than the partner who ordered. For this scenario, we don't need a particular dropship warehouse.
 
 			final String trxName = InterfaceWrapperHelper.getTrxName(order);
-			final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, trxName);
+			final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId.getRepoId(), trxName);
 			final I_M_Warehouse dropShipWarehouse = orgInfo.getDropShip_Warehouse();
 			if (dropShipWarehouse == null || dropShipWarehouse.getM_Warehouse_ID() <= 0)
 			{
@@ -111,7 +113,14 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return warehouse;
 		}
 
-		return Services.get(IWarehouseDAO.class).retrieveOrgWarehouse(ctx, adOrgId);
+		final WarehouseId orgWarehouseId = Services.get(IOrgDAO.class).getOrgWarehouseId(adOrgId);
+		if(orgWarehouseId != null)
+		{
+			return Services.get(IWarehouseDAO.class).getById(orgWarehouseId);
+		}
+
+		//
+		return null;
 	}
 
 	/**

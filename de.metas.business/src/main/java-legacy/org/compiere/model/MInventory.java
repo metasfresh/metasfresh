@@ -29,6 +29,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -89,10 +90,10 @@ public class MInventory extends X_M_Inventory implements IDocument
 	 * @param wh
 	 * @param trxName
 	 */
-	public MInventory(final MWarehouse wh, final String trxName)
+	public MInventory(final I_M_Warehouse wh)
 	{
-		this(wh.getCtx(), 0, trxName);
-		setClientOrg(wh);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		setClientOrgFromModel(wh);
 		setM_Warehouse_ID(wh.getM_Warehouse_ID());
 	}
 

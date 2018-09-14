@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
@@ -65,6 +66,10 @@ public interface IOrgDAO extends ISingletonService
 		return retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
 	}
 
+	WarehouseId getOrgWarehouseId(OrgId orgId);
+
+	WarehouseId getOrgPOWarehouseId(OrgId orgId);
+
 	/**
 	 * Search for the organization when the value is known
 	 * 
@@ -82,4 +87,5 @@ public interface IOrgDAO extends ISingletonService
 	}
 
 	List<I_AD_Org> retrieveChildOrgs(Properties ctx, int parentOrgId, int adTreeOrgId);
+
 }

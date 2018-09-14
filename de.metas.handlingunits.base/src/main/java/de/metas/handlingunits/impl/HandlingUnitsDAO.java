@@ -49,6 +49,7 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
@@ -88,7 +89,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -976,25 +976,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.firstOnly(I_DD_NetworkDistribution.class);
 	}
 
-	@Override
-	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesForHUs(final List<I_M_HU> hus)
+	private Set<WarehouseId> retrieveWarehouseIdsForHUs(final List<I_M_HU> hus)
 	{
-		return hus
-				.stream()
+		final Set<Integer> locatorRepoIds = hus.stream()
 				.map(I_M_HU::getM_Locator_ID)
-				.distinct()
-				.map(id -> InterfaceWrapperHelper.load(id, I_M_Locator.class))
-				.map(I_M_Locator::getM_Warehouse_ID)
-				.distinct()
-				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
-				.collect(ImmutableList.toImmutableList());
+				.filter(locatorRepoId -> locatorRepoId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return Services.get(IWarehouseDAO.class).getWarehouseIdsForLocatorRepoIds(locatorRepoIds);
 	}
 
 	@Override
 	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		if (hus.isEmpty())
 		{
 			// should never happen
@@ -1004,17 +998,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		// used for deciding the org and context
 		final I_M_HU firstHU = hus.get(0);
 
-		final int orgId = firstHU.getAD_Org_ID();
-		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
+		final OrgId orgId = OrgId.ofRepoId(firstHU.getAD_Org_ID());
 
-		final Set<Integer> huWarehouseIds = handlingUnitsDAO.retrieveWarehousesForHUs(hus)
-				.stream()
-				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<WarehouseId> huWarehouseIds = retrieveWarehouseIdsForHUs(hus);
 
-		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).getByOrgId(orgId)
 				.stream()
-				.filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
+				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		return warehouses;

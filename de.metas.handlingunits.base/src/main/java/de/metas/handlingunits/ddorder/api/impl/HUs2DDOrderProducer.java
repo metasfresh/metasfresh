@@ -16,13 +16,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -127,9 +129,9 @@ public class HUs2DDOrderProducer
 	// Status
 	private final AtomicBoolean _processed = new AtomicBoolean();
 	private I_S_Resource plant;
-	private org.compiere.model.I_M_Warehouse warehouseInTrasit;
-	private int docTypeDO_ID;
-	private I_AD_Org org;
+	private WarehouseId warehouseInTrasitId;
+	private DocTypeId docTypeDO_ID;
+	private OrgId orgId;
 	private final Map<ArrayKey, DDOrderLineCandidate> ddOrderLineCandidates = new LinkedHashMap<>();
 
 	private HUs2DDOrderProducer()
@@ -215,8 +217,7 @@ public class HUs2DDOrderProducer
 		//
 		// DD Order organization
 		final I_M_Warehouse warehouseTo = getM_Warehouse_To();
-		org = warehouseTo.getAD_Org();
-		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
+		orgId = OrgId.ofRepoId(warehouseTo.getAD_Org_ID());
 
 		//
 		// Plant
@@ -224,17 +225,16 @@ public class HUs2DDOrderProducer
 
 		//
 		// InTransit warehouse
-		warehouseInTrasit = warehouseDAO.retrieveWarehouseInTransitForOrg(ctx, org.getAD_Org_ID());
-		Check.assumeNotNull(warehouseInTrasit, "Warehouse in Trasit shall exist for {}", org);
+		warehouseInTrasitId = warehouseDAO.getInTransitWarehouseId(orgId);
 
 		//
 		// DD_Order document type
-		docTypeDO_ID = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(
+		docTypeDO_ID = DocTypeId.ofRepoIdOrNull(Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(
 				DocTypeQuery.builder()
 						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-						.adClientId(Env.getAD_Client_ID(ctx))
-						.adOrgId(org.getAD_Org_ID())
-						.build());
+						.adClientId(Env.getAD_Client_ID())
+						.adOrgId(orgId.getRepoId())
+						.build()));
 
 	}
 
@@ -372,7 +372,7 @@ public class HUs2DDOrderProducer
 		final Properties ctx = huContext.getCtx();
 
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.create(ctx, I_DD_Order.class, ITrx.TRXNAME_ThreadInherited);
-		ddOrder.setAD_Org(org);
+		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		ddOrder.setMRP_Generated(true);
 		ddOrder.setMRP_AllowCleanup(true);
 		ddOrder.setPP_Plant(plant);
@@ -380,8 +380,8 @@ public class HUs2DDOrderProducer
 		ddOrder.setC_BPartner_Location_ID(getBpartnerLocationId());
 		// order.setSalesRep_ID(productPlanningData.getPlanner_ID());
 
-		ddOrder.setC_DocType_ID(docTypeDO_ID);
-		ddOrder.setM_Warehouse(warehouseInTrasit);
+		ddOrder.setC_DocType_ID(DocTypeId.toRepoId(docTypeDO_ID));
+		ddOrder.setM_Warehouse_ID(warehouseInTrasitId.getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(date);

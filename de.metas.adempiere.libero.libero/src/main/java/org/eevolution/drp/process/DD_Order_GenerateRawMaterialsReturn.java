@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -37,11 +36,11 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -59,6 +58,7 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -232,28 +232,27 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final Timestamp dateOrdered = candidate.getDateOrdered();
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
-		final I_AD_Org org = candidate.getAD_Org();
+		final OrgId orgId = candidate.getOrgId();
 		final I_C_BPartner orgBPartner = candidate.getOrgBPartner();
 		final I_C_BPartner_Location orgBPLocation = candidate.getOrgBPLocation();
 		final int salesRepId = candidate.getPlanner_ID();
-		final I_M_Warehouse warehouseInTrasit = candidate.getInTransitWarehouse();
+		final WarehouseId warehouseInTrasitId = candidate.getInTransitWarehouseId();
 		final I_S_Resource rawMaterialsPlant = candidate.getRawMaterialsPlant();
 
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class, context);
-		ddOrder.setAD_Org(org);
+		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		ddOrder.setPP_Plant(rawMaterialsPlant);
 		ddOrder.setC_BPartner(orgBPartner);
 		ddOrder.setC_BPartner_Location(orgBPLocation);
 		ddOrder.setSalesRep_ID(salesRepId);
 
-		final int docTypeId = docTypeDAO.getDocTypeId(
-				getCtx(),
-				X_C_DocType.DOCBASETYPE_DistributionOrder,
-				ddOrder.getAD_Client_ID(),
-				ddOrder.getAD_Org_ID(),
-				ITrx.TRXNAME_None);
+		final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.adClientId(ddOrder.getAD_Client_ID())
+				.adOrgId(ddOrder.getAD_Org_ID())
+				.build());
 		ddOrder.setC_DocType_ID(docTypeId);
-		ddOrder.setM_Warehouse(warehouseInTrasit);
+		ddOrder.setM_Warehouse_ID(warehouseInTrasitId.getRepoId());
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(dateOrdered);

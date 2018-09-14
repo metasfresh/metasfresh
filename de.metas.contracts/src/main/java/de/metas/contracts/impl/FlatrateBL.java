@@ -43,6 +43,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -1499,8 +1500,8 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else
 		{
-			final List<I_M_Warehouse> warehousesForOrg = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, term.getAD_Org_ID());
-			if (warehousesForOrg.size() == 0)
+			final List<I_M_Warehouse> warehousesForOrg = Services.get(IWarehouseDAO.class).getByOrgId(OrgId.ofRepoId(term.getAD_Org_ID()));
+			if (warehousesForOrg.isEmpty())
 			{
 				throw new AdempiereException(
 						"de.metas.flatrate.Org.Warehouse_Missing",

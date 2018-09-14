@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
@@ -49,9 +50,12 @@ import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Getter;
+import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -132,6 +136,11 @@ public interface IQuery<T>
 
 
 	int firstId();
+
+	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return idMapper.apply(firstId());
+	}
 
 	/**
 	 * Return first ID. If there are more results and exception is thrown.
@@ -413,6 +422,12 @@ public interface IQuery<T>
 	 * @return list of record Ids
 	 */
 	List<Integer> listIds();
+	
+	default <ID extends RepoIdAware> Set<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
+	}
+
 
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.

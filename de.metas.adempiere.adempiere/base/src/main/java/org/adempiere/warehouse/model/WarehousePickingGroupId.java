@@ -1,8 +1,6 @@
-package org.adempiere.warehouse;
+package org.adempiere.warehouse.model;
 
-import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 import org.adempiere.util.Check;
 
@@ -10,14 +8,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -39,40 +36,32 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class WarehouseId implements RepoIdAware
+public class WarehousePickingGroupId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static WarehouseId ofRepoId(final int repoId)
+	public static WarehousePickingGroupId ofRepoId(final int repoId)
 	{
-		return new WarehouseId(repoId);
+		return new WarehousePickingGroupId(repoId);
 	}
 
-	public static WarehouseId ofRepoIdOrNull(final int repoId)
+	public static WarehousePickingGroupId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new WarehouseId(repoId) : null;
+		return repoId > 0 ? new WarehousePickingGroupId(repoId) : null;
 	}
 
-	public static Optional<WarehouseId> optionalOfRepoId(final int repoId)
+	public static Optional<WarehousePickingGroupId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoId(repoId));
 	}
 
-	public static int toRepoId(final WarehouseId warehouseId)
+	public static int toRepoId(final WarehousePickingGroupId id)
 	{
-		return warehouseId != null ? warehouseId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static Set<Integer> toRepoIds(final Collection<WarehouseId> warehouseIds)
-	{
-		return warehouseIds.stream()
-				.map(WarehouseId::toRepoId)
-				.filter(id -> id > 0)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private WarehouseId(final int repoId)
+	private WarehousePickingGroupId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

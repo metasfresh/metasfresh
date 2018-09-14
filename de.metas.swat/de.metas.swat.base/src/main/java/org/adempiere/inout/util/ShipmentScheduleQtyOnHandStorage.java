@@ -136,7 +136,7 @@ public class ShipmentScheduleQtyOnHandStorage
 	private AvailableToPromiseQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
-		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
+		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
 
 		final int productId = sched.getM_Product_ID();
 		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);

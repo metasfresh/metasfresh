@@ -11,9 +11,11 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -163,8 +165,8 @@ public class DDOrderPojoSupplier
 			}
 
 			// Get the warehouse in transit
-			final int warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseId(ctx, warehouseFrom.getAD_Org_ID());
-			if (warehouseInTrasitId <= 0)
+			final WarehouseId warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseIdIfExists(OrgId.ofRepoId(warehouseFrom.getAD_Org_ID())).orElse(null);
+			if (warehouseInTrasitId == null)
 			{
 				// DRP-010: Do not exist Transit Warehouse to this Organization
 				Loggables.get().addLog(

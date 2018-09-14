@@ -28,13 +28,14 @@ import java.math.BigDecimal;
 
 import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
 import org.adempiere.util.Services;
-import org.compiere.model.MWarehouse;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_T_Replenish;
 import org.compiere.util.ReplenishInterface;
 
 public class ReplenishForFutureQtyServiceInvoker implements ReplenishInterface {
 
-	public BigDecimal getQtyToOrder(final MWarehouse wh,
+	@Override
+	public BigDecimal getQtyToOrder(final I_M_Warehouse wh,
 			final X_T_Replenish replenishPO) {
 
 		return Services.get(IReplenishForFutureQty.class)

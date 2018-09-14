@@ -14,7 +14,6 @@ import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
@@ -65,7 +64,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final I_C_Order dummyOrder;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
@@ -265,7 +264,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	private int findWareousePOId(final I_C_Order salesOrder)
 	{
-		final WarehouseId warehousePOId = warehouseDAO.retrieveOrgWarehousePOId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()));
+		final WarehouseId warehousePOId = orgsRepo.getOrgPOWarehouseId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()));
 		if (warehousePOId != null)
 		{
 			return warehousePOId.getRepoId();

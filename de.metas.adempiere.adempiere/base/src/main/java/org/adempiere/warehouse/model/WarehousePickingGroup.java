@@ -1,6 +1,5 @@
 package org.adempiere.warehouse.model;
 
-import org.adempiere.util.Check;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableSet;
@@ -35,20 +34,18 @@ import lombok.Value;
 @Value
 public final class WarehousePickingGroup
 {
-	private final int id;
+	private final WarehousePickingGroupId id;
 	private final String name;
 	private final String description;
 	private final ImmutableSet<WarehouseId> warehouseIds;
 
 	@Builder
 	public WarehousePickingGroup(
-			final int id,
+			@NonNull final WarehousePickingGroupId id,
 			@NonNull final String name,
 			final String description,
 			@NonNull @Singular final ImmutableSet<WarehouseId> warehouseIds)
 	{
-		Check.assume(id > 0, "id > 0");
-
 		this.id = id;
 		this.name = name;
 		this.description = description;

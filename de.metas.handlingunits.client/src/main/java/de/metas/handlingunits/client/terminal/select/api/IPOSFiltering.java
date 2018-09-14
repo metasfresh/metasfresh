@@ -51,7 +51,7 @@ public interface IPOSFiltering
 	 * @param ctx
 	 * @return
 	 */
-	List<I_M_Warehouse> retrieveWarehouses(Properties ctx);
+	List<I_M_Warehouse> retrieveWarehouses();
 
 	/**
 	 * Retrieve Receipt schedules filtered by warehouse
