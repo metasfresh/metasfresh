@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package de.metas.process;
 
@@ -23,13 +23,16 @@ import java.sql.Timestamp;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
+import de.metas.lang.RepoIdAware;
+
 /**
  * Immutable Process Parameter
  *
  * @author Jorg Janke
  * @version $Id: ProcessInfoParameter.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
  *
- * @author Teo Sarca, www.arhipac.ro <li>FR [ 2430845 ] Add ProcessInfoParameter.getParameterAsBoolean method
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 2430845 ] Add ProcessInfoParameter.getParameterAsBoolean method
  */
 public final class ProcessInfoParameter implements Serializable
 {
@@ -37,7 +40,7 @@ public final class ProcessInfoParameter implements Serializable
 	 *
 	 */
 	private static final long serialVersionUID = 4536416337960754407L;
-	
+
 	public static final ProcessInfoParameter of(final String parameterName, final int parameterValue)
 	{
 		final Integer parameterValueTo = null;
@@ -45,7 +48,7 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
-	
+
 	public static final ProcessInfoParameter of(final String parameterName, final String parameterValue)
 	{
 		final String parameterValueTo = null;
@@ -69,14 +72,13 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
-	
+
 	public static final ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
 	{
 		final String info = null;
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
-
 
 	public static final ProcessInfoParameter of(final String parameterName, final boolean parameterValue)
 	{
@@ -85,7 +87,7 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
-	
+
 	public static final ProcessInfoParameter ofValueObject(final String parameterName, final Object parameterValue)
 	{
 		final Object parameterValueTo = null;
@@ -243,12 +245,19 @@ public final class ProcessInfoParameter implements Serializable
 		{
 			return 0;
 		}
-		if (value instanceof Number)
+		else if (value instanceof Number)
 		{
 			return ((Number)value).intValue();
 		}
-		final BigDecimal bd = new BigDecimal(value.toString());
-		return bd.intValue();
+		else if (value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
+		}
+		else
+		{
+			final BigDecimal bd = new BigDecimal(value.toString());
+			return bd.intValue();
+		}
 	}
 
 	/**
@@ -298,11 +307,11 @@ public final class ProcessInfoParameter implements Serializable
 
 	private final Timestamp toTimestamp(final Object value)
 	{
-		if(value == null)
+		if (value == null)
 		{
 			return null;
 		}
-		if(value instanceof Timestamp)
+		if (value instanceof Timestamp)
 		{
 			return (Timestamp)value;
 		}
@@ -312,7 +321,7 @@ public final class ProcessInfoParameter implements Serializable
 		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert "+value+" to Timestamp");
+			throw new IllegalArgumentException("Cannot convert " + value + " to Timestamp");
 		}
 	}
 

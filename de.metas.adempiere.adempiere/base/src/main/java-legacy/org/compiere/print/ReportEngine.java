@@ -20,6 +20,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.awt.print.PrinterJob;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -53,6 +54,7 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.apache.ecs.XhtmlDocument;
@@ -83,11 +85,16 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.print.IPrintService;
+import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.util.FileUtil;
+import lombok.NonNull;
 
 /**
  * Report Engine.
@@ -955,7 +962,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 			// 03744: begin
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
-				Services.get(IJasperReportEngineAdapter.class).createPDF(this, file);
+				final byte[] data = createPdfDataInvokeReportProcess();
+				final ByteArrayInputStream stream = new ByteArrayInputStream(data == null ? new byte[] {} : data);
+				FileUtil.copy(stream, file);
 			}
 			else
 			{
@@ -978,11 +987,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 		return file2.exists();
 	}	// createPDF
 
-	/**
-	 * Create PDF as Data array
-	 *
-	 * @return pdf data
-	 */
 	public byte[] createPDFData()
 	{
 		try
@@ -990,7 +994,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			// 03744: begin
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
-				return Services.get(IJasperReportEngineAdapter.class).createPDFData(this);
+				return createPdfDataInvokeReportProcess();
 			}
 			else
 			{
@@ -1002,12 +1006,37 @@ public class ReportEngine implements PrintServiceAttributeListener
 		}
 		catch (Exception e)
 		{
-			// metas: throw exception instead of logging the error
-			throw new AdempiereException(e);
-			// log.error("PDF", e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 		// return null;
 	}	// createPDFData
+
+	private byte[] createPdfDataInvokeReportProcess()
+	{
+		final Properties ctx = Env.getCtx(); // ReportEngine.getCtx() fails, because the ctx would be taken from an "old-school" layout
+
+		final ProcessExecutor processExecutor = ProcessInfo.builder()
+				.setCtx(ctx)
+				.setAD_Process_ID(getPrintFormat().getJasperProcess_ID())
+				.setRecord(getPrintInfo().getAD_Table_ID(), getPrintInfo().getRecord_ID())
+				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(ctx))
+				.addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
+				.setPrintPreview(true) // don't archive it! just give us the PDF data
+				.buildAndPrepareExecution()
+				.onErrorThrowException(true)
+				.executeSync();
+		return processExecutor.getResult().getReportData();
+	}
+
+	public static String getBarcodeServlet(@NonNull final Properties ctx)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final String barcodeServlet = sysConfigBL.getValue(JasperConstants.SYSCONFIG_BarcodeServlet,
+				null,  // defaultValue,
+				Env.getAD_Client_ID(ctx),
+				Env.getAD_Org_ID(ctx));
+		return barcodeServlet;
+	}
 
 	/**************************************************************************
 	 * Create PostScript File

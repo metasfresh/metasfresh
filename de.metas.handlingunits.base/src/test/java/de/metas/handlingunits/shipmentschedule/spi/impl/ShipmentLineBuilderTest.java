@@ -21,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -36,12 +37,12 @@ import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +62,7 @@ public class ShipmentLineBuilderTest
 	public void init()
 	{
 		final HUTestHelper huTestHelper = new HUTestHelper();
-		
+
 		final I_M_HU_PI huDefIFCO = huTestHelper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item itemMA = huTestHelper.createHU_PI_Item_Material(huDefIFCO);
 		piipWithCapacityEight = huTestHelper.assignProduct(itemMA, huTestHelper.pTomato, EIGHT, huTestHelper.uomEach);
@@ -98,10 +99,30 @@ public class ShipmentLineBuilderTest
 		// invoke the methods under test
 		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
 		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
-		
+
 		assertThat(shipmentLine).isNotNull();
 		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
 		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo(TEN); // we want 10, not the piip's 8
+	}
+
+	@Test
+	public void createShipmentLine_shipmentScheduleWithoutHu_BothQty()
+	{
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(shipmentSchedule, ONE);
+
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(shipment);
+		shipmentLineBuilder.setQtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_PD);
+		shipmentLineBuilder.setManualPackingMaterial(true);
+
+		// invoke the methods under test
+		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		assertThat(shipmentLine).isNotNull();
+		assertThat(shipmentLine.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(shipmentSchedule.getM_Product_ID());
+		assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(ONE);
+		assertThat(shipmentLine.getQtyTU_Override()).isEqualByComparingTo(ONE);
 	}
 }

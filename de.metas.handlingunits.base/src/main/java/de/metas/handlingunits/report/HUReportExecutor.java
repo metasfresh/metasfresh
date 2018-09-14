@@ -13,17 +13,17 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.compiere.report.IJasperService;
+import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -31,6 +31,7 @@ import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.print.IPrintService;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -70,10 +71,6 @@ public class HUReportExecutor
 	{
 		return new HUReportExecutor(ctx);
 	}
-
-	/** AD_SysConfig for "BarcodeServlet" */
-	private static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
-	private static final String PARA_BarcodeURL = "barcodeURL";
 
 	private static final String REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
 
@@ -227,8 +224,8 @@ public class HUReportExecutor
 				.setWindowNo(request.getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
-				.addParameter(PARA_BarcodeURL, getBarcodeServlet(ctx))
-				.addParameter(IJasperService.PARAM_PrintCopies, request.getCopies())
+				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(ctx))
+				.addParameter(IPrintService.PARAM_PrintCopies, request.getCopies())
 				.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
@@ -241,16 +238,6 @@ public class HUReportExecutor
 				.processInfo(processExecutor.getProcessInfo())
 				.processExecutionResult(processExecutor.getResult())
 				.build();
-	}
-
-	private static String getBarcodeServlet(final Properties ctx)
-	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final String barcodeServlet = sysConfigBL.getValue(SYSCONFIG_BarcodeServlet,
-				null,  // defaultValue,
-				Env.getAD_Client_ID(ctx),
-				Env.getAD_Org_ID(ctx));
-		return barcodeServlet;
 	}
 
 	private static final class HUReportTrxListener

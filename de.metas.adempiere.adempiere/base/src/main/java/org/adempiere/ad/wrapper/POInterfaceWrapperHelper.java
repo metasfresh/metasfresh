@@ -233,4 +233,10 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 	{
 		return getDynAttribute(model, PO.DYNATTR_CopyRecordSupport_OldValue) != null;
 	}
+	
+	@Override
+	public boolean isCopying(final Object model)
+	{
+		return getDynAttribute(model, PO.DYNATTR_CopyRecordSupport) != null;
+	}
 }

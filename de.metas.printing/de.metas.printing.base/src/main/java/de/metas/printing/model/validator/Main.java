@@ -35,8 +35,6 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.report.IJasperServiceRegistry;
-import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -47,6 +45,7 @@ import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
+import de.metas.print.IPrintServiceRegistry;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.async.spi.impl.PDFPrintingAsyncBatchListener;
@@ -90,7 +89,7 @@ public class Main extends AbstractModuleInterceptor
 			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
 			return;
 		}
-		
+
 		super.onInit(engine, client);
 
 		//
@@ -147,9 +146,7 @@ public class Main extends AbstractModuleInterceptor
 
 		Services.get(IPrintingQueueBL.class).registerHandler(DocumentPrintingQueueHandler.instance);
 
-		//
-		// Adapter: Old school Jasper Printing Service to our Printing
-		Services.get(IJasperServiceRegistry.class).registerJasperService(ServiceType.MASS_PRINT_FRAMEWORK, de.metas.printing.adapter.JasperServiceAdapter.instance);
+		Services.get(IPrintServiceRegistry.class).registerJasperService(de.metas.printing.adapter.MassPrintServiceAdapter.INSTANCE);
 
 		// callouts
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -173,7 +170,7 @@ public class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
 	}
-	
+
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{

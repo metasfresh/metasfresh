@@ -114,7 +114,6 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	public PrintJobLinesAggregator(final IPrintPackageCtx printCtx,
 			final I_C_Print_Job_Instructions printJobInstructions)
 	{
-		super();
 		Check.assume(printCtx != null, "printCtx not null");
 		this.printCtx = printCtx;
 

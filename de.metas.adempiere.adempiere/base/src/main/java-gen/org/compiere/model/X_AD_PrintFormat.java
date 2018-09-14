@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_PrintFormat
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_PrintFormat extends org.compiere.model.PO implements I_AD_PrintFormat, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -155035237L;
 
     /** Standard Constructor */
     public X_AD_PrintFormat (Properties ctx, int AD_PrintFormat_ID, String trxName)
@@ -40,18 +24,16 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
         {
 			setAD_PrintColor_ID (0);
 			setAD_PrintFont_ID (0);
-			setAD_PrintFormat_ID (0);
-// 0
+			setAD_Printformat_Group (null); // None
+			setAD_PrintFormat_ID (0); // 0
 			setAD_PrintPaper_ID (0);
 			setAD_Table_ID (0);
 			setFooterMargin (0);
 			setHeaderMargin (0);
 			setIsDefault (false);
 			setIsForm (false);
-			setIsStandardHeaderFooter (true);
-// Y
-			setIsTableBased (true);
-// Y
+			setIsStandardHeaderFooter (true); // Y
+			setIsTableBased (true); // Y
 			setName (null);
         } */
     }
@@ -62,37 +44,32 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 7 - System - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_PrintFormat[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_PrintColor getAD_PrintColor() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintColor_ID, org.compiere.model.I_AD_PrintColor.class);
+	}
 
-	public I_AD_PrintColor getAD_PrintColor() throws RuntimeException
-    {
-		return (I_AD_PrintColor)MTable.get(getCtx(), I_AD_PrintColor.Table_Name)
-			.getPO(getAD_PrintColor_ID(), get_TrxName());	}
+	@Override
+	public void setAD_PrintColor(org.compiere.model.I_AD_PrintColor AD_PrintColor)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintColor_ID, org.compiere.model.I_AD_PrintColor.class, AD_PrintColor);
+	}
 
-	/** Set Print Color.
+	/** Set Druck - Farbe.
 		@param AD_PrintColor_ID 
 		Color used for printing and display
 	  */
+	@Override
 	public void setAD_PrintColor_ID (int AD_PrintColor_ID)
 	{
 		if (AD_PrintColor_ID < 1) 
@@ -101,9 +78,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_Value (COLUMNNAME_AD_PrintColor_ID, Integer.valueOf(AD_PrintColor_ID));
 	}
 
-	/** Get Print Color.
+	/** Get Druck - Farbe.
 		@return Color used for printing and display
 	  */
+	@Override
 	public int getAD_PrintColor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintColor_ID);
@@ -112,15 +90,23 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_AD_PrintFont getAD_PrintFont() throws RuntimeException
-    {
-		return (I_AD_PrintFont)MTable.get(getCtx(), I_AD_PrintFont.Table_Name)
-			.getPO(getAD_PrintFont_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_PrintFont getAD_PrintFont() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintFont_ID, org.compiere.model.I_AD_PrintFont.class);
+	}
 
-	/** Set Print Font.
+	@Override
+	public void setAD_PrintFont(org.compiere.model.I_AD_PrintFont AD_PrintFont)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintFont_ID, org.compiere.model.I_AD_PrintFont.class, AD_PrintFont);
+	}
+
+	/** Set Druck - Schrift.
 		@param AD_PrintFont_ID 
 		Maintain Print Font
 	  */
+	@Override
 	public void setAD_PrintFont_ID (int AD_PrintFont_ID)
 	{
 		if (AD_PrintFont_ID < 1) 
@@ -129,9 +115,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_Value (COLUMNNAME_AD_PrintFont_ID, Integer.valueOf(AD_PrintFont_ID));
 	}
 
-	/** Get Print Font.
+	/** Get Druck - Schrift.
 		@return Maintain Print Font
 	  */
+	@Override
 	public int getAD_PrintFont_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFont_ID);
@@ -140,10 +127,52 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	/** Set Print Format.
+	/** 
+	 * AD_Printformat_Group AD_Reference_ID=504470
+	 * Reference name: AD_PrintFormat_Group
+	 */
+	public static final int AD_PRINTFORMAT_GROUP_AD_Reference_ID=504470;
+	/** Lieferschein = LS */
+	public static final String AD_PRINTFORMAT_GROUP_Lieferschein = "LS";
+	/** Keine = None */
+	public static final String AD_PRINTFORMAT_GROUP_Keine = "None";
+	/** Rechnung (Lieferant) = PI */
+	public static final String AD_PRINTFORMAT_GROUP_RechnungLieferant = "PI";
+	/** Lieferantenauftrag = PO */
+	public static final String AD_PRINTFORMAT_GROUP_Lieferantenauftrag = "PO";
+	/** Rechnung (Kunde) = SI */
+	public static final String AD_PRINTFORMAT_GROUP_RechnungKunde = "SI";
+	/** Kundenauftrag = SO */
+	public static final String AD_PRINTFORMAT_GROUP_Kundenauftrag = "SO";
+	/** Wareneingang = WE */
+	public static final String AD_PRINTFORMAT_GROUP_Wareneingang = "WE";
+	/** Speditionsauftrag/Ladeliste = ST */
+	public static final String AD_PRINTFORMAT_GROUP_SpeditionsauftragLadeliste = "ST";
+	/** Set Formatgruppe.
+		@param AD_Printformat_Group 
+		Gruppe von Druckformaten, die die für den Druck des selben Beleges in Frage kommen
+	  */
+	@Override
+	public void setAD_Printformat_Group (java.lang.String AD_Printformat_Group)
+	{
+
+		set_Value (COLUMNNAME_AD_Printformat_Group, AD_Printformat_Group);
+	}
+
+	/** Get Formatgruppe.
+		@return Gruppe von Druckformaten, die die für den Druck des selben Beleges in Frage kommen
+	  */
+	@Override
+	public java.lang.String getAD_Printformat_Group () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Printformat_Group);
+	}
+
+	/** Set Druck - Format.
 		@param AD_PrintFormat_ID 
 		Data Print Format
 	  */
+	@Override
 	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
 	{
 		if (AD_PrintFormat_ID < 1) 
@@ -152,9 +181,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_ValueNoCheck (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
 	}
 
-	/** Get Print Format.
+	/** Get Druck - Format.
 		@return Data Print Format
 	  */
+	@Override
 	public int getAD_PrintFormat_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
@@ -163,15 +193,23 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_AD_PrintPaper getAD_PrintPaper() throws RuntimeException
-    {
-		return (I_AD_PrintPaper)MTable.get(getCtx(), I_AD_PrintPaper.Table_Name)
-			.getPO(getAD_PrintPaper_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_PrintPaper getAD_PrintPaper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintPaper_ID, org.compiere.model.I_AD_PrintPaper.class);
+	}
 
-	/** Set Print Paper.
+	@Override
+	public void setAD_PrintPaper(org.compiere.model.I_AD_PrintPaper AD_PrintPaper)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintPaper_ID, org.compiere.model.I_AD_PrintPaper.class, AD_PrintPaper);
+	}
+
+	/** Set Druck - Papier.
 		@param AD_PrintPaper_ID 
 		Printer paper definition
 	  */
+	@Override
 	public void setAD_PrintPaper_ID (int AD_PrintPaper_ID)
 	{
 		if (AD_PrintPaper_ID < 1) 
@@ -180,9 +218,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_Value (COLUMNNAME_AD_PrintPaper_ID, Integer.valueOf(AD_PrintPaper_ID));
 	}
 
-	/** Get Print Paper.
+	/** Get Druck - Papier.
 		@return Printer paper definition
 	  */
+	@Override
 	public int getAD_PrintPaper_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintPaper_ID);
@@ -191,15 +230,23 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_AD_PrintTableFormat getAD_PrintTableFormat() throws RuntimeException
-    {
-		return (I_AD_PrintTableFormat)MTable.get(getCtx(), I_AD_PrintTableFormat.Table_Name)
-			.getPO(getAD_PrintTableFormat_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_PrintTableFormat getAD_PrintTableFormat() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintTableFormat_ID, org.compiere.model.I_AD_PrintTableFormat.class);
+	}
 
-	/** Set Print Table Format.
+	@Override
+	public void setAD_PrintTableFormat(org.compiere.model.I_AD_PrintTableFormat AD_PrintTableFormat)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintTableFormat_ID, org.compiere.model.I_AD_PrintTableFormat.class, AD_PrintTableFormat);
+	}
+
+	/** Set Druck - Tabellenformat.
 		@param AD_PrintTableFormat_ID 
 		Table Format in Reports
 	  */
+	@Override
 	public void setAD_PrintTableFormat_ID (int AD_PrintTableFormat_ID)
 	{
 		if (AD_PrintTableFormat_ID < 1) 
@@ -208,9 +255,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_Value (COLUMNNAME_AD_PrintTableFormat_ID, Integer.valueOf(AD_PrintTableFormat_ID));
 	}
 
-	/** Get Print Table Format.
+	/** Get Druck - Tabellenformat.
 		@return Table Format in Reports
 	  */
+	@Override
 	public int getAD_PrintTableFormat_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintTableFormat_ID);
@@ -219,15 +267,23 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_AD_ReportView getAD_ReportView() throws RuntimeException
-    {
-		return (I_AD_ReportView)MTable.get(getCtx(), I_AD_ReportView.Table_Name)
-			.getPO(getAD_ReportView_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_ReportView getAD_ReportView() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_ReportView_ID, org.compiere.model.I_AD_ReportView.class);
+	}
 
-	/** Set Report View.
+	@Override
+	public void setAD_ReportView(org.compiere.model.I_AD_ReportView AD_ReportView)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_ReportView_ID, org.compiere.model.I_AD_ReportView.class, AD_ReportView);
+	}
+
+	/** Set Berichts-View.
 		@param AD_ReportView_ID 
 		View used to generate this report
 	  */
+	@Override
 	public void setAD_ReportView_ID (int AD_ReportView_ID)
 	{
 		if (AD_ReportView_ID < 1) 
@@ -236,9 +292,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_ValueNoCheck (COLUMNNAME_AD_ReportView_ID, Integer.valueOf(AD_ReportView_ID));
 	}
 
-	/** Get Report View.
+	/** Get Berichts-View.
 		@return View used to generate this report
 	  */
+	@Override
 	public int getAD_ReportView_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ReportView_ID);
@@ -247,15 +304,23 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	/** Set Table.
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -264,9 +329,10 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -277,70 +343,57 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 
 	/** Set Args.
 		@param Args Args	  */
-	public void setArgs (String Args)
+	@Override
+	public void setArgs (java.lang.String Args)
 	{
 		set_Value (COLUMNNAME_Args, Args);
 	}
 
 	/** Get Args.
 		@return Args	  */
-	public String getArgs () 
+	@Override
+	public java.lang.String getArgs () 
 	{
-		return (String)get_Value(COLUMNNAME_Args);
-	}
-
-	/** Set Classname.
-		@param Classname 
-		Java Classname
-	  */
-	public void setClassname (String Classname)
-	{
-		set_Value (COLUMNNAME_Classname, Classname);
-	}
-
-	/** Get Classname.
-		@return Java Classname
-	  */
-	public String getClassname () 
-	{
-		return (String)get_Value(COLUMNNAME_Classname);
+		return (java.lang.String)get_Value(COLUMNNAME_Args);
 	}
 
 	/** Set Create Copy.
 		@param CreateCopy Create Copy	  */
-	public void setCreateCopy (String CreateCopy)
+	@Override
+	public void setCreateCopy (java.lang.String CreateCopy)
 	{
 		set_Value (COLUMNNAME_CreateCopy, CreateCopy);
 	}
 
 	/** Get Create Copy.
 		@return Create Copy	  */
-	public String getCreateCopy () 
+	@Override
+	public java.lang.String getCreateCopy () 
 	{
-		return (String)get_Value(COLUMNNAME_CreateCopy);
+		return (java.lang.String)get_Value(COLUMNNAME_CreateCopy);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Footer Margin.
 		@param FooterMargin 
 		Margin of the Footer in 1/72 of an inch
 	  */
+	@Override
 	public void setFooterMargin (int FooterMargin)
 	{
 		set_Value (COLUMNNAME_FooterMargin, Integer.valueOf(FooterMargin));
@@ -349,6 +402,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 	/** Get Footer Margin.
 		@return Margin of the Footer in 1/72 of an inch
 	  */
+	@Override
 	public int getFooterMargin () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_FooterMargin);
@@ -361,6 +415,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		@param HeaderMargin 
 		Margin of the Header in 1/72 of an inch
 	  */
+	@Override
 	public void setHeaderMargin (int HeaderMargin)
 	{
 		set_Value (COLUMNNAME_HeaderMargin, Integer.valueOf(HeaderMargin));
@@ -369,6 +424,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 	/** Get Header Margin.
 		@return Margin of the Header in 1/72 of an inch
 	  */
+	@Override
 	public int getHeaderMargin () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_HeaderMargin);
@@ -377,18 +433,20 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return ii.intValue();
 	}
 
-	/** Set Default.
+	/** Set Standard.
 		@param IsDefault 
 		Default value
 	  */
+	@Override
 	public void setIsDefault (boolean IsDefault)
 	{
 		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
 	}
 
-	/** Get Default.
+	/** Get Standard.
 		@return Default value
 	  */
+	@Override
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
@@ -401,18 +459,20 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return false;
 	}
 
-	/** Set Form.
+	/** Set Fenster (nicht dynamisch).
 		@param IsForm 
 		If Selected, a Form is printed, if not selected a columnar List report
 	  */
+	@Override
 	public void setIsForm (boolean IsForm)
 	{
 		set_Value (COLUMNNAME_IsForm, Boolean.valueOf(IsForm));
 	}
 
-	/** Get Form.
+	/** Get Fenster (nicht dynamisch).
 		@return If Selected, a Form is printed, if not selected a columnar List report
 	  */
+	@Override
 	public boolean isForm () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsForm);
@@ -429,6 +489,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		@param IsStandardHeaderFooter 
 		The standard Header and Footer is used
 	  */
+	@Override
 	public void setIsStandardHeaderFooter (boolean IsStandardHeaderFooter)
 	{
 		set_Value (COLUMNNAME_IsStandardHeaderFooter, Boolean.valueOf(IsStandardHeaderFooter));
@@ -437,6 +498,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 	/** Get Standard Header/Footer.
 		@return The standard Header and Footer is used
 	  */
+	@Override
 	public boolean isStandardHeaderFooter () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsStandardHeaderFooter);
@@ -453,6 +515,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		@param IsTableBased 
 		Table based List Reporting
 	  */
+	@Override
 	public void setIsTableBased (boolean IsTableBased)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsTableBased, Boolean.valueOf(IsTableBased));
@@ -461,6 +524,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 	/** Get Table Based.
 		@return Table based List Reporting
 	  */
+	@Override
 	public boolean isTableBased () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsTableBased);
@@ -473,15 +537,23 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		return false;
 	}
 
-	public I_AD_Process getJasperProcess() throws RuntimeException
-    {
-		return (I_AD_Process)MTable.get(getCtx(), I_AD_Process.Table_Name)
-			.getPO(getJasperProcess_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Process getJasperProcess() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_JasperProcess_ID, org.compiere.model.I_AD_Process.class);
+	}
+
+	@Override
+	public void setJasperProcess(org.compiere.model.I_AD_Process JasperProcess)
+	{
+		set_ValueFromPO(COLUMNNAME_JasperProcess_ID, org.compiere.model.I_AD_Process.class, JasperProcess);
+	}
 
 	/** Set Jasper Process.
 		@param JasperProcess_ID 
 		The Jasper Process used by the printengine if any process defined
 	  */
+	@Override
 	public void setJasperProcess_ID (int JasperProcess_ID)
 	{
 		if (JasperProcess_ID < 1) 
@@ -493,6 +565,7 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 	/** Get Jasper Process.
 		@return The Jasper Process used by the printengine if any process defined
 	  */
+	@Override
 	public int getJasperProcess_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_JasperProcess_ID);
@@ -505,7 +578,8 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
-	public void setName (String Name)
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -513,33 +587,28 @@ public class X_AD_PrintFormat extends PO implements I_AD_PrintFormat, I_Persiste
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
-
-	/** Set Printer Name.
+	/** Set Drucker.
 		@param PrinterName 
 		Name of the Printer
 	  */
-	public void setPrinterName (String PrinterName)
+	@Override
+	public void setPrinterName (java.lang.String PrinterName)
 	{
 		set_Value (COLUMNNAME_PrinterName, PrinterName);
 	}
 
-	/** Get Printer Name.
+	/** Get Drucker.
 		@return Name of the Printer
 	  */
-	public String getPrinterName () 
+	@Override
+	public java.lang.String getPrinterName () 
 	{
-		return (String)get_Value(COLUMNNAME_PrinterName);
+		return (java.lang.String)get_Value(COLUMNNAME_PrinterName);
 	}
 }
