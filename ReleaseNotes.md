@@ -12,6 +12,9 @@ Here come the actual release notes:
 
 # metasfresh 5.75
 ## Features
+* metasfresh
+  * [#4594](https://github.com/metasfresh/metasfresh/issues/4594) WebUI: Outbound EMail Server (SMTP)
+    * New Window for the Outbound eMail Server Configuration in WebUI.
 
 ## Fixes
 
