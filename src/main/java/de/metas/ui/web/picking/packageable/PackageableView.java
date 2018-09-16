@@ -7,15 +7,14 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
@@ -26,7 +25,6 @@ import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -84,19 +82,13 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	}
 
 	@Override
-	protected IRowsData<PackageableRow> getRowsData()
+	protected PackageableRowsData getRowsData()
 	{
 		return PackageableRowsData.cast(super.getRowsData());
 	}
 
-	@Override
-	public Set<DocumentPath> getReferencingDocumentPaths()
-	{
-		return ImmutableSet.of();
-	}
-
 	/**
-	 * Always returns {@link I_M_Packageable_V#Table_Name}.
+	 * @return {@link I_M_Packageable_V#Table_Name}.
 	 */
 	@Override
 	public String getTableNameOrNull(@Nullable final DocumentId ignored)
@@ -131,18 +123,12 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	@Override
 	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
-		final Set<Integer> shipmentScheduleIds = rowIds.toIntSet();
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+		final Set<ShipmentScheduleId> shipmentScheduleIds = rowIds.toIds(ShipmentScheduleId::ofRepoId);
 
-		final List<I_M_Packageable_V> packables = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Packageable_V.class)
-				.addInArrayFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.create()
-				.list(I_M_Packageable_V.class);
-		return InterfaceWrapperHelper.createList(packables, modelClass);
+		final IPackagingDAO packageablesRepo = Services.get(IPackagingDAO.class);
+		final List<I_M_Packageable_V> records = packageablesRepo.retrievePackageableRecordsByShipmentScheduleIds(shipmentScheduleIds);
+
+		return InterfaceWrapperHelper.createList(records, modelClass);
 	}
 
 	public void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)

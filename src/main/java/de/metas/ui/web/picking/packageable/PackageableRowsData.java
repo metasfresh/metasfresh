@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -80,14 +78,6 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	public Map<DocumentId, PackageableRow> getDocumentId2TopLevelRows()
 	{
 		return topLevelRows.get();
-	}
-
-	@Override
-	public ListMultimap<TableRecordReference, PackageableRow> getTableRecordReference2rows()
-	{
-		return getAllRows()
-				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(PackageableRow::getTableRecordReference));
 	}
 
 	@Override

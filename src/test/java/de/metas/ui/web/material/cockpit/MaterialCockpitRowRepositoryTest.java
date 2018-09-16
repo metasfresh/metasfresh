@@ -60,7 +60,6 @@ public class MaterialCockpitRowRepositoryTest
 		final IRowsData<MaterialCockpitRow> result = materialCockpitRowRepository.createRowsData(ImmutableList.of());
 		assertThat(result.getAllRows()).isEmpty();
 		assertThat(result.getTopLevelRows()).isEmpty();
-		assertThat(result.getTableRecordReference2rows().asMap()).isEmpty();
 	}
 
 }

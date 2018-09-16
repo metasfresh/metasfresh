@@ -16,10 +16,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 
 import de.metas.order.OrderLineId;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
@@ -152,9 +150,9 @@ class PricingConditionsRowData implements IEditableRowsData<PricingConditionsRow
 	}
 
 	@Override
-	public ListMultimap<TableRecordReference, PricingConditionsRow> getTableRecordReference2rows()
+	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
 	{
-		return ImmutableListMultimap.of();
+		return Stream.empty();
 	}
 
 	@Override

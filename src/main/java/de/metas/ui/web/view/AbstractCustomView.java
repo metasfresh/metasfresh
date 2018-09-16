@@ -16,7 +16,6 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -342,7 +341,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	{
 		Map<DocumentId, T> getDocumentId2TopLevelRows();
 
-		ListMultimap<TableRecordReference, T> getTableRecordReference2rows();
+		Stream<DocumentId> streamDocumentIdsToInvalidate(TableRecordReference recordRef);
 
 		void invalidateAll();
 
@@ -377,14 +376,6 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 						.appendParametersToMessage().setParameter("rowId", rowId);
 			}
 			return row;
-		}
-
-		default Stream<DocumentId> streamDocumentIdsToInvalidate(@NonNull final TableRecordReference recordRef)
-		{
-			return getTableRecordReference2rows()
-					.get(recordRef)
-					.stream()
-					.map(IViewRow::getId);
 		}
 	}
 

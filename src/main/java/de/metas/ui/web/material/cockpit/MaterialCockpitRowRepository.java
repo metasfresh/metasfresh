@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -89,9 +90,12 @@ public class MaterialCockpitRowRepository
 			}
 
 			@Override
-			public ListMultimap<TableRecordReference, MaterialCockpitRow> getTableRecordReference2rows()
+			public Stream<DocumentId> streamDocumentIdsToInvalidate(TableRecordReference recordRef)
 			{
-				return extractTableRecordReference2DocumentId2(getAllRows());
+				return extractTableRecordReference2DocumentId2(getAllRows())
+						.get(recordRef)
+						.stream()
+						.map(MaterialCockpitRow::getId);
 			}
 
 			@Override
