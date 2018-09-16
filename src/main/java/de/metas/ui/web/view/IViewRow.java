@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.NumberUtils;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -122,7 +123,9 @@ public interface IViewRow
 
 	//
 	// Included documents (children)
-	Collection<? extends IViewRow> getIncludedRows();
+	// @formatter:off
+	default Collection<? extends IViewRow> getIncludedRows() { return ImmutableList.of(); };
+	// @formatter:on
 
 	//
 	// Attributes
