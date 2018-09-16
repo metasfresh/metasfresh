@@ -224,4 +224,12 @@ public final class ViewId
 
 		return new ViewId(viewId, parts, windowId);
 	}
+
+	public void assertWindowId(@NonNull final WindowId expectedWindowId)
+	{
+		if (!windowId.equals(expectedWindowId))
+		{
+			throw new AdempiereException("" + this + " does not have expected windowId: " + expectedWindowId);
+		}
+	}
 }
