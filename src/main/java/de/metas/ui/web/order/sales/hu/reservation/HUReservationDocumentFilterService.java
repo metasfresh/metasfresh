@@ -99,13 +99,13 @@ public class HUReservationDocumentFilterService
 				.addOnlyInWarehouseIds(warehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
-		if (packageable.getOrderLineIdOrNull() == null)
+		if (packageable.getSalesOrderLineIdOrNull() == null)
 		{
 			huQuery.setExcludeReserved();
 		}
 		else
 		{
-			huQuery.setExcludeReservedToOtherThan(packageable.getOrderLineIdOrNull());
+			huQuery.setExcludeReservedToOtherThan(packageable.getSalesOrderLineIdOrNull());
 		}
 
 		return HUIdsFilterHelper.createFilter(huQuery);
