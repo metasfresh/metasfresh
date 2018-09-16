@@ -1,7 +1,7 @@
 package de.metas.ui.web.picking.packageable;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -97,7 +97,7 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
-	private final java.util.Date preparationDate;
+	private final LocalDateTime preparationDate;
 
 	private final ShipmentScheduleId shipmentScheduleId;
 
@@ -132,7 +132,7 @@ public final class PackageableRow implements IViewRow
 			final BigDecimal qtyOrdered,
 			final BigDecimal qtyPicked,
 			final LookupValue bpartner,
-			final Date preparationDate)
+			final LocalDateTime preparationDate)
 	{
 		this.viewId = viewId;
 		this.id = createRowIdFromShipmentScheduleId(shipmentScheduleId);
