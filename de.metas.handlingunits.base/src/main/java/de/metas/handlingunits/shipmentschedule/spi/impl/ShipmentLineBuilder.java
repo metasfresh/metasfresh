@@ -78,6 +78,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -87,6 +88,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Capacity;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -135,6 +137,9 @@ import lombok.NonNull;
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<Integer> alreadyAssignedTUIds = null; // to be configured by called
 
+	@Getter
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
+
 	//
 	// Manual packing materials related:
 	private boolean manualPackingMaterial = false;
@@ -143,6 +148,7 @@ import lombok.NonNull;
 
 	private final TreeSet<IAttributeValue> attributeValues = //
 			new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+
 
 	/**
 	 *
@@ -300,7 +306,7 @@ import lombok.NonNull;
 			{
 				// https://github.com/metasfresh/metasfresh/issues/4028 Multiple shipment lines for one order line all have the order line's TU-Qty
 				// this is a dirty hack;
-				// note that for "no-HU" shipment we assume a homogeneous PiiP and therefore may simply add up those TU quantities 
+				// note that for "no-HU" shipment we assume a homogeneous PiiP and therefore may simply add up those TU quantities
 				// TODO if we get to it before we ditch HU-less shipments altogether:
 				// * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picked
 				// * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
@@ -441,7 +447,9 @@ import lombok.NonNull;
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
-				if (qtyTU != null)
+
+
+				if (qtyTU != null && !getQtyTypeToUse().isUseBoth())
 				{
 					shipmentLine.setQtyTU_Override(qtyTU);
 				}
@@ -514,34 +522,33 @@ import lombok.NonNull;
 	{
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run((IHUContextProcessor)huContext ->
-			{
+		executor.run((IHUContextProcessor)huContext -> {
 
-				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-				final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
-				final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
-				// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have
-				// included also the packagingItemTemplate's attributes.
-				// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
-				final IAttributeStorage shipmentLineAttributeStorageTo = //
-						ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
+			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
+			// attributeStorageFactory.getAttributeStorage() would have given us an instance that would have
+			// included also the packagingItemTemplate's attributes.
+			// However, we only want the attributes that are declared in our iolcand-handler's attribute config.
+			final IAttributeStorage shipmentLineAttributeStorageTo = //
+					ASIAttributeStorage.createNew(attributeStorageFactory, shipmentLine.getM_AttributeSetInstance());
 
-				final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-				final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-				final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-						.setProduct(product)
-						.setQty(shipmentLine.getMovementQty())
-						.setUOM(product.getC_UOM())
-						.setAttributeStorageFrom(huAttributeStorageFrom)
-						.setAttributeStorageTo(shipmentLineAttributeStorageTo)
-						.setHUStorageFrom(huStorageFrom);
+			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
+					.setProduct(product)
+					.setQty(shipmentLine.getMovementQty())
+					.setUOM(product.getC_UOM())
+					.setAttributeStorageFrom(huAttributeStorageFrom)
+					.setAttributeStorageTo(shipmentLineAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom);
 
-				final IHUAttributeTransferRequest request = requestBuilder.create();
-				trxAttributesBuilder.transferAttributes(request);
+			final IHUAttributeTransferRequest request = requestBuilder.create();
+			trxAttributesBuilder.transferAttributes(request);
 
-				return IHUContextProcessor.NULL_RESULT;
-			});
+			return IHUContextProcessor.NULL_RESULT;
+		});
 	}
 
 	public List<ShipmentScheduleWithHU> getCandidates()
@@ -569,5 +576,10 @@ import lombok.NonNull;
 	public void setAlreadyAssignedTUIds(final Set<Integer> alreadyAssignedTUIds)
 	{
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
+	}
+
+	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		this.qtyTypeToUse = qtyTypeToUse;
 	}
 }

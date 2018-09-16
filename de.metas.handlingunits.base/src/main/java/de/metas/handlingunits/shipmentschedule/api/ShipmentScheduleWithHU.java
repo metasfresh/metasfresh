@@ -35,6 +35,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -80,21 +82,39 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 public class ShipmentScheduleWithHU
 {
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
+			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext, qtyTypeToUse);
+	}
+
+	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
+		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext, null);
 	}
+
+	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
+			@NonNull final IHUContext huContext,
+			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, false, qtyTypeToUse);
+	}
+
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
 			@NonNull final IHUContext huContext)
 	{
-		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked);
+		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked, false, null);
 	}
 
 	/**
@@ -104,9 +124,17 @@ public class ShipmentScheduleWithHU
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final BigDecimal qtyPicked,
+			final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
+	{
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true, qtyTypeToUse);
+	}
+
+	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked);
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true, null);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
@@ -129,9 +157,22 @@ public class ShipmentScheduleWithHU
 
 	private I_M_InOutLine shipmentLine = null;
 
+	@Getter
+	@Setter
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // keep old functionality as default
+	/**
+	 * Tells us if the candidate is supposed to receive a manual packing material (in the case when we have a quick shipment, with no picking)
+	 * #4507 leave default as before: if nothing is specified, create the shipments based on qtyToDeliver and create the packing materials
+	 */
+	@Getter
+	@Setter
+	private boolean createManualPackingMaterial = true;
+
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc,
+			final boolean createManualPackingMaterial,
+			@Nullable final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -144,6 +185,10 @@ public class ShipmentScheduleWithHU
 		this.vhu = shipmentScheduleAlloc.getVHU_ID() > 0 ? shipmentScheduleAlloc.getVHU() : null;
 		this.tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
 		this.luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
+
+		this.setCreateManualPackingMaterial(createManualPackingMaterial);
+		this.setQtyTypeToUse(qtyTypeToUse);
+
 	}
 
 	/**
@@ -156,7 +201,9 @@ public class ShipmentScheduleWithHU
 	private ShipmentScheduleWithHU(
 			final IHUContext huContext,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final BigDecimal qtyPicked)
+			@NonNull final BigDecimal qtyPicked,
+			final boolean createManualPackingMaterial,
+			final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		this.huContext = Util.coalesce(
 				huContext,
@@ -170,6 +217,9 @@ public class ShipmentScheduleWithHU
 		vhu = null; // no VHU
 		tuHU = null; // no TU
 		luHU = null; // no LU
+
+		this.setCreateManualPackingMaterial(createManualPackingMaterial);
+		this.setQtyTypeToUse(qtyTypeToUse);
 	}
 
 	@Override
@@ -184,6 +234,7 @@ public class ShipmentScheduleWithHU
 				+ "\n    attributesAggregationKey=" + (attributesAggregationKey == null ? "<NOT BUILT>" : attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleQtyPicked
 				+ "\n    shipmentLine=" + shipmentLine
+				+ "\n	 qtyTypeToUse=" + qtyTypeToUse
 				+ "\n]";
 	}
 
@@ -490,4 +541,5 @@ public class ShipmentScheduleWithHU
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		return hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(Env.getCtx());
 	}
+
 }
