@@ -93,10 +93,6 @@ public class HULotNumberLockService
 			return false;
 		}
 
-		if (Constants.ATTR_Locked_Value_Locked.equals(huAttribute.getValue()))
-		{
-			return true;
-		}
-		return false;
+		return Constants.ATTR_Locked_Value_Locked.equals(huAttribute.getValue());
 	}
 }
