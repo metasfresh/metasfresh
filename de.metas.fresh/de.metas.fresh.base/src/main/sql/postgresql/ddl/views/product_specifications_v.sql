@@ -1,5 +1,6 @@
 -- DROP VIEW "de.metas.fresh".product_specifications_v;
 
+
 CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
 select p.Name as productName, p.CustomerLabelName,
 p.additional_produktinfos, p.Ingredients, p.Value as productValue,
@@ -9,6 +10,7 @@ a.Name as allergen, nf.Name as nutritionName, pn.nutritionqty,
 bomProduct.Name as componentName, bomLine.qtybatch, bomProduct.ingredients as componentIngredients
 from m_product p
 left outer join ad_orginfo oi on p.ad_org_id=oi.ad_org_id
+left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner_location_id
 left outer join c_location l on oi.c_location_id=l.c_location_id
 left outer join c_country c on l.c_country_id=c.c_country_id
 left outer join M_HU_PI_Item_Product pi on pi.M_product_ID = p.M_product_ID
