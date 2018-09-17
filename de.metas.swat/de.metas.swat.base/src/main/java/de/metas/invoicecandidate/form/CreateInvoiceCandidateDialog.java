@@ -51,10 +51,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VLookup;
@@ -68,7 +70,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -444,7 +445,6 @@ public class CreateInvoiceCandidateDialog
 			final Properties ctx = contextProvider.getCtx();
 
 			final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
-			final I_M_Warehouse warehouse = null;
 
 			priceTaxId = Services.get(ITaxBL.class).getTax(
 					ctx,
@@ -453,8 +453,8 @@ public class CreateInvoiceCandidateDialog
 					product.getM_Product_ID(), // productId
 					date, // billDate
 					date, // shipDate
-					product.getAD_Org_ID(), // orgId
-					warehouse,
+					OrgId.ofRepoId(product.getAD_Org_ID()), // orgId
+					(WarehouseId)null,
 					locationField.getValueAsInt(), // shipC_BPartner_Location_ID
 					soTrx.toBoolean());
 		}

@@ -78,7 +78,13 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
 	{
-		return loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		return getById(warehouseId, I_M_Warehouse.class);
+	}
+
+	@Override
+	public <T extends I_M_Warehouse> T getById(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
+	{
+		return loadOutOfTrx(warehouseId, modelType);
 	}
 
 	@Override

@@ -28,11 +28,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Order;
@@ -126,8 +128,8 @@ public abstract class AbstractDeliveryTest
 						, orderLine.getM_Product_ID()
 						, order.getDatePromised()
 						, order.getDatePromised()
-						, order.getAD_Org_ID()
-						, order.getM_Warehouse()
+						, OrgId.ofRepoId(order.getAD_Org_ID())
+						, WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID())
 						, order.getC_BPartner_Location_ID()
 						, order.isSOTrx());
 				minTimes = 0;

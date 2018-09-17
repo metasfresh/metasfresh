@@ -24,6 +24,7 @@ package org.adempiere.warehouse.api.impl;
 
 import java.util.List;
 
+import org.adempiere.location.CountryId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
@@ -112,8 +113,13 @@ public class WarehouseBL implements IWarehouseBL
 		return warehousesRepo.createDefaultLocator(warehouseId);
 	}
 
-	@Override
-	public I_C_Location getC_Location(final I_M_Warehouse warehouse)
+	private I_C_Location getC_Location(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+		return getC_Location(warehouse);
+	}
+
+	private I_C_Location getC_Location(final I_M_Warehouse warehouse)
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
 
@@ -124,5 +130,12 @@ public class WarehouseBL implements IWarehouseBL
 		Check.assumeNotNull(location, "C_Location_ID not null for {}, {}", bpLocation, warehouse);
 
 		return location;
+	}
+
+	@Override
+	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_C_Location location = getC_Location(warehouseId);
+		return CountryId.ofRepoIdOrNull(location.getC_Country_ID());
 	}
 }

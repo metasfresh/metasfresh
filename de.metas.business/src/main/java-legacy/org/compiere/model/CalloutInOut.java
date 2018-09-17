@@ -25,6 +25,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DisplayType;
@@ -96,9 +97,9 @@ public class CalloutInOut extends CalloutEngine
 		inout.setUser2_ID(order.getUser2_ID());
 
 		// Warehouse (05251 begin: we need to use the advisor)
-		final I_M_Warehouse wh = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
-		inout.setM_Warehouse_ID(wh.getM_Warehouse_ID());
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
+		Check.assumeNotNull(warehouseId, "IWarehouseAdvisor finds a ware house for {}", order);
+		inout.setM_Warehouse_ID(warehouseId.getRepoId());
 
 		//
 		inout.setDeliveryRule(order.getDeliveryRule());

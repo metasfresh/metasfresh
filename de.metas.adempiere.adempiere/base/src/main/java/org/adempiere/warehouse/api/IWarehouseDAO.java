@@ -43,6 +43,8 @@ public interface IWarehouseDAO extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
 
+	<T extends I_M_Warehouse> T getById(WarehouseId warehouseId, Class<T> modelType);
+
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
 
 	<T extends I_M_Warehouse> List<T> getByIds(Collection<WarehouseId> warehouseIds, Class<T> modelType);

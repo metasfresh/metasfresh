@@ -31,14 +31,16 @@ import java.util.Properties;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -117,15 +119,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_InOut io = il.getM_InOutLine().getM_InOut();
 
-		final I_C_Location locationFrom = Services.get(IWarehouseBL.class).getC_Location(io.getM_Warehouse());
-		final int countryFromId = locationFrom.getC_Country_ID();
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(io.getM_Warehouse_ID());
+		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
 		final I_C_BPartner_Location locationTo = InterfaceWrapperHelper.create(io.getC_BPartner_Location(), I_C_BPartner_Location.class);
 
 		final Timestamp shipDate = io.getMovementDate();
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(ctx,
 				countryFromId,
-				io.getAD_Org_ID(),
+				OrgId.ofRepoId(io.getAD_Org_ID()),
 				locationTo,
 				shipDate,
 				taxCategoryId,
@@ -139,10 +141,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(io.isSOTrx())
 					.shipDate(shipDate)
-					.shipFromC_Location_ID(locationFrom.getC_Location_ID())
+					.shipFromCountryId(countryFromId)
 					.shipToC_Location_ID(locationTo.getC_Location_ID())
 					.billDate(invoice.getDateInvoiced())
-					.billFromC_Location_ID(locationFrom.getC_Location_ID())
+					.billFromCountryId(countryFromId)
 					.billToC_Location_ID(invoice.getC_BPartner_Location().getC_Location_ID())
 					.build();
 		}

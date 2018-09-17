@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -30,6 +31,8 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -1459,12 +1462,14 @@ public class MOrder extends X_C_Order implements IDocument
 
 		log.debug("Binding=" + binding + " - IsSOTrx=" + isSOTrx);
 
+		final WarehouseId dropShipWarehouseId = Services.get(IOrgDAO.class).getOrgDropshipWarehouseId(OrgId.ofRepoId(getAD_Org_ID()));
+
 		// Force same WH for all but SO/PO
-		int header_M_Warehouse_ID = getM_Warehouse_ID();
+		WarehouseId headerWarehouseId = WarehouseId.ofRepoId(getM_Warehouse_ID());
 		if (MDocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
 				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(docSubType))
 		{
-			header_M_Warehouse_ID = 0;		// don't enforce
+			headerWarehouseId = null;		// don't enforce
 		}
 
 		BigDecimal Volume = BigDecimal.ZERO;
@@ -1476,22 +1481,22 @@ public class MOrder extends X_C_Order implements IDocument
 		// Always check and (un) Reserve Inventory
 		for (final MOrderLine line : lines)
 		{
-			final I_M_Warehouse lineWarehouseAdviced = warehouseAdvisor.evaluateWarehouse(line);
-			final int lineWarehouseIdAdviced = lineWarehouseAdviced == null ? -1 : lineWarehouseAdviced.getM_Warehouse_ID();
+			final WarehouseId lineWarehouseIdAdviced = warehouseAdvisor.evaluateWarehouse(line);
 
 			// Check/set WH/Org
-			if (header_M_Warehouse_ID != 0)  	// enforce WH
+			if (headerWarehouseId != null) // enforce WH
 			{
-				if (header_M_Warehouse_ID != lineWarehouseIdAdviced
-						&& lineWarehouseIdAdviced != MOrgInfo.get(getCtx(), getAD_Org_ID(), get_TrxName()).getDropShip_Warehouse_ID())   // metas 01658 removing 'isDropShip' flag
+				if (!Objects.equals(headerWarehouseId, lineWarehouseIdAdviced)
+						&& !Objects.equals(lineWarehouseIdAdviced, dropShipWarehouseId))   // metas 01658 removing 'isDropShip' flag
 				{
-					line.setM_Warehouse_ID(header_M_Warehouse_ID);
+					line.setM_Warehouse_ID(headerWarehouseId.getRepoId());
 				}
 				if (getAD_Org_ID() != line.getAD_Org_ID())
 				{
 					line.setAD_Org_ID(getAD_Org_ID());
 				}
 			}
+			
 			// Binding
 			final BigDecimal target = binding ? line.getQtyOrdered() : BigDecimal.ZERO;
 			final BigDecimal difference = target
@@ -1521,7 +1526,9 @@ public class MOrder extends X_C_Order implements IDocument
 				{
 					final BigDecimal ordered = isSOTrx ? BigDecimal.ZERO : difference;
 					final BigDecimal reserved = isSOTrx ? difference : BigDecimal.ZERO;
-					final WarehouseId lineWarehouseId = WarehouseId.ofRepoId(line.getM_Warehouse_ID() > 0 ? line.getM_Warehouse_ID() : Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line).getM_Warehouse_ID());
+					final WarehouseId lineWarehouseId = line.getM_Warehouse_ID() > 0
+							? WarehouseId.ofRepoId(line.getM_Warehouse_ID())
+							: Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line);
 					int M_Locator_ID = 0;
 					// Get Locator to reserve
 					if (line.getM_AttributeSetInstance_ID() != 0)  	// Get existing Location
@@ -1897,14 +1904,13 @@ public class MOrder extends X_C_Order implements IDocument
 			// Qty = Ordered - Delivered
 			final BigDecimal MovementQty = oLine.getQtyOrdered().subtract(oLine.getQtyDelivered());
 			// Location
-			final I_M_Warehouse warehouse = warehouseAdvisor.evaluateWarehouse(line);
-			final int warehouseId = warehouse == null ? -1 : warehouse.getM_Warehouse_ID();
-			int M_Locator_ID = MStorage.getM_Locator_ID(warehouseId,
+			final WarehouseId warehouseId = warehouseAdvisor.evaluateWarehouse(line);
+			int M_Locator_ID = MStorage.getM_Locator_ID(warehouseId.getRepoId(),
 					oLine.getM_Product_ID(), oLine.getM_AttributeSetInstance_ID(),
 					MovementQty, get_TrxName());
-			if (M_Locator_ID <= 0 && warehouseId > 0)  		// Get default Location
+			if (M_Locator_ID <= 0)  		// Get default Location
 			{
-				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouseId)).getRepoId();
+				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId();
 			}
 			//
 			ioLine.setOrderLine(oLine, M_Locator_ID, MovementQty);

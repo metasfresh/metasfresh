@@ -113,7 +113,7 @@ public class OrgDAO implements IOrgDAO
 
 		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_Warehouse_ID());
 	}
-	
+
 	@Override
 	public WarehouseId getOrgPOWarehouseId(@NonNull final OrgId orgId)
 	{
@@ -128,6 +128,19 @@ public class OrgDAO implements IOrgDAO
 		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
 	}
 
+	@Override
+	public WarehouseId getOrgDropshipWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getDropShip_Warehouse_ID());
+	}
 
 	@Override
 	public I_AD_Org retrieveOrganizationByValue(final Properties ctx, final String value)

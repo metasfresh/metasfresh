@@ -303,9 +303,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		//
 
 		// 04579 fixing this problem so i can create a shipment for a PO order
-		final I_M_Warehouse wh = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
-		setM_Warehouse_ID(wh.getM_Warehouse_ID());
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
+		Check.assumeNotNull(warehouseId, "IWarehouseAdvisor finds a ware house for {}", order);
+		setM_Warehouse_ID(warehouseId.getRepoId());
 
 		setIsSOTrx(order.isSOTrx());
 		// metas: better setting of the movement type
@@ -1459,7 +1459,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				if (oLine != null)
 				{
 					reservationAttributeSetInstance_ID = oLine.getM_AttributeSetInstance_ID();
-					sameWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID() == getM_Warehouse_ID();
+					sameWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getRepoId() == getM_Warehouse_ID();
 				}
 
 				final IStorageBL storageBL = Services.get(IStorageBL.class);
@@ -1505,7 +1505,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						if (!sameWarehouse)
 						{
 							// correct qtyOrdered in warehouse of order
-							final WarehouseId warehouseId = WarehouseId.ofRepoId(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
+							final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine);
 							// task 08999 : update the storage async
 							storageBL.addAsync(
 									getCtx(),
@@ -1552,7 +1552,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					if (!sameWarehouse)
 					{
 						// correct qtyOrdered in warehouse of order
-						final WarehouseId warehouseId = WarehouseId.ofRepoId(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
+						final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine);
 						// task 08999 : update the storage async
 						storageBL.addAsync(
 								getCtx(),

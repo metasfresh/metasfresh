@@ -105,9 +105,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 
 	private WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return WarehouseId.ofRepoIdOrNull(Services.get(IWarehouseAdvisor.class)
-				.evaluateWarehouse(shipmentSchedule.getC_OrderLine())
-				.getM_Warehouse_ID());
+		return Services.get(IWarehouseAdvisor.class).evaluateWarehouse(shipmentSchedule.getC_OrderLine());
 	}
 
 	private DocumentLineDescriptor getDocumentLineDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

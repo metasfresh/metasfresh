@@ -31,8 +31,8 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.IOrderBL;
@@ -70,11 +70,10 @@ public class C_Order
 			return;
 		}
 
-		final I_M_Warehouse warehouse = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-
-		if (warehouse != null)
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
+		if (warehouseId != null)
 		{
-			order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+			order.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
 	}
 }

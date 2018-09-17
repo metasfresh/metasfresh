@@ -32,9 +32,11 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -145,8 +147,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		// org id
-		final int orgId = olc.getAD_Org_ID();
-		ic.setAD_Org_ID(orgId);
+		final OrgId orgId = OrgId.ofRepoId(olc.getAD_Org_ID());
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		ic.setC_ILCandHandler(getHandlerRecord());
 
@@ -212,7 +214,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				, olc.getDatePromised()
 				, olc.getDatePromised()
 				, orgId
-				, warehouse
+				, (WarehouseId)null
 				, olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc)
 				, isSOTrx);
 		ic.setC_Tax_ID(taxId);

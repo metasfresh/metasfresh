@@ -38,6 +38,7 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -162,20 +163,20 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			// From Warehouse
 			//
 			// This can be null
-			final I_M_Warehouse lineWarehouse = line.getM_Warehouse();
+			final WarehouseId lineWarehouseId = WarehouseId.ofRepoIdOrNull(line.getM_Warehouse_ID());
 
-			final I_M_Warehouse warehouseToUse;
+			final WarehouseId warehouseIdToUse;
 
-			if (lineWarehouse != null)
+			if (lineWarehouseId != null)
 			{
-				warehouseToUse = lineWarehouse;
+				warehouseIdToUse = lineWarehouseId;
 			}
 			else
 			{
-				warehouseToUse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line);
+				warehouseIdToUse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line);
 			}
 
-			receiptSchedule.setM_Warehouse(warehouseToUse);
+			receiptSchedule.setM_Warehouse_ID(warehouseIdToUse.getRepoId());
 
 			//
 			// Destination Warehouse

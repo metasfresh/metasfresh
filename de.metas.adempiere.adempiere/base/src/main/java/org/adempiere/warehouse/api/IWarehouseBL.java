@@ -1,5 +1,7 @@
 package org.adempiere.warehouse.api;
 
+import org.adempiere.location.CountryId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,7 +27,6 @@ package org.adempiere.warehouse.api;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -52,9 +53,5 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getDefaultLocatorId(WarehouseId warehouse);
 
-	/**
-	 * @param warehouse
-	 * @return the address where given warehouse is located; never returns null
-	 */
-	I_C_Location getC_Location(I_M_Warehouse warehouse);
+	CountryId getCountryId(WarehouseId warehouseId);
 }

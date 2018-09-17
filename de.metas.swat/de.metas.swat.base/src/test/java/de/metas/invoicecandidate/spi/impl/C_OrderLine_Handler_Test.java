@@ -33,10 +33,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.user.UserRepository;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -177,8 +179,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						, oL1.getM_Product_ID()
 						, order1.getDatePromised()
 						, order1.getDatePromised()
-						, order1.getAD_Org_ID()
-						, order1.getM_Warehouse()
+						, OrgId.ofRepoId(order1.getAD_Org_ID())
+						, WarehouseId.ofRepoId(order1.getM_Warehouse_ID())
 						, order1.getC_BPartner_Location_ID()
 						, order1.isSOTrx());
 				minTimes = 0;

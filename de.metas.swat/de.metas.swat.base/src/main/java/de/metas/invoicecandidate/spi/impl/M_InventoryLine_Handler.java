@@ -12,9 +12,12 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
@@ -41,6 +44,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.product.IProductDAO;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -122,8 +126,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, inventoryLine);
 
-		final int adOrgId = inventoryLine.getAD_Org_ID();
-		ic.setAD_Org_ID(adOrgId);
+		final OrgId orgId = OrgId.ofRepoId(inventoryLine.getAD_Org_ID());
+		ic.setAD_Org_ID(orgId.getRepoId());
 
 		ic.setC_ILCandHandler(getHandlerRecord());
 
@@ -181,9 +185,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set C_Activity from Product (07442)
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(inventoryLine);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
-		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, adOrgId, I_AD_Org.class, trxName);
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, trxName);
+		final I_AD_Org org = Services.get(IOrgDAO.class).getById(orgId);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, org, product);
 		ic.setC_Activity(activity);
 
@@ -200,8 +203,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				productId,
 				billDate,
 				shipDate,
-				adOrgId,
-				inOut.getM_Warehouse(),
+				orgId,
+				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
 				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId);

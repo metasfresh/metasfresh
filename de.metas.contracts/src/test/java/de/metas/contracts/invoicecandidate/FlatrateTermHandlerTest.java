@@ -10,14 +10,15 @@ import java.util.Properties;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -37,6 +38,7 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.Builder;
@@ -105,8 +107,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				final Properties ctx = Env.getCtx();
 
 				final int taxCategoryId = -1;
-				final I_M_Warehouse warehouse = null;
-				final boolean isSOTrx = true;
 
 				taxBL.getTax(
 						ctx
@@ -115,10 +115,10 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, term1.getM_Product_ID()
 						, term1.getStartDate()
 						, term1.getStartDate()
-						, term1.getAD_Org_ID()
-						, warehouse
+						, OrgId.ofRepoId(term1.getAD_Org_ID())
+						, (WarehouseId)null
 						, Util.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
-						, isSOTrx);
+						, SOTrx.SALES.toBoolean());
 				minTimes = 0;
 				result = 3;
 		}};

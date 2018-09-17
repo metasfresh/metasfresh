@@ -55,8 +55,13 @@ public interface IOrgDAO extends ISingletonService
 
 	default String retrieveOrgName(final int adOrgId)
 	{
-		final I_AD_Org org = retrieveOrg(adOrgId);
-		return org != null ? org.getName() : null;
+		return retrieveOrgName(OrgId.ofRepoId(adOrgId));
+	}
+
+	default String retrieveOrgName(@NonNull final OrgId adOrgId)
+	{
+		final I_AD_Org org = getById(adOrgId);
+		return org != null ? org.getName() : "<" + adOrgId.getRepoId() + ">";
 	}
 
 	I_AD_OrgInfo retrieveOrgInfo(Properties ctx, int adOrgId, String trxName);
@@ -69,6 +74,8 @@ public interface IOrgDAO extends ISingletonService
 	WarehouseId getOrgWarehouseId(OrgId orgId);
 
 	WarehouseId getOrgPOWarehouseId(OrgId orgId);
+
+	WarehouseId getOrgDropshipWarehouseId(OrgId orgId);
 
 	/**
 	 * Search for the organization when the value is known
@@ -87,5 +94,4 @@ public interface IOrgDAO extends ISingletonService
 	}
 
 	List<I_AD_Org> retrieveChildOrgs(Properties ctx, int parentOrgId, int adTreeOrgId);
-
 }

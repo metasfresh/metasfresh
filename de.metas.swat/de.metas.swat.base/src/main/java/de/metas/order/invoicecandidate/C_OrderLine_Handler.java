@@ -34,9 +34,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_InOut;
@@ -199,8 +201,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				orderLine.getM_Product_ID(),
 				order.getDatePromised(), // billDate
 				order.getDatePromised(), // shipDate
-				order.getAD_Org_ID(),
-				order.getM_Warehouse(),
+				OrgId.ofRepoId(order.getAD_Org_ID()),
+				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 				Util.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
 				order.isSOTrx());
 		ic.setC_Tax_ID(taxId);

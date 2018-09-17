@@ -387,8 +387,8 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 
-		final int orgId = dataEntry.getAD_Org_ID();
-		newCand.setAD_Org_ID(orgId);
+		final OrgId orgId = OrgId.ofRepoId(dataEntry.getAD_Org_ID());
+		newCand.setAD_Org_ID(orgId.getRepoId());
 
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
@@ -427,7 +427,6 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
-		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
@@ -440,7 +439,7 @@ public class FlatrateBL implements IFlatrateBL
 				dataEntry.getDate_Reported(),// billDate
 				dataEntry.getDate_Reported(),// shipDate
 				orgId,
-				warehouse,
+				(WarehouseId)null,
 				shipToLocationId,
 				isSOTrx);
 
@@ -555,7 +554,6 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
-		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
@@ -566,8 +564,8 @@ public class FlatrateBL implements IFlatrateBL
 				productIdForIc,
 				dataEntry.getDate_Reported(), // billDate
 				dataEntry.getDate_Reported(), // shipDate
-				dataEntry.getAD_Org_ID(),
-				warehouse,
+				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
+				(WarehouseId)null,
 				shipToLocationId,
 				isSOTrx);
 

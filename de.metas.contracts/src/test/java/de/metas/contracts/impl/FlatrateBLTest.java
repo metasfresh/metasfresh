@@ -30,8 +30,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -45,7 +47,6 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -223,7 +224,6 @@ public class FlatrateBLTest extends ContractsTestBase
 				final Properties ctx = Env.getCtx();
 
 				final int taxCategoryId = -1;
-				final I_M_Warehouse warehouse = null;
 				final boolean isSOTrx = true;
 
 				taxBL.getTax(
@@ -233,8 +233,8 @@ public class FlatrateBLTest extends ContractsTestBase
 						currentTerm.getM_Product_ID(),
 						dataEntry.getDate_Reported(),
 						dataEntry.getDate_Reported(),
-						dataEntry.getAD_Org_ID(),
-						warehouse,
+						OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
+						(WarehouseId)null,
 						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
 						isSOTrx);
 				minTimes = 0;

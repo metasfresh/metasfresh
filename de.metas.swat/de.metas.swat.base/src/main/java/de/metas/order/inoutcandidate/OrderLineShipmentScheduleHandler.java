@@ -90,7 +90,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		// 04290
-		newSched.setM_Warehouse(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine));
+		newSched.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine).getRepoId());
 
 		final String bPartnerAddress;
 		if (!Check.isEmpty(orderLine.getBPartnerAddress()))
