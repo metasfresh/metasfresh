@@ -87,13 +87,19 @@ public class HUReservationDocumentFilterService
 
 	public DocumentFilter createDocumentFilterIgnoreAttributes(@NonNull final Packageable packageable)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHUQueryBuilder huQuery = createHUQueryIgnoreAttributes(packageable);
 
-		final Set<WarehouseId> //
-		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(packageable.getWarehouseId());
+		return HUIdsFilterHelper.createFilter(huQuery);
+	}
 
-		final IHUQueryBuilder huQuery = handlingUnitsDAO
+	private IHUQueryBuilder createHUQueryIgnoreAttributes(final Packageable packageable)
+	{
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+
+		final Set<WarehouseId> warehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(packageable.getWarehouseId());
+
+		final IHUQueryBuilder huQuery = handlingUnitsRepo
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(packageable.getProductId())
 				.addOnlyInWarehouseIds(warehouseIds)
@@ -107,7 +113,6 @@ public class HUReservationDocumentFilterService
 		{
 			huQuery.setExcludeReservedToOtherThan(packageable.getSalesOrderLineIdOrNull());
 		}
-
-		return HUIdsFilterHelper.createFilter(huQuery);
+		return huQuery;
 	}
 }
