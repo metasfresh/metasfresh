@@ -1,7 +1,7 @@
 /**
- * 
+ *
  */
-package de.metas.adempiere.report.jasper;
+package de.metas.util;
 
 /*
  * #%L
@@ -13,12 +13,12 @@ package de.metas.adempiere.report.jasper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,15 +34,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * @author tsa
- * 
- */
-public final class JasperUtil
+public final class FileUtil
 {
-	private JasperUtil()
+	private FileUtil()
 	{
-		super();
 	}
 
 	public static final void copy(File from, OutputStream out) throws IOException
@@ -68,16 +63,15 @@ public final class JasperUtil
 		out.flush();
 	}
 
-	public static File createTempFile(final OutputType type, final String title)
+	public static File createTempFile(final String fileExtension, final String title)
 	{
 		final String path = System.getProperty("java.io.tmpdir");
-		final String extension = type.getFileExtension();
 		final String prefix = makeFilePrefix(title);
 
 		File file;
 		try
 		{
-			file = File.createTempFile(prefix, "." + extension, new File(path));
+			file = File.createTempFile(prefix, "." + fileExtension, new File(path));
 		}
 		catch (IOException e)
 		{
@@ -115,9 +109,9 @@ public final class JasperUtil
 		return prefix.toString();
 	}
 
-	public static File toTempFile(byte[] data, OutputType type, String title)
+	public static File toTempFile(byte[] data, final String fileExtension, String title)
 	{
-		final File file = createTempFile(type, title);
+		final File file = createTempFile(fileExtension, title);
 		final InputStream in = new ByteArrayInputStream(data);
 		try
 		{

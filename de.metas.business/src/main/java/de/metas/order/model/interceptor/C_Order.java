@@ -205,7 +205,10 @@ public class C_Order
 	})
 	public void updateDescriptionFromDocType(final I_C_Order order)
 	{
-		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+		if (!InterfaceWrapperHelper.isCopying(order))
+		{
+			Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+		}
 	}
 
 	@ModelChange(timings = {

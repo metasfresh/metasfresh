@@ -1,4 +1,4 @@
-package de.metas.adempiere.report.jasper.client;
+package de.metas.report.jasper.client;
 
 /*
  * #%L
@@ -56,8 +56,8 @@ public final class JRClient
 		return instance;
 	}
 
-	public static final String SYSCONFIG_JRServerClass = "de.metas.adempiere.report.jasper.JRServerClass";
-	public static final String SYSCONFIG_JRServerClass_DEFAULT = "de.metas.adempiere.report.jasper.server.RemoteServletServer";
+	public static final String SYSCONFIG_JRServerClass = "de.metas.report.jasper.client.JRServerClass";
+	public static final String SYSCONFIG_JRServerClass_DEFAULT = RemoteServletInvoker.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(JRClient.class);
 
@@ -100,7 +100,7 @@ public final class JRClient
 	private JRClient()
 	{
 		super();
-		
+
 		// If the instance is not a client, reset the Jasper servlet cache.
 		if (!Ini.isClient())
 		{
@@ -208,10 +208,10 @@ public final class JRClient
 
 	/**
 	 * Extracts reporting language from given {@link ProcessInfo}.
-	 * 
+	 *
 	 * @param pi
 	 * @return Language; never returns null
-	 * 
+	 *
 	 * @implNote Usually the ProcessInfo already has the language set, so this method is just a fallback.
 	 *           If you are thinking to extend how the reporting language is fetched, please check {@link ProcessInfoBuilder}'s getReportLanguage() method.
 	 */
