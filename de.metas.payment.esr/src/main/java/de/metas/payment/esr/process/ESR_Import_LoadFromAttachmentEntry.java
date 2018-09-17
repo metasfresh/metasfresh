@@ -5,6 +5,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
@@ -56,7 +57,7 @@ public class ESR_Import_LoadFromAttachmentEntry
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final AttachmentEntry fromAttachmentEntry = attachmentDAO.retrieveAttachmentEntryById(-1, p_AD_AttachmentEntry_ID); // attachmentId = -1
+		final AttachmentEntry fromAttachmentEntry = attachmentDAO.retrieveAttachmentEntryById(-1, AttachmentEntryId.ofRepoId(p_AD_AttachmentEntry_ID)); // attachmentId = -1
 
 		final I_ESR_Import esrImport = getRecord(I_ESR_Import.class);
 		ESRImportEnqueuer.newInstance()

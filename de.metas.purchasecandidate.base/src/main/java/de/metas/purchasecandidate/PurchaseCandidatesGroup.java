@@ -51,6 +51,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class PurchaseCandidatesGroup
 {
+	/** Creates a group that consists of a single purchaseCandidate. */
 	public static PurchaseCandidatesGroup of(
 			@NonNull final PurchaseDemandId purchaseDemandId,
 			@NonNull final PurchaseCandidate purchaseCandidate,

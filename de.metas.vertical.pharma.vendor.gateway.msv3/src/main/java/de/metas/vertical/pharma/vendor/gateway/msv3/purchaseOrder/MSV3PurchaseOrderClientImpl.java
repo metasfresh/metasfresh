@@ -35,6 +35,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderType;
 import de.metas.vertical.pharma.msv3.protocol.order.SupportIDType;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
@@ -248,8 +249,8 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 	}
 
 	private static RemotePurchaseOrderCreated createRemotePurchaseOrderCreated(
-			final MSV3PurchaseOrderTransaction purchaseTransaction,
-			final Map<OrderCreateRequestPackageItemId, PurchaseOrderRequestItem> purchaseOrderRequestItems)
+			@NonNull final MSV3PurchaseOrderTransaction purchaseTransaction,
+			@NonNull final Map<OrderCreateRequestPackageItemId, PurchaseOrderRequestItem> purchaseOrderRequestItems)
 	{
 		final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransaction.store();
 
@@ -300,15 +301,15 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 
 				for (final OrderResponsePackageItemPart responseItemPart : responseItem.getParts())
 				{
-					if (responseItemPart.getDeliveryDate() == null)
+					final Type type = responseItemPart.getType();
+					if (type.isNoDeliveryPossible())
 					{
 						continue;
 					}
 
 					final MSV3OrderResponsePackageItemPartRepoId internalItemId = purchaseTransaction.getResponseItemPartRepoId(responseItemPart.getId());
-
 					builder
-							.confirmedDeliveryDate(responseItemPart.getDeliveryDate())
+							.confirmedDeliveryDateOrNull(responseItemPart.getDeliveryDate())
 							.confirmedOrderQuantity(responseItemPart.getQty().getValueAsBigDecimal())
 							.internalItemId(internalItemId);
 

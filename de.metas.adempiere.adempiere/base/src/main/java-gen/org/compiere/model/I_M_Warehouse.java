@@ -340,6 +340,33 @@ public interface I_M_Warehouse
     public static final String COLUMNNAME_M_Warehouse_PickingGroup_ID = "M_Warehouse_PickingGroup_ID";
 
 	/**
+	 * Set Warehouse Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID);
+
+	/**
+	 * Get Warehouse Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_Type_ID();
+
+	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type();
+
+	public void setM_Warehouse_Type(org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type);
+
+    /** Column definition for M_Warehouse_Type_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Type> COLUMN_M_Warehouse_Type_ID = new org.adempiere.model.ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Type>(I_M_Warehouse.class, "M_Warehouse_Type_ID", org.compiere.model.I_M_Warehouse_Type.class);
+    /** Column name M_Warehouse_Type_ID */
+    public static final String COLUMNNAME_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
+
+	/**
 	 * Set Source Warehouse.
 	 * Optional Warehouse to replenish from
 	 *

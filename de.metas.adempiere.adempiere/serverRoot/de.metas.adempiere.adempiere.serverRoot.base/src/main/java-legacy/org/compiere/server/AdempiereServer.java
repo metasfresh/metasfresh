@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.server;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,8 +53,8 @@ import de.metas.logging.LogManager;
 public abstract class AdempiereServer extends Thread
 {
 	/**
-	 * Create New Server Thead
-	 * 
+	 * Create New Server Thread
+	 *
 	 * @param model model
 	 * @return server tread or null
 	 */
@@ -76,7 +78,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**************************************************************************
 	 * Server Base Class
-	 * 
+	 *
 	 * @param model model
 	 * @param initialNapSecs delay time running in sec
 	 */
@@ -126,7 +128,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Get Server Context
-	 * 
+	 *
 	 * @return context
 	 */
 	protected final Properties getCtx()
@@ -144,7 +146,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Sleep for set time
-	 * 
+	 *
 	 * @return true if not interrupted
 	 */
 	protected final boolean sleep()
@@ -208,7 +210,7 @@ public abstract class AdempiereServer extends Thread
 		m_runTotalMS += m_runLastMS;
 		//
 		p_model.setDateLastRun(new Timestamp(now));
-		p_model.save();
+		save(p_model, ITrx.TRXNAME_None);
 		//
 		log.debug(getName() + ": " + getStatistics());
 	}	// runNow
@@ -275,9 +277,9 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * This method does the actual work of the {@link #run()} method.
-	 * 
+	 *
 	 * @return <code>true</code> if the calling {@link #run()} should break out of its <code>while(true)</code> block.
-	 * 
+	 *
 	 * @see http://dewiki908/mediawiki/index.php/03034:_ADempiere_ServerProcesses_can_die_%282012072510000033%29
 	 */
 	private final boolean run0() throws Exception
@@ -340,7 +342,7 @@ public abstract class AdempiereServer extends Thread
 		//
 		p_model.setDateLastRun(lastRun);
 		p_model.setDateNextRun(new Timestamp(m_nextWork));
-		p_model.save();
+		save(p_model, ITrx.TRXNAME_None);
 
 		log.debug(getName() + ": " + getStatistics());
 
@@ -349,7 +351,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Get Run Statistics
-	 * 
+	 *
 	 * @return Statistic info
 	 */
 	public final String getStatistics()
@@ -367,14 +369,14 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Get Server Info
-	 * 
+	 *
 	 * @return info
 	 */
 	public abstract String getServerInfo();
 
 	/**
 	 * Get Unique ID
-	 * 
+	 *
 	 * @return Unique ID
 	 */
 	public final String getServerID()
@@ -384,7 +386,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Get the date Next run
-	 * 
+	 *
 	 * @param requery requery database
 	 * @return date next run
 	 */
@@ -395,20 +397,20 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Sets DateNextRun and save.
-	 * 
+	 *
 	 * @param dateNextRun
 	 */
 	public final void setDateNextRun(final Timestamp dateNextRun)
 	{
 		p_model.setDateNextRun(dateNextRun);
 
-		// NOTE: we need to save it because some BL is rellying on this (e.g. Scheduler)
-		p_model.save();
+		// NOTE: we need to save it because some BL is relying on this (e.g. Scheduler)
+		save(p_model, ITrx.TRXNAME_None);
 	}
 
 	/**
 	 * Get the date Last run
-	 * 
+	 *
 	 * @return date last run
 	 */
 	public final Timestamp getDateLastRun()
@@ -418,7 +420,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Get Description
-	 * 
+	 *
 	 * @return Description
 	 */
 	public final String getDescription()
@@ -428,7 +430,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Get Model
-	 * 
+	 *
 	 * @return Model
 	 */
 	public final AdempiereProcessor getModel()
@@ -438,7 +440,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Calculate Sleep ms
-	 * 
+	 *
 	 * @return miliseconds
 	 */
 	protected final long calculateSleep()
@@ -468,7 +470,7 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Is Sleeping
-	 * 
+	 *
 	 * @return sleeping
 	 */
 	public final boolean isSleeping()
@@ -508,9 +510,9 @@ public abstract class AdempiereServer extends Thread
 
 	/**
 	 * Set the initial nap/sleep when server starts.
-	 * 
+	 *
 	 * Mainly this method is used by tests.
-	 * 
+	 *
 	 * @param initialNapSeconds
 	 */
 	public final void setInitialNapSeconds(final int initialNapSeconds)

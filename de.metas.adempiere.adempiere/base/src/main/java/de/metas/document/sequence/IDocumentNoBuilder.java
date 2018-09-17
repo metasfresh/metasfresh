@@ -39,11 +39,10 @@ public interface IDocumentNoBuilder
 	IDocumentNoBuilder setDocumentModel(Object documentModel);
 
 	/**
-	 * Explicitly set which is the sequence no to be used. In this case, the builder won't fetch and increment current sequence number but it will just use this one.
-	 *
-	 * @param sequenceNo
+	 * Explicitly set which is the sequence number to be used.
+	 * If set, then the builder won't fetch and increment current sequence number but it will just use this one.
 	 */
-	IDocumentNoBuilder setSequenceNo(int sequenceNo);
+	IDocumentNoBuilder setSequenceNo(String sequenceNo);
 
 	/**
 	 * Advises the builder to use a preliminary DocumentNo.

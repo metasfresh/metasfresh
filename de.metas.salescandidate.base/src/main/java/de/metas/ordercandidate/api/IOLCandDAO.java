@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api;
 
 
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -34,6 +35,8 @@ import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 
 public interface IOLCandDAO extends ISingletonService
 {
+	OptionalInt getOLCandIdByExternalId(final String olCandExternalId);
+	
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_OrderLine ol, Class<T> clazz);
 
 	/**

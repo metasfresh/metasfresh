@@ -1402,12 +1402,13 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		/** Relevant for report processes.
+		 * {@code true} means that the system shall just if the report data shall just be returned*/
 		public boolean isPrintPreview()
 		{
-			final Boolean printPreview = this.printPreview;
-			if (printPreview != null)
+			if (this.printPreview != null)
 			{
-				return printPreview;
+				return this.printPreview;
 			}
 
 			if (Ini.isClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))

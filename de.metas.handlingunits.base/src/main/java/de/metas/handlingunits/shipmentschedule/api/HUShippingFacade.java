@@ -169,7 +169,6 @@ public class HUShippingFacade
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(completeShipments)
 				.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-				.setManualPackingMaterial(false) // use the HUs!
 				.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.

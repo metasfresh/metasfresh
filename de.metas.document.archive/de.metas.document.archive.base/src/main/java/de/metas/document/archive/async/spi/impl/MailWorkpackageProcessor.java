@@ -1,34 +1,12 @@
 package de.metas.document.archive.async.spi.impl;
 
-/*
- * #%L
- * de.metas.document.archive.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,7 +25,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
-import de.metas.document.engine.IDocument;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
@@ -71,6 +48,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
@@ -148,7 +126,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				processID,
 				docOutboundLogRecord.getC_DocType(),
 				null, // mailCustomType
-				userFrom  	);
+				userFrom);
 
 		// note that we verified this earlier
 		final String mailTo = Check.assumeNotEmpty(
@@ -167,16 +145,17 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 			final EMail email = mailBL.createEMail(ctx, mailbox, mailTo, subject, message, html);
 
-			final File attachment = getDocumentAttachment(ctx, archive, trxName);
+			final byte[] attachment = archiveBL.getBinaryData(archive);
 			if (attachment == null)
 			{
 				status = IArchiveEventManager.STATUS_MESSAGE_NOT_SENT; // TODO log or do something; do NOT send blank mails without an attachment
 			}
 			else
 			{
-				email.addAttachment(attachment);
-				mailBL.send(email);
+				final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
+				email.addAttachment(tableName + "_" + docOutboundLogRecord.getRecord_ID() + ".pdf", attachment);
 
+				mailBL.send(email);
 				status = IArchiveEventManager.STATUS_MESSAGE_SENT;
 			}
 		}
@@ -211,17 +190,5 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		return message.toLowerCase().indexOf("<html>") >= 0;
-	}
-
-	private File getDocumentAttachment(final Properties ctx, final I_AD_Archive archive, final String trxName)
-	{
-		final int tableId = archive.getAD_Table_ID();
-		final String tableName = adTableDAO.retrieveTableName(tableId);
-
-		final int recordId = archive.getRecord_ID();
-		final IDocument doc = InterfaceWrapperHelper.create(ctx, tableName, recordId, IDocument.class, trxName);
-
-		final File attachment = doc.createPDF();
-		return attachment;
 	}
 }

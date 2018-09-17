@@ -5,6 +5,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_City;
+import org.compiere.model.I_C_Location;
 
 /*
  * #%L
@@ -19,17 +20,18 @@ import org.compiere.model.I_C_City;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public interface ILocationDAO extends ISingletonService
 {
+	void save(I_C_Location location);
 
 	/**
 	 * @return cities filter by country and by regionId (if set)

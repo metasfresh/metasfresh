@@ -39,6 +39,7 @@ import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -202,7 +203,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		{
 			ro = !Env.getUserRolePermissions().canUpdate(
 					Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
-					MBPartnerLocation.Table_ID, 0, false);
+					InterfaceWrapperHelper.getTableId(I_C_BPartner_Location.class),
+					0,
+					false);
 		}
 		if (!ro)
 		{
