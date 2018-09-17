@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.76
+## Features
+
+## Fixes
+
 # metasfresh 5.75
 ## Features
 * metasfresh
