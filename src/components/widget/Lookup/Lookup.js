@@ -198,9 +198,8 @@ class Lookup extends Component {
   };
 
   widgetTooltipToggle = (field, value) => {
-    // const { onFocus, onBlur } = this.props;
     const curVal = this.getLookupWidget(field).tooltipOpen;
-    const newVal = value != null ? value : !curVal
+    const newVal = value != null ? value : !curVal;
 
     this._changeWidgetProperty(field, 'tooltipOpen', newVal);
   };
