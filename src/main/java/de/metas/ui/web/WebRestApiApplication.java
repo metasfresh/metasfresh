@@ -65,6 +65,8 @@ import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 @Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication
 {
+	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
+
 	public static final String BEANNAME_WebuiTaskScheduler = "webuiTaskScheduler";
 
 	/**
@@ -108,7 +110,7 @@ public class WebRestApiApplication
 	{
 		final ArrayList<String> activeProfiles = Services
 				.get(ISysConfigBL.class)
-				.getValuesForPrefix("de.metas.ui.web.spring.profiles.active", 0, 0)
+				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, 0, 0)
 				.entrySet()
 				.stream()
 				.map(Entry::getValue)
