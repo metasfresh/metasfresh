@@ -234,7 +234,7 @@ public class ShipmentScheduleWithHU
 				+ "\n    attributesAggregationKey=" + (attributesAggregationKey == null ? "<NOT BUILT>" : attributesAggregationKey)
 				+ "\n    shipmentScheduleAlloc=" + shipmentScheduleQtyPicked
 				+ "\n    shipmentLine=" + shipmentLine
-				+ "\n	 qtyToUse=" + qtyTypeToUse
+				+ "\n	 qtyTypeToUse=" + qtyTypeToUse
 				+ "\n]";
 	}
 

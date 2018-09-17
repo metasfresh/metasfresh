@@ -10,11 +10,48 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.75
+# metasfresh 5.76
 ## Features
 
 ## Fixes
 
+# metasfresh 5.75
+## Features
+* metasfresh
+  * [#4507](https://github.com/metasfresh/metasfresh/issues/4507) Picked and Non-Picked Quantities Shipment generation
+  * [#4549](https://github.com/metasfresh/metasfresh/issues/4549) Sales Order Candidates REST API improvements
+  * [#4556](https://github.com/metasfresh/metasfresh/issues/4556) Show Product note as tooltip in order line
+  * [#4557](https://github.com/metasfresh/metasfresh/issues/4557) Improve BPartner Memo-Import
+  * [#4558](https://github.com/metasfresh/metasfresh/issues/4558) Show BPartner memo as tooltip in order
+  * [#4566](https://github.com/metasfresh/metasfresh/issues/4566) save AdempiereProcessor lastRun/nextRun timestamp out-of-trx
+  * [#4568](https://github.com/metasfresh/metasfresh/issues/4568) Add note field to invoice candidates
+  * [#4575](https://github.com/metasfresh/metasfresh/issues/4575) Allow custom, POReference-based document number
+  * [#4576](https://github.com/metasfresh/metasfresh/issues/4576) Introduce Warehouse Type
+  * [#4587](https://github.com/metasfresh/metasfresh/issues/4587) Allow custom PDF-creating code to be called via print-format
+  * [#4592](https://github.com/metasfresh/metasfresh/issues/4592) Number Format Exception
+  * [#4593](https://github.com/metasfresh/metasfresh/issues/4593) MailWorkpackageProcessor shall mail the AD_Archive's own PDF
+  * [#4594](https://github.com/metasfresh/metasfresh/issues/4594) WebUI: Outbound EMail Server (SMTP)
+    * New Window for the Outbound eMail Server Configuration in WebUI.
+  * [#4595](https://github.com/metasfresh/metasfresh/issues/4595) WebUI: Window EMail Server Routing
+    * New Window for the eMail Server Routing Configration in WebUI.
+
+* metasfresh-webui-api
+  * [#1038](https://github.com/metasfresh/metasfresh-webui-api/issues/1038) Use user language for messages and errors in Forgot Password feature
+
+## Fixes
+
+* metasfresh
+  * [#4563](https://github.com/metasfresh/metasfresh/issues/4563) sometimes missing purchase candidates aren't created
+  * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) msv3 - local purchase order is not created if remote order confirmation lacks deliveryDate
+  * [#4591](https://github.com/metasfresh/metasfresh/issues/4591) Printing problem on multi-org-system
+
+* metasfresh-webui-api
+  * [#1046](https://github.com/metasfresh/metasfresh-webui-api/issues/1046) Sometimes there are no available DocActions for Sales Orders
+  * [#1047](https://github.com/metasfresh/metasfresh-webui-api/issues/1047) Allow purchase disposition from sales order only for drafted sales orders
+
+* metasfresh-webui-frontend
+  * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
+  
 # metasfresh 5.74
 ## Features
 
@@ -36,9 +73,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1035](https://github.com/metasfresh/metasfresh-webui-api/issues/1035) Implement CORS support
-    * New feature, now supporting cross origin ressource sharing.
+    * New feature, now supporting cross origin resource sharing.
   * [#1037](https://github.com/metasfresh/metasfresh-webui-api/issues/1037) Advanced tooltip support
-    * New Functionality now suppoting advanced tooltips in webui.
+    * New Functionality now supporting advanced tooltips in webui.
 
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
@@ -53,8 +90,10 @@ Here come the actual release notes:
     * Fixes a Bug in Product Prices when recording Scale Prices.
   * [#4552](https://github.com/metasfresh/metasfresh/issues/4552) AD_User is wrong in shipment schedule when using isDropShip
     * Fixes the Shipment Contact User when using Drop Shipment in Sales Order.
-  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) msv3 related fixes
+  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) MSV3 related fixes
     * Fixes different Pharma MSV3 related issues.
+  * [#4572](https://github.com/metasfresh/metasfresh/issues/4572) Texts missing in cloned sales quotation
+    * Bugfix for Document Line descriptions when closing Sales Orders/ Quotations.
 
 * metasfresh-webui-api
   * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
