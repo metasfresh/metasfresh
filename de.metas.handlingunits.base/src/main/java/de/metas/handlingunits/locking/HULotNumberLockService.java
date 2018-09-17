@@ -1,5 +1,7 @@
 package de.metas.handlingunits.locking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeId;
@@ -49,11 +51,12 @@ public class HULotNumberLockService
 
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	public HULotNumberLockService(@NonNull final LotNumberLockRepository lotNumberLockRepository)
 	{
-
 		this.lotNumberLockRepository = lotNumberLockRepository;
 	}
 
@@ -61,8 +64,7 @@ public class HULotNumberLockService
 	{
 		final String lotNumber = huAttributeStorage.getValueAsString(LotNumberDateAttributeDAO.LotNumberAttribute);
 
-		final List<IHUProductStorage> productStorages = Services
-				.get(IHandlingUnitsBL.class)
+		final List<IHUProductStorage> productStorages = handlingUnitsBL
 				.getStorageFactory()
 				.getStorage(huAttributeStorage.getM_HU())
 				.getProductStorages();
@@ -94,5 +96,23 @@ public class HULotNumberLockService
 		}
 
 		return Constants.ATTR_Locked_Value_Locked.equals(huAttribute.getValue());
+	}
+
+	public void markHUAsLocked(final I_M_HU huRecord)
+	{
+		// retrieve the attribute
+		final AttributeId lockedAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Locked);
+
+		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, lockedAttributeId);
+
+		if (huAttribute == null)
+		{
+			// nothing to do. The HU doesn't have the attribute
+			return;
+		}
+
+		huAttribute.setValue(Constants.ATTR_Locked_Value_Locked);
+
+		save(huAttribute);
 	}
 }
