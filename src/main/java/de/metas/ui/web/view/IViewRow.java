@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -49,9 +50,13 @@ public interface IViewRow
 	// Document info
 	// @formatter:off
 	DocumentId getId();
-	IViewRowType getType();
 	boolean isProcessed();
 	// @formatter:on
+
+	default IViewRowType getType()
+	{
+		return DefaultRowType.Row;
+	}
 
 	/**
 	 * Gets row's document path.
