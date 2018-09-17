@@ -2,32 +2,7 @@ package org.adempiere.warehouse.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
@@ -76,7 +51,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	@Override
 	public WarehouseId evaluateOrderWarehouse(@NonNull final I_C_Order order)
 	{
-		WarehouseId orderWarehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+		final WarehouseId orderWarehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
 		if (orderWarehouseId != null)
 		{
 			return orderWarehouseId;
@@ -87,20 +62,20 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 	protected WarehouseId findOrderWarehouseId(@NonNull final I_C_Order order)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+
 		final OrgId adOrgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
-		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+		// task 07014: for a dropship purchase order, we take the org info's dropship warehouse. our vendor will send the good directly to our customer and it will never enter any of our physical
+		// warehouses, but none the less we own it for a certain time. That'S what the dropship warehouse is for.
+		// For a sales order, "dropship" means that the order's receiver is someone other than the partner who ordered. For this scenario, we don't need a particular dropship warehouse.
 		if (order.isDropShip() && !order.isSOTrx())
 		{
-			// task 07014: for a dropship purchase order, we take the org info's dropship warehouse. our vendor will send the good directly to our customer and it will never enter any of our physical
-			// warehouses, but none the less we own it for a certain time. That'S what the dropship warehouse is for.
-			// For a sales order, "dropship" means that the order's receiver is someone other than the partner who ordered. For this scenario, we don't need a particular dropship warehouse.
-
 			final WarehouseId dropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(adOrgId);
 			if (dropShipWarehouseId == null)
 			{
-				throw new AdempiereException("@NotFound@ @DropShip_Warehouse_ID@ (@AD_Org_ID@: " + order.getAD_Org().getName() + ")");
+				final String orgName = orgsRepo.retrieveOrgName(adOrgId);
+				throw new AdempiereException("@NotFound@ @DropShip_Warehouse_ID@ (@AD_Org_ID@: " + orgName + ")");
 			}
 			return dropShipWarehouseId;
 		}
