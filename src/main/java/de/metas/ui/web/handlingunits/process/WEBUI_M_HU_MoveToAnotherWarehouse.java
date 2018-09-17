@@ -1,34 +1,16 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.Comparator;
-import java.util.List;
+import org.compiere.Adempiere;
 
-import org.adempiere.util.Services;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.movement.api.HUMovementResult;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
+import de.metas.handlingunits.locking.HULotNumberLockService;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,76 +28,22 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
  * #L%
  */
 
-/**
- * #2144
- * HU editor: Move selected HUs to another warehouse
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
+public class WEBUI_M_HU_MoveToAnotherWarehouse extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
 {
-	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
-	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
-	private I_M_Warehouse warehouse;
-
-	private HUMovementResult movementResult = null;
+	private final transient HULotNumberLockService lotNumberLockService = Adempiere.getBean(HULotNumberLockService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!isHUEditorView())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
-		}
-
-		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
-		}
-
-		final boolean activeTopLevelHUsSelected = streamSelectedHUs(Select.ONLY_TOPLEVEL)
-				.filter(huRecord -> huStatusBL.isPhysicalHU(huRecord))
+		final boolean lockedHUs = streamSelectedHUs(Select.ONLY_TOPLEVEL)
+				.filter(huRecord -> lotNumberLockService.isLockedHU(huRecord))
 				.findAny()
 				.isPresent();
-		if (!activeTopLevelHUsSelected)
+		if (lockedHUs)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no physical (etc active) hus selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Some HUs are locked");
 		}
-		return ProcessPreconditionsResolution.accept();
-	}
 
-	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = LookupSource.lookup)
-	public LookupValuesList getAvailableWarehouses()
-	{
-		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList()));
-
-		return warehousesToLoad.stream()
-				.sorted(Comparator.comparing(org.compiere.model.I_M_Warehouse::getName))
-				.map(warehouse -> IntegerLookupValue.of(warehouse.getM_Warehouse_ID(), warehouse.getName()))
-				.collect(LookupValuesList.collect());
-	}
-
-	@Override
-	protected String doIt() throws Exception
-	{
-		final List<I_M_HU> hus = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
-		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
-
-		return MSG_OK;
-	}
-
-	@Override
-	protected void postProcess(final boolean success)
-	{
-		// Invalidate the view
-		// On refresh we expect the HUs we moved, to not be present here anymore.
-		if (movementResult != null)
-		{
-			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
-		}
+		return super.checkPreconditionsApplicable();
 	}
 }
