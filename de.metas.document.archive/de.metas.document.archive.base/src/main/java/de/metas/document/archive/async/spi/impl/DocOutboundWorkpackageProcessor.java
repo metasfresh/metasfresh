@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -50,6 +51,8 @@ import de.metas.document.archive.spi.impl.DefaultModelArchiver;
  */
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
+	final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
@@ -72,11 +75,13 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final I_AD_Archive archive = createModelArchiver(record).archive();
 		if (archive == null)
 		{
+			Loggables.get().addLog("Created *no* AD_Archive for record={}", record);
 			return;
 		}
+		Loggables.get().addLog("Created AD_Archive_ID={} for record={}", archive.getAD_Archive_ID(), record);
 
 		final String action = X_C_Doc_Outbound_Log_Line.ACTION_PdfExport; // this action is ported here. i'm not 100% sure it makes sense
-		Services.get(IArchiveEventManager.class).firePdfUpdate(archive, null, action); // user=null
+		archiveEventManager.firePdfUpdate(archive, null, action); // user=null
 	}
 
 	@VisibleForTesting
