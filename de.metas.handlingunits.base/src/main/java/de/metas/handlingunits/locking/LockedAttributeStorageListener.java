@@ -1,23 +1,16 @@
 package de.metas.handlingunits.locking;
 
-import java.util.List;
-
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.product.LotNumberLock;
-import de.metas.product.LotNumberLockRepository;
 import lombok.NonNull;
 
 /*
@@ -46,12 +39,12 @@ import lombok.NonNull;
 public class LockedAttributeStorageListener implements IAttributeStorageListener
 {
 
-	private final transient LotNumberLockRepository lotNumberLockRepository;
+	private final transient HULotNumberLockService lotNumberLockService;
 
-	public LockedAttributeStorageListener(@NonNull final LotNumberLockRepository lotNumberLockRepository)
+	public LockedAttributeStorageListener(@NonNull final HULotNumberLockService lotNumberLockService)
 	{
 
-		this.lotNumberLockRepository = lotNumberLockRepository;
+		this.lotNumberLockService = lotNumberLockService;
 
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
@@ -84,7 +77,7 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 			return;
 		}
 
-		if (isQuarantineLotNumber(huAttributeStorage))
+		if (lotNumberLockService.isQuarantineLotNumber(huAttributeStorage))
 		{
 			storage.setValue(Constants.ATTR_Locked, Constants.ATTR_Locked_Value_Locked);
 		}
@@ -94,28 +87,4 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 		}
 	}
 
-	private boolean isQuarantineLotNumber(@NonNull final AbstractHUAttributeStorage huAttributeStorage)
-	{
-		final String lotNumber = huAttributeStorage.getValueAsString(LotNumberDateAttributeDAO.LotNumberAttribute);
-
-		final List<IHUProductStorage> productStorages = Services
-				.get(IHandlingUnitsBL.class)
-				.getStorageFactory()
-				.getStorage(huAttributeStorage.getM_HU())
-				.getProductStorages();
-
-		for (final IHUProductStorage productStorage : productStorages)
-		{
-			final I_M_Product productRecord = productStorage.getM_Product();
-
-			final LotNumberLock lotNumberLock = lotNumberLockRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
-
-			if (lotNumberLock != null)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
 }
