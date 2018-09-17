@@ -1,6 +1,6 @@
-package de.metas.ui.web.pickingV2;
+package de.metas.ui.web.pickingV2.productsToPick;
 
-import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -15,20 +15,22 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class PickingConstantsV2
+class ProductsToPickRowId
 {
-	public static final String WINDOWID_PackageableView_String = "540485"; // FIXME: HARDCODED
-	public static final WindowId WINDOWID_PackageableView = WindowId.fromJson(WINDOWID_PackageableView_String);
 
-	public static final String WINDOWID_ProductsToPickView_String = "picking.v2.productsToPick";
-	public static final WindowId WINDOWID_ProductsToPickView = WindowId.fromJson(WINDOWID_ProductsToPickView_String);
+	public DocumentId toDocumentId()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

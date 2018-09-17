@@ -17,8 +17,6 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowType;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -118,16 +116,15 @@ public final class PackageableRow implements IViewRow
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
 	}
 
+	public static PackageableRow cast(final IViewRow row)
+	{
+		return (PackageableRow)row;
+	}
+
 	@Override
 	public DocumentId getId()
 	{
 		return rowId.getDocumentId();
-	}
-
-	@Override
-	public IViewRowType getType()
-	{
-		return DefaultRowType.Row;
 	}
 
 	@Override
@@ -152,15 +149,4 @@ public final class PackageableRow implements IViewRow
 		}
 		return _fieldNameAndJsonValues;
 	}
-
-	// public TableRecordReference getTableRecordReference()
-	// {
-	// return createTableRecordReferenceFromShipmentScheduleId(getShipmentScheduleId());
-	// }
-	//
-	// public static TableRecordReference createTableRecordReferenceFromShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
-	// {
-	// return TableRecordReference.of(I_M_Packageable_V.Table_Name, shipmentScheduleId);
-	// }
-
 }

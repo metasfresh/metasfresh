@@ -1,6 +1,12 @@
-package de.metas.ui.web.pickingV2;
+package de.metas.ui.web.pickingV2.productsToPick;
 
-import de.metas.ui.web.window.datatypes.WindowId;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -24,11 +30,28 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
-public class PickingConstantsV2
+class ProductsToPickRowsData implements IRowsData<ProductsToPickRow>
 {
-	public static final String WINDOWID_PackageableView_String = "540485"; // FIXME: HARDCODED
-	public static final WindowId WINDOWID_PackageableView = WindowId.fromJson(WINDOWID_PackageableView_String);
 
-	public static final String WINDOWID_ProductsToPickView_String = "picking.v2.productsToPick";
-	public static final WindowId WINDOWID_ProductsToPickView = WindowId.fromJson(WINDOWID_ProductsToPickView_String);
+	@Override
+	public Map<DocumentId, ProductsToPickRow> getDocumentId2TopLevelRows()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Stream<DocumentId> streamDocumentIdsToInvalidate(TableRecordReference recordRef)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void invalidateAll()
+	{
+		// TODO Auto-generated method stub
+
+	}
+
 }

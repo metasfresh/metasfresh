@@ -1,15 +1,22 @@
 package de.metas.ui.web.pickingV2.packageable;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -35,13 +42,22 @@ import lombok.NonNull;
 
 public class PackageableView extends AbstractCustomView<PackageableRow>
 {
+	public static PackageableView cast(final IView view)
+	{
+		return (PackageableView)view;
+	}
+
+	private final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors;
+
 	@Builder
 	private PackageableView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
-			@NonNull final PackageableRowsData rowsData)
+			@NonNull final PackageableRowsData rowsData,
+			@NonNull @Singular final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors)
 	{
 		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
+		this.relatedProcessDescriptors = relatedProcessDescriptors;
 	}
 
 	@Override
@@ -56,4 +72,9 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 		return PackageableRowsData.cast(super.getRowsData());
 	}
 
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return relatedProcessDescriptors;
+	}
 }
