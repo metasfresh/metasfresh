@@ -2,13 +2,17 @@ package de.metas;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.impl.QuerySelectionToDeleteHelper;
 import org.adempiere.ad.dao.model.I_T_Query_Selection;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
@@ -81,6 +85,8 @@ public class ServerBoot implements InitializingBean
 
 	private static final Logger logger = LogManager.getLogger(ServerBoot.class);
 
+	private static final String SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE = "de.metas.spring.profiles.active";
+
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -95,6 +101,12 @@ public class ServerBoot implements InitializingBean
 			Ini.setRunMode(RunMode.BACKEND);
 			Adempiere.instance.startup(RunMode.BACKEND);
 
+			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
+			activeProfiles.add(Profiles.PROFILE_App);
+			activeProfiles.add(Profiles.PROFILE_JasperService);
+			activeProfiles.add(Profiles.PROFILE_PrintService);
+			activeProfiles.add(Profiles.PROFILE_AccountingService);
+
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
@@ -102,11 +114,7 @@ public class ServerBoot implements InitializingBean
 					// consider removing the jasper profile
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 					// same goes for PrintService
-					.profiles(
-							Profiles.PROFILE_App,
-							Profiles.PROFILE_JasperService,
-							Profiles.PROFILE_PrintService,
-							Profiles.PROFILE_AccountingService)
+					.profiles(activeProfiles.toArray(new String[0]))
 					.run(args);
 		}
 
@@ -121,6 +129,18 @@ public class ServerBoot implements InitializingBean
 
 		// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
 		Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
+	}
+
+	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
+	{
+		final ArrayList<String> activeProfiles = Services
+				.get(ISysConfigBL.class)
+				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
+				.entrySet()
+				.stream()
+				.map(Entry::getValue)
+				.collect(Collectors.toCollection(ArrayList::new));
+		return activeProfiles;
 	}
 
 	@Configuration
