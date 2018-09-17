@@ -121,12 +121,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private static final String ATTRIBUTE_ASI = "asi";
 
+	private final boolean excludeBOMProducts;
+
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			@NonNull final String availableStockDateParamName,
-			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
+			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			final boolean excludeBOMProducts)
 	{
 		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -134,19 +137,24 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		this.param_AvailableStockDate = CtxNames.ofNameAndDefaultValue(availableStockDateParamName, "NULL");
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 
+		this.excludeBOMProducts = excludeBOMProducts;
+
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_AD_Org_ID);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
-			@NonNull final String pricingDateParamName)
+			@NonNull final String pricingDateParamName,
+			final boolean excludeBOMProducts)
 	{
 		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
 
 		this.param_AvailableStockDate = null;
 		this.availableToPromiseAdapter = null;
+
+		this.excludeBOMProducts = excludeBOMProducts;
 
 		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 	}
@@ -249,6 +257,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 
 		//
 		// SQL: SELECT ... FROM
@@ -266,6 +275,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
@@ -366,6 +376,16 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final Integer adOrgId = param_AD_Org_ID.getValueAsInteger(evalCtx);
 		sqlWhereClause.append("\n AND p.AD_Org_ID IN (0, ").append(sqlWhereClauseParams.placeholder(adOrgId)).append(")");
+	}
+
+	private void appendFilterBOMProducts(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams, final LookupDataSourceContext evalCtx)
+	{
+		if (!excludeBOMProducts)
+		{
+			return;
+		}
+
+		sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM + "=" + sqlWhereClauseParams.placeholder(false));
 	}
 
 	private static final String convertFilterToSql(final String filter)
@@ -641,5 +661,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_BPartnerProductNo = "BPartnerProductNo";
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+		String COLUMNNAME_IsBOM = "IsBOM";
 	}
 }

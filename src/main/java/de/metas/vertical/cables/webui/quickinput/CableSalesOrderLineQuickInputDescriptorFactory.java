@@ -67,6 +67,7 @@ import lombok.NonNull;
 				.builderWithoutStockInfo()
 				.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 				.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+				.excludeBOMProducts(true)
 				.build();
 	}
 
