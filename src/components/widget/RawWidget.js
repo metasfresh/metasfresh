@@ -833,7 +833,6 @@ class RawWidget extends Component {
       widgetType,
       handleZoomInto,
     } = this.props;
-
     const { errorPopup, clearedFieldWarning, tooltipToggled } = this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
@@ -876,8 +875,7 @@ class RawWidget extends Component {
       >
         {captionElement || null}
         {!noLabel &&
-          caption &&
-          description && (
+          caption && (
             <div
               key="title"
               className={
@@ -886,7 +884,7 @@ class RawWidget extends Component {
                   ? 'col-sm-12 panel-title'
                   : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-3 ')
               }
-              title={description}
+              title={description || caption}
             >
               {fields[0].supportZoomInto ? (
                 <span
