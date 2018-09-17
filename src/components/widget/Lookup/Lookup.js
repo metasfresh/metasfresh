@@ -406,19 +406,17 @@ class Lookup extends Component {
               'field',
               item.field
             )[0];
-            console.log('ITEMBYPROPERTY: ', itemByProperty)
             const widgetTooltipToggled = lookupWidget.tooltipOpen;
 
             if (item.type === 'Tooltip') {
               return (
                 <div
                   key={item.field}
-                  className={classnames(
-                    'raw-lookup-wrapper raw-lookup-wrapper-bcg'
-                  )}
+                  className="raw-lookup-wrapper lookup-tooltip"
                 >
                   <WidgetTooltip
-                    item={item}
+                    widget={item}
+                    data={itemByProperty}
                     isToggled={widgetTooltipToggled}
                     onToggle={val => this.widgetTooltipToggle(item.field, val)}
                   />

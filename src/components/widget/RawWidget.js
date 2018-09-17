@@ -277,6 +277,7 @@ class RawWidget extends Component {
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
+      title: widgetValue,
     };
 
     switch (widgetType) {
