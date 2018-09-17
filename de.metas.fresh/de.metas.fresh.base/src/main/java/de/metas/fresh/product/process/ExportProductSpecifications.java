@@ -13,6 +13,7 @@ import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterFactory;
 import de.metas.data.export.api.impl.JdbcExporterBuilder;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 
 /*
@@ -45,6 +46,7 @@ public class ExportProductSpecifications extends JavaProcess
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
+	private final IMsgBL msgBL = Services.get(IMsgBL.class); 
 
 	@Override
 	protected String doIt() throws Exception
@@ -69,24 +71,25 @@ public class ExportProductSpecifications extends JavaProcess
 		builder.addWhereClause("1=1", new Object[] {});
 		builder.addOrderBy("productValue");
 
-		builder.addField("Artikelbezeichnung", "productName");
-		builder.addField("Sachbezeichnung", "CustomerLabelName");
-		builder.addField("Obligatorische Zusatzangaben", "additional_produktinfos");
-		builder.addField("Artikelnummer", "productValue");
-		builder.addField("EAN Code CU", "UPC");
-		builder.addField("Nettogewicht", "weight");
-		builder.addField("Produktionsland", "country");
-		builder.addField("Verpackungsmaterial", "piName");
-		builder.addField("Anzahl CU/TU", "piQty");
-		builder.addField("Haltbarkeit ab Produktionstag/Abpacktag", "guaranteedaysmin");
-		builder.addField("Lager- und Transporttemperatur", "warehouse_temperature");
-		builder.addField("Produktebeschrieb", "productDecription");
-		builder.addField("Stückliste Komponente", "componentName");
-		builder.addField("Zutaten", "componentIngredients");
-		builder.addField("%- Anteil", "qtybatch");
-		builder.addField("Allergene", "allergen");
-		builder.addField("Nährwerte", "nutritionName");
-		builder.addField("Nährwerte menge", "nutritionqty");
+		
+		builder.addField(msgBL.translate(getCtx(), "ProductName"), "productName");
+		builder.addField(msgBL.translate(getCtx(), "CustomerLabelName"), "CustomerLabelName");
+		builder.addField(msgBL.translate(getCtx(), "Additional_produktinfos"), "additional_produktinfos");
+		builder.addField(msgBL.translate(getCtx(), "ProductValue"), "productValue");
+		builder.addField(msgBL.translate(getCtx(),"UPC"), "UPC");
+		builder.addField(msgBL.translate(getCtx(),"NetWeight"), "weight");
+		builder.addField(msgBL.translate(getCtx(),"Country"), "country");
+		builder.addField(msgBL.translate(getCtx(),"IsPackagingMaterial"), "piName");
+		builder.addField(msgBL.translate(getCtx(),"NumberOfEvents"), "piQty");
+		builder.addField(msgBL.translate(getCtx(),"ShelfLifeDays"), "guaranteedaysmin");
+		builder.addField(msgBL.translate(getCtx(),"Warehouse_temperature"), "warehouse_temperature");
+		builder.addField(msgBL.translate(getCtx(),"ProductDescription"), "productDecription");
+		builder.addField(msgBL.translate(getCtx(),"M_BOMProduct_ID"), "componentName");
+		builder.addField(msgBL.translate(getCtx(),"Ingredients"), "componentIngredients");
+		builder.addField(msgBL.translate(getCtx(),"QtyBatch"), "qtybatch");
+		builder.addField(msgBL.translate(getCtx(),"Allergen"), "allergen");
+		builder.addField(msgBL.translate(getCtx(),"M_Product_Nutrition_ID"), "nutritionName");
+		builder.addField(msgBL.translate(getCtx(),"NutritionQty"), "nutritionqty");
 
 		return builder.createDataSource();
 	}
