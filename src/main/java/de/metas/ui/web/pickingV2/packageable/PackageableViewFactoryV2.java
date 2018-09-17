@@ -1,8 +1,15 @@
 
 package de.metas.ui.web.pickingV2.packageable;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
+import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_OpenProductsToPick;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -12,6 +19,7 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -67,7 +75,24 @@ public class PackageableViewFactoryV2 implements IViewFactory
 
 	private Iterable<? extends RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return ImmutableList.of(
+				createProcessDescriptor(PackageablesView_OpenProductsToPick.class));
 	}
+
+	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final int processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId <= 0)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.anyTable().anyWindow()
+				.webuiQuickAction(true)
+				.build();
+	}
+
 }
