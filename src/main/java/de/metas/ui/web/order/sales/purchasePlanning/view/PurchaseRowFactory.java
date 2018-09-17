@@ -113,7 +113,9 @@ public class PurchaseRowFactory
 		}
 	}
 
-	public PurchaseRow createGroupRow(final PurchaseDemand demand, final List<PurchaseRow> rows)
+	public PurchaseRow createGroupRow(
+			@NonNull final PurchaseDemand demand,
+			@NonNull final List<PurchaseRow> rows)
 	{
 		return PurchaseRow.groupRowBuilder()
 				.lookups(lookups)

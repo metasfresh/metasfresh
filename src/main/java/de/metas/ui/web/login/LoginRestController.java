@@ -340,10 +340,25 @@ public class LoginRestController
 	}
 
 	@GetMapping("/resetPassword/{token}")
+	@Deprecated
 	public JSONResetPassword getResetPasswordInfo(@PathVariable("token") final String token)
 	{
+		return resetPasswordInitByToken(token);
+	}
+
+	@PostMapping("/resetPassword/{token}/init")
+	public JSONResetPassword resetPasswordInitByToken(@PathVariable("token") final String token)
+	{
+		userSession.assertNotLoggedIn();
+
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);
 		final I_AD_User user = usersRepo.getByPasswordResetCode(token);
+
+		final String userADLanguage = user.getAD_Language();
+		if (!Check.isEmpty(userADLanguage, true))
+		{
+			userSession.setAD_Language(userADLanguage);
+		}
 
 		return JSONResetPassword.builder()
 				.fullname(user.getName())

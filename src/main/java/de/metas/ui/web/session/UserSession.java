@@ -249,7 +249,7 @@ public class UserSession
 	 * @param adLanguage
 	 * @return old AD_Language
 	 */
-	String setAD_Language(final String adLanguage)
+	public String setAD_Language(final String adLanguage)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);
