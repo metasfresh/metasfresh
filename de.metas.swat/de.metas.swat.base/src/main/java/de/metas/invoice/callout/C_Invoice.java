@@ -119,7 +119,6 @@ public class C_Invoice
 	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID })
 	public void updateFromDocType(final I_C_Invoice invoice, final ICalloutField field)
 	{
-
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(invoice.getC_DocTypeTarget())

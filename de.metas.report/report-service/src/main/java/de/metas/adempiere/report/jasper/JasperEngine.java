@@ -56,6 +56,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
+import de.metas.util.FileUtil;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
@@ -465,7 +466,7 @@ public class JasperEngine extends AbstractReportEngine
 			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
 			// TODO: handle image links
 
-			JasperUtil.copy(file, out);
+			FileUtil.copy(file, out);
 		}
 		else if (OutputType.XML == outputType)
 		{

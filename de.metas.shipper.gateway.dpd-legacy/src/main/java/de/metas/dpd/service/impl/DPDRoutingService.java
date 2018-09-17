@@ -60,7 +60,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.IPrintingService;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -80,6 +79,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.report.jasper.client.JRClient;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.X_M_ShippingPackage;
 import net.sf.jasperreports.engine.JRException;

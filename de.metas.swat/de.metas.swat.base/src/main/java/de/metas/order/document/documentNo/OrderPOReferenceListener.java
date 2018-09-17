@@ -50,7 +50,7 @@ public class OrderPOReferenceListener implements IDocumentNoListener
 	 * Notes:
 	 * <ul>
 	 * <li>the order is not saved
-	 * <li>calling this methdod from a model validator generally does not work well, because the (definite) documentNo itself is set when the order is changed, and the order might still have its old
+	 * <li>calling this method from a model validator generally does not work well, because the (definite) documentNo itself is set when the order is changed, and the order might still have its old
 	 * documentNo value.
 	 * </ul>
 	 *

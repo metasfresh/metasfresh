@@ -142,4 +142,8 @@ public interface IInterfaceWrapperHelper
 		return false;
 	}
 
+	default boolean isCopying(final Object model)
+	{
+		return false;
+	}
 }

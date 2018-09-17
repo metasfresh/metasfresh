@@ -41,7 +41,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -59,6 +58,7 @@ import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.report.jasper.client.JRClient;
 
 public final class TextTemplateBL implements ITextTemplateBL
 {

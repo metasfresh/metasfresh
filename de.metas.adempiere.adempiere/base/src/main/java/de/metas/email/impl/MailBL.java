@@ -37,6 +37,7 @@ import de.metas.email.Mailbox;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
+import lombok.NonNull;
 
 /**
  * @author Cristina Ghita, Metas.RO
@@ -175,14 +176,13 @@ public class MailBL implements IMailBL
 
 	@Override
 	public EMail createEMail(final Properties ctx,
-			final Mailbox mailbox,
+			@NonNull final Mailbox mailbox,
 			final String to,
 			final String subject,
 			String message,
 			final boolean html)
 	{
 		Check.assumeNotEmpty(to, "Param 'to' is not empty (mailbox={}, subject={})", mailbox, subject);
-		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null (mailbox={}, subject={})", mailbox, subject);
 
 		if (mailbox.getEmail() == null
 				// || mailbox.getUsername() == null

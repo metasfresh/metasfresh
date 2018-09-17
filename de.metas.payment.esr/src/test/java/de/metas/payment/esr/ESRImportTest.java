@@ -802,7 +802,6 @@ public class ESRImportTest extends ESRTestBase
 	@Test
 	public void testInvoiceReferenceNotFound_T07()
 	{
-
 		// org
 		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
@@ -1612,7 +1611,7 @@ public class ESRImportTest extends ESRTestBase
 		// esrBL.process(esrImport, trxRunConfig);
 		esrImportBL.complete(esrImport, "test");
 
-	
+
 		InterfaceWrapperHelper.refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));
 	}
