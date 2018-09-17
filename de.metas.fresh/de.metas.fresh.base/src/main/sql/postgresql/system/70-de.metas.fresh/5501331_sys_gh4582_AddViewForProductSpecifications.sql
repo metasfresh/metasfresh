@@ -3,11 +3,14 @@
 CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
 select p.Name as productName, p.CustomerLabelName,
 p.additional_produktinfos, p.Ingredients, p.Value as productValue,
-p.UPC, p.weight, 'Schweiz' as country, pi.Name as piName, pi.qty as piQty,
+p.UPC, p.weight, c.name as country, pi.Name as piName, pi.qty as piQty,
 p.guaranteedaysmin, p.warehouse_temperature, p.description as productDecription,
 a.Name as allergen, nf.Name as nutritionName, pn.nutritionqty,
 bomProduct.Name as componentName, bomLine.qtybatch, bomProduct.ingredients as componentIngredients
 from m_product p
+left outer join ad_orginfo oi on p.ad_org_id=oi.ad_org_id
+left outer join c_location l on oi.c_location_id=l.c_location_id
+left outer join c_country c on l.c_country_id=c.c_country_id
 left outer join M_HU_PI_Item_Product pi on pi.M_product_ID = p.M_product_ID
 left outer join M_Product_Allergen pa on pa.M_product_ID = p.M_product_ID
 left outer join M_Allergen a on a.m_allergen_id =pa.m_allergen_id
