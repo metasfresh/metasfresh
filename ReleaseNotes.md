@@ -12,6 +12,11 @@ Here come the actual release notes:
 
 # metasfresh 5.75
 ## Features
+* metasfresh
+  * [#4594](https://github.com/metasfresh/metasfresh/issues/4594) WebUI: Outbound EMail Server (SMTP)
+    * New Window for the Outbound eMail Server Configuration in WebUI.
+  * [#4595](https://github.com/metasfresh/metasfresh/issues/4595) WebUI: Window EMail Server Routing
+    * New Window for the eMail Server Routing Configration in WebUI.
 
 ## Fixes
 
@@ -36,9 +41,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1035](https://github.com/metasfresh/metasfresh-webui-api/issues/1035) Implement CORS support
-    * New feature, now supporting cross origin ressource sharing.
+    * New feature, now supporting cross origin resource sharing.
   * [#1037](https://github.com/metasfresh/metasfresh-webui-api/issues/1037) Advanced tooltip support
-    * New Functionality now suppoting advanced tooltips in webui.
+    * New Functionality now supporting advanced tooltips in webui.
 
 * metasfresh-webui-frontend
   * [#1908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1908) Show multiple lines of a multi line text field in grid tab
@@ -53,8 +58,10 @@ Here come the actual release notes:
     * Fixes a Bug in Product Prices when recording Scale Prices.
   * [#4552](https://github.com/metasfresh/metasfresh/issues/4552) AD_User is wrong in shipment schedule when using isDropShip
     * Fixes the Shipment Contact User when using Drop Shipment in Sales Order.
-  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) msv3 related fixes
+  * [#4560](https://github.com/metasfresh/metasfresh/issues/4560) MSV3 related fixes
     * Fixes different Pharma MSV3 related issues.
+  * [#4572](https://github.com/metasfresh/metasfresh/issues/4572) Texts missing in cloned sales quotation
+    * Bugfix for Document Line descriptions when closing Sales Orders/ Quotations.
 
 * metasfresh-webui-api
   * [#1040](https://github.com/metasfresh/metasfresh-webui-api/issues/1040) Some views are failing because #AD_User_ID was not found in context
