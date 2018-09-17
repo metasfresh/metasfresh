@@ -116,8 +116,8 @@ class PasswordRecovery extends Component {
               .then(response => onResetOk(response))
               .catch(err => {
                 this.setState({
-                  err: err.response
-                    ? err.response.data.message
+                  err: err.data
+                    ? err.data.message
                     : counterpart.translate('login.error.fallback'),
                   pending: false,
                 });
