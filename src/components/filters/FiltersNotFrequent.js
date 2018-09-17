@@ -2,6 +2,7 @@ import counterpart from 'counterpart';
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
+import classnames from 'classnames';
 import { connect } from 'react-redux';
 
 import { getItemsByProperty } from '../../actions/WindowActions';
@@ -54,6 +55,8 @@ class FiltersNotFrequent extends Component {
       clearFilters,
       active,
       modalVisible,
+      activeFiltersCaptions,
+      resetInitialValues,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -61,21 +64,29 @@ class FiltersNotFrequent extends Component {
     const activeFilters = data.filter(filter => filter.isActive);
     const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
-    let caption = activeFilter ? activeFilter.caption : 'Filter';
-    if (activeFilter.captionValue && activeFilter.captionValue.length) {
-      caption = activeFilter.captionValue;
+    const captions =
+      (activeFilter && activeFiltersCaptions[activeFilter.filterId]) || [];
+    let panelCaption = activeFilter.isActive ? activeFilter.caption : '';
+    let buttonCaption = activeFilter.isActive ? activeFilter.caption : 'Filter';
+
+    if (captions.length) {
+      buttonCaption = captions[0];
+      panelCaption = captions[1];
     }
 
     return (
       <div className="filter-wrapper">
         <button
           onClick={() => this.toggleDropdown(true)}
-          className={
-            'btn btn-filter btn-meta-outline-secondary ' +
-            'btn-distance btn-sm' +
-            (isOpenDropdown ? ' btn-select' : '') +
-            (activeFilters.length > 0 ? ' btn-active' : '')
-          }
+          className={classnames(
+            'btn btn-filter btn-meta-outline-secondary',
+            'btn-distance btn-sm',
+            {
+              'btn-select': isOpenDropdown,
+              'btn-active': captions.length,
+            }
+          )}
+          title={buttonCaption}
           tabIndex={modalVisible ? -1 : 0}
         >
           <i className="meta-icon-preview" />
@@ -88,7 +99,9 @@ class FiltersNotFrequent extends Component {
                 {activeFilter.captionValue}
               </Fragment>
             ) : (
-              `${counterpart.translate('window.filters.caption2')}: ${caption}`
+              `${counterpart.translate(
+                'window.filters.caption2'
+              )}: ${buttonCaption}`
             )
           ) : (
             'Filter'
@@ -110,19 +123,23 @@ class FiltersNotFrequent extends Component {
               </ul>
             ) : (
               <FiltersItem
+                {...{
+                  panelCaption,
+                  windowType,
+                  active,
+                  viewId,
+                  resetInitialValues,
+                  applyFilters,
+                  clearFilters,
+                }}
                 captionValue={activeFilter.captionValue}
-                windowType={windowType}
                 data={activeFilter.isActive ? activeFilter : openFilter}
                 closeFilterMenu={() => this.toggleDropdown(false)}
                 returnBackToDropdown={() => this.toggleFilter(null)}
-                clearFilters={clearFilters}
-                applyFilters={applyFilters}
                 notValidFields={notValidFields}
                 isActive={activeFilter.isActive}
-                active={active}
                 onShow={() => handleShow(true)}
                 onHide={() => handleShow(false)}
-                viewId={viewId}
                 outsideClick={this.outsideClick}
                 openedFilter={true}
                 filtersWrapper={this.props.filtersWrapper}
@@ -137,12 +154,14 @@ class FiltersNotFrequent extends Component {
 
 FiltersNotFrequent.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
+  resetInitialValues: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
+  activeFiltersCaptions: PropTypes.object,
 };
 
-const mapStateToProps = state => {
-  const { allowOutsideClick, modal } = state.windowHandler;
+const mapStateToProps = ({ windowHandler }) => {
+  const { allowOutsideClick, modal } = windowHandler;
 
   return {
     allowOutsideClick,
