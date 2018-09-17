@@ -9,16 +9,15 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.api.Packageable;
+import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
-import de.metas.purchasecandidate.SalesOrderLine;
-import de.metas.purchasecandidate.SalesOrderLineRepository;
+import de.metas.order.OrderLineRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import lombok.NonNull;
@@ -48,41 +47,47 @@ import lombok.NonNull;
 @Service
 public class HUReservationDocumentFilterService
 {
-	private final SalesOrderLineRepository salesOrderLineRepository;
+	private final OrderLineRepository orderLineRepository;
 
-	public HUReservationDocumentFilterService(@NonNull final SalesOrderLineRepository salesOrderLineRepository)
+	public HUReservationDocumentFilterService(@NonNull final OrderLineRepository orderLineRepository)
 	{
-		this.salesOrderLineRepository = salesOrderLineRepository;
+		this.orderLineRepository = orderLineRepository;
 	}
 
 	public DocumentFilter createOrderLineDocumentFilter(@NonNull final OrderLineId orderLineId)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final OrderLine salesOrderLine = orderLineRepository.getById(orderLineId);
+		return createOrderLineDocumentFilter(salesOrderLine);
+	}
+
+	private DocumentFilter createOrderLineDocumentFilter(@NonNull final OrderLine salesOrderLine)
+	{
+		final IHUQueryBuilder huQuery = createHUQuery(salesOrderLine);
+		return HUIdsFilterHelper.createFilter(huQuery);
+	}
+
+	private IHUQueryBuilder createHUQuery(final OrderLine salesOrderLine)
+	{
+		final IWarehouseDAO warehouseRepo = Services.get(IWarehouseDAO.class);
 		final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		final SalesOrderLine salesOrderLine = salesOrderLineRepository.getById(orderLineId);
-
-		final I_M_Warehouse //
-		orderLineWarehouse = warehouseAdvisor.evaluateWarehouse(salesOrderLine.getId().getOrderLineId());
-		Check.assumeNotNull(orderLineWarehouse,
-				"For the current sales order line, there needs to be a warehouse; salesOrderLine={}", salesOrderLine);
-
-		final Set<WarehouseId> //
-		warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(WarehouseId.ofRepoId(orderLineWarehouse.getM_Warehouse_ID()));
-
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
+		final OrderLineId salesOrderLineId = salesOrderLine.getId();
+		final WarehouseId orderLineWarehouseId = warehouseAdvisor.evaluateWarehouse(salesOrderLineId);
+		Check.assumeNotNull(orderLineWarehouseId, "For the current sales order line, there needs to be a warehouse; salesOrderLine={}", salesOrderLine);
+
+		final Set<WarehouseId> warehouseIds = warehouseRepo.getWarehouseIdsOfSamePickingGroup(orderLineWarehouseId);
+
 		final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(salesOrderLine.getAsiId());
 
-		final IHUQueryBuilder huQuery = handlingUnitsDAO
+		return handlingUnitsRepo
 				.createHUQueryBuilder()
 				.addOnlyWithProductId(salesOrderLine.getProductId())
 				.addOnlyInWarehouseIds(warehouseIds)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.setExcludeReservedToOtherThan(salesOrderLine.getId().getOrderLineId())
+				.setExcludeReservedToOtherThan(salesOrderLineId)
 				.addOnlyWithAttributes(attributeSet);
-
-		return HUIdsFilterHelper.createFilter(huQuery);
 	}
 
 	public DocumentFilter createDocumentFilterIgnoreAttributes(@NonNull final Packageable packageable)
