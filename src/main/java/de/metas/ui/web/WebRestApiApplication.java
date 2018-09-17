@@ -1,8 +1,13 @@
 package de.metas.ui.web;
 
+import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -83,17 +88,32 @@ public class WebRestApiApplication
 			Ini.setRunMode(RunMode.WEBUI);
 			Adempiere.instance.startup(RunMode.WEBUI);
 
+			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
+			activeProfiles.add(Profiles.PROFILE_Webui);
+
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
 			new SpringApplicationBuilder(WebRestApiApplication.class)
 					.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 					.web(true)
-					.profiles(Profiles.PROFILE_Webui)
+					.profiles(activeProfiles.toArray(new String[0]))
 					.run(args);
 		}
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
+	}
+
+	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
+	{
+		final ArrayList<String> activeProfiles = Services
+				.get(ISysConfigBL.class)
+				.getValuesForPrefix("de.metas.ui.web.spring.profiles.active", 0, 0)
+				.entrySet()
+				.stream()
+				.map(Entry::getValue)
+				.collect(Collectors.toCollection(ArrayList::new));
+		return activeProfiles;
 	}
 
 	@Bean(Adempiere.BEAN_NAME)
