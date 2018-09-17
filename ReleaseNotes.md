@@ -13,13 +13,40 @@ Here come the actual release notes:
 # metasfresh 5.75
 ## Features
 * metasfresh
+  * [#4507](https://github.com/metasfresh/metasfresh/issues/4507) Picked and Non-Picked Quantities Shipment generation
+  * [#4549](https://github.com/metasfresh/metasfresh/issues/4549) Sales Order Candidates REST API improvements
+  * [#4556](https://github.com/metasfresh/metasfresh/issues/4556) Show Product note as tooltip in order line
+  * [#4557](https://github.com/metasfresh/metasfresh/issues/4557) Improve BPartner Memo-Import
+  * [#4558](https://github.com/metasfresh/metasfresh/issues/4558) Show BPartner memo as tooltip in order
+  * [#4566](https://github.com/metasfresh/metasfresh/issues/4566) save AdempiereProcessor lastRun/nextRun timestamp out-of-trx
+  * [#4568](https://github.com/metasfresh/metasfresh/issues/4568) Add note field to invoice candidates
+  * [#4575](https://github.com/metasfresh/metasfresh/issues/4575) Allow custom, POReference-based document number
+  * [#4576](https://github.com/metasfresh/metasfresh/issues/4576) Introduce Warehouse Type
+  * [#4587](https://github.com/metasfresh/metasfresh/issues/4587) Allow custom PDF-creating code to be called via print-format
+  * [#4592](https://github.com/metasfresh/metasfresh/issues/4592) Number Format Exception
+  * [#4593](https://github.com/metasfresh/metasfresh/issues/4593) MailWorkpackageProcessor shall mail the AD_Archive's own PDF
   * [#4594](https://github.com/metasfresh/metasfresh/issues/4594) WebUI: Outbound EMail Server (SMTP)
     * New Window for the Outbound eMail Server Configuration in WebUI.
   * [#4595](https://github.com/metasfresh/metasfresh/issues/4595) WebUI: Window EMail Server Routing
     * New Window for the eMail Server Routing Configration in WebUI.
 
+* metasfresh-webui-api
+  * [#1038](https://github.com/metasfresh/metasfresh-webui-api/issues/1038) Use user language for messages and errors in Forgot Password feature
+
 ## Fixes
 
+* metasfresh
+  * [#4563](https://github.com/metasfresh/metasfresh/issues/4563) sometimes missing purchase candidates aren't created
+  * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) msv3 - local purchase order is not created if remote order confirmation lacks deliveryDate
+  * [#4591](https://github.com/metasfresh/metasfresh/issues/4591) Printing problem on multi-org-system
+
+* metasfresh-webui-api
+  * [#1046](https://github.com/metasfresh/metasfresh-webui-api/issues/1046) Sometimes there are no available DocActions for Sales Orders
+  * [#1047](https://github.com/metasfresh/metasfresh-webui-api/issues/1047) Allow purchase disposition from sales order only for drafted sales orders
+
+* metasfresh-webui-frontend
+  * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
+  
 # metasfresh 5.74
 ## Features
 
