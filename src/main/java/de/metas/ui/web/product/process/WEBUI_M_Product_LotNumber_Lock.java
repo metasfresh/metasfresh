@@ -19,6 +19,7 @@ import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.locking.HULotNumberLockService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -39,12 +40,12 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +57,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * for HUs containing products with LotNo attributes that fit the pairs in the
  * selected I_M_Product_LotNumber_Lock entries. If such HUs are found, they will
  * all be put in a DD_Order and sent to the Quarantine warehouse.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -66,6 +67,9 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private LotNumberLockRepository lotNoLockRepo;
+
+	@Autowired
+	private HULotNumberLockService huLotNoLockService;
 
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
@@ -142,6 +146,8 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 			{
 				continue;
 			}
+
+			huLotNoLockService.markHUAsLocked(hu);
 
 			final I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
 			final int bpartnerId = firstReceipt.getC_BPartner_ID();
