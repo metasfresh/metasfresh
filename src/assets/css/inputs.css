@@ -793,6 +793,11 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     line-height: 1.2;
 }
 
+.lookup-tooltip {
+    flex: 0.05;
+    justify-content: flex-end;
+}
+
 /* Attributes */
 
 .attributes {
