@@ -119,12 +119,20 @@ context('Reusable "login" custom command', function() {
 });
 
 describe('Enter value into string field', function() {
-  Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
+Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
     cy.get(`.form-field-${fieldName}`)
       .find('input')
       .type(stringValue);
   });
 });
+
+describe('Enter value into text field', function() {
+  Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
+      cy.get(`.form-field-${fieldName}`)
+        .find('textarea')
+        .type(stringValue);
+    });
+  });
 
 describe('Enter value into lookup list field', function() {
   Cypress.Commands.add(
@@ -188,5 +196,11 @@ describe('Execute a doc action', function() {
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
     cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
+  })
   });
-});
+
+  describe('Open the advanced edit overlay via ALT+E shortcut', function() {
+    Cypress.Commands.add('openAdvancedEdit', () => {
+      cy.get('body').type('{alt}E')
+    })
+  });
