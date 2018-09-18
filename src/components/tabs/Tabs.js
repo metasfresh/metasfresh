@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
@@ -78,10 +79,20 @@ class Tabs extends Component {
       });
 
       if (selected == item.key) {
-        const { tabid, queryOnActivate, docId, orderBy } = item.props;
+        const {
+          tabid,
+          queryOnActivate,
+          docId,
+          orderBy,
+          internalName,
+        } = item.props;
 
         return (
-          <div key={'pane' + item.key} className="tab-pane active">
+          <div
+            key={'pane' + item.key}
+            className="tab-pane active"
+            id={internalName}
+          >
             <Tab
               {...{
                 queryOnActivate,
@@ -106,9 +117,9 @@ class Tabs extends Component {
 
     return (
       <div
-        className={
-          'mb-1 ' + (fullScreen ? 'tabs-fullscreen container-fluid ' : '')
-        }
+        className={classnames('mb-1', {
+          'tabs-fullscreen container-fluid': fullScreen,
+        })}
       >
         <ul className="nav nav-tabs mt-1">{this.renderPills(children)}</ul>
         <div className="tab-content" ref={c => (this.tabContent = c)}>

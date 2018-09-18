@@ -60,6 +60,7 @@ class Window extends PureComponent {
             tabid,
             caption,
             elements,
+            internalName,
             emptyResultText,
             emptyResultHint,
             queryOnActivate,
@@ -68,20 +69,23 @@ class Window extends PureComponent {
           } = elem;
           return (
             <Table
+              {...{
+                caption,
+                rowData,
+                tabid,
+                type,
+                sort,
+                newRow,
+                internalName,
+              }}
               entity="window"
-              caption={caption}
               keyProperty="rowId"
               key={tabid}
-              rowData={rowData}
               cols={elements}
-              tabid={tabid}
-              type={type}
-              sort={sort}
               orderBy={defaultOrderBys}
               docId={dataId}
               emptyText={emptyResultText}
               emptyHint={emptyResultHint}
-              newRow={newRow}
               tabIndex={this.tabIndex.tabs}
               queryOnActivate={queryOnActivate}
               supportQuickInput={supportQuickInput}
