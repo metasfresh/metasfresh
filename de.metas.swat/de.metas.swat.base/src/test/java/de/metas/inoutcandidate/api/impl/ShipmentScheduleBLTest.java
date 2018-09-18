@@ -60,8 +60,8 @@ public class ShipmentScheduleBLTest
 
 		final DeliveryGroupCandidate result = new ShipmentScheduleBL().createGroup(scheduleSourceDoc, sched);
 		assertThat(result.getGroupId()).isEqualTo(10);
-		assertThat(result.getShipperId()).isEqualTo(20);
-		assertThat(result.getWarehouseId()).isEqualTo(35);
+		assertThat(result.getShipperId().getRepoId()).isEqualTo(20);
+		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(35);
 		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}
 
