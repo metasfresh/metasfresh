@@ -18,15 +18,17 @@ spec:
         de.metas.deployment.type: metasfresh-postgresql
         de.metas.deployment.user: "demouser"
         de.metas.deployment.stage: "demo"
+        de.metas.deployment.name: "metasfresh-postgresql-demouser-demo"
     spec:
       containers:
 #
 # metasfresh-db
       - name: db
-        image: dockerhub.metasfresh.com/postgres:10.3
+        image: dockerhub.metasfresh.com/postgres:10.5
         imagePullPolicy: Always
         ports:
           - containerPort: 5432
+        args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
         resources: {}
         volumeMounts:
         - mountPath: /etc/localtime
@@ -37,6 +39,9 @@ spec:
           readOnly: true
         - mountPath: /var/lib/postgresql/data
           name: postgresql-data
+        - mountPath: /etc/postgresql
+          name: postgresql-config
+
       initContainers:
         - name: init-postgres
           image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-10-3:master_LATEST
@@ -67,3 +72,9 @@ spec:
           path: /etc/timezone
       - name: postgresql-data
         emptyDir: {}
+      - name: postgresql-config
+        configMap:
+          # I created this configmap via
+          # kubectl create configmap metasfresh-postgresql-config --from-file=postgresql.conf
+          name: metasfresh-postgresql-config
+
