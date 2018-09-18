@@ -7,7 +7,6 @@ describe('Product translation Test; #1025-api - Error opening translation window
         cy.visit('window/140/2005577');
 
         cy.openAdvancedEdit();
-//        cy.get('.panel-modal-content').scrollTo('bottom')  
         cy.writeIntoTextField('DocumentNote', 'blah-blah-blah');
     });
 });
