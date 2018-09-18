@@ -2,7 +2,6 @@ package de.metas.ui.web.pickingV2.productsToPick;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -25,12 +24,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,10 +40,10 @@ import lombok.NonNull;
 public class ProductsToPickViewFactory implements IViewFactory
 {
 	@Autowired
-	private HUReservationDocumentFilterService huReservationService;
+	private ProductsToPickRowsRepository rowsRepository;
 
 	@Override
-	public ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, ViewProfileId profileId)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		return ViewLayout.builder()
 				.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
@@ -63,7 +62,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	{
 		final ViewId viewId = ViewId.random(PickingConstantsV2.WINDOWID_ProductsToPickView);
 
-		final ProductsToPickRowsData rowsData = createProductsToPickRowsData(packageableRow);
+		final ProductsToPickRowsData rowsData = rowsRepository.createProductsToPickRowsData(packageableRow);
 
 		return ProductsToPickView.builder()
 				.viewId(viewId)
@@ -71,13 +70,4 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.build();
 	}
 
-	private ProductsToPickRowsData createProductsToPickRowsData(PackageableRow packageableRow)
-	{
-		huReservationService.prepareHUQuery()
-		// .warehouseId(ALL)
-		// .productId(packageableRow.getProductId())
-		// TODO Auto-generated method stub
-		;
-		return null;
-	}
 }

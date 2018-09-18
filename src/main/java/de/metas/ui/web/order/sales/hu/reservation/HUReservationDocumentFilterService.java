@@ -98,25 +98,21 @@ public class HUReservationDocumentFilterService
 
 	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "ReservationHUQueryBuilder")
 	private IHUQueryBuilder createHUQuery(
-			@Nullable final WarehouseId warehouseId,
+			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
 			@Nullable final OrderLineId reservedToSalesOrderLineId)
 	{
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+
+		final Set<WarehouseId> pickingWarehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
 		final IHUQueryBuilder huQuery = handlingUnitsRepo
 				.createHUQueryBuilder()
+				.addOnlyInWarehouseIds(pickingWarehouseIds)
 				.addOnlyWithProductId(productId)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
-
-		// Warehouse
-		if (warehouseId != null)
-		{
-			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-			final Set<WarehouseId> pickingWarehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(warehouseId);
-			huQuery.addOnlyInWarehouseIds(pickingWarehouseIds);
-		}
 
 		// ASI
 		if (asiId != null)

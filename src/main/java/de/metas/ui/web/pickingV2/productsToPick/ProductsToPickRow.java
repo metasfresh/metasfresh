@@ -1,11 +1,11 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -55,13 +55,13 @@ public class ProductsToPickRow implements IViewRow
 	private final LocalDate expiringDateAttr;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", seqNo = 50)
-	private final LocalDate repackNumberAttr;
+	private final String repackNumberAttr;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60)
 	private final Boolean bruchAttr;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
-	private final BigDecimal qty;
+	private final Quantity qty;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Processed", seqNo = 80)
 	private final boolean processed;
@@ -77,9 +77,9 @@ public class ProductsToPickRow implements IViewRow
 			@NonNull final LookupValue locator,
 			final String lotNumberAttr,
 			final LocalDate expiringDateAttr,
-			final LocalDate repackNumberAttr,
+			final String repackNumberAttr,
 			final Boolean bruchAttr,
-			@NonNull final BigDecimal qty,
+			@NonNull final Quantity qty,
 			final boolean processed)
 	{
 		this.rowId = rowId;

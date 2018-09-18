@@ -29,6 +29,6 @@ public class PickingConstantsV2
 	public static final String WINDOWID_PackageableView_String = "540485"; // FIXME: HARDCODED
 	public static final WindowId WINDOWID_PackageableView = WindowId.fromJson(WINDOWID_PackageableView_String);
 
-	public static final String WINDOWID_ProductsToPickView_String = "picking.v2.productsToPick";
+	public static final String WINDOWID_ProductsToPickView_String = "picking_v2_productsToPick";
 	public static final WindowId WINDOWID_ProductsToPickView = WindowId.fromJson(WINDOWID_ProductsToPickView_String);
 }

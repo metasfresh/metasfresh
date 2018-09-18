@@ -19,7 +19,6 @@ import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
-import de.metas.product.ProductId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -93,8 +92,9 @@ public final class PackageableRow implements IViewRow
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final PackageableRowId rowId;
 	@Getter
-	private final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 	private final ImmutableList<Packageable> packageables;
+	@Getter
+	private final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 
 	@Builder
 	private PackageableRow(
@@ -185,11 +185,5 @@ public final class PackageableRow implements IViewRow
 			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
-	}
-
-	public ProductId getProductId()
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
