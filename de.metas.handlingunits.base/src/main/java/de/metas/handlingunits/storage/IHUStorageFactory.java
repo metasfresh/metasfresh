@@ -31,6 +31,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -58,7 +59,7 @@ public interface IHUStorageFactory
 	 * @param productId
 	 * @return product storages; never return {@code null}. Only return items for existing storages. E.g. if none of the given {@code hus} has a storage, return an empty list.
 	 */
-	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, int productId);
+	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, ProductId productId);
 
 	Stream<IHUProductStorage> streamHUProductStorages(List<I_M_HU> hus);
 

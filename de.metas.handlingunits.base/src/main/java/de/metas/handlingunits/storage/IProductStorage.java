@@ -13,15 +13,14 @@ package de.metas.handlingunits.storage;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -30,6 +29,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 public interface IProductStorage
@@ -75,6 +75,11 @@ public interface IProductStorage
 	{
 		final I_M_Product product = getM_Product();
 		return product == null ? -1 : product.getM_Product_ID();
+	}
+
+	default ProductId getProductId()
+	{
+		return ProductId.ofRepoId(getM_Product_ID());
 	}
 
 	I_C_UOM getC_UOM();

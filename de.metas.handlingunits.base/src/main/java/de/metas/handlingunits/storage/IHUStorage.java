@@ -8,6 +8,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -22,7 +23,7 @@ public interface IHUStorage extends IGenericHUStorage
 	I_M_HU getM_HU();
 
 	List<IHUProductStorage> getProductStorages();
-	
+
 	default Stream<IHUProductStorage> streamProductStorages()
 	{
 		return getProductStorages().stream();
@@ -44,22 +45,26 @@ public interface IHUStorage extends IGenericHUStorage
 	 * @return product storage; if no storage was found, null is returned
 	 */
 	IHUProductStorage getProductStorageOrNull(int productId);
-	
+
 	default IHUProductStorage getProductStorageOrNull(@NonNull I_M_Product product)
 	{
 		return getProductStorageOrNull(product.getM_Product_ID());
+	}
+
+	default IHUProductStorage getProductStorageOrNull(@NonNull ProductId productId)
+	{
+		return getProductStorageOrNull(productId.getRepoId());
 	}
 
 	/**
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}, in the given uom
 	 */
 	Quantity getQtyForProductStorages(I_C_UOM uom);
-	
+
 	/**
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}, in the storage uom
 	 */
 	Quantity getQtyForProductStorages();
-
 
 	/**
 	 * Propagate ALL storage products & quantities - UOM-based - to parent (incremental)
@@ -85,7 +90,8 @@ public interface IHUStorage extends IGenericHUStorage
 	/**
 	 * Gets the {@link I_M_Product} stored in this HU Storage.
 	 * 
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>single product stored in this storage
 	 *         <li><code>null</code> if the storage is empty or there are more then one products stored
 	 *         </ul>

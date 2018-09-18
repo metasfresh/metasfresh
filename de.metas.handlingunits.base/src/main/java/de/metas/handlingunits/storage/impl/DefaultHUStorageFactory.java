@@ -25,9 +25,6 @@ package de.metas.handlingunits.storage.impl;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -37,8 +34,11 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 public class DefaultHUStorageFactory implements IHUStorageFactory
 {
 	private final IHUStorageDAO storageDAO;
@@ -48,11 +48,8 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 		this(new HUStorageDAO());
 	}
 
-	public DefaultHUStorageFactory(final IHUStorageDAO storageDAO)
+	public DefaultHUStorageFactory(@NonNull final IHUStorageDAO storageDAO)
 	{
-		super();
-
-		Check.assumeNotNull(storageDAO, "storageDAO not null");
 		this.storageDAO = storageDAO;
 	}
 
@@ -76,13 +73,7 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public List<IHUProductStorage> getHUProductStorages(@NonNull final List<I_M_HU> hus, final int productId)
+	public List<IHUProductStorage> getHUProductStorages(@NonNull final List<I_M_HU> hus, final ProductId productId)
 	{
 		return hus.stream()
 				.map(this::getStorage)
