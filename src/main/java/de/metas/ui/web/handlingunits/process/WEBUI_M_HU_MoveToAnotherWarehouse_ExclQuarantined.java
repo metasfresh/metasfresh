@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import org.compiere.Adempiere;
 
-import de.metas.handlingunits.locking.HULotNumberQuarantineService;
+import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 
