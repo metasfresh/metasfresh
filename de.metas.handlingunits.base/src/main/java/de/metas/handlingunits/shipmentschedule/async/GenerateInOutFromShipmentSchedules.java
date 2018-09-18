@@ -329,17 +329,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				continue;
 			}
 
-			// Considering only those lines which have an LU
-			// NOTE: this shall not happen because we already created the LUs
-			// Task FRESH-251 : In case the qty Picked are used, only add the LU if it was required by the qty picked
-			if (qtyPickedRecordHU.getM_LU_HU_ID() <= 0)
-			{
-				final HUException ex = new HUException("Record shall have LU set: " + qtyPickedRecord);
-				logger.warn(ex.getLocalizedMessage() + " [Skipped]", ex);
-				Loggables.get().addLog("WARN: {} [Skipped]", ex.getLocalizedMessage());
-				continue;
-			}
-
 			//
 			// Create ShipmentSchedule+HU candidate and add it to our list
 			final ShipmentScheduleWithHU candidate = //
@@ -461,7 +450,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		//
 		// Case: this shipment schedule line was at least partial picked
 		// => take all TUs which does not have an LU and add them to LUs
-		else // if (onlyUseQtyToDeliver)
+		else
 		{
 			createLUsForTUs(schedule, qtyPickedRecords);
 		}

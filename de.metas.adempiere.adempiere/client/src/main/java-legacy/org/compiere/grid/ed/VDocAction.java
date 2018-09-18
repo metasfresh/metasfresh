@@ -237,18 +237,12 @@ public class VDocAction extends CDialog
 		 */
 		final Set<String> docActions;
 		{
-			Integer docTypeId = (Integer)m_mTab.getValue("C_DocType_ID");
-			if (docTypeId == null || docTypeId.intValue() <= 0)
-			{
-				docTypeId = (Integer)m_mTab.getValue("C_DocTypeTarget_ID");
-			}
-
 			final Properties ctx = Env.getCtx();
 			final DocActionOptionsContext optionsCtx = DocActionOptionsContext.builder()
 					.userRolePermissionsKey(UserRolePermissionsKey.of(ctx))
 					.tableName(m_mTab.getTableName())
 					.docStatus(DocStatus)
-					.docTypeId(DocTypeId.ofRepoIdOrNull(docTypeId))
+					.docTypeId(getDocTypeId())
 					.processing(Processing)
 					.orderType(OrderType)
 					.soTrx(SOTrx.ofBoolean(IsSOTrx))
@@ -289,6 +283,17 @@ public class VDocAction extends CDialog
 			actionCombo.setSelectedItem(defaultDocActionItem);
 		}
 	}	// dynInit
+
+	private DocTypeId getDocTypeId()
+	{
+		Integer docTypeId = (Integer)m_mTab.getValue("C_DocType_ID");
+		if (docTypeId == null || docTypeId.intValue() <= 0)
+		{
+			docTypeId = (Integer)m_mTab.getValue("C_DocTypeTarget_ID");
+		}
+
+		return docTypeId != null ? DocTypeId.ofRepoIdOrNull(docTypeId) : null;
+	}
 
 	/**
 	 * Check Status Change
@@ -332,15 +337,13 @@ public class VDocAction extends CDialog
 	 */
 	private Map<String, IDocActionItem> getDocActionItemsIndexedByValue()
 	{
-		if(docActionItemsByValue == null)
+		if (docActionItemsByValue == null)
 		{
 			docActionItemsByValue = Services.get(IDocumentBL.class).retrieveDocActionItemsIndexedByValue();
 		}
 
 		return docActionItemsByValue;
 	}
-
-
 
 	/**
 	 * ActionListener
@@ -385,7 +388,7 @@ public class VDocAction extends CDialog
 	private boolean save()
 	{
 		final IDocActionItem selectedDocAction = actionCombo.getSelectedItem();
-		if(selectedDocAction == null)
+		if (selectedDocAction == null)
 		{
 			return false;
 		}
