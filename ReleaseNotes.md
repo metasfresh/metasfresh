@@ -12,6 +12,9 @@ Here come the actual release notes:
 
 # metasfresh 5.76
 ## Features
+* metasfresh
+  * [#4605](https://github.com/metasfresh/metasfresh/issues/4605) Webui: Org window: hide the AD_Org_ID field
+    * Hiding the Organisation Field in Organisation Window.
 
 ## Fixes
 
