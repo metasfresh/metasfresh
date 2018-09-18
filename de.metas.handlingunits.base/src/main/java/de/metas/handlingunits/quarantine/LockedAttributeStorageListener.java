@@ -1,4 +1,4 @@
-package de.metas.handlingunits.locking;
+package de.metas.handlingunits.quarantine;
 
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;

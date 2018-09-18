@@ -1,4 +1,4 @@
-package de.metas.handlingunits.locking;
+package de.metas.handlingunits.quarantine;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
