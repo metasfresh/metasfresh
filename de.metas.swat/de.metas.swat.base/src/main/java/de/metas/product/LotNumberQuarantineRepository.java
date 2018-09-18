@@ -7,7 +7,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
-import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import de.metas.product.model.I_M_Product_LotNumber_Quarantine;
 
 /*
  * #%L
@@ -35,36 +35,36 @@ import de.metas.product.model.I_M_Product_LotNumber_Lock;
 public class LotNumberQuarantineRepository
 {
 
-	public LotNumberLock getById(final int lotNoLockId)
+	public LotNumberQuarantine getById(final int lotNoLockId)
 	{
 		Check.assumeGreaterThanZero(lotNoLockId, "lotNoLockId");
-		final I_M_Product_LotNumber_Lock record = load(lotNoLockId, I_M_Product_LotNumber_Lock.class);
-		return toLotNumberLock(record);
+		final I_M_Product_LotNumber_Quarantine record = load(lotNoLockId, I_M_Product_LotNumber_Quarantine.class);
+		return toLotNumberQuarantine(record);
 	}
 
-	private static LotNumberLock toLotNumberLock(final I_M_Product_LotNumber_Lock record)
+	private static LotNumberQuarantine toLotNumberQuarantine(final I_M_Product_LotNumber_Quarantine record)
 	{
-		return LotNumberLock.builder()
-				.id(record.getM_Product_LotNumber_Lock_ID())
+		return LotNumberQuarantine.builder()
+				.id(record.getM_Product_LotNumber_Quarantine_ID())
 				.productId(record.getM_Product_ID())
 				.lotNo(record.getLot())
 				.description(record.getDescription())
 				.build();
 	}
 
-	public LotNumberLock getByProductIdAndLot(final int productId, final String lotNo)
+	public LotNumberQuarantine getByProductIdAndLot(final int productId, final String lotNo)
 	{
-		final I_M_Product_LotNumber_Lock record = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product_LotNumber_Lock.class)
+		final I_M_Product_LotNumber_Quarantine record = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_LotNumber_Quarantine.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addInArrayFilter(I_M_Product_LotNumber_Lock.COLUMN_M_Product_ID, productId, null)
-				.addEqualsFilter(I_M_Product_LotNumber_Lock.COLUMNNAME_Lot, lotNo)
-				.orderBy(I_M_Product_LotNumber_Lock.COLUMNNAME_M_Product_ID)
+				.addInArrayFilter(I_M_Product_LotNumber_Quarantine.COLUMN_M_Product_ID, productId, null)
+				.addEqualsFilter(I_M_Product_LotNumber_Quarantine.COLUMNNAME_Lot, lotNo)
+				.orderBy(I_M_Product_LotNumber_Quarantine.COLUMNNAME_M_Product_ID)
 				.create()
 				.first();
 
-		return record != null ? toLotNumberLock(record) : null;
+		return record != null ? toLotNumberQuarantine(record) : null;
 	}
 
 }

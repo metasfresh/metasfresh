@@ -18,7 +18,7 @@ import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.product.LotNumberLock;
+import de.metas.product.LotNumberQuarantine;
 import de.metas.product.LotNumberQuarantineRepository;
 import lombok.NonNull;
 
@@ -73,7 +73,7 @@ public class HULotNumberQuarantineService
 		{
 			final I_M_Product productRecord = productStorage.getM_Product();
 
-			final LotNumberLock lotNumberLock = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
+			final LotNumberQuarantine lotNumberLock = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
 
 			if (lotNumberLock != null)
 			{
@@ -86,24 +86,24 @@ public class HULotNumberQuarantineService
 	public boolean isQuarantineHU(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId lockedAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Locked);
+		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Quarantine);
 
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, lockedAttributeId);
+		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 
 		if (huAttribute == null)
 		{
 			return false;
 		}
 
-		return Constants.ATTR_Locked_Value_Locked.equals(huAttribute.getValue());
+		return Constants.ATTR_Quarantine_Value_Quarantine.equals(huAttribute.getValue());
 	}
 
-	public void markHUAsLocked(final I_M_HU huRecord)
+	public void markHUAsQuarantine(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId lockedAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Locked);
+		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Quarantine);
 
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, lockedAttributeId);
+		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 
 		if (huAttribute == null)
 		{
@@ -111,7 +111,7 @@ public class HULotNumberQuarantineService
 			return;
 		}
 
-		huAttribute.setValue(Constants.ATTR_Locked_Value_Locked);
+		huAttribute.setValue(Constants.ATTR_Quarantine_Value_Quarantine);
 
 		save(huAttribute);
 	}

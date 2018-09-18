@@ -64,7 +64,7 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 			return;
 		}
 
-		if (!storage.hasAttribute(Constants.ATTR_Locked))
+		if (!storage.hasAttribute(Constants.ATTR_Quarantine))
 		{
 			return;
 		}
@@ -79,11 +79,11 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 
 		if (lotNumberLockService.isQuarantineLotNumber(huAttributeStorage))
 		{
-			storage.setValue(Constants.ATTR_Locked, Constants.ATTR_Locked_Value_Locked);
+			storage.setValue(Constants.ATTR_Quarantine, Constants.ATTR_Quarantine_Value_Quarantine);
 		}
 		else
 		{
-			storage.setValue(Constants.ATTR_Locked, null);
+			storage.setValue(Constants.ATTR_Quarantine, null);
 		}
 	}
 

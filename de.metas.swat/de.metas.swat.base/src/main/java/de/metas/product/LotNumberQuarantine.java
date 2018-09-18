@@ -29,7 +29,7 @@ import lombok.Value;
  */
 
 @Value
-public class LotNumberLock
+public class LotNumberQuarantine
 {
 	int id;
 	int productId;
@@ -37,7 +37,7 @@ public class LotNumberLock
 	String description;
 
 	@Builder
-	public LotNumberLock(
+	public LotNumberQuarantine(
 			final int id,
 			final int productId,
 			@NonNull final String lotNo,
