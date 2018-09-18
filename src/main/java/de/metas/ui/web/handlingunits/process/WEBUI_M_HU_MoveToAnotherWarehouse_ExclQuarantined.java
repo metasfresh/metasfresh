@@ -28,8 +28,10 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
  * #L%
  */
 
-public class WEBUI_M_HU_MoveToAnotherWarehouse extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
+public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
 {
+	public static final String MSG_WEBUI_HUs_IN_Quarantine = "WEBUI_HUs_IN_Quarantine";
+
 	private final transient HULotNumberQuarantineService lotNumberLockService = Adempiere.getBean(HULotNumberQuarantineService.class);
 
 	@Override
@@ -41,7 +43,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends WEBUI_M_HU_MoveToAnotherW
 				.isPresent();
 		if (lockedHUs)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Some HUs are locked");
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_HUs_IN_Quarantine));
 		}
 
 		return super.checkPreconditionsApplicable();
