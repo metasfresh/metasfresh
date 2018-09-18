@@ -57,6 +57,11 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(qty, uom);
 	}
 
+	public static final Quantity of(final int qty, final I_C_UOM uom)
+	{
+		return of(BigDecimal.valueOf(qty), uom);
+	}
+
 	public static boolean isInfinite(final BigDecimal qty)
 	{
 		return QTY_INFINITE.compareTo(qty) == 0;
