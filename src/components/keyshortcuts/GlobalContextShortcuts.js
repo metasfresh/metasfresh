@@ -135,7 +135,13 @@ export default class GlobalContextShortcuts extends Component {
 
       const activeElement = document.activeElement;
 
-      if (activeElement && activeElement.nodeName === 'INPUT') {
+      if (
+        activeElement &&
+        ((activeElement.nodeName === 'INPUT' &&
+          activeElement.type === 'text') ||
+          (activeElement.nodeName === 'TEXTAREA' &&
+            activeElement.type === 'textarea'))
+      ) {
         this.setCaretPosition(activeElement, 0);
 
         return true;
@@ -148,8 +154,10 @@ export default class GlobalContextShortcuts extends Component {
 
       if (
         activeElement &&
-        activeElement.nodeName === 'INPUT' &&
-        activeElement.type === 'text'
+        ((activeElement.nodeName === 'INPUT' &&
+          activeElement.type === 'text') ||
+          (activeElement.nodeName === 'TEXTAREA' &&
+            activeElement.type === 'textarea'))
       ) {
         this.setCaretPosition(activeElement, activeElement.value.length);
 
