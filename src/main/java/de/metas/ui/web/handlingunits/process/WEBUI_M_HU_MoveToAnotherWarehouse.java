@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import org.compiere.Adempiere;
 
-import de.metas.handlingunits.locking.HULotNumberLockService;
+import de.metas.handlingunits.locking.HULotNumberQuarantineService;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 
@@ -30,13 +30,13 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 
 public class WEBUI_M_HU_MoveToAnotherWarehouse extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
 {
-	private final transient HULotNumberLockService lotNumberLockService = Adempiere.getBean(HULotNumberLockService.class);
+	private final transient HULotNumberQuarantineService lotNumberLockService = Adempiere.getBean(HULotNumberQuarantineService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		final boolean lockedHUs = streamSelectedHUs(Select.ONLY_TOPLEVEL)
-				.filter(huRecord -> lotNumberLockService.isLockedHU(huRecord))
+				.filter(huRecord -> lotNumberLockService.isQuarantineHU(huRecord))
 				.findAny()
 				.isPresent();
 		if (lockedHUs)

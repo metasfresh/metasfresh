@@ -19,14 +19,14 @@ import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
-import de.metas.handlingunits.locking.HULotNumberLockService;
+import de.metas.handlingunits.locking.HULotNumberQuarantineService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.LotNumberLock;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -66,10 +66,10 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		IProcessPrecondition
 {
 	@Autowired
-	private LotNumberLockRepository lotNoLockRepo;
+	private LotNumberQuarantineRepository lotNoLockRepo;
 
 	@Autowired
-	private HULotNumberLockService huLotNoLockService;
+	private HULotNumberQuarantineService huLotNoLockService;
 
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
