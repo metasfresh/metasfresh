@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -174,6 +175,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			else
 			{
 				warehouseIdToUse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line);
+				if (warehouseIdToUse == null)
+				{
+					throw new AdempiereException("No warehouse found for " + line);
+				}
 			}
 
 			receiptSchedule.setM_Warehouse_ID(warehouseIdToUse.getRepoId());
