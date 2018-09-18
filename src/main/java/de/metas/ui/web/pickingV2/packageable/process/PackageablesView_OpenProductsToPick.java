@@ -50,7 +50,7 @@ public class PackageablesView_OpenProductsToPick extends PackageablesViewBasedPr
 		final ProductsToPickView productsToPickView = productsToPickViewFactory.createView(row);
 
 		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
-				.target(ViewOpenTarget.IncludedView)
+				.target(ViewOpenTarget.ModalOverlay)
 				.viewId(productsToPickView.getViewId().toJson())
 				.build());
 

@@ -6,6 +6,7 @@ import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -41,6 +42,13 @@ public class ProductsToPickViewFactory implements IViewFactory
 {
 	@Autowired
 	private ProductsToPickRowsRepository rowsRepository;
+	private IViewsRepository viewsRepository;
+
+	@Override
+	public void setViewsRepository(final IViewsRepository viewsRepository)
+	{
+		this.viewsRepository = viewsRepository;
+	}
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
@@ -64,10 +72,14 @@ public class ProductsToPickViewFactory implements IViewFactory
 
 		final ProductsToPickRowsData rowsData = rowsRepository.createProductsToPickRowsData(packageableRow);
 
-		return ProductsToPickView.builder()
+		final ProductsToPickView view = ProductsToPickView.builder()
 				.viewId(viewId)
 				.rowsData(rowsData)
 				.build();
+
+		viewsRepository.getViewsStorageFor(viewId).put(view);
+
+		return view;
 	}
 
 }
