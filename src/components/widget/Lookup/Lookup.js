@@ -408,6 +408,10 @@ class Lookup extends Component {
             const widgetTooltipToggled = lookupWidget.tooltipOpen;
 
             if (item.type === 'Tooltip') {
+              if (!itemByProperty.value) {
+                return null;
+              }
+
               return (
                 <div
                   key={item.field}
