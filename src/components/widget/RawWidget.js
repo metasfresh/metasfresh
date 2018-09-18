@@ -598,7 +598,12 @@ class RawWidget extends Component {
               this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
-            <input {...widgetProperties} type="number" min="0" step="1" />
+            <input
+              {...widgetProperties}
+              type="number"
+              min="0"
+              step={subentity === 'quickInput' ? 0.1 : 1}
+            />
           </div>
         );
       case 'Number':
