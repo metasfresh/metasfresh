@@ -68,7 +68,7 @@ public class BPartnerId implements RepoIdAware
 
 	private BPartnerId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "bpartnerId");
 	}
 
 	@JsonValue
