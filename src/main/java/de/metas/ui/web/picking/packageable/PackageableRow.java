@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewsIndexStorage;
@@ -82,12 +82,12 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyOrdered, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
 	})
-	private final BigDecimal qtyOrdered;
+	private final Quantity qtyOrdered;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPicked, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
 	})
-	private final BigDecimal qtyPicked;
+	private final Quantity qtyPicked;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
@@ -129,8 +129,8 @@ public final class PackageableRow implements IViewRow
 			@NonNull final ViewId viewId,
 			final LookupValue order,
 			final LookupValue product,
-			final BigDecimal qtyOrdered,
-			final BigDecimal qtyPicked,
+			@NonNull final Quantity qtyOrdered,
+			final Quantity qtyPicked,
 			final LookupValue bpartner,
 			final LocalDateTime preparationDate)
 	{
@@ -141,7 +141,7 @@ public final class PackageableRow implements IViewRow
 		this.order = order;
 		this.product = product;
 		this.qtyOrdered = qtyOrdered;
-		this.qtyPicked = qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
+		this.qtyPicked = qtyPicked;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -231,19 +231,8 @@ public final class PackageableRow implements IViewRow
 		return product != null ? product.getIdAsInt() : -1;
 	}
 
-	public BigDecimal getQtyOrdered()
+	public Quantity getQtyOrderedWithoutPicked()
 	{
-		return qtyOrdered != null ? qtyOrdered : BigDecimal.ZERO;
-	}
-
-	public BigDecimal getQtyPicked()
-	{
-		return qtyPicked != null ? qtyPicked : BigDecimal.ZERO;
-	}
-
-	public BigDecimal getQtyOrderedWithoutPicked()
-	{
-		final BigDecimal qtyOrderedMinusPicked = getQtyOrdered().subtract(getQtyPicked());
-		return qtyOrderedMinusPicked.signum() > 0 ? qtyOrderedMinusPicked : BigDecimal.ZERO;
+		return qtyOrdered.subtract(qtyPicked).toZeroIfNegative();
 	}
 }

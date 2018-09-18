@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,6 +19,7 @@ import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -85,7 +85,7 @@ public class PackageableRowsRepository
 
 	private PackageableRow createPackageableRow(final ViewId viewId, final Packageable packageable)
 	{
-		final BigDecimal qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
+		final Quantity qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
 		final Optional<OrderLineId> orderLineId = Optional.ofNullable(packageable.getSalesOrderLineIdOrNull());
 
 		return PackageableRow.builder()
@@ -97,6 +97,7 @@ public class PackageableRowsRepository
 				.product(productLookup.get().findById(packageable.getProductId()))
 				.bpartner(bpartnerLookup.get().findById(packageable.getCustomerId()))
 				.preparationDate(packageable.getPreparationDate())
+				//
 				.qtyOrdered(packageable.getQtyOrdered())
 				.qtyPicked(qtyPicked)
 				//
