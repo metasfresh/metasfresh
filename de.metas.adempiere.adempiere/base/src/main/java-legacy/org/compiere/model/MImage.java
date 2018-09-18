@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +38,6 @@ import javax.swing.ImageIcon;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -56,14 +56,14 @@ public class MImage extends X_AD_Image
 	 *
 	 */
 	private static final long serialVersionUID = -7361463683427300715L;
-	
+
 	public static URL getURLOrNull(final int adImageId)
 	{
 		if(adImageId <= 0)
 		{
 			return null;
 		}
-		
+
 		final MImage adImage = get(Env.getCtx(), adImageId);
 		return adImage != null ? adImage.getURL() : null;
 	}
