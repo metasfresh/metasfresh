@@ -2,6 +2,7 @@ package de.metas.fresh.picking.form;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -35,7 +36,9 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +46,8 @@ import org.junit.Test;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
@@ -51,10 +56,13 @@ import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 
 public class FreshPackingMdTest
 {
 	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(30);
+	private I_C_UOM uom;
+
 	private final LocalDateTime date_2014_01_10 = LocalDateTime.of(2014, Month.JANUARY, 10, 0, 0);
 	private final LocalDateTime date_2014_01_11 = LocalDateTime.of(2014, Month.JANUARY, 11, 0, 0);
 	private final LocalDateTime date_2014_01_12 = LocalDateTime.of(2014, Month.JANUARY, 12, 0, 0);
@@ -71,6 +79,9 @@ public class FreshPackingMdTest
 
 		this.packagingDAO = new MockedPackagingDAO();
 		Services.registerService(IPackagingDAO.class, packagingDAO);
+
+		uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
 	}
 
 	@Test
@@ -146,8 +157,8 @@ public class FreshPackingMdTest
 				tableRowAgg.getQtyToDeliver(),
 				Matchers.comparesEqualTo(BigDecimal.valueOf(expectedQtyToDeliver)));
 
-		Assert.assertEquals("Invalid aggregated DeliveryDate", expectedDeliveryDate, tableRowAgg.getDeliveryDate());
-		Assert.assertEquals("Invalid aggregated PreparationDate", expectedPreparationDate, tableRowAgg.getPreparationDate());
+		Assert.assertEquals("Invalid aggregated DeliveryDate", expectedDeliveryDate, TimeUtil.asLocalDateTime(tableRowAgg.getDeliveryDate()));
+		Assert.assertEquals("Invalid aggregated PreparationDate", expectedPreparationDate, TimeUtil.asLocalDateTime(tableRowAgg.getPreparationDate()));
 	}
 
 	private FreshPackingMd createPackingModel()
@@ -165,15 +176,24 @@ public class FreshPackingMdTest
 		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentScheduleRecord);
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(10);
+
 		return Packageable.builder()
-				.qtyToDeliver(BigDecimal.valueOf(qtyToDeliver))
+				.qtyOrdered(Quantity.zero(uom))
+				.qtyToDeliver(Quantity.of(qtyToDeliver, uom))
+				.qtyPicked(Quantity.zero(uom))
+				.qtyPickedPlanned(Quantity.zero(uom))
+				//
+				.customerId(bpartnerId)
+				.customerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, 11))
+				//
 				.deliveryDate(deliveryDate)
 				.preparationDate(preparationDate)
 				.displayed(true)
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
 				.productId(ProductId.ofRepoId(20))
 				.warehouseId(WAREHOUSE_ID)
-				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(0))
+				.asiId(AttributeSetInstanceId.NONE)
 				.build();
 	}
 }

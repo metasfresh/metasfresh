@@ -615,7 +615,7 @@ public class PackingMd extends MvcMdGenForm
 	{
 		final BPartnerId bpartnerId = item.getCustomerId();
 		final WarehouseId warehouseDestId = null; // M_Warehouse_Dest is gone for a long time by now
-		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
+		final BigDecimal qtyToDeliver = item.getQtyToDeliver().getAsBigDecimal();
 
 		final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, warehouseDestId, qtyToDeliver);
 		if (tree != null && tree.getCreatedBy() != packingUserId && tree.getCreatedBy() != 0)

@@ -10,10 +10,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -29,17 +31,20 @@ import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 public class PackagingDAO implements IPackagingDAO
 {
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
 	@Override
 	public List<Packageable> retrievePackableLines(final PackageableQuery query)
 	{
 		return createQuery(query)
 				.stream(I_M_Packageable_V.class)
-				.map(record -> toPackageable(record))
+				.map(this::toPackageable)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -91,7 +96,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		return retrievePackageableRecordsByShipmentScheduleIds(shipmentScheduleIds)
 				.stream()
-				.map(record -> toPackageable(record))
+				.map(this::toPackageable)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -102,10 +107,10 @@ public class PackagingDAO implements IPackagingDAO
 				.createQueryBuilder(I_M_Packageable_V.class)
 				.create()
 				.stream(I_M_Packageable_V.class)
-				.map(record -> toPackageable(record));
+				.map(this::toPackageable);
 	}
 
-	private static Packageable toPackageable(@NonNull final I_M_Packageable_V record)
+	private Packageable toPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 
@@ -117,10 +122,11 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
 
-		packageable.qtyOrdered(record.getQtyOrdered());
-		packageable.qtyToDeliver(record.getQtyToDeliver());
-		packageable.qtyPicked(record.getQtyPicked());
-		packageable.qtyPickedPlanned(record.getQtyPickedPlanned());
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
+		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
+		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));
+		packageable.qtyPicked(Quantity.of(record.getQtyPicked(), uom));
+		packageable.qtyPickedPlanned(Quantity.of(record.getQtyPickedPlanned(), uom));
 
 		packageable.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()));
 		packageable.warehouseName(record.getWarehouseName());

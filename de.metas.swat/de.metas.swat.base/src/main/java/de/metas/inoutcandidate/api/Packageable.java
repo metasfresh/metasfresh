@@ -36,6 +36,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,15 +49,21 @@ public class Packageable
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
 
-	BigDecimal qtyOrdered;
-	BigDecimal qtyToDeliver;
-	BigDecimal qtyPicked;
-	BigDecimal qtyPickedPlanned;
+	@NonNull
+	Quantity qtyOrdered;
+	@NonNull
+	Quantity qtyToDeliver;
+	@NonNull
+	Quantity qtyPicked;
+	@NonNull
+	Quantity qtyPickedPlanned;
 
+	@NonNull
 	BPartnerId customerId;
 	String customerBPValue;
 	String customerName;
 
+	@NonNull
 	BPartnerLocationId customerLocationId;
 	String customerBPLocationName;
 	String customerAddress;
