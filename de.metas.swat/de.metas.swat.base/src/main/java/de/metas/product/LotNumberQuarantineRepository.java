@@ -35,10 +35,10 @@ import de.metas.product.model.I_M_Product_LotNumber_Quarantine;
 public class LotNumberQuarantineRepository
 {
 
-	public LotNumberQuarantine getById(final int lotNoLockId)
+	public LotNumberQuarantine getById(final int lotNoQuarantineId)
 	{
-		Check.assumeGreaterThanZero(lotNoLockId, "lotNoLockId");
-		final I_M_Product_LotNumber_Quarantine record = load(lotNoLockId, I_M_Product_LotNumber_Quarantine.class);
+		Check.assumeGreaterThanZero(lotNoQuarantineId, "lotNoQuarantineId");
+		final I_M_Product_LotNumber_Quarantine record = load(lotNoQuarantineId, I_M_Product_LotNumber_Quarantine.class);
 		return toLotNumberQuarantine(record);
 	}
 

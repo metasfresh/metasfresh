@@ -36,15 +36,15 @@ import lombok.NonNull;
  */
 
 @Component
-public class LockedAttributeStorageListener implements IAttributeStorageListener
+public class QuarantineAttributeStorageListener implements IAttributeStorageListener
 {
 
-	private final transient HULotNumberQuarantineService lotNumberLockService;
+	private final transient HULotNumberQuarantineService lotNumberQuarantineService;
 
-	public LockedAttributeStorageListener(@NonNull final HULotNumberQuarantineService lotNumberLockService)
+	public QuarantineAttributeStorageListener(@NonNull final HULotNumberQuarantineService lotNumberQuarantineService)
 	{
 
-		this.lotNumberLockService = lotNumberLockService;
+		this.lotNumberQuarantineService = lotNumberQuarantineService;
 
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
@@ -77,7 +77,7 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 			return;
 		}
 
-		if (lotNumberLockService.isQuarantineLotNumber(huAttributeStorage))
+		if (lotNumberQuarantineService.isQuarantineLotNumber(huAttributeStorage))
 		{
 			storage.setValue(Constants.ATTR_Quarantine, Constants.ATTR_Quarantine_Value_Quarantine);
 		}
