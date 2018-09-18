@@ -28,8 +28,11 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.expectations.HUTransactionExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
@@ -55,10 +58,15 @@ public class ShipmentScheduleHelper
 	public final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	public final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
+	private final BPartnerId defaultCustomerId;
+
 	public ShipmentScheduleHelper(final HUTestHelper helper)
 	{
-		super();
 		this.helper = helper;
+
+		final I_C_BPartner defaultCustomer = BusinessTestHelper.createBPartner("test customer");
+		defaultCustomerId = BPartnerId.ofRepoId(defaultCustomer.getC_BPartner_ID());
+
 	}
 
 	public void assertValidTransaction(final IHUTransactionCandidate trx,
@@ -66,7 +74,7 @@ public class ShipmentScheduleHelper
 			final BigDecimal trxQtyExpected,
 			final BigDecimal scheduleQtyPickedExpected)
 	{
-		new HUTransactionExpectation<Object>()
+		new HUTransactionExpectation<>()
 				.product(schedule.getM_Product())
 				.qty(trxQtyExpected)
 				.uom(schedule.getC_UOM())
@@ -105,6 +113,7 @@ public class ShipmentScheduleHelper
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
 		shipmentSchedule.setM_Product(product);
 		shipmentSchedule.setC_OrderLine(orderLine);
+		shipmentSchedule.setC_BPartner_ID(defaultCustomerId.getRepoId());
 
 		// task 09005: set QtyOrdered_calculated because it's the initial value for the newly created shipment schedule
 		shipmentSchedule.setQtyOrdered_Calculated(qtyToDeliver);
@@ -140,7 +149,7 @@ public class ShipmentScheduleHelper
 			final List<IHUTransactionCandidate> trxs,
 			final I_M_HU_Item dummyItem)
 	{
-		final List<IHUTransactionCandidate> trxsFinal = new ArrayList<IHUTransactionCandidate>();
+		final List<IHUTransactionCandidate> trxsFinal = new ArrayList<>();
 		for (final IHUTransactionCandidate trx : trxs)
 		{
 			// Create counterpart
