@@ -3,19 +3,23 @@ package de.metas.ui.web.pickingV2.packageable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.warehouse.WarehouseTypeId;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -53,6 +57,11 @@ import lombok.ToString;
 @ToString(exclude = "_fieldNameAndJsonValues")
 public final class PackageableRow implements IViewRow
 {
+	public static PackageableRow cast(final IViewRow row)
+	{
+		return (PackageableRow)row;
+	}
+
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, seqNo = 10)
 	private final String orderDocumentNo;
 
@@ -85,6 +94,7 @@ public final class PackageableRow implements IViewRow
 	private final PackageableRowId rowId;
 	@Getter
 	private final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+	private final ImmutableList<Packageable> packageables;
 
 	@Builder
 	private PackageableRow(
@@ -96,12 +106,9 @@ public final class PackageableRow implements IViewRow
 			final int lines,
 			final String assignedToUserName,
 			final LookupValue shipper,
-			final LocalDate deliveryDate,
-			final LocalDateTime preparationDate,
-			final BigDecimal lineNetAmt,
-			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+			final Collection<Packageable> packageables)
 	{
-		Check.assumeNotEmpty(shipmentScheduleIds, "shipmentScheduleIds is not empty");
+		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
 		this.rowId = PackageableRowId.of(orderId, warehouseTypeId);
 		this.orderDocumentNo = orderDocumentNo;
@@ -110,15 +117,45 @@ public final class PackageableRow implements IViewRow
 		this.lines = lines;
 		this.assignedToUserName = assignedToUserName;
 		this.shipper = shipper;
-		this.deliveryDate = deliveryDate;
-		this.lineNetAmt = lineNetAmt;
-		this.preparationDate = preparationDate;
-		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
+		this.deliveryDate = calculateEarliestDeliveryDate(packageables);
+		this.lineNetAmt = calculateNetAmt(packageables);
+		this.preparationDate = calculateEarliestPreparationTime(packageables);
+		this.packageables = ImmutableList.copyOf(packageables);
+		this.shipmentScheduleIds = extractShipmentScheduleIds(packageables);
 	}
 
-	public static PackageableRow cast(final IViewRow row)
+	private static LocalDate calculateEarliestDeliveryDate(final Collection<Packageable> packageables)
 	{
-		return (PackageableRow)row;
+		return packageables.stream()
+				.map(Packageable::getDeliveryDate)
+				.filter(Predicates.notNull())
+				.map(LocalDateTime::toLocalDate)
+				.min(LocalDate::compareTo)
+				.orElse(null);
+	}
+
+	private static LocalDateTime calculateEarliestPreparationTime(final Collection<Packageable> packageables)
+	{
+		return packageables.stream()
+				.map(Packageable::getPreparationDate)
+				.filter(Predicates.notNull())
+				.min(LocalDateTime::compareTo)
+				.orElse(null);
+	}
+
+	private static BigDecimal calculateNetAmt(final Collection<Packageable> packageables)
+	{
+		return packageables.stream()
+				.map(Packageable::getSalesOrderLineNetAmt)
+				.filter(Predicates.notNull())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	private static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<Packageable> packageables)
+	{
+		return packageables.stream()
+				.map(Packageable::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -148,5 +185,11 @@ public final class PackageableRow implements IViewRow
 			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
+	}
+
+	public ProductId getProductId()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

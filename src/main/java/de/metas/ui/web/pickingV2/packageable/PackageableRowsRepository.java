@@ -1,11 +1,7 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -14,16 +10,13 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
 
-import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -115,44 +108,8 @@ final class PackageableRowsRepository
 				.warehouseTypeName(warehouseTypeName)
 				.lines(packageables.size())
 				.shipper(shipper)
-				.deliveryDate(calculateEarliestDeliveryDate(packageables))
-				.preparationDate(calculateEarliestPreparationTime(packageables))
-				.lineNetAmt(calculateNetAmt(packageables))
-				.shipmentScheduleIds(extractShipmentScheduleIds(packageables))
+				.packageables(packageables)
 				.build();
 	}
 
-	private static LocalDate calculateEarliestDeliveryDate(final Collection<Packageable> packageables)
-	{
-		return packageables.stream()
-				.map(Packageable::getDeliveryDate)
-				.filter(Predicates.notNull())
-				.map(LocalDateTime::toLocalDate)
-				.min(LocalDate::compareTo)
-				.orElse(null);
-	}
-
-	private static LocalDateTime calculateEarliestPreparationTime(final Collection<Packageable> packageables)
-	{
-		return packageables.stream()
-				.map(Packageable::getPreparationDate)
-				.filter(Predicates.notNull())
-				.min(LocalDateTime::compareTo)
-				.orElse(null);
-	}
-
-	private static BigDecimal calculateNetAmt(final Collection<Packageable> packageables)
-	{
-		return packageables.stream()
-				.map(Packageable::getSalesOrderLineNetAmt)
-				.filter(Predicates.notNull())
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
-
-	private static Set<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<Packageable> packageables)
-	{
-		return packageables.stream()
-				.map(Packageable::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
 }

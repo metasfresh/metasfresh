@@ -1,5 +1,8 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -37,6 +40,9 @@ import lombok.NonNull;
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_ProductsToPickView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class ProductsToPickViewFactory implements IViewFactory
 {
+	@Autowired
+	private HUReservationDocumentFilterService huReservationService;
+
 	@Override
 	public ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, ViewProfileId profileId)
 	{
@@ -67,7 +73,11 @@ public class ProductsToPickViewFactory implements IViewFactory
 
 	private ProductsToPickRowsData createProductsToPickRowsData(PackageableRow packageableRow)
 	{
+		huReservationService.prepareHUQuery()
+		// .warehouseId(ALL)
+		// .productId(packageableRow.getProductId())
 		// TODO Auto-generated method stub
+		;
 		return null;
 	}
 }
