@@ -12,6 +12,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.Theories;
@@ -371,8 +372,12 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		save(warehouse);
 
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		save(bpartner);
+
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setM_Warehouse(warehouse);
+		shipmentSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		save(shipmentSchedule);
 
 		// @formatter:off
