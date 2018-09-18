@@ -73,9 +73,9 @@ public class HULotNumberQuarantineService
 		{
 			final I_M_Product productRecord = productStorage.getM_Product();
 
-			final LotNumberQuarantine lotNumberLock = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
+			final LotNumberQuarantine lotNumberQuarantine = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
 
-			if (lotNumberLock != null)
+			if (lotNumberQuarantine != null)
 			{
 				return true;
 			}
