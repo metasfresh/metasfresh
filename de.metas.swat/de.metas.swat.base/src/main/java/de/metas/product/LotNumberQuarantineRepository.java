@@ -32,7 +32,7 @@ import de.metas.product.model.I_M_Product_LotNumber_Lock;
  */
 
 @Repository
-public class LotNumberLockRepository
+public class LotNumberQuarantineRepository
 {
 
 	public LotNumberLock getById(final int lotNoLockId)

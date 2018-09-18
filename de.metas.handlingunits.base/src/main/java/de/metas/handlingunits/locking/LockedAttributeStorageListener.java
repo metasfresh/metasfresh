@@ -39,9 +39,9 @@ import lombok.NonNull;
 public class LockedAttributeStorageListener implements IAttributeStorageListener
 {
 
-	private final transient HULotNumberLockService lotNumberLockService;
+	private final transient HULotNumberQuarantineService lotNumberLockService;
 
-	public LockedAttributeStorageListener(@NonNull final HULotNumberLockService lotNumberLockService)
+	public LockedAttributeStorageListener(@NonNull final HULotNumberQuarantineService lotNumberLockService)
 	{
 
 		this.lotNumberLockService = lotNumberLockService;

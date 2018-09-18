@@ -28,7 +28,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.product.LotNumberLock;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantineRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -68,13 +68,13 @@ public class DistributeAndMoveReceiptCreator
 	private final transient IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	private final transient ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
-	private final transient LotNumberLockRepository lotNumberLockRepository;
+	private final transient LotNumberQuarantineRepository lotNumberLockRepository;
 
 	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final transient IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 	private final transient IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
 
-	public DistributeAndMoveReceiptCreator(@NonNull final LotNumberLockRepository lotNumberLockRepository)
+	public DistributeAndMoveReceiptCreator(@NonNull final LotNumberQuarantineRepository lotNumberLockRepository)
 	{
 		this.lotNumberLockRepository = lotNumberLockRepository;
 	}

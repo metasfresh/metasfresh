@@ -19,7 +19,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.LotNumberLock;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantineRepository;
 import lombok.NonNull;
 
 /*
@@ -45,19 +45,19 @@ import lombok.NonNull;
  */
 
 @Service
-public class HULotNumberLockService
+public class HULotNumberQuarantineService
 {
-	private final transient LotNumberLockRepository lotNumberLockRepository;
+	private final transient LotNumberQuarantineRepository lotNumberQuarantineRepository;
 
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	private final transient IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
-	public HULotNumberLockService(@NonNull final LotNumberLockRepository lotNumberLockRepository)
+	public HULotNumberQuarantineService(@NonNull final LotNumberQuarantineRepository lotNumberQuarantineRepository)
 	{
-		this.lotNumberLockRepository = lotNumberLockRepository;
+		this.lotNumberQuarantineRepository = lotNumberQuarantineRepository;
 	}
 
 	public boolean isQuarantineLotNumber(@NonNull final AbstractHUAttributeStorage huAttributeStorage)
@@ -73,7 +73,7 @@ public class HULotNumberLockService
 		{
 			final I_M_Product productRecord = productStorage.getM_Product();
 
-			final LotNumberLock lotNumberLock = lotNumberLockRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
+			final LotNumberLock lotNumberLock = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
 
 			if (lotNumberLock != null)
 			{
@@ -83,7 +83,7 @@ public class HULotNumberLockService
 		return false;
 	}
 
-	public boolean isLockedHU(final I_M_HU huRecord)
+	public boolean isQuarantineHU(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
 		final AttributeId lockedAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Locked);
