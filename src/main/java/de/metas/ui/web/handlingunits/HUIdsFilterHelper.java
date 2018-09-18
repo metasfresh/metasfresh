@@ -95,8 +95,8 @@ public final class HUIdsFilterHelper
 		/**
 		 * Empty list means "no restriction".
 		 */
-		private final Set<HuId> mustHUIds;
-		private final Set<HuId> shallNotHUIds;
+		private final HashSet<HuId> mustHUIds;
+		private final HashSet<HuId> shallNotHUIds;
 
 		private HUIdsFilterData(
 				@Nullable final Collection<HuId> initialHUIds,
@@ -172,11 +172,6 @@ public final class HUIdsFilterHelper
 		{
 			return initialHUQuery != null;
 		}
-	}
-
-	public static final class MutableHUIdsList
-	{
-		// public static final MutableHUIdsList of(HUIdsFilterData filter, )
 	}
 
 	public static final String FILTER_ID = "huIds";
