@@ -34,6 +34,11 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 public interface IViewFactory
 {
+	/** Don't call it directly. Will be called by API. */
+	default void setViewsRepository(final IViewsRepository viewsRepository)
+	{
+	}
+
 	IView createView(CreateViewRequest request);
 
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, ViewProfileId profileId);
@@ -48,13 +53,12 @@ public interface IViewFactory
 		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
 		return createView(createViewRequest);
 	}
-	
-	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, Supplier<IViewsRepository> viewsRepo)
+
+	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, final Supplier<IViewsRepository> viewsRepo)
 	{
 		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
 		return createView(createViewRequest);
 	}
-	
 
 	default IView deleteStickyFilter(final IView view, final String filterId)
 	{

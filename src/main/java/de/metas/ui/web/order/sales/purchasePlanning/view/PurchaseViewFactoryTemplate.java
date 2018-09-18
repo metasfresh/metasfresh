@@ -27,6 +27,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -97,6 +98,11 @@ public abstract class PurchaseViewFactoryTemplate implements IViewFactory, IView
 		viewLayoutFactory = PurchaseViewLayoutFactory.builder()
 				.caption(caption)
 				.build();
+	}
+
+	@Override
+	public void setViewsRepository(final IViewsRepository viewsRepository)
+	{
 	}
 
 	protected abstract List<PurchaseDemand> getDemands(CreateViewRequest request);
