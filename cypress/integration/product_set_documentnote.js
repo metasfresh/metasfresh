@@ -1,4 +1,4 @@
-describe('Product translation Test; #1025-api - Error opening translation windows https://github.com/metasfresh/metasfresh-webui-api/issues/1025', function() {
+describe('Product DocumentNote test', function() {
     before(function() {
         cy.loginByForm();
     });
