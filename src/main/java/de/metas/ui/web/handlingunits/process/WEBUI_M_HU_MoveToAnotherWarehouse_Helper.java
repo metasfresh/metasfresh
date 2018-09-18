@@ -3,6 +3,8 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
@@ -54,7 +56,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorProcessTemplate implements IProcessPrecondition
+
+public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
@@ -67,6 +70,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorProcessTem
 	private I_M_Warehouse warehouse;
 
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (!isHUEditorView())
