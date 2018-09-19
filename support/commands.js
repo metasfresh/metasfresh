@@ -118,6 +118,7 @@ context('Reusable "login" custom command', function() {
   });
 });
 
+// Should also work for date columns, e.g. '01/01/2018{enter}'
 describe('Enter value into string field', function() {
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
     cy.get(`.form-field-${fieldName}`)
