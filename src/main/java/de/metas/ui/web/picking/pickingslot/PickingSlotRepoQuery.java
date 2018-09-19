@@ -49,7 +49,7 @@ public class PickingSlotRepoQuery
 		return builder().currentShipmentScheduleId(shipmentScheduleId).shipmentScheduleId(shipmentScheduleId).build();
 	}
 
-	public enum PickingCandidateStatus
+	public enum PickingCandidateQueryStatus
 	{
 		/**
 		 * Only retrieve picking slot items that have a processed {@link I_M_Picking_Candidate} assigned to their underlying {@link I_M_PickingSlot}.
@@ -74,14 +74,14 @@ public class PickingSlotRepoQuery
 
 	ShipmentScheduleId currentShipmentScheduleId;
 	ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
-	PickingCandidateStatus pickingCandidates;
+	PickingCandidateQueryStatus pickingCandidates;
 	String pickingSlotBarcode;
 
 	@Builder
 	private PickingSlotRepoQuery(
 			final ShipmentScheduleId currentShipmentScheduleId,
 			@Singular final Set<ShipmentScheduleId> shipmentScheduleIds,
-			final PickingCandidateStatus pickingCandidates,
+			final PickingCandidateQueryStatus pickingCandidates,
 			final String pickingSlotBarcode)
 	{
 		if (currentShipmentScheduleId != null && !shipmentScheduleIds.contains(currentShipmentScheduleId))
@@ -91,7 +91,7 @@ public class PickingSlotRepoQuery
 
 		this.currentShipmentScheduleId = currentShipmentScheduleId;
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
-		this.pickingCandidates = pickingCandidates != null ? pickingCandidates : PickingCandidateStatus.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM;
+		this.pickingCandidates = pickingCandidates != null ? pickingCandidates : PickingCandidateQueryStatus.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM;
 		this.pickingSlotBarcode = pickingSlotBarcode;
 	}
 

@@ -191,7 +191,7 @@ public class PickingHURowsRepository
 				queryBuilder.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL); // even if we don't care, we *do not* want to show closed picking candidates
 				break;
 			case ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM:
-				final Set<Integer> rackSystemPickingSlotIds = Services.get(IHUPickingSlotDAO.class).retrieveAllPickingSlotIdsWhichAreRackSystems();
+				final Set<PickingSlotId> rackSystemPickingSlotIds = Services.get(IHUPickingSlotDAO.class).retrieveAllPickingSlotIdsWhichAreRackSystems();
 				queryBuilder.addCompositeQueryFilter()
 						.setJoinOr()
 						.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL)
