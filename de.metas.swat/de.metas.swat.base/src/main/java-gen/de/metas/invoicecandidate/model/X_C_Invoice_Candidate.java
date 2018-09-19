@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1294845685L;
+	private static final long serialVersionUID = 1053446978L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -290,6 +290,43 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner_Location getBill_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setBill_Location_Override(org.compiere.model.I_C_BPartner_Location Bill_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, Bill_Location_Override);
+	}
+
+	/** Set Rechungsadresse abw..
+		@param Bill_Location_Override_ID 
+		Standort des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_Location_Override_ID (int Bill_Location_Override_ID)
+	{
+		if (Bill_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_Bill_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_Location_Override_ID, Integer.valueOf(Bill_Location_Override_ID));
+	}
+
+	/** Get Rechungsadresse abw..
+		@return Standort des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_AD_User getBill_User() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_Bill_User_ID, org.compiere.model.I_AD_User.class);
@@ -321,6 +358,40 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getBill_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getBill_User_ID_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_User_ID_Override_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setBill_User_ID_Override(org.compiere.model.I_AD_User Bill_User_ID_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_User_ID_Override_ID, org.compiere.model.I_AD_User.class, Bill_User_ID_Override);
+	}
+
+	/** Set Rechnungskontakt abw..
+		@param Bill_User_ID_Override_ID Rechnungskontakt abw.	  */
+	@Override
+	public void setBill_User_ID_Override_ID (int Bill_User_ID_Override_ID)
+	{
+		if (Bill_User_ID_Override_ID < 1) 
+			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_User_ID_Override_ID, Integer.valueOf(Bill_User_ID_Override_ID));
+	}
+
+	/** Get Rechnungskontakt abw..
+		@return Rechnungskontakt abw.	  */
+	@Override
+	public int getBill_User_ID_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1530,6 +1601,22 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey);
 	}
 
+	/** Set Kopf-Aggregationsmerkmal (vorgegeben).
+		@param HeaderAggregationKey_Calc Kopf-Aggregationsmerkmal (vorgegeben)	  */
+	@Override
+	public void setHeaderAggregationKey_Calc (java.lang.String HeaderAggregationKey_Calc)
+	{
+		set_Value (COLUMNNAME_HeaderAggregationKey_Calc, HeaderAggregationKey_Calc);
+	}
+
+	/** Get Kopf-Aggregationsmerkmal (vorgegeben).
+		@return Kopf-Aggregationsmerkmal (vorgegeben)	  */
+	@Override
+	public java.lang.String getHeaderAggregationKey_Calc () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey_Calc);
+	}
+
 	/** Set Header aggregation builder.
 		@param HeaderAggregationKeyBuilder_ID Header aggregation builder	  */
 	@Override
@@ -1550,22 +1637,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Kopf-Aggregationsmerkmal (vorgegeben).
-		@param HeaderAggregationKey_Calc Kopf-Aggregationsmerkmal (vorgegeben)	  */
-	@Override
-	public void setHeaderAggregationKey_Calc (java.lang.String HeaderAggregationKey_Calc)
-	{
-		set_Value (COLUMNNAME_HeaderAggregationKey_Calc, HeaderAggregationKey_Calc);
-	}
-
-	/** Get Kopf-Aggregationsmerkmal (vorgegeben).
-		@return Kopf-Aggregationsmerkmal (vorgegeben)	  */
-	@Override
-	public java.lang.String getHeaderAggregationKey_Calc () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey_Calc);
 	}
 
 	/** 
@@ -2076,6 +2147,25 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey);
 	}
 
+	/** Set Aggregations-Zusatz.
+		@param LineAggregationKey_Suffix 
+		Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	  */
+	@Override
+	public void setLineAggregationKey_Suffix (java.lang.String LineAggregationKey_Suffix)
+	{
+		set_Value (COLUMNNAME_LineAggregationKey_Suffix, LineAggregationKey_Suffix);
+	}
+
+	/** Get Aggregations-Zusatz.
+		@return Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	  */
+	@Override
+	public java.lang.String getLineAggregationKey_Suffix () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey_Suffix);
+	}
+
 	/** Set Line aggregation builder.
 		@param LineAggregationKeyBuilder_ID Line aggregation builder	  */
 	@Override
@@ -2096,25 +2186,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Aggregations-Zusatz.
-		@param LineAggregationKey_Suffix 
-		Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
-	  */
-	@Override
-	public void setLineAggregationKey_Suffix (java.lang.String LineAggregationKey_Suffix)
-	{
-		set_Value (COLUMNNAME_LineAggregationKey_Suffix, LineAggregationKey_Suffix);
-	}
-
-	/** Get Aggregations-Zusatz.
-		@return Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
-	  */
-	@Override
-	public java.lang.String getLineAggregationKey_Suffix () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey_Suffix);
 	}
 
 	/** Set Zeilennetto.
@@ -2364,6 +2435,25 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
+	/** Set Notiz.
+		@param Note 
+		Optional weitere Information
+	  */
+	@Override
+	public void setNote (java.lang.String Note)
+	{
+		set_Value (COLUMNNAME_Note, Note);
+	}
+
+	/** Get Notiz.
+		@return Optional weitere Information
+	  */
+	@Override
+	public java.lang.String getNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Note);
+	}
+
 	/** Set Referenz.
 		@param POReference 
 		Referenz-Nummer des Kunden
@@ -2381,6 +2471,40 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getPOReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getPrice_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Price_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setPrice_UOM(org.compiere.model.I_C_UOM Price_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_Price_UOM_ID, org.compiere.model.I_C_UOM.class, Price_UOM);
+	}
+
+	/** Set Preiseinheit.
+		@param Price_UOM_ID Preiseinheit	  */
+	@Override
+	public void setPrice_UOM_ID (int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
+	}
+
+	/** Get Preiseinheit.
+		@return Preiseinheit	  */
+	@Override
+	public int getPrice_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Einzelpreis.
@@ -2485,40 +2609,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getPrice_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Price_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setPrice_UOM(org.compiere.model.I_C_UOM Price_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_Price_UOM_ID, org.compiere.model.I_C_UOM.class, Price_UOM);
-	}
-
-	/** Set Preiseinheit.
-		@param Price_UOM_ID Preiseinheit	  */
-	@Override
-	public void setPrice_UOM_ID (int Price_UOM_ID)
-	{
-		if (Price_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
-	}
-
-	/** Get Preiseinheit.
-		@return Preiseinheit	  */
-	@Override
-	public int getPrice_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** 
@@ -2794,47 +2884,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set Zu berechn. Menge vor Qualitätsabzug.
-		@param QtyToInvoiceBeforeDiscount Zu berechn. Menge vor Qualitätsabzug	  */
-	@Override
-	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount)
-	{
-		set_Value (COLUMNNAME_QtyToInvoiceBeforeDiscount, QtyToInvoiceBeforeDiscount);
-	}
-
-	/** Get Zu berechn. Menge vor Qualitätsabzug.
-		@return Zu berechn. Menge vor Qualitätsabzug	  */
-	@Override
-	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceBeforeDiscount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Zu berechn. Menge In Preiseinheit.
-		@param QtyToInvoiceInPriceUOM 
-		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
-	  */
-	@Override
-	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM)
-	{
-		set_ValueNoCheck (COLUMNNAME_QtyToInvoiceInPriceUOM, QtyToInvoiceInPriceUOM);
-	}
-
-	/** Get Zu berechn. Menge In Preiseinheit.
-		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
-	  */
-	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Zu berechn. Menge abw..
 		@param QtyToInvoice_Override 
 		Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
@@ -2874,6 +2923,47 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getQtyToInvoice_OverrideFulfilled () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Zu berechn. Menge vor Qualitätsabzug.
+		@param QtyToInvoiceBeforeDiscount Zu berechn. Menge vor Qualitätsabzug	  */
+	@Override
+	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount)
+	{
+		set_Value (COLUMNNAME_QtyToInvoiceBeforeDiscount, QtyToInvoiceBeforeDiscount);
+	}
+
+	/** Get Zu berechn. Menge vor Qualitätsabzug.
+		@return Zu berechn. Menge vor Qualitätsabzug	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceBeforeDiscount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Zu berechn. Menge In Preiseinheit.
+		@param QtyToInvoiceInPriceUOM 
+		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
+	  */
+	@Override
+	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyToInvoiceInPriceUOM, QtyToInvoiceInPriceUOM);
+	}
+
+	/** Get Zu berechn. Menge In Preiseinheit.
+		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
+	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
