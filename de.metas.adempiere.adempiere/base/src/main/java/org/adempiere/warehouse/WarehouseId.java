@@ -74,7 +74,7 @@ public class WarehouseId implements RepoIdAware
 
 	private WarehouseId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "warehouseId");
 	}
 
 	@Override

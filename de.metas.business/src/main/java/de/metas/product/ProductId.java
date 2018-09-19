@@ -71,6 +71,6 @@ public class ProductId implements RepoIdAware
 
 	private ProductId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "productId");
 	}
 }
