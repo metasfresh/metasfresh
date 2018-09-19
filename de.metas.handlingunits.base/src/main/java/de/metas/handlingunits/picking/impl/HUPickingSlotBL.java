@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -587,7 +586,7 @@ public class HUPickingSlotBL
 	@Override
 	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId)
 	{
-		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
+		final I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId, I_M_PickingSlot.class);
 		releasePickingSlotIfPossible(pickingSlot);
 	}
 
