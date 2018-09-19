@@ -729,10 +729,8 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static void delete(final Object model)
+	public static void delete(@NonNull final Object model)
 	{
-		Check.assume(model != null, "model is null");
-
 		if (POWrapper.isHandled(model))
 		{
 			POWrapper.delete(model);
@@ -745,6 +743,16 @@ public class InterfaceWrapperHelper
 		{
 			throw new IllegalStateException("delete is not supported for " + model);
 		}
+	}
+
+	public static void deleteAll(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(InterfaceWrapperHelper::delete);
 	}
 
 	/**
@@ -1121,15 +1129,15 @@ public class InterfaceWrapperHelper
 		}
 
 	}
-	
+
 	public static Optional<OrgId> getOrgId(final Object model)
 	{
 		final Object orgIdObj = getValue(model, "AD_Org_ID").orElse(null);
-		if(orgIdObj == null)
+		if (orgIdObj == null)
 		{
 			return Optional.empty();
 		}
-		
+
 		final int orgIdInt = NumberUtils.asInt(orgIdObj, -1);
 		return OrgId.optionalOfRepoId(orgIdInt);
 	}
@@ -1726,7 +1734,7 @@ public class InterfaceWrapperHelper
 	{
 		return helpers.isCopy(model);
 	}
-	
+
 	public static boolean isCopying(final Object model)
 	{
 		return helpers.isCopying(model);
