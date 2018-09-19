@@ -33,14 +33,14 @@ import lombok.experimental.UtilityClass;
  * HU Attributes constants
  */
 @UtilityClass
-public final class Constants
+public final class HUAttributeConstants
 {
 	/**
 	 * Context name used to identify the map of initial default values to be used when creating HU attributes.
 	 *
 	 * Type: Map of {@link I_M_Attribute} to value({@link Object}).
 	 */
-	public static String CTXATTR_DefaultAttributesValue = Constants.class.getName() + "#DefaultAttributesValue";
+	public static String CTXATTR_DefaultAttributesValue = HUAttributeConstants.class.getName() + "#DefaultAttributesValue";
 
 	public static final String ATTR_QualityDiscountPercent_Value = "QualityDiscountPercent";
 	public static final String ATTR_QualityNotice_Value = "QualityNotice";

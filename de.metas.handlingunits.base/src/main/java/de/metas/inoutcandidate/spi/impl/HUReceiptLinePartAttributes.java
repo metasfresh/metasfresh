@@ -32,7 +32,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -100,9 +100,9 @@ import de.metas.inout.model.I_M_QualityNote;
 		id = String.valueOf(tuHU.getM_HU_ID());
 
 		//
-		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(Constants.ATTR_QualityDiscountPercent_Value);
-		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_QualityNotice_Value);
-		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(Constants.ATTR_SubProducerBPartner_Value);
+		attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityDiscountPercent_Value);
+		attr_QualityNotice = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityNotice_Value);
+		attr_SubProducerBPartner = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 	}
 
 	@Override

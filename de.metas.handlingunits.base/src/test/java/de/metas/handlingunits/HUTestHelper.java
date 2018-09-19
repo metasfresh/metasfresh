@@ -104,7 +104,7 @@ import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
 import de.metas.handlingunits.attribute.impl.WeightableFactory;
@@ -571,7 +571,7 @@ public class HUTestHelper
 		attr_WeightTare = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
 		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
-		attr_CostPrice = attributesTestHelper.createM_Attribute(Constants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
+		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
 		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityDiscountPercent_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityNotice_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -586,12 +586,12 @@ public class HUTestHelper
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
-		attr_LotNumberDate = attributesTestHelper.createM_Attribute(Constants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
 		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(Constants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(Constants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
