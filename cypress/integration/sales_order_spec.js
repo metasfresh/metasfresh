@@ -55,10 +55,10 @@ describe('New sales order test', function() {
         .first()
         .find('input')
         .clear()
-        .type('G0002');
+        .type('G0001');
 
       cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'Test Lieferant 1').click();
+      cy.contains('.input-dropdown-list-option', 'Test Kunde 1').click();
       cy
         .get('.input-dropdown-list .input-dropdown-list-header')
         .should('not.exist');
@@ -67,6 +67,8 @@ describe('New sales order test', function() {
     });
 
     it('Fill order reference to differentiate cypress tests', function() {
+      cy.writeIntoStringField('POReference', `Cypress Test ${new Date().getTime()}`);
+      /*
       cy.get('.form-field-POReference')
         .find('input')
         .type(`Cypress Test ${new Date().getTime()}{enter}`);
@@ -74,6 +76,7 @@ describe('New sales order test', function() {
       cy.get('.indicator-pending').should('exist');
       cy.wait(100);
       cy.get('.indicator-pending').should('not.exist');
+      */
     });
 
     it('Add new product', function() {
