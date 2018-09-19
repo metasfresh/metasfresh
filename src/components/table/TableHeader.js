@@ -57,7 +57,7 @@ class TableHeader extends PureComponent {
     deselect();
   };
 
-  renderSorting = (field, caption, sortable) => {
+  renderSorting = (field, caption, sortable, description) => {
     const { fields } = this.state;
     const fieldSorting = fields[field];
 
@@ -67,7 +67,7 @@ class TableHeader extends PureComponent {
         onClick={() => this.handleClick(field, sortable)}
       >
         <span
-          title={caption}
+          title={description || caption}
           className={classnames({ 'th-caption': sortable })}
         >
           {caption}
@@ -97,7 +97,8 @@ class TableHeader extends PureComponent {
                 ? this.renderSorting(
                     item.fields[0].field,
                     item.caption,
-                    item.sortable
+                    item.sortable,
+                    item.description
                   )
                 : item.caption}
             </th>
