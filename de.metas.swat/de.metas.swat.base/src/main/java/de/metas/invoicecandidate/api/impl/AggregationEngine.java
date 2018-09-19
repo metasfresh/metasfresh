@@ -309,14 +309,14 @@ public class AggregationEngine implements IAggregationEngine
 		final IInvoiceLineAggregationRequest icAggregationRequest = icAggregationRequestBuilder.build();
 		lineAggregator.addInvoiceCandidate(icAggregationRequest);
 	}
-
+	
 	private void addToInvoiceHeader(final InvoiceHeaderImplBuilder invoiceHeader, final I_C_Invoice_Candidate ic, final int inoutId)
 	{
 
 		invoiceHeader.setAD_Org_ID(ic.getAD_Org_ID());
 		invoiceHeader.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		invoiceHeader.setBill_Location_ID(ic.getBill_Location_ID());
-		invoiceHeader.setBill_User_ID(ic.getBill_User_ID());
+		invoiceHeader.setBill_Location_ID(getBill_Location_ID(ic));
+		invoiceHeader.setBill_User_ID(getBill_User_ID(ic));
 		invoiceHeader.setC_Order_ID(ic.getC_Order_ID());
 		invoiceHeader.setPOReference(ic.getPOReference()); // task 07978
 
@@ -371,6 +371,17 @@ public class AggregationEngine implements IAggregationEngine
 
 		// 06630: set shipment id to header
 		invoiceHeader.setM_InOut_ID(inoutId);
+	}
+	
+
+	private int getBill_Location_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return ic.getBill_Location_Override_ID() > 0 ? ic.getBill_Location_Override_ID() : ic.getBill_Location_ID(); 
+	}
+	
+	private int getBill_User_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return ic.getBill_User_ID_Override_ID() > 0 ? ic.getBill_User_ID_Override_ID() : ic.getBill_User_ID(); 
 	}
 
 	@Override
