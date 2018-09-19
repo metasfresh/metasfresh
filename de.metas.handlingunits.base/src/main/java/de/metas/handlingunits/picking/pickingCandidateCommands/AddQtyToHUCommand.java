@@ -1,7 +1,5 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -9,7 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -18,7 +16,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -26,12 +23,11 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -39,6 +35,8 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -70,7 +68,15 @@ public class AddQtyToHUCommand
 	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
 
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final IPackagingDAO packingDAO = Services.get(IPackagingDAO.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final BigDecimal qtyCU;
@@ -78,6 +84,8 @@ public class AddQtyToHUCommand
 	private final PickingSlotId pickingSlotId;
 	private final ShipmentScheduleId shipmentScheduleId;
 	private final boolean isAllowOverdelivery;
+
+	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
 	@Builder
 	private AddQtyToHUCommand(
@@ -107,32 +115,37 @@ public class AddQtyToHUCommand
 	 */
 	public Quantity performAndGetQtyPicked()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final boolean overdeliveryError = !isAllowOverdelivery && isOverdelivery();
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 
+		final boolean overdeliveryError = !isAllowOverdelivery && isOverDelivery();
 		if (overdeliveryError)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(shipmentSchedule), PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed));
+			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
 		}
 
-		final I_M_Product product = shipmentSchedule.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 
-		final I_M_Picking_Candidate candidate = pickingCandidateRepository.getCreateCandidate(targetHUId, pickingSlotId, shipmentScheduleId);
+		final PickingCandidate candidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(targetHUId, shipmentScheduleId, pickingSlotId)
+				.orElseGet(() -> PickingCandidate.builder()
+						.qtyPicked(Quantity.zero(uom))
+						.huId(targetHUId)
+						.shipmentScheduleId(shipmentScheduleId)
+						.pickingSlotId(pickingSlotId)
+						.build());
+		pickingCandidateRepository.save(candidate);
 
 		final HUListAllocationSourceDestination source = createAllocationSource(shipmentSchedule);
 		final IAllocationDestination destination = createAllocationDestination(targetHUId);
 
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		// create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing();
-
+		// NOTE: create the context with the tread-inherited transaction,
+		// otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContext)
-				.setProduct(product)
-				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getUomOfProduct(shipmentSchedule)))
+				.setHUContext(huContextFactory.createMutableHUContextForProcessing())
+				.setProduct(productsRepo.getById(productId))
+				.setQuantity(Quantity.of(qtyCU, uom))
 				.setDateAsToday()
-				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the picking candidate
+				.setFromReferencedTableRecord(pickingCandidateRepository.toTableRecordReference(candidate)) // the m_hu_trx_Line coming out of this will reference the picking candidate
 				.setForceQtyAllocation(true)
 				.create();
 
@@ -145,7 +158,7 @@ public class AddQtyToHUCommand
 
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
-		addQtyToCandidate(candidate, product, qtyPicked);
+		addQtyToCandidate(candidate, productId, qtyPicked);
 
 		return qtyPicked;
 	}
@@ -164,7 +177,7 @@ public class AddQtyToHUCommand
 				.onlyTopLevelHUs(true)
 				.build();
 
-		final List<I_M_HU> sourceHUs = Services.get(IHUPickingSlotBL.class).retrieveAvailableSourceHUs(query);
+		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveAvailableSourceHUs(query);
 		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(sourceHUs);
 		source.setDestroyEmptyHUs(false); // don't automatically destroy them. we will do that ourselves if the sourceHUs are empty at the time we process our picking candidates
 
@@ -176,7 +189,6 @@ public class AddQtyToHUCommand
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
 		// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		if (!huStatusBL.isStatusActive(hu))
 		{
 			throw new AdempiereException("not an active HU").setParameter("hu", hu);
@@ -187,8 +199,8 @@ public class AddQtyToHUCommand
 	}
 
 	private void addQtyToCandidate(
-			@NonNull final I_M_Picking_Candidate candidate,
-			@NonNull final I_M_Product product,
+			@NonNull final PickingCandidate candidate,
+			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToAdd)
 	{
 		final Quantity qtyNew;
@@ -198,23 +210,34 @@ public class AddQtyToHUCommand
 		}
 		else
 		{
-			final IUOMConversionContext conversionCtx = Services.get(IUOMConversionBL.class).createConversionContext(product);
-			final Quantity qty = Quantity.of(candidate.getQtyPicked(), candidate.getC_UOM());
+			final IUOMConversionContext conversionCtx = uomConversionBL.createConversionContext(productId);
+			final Quantity qty = candidate.getQtyPicked();
 			final Quantity qtyToAddConv = conversionCtx.convertQty(qtyToAdd, qty.getUOM());
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
-		candidate.setQtyPicked(qtyNew.getQty());
-		candidate.setC_UOM(qtyNew.getUOM());
+		candidate.setQtyPicked(qtyNew);
 		pickingCandidateRepository.save(candidate);
 	}
 
-	private boolean isOverdelivery()
+	private boolean isOverDelivery()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentScheduleId);
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
+		final BigDecimal qtyPickedPlanned = packingDAO.retrieveQtyPickedPlannedOrNull(shipmentScheduleId);
 		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned == null ? BigDecimal.ZERO : qtyPickedPlanned);
 
 		return qtyCU.compareTo(qtytoDeliver) > 0;
 	}
+
+	private I_M_ShipmentSchedule getShipmentSchedule()
+	{
+		I_M_ShipmentSchedule shipmentSchedule = _shipmentSchedule;
+		if (shipmentSchedule == null)
+		{
+			shipmentSchedule = _shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
+			return shipmentSchedule;
+		}
+		return shipmentSchedule;
+	}
+
 }

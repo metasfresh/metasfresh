@@ -6,7 +6,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand.AddQtyToHUCommandBuilder;
@@ -132,6 +130,7 @@ public class PickingCandidateService
 		//
 		// Automatically close those processed picking candidates which are NOT on a rack system picking slot. (gh2740)
 		ClosePickingCandidateCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(processCmd.getProcessedPickingCandidates())
 				.pickingSlotIsRackSystem(false)
 				.build()
@@ -150,8 +149,11 @@ public class PickingCandidateService
 
 	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
+				shipmentScheduleIds,
+				PickingCandidateStatus.Processed);
 		return ClosePickingCandidateCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidates);
 	}
 
@@ -162,14 +164,12 @@ public class PickingCandidateService
 
 	public void inactivateForHUIds(final Collection<HuId> huIds)
 	{
-		pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
-				.forEach(this::inactivate);
-	}
+		// tolerate empty
+		if (huIds.isEmpty())
+		{
+			return;
+		}
 
-	private void inactivate(final I_M_Picking_Candidate pickingCandidate)
-	{
-		pickingCandidate.setIsActive(false);
-		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
-		InterfaceWrapperHelper.save(pickingCandidate);
+		pickingCandidateRepository.inactivateForHUIds(huIds);
 	}
 }

@@ -1,24 +1,22 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.model.I_M_PickingSlot;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
@@ -60,16 +58,21 @@ public class ClosePickingCandidateCommand
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
-	private final List<I_M_Picking_Candidate> pickingCandidates;
+	private final PickingCandidateRepository pickingCandidateRepository;
+
+	private final List<PickingCandidate> pickingCandidates;
 	private final Boolean pickingSlotIsRackSystem;
 	private final boolean failOnError;
 
 	@Builder
 	private ClosePickingCandidateCommand(
-			@NonNull final Collection<I_M_Picking_Candidate> pickingCandidates,
+			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final Collection<PickingCandidate> pickingCandidates,
 			@Nullable final Boolean pickingSlotIsRackSystem,
 			@Nullable final Boolean failOnError)
 	{
+		this.pickingCandidateRepository = pickingCandidateRepository;
+
 		// NOTE: tolerate empty pickingCandidates list.
 		this.pickingCandidates = ImmutableList.copyOf(pickingCandidates);
 		this.pickingSlotIsRackSystem = pickingSlotIsRackSystem;
@@ -88,21 +91,18 @@ public class ClosePickingCandidateCommand
 
 		//
 		// Release the picking slots
-		pickingCandidates.stream()
-				.map(I_M_Picking_Candidate::getM_PickingSlot_ID)
-				.map(PickingSlotId::ofRepoId)
-				.distinct()
-				.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
+		final Set<PickingSlotId> pickingSlotIds = PickingCandidate.extractPickingSlotIds(pickingCandidates);
+		huPickingSlotBL.releasePickingSlotsIfPossible(pickingSlotIds);
 	}
 
-	private boolean isEligible(final I_M_Picking_Candidate pickingCandidate)
+	private boolean isEligible(final PickingCandidate pickingCandidate)
 	{
-		if (!X_M_Picking_Candidate.STATUS_PR.equals(pickingCandidate.getStatus()))
+		if (!PickingCandidateStatus.Processed.equals(pickingCandidate.getStatus()))
 		{
 			return false;
 		}
 
-		if (pickingSlotIsRackSystem != null && pickingSlotIsRackSystem != huPickingSlotDAO.isPickingRackSystem(pickingCandidate.getM_PickingSlot_ID()))
+		if (pickingSlotIsRackSystem != null && pickingSlotIsRackSystem != isPickingSlotRackSystem(pickingCandidate))
 		{
 			return false;
 		}
@@ -110,13 +110,21 @@ public class ClosePickingCandidateCommand
 		return true;
 	}
 
-	private void close(final I_M_Picking_Candidate pickingCandidate)
+	private boolean isPickingSlotRackSystem(final PickingCandidate pickingCandidate)
+	{
+		final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
+		return pickingSlotId != null && huPickingSlotDAO.isPickingRackSystem(pickingSlotId);
+	}
+
+	private void close(final PickingCandidate pickingCandidate)
 	{
 		try
 		{
-			final int pickingSlotId = pickingCandidate.getM_PickingSlot_ID();
-			final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
-			huPickingSlotBL.addToPickingSlotQueue(pickingSlot, pickingCandidate.getM_HU());
+			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
+			if (pickingSlotId != null)
+			{
+				huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, pickingCandidate.getHuId());
+			}
 
 			markCandidateAsClosed(pickingCandidate);
 		}
@@ -133,9 +141,9 @@ public class ClosePickingCandidateCommand
 		}
 	}
 
-	private void markCandidateAsClosed(final I_M_Picking_Candidate pickingCandidate)
+	private void markCandidateAsClosed(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
-		InterfaceWrapperHelper.save(pickingCandidate);
+		pickingCandidate.setStatus(PickingCandidateStatus.Closed);
+		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

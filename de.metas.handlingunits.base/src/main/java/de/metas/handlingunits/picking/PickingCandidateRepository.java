@@ -1,16 +1,28 @@
 package de.metas.handlingunits.picking;
 
-import java.math.BigDecimal;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -18,9 +30,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -54,23 +65,70 @@ import lombok.NonNull;
 @Service
 public class PickingCandidateRepository
 {
-	private static final Logger logger = LogManager.getLogger(PickingCandidateRepository.class);
+	// private static final Logger logger = LogManager.getLogger(PickingCandidateRepository.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
-	public void save(final I_M_Picking_Candidate candidate)
+	public PickingCandidate getById(@NonNull final PickingCandidateId id)
 	{
-		InterfaceWrapperHelper.save(candidate);
+		return toPickingCandidate(getRecordById(id));
 	}
 
-	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesViaPickingCandidates(final HuId huId)
+	private I_M_Picking_Candidate getRecordById(@NonNull final PickingCandidateId id)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_M_ShipmentSchedule> scheds = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huId)
-				.andCollect(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.class)
-				.create()
-				.list();
-		return scheds;
+		final I_M_Picking_Candidate record = load(id, I_M_Picking_Candidate.class);
+		if (record == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Picking_Candidate_ID@: " + id);
+		}
+		return record;
+	}
+
+	public void saveAll(@NonNull final Collection<PickingCandidate> candidates)
+	{
+		candidates.forEach(this::save);
+	}
+
+	public void save(@NonNull final PickingCandidate candidate)
+	{
+		final I_M_Picking_Candidate record;
+		if (candidate.getId() == null)
+		{
+			record = newInstance(I_M_Picking_Candidate.class);
+		}
+		else
+		{
+			record = getRecordById(candidate.getId());
+		}
+
+		updateRecord(record, candidate);
+		saveRecord(record);
+
+		candidate.setId(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()));
+	}
+
+	private PickingCandidate toPickingCandidate(final I_M_Picking_Candidate record)
+	{
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
+		final Quantity qtyPicked = Quantity.of(record.getQtyPicked(), uom);
+
+		return PickingCandidate.builder()
+				.id(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
+				.status(PickingCandidateStatus.ofCode(record.getStatus()))
+				.qtyPicked(qtyPicked)
+				.huId(HuId.ofRepoId(record.getM_HU_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.pickingSlotId(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
+				.build();
+	}
+
+	private static void updateRecord(final I_M_Picking_Candidate record, final PickingCandidate from)
+	{
+		record.setStatus(from.getStatus().getCode());
+		record.setQtyPicked(from.getQtyPicked().getAsBigDecimal());
+		record.setC_UOM_ID(from.getQtyPicked().getUOMId());
+		record.setM_HU_ID(from.getHuId().getRepoId());
+		record.setM_ShipmentSchedule_ID(from.getShipmentScheduleId().getRepoId());
+		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(from.getPickingSlotId()));
 	}
 
 	public Set<ShipmentScheduleId> retrieveShipmentScheduleIdsForPickingCandidateIds(final Collection<PickingCandidateId> pickingCandidateIds)
@@ -92,7 +150,7 @@ public class PickingCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public List<I_M_Picking_Candidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<HuId> huIds)
+	public List<PickingCandidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<HuId> huIds)
 	{
 		// tolerate empty
 		if (huIds.isEmpty())
@@ -100,21 +158,27 @@ public class PickingCandidateRepository
 			return ImmutableList.of();
 		}
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_M_Picking_Candidate> result = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds)
+		return retrievePickingCandidatesByHUIdsQuery(huIds)
 				.create()
-				.list();
-		return result;
+				.stream()
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public I_M_Picking_Candidate getCreateCandidate(
-			@NonNull final HuId huId,
-			@NonNull final PickingSlotId pickingSlotId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	private IQueryBuilder<I_M_Picking_Candidate> retrievePickingCandidatesByHUIdsQuery(@NonNull final Collection<HuId> huIds)
 	{
-		I_M_Picking_Candidate pickingCandidate = Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds);
+	}
+
+	public Optional<PickingCandidate> getByShipmentScheduleIdAndHuIdAndPickingSlotId(
+			@NonNull final HuId huId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final PickingSlotId pickingSlotId)
+	{
+		final I_M_Picking_Candidate existingRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
@@ -123,31 +187,65 @@ public class PickingCandidateRepository
 				.create()
 				.firstOnly(I_M_Picking_Candidate.class);
 
-		if (pickingCandidate == null)
+		if (existingRecord == null)
 		{
-			pickingCandidate = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
-			pickingCandidate.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
-			pickingCandidate.setM_PickingSlot_ID(pickingSlotId.getRepoId());
-			pickingCandidate.setM_HU_ID(huId.getRepoId());
-			pickingCandidate.setQtyPicked(BigDecimal.ZERO); // will be updated later
-			pickingCandidate.setC_UOM(null); // will be updated later
-			save(pickingCandidate);
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(toPickingCandidate(existingRecord));
+		}
+	}
 
-			logger.info("Created new M_Picking_Candidate for M_HU_ID={}, M_PickingSlot_ID={}, M_ShipmentSchedule_ID={}; candidate={}",
-					huId, pickingSlotId, shipmentScheduleId, pickingCandidate);
+	// public I_M_Picking_Candidate getCreateCandidate(
+	// @NonNull final HuId huId,
+	// @NonNull final PickingSlotId pickingSlotId,
+	// @NonNull final ShipmentScheduleId shipmentScheduleId)
+	// {
+	// I_M_Picking_Candidate existingRecord2 = Services.get(IQueryBL.class)
+	// .createQueryBuilder(I_M_Picking_Candidate.class)
+	// .addOnlyActiveRecordsFilter()
+	// .addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
+	// .addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+	// .addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+	// .create()
+	// .firstOnly(I_M_Picking_Candidate.class);
+	//
+	// if (existingRecord2 == null)
+	// {
+	// InterfaceWrapperHelper existingRecord = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
+	// existingRecord.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
+	// existingRecord.setM_PickingSlot_ID(pickingSlotId.getRepoId());
+	// existingRecord.setM_HU_ID(huId.getRepoId());
+	// existingRecord.setQtyPicked(BigDecimal.ZERO); // will be updated later
+	// existingRecord.setC_UOM(null); // will be updated later
+	// save(existingRecord);
+	//
+	// logger.info("Created new M_Picking_Candidate for M_HU_ID={}, M_PickingSlot_ID={}, M_ShipmentSchedule_ID={}; candidate={}",
+	// huId, pickingSlotId, shipmentScheduleId, existingRecord);
+	// }
+	//
+	// return existingRecord;
+	// }
+
+	public void deletePickingCandidates(@NonNull final Collection<PickingCandidate> candidates)
+	{
+		final Set<PickingCandidateId> ids = candidates.stream()
+				.map(PickingCandidate::getId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+		if (ids.isEmpty())
+		{
+			return;
 		}
 
-		return pickingCandidate;
+		final List<I_M_Picking_Candidate> records = loadByRepoIdAwares(ids, I_M_Picking_Candidate.class);
+		InterfaceWrapperHelper.deleteAll(records);
 	}
 
-	public void deletePickingCandidates(final Collection<I_M_Picking_Candidate> candidates)
-	{
-		candidates.forEach(InterfaceWrapperHelper::delete);
-	}
-
-	public List<I_M_Picking_Candidate> retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
+	public List<PickingCandidate> retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
-			@NonNull final String status)
+			@NonNull final PickingCandidateStatus status)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
@@ -157,10 +255,13 @@ public class PickingCandidateRepository
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, status)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, status.getCode())
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
-				.list(I_M_Picking_Candidate.class);
+				.stream(I_M_Picking_Candidate.class)
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
+
 	}
 
 	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
@@ -172,5 +273,39 @@ public class PickingCandidateRepository
 				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL)
 				.create()
 				.match();
+	}
+
+	public void inactivateForHUIds(@NonNull final Collection<HuId> huIds)
+	{
+		Check.assumeNotEmpty(huIds, "huIds is not empty");
+
+		retrievePickingCandidatesByHUIdsQuery(huIds)
+				.create()
+				.update(record -> {
+					markAsInactiveNoSave(record);
+					return IQueryUpdater.MODEL_UPDATED;
+
+				});
+	}
+
+	private void markAsInactiveNoSave(I_M_Picking_Candidate record)
+	{
+		record.setIsActive(false);
+		record.setStatus(PickingCandidateStatus.Closed.getCode());
+	}
+
+	public TableRecordReference toTableRecordReference(@NonNull final PickingCandidate candidate)
+	{
+		final PickingCandidateId id = candidate.getId();
+		if (id == null)
+		{
+			throw new AdempiereException("Candidate is not saved: " + candidate);
+		}
+		return toTableRecordReference(id);
+	}
+
+	public TableRecordReference toTableRecordReference(@NonNull final PickingCandidateId id)
+	{
+		return TableRecordReference.of(I_M_Picking_Candidate.Table_Name, id.getRepoId());
 	}
 }

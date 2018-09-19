@@ -1,16 +1,15 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -25,9 +24,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -85,6 +84,7 @@ public class ProcessPickingCandidateCommand
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IPackingService packingService = Services.get(IPackingService.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
@@ -94,7 +94,8 @@ public class ProcessPickingCandidateCommand
 	private final PickingSlotId pickingSlotId;
 	private final ShipmentScheduleId shipmentScheduleId;
 
-	private ImmutableListMultimap<HuId, I_M_Picking_Candidate> pickingCandidatesByHUId = null; // lazy
+	private ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByHUId = null; // lazy
+	private ImmutableList<PickingCandidate> processedPickingCandidates = null;
 
 	@Builder
 	private ProcessPickingCandidateCommand(
@@ -106,7 +107,7 @@ public class ProcessPickingCandidateCommand
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
 		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
-		
+
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.pickingConfigRepository = pickingConfigRepository;
@@ -163,32 +164,32 @@ public class ProcessPickingCandidateCommand
 	{
 		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new IdentityHashMap<>();
 
-		final List<I_M_Picking_Candidate> pickingCandidates = getPickingCandidatesForHUId(huId);
-		for (final I_M_Picking_Candidate pc : pickingCandidates)
+		final List<PickingCandidate> pickingCandidates = getPickingCandidatesForHUId(huId);
+		for (final PickingCandidate pc : pickingCandidates)
 		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(pc.getM_ShipmentSchedule_ID());
-			final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
-			final BigDecimal qty = pc.getQtyPicked();
-			scheds2Qtys.put(shipmentSchedule, Quantity.of(qty, pc.getC_UOM()));
+			final ShipmentScheduleId shipmentScheduleId = pc.getShipmentScheduleId();
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId);
+			final Quantity qty = pc.getQtyPicked();
+			scheds2Qtys.put(shipmentSchedule, qty);
 		}
 
 		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
 		return itemToPack;
 	}
 
-	private List<I_M_Picking_Candidate> getPickingCandidatesForHUId(final HuId huId)
+	private ImmutableList<PickingCandidate> getPickingCandidatesForHUId(final HuId huId)
 	{
 		return getPickingCandidatesIndexedByHUId().get(huId);
 	}
 
-	private ImmutableListMultimap<HuId, I_M_Picking_Candidate> getPickingCandidatesIndexedByHUId()
+	private ImmutableListMultimap<HuId, PickingCandidate> getPickingCandidatesIndexedByHUId()
 	{
 		if (pickingCandidatesByHUId == null)
 		{
 			pickingCandidatesByHUId = pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
 					.stream()
-					.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.getRepoId() == pc.getM_ShipmentSchedule_ID())
-					.collect(GuavaCollectors.toImmutableListMultimap(pc -> HuId.ofRepoId(pc.getM_HU_ID())));
+					.filter(pc -> shipmentScheduleId == null || Objects.equals(shipmentScheduleId, pc.getShipmentScheduleId()))
+					.collect(GuavaCollectors.toImmutableListMultimap(PickingCandidate::getHuId));
 		}
 		return pickingCandidatesByHUId;
 	}
@@ -223,19 +224,18 @@ public class ProcessPickingCandidateCommand
 
 	private void markCandidatesAsProcessed()
 	{
-		getPickingCandidatesIndexedByHUId()
+		this.processedPickingCandidates = getPickingCandidatesIndexedByHUId()
 				.values()
-				.forEach(this::markCandidateAsProcessed);
+				.stream()
+				.peek(pc -> pc.setStatus(PickingCandidateStatus.Processed))
+				.collect(ImmutableList.toImmutableList());
+		
+		pickingCandidateRepository.saveAll(processedPickingCandidates);
 	}
 
-	private void markCandidateAsProcessed(final I_M_Picking_Candidate pickingCandidate)
+	public Collection<PickingCandidate> getProcessedPickingCandidates()
 	{
-		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_PR);
-		InterfaceWrapperHelper.save(pickingCandidate);
-	}
-
-	public Collection<I_M_Picking_Candidate> getProcessedPickingCandidates()
-	{
-		return getPickingCandidatesIndexedByHUId().values();
+		Check.assumeNotEmpty(processedPickingCandidates, "processedPickingCandidates is not empty");
+		return processedPickingCandidates;
 	}
 }

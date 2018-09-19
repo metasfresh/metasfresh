@@ -1,21 +1,22 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -58,7 +59,8 @@ public class AddHUToPickingSlotCommand
 	private final HuId huId;
 	private final PickingSlotId pickingSlotId;
 	private final ShipmentScheduleId shipmentScheduleId;
-	private I_M_HU hu;
+
+	private I_M_ShipmentSchedule shipmentSchedule;
 
 	@Builder
 	private AddHUToPickingSlotCommand(
@@ -75,35 +77,33 @@ public class AddHUToPickingSlotCommand
 
 	public void perform()
 	{
-		hu = handlingUnitsDAO.getById(huId);
+		shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 
 		final Quantity qty = getQtyFromHU();
 
-		final I_M_Picking_Candidate pickingCandidate = pickingCandidateRepository.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
-
-		if (qty != null)
-		{
-			pickingCandidate.setQtyPicked(qty.getAsBigDecimal());
-			pickingCandidate.setC_UOM(qty.getUOM());
-		}
-		else
-		{
-			pickingCandidate.setQtyPicked(BigDecimal.ZERO);
-			pickingCandidate.setC_UOM(null);
-		}
+		final PickingCandidate pickingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(huId, shipmentScheduleId, pickingSlotId)
+				.orElseGet(() -> PickingCandidate.builder()
+						.qtyPicked(qty)
+						.huId(huId)
+						.shipmentScheduleId(shipmentScheduleId)
+						.pickingSlotId(pickingSlotId)
+						.build());
+		pickingCandidate.setQtyPicked(qty);
+		pickingCandidateRepository.save(pickingCandidate);
 
 		//
 		// Try allocating the picking slot
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
-		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule);
-		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
-
-		pickingCandidateRepository.save(pickingCandidate);
+		{
+			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+			final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule);
+			huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
+		}
 	}
 
 	private Quantity getQtyFromHU()
 	{
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+
 		final List<IHUProductStorage> productStorages = huContextFactory
 				.createMutableHUContext()
 				.getHUStorageFactory()
@@ -111,8 +111,11 @@ public class AddHUToPickingSlotCommand
 				.getProductStorages();
 		if (productStorages.isEmpty())
 		{
+			// TODO: don't return null but return ZERO using product's UOM
+
 			// Allow empty storage. That's the case when we are adding a newly created HU
-			return null;
+			final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
+			return Quantity.zero(uom);
 			// throw new AdempiereException("HU is empty").setParameter("hu", hu);
 		}
 		else if (productStorages.size() > 1)

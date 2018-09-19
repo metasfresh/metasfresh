@@ -122,7 +122,7 @@ public interface IHUPickingSlotDAO extends ISingletonService
 		return isHuIdPicked(huId.getRepoId());
 	}
 
-	boolean isPickingRackSystem(final int pickingSlotId);
+	boolean isPickingRackSystem(final PickingSlotId pickingSlotId);
 
-	Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems();
+	Set<PickingSlotId> retrieveAllPickingSlotIdsWhichAreRackSystems();
 }

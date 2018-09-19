@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -26,9 +27,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.logging.LogManager;
@@ -101,14 +102,14 @@ public class RemoveQtyFromHUCommand
 		final HUListAllocationSourceDestination source = createAllocationSourceAsHU();
 		final IAllocationDestination destination = createAllocationDestinationAsSourceHUs();
 
-		final List<I_M_Picking_Candidate> candidates = retrievePickingCandidates();
+		final List<PickingCandidate> candidates = retrievePickingCandidates();
 		if (candidates.isEmpty())
 		{
 			throw new AdempiereException("No picking candidates found");
 		}
 
 		BigDecimal qtyAllocatedSum = BigDecimal.ZERO;
-		for (final I_M_Picking_Candidate candidate : candidates)
+		for (final PickingCandidate candidate : candidates)
 		{
 			final IAllocationRequest request = createAllocationRequest(candidate);
 
@@ -130,18 +131,14 @@ public class RemoveQtyFromHUCommand
 		final I_M_HU hu = load(huId, I_M_HU.class);
 		if (handlingUnitsBL.isDestroyed(hu))
 		{
-			final ImmutableSet<PickingSlotId> pickingSlotIds = candidates.stream()
-					.map(I_M_Picking_Candidate::getM_PickingSlot_ID)
-					.map(PickingSlotId::ofRepoId)
-					.distinct()
-					.collect(ImmutableSet.toImmutableSet());
+			final Set<PickingSlotId> pickingSlotIds = PickingCandidate.extractPickingSlotIds(candidates);
 
 			pickingCandidateRepository.deletePickingCandidates(candidates);
 			pickingSlotIds.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
 		}
 	}
 
-	private List<I_M_Picking_Candidate> retrievePickingCandidates()
+	private List<PickingCandidate> retrievePickingCandidates()
 	{
 		return pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableList.of(huId));
 	}
@@ -165,7 +162,7 @@ public class RemoveQtyFromHUCommand
 	 * @param candidate
 	 * @return
 	 */
-	private IAllocationRequest createAllocationRequest(@NonNull final I_M_Picking_Candidate candidate)
+	private IAllocationRequest createAllocationRequest(@NonNull final PickingCandidate candidate)
 	{
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
 
@@ -174,7 +171,7 @@ public class RemoveQtyFromHUCommand
 				.setProduct(product)
 				.setQuantity(Quantity.of(qtyCU, product.getC_UOM()))
 				.setDateAsToday()
-				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the picking candidate
+				.setFromReferencedTableRecord(pickingCandidateRepository.toTableRecordReference(candidate)) // the m_hu_trx_Line coming out of this will reference the picking candidate
 				.setForceQtyAllocation(true)
 				.create();
 		return request;

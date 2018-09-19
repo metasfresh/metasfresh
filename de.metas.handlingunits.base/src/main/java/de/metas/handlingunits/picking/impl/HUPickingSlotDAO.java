@@ -305,26 +305,21 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public boolean isPickingRackSystem(final int pickingSlotId)
+	public boolean isPickingRackSystem(@NonNull final PickingSlotId pickingSlotId)
 	{
-		if (pickingSlotId <= 0)
-		{
-			return false;
-		}
-
 		return retrieveAllPickingSlotIdsWhichAreRackSystems().contains(pickingSlotId);
 	}
 
 	@Cached(cacheName = I_M_PickingSlot.Table_Name + "#by#" + I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, expireMinutes = Cached.EXPIREMINUTES_Never)
 	@Override
-	public Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems()
+	public Set<PickingSlotId> retrieveAllPickingSlotIdsWhichAreRackSystems()
 	{
-		final List<Integer> pickingSlotIds = Services.get(IQueryBL.class)
+		final Set<PickingSlotId> pickingSlotIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_PickingSlot.class)
 				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds();
+				.listIds(PickingSlotId::ofRepoId);
 
 		return ImmutableSet.copyOf(pickingSlotIds);
 	}

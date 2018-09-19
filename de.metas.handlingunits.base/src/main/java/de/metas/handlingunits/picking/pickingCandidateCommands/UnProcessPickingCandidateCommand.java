@@ -22,14 +22,15 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -85,15 +86,15 @@ public class UnProcessPickingCandidateCommand
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
-		this._huId = huId;
+		_huId = huId;
 	}
 
 	public void perform()
 	{
 		final I_M_HU hu = getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableSet.of(huId));
+
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableSet.of(huId));
 
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = retrieveQtyPickedRecords(pickingCandidates);
 
@@ -120,17 +121,17 @@ public class UnProcessPickingCandidateCommand
 		return _hu;
 	}
 
-	private void convertToStatusProcessed(final I_M_Picking_Candidate pickingCandidate)
+	private void convertToStatusProcessed(final PickingCandidate pickingCandidate)
 	{
-		if (X_M_Picking_Candidate.STATUS_IP.equals(pickingCandidate.getStatus()))
+		if (PickingCandidateStatus.InProgress.equals(pickingCandidate.getStatus()))
 		{
 			// already in progress => nothing to do
 		}
-		else if (X_M_Picking_Candidate.STATUS_PR.equals(pickingCandidate.getStatus()))
+		else if (PickingCandidateStatus.Processed.equals(pickingCandidate.getStatus()))
 		{
 			// already status processed => nothing to do
 		}
-		else if (X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidate.getStatus()))
+		else if (PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
 		{
 			UnClosePickingCandidateCommand.builder()
 					.pickingCandidate(pickingCandidate)
@@ -143,14 +144,15 @@ public class UnProcessPickingCandidateCommand
 		}
 	}
 
-	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final List<I_M_Picking_Candidate> pickingCandidates)
+	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final List<PickingCandidate> pickingCandidates)
 	{
-		final Set<Integer> shipmentScheduleIds = pickingCandidates.stream()
-				.map(I_M_Picking_Candidate::getM_ShipmentSchedule_ID)
+		final Set<ShipmentScheduleId> shipmentScheduleIds = pickingCandidates.stream()
+				.map(PickingCandidate::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(getM_HU()).stream()
-				.filter(qtyPickedRecord -> shipmentScheduleIds.contains(qtyPickedRecord.getM_ShipmentSchedule_ID()))
+		return huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(getM_HU())
+				.stream()
+				.filter(qtyPickedRecord -> shipmentScheduleIds.contains(ShipmentScheduleId.ofRepoIdOrNull(qtyPickedRecord.getM_ShipmentSchedule_ID())))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -224,9 +226,9 @@ public class UnProcessPickingCandidateCommand
 		}
 	}
 
-	private void markCandidateAsInProgress(final I_M_Picking_Candidate pickingCandidate)
+	private void markCandidateAsInProgress(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_IP);
-		InterfaceWrapperHelper.save(pickingCandidate);
+		pickingCandidate.setStatus(PickingCandidateStatus.InProgress);
+		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

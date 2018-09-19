@@ -1,14 +1,15 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
@@ -54,18 +55,15 @@ public class RemoveHUFromPickingSlotCommand
 
 	public void perform()
 	{
-		final List<I_M_Picking_Candidate> candidates = retrievePickingCandidates();
-		final ImmutableSet<PickingSlotId> pickingSlotIds = candidates.stream()
-				.map(pc -> PickingSlotId.ofRepoId(pc.getM_PickingSlot_ID()))
-				.distinct()
-				.collect(ImmutableSet.toImmutableSet());
+		final List<PickingCandidate> candidates = retrievePickingCandidates();
+		final Set<PickingSlotId> pickingSlotIds = PickingCandidate.extractPickingSlotIds(candidates);
 
 		pickingCandidateRepository.deletePickingCandidates(candidates);
-		pickingSlotIds.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
+		huPickingSlotBL.releasePickingSlotsIfPossible(pickingSlotIds);
 
 	}
 
-	private List<I_M_Picking_Candidate> retrievePickingCandidates()
+	private List<PickingCandidate> retrievePickingCandidates()
 	{
 		return pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableSet.of(huId));
 	}

@@ -25,6 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -49,6 +50,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
@@ -264,6 +266,14 @@ public class HUPickingSlotBL
 	}
 
 	@Override
+	public IQueueActionResult addToPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final HuId huId)
+	{
+		final de.metas.picking.model.I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId);
+		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
+		return addToPickingSlotQueue(pickingSlot, hu);
+	}
+
+	@Override
 	public IQueueActionResult addToPickingSlotQueue(final de.metas.picking.model.I_M_PickingSlot pickingSlot, final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
@@ -273,8 +283,7 @@ public class HUPickingSlotBL
 		return results.get(0);
 	}
 
-	@Override
-	public List<IQueueActionResult> addToPickingSlotQueue(
+	private List<IQueueActionResult> addToPickingSlotQueue(
 			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
 			@NonNull final List<I_M_HU> hus)
 	{
@@ -377,6 +386,14 @@ public class HUPickingSlotBL
 		// Create the picking slot transaction and return it.
 		final I_M_PickingSlot_Trx pickingSlotTrx = createPickingSlotTrx(pickingSlot, hu, X_M_PickingSlot_Trx.ACTION_Add_HU_To_Queue);
 		return new QueueActionResult(pickingSlotTrx, pickingSlotHU);
+	}
+
+	@Override
+	public IQueueActionResult removeFromPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, @NonNull final HuId huId)
+	{
+		final de.metas.picking.model.I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId);
+		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
+		return removeFromPickingSlotQueue(pickingSlot, hu);
 	}
 
 	@Override
@@ -589,6 +606,18 @@ public class HUPickingSlotBL
 	{
 		final I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId, I_M_PickingSlot.class);
 		releasePickingSlotIfPossible(pickingSlot);
+	}
+
+	@Override
+	public void releasePickingSlotsIfPossible(@NonNull final Collection<PickingSlotId> pickingSlotIds)
+	{
+		// tolerate empty
+		if (pickingSlotIds.isEmpty())
+		{
+			return;
+		}
+
+		pickingSlotIds.forEach(this::releasePickingSlotIfPossible);
 	}
 
 	@Override

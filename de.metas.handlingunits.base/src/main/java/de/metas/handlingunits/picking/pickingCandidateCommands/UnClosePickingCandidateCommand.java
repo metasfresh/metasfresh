@@ -1,15 +1,13 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
-import de.metas.handlingunits.model.I_M_PickingSlot;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -48,10 +46,10 @@ class UnClosePickingCandidateCommand
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
-	private final I_M_Picking_Candidate pickingCandidate;
+	private final PickingCandidate pickingCandidate;
 
 	@Builder
-	private UnClosePickingCandidateCommand(@NonNull final I_M_Picking_Candidate pickingCandidate)
+	private UnClosePickingCandidateCommand(@NonNull final PickingCandidate pickingCandidate)
 	{
 		this.pickingCandidate = pickingCandidate;
 	}
@@ -61,13 +59,18 @@ class UnClosePickingCandidateCommand
 	 */
 	public void perform()
 	{
-		if (!X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidate.getStatus()))
+		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
 		{
 			throw new AdempiereException("Invalid picking candidate status. Expected CLosed but it was " + pickingCandidate.getStatus())
 					.setParameter("pickingCandidate", pickingCandidate);
 		}
 
-		final int pickingSlotId = pickingCandidate.getM_PickingSlot_ID();
+		final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
+		if (pickingSlotId == null)
+		{
+			throw new AdempiereException("Not in a picking slot");
+		}
+
 		if (huPickingSlotDAO.isPickingRackSystem(pickingSlotId))
 		{
 			throw new AdempiereException("Unclosing a picking candidate when picking slot is a rack system is not allowed")
@@ -75,7 +78,6 @@ class UnClosePickingCandidateCommand
 					.setParameter("pickingCandidate", pickingCandidate);
 		}
 
-		final I_M_PickingSlot pickingSlot = load(pickingSlotId, I_M_PickingSlot.class);
-		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlot, pickingCandidate.getM_HU());
+		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlotId, pickingCandidate.getHuId());
 	}
 }
