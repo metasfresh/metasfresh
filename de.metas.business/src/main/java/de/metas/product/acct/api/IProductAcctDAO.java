@@ -29,7 +29,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 
@@ -51,11 +50,9 @@ public interface IProductAcctDAO extends ISingletonService
 	 */
 	ActivityId retrieveActivityForAcct(ClientId clientId, OrgId orgId, ProductId productId);
 
-	I_M_Product_Acct retrieveProductAcctOrNull(Properties ctx, int acctSchemaId, int productId);
-
 	I_M_Product_Acct retrieveProductAcctOrNull(I_C_AcctSchema acctSchema, int productId);
 
-	I_M_Product_Acct retrieveProductAcctOrNull(I_M_Product product);
+	ActivityId getProductActivityId(ProductId productId);
 
 	/**
 	 * 

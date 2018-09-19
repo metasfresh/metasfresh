@@ -33,7 +33,6 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
@@ -75,7 +74,6 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return ActivityId.ofRepoIdOrNull(acctInfo.getC_Activity_ID());
 	}
 
-	@Override
 	@Cached(cacheName = I_M_Product_Acct.Table_Name)
 	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final int acctSchemaId, final int productId)
 	{
@@ -97,13 +95,17 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Override
-	public I_M_Product_Acct retrieveProductAcctOrNull(final I_M_Product product)
+	public ActivityId getProductActivityId(@NonNull final ProductId productId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-
+		final Properties ctx = Env.getCtx();
 		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
+		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), productId.getRepoId());
+		if (productAcct == null)
+		{
+			return null;
+		}
 
-		return retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), product.getM_Product_ID());
+		return ActivityId.ofRepoIdOrNull(productAcct.getC_Activity_ID());
 	}
 
 	@Override
