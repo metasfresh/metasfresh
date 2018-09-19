@@ -57,7 +57,7 @@ public class ProductsToPickRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", seqNo = 50)
 	private final String repackNumberAttr;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60) // Damaged
 	private final Boolean bruchAttr;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
