@@ -50,7 +50,7 @@ class Tabs extends Component {
     return pills.map(item => {
       return (
         <li
-          id={item.props.internalName}
+          id={`tab_${item.props.internalName}`}
           className="nav-item"
           key={'tab' + item.key}
           onClick={e => this.handleClick(e, item.key)}
