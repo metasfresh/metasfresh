@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.api;
+package de.metas.handlingunits.picking;
 
 import java.util.Collection;
 
@@ -14,7 +14,7 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,12 +22,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,34 +35,34 @@ import lombok.Value;
  */
 
 @Value
-public class ShipmentScheduleId implements RepoIdAware
+public class PickingCandidateId implements RepoIdAware
 {
 	@JsonCreator
-	public static ShipmentScheduleId ofRepoId(final int repoId)
+	public static PickingCandidateId ofRepoId(final int repoId)
 	{
-		return new ShipmentScheduleId(repoId);
+		return new PickingCandidateId(repoId);
 	}
 
-	public static ShipmentScheduleId ofRepoIdOrNull(final int repoId)
+	public static PickingCandidateId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<ShipmentScheduleId> ids)
+	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<PickingCandidateId> ids)
 	{
 		if (ids.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		return ids.stream().map(ShipmentScheduleId::getRepoId).collect(ImmutableSet.toImmutableSet());
+		return ids.stream().map(PickingCandidateId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	int repoId;
 
-	private ShipmentScheduleId(final int shipmentScheduleRepoId)
+	private PickingCandidateId(final int pickingCandidateRepoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(shipmentScheduleRepoId, "shipmentScheduleRepoId");
+		this.repoId = Check.assumeGreaterThanZero(pickingCandidateRepoId, "pickingCandidateRepoId");
 	}
 
 	@Override

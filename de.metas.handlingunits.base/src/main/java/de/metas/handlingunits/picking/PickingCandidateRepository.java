@@ -61,7 +61,7 @@ public class PickingCandidateRepository
 		InterfaceWrapperHelper.save(candidate);
 	}
 
-	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesViaPickingCandidates(final int huId)
+	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesViaPickingCandidates(final HuId huId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<I_M_ShipmentSchedule> scheds = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
@@ -73,19 +73,22 @@ public class PickingCandidateRepository
 		return scheds;
 	}
 
-	public Set<Integer> retrieveShipmentScheduleIdsForPickingCandidateIds(final Collection<Integer> pickingCandidateIds)
+	public Set<ShipmentScheduleId> retrieveShipmentScheduleIdsForPickingCandidateIds(final Collection<PickingCandidateId> pickingCandidateIds)
 	{
 		if (pickingCandidateIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_Picking_Candidate_ID, pickingCandidateIds)
+				.addNotNull(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID)
 				.create()
 				.listDistinct(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, Integer.class)
 				.stream()
+				.map(ShipmentScheduleId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -160,7 +163,7 @@ public class PickingCandidateRepository
 				.list(I_M_Picking_Candidate.class);
 	}
 
-	public boolean hasNotClosedCandidatesForPickingSlot(final int pickingSlotId)
+	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
