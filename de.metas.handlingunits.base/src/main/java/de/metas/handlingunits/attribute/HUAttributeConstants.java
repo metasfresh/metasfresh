@@ -1,6 +1,7 @@
 package de.metas.handlingunits.attribute;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.util.Check;
 
 /*
@@ -55,7 +56,7 @@ public final class HUAttributeConstants
 	/**
 	 * @see http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29
 	 */
-	public static final String ATTR_LotNumberDate = "HU_LotNumberDate";
+	public static final String ATTR_LotNumberDate = LotNumberDateAttributeDAO.ATTR_LotNumberDate;
 
 	/**
 	 * The <code>M_Attribute.Value</code> for the HU-attribute referencing the purchase C_OrderLine_ID on which the given HU was ordered.

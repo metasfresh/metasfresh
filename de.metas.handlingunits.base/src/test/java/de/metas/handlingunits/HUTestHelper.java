@@ -588,7 +588,7 @@ public class HUTestHelper
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);

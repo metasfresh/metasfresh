@@ -187,9 +187,8 @@ public abstract class ReceiptScheduleTestBase
 		//@formatter:on
 
 		// #653
-		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.LotNumberDateAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-
-		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		setup();
 	}

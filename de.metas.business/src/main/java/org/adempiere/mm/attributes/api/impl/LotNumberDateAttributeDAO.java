@@ -30,21 +30,21 @@ import org.compiere.model.I_M_Attribute;
 
 public class LotNumberDateAttributeDAO implements ILotNumberDateAttributeDAO
 {
-	public static String LotNumberDateAttribute = "HU_LotNumberDate";
-	public static String LotNumberAttribute = "Lot-Nummer";
+	public static String ATTR_LotNumberDate = "HU_LotNumberDate";
+	public static String ATTR_LotNumber = "Lot-Nummer";
 
 	@Override
 	public AttributeId getLotNumberDateAttributeId()
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		return attributesRepo.retrieveAttributeIdByValueOrNull(LotNumberDateAttribute);
+		return attributesRepo.retrieveAttributeIdByValueOrNull(ATTR_LotNumberDate);
 	}
 
 	@Override
 	public AttributeId getLotNumberAttributeId()
 	{
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		return attributesRepo.retrieveAttributeIdByValueOrNull(LotNumberAttribute);
+		return attributesRepo.retrieveAttributeIdByValueOrNull(ATTR_LotNumber);
 	}
 
 	@Override
