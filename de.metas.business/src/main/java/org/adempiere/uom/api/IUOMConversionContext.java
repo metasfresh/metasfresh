@@ -18,17 +18,18 @@ import org.compiere.model.I_C_UOM;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.compiere.model.I_M_Product;
 
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -40,21 +41,29 @@ import de.metas.quantity.Quantity;
 public interface IUOMConversionContext
 {
 	/**
-	 * @deprecated please use {@link #of(int)}.
+	 * @deprecated please use {@link #of(ProductId)}.
 	 */
 	@Deprecated
 	public static IUOMConversionContext of(final I_M_Product product)
 	{
-		return of(product != null ? product.getM_Product_ID() : -1);
+		return of(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null);
 	}
 
+	/**
+	 * @deprecated please use {@link #of(ProductId)}.
+	 */
+	@Deprecated
 	public static IUOMConversionContext of(final int productId)
+	{
+		return of(ProductId.ofRepoIdOrNull(productId));
+	}
+
+	public static IUOMConversionContext of(final ProductId productId)
 	{
 		return new UOMConversionContext(productId);
 	}
 
-
-	int getProductId();
+	ProductId getProductId();
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code> using this context.
@@ -71,8 +80,8 @@ public interface IUOMConversionContext
 
 	default Quantity convertQty(final Quantity qty, final I_C_UOM uomTo)
 	{
-		final BigDecimal qtyConv = convertQty(qty.getQty(), qty.getUOM(), uomTo);
-		return new Quantity(qtyConv, uomTo, qty.getQty(), qty.getUOM());
+		final BigDecimal qtyConv = convertQty(qty.getAsBigDecimal(), qty.getUOM(), uomTo);
+		return new Quantity(qtyConv, uomTo, qty.getAsBigDecimal(), qty.getUOM());
 	}
 
 	/**

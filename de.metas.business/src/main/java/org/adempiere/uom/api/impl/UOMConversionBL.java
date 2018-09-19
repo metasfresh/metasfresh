@@ -52,6 +52,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
 import lombok.NonNull;
@@ -61,7 +62,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public IUOMConversionContext createConversionContext(final int productId)
+	public IUOMConversionContext createConversionContext(final ProductId productId)
 	{
 		return IUOMConversionContext.of(productId);
 	}
@@ -129,7 +130,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		//
 		// Convert current quantity to "uomTo"
-		final BigDecimal sourceQtyNew = quantity.getQty();
+		final BigDecimal sourceQtyNew = quantity.getAsBigDecimal();
 		final I_C_UOM sourceUOMNew = currentUOM;
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal qtyNew = uomConversionBL.convertQty(conversionCtx,
@@ -147,7 +148,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
 
 		// Get Product's stocking UOM
-		final int productId = conversionCtx.getProductId();
+		final ProductId productId = conversionCtx.getProductId();
 		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
@@ -156,7 +157,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public Quantity convertToProductUOM(@NonNull final Quantity quantity, final int productId)
 	{
-		final BigDecimal sourceQty = quantity.getQty();
+		final BigDecimal sourceQty = quantity.getAsBigDecimal();
 		final I_C_UOM sourceUOM = quantity.getUOM();
 
 		final IUOMConversionContext conversionCtx = createConversionContext(productId);

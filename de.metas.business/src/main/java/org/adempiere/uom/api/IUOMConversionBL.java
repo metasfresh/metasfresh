@@ -37,12 +37,12 @@ import lombok.NonNull;
 
 public interface IUOMConversionBL extends ISingletonService
 {
-	/**
-	 * Creates conversion context to be used in other conversion BL methods.
-	 * 
-	 * @return conversion context; never return null
-	 */
-	IUOMConversionContext createConversionContext(int productId);
+	IUOMConversionContext createConversionContext(ProductId productId);
+
+	default IUOMConversionContext createConversionContext(int productId)
+	{
+		return createConversionContext(ProductId.ofRepoIdOrNull(productId));
+	}
 
 	@Deprecated
 	default IUOMConversionContext createConversionContext(I_M_Product product)
@@ -66,7 +66,7 @@ public interface IUOMConversionBL extends ISingletonService
 		final int productId = product != null ? product.getM_Product_ID() : -1;
 		return convertQty(productId, qty, uomFrom, uomTo);
 	}
-	
+
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
 	 * 
