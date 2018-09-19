@@ -1,9 +1,11 @@
 package org.adempiere.mm.attributes.api;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -13,9 +15,11 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
@@ -259,11 +263,40 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
+	public LocalDate getValueAsLocalDate(final String attributeKey)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+	}
+
+	public Optional<LocalDate> getValueAsLocalDateIfExists(final String attributeKey)
+	{
+		if (hasAttribute(attributeKey))
+		{
+			return Optional.ofNullable(getValueAsLocalDate(attributeKey));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
 	@Override
 	public String getValueAsString(final String attributeKey)
 	{
 		final Object valueObj = getValue(attributeKey);
 		return valueObj != null ? valueObj.toString() : null;
+	}
+
+	public Optional<String> getValueAsStringIfExists(final String attributeKey)
+	{
+		if (hasAttribute(attributeKey))
+		{
+			return Optional.ofNullable(getValueAsString(attributeKey));
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@Override
@@ -280,6 +313,23 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public boolean hasAttributeValueId(final AttributeValueId attributeValueId)
 	{
 		return valueIdsByAttributeKey.containsValue(attributeValueId);
+	}
+
+	public Boolean getValueAsBoolean(final String attributeKey)
+	{
+		return StringUtils.toBoolean(getValueAsString(attributeKey), null);
+	}
+
+	public Optional<Boolean> getValueAsBooleanIfExists(final String attributeKey)
+	{
+		if (hasAttribute(attributeKey))
+		{
+			return Optional.ofNullable(getValueAsBoolean(attributeKey));
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@Override
