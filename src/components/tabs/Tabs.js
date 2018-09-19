@@ -50,6 +50,7 @@ class Tabs extends Component {
     return pills.map(item => {
       return (
         <li
+          id={item.props.internalName}
           className="nav-item"
           key={'tab' + item.key}
           onClick={e => this.handleClick(e, item.key)}
@@ -79,20 +80,10 @@ class Tabs extends Component {
       });
 
       if (selected == item.key) {
-        const {
-          tabid,
-          queryOnActivate,
-          docId,
-          orderBy,
-          internalName,
-        } = item.props;
+        const { tabid, queryOnActivate, docId, orderBy } = item.props;
 
         return (
-          <div
-            key={'pane' + item.key}
-            className="tab-pane active"
-            id={internalName}
-          >
+          <div key={'pane' + item.key} className="tab-pane active">
             <Tab
               {...{
                 queryOnActivate,
