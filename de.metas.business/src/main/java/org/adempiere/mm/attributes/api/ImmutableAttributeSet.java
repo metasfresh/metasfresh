@@ -68,23 +68,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				.filter(filter)
 				.forEach(attribute -> {
 					final Object value = attributeSet.getValue(attribute);
-					final AttributeValueId attributeValueId = getAttributeValueIdOrNull(attributeSet, attribute);
+					final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attribute.getValue());
 					builder.attributeValue(attribute, value, attributeValueId);
 				});
 
 		return builder.build();
-	}
-
-	private static final AttributeValueId getAttributeValueIdOrNull(final IAttributeSet attributeSet, final I_M_Attribute attribute)
-	{
-		if (attributeSet instanceof ImmutableAttributeSet)
-		{
-			return ((ImmutableAttributeSet)attributeSet).getAttributeValueIdOrNull(attribute);
-		}
-		else
-		{
-			return null;
-		}
 	}
 
 	public static final ImmutableAttributeSet EMPTY = new ImmutableAttributeSet();
@@ -278,14 +266,10 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return valueObj != null ? valueObj.toString() : null;
 	}
 
+	@Override
 	public AttributeValueId getAttributeValueIdOrNull(final String attributeKey)
 	{
 		return valueIdsByAttributeKey.get(attributeKey);
-	}
-
-	public AttributeValueId getAttributeValueIdOrNull(@NonNull final I_M_Attribute attribute)
-	{
-		return getAttributeValueIdOrNull(attribute.getValue());
 	}
 
 	public boolean hasAttributeValueIds()

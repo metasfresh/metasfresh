@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
@@ -49,7 +50,7 @@ public interface IAttributeSet
 	 * @return true if the given attribute is available for getting/setting
 	 */
 	boolean hasAttribute(String attribute);
-	
+
 	boolean hasAttribute(AttributeId attributeId);
 
 	/**
@@ -67,7 +68,7 @@ public interface IAttributeSet
 	 * @return {@link I_M_Attribute} or <code>null</code>
 	 */
 	I_M_Attribute getAttributeByIdIfExists(int attributeId);
-	
+
 	default I_M_Attribute getAttributeByIdIfExists(@NonNull final AttributeId attributeId)
 	{
 		return getAttributeByIdIfExists(attributeId.getRepoId());
@@ -127,20 +128,25 @@ public interface IAttributeSet
 		return getValueAsString(attribute.getValue());
 	}
 
+	default AttributeValueId getAttributeValueIdOrNull(String attributeKey)
+	{
+		return null;
+	}
+
 	/**
 	 * Set attribute's value and propagate to its parent/child attribute sets.
 	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	void setValue(String attribute, Object value);
-	
+
 	void setValue(AttributeId attributeId, Object value);
 
 	default void setValue(final I_M_Attribute attribute, final Object value)
 	{
 		setValue(attribute.getValue(), value);
 	}
-	
+
 	/**
 	 * @return {@link IAttributeValueCallout} instance; never return null
 	 */
