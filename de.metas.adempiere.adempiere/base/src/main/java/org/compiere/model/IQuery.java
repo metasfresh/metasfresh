@@ -427,7 +427,7 @@ public interface IQuery<T>
 	 */
 	List<Integer> listIds();
 
-	default <ID extends RepoIdAware> Set<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	default <ID extends RepoIdAware> ImmutableSet<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
 	}
