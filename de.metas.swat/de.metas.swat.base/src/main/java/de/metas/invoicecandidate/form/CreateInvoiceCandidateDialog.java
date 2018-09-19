@@ -51,6 +51,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -62,8 +63,6 @@ import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
@@ -92,6 +91,7 @@ import de.metas.pricing.exception.ProductPriceNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import net.miginfocom.swing.MigLayout;
@@ -475,17 +475,14 @@ public class CreateInvoiceCandidateDialog
 
 	private void configureC_Activity_ID(final IContextAware contextProvider, final I_M_Product product, final I_M_PricingSystem pricingSystem)
 	{
-		final int orgId = Env.getAD_Org_ID(contextProvider.getCtx());
-		final I_AD_Org org = InterfaceWrapperHelper.create(contextProvider.getCtx(), orgId, I_AD_Org.class, contextProvider.getTrxName());
+		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(contextProvider.getCtx()));
+		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(contextProvider.getCtx()));
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		int activityId = -1;
+		ActivityId activityId = null;
 		try
 		{
-			final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, org, product);
-			if (activity != null)
-			{
-				activityId = activity.getC_Activity_ID();
-			}
+			activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
 		}
 		catch (final Exception e)
 		{
@@ -495,11 +492,11 @@ public class CreateInvoiceCandidateDialog
 			return;
 		}
 
-		if (activityId <= 0)
+		if (activityId == null)
 		{
 			return;
 		}
-		activityField.setValue(activityId);
+		activityField.setValue(activityId.getRepoId());
 	}
 
 	@Override

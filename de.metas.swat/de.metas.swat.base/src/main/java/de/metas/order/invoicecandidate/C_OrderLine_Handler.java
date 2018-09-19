@@ -34,13 +34,12 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -65,6 +64,8 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -181,18 +182,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// 07442 activity and tax
 
-		final I_C_Activity activity;
+		final ActivityId activityId;
 		if (orderLine.getC_Activity_ID() > 0)
 		{
 			// https://github.com/metasfresh/metasfresh/issues/2299
-			activity = orderLine.getC_Activity();
+			activityId = ActivityId.ofRepoId(orderLine.getC_Activity_ID());
 		}
 		else
 		{
-			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(orderLine);
-			activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, orderLine.getAD_Org(), orderLine.getM_Product());
+			activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+					ProductId.ofRepoId(orderLine.getM_Product_ID()));
 		}
-		ic.setC_Activity(activity);
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,

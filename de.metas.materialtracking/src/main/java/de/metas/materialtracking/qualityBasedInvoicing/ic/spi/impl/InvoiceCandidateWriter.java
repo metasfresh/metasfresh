@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -42,7 +43,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -69,6 +69,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceL
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 
@@ -583,14 +585,17 @@ public class InvoiceCandidateWriter
 	/**
 	 *
 	 * @param invoiceCandidate
+	 * @task 07442
 	 */
 	@VisibleForTesting
 	protected void setC_Activity_ID(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		// 07442 activity
-		final IContextAware context = getContext();
-		final I_C_Activity activity = productAcctDAO.retrieveActivityForAcct(context, invoiceCandidate.getAD_Org(), invoiceCandidate.getM_Product());
-		invoiceCandidate.setC_Activity(activity);
+		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
+				ClientId.ofRepoId(invoiceCandidate.getAD_Client_ID()),
+				OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID()),
+				ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()));
+
+		invoiceCandidate.setC_Activity_ID(ActivityId.toRepoId(activityId));
 	}
 
 	/**

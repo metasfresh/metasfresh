@@ -12,21 +12,17 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerBL;
@@ -44,7 +40,8 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
-import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -125,6 +122,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_M_Inventory inventory = InterfaceWrapperHelper.create(inventoryLine.getM_Inventory(), I_M_Inventory.class);
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, inventoryLine);
+		
+		final ClientId clientId = ClientId.ofRepoId(inventoryLine.getAD_Client_ID());
 
 		final OrgId orgId = OrgId.ofRepoId(inventoryLine.getAD_Org_ID());
 		ic.setAD_Org_ID(orgId.getRepoId());
@@ -148,10 +147,10 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Product
-		final int productId = inventoryLine.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 
 		{
-			ic.setM_Product_ID(productId);
+			ic.setM_Product_ID(productId.getRepoId());
 			// for the time being, the material disposals do not have packing material lines because we only throw the products, not the boxes
 			ic.setIsPackagingMaterial(false);
 
@@ -183,15 +182,12 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Activity from Product (07442)
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(inventoryLine);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
-		final I_AD_Org org = Services.get(IOrgDAO.class).getById(orgId);
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, org, product);
-		ic.setC_Activity(activity);
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		//
 		// Set C_Tax from Product (07442)
+		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
 		final int taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : -1;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final Timestamp billDate = inOut.getDateAcct();
@@ -200,7 +196,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				ctx,
 				ic,
 				taxCategoryId,
-				productId,
+				productId.getRepoId(),
 				billDate,
 				shipDate,
 				orgId,

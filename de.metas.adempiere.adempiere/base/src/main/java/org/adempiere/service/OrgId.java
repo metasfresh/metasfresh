@@ -79,7 +79,7 @@ public class OrgId implements RepoIdAware
 
 	private OrgId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "orgId");
 	}
 
 	private OrgId()

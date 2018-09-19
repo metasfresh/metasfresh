@@ -32,13 +32,11 @@ import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -54,6 +52,8 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.NonNull;
@@ -199,12 +199,13 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIsSOTrx(true);
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(olc);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, olc.getAD_Org(), olCandEffectiveValuesBL.getM_Product_Effective(olc));
-		ic.setC_Activity(activity);
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+				ClientId.ofRepoId(olc.getAD_Client_ID()),
+				OrgId.ofRepoId(olc.getAD_Org_ID()),
+				ProductId.ofRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olc)));
+		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		final int taxCategoryId = -1; // FIXME for accuracy, we will need the tax category
-		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
 
 		final int taxId = Services.get(ITaxBL.class).getTax(ctx

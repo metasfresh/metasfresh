@@ -13,7 +13,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
@@ -39,6 +38,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import lombok.Builder;
@@ -48,8 +49,8 @@ import mockit.Mocked;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
-	private I_AD_Org org;
-	private I_C_Activity activity;
+	private OrgId orgId;
+	private ActivityId activityId;
 
 	@Mocked
 	protected IProductAcctDAO productAcctDAO;
@@ -66,11 +67,13 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	@Before
 	public void before()
 	{
-		org = newInstance(I_AD_Org.class);
+		final I_AD_Org org = newInstance(I_AD_Org.class);
 		InterfaceWrapperHelper.save(org);
+		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
-		activity = newInstance(I_C_Activity.class);
+		final I_C_Activity activity = newInstance(I_C_Activity.class);
 		InterfaceWrapperHelper.save(activity);
+		activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 	}
 
 	@Test
@@ -79,6 +82,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
 
 		final I_M_Product product1 = createProduct();
+		final ProductId productId1 = ProductId.ofRepoId(product1.getM_Product_ID());
 		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
 				.build();
 		final I_C_OrderLine orderLine = newOrderLine()
@@ -100,9 +104,19 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		// @formatter:off
 		new Expectations()
 		{{
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, product1); minTimes = 0; result = activity;
+				productAcctDAO.retrieveActivityForAcct(
+						clientId,
+						orgId,
+						productId1);
+				minTimes = 0;
+				result = activityId;
 
-				productAcctDAO.retrieveActivityForAcct((IContextAware)any, withNotEqual(org), withNotEqual(product1)); minTimes = 0; result = null;
+				productAcctDAO.retrieveActivityForAcct(
+						withNotEqual(clientId),
+						withNotEqual(orgId),
+						withNotEqual(productId1));
+				minTimes = 0;
+				result = null;
 
 				final Properties ctx = Env.getCtx();
 
@@ -132,7 +146,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	private I_M_Product createProduct()
 	{
 		final I_M_Product product1 = newInstance(I_M_Product.class);
-		product1.setAD_Org(org);
+		product1.setAD_Org_ID(orgId.getRepoId());
 		POJOWrapper.setInstanceName(product1, "product1");
 		save(product1);
 		return product1;
@@ -158,7 +172,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		conditions.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		conditions.setAD_Org(org);
+		conditions.setAD_Org_ID(orgId.getRepoId());
 		conditions.setC_Flatrate_Transition(transition);
 		save(conditions);
 		return conditions;

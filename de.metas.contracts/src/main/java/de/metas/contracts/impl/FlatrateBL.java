@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
@@ -43,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -54,7 +54,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -104,6 +103,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.workflow.api.IWFExecutionFactory;
@@ -418,12 +419,9 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
+		final ActivityId activityId = findActivityIdOrNull(term, productId);
 
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
-
-		newCand.setC_Activity(activity);
+		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
@@ -450,6 +448,14 @@ public class FlatrateBL implements IFlatrateBL
 		InterfaceWrapperHelper.save(newCand);
 
 		return newCand;
+	}
+
+	private ActivityId findActivityIdOrNull(final I_C_Flatrate_Term term, final int productId)
+	{
+		return Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+				ClientId.ofRepoId(term.getAD_Client_ID()),
+				OrgId.ofRepoId(term.getAD_Org_ID()),
+				ProductId.ofRepoId(productId));
 	}
 
 	private void setILCandHandler(final Properties ctx, final I_C_Invoice_Candidate newCand)
@@ -545,12 +551,9 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setRecord_ID(dataEntry.getC_Flatrate_DataEntry_ID());
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(term);
+		final ActivityId activityId = findActivityIdOrNull(term, productIdForIc);
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, productIdForIc, I_M_Product.class, trxName);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, term.getAD_Org(), product);
-
-		newCand.setC_Activity(activity);
+		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
