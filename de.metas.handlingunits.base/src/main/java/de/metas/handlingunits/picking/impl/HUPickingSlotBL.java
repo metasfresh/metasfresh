@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -624,20 +623,13 @@ public class HUPickingSlotBL
 	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsQuery query)
 	{
 		final SourceHUsService sourceHuService = SourceHUsService.get();
-
-		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = //
-				vhus -> sourceHuService.retrieveParentHusThatAreSourceHUs(vhus);
-
-		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, sourceHuService::retrieveParentHusThatAreSourceHUs);
 	}
 
 	@Override
 	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery query)
 	{
-		final Function<List<I_M_HU>, List<I_M_HU>> //
-		vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
-
-		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, vhuToEndResultFunction);
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(query, RetrieveAvailableHUsToPickFilters::retrieveFullTreeAndExcludePickingHUs);
 	}
 
 	@Override

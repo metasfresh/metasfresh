@@ -19,6 +19,7 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +28,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -197,37 +202,6 @@ public class PickingCandidateRepository
 		}
 	}
 
-	// public I_M_Picking_Candidate getCreateCandidate(
-	// @NonNull final HuId huId,
-	// @NonNull final PickingSlotId pickingSlotId,
-	// @NonNull final ShipmentScheduleId shipmentScheduleId)
-	// {
-	// I_M_Picking_Candidate existingRecord2 = Services.get(IQueryBL.class)
-	// .createQueryBuilder(I_M_Picking_Candidate.class)
-	// .addOnlyActiveRecordsFilter()
-	// .addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
-	// .addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
-	// .addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
-	// .create()
-	// .firstOnly(I_M_Picking_Candidate.class);
-	//
-	// if (existingRecord2 == null)
-	// {
-	// InterfaceWrapperHelper existingRecord = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
-	// existingRecord.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
-	// existingRecord.setM_PickingSlot_ID(pickingSlotId.getRepoId());
-	// existingRecord.setM_HU_ID(huId.getRepoId());
-	// existingRecord.setQtyPicked(BigDecimal.ZERO); // will be updated later
-	// existingRecord.setC_UOM(null); // will be updated later
-	// save(existingRecord);
-	//
-	// logger.info("Created new M_Picking_Candidate for M_HU_ID={}, M_PickingSlot_ID={}, M_ShipmentSchedule_ID={}; candidate={}",
-	// huId, pickingSlotId, shipmentScheduleId, existingRecord);
-	// }
-	//
-	// return existingRecord;
-	// }
-
 	public void deletePickingCandidates(@NonNull final Collection<PickingCandidate> candidates)
 	{
 		final Set<PickingCandidateId> ids = candidates.stream()
@@ -308,4 +282,74 @@ public class PickingCandidateRepository
 	{
 		return TableRecordReference.of(I_M_Picking_Candidate.Table_Name, id.getRepoId());
 	}
+
+	public List<PickingCandidate> query(@NonNull final PickingCandidatesQuery pickingCandidatesQuery)
+	{
+		// configure the query builder
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+
+		if (pickingCandidatesQuery.isOnlyNotClosedOrNotRackSystem())
+		{
+			final IHUPickingSlotDAO huPickingSlotsRepo = Services.get(IHUPickingSlotDAO.class);
+			final Set<PickingSlotId> rackSystemPickingSlotIds = huPickingSlotsRepo.retrieveAllPickingSlotIdsWhichAreRackSystems();
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL)
+					.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
+		}
+
+		//
+		// Picking slot Barcode filter
+		final String pickingSlotBarcode = pickingCandidatesQuery.getPickingSlotBarcode();
+		if (!Check.isEmpty(pickingSlotBarcode, true))
+		{
+			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
+			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
+					.barcode(pickingSlotBarcode)
+					.build());
+			if (pickingSlotIds.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotIds);
+		}
+
+		//
+		// HU filter
+		final IQuery<I_M_HU> husQuery = queryBL.createQueryBuilder(I_M_HU.class)
+				.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Shipped) // not already shipped (https://github.com/metasfresh/metasfresh-webui-api/issues/647)
+				.create();
+		queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+
+		return queryBuilder
+				.orderBy(I_M_Picking_Candidate.COLUMNNAME_M_Picking_Candidate_ID)
+				.create()
+				.stream()
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
+	}
+	
+	/**
+	 * @return Return {@code true} if the given HU is referenced by an active picking candidate.<br>
+	 *         Note that we use the ID for performance reasons.
+	 */
+	//@Cached(cacheName = I_M_Picking_Candidate.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
+	public boolean isHuIdPicked(@NonNull final HuId huId)
+	{
+		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.match();
+		return isAlreadyPicked;
+	}
+
+
 }

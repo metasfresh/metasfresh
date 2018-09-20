@@ -38,7 +38,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.picking.api.PickingSlotId;
 
 public interface IHUPickingSlotDAO extends ISingletonService
@@ -107,20 +106,6 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryFilter<I_M_HU> createHUOnPickingSlotQueryFilter(final Object contextProvider);
-
-	/**
-	 * Return {@code true} if the given {@code M_HU_ID} is referenced by an active {@link I_M_Picking_Candidate}.<br>
-	 * Note that we use the ID for performance reasons.
-	 *
-	 * @param huId
-	 * @return
-	 */
-	boolean isHuIdPicked(int huId);
-
-	default boolean isHuIdPicked(final HuId huId)
-	{
-		return isHuIdPicked(huId.getRepoId());
-	}
 
 	boolean isPickingRackSystem(final PickingSlotId pickingSlotId);
 

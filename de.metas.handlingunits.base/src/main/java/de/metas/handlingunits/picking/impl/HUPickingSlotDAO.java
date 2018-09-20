@@ -50,7 +50,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import lombok.NonNull;
@@ -289,19 +288,6 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.create()
 				.setOnlyActiveRecords(true)
 				.list(I_M_PickingSlot.class);
-	}
-
-	@Override
-	@Cached(cacheName = I_M_Picking_Candidate.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
-	public boolean isHuIdPicked(final int huId)
-	{
-		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.match();
-		return isAlreadyPicked;
 	}
 
 	@Override

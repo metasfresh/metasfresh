@@ -73,5 +73,4 @@ public class PickingCandidate
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }

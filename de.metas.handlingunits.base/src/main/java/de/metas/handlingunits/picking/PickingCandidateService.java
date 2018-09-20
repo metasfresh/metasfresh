@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand.AddQtyToHUCommandBuilder;
@@ -105,7 +104,7 @@ public class PickingCandidateService
 	 * For the given {@code huIds}, this method does two things:
 	 * <ul>
 	 * <li>Retrieves the source HUs (if any) of the the given {@code huIds} and if they are empty creates a snapshot and destroys them</li>
-	 * <li>selects the {@link I_M_Picking_Candidate}s that reference those HUs
+	 * <li>selects the picking candidates that reference those HUs
 	 * and have {@code status == 'IP'} (in progress) and updates them to {@code status='PR'} (processed).
 	 * No model interceptors etc will be fired.</li>
 	 * </ul>
@@ -172,4 +171,10 @@ public class PickingCandidateService
 
 		pickingCandidateRepository.inactivateForHUIds(huIds);
 	}
+
+	public boolean isHuIdPicked(@NonNull final HuId huId)
+	{
+		return pickingCandidateRepository.isHuIdPicked(huId);
+	}
+
 }
