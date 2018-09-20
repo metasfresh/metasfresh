@@ -7,9 +7,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -65,13 +65,13 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 
 	private final void fireDocValidateEvent(final int timing)
 	{
-		if (POWrapper.isHandled(model))
+		if (POJOWrapper.isHandled(model))
 		{
-			ModelValidationEngine.get().fireDocValidate(model, timing);
+			POJOLookupMap.get().fireDocumentChange(model, DocTimingType.valueOf(timing));
 		}
 		else
 		{
-			POJOLookupMap.get().fireDocumentChange(model, DocTimingType.valueOf(timing));
+			ModelValidationEngine.get().fireDocValidate(model, timing);
 		}
 	}
 
