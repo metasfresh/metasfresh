@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -168,12 +169,21 @@ public class PickingSlotViewRepository
 		final List<I_M_PickingSlot> pickingSlots = retrievePickingSlotsForShipmentSchedule(query);
 
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
-		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
+		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(toPickingCandidatesQuery(query));
 
 		final ImmutableList<PickingSlotRow> result = pickingSlots.stream() // get stream of I_M_PickingSlot
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
 				.collect(ImmutableList.toImmutableList());
 		return result;
+	}
+
+	private static PickingCandidatesQuery toPickingCandidatesQuery(final PickingSlotRepoQuery query)
+	{
+		return PickingCandidatesQuery.builder()
+				.shipmentScheduleIds(query.getShipmentScheduleIds())
+				.onlyNotClosedOrNotRackSystem(query.isOnlyNotClosedOrNotRackSystem())
+				.pickingSlotBarcode(query.getPickingSlotBarcode())
+				.build();
 	}
 
 	/**

@@ -20,6 +20,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -82,13 +83,16 @@ public class PickingSlotViewRepositoryTests
 			pickingSlot.setIsPickingRackSystem(true);
 		});
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
 		// @formatter:off return an empty list
-		new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
+		new Expectations() {{
+			pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.of(shipmentScheduleId));
+			result = ImmutableListMultimap.of();
+		}};
 		// @formatter:on
 
 		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 		final List<PickingSlotRow> pickingSlotRows = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(pickingSlotRows.size(), is(1)); // even if there are no HUs, there shall still be a row for our picking slot.
@@ -106,7 +110,6 @@ public class PickingSlotViewRepositoryTests
 
 		final boolean pickingSlotRowProcessed = false;
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
 		// set up a picked TU with a CU to be returned by the pickingHUsRepo.
 		{
@@ -128,11 +131,15 @@ public class PickingSlotViewRepositoryTests
 							pickingSlotRowProcessed));
 
 			// @formatter:off return an empty list
-			new Expectations() {{ pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query); result = husIndexedByPickingSlotId; }};
+			new Expectations() {{ 
+				pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.of(shipmentScheduleId));
+				result = husIndexedByPickingSlotId; 
+			}};
 			// @formatter:on
 		}
 
 		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSlotViewRepository();
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(rowsByShipmentScheduleId.size(), is(1));

@@ -87,7 +87,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		if (huPickingSlotDAO.isHuIdPicked(huRow.getHuId()))
+		if (pickingCandidateService.isHuIdPicked(huRow.getHuId()))
 		{
 			return false;
 		}

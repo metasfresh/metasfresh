@@ -6,7 +6,6 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -35,7 +34,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
  */
 
 /**
- * Unprocesses the processed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
+ * Unprocesses the processed picking candidate of the currently selected TU.<br>
  * Unprocessing means that
  * <ul>
  * <li>the HU is changed from status "picked" to "active" (even if it was only "planned" before the candidate was processed!)</li>

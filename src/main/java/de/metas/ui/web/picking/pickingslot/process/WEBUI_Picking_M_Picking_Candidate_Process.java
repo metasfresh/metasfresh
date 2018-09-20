@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -38,7 +37,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
  */
 
 /**
- * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
+ * Processes the unprocessed picking candidate of the currently selected TU.<br>
  * Processing means that
  * <ul>
  * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>

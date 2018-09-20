@@ -21,7 +21,6 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidateQueryStatus;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
@@ -159,7 +158,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
 		final PickingSlotRepoQueryBuilder queryBuilder = PickingSlotRepoQuery.builder()
-				.pickingCandidates(PickingCandidateQueryStatus.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM)
+				.onlyNotClosedOrNotRackSystem(true)
 				.currentShipmentScheduleId(currentShipmentScheduleId);
 		if (allShipmentScheduleIds == null || allShipmentScheduleIds.isEmpty())
 		{
