@@ -14,15 +14,12 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
-import de.metas.document.engine.DocumentHandler;
-import de.metas.document.engine.DocumentHandlerProvider;
-import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 
 public final class DocumentBL extends AbstractDocumentBL
 {
 	@Override
-	protected IDocument getDocument(final Object documentObj, final boolean throwEx)
+	protected IDocument getLegacyDocumentOrNull(final Object documentObj, final boolean throwEx)
 	{
 		if (documentObj == null)
 		{
@@ -53,15 +50,6 @@ public final class DocumentBL extends AbstractDocumentBL
 		{
 			return (IDocument)po;
 
-		}
-
-		//
-		final String tableName = po.get_TableName();
-		final DocumentHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
-		if (handlerProvider != null)
-		{
-			final DocumentHandler handler = handlerProvider.provideForDocument(po);
-			return DocumentWrapper.wrapModelUsingHandler(po, handler);
 		}
 
 		if (throwEx)

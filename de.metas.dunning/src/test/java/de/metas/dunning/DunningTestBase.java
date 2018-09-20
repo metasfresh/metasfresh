@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -43,6 +44,7 @@ import org.adempiere.document.service.impl.DummyDocumentLocationBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.PlainInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
@@ -105,6 +107,8 @@ public class DunningTestBase
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.get().setCopyOnSave(true); // FIXME : Adapt dunning tests to new behavior
 
+		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, 0);
+
 		dao = new PlainDunningDAO();
 		Services.registerService(IDunningDAO.class, dao);
 
@@ -120,6 +124,8 @@ public class DunningTestBase
 
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
+
+
 
 		MockedCloseableIterator.clear();
 

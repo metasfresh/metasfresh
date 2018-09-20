@@ -5,8 +5,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.POWrapper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -62,7 +65,14 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 
 	private final void fireDocValidateEvent(final int timing)
 	{
-		ModelValidationEngine.get().fireDocValidate(model, timing);
+		if (POWrapper.isHandled(model))
+		{
+			ModelValidationEngine.get().fireDocValidate(model, timing);
+		}
+		else
+		{
+			POJOLookupMap.get().fireDocumentChange(model, DocTimingType.valueOf(timing));
+		}
 	}
 
 	@Override

@@ -26,18 +26,14 @@ import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.exception.DunningException;
-import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.PlainDunningConfigurator;
 
@@ -133,19 +129,6 @@ public class DunningBLTest extends DunningTestBase
 
 		candidate.setIsActive(false);
 		dunningBL.validate(candidate);
-	}
-
-	@Test(expected = DunningException.class)
-	public void test_processDunningDoc_alreadyProcessed()
-	{
-		final PlainDunningContext context = createPlainDunningContext();
-
-		final I_C_DunningDoc dunningDoc = dao.newInstance(context, I_C_DunningDoc.class);
-		dunningDoc.setProcessed(true);
-		InterfaceWrapperHelper.save(dunningDoc);
-
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-		documentBL.processEx(dunningDoc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	@Test

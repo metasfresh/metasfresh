@@ -16,15 +16,14 @@ package de.metas.dunning.test.integration;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -45,7 +44,13 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningEventDispatcher;
@@ -54,6 +59,7 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
+import de.metas.dunning.invoice.api.impl.InvoiceSourceBL;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedDunningCandidateListener;
@@ -63,6 +69,12 @@ import de.metas.interfaces.I_C_DocType;
  * @author tsa
  *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ShutdownListener.class,
+		DunningDocDocumentHandlerProvider.class
+})
 public class TestDunning extends DunningTestBase
 {
 	// Invoices
@@ -315,7 +327,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Execute writeoff process
-		Services.get(IInvoiceSourceBL.class).writeOffDunningDocs(dunningContext.getCtx(), "writeoff test 2");
+		new InvoiceSourceBL().writeOffDunningDocs(dunningContext.getCtx(), "writeoff test 2");
 
 		//
 		// Assert no invoice shall be wrote-off at this moment (we are still on level1)
