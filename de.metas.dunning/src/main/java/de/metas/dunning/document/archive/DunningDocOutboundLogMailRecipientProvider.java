@@ -1,10 +1,14 @@
 package de.metas.dunning.document.archive;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.user.User;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
+import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
@@ -16,6 +20,8 @@ import de.metas.document.archive.DocOutBoundRecipientId;
 import de.metas.document.archive.DocOutBoundRecipientRepository;
 import de.metas.document.archive.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.dunning.DunningDocId;
+import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
 import lombok.NonNull;
 
@@ -48,13 +54,16 @@ public class DunningDocOutboundLogMailRecipientProvider
 
 	private final DocOutBoundRecipientRepository recipientRepository;
 	private final IBPartnerBL bpartnerBL;
+	private final DunningService dunningService;
 
 	public DunningDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
-			@NonNull final IBPartnerBL bpartnerBL)
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final DunningService dunningService)
 	{
 		this.recipientRepository = recipientRepository;
 		this.bpartnerBL = bpartnerBL;
+		this.dunningService = dunningService;
 	}
 
 	@Override
@@ -80,20 +89,42 @@ public class DunningDocOutboundLogMailRecipientProvider
 				.ofReferenced(docOutboundLogRecord)
 				.getModel(I_C_DunningDoc.class);
 
+		final DunningDocId dunningDocId = DunningDocId.ofRepoId(dunningRecord.getC_DunningDoc_ID());
+		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
+		final int singleCommonInvoiceContactId = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getAD_User_ID, -1);
+		if (singleCommonInvoiceContactId > 0)
+		{
+			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(singleCommonInvoiceContactId));
+			if (Check.isEmpty(invoiceUser.getEmailAddress(), true))
+			{
+				Loggables.get().addLog("The dunned invoices' common invoiceUser={} has not mail address", invoiceUser);
+			}
+			else
+			{
+				Loggables.get().addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", invoiceUser);
+				return Optional.of(invoiceUser);
+			}
+		}
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(dunningRecord.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, dunningRecord.getC_BPartner_Location_ID());
 		final RetrieveBillContactRequest request = RetrieveBillContactRequest
 				.builder()
 				.bpartnerId(bpartnerId)
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, dunningRecord.getC_BPartner_Location_ID()))
+				.bPartnerLocationId(bPartnerLocationId)
 				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 				.build();
 
 		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
 		if (billContact != null)
 		{
+			Loggables.get().addLog("Found billContact={} with a mail address for bpartnerId={} and bPartnerLocationId={}", billContact, bpartnerId, bPartnerLocationId);
+
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId()));
 			return Optional.of(docOutBoundRecipient);
 		}
+
+		Loggables.get().addLog("Found no billContact with a mail address for bpartnerId={} and bPartnerLocationId={}", bpartnerId, bPartnerLocationId);
 		return Optional.empty();
 	}
 
