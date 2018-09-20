@@ -116,7 +116,6 @@ public class ESRImportTest extends ESRTestBase
 	@Test
 	public void testStandardCase_T01()
 	{
-
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
 		final String refNo = "300000001060012345600654321";
