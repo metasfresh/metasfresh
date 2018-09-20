@@ -436,7 +436,9 @@ class FiltersItem extends Component {
                   },
                 ]}
               >
-                {!filter.isActive && !filter.parameters ? (
+                {filter.isActive && !filter.parameters ? (
+                  <span />
+                ) : (
                   <button
                     className="applyBtn btn btn-sm btn-success"
                     onClick={this.handleApply}
@@ -445,8 +447,6 @@ class FiltersItem extends Component {
                   >
                     {counterpart.translate('window.apply.caption')}
                   </button>
-                ) : (
-                  <span />
                 )}
                 {isTooltipShow && (
                   <Tooltips
