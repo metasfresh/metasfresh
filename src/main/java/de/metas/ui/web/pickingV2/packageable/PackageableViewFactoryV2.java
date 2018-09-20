@@ -6,6 +6,7 @@ import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.money.MoneyService;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
@@ -46,7 +47,12 @@ import lombok.NonNull;
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_PackageableView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PackageableViewFactoryV2 implements IViewFactory
 {
-	private final PackageableRowsRepository rowsRepo = new PackageableRowsRepository();
+	private final PackageableRowsRepository rowsRepo;
+
+	public PackageableViewFactoryV2(@NonNull final MoneyService moneyService)
+	{
+		rowsRepo = new PackageableRowsRepository(moneyService);
+	}
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)

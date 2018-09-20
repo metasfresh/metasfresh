@@ -10,6 +10,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
 
+import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -17,9 +18,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,15 +51,17 @@ final class PackageableRowsRepository
 {
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IPackagingDAO packageablesRepo = Services.get(IPackagingDAO.class);
+	private final MoneyService moneyService;
 
 	private final Supplier<LookupDataSource> bpartnerLookup;
 	private final Supplier<LookupDataSource> shipperLookup;
 
-	public PackageableRowsRepository()
+	public PackageableRowsRepository(@NonNull final MoneyService moneyService)
 	{
+		this.moneyService = moneyService;
+
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
-
 		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name));
 		shipperLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_M_Shipper.Table_Name));
 	}
@@ -108,8 +114,19 @@ final class PackageableRowsRepository
 				.warehouseTypeName(warehouseTypeName)
 				.lines(packageables.size())
 				.shipper(shipper)
+				.lineNetAmt(buildNetAmtTranslatableString(packageables))
 				.packageables(packageables)
 				.build();
+	}
+
+	private ITranslatableString buildNetAmtTranslatableString(final Collection<Packageable> packageables)
+	{
+		return packageables.stream()
+				.map(Packageable::getSalesOrderLineNetAmt)
+				.filter(Predicates.notNull())
+				.collect(Money.sumByCurrencyAndStream())
+				.map(moneyService::toTranslatableString)
+				.collect(ITranslatableString.joining(", "));
 	}
 
 }

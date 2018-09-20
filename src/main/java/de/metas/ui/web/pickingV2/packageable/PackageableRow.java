@@ -1,6 +1,5 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -82,8 +81,8 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, captionKey = I_M_Packageable_V.COLUMNNAME_DeliveryDate, seqNo = 70)
 	private final LocalDate deliveryDate;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Amount, captionKey = "LineNetAmt", seqNo = 80)
-	private final BigDecimal lineNetAmt;
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "LineNetAmt", seqNo = 80)
+	private final ITranslatableString lineNetAmt;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, seqNo = 80)
 	private final LocalDateTime preparationDate;
@@ -106,6 +105,7 @@ public final class PackageableRow implements IViewRow
 			final int lines,
 			final String assignedToUserName,
 			final LookupValue shipper,
+			final ITranslatableString lineNetAmt,
 			final Collection<Packageable> packageables)
 	{
 		Check.assumeNotEmpty(packageables, "packageables is not empty");
@@ -118,7 +118,7 @@ public final class PackageableRow implements IViewRow
 		this.assignedToUserName = assignedToUserName;
 		this.shipper = shipper;
 		this.deliveryDate = calculateEarliestDeliveryDate(packageables);
-		this.lineNetAmt = calculateNetAmt(packageables);
+		this.lineNetAmt = lineNetAmt;
 		this.preparationDate = calculateEarliestPreparationTime(packageables);
 		this.packageables = ImmutableList.copyOf(packageables);
 		this.shipmentScheduleIds = extractShipmentScheduleIds(packageables);
@@ -141,14 +141,6 @@ public final class PackageableRow implements IViewRow
 				.filter(Predicates.notNull())
 				.min(LocalDateTime::compareTo)
 				.orElse(null);
-	}
-
-	private static BigDecimal calculateNetAmt(final Collection<Packageable> packageables)
-	{
-		return packageables.stream()
-				.map(Packageable::getSalesOrderLineNetAmt)
-				.filter(Predicates.notNull())
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	private static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<Packageable> packageables)
