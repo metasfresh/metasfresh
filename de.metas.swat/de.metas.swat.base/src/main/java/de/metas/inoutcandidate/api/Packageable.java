@@ -42,6 +42,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+/** Lines which have to be picked and delivered */
 @Value
 @Builder
 public class Packageable
@@ -54,7 +55,11 @@ public class Packageable
 	@NonNull
 	Quantity qtyToDeliver;
 	@NonNull
+	Quantity qtyDelivered;
+	/** quantity picked, not yet delivered */
+	@NonNull
 	Quantity qtyPicked;
+	/** quantity picked planned (i.e. picking candidates not already processed) */
 	@NonNull
 	Quantity qtyPickedPlanned;
 

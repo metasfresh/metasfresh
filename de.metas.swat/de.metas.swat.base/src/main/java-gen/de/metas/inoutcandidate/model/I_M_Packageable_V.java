@@ -773,6 +773,31 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_ProductName = "ProductName";
 
 	/**
+	 * Set Gelieferte Menge.
+	 * Gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
+
+	/**
+	 * Get Gelieferte Menge.
+	 * Gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDelivered();
+
+    /** Column definition for QtyDelivered */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyDelivered", null);
+    /** Column name QtyDelivered */
+    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+
+	/**
 	 * Set Bestellt/ Beauftragt.
 	 * Bestellt/ Beauftragt
 	 *

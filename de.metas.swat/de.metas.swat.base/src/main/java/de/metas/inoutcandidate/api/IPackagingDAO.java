@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
-
 /**
  * Packaging related DAO
  *
@@ -31,7 +29,4 @@ public interface IPackagingDAO extends ISingletonService
 	Packageable getByShipmentScheduleId(ShipmentScheduleId shipmentScheduleId);
 
 	List<Packageable> getByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
-
-	List<I_M_Packageable_V> retrievePackageableRecordsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
-
 }

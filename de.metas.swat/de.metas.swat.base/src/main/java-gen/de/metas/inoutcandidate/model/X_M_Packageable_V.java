@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 739716783L;
+	private static final long serialVersionUID = -1463121846L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -791,6 +791,28 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getProductName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Gelieferte Menge.
+		@param QtyDelivered 
+		Gelieferte Menge
+	  */
+	@Override
+	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyDelivered, QtyDelivered);
+	}
+
+	/** Get Gelieferte Menge.
+		@return Gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDelivered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Bestellt/ Beauftragt.

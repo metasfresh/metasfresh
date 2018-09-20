@@ -113,6 +113,7 @@ public class PackagingDAO implements IPackagingDAO
 	private Packageable toPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
 		final PackageableBuilder packageable = Packageable.builder();
 		packageable.customerId(bpartnerId);
@@ -122,9 +123,9 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.customerBPLocationName(record.getBPartnerLocationName());
 		packageable.customerAddress(record.getBPartnerAddress_Override());
 
-		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 		packageable.qtyOrdered(Quantity.of(record.getQtyOrdered(), uom));
 		packageable.qtyToDeliver(Quantity.of(record.getQtyToDeliver(), uom));
+		packageable.qtyDelivered(Quantity.of(record.getQtyDelivered(), uom));
 		packageable.qtyPicked(Quantity.of(record.getQtyPicked(), uom));
 		packageable.qtyPickedPlanned(Quantity.of(record.getQtyPickedPlanned(), uom));
 
@@ -171,8 +172,7 @@ public class PackagingDAO implements IPackagingDAO
 
 	}
 
-	@Override
-	public List<I_M_Packageable_V> retrievePackageableRecordsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	private List<I_M_Packageable_V> retrievePackageableRecordsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
