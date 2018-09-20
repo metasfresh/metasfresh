@@ -2,6 +2,7 @@ package de.metas.document.engine;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
@@ -151,6 +152,8 @@ public interface IDocument
 	String getDocStatus();
 
 	String getDocAction();
+
+	LocalDate getDocumentDate();
 
 	Properties getCtx();
 

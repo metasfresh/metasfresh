@@ -10,28 +10,30 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.exception.DunningException;
@@ -142,7 +144,8 @@ public class DunningBLTest extends DunningTestBase
 		dunningDoc.setProcessed(true);
 		InterfaceWrapperHelper.save(dunningDoc);
 
-		dunningBL.processDunningDoc(context, dunningDoc);
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+		documentBL.processEx(dunningDoc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	@Test

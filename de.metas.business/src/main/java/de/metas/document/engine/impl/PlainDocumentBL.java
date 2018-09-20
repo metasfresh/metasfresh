@@ -10,12 +10,12 @@ package de.metas.document.engine.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,7 +24,7 @@ package de.metas.document.engine.impl;
 
 
 import java.lang.reflect.Method;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -43,9 +43,9 @@ import de.metas.document.engine.IDocumentBL;
 
 /**
  * Database decoupled implementation for {@link IDocumentBL}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 // @Ignore
 public class PlainDocumentBL extends AbstractDocumentBL
@@ -87,9 +87,9 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		if (hasMethod(interfaceClass, String.class, "getDocStatus")
 				&& hasMethod(interfaceClass, String.class, "getDocAction")
 				// allow for now to consider documents also the ones that don't have DocumentNo; see <code>I_C_Flatrate_Term</code>
-//				&& hasMethod(interfaceClass, String.class, "getDocumentNo") 
+//				&& hasMethod(interfaceClass, String.class, "getDocumentNo")
 				)
-			
+
 		{
 			return POJOWrapper.create(document, IDocument.class);
 		}
@@ -191,7 +191,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		final DocTimingType timingTypeAfter = DocTimingType.forAction(action, BeforeAfterType.After);
 
 		final String tableName = InterfaceWrapperHelper.getModelTableName(doc);
-		
+
 		//
 		// To better emulate doc processing workflow, in case we are asked to Complete a document fire Prepare first
 		if (IDocument.ACTION_Complete.equals(action))
@@ -319,7 +319,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	};
 
 	@Override
-	public Timestamp getDocumentDate(Properties ctx, int adTableID, int recordId)
+	public LocalDate getDocumentDate(Properties ctx, int adTableID, int recordId)
 	{
 		final Object model = POJOLookupMap.get().lookup(adTableID, recordId);
 		return getDocumentDate(model);

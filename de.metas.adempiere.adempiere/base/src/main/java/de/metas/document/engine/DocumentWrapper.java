@@ -2,6 +2,7 @@ package de.metas.document.engine;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.model.IModelWrapper;
@@ -160,7 +161,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_CLOSE);
 		return true;
 	}
-	
+
 	@Override
 	public void unCloseIt()
 	{
@@ -206,6 +207,12 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	public String getDocumentInfo()
 	{
 		return handler.getDocumentInfo(model);
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return handler.getDocumentDate(model);
 	}
 
 	@Override
@@ -316,7 +323,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	{
 		return getDocumentModel();
 	}
-	
+
 	@Override
 	public Object getDocumentModel()
 	{

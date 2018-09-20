@@ -55,6 +55,7 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.document.IDocumentLocationBL;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.dunning.api.IDunnableDoc;
@@ -187,13 +188,14 @@ public class DunningTestBase
 	protected void processDunningDocs(final PlainDunningContext dunningContext)
 	{
 		final List<I_C_DunningDoc> dunningDocs = db.getRecords(I_C_DunningDoc.class);
-		for (I_C_DunningDoc dunningDoc : dunningDocs)
+		for (final I_C_DunningDoc dunningDoc : dunningDocs)
 		{
 			if (dunningDoc.isProcessed())
 			{
 				continue;
 			}
-			dunningBL.processDunningDoc(dunningContext, dunningDoc);
+			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+			documentBL.processEx(dunningDoc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 	}
 
