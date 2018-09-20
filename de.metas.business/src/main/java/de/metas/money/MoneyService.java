@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.lang.Percent;
 import lombok.NonNull;
 
@@ -113,5 +116,16 @@ public class MoneyService
 
 		final BigDecimal newValue = percent.subtractFromBase(input.getValue(), currency.getPrecision());
 		return Money.of(newValue, input.getCurrencyId());
+	}
+
+	public ITranslatableString toTranslatableString(@NonNull final Money money)
+	{
+		final Currency currency = currencyRepository.getById(money.getCurrencyId());
+
+		return TranslatableStringBuilder.newInstance()
+				.append(money.getValue(), DisplayType.Amount)
+				.append(" ")
+				.append(currency.getThreeLetterCode())
+				.build();
 	}
 }
