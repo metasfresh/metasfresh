@@ -1260,7 +1260,11 @@ class Table extends Component {
                 ? () => handleOpenNewTab(selected, type)
                 : ''
             }
-            handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
+            handleDelete={
+              selected.length > 0 && selected[0]
+                ? () => this.handleDelete()
+                : ''
+            }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
           />
