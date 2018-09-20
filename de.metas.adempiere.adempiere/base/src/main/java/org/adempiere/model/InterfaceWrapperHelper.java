@@ -988,13 +988,8 @@ public class InterfaceWrapperHelper
 	 * @return table name
 	 * @throws AdempiereException if model is null or model is not supported
 	 */
-	public static String getModelTableName(final Object model)
+	public static String getModelTableName(@NonNull final Object model)
 	{
-		if (model == null)
-		{
-			throw new AdempiereException("Cannot get TableName for a null model. Possible development issue.");
-		}
-
 		final String modelTableName = getModelTableNameOrNull(model);
 		if (modelTableName == null)
 		{
@@ -1121,15 +1116,15 @@ public class InterfaceWrapperHelper
 		}
 
 	}
-	
+
 	public static Optional<OrgId> getOrgId(final Object model)
 	{
 		final Object orgIdObj = getValue(model, "AD_Org_ID").orElse(null);
-		if(orgIdObj == null)
+		if (orgIdObj == null)
 		{
 			return Optional.empty();
 		}
-		
+
 		final int orgIdInt = NumberUtils.asInt(orgIdObj, -1);
 		return OrgId.optionalOfRepoId(orgIdInt);
 	}
@@ -1273,7 +1268,11 @@ public class InterfaceWrapperHelper
 		return isAllValuesSet;
 	}
 
-	private static boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	private static boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName,
+			@Nullable final Object value,
+			final boolean throwExIfColumnNotFound)
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");
@@ -1726,7 +1725,7 @@ public class InterfaceWrapperHelper
 	{
 		return helpers.isCopy(model);
 	}
-	
+
 	public static boolean isCopying(final Object model)
 	{
 		return helpers.isCopying(model);

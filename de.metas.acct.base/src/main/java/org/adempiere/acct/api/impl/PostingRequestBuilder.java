@@ -99,19 +99,19 @@ import lombok.NonNull;
 	{
 		setExecuted();
 
+		if (!postingService.isEnabled())
+		{
+			setPostedError("Accounting module is disabled");
+			postingComplete();
+			return this;
+		}
+
 		//
 		// Check if we shall post the document immediately by checking PostImmediate option
 		// If not, we will enqueue it.
 		if (!isPostImmediate())
 		{
 			postIt_Enqueue();
-			postingComplete();
-			return this;
-		}
-
-		if (!postingService.isEnabled())
-		{
-			setPostedError("Accounting module is disabled");
 			postingComplete();
 			return this;
 		}
