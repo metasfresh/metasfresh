@@ -100,8 +100,7 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 
 		final ImmutableSet<ProductId> productIDs = storage.getProductStorages()
 				.stream()
-				.map(IHUProductStorage::getM_Product_ID)
-				.map(ProductId::ofRepoId)
+				.map(IHUProductStorage::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final DocumentPath documentPath = createDocumentPath(key);

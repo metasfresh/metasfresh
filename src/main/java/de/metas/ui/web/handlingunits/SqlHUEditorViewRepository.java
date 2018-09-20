@@ -52,6 +52,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -274,7 +275,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (singleProductStorage != null)
 		{
 			huEditorRow
-					.setProduct(createProductLookupValue(singleProductStorage.getM_Product()))
+					.setProduct(createProductLookupValue(singleProductStorage.getProductId()))
 					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
 					.setQtyCU(singleProductStorage.getQty());
 		}
@@ -378,13 +379,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		final I_M_Product product = huStorage.getM_Product();
+		final ProductId productId = huStorage.getProductId();
 		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getReservedForOrderLineId(huId);
 
 		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, ProductId.ofRepoId(product.getM_Product_ID())))
+				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, productId))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
 				.setProcessed(processed)
@@ -397,7 +398,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setReservedForOrderLine(reservedForOrderLineId.orElse(null))
 				.setHUStatusDisplay(createHUStatusDisplayLookupValue(hu))
 				//
-				.setProduct(createProductLookupValue(product))
+				.setProduct(createProductLookupValue(productId))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty())
 				//
@@ -407,15 +408,15 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return huEditorRow;
 	}
 
-	public JSONLookupValue createProductLookupValue(@Nullable final I_M_Product product)
+	public JSONLookupValue createProductLookupValue(@Nullable final ProductId productId)
 	{
-		if (product == null)
+		if (productId == null)
 		{
 			return null;
 		}
 
-		final String displayName = product.getValue() + "_" + product.getName();
-		return JSONLookupValue.of(product.getM_Product_ID(), displayName);
+		final String displayName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		return JSONLookupValue.of(productId.getRepoId(), displayName);
 	}
 
 	private static JSONLookupValue createUOMLookupValue(@Nullable final I_C_UOM uom)

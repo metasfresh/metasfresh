@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -12,7 +13,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -28,6 +29,7 @@ import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -109,11 +111,11 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		sqlWhereClause.append(I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=").append(DB.TO_BOOLEAN(false));
 
-		final int productId = getSingleProductId(huId);
+		final ProductId productId = getSingleProductId(huId);
 		sqlWhereClause.append(" AND ")
 				.append(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID)
 				.append("=")
-				.append(productId);
+				.append(productId.getRepoId());
 
 		final I_M_HU hu = load(huId, I_M_HU.class);
 		if (hu.getC_BPartner_ID() > 0)
@@ -129,18 +131,18 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 		return Services.get(IValidationRuleFactory.class).createSQLValidationRule(sqlWhereClause.toString());
 	}
 
-	private static final int getSingleProductId(final HuId huId)
+	private static final ProductId getSingleProductId(final HuId huId)
 	{
 		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
-		final List<Integer> productIds = Services.get(IHUContextFactory.class)
+		final Set<ProductId> productIds = Services.get(IHUContextFactory.class)
 				.createMutableHUContext()
 				.getHUStorageFactory()
 				.getStorage(hu)
 				.getProductStorages()
 				.stream()
-				.map(IHUProductStorage::getM_Product_ID)
+				.map(IHUProductStorage::getProductId)
 				.distinct()
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
 		if (productIds.isEmpty())
 		{
@@ -151,7 +153,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 			throw new AdempiereException("Multi product HUs are not allowed");
 		}
 
-		return productIds.get(0);
+		return productIds.iterator().next();
 	}
 
 	public LookupValuesList getPickingSlotValues(@NonNull final LookupDataSourceContext context)
