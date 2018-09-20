@@ -32,9 +32,13 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4507](https://github.com/metasfresh/metasfresh/issues/4507) Picked and Non-Picked Quantities Shipment generation
+    * New action available in Shipment Schedules. Now it's possible to create shipments that include picked quantities and non-picked quantities as fallback szenario.
   * [#4549](https://github.com/metasfresh/metasfresh/issues/4549) Sales Order Candidates REST API improvements
+    * Improvements of the REST API endpoin for Sales Order Candidates.
   * [#4556](https://github.com/metasfresh/metasfresh/issues/4556) Show Product note as tooltip in order line
+    * Adding a Toltip functionality for Products in Orerline.
   * [#4557](https://github.com/metasfresh/metasfresh/issues/4557) Improve BPartner Memo-Import
+    * Improves the Data Import of Business Partner Memo fields.
   * [#4558](https://github.com/metasfresh/metasfresh/issues/4558) Show BPartner memo as tooltip in order
   * [#4566](https://github.com/metasfresh/metasfresh/issues/4566) save AdempiereProcessor lastRun/nextRun timestamp out-of-trx
   * [#4568](https://github.com/metasfresh/metasfresh/issues/4568) Add note field to invoice candidates
