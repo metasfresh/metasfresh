@@ -22,6 +22,10 @@ Here come the actual release notes:
 
 ## Fixes
 
+* metasfresh-webui-frontend
+  *[#1949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1949) Shortcuts not working properly in Tabs after changing sth in grid view + [Tab]
+    * Improvement of Shortcut Handling after Delete in Subtab.
+
 # metasfresh 5.75
 ## Features
 * metasfresh
