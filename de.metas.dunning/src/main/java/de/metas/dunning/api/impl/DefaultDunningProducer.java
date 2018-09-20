@@ -38,7 +38,8 @@ import org.slf4j.Logger;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.dunning.api.IDunningBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
@@ -48,6 +49,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.dunning.model.X_C_DunningDoc;
 import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
 
@@ -156,9 +158,8 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setC_Dunning_Contact_ID(candidate.getC_Dunning_Contact_ID());
 		doc.setIsActive(true);
 		doc.setProcessed(false);
-
-		// task 07359: the PartnerAddress is created&updated by the C_DunningDoc model validator
-		// Services.get(IDocumentLocationBL.class).setBPartnerAddress(new DunningDocDocumentLocationAdapter(doc));
+		doc.setDocStatus(X_C_DunningDoc.DOCSTATUS_InProgress);
+		doc.setDocAction(X_C_DunningDoc.DOCACTION_Complete);
 
 		return doc;
 	}
@@ -260,12 +261,14 @@ public class DefaultDunningProducer implements IDunningProducer
 		completeDunningDocLine();
 
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 		dunningDAO.save(dunningDoc);
 
 		// If ProcessDunningDoc option is set in context, we need to automatically process the dunningDoc too
 		if (getDunningContext().isProperty(CONTEXT_ProcessDunningDoc, DEFAULT_ProcessDunningDoc))
 		{
-			Services.get(IDunningBL.class).processDunningDoc(getDunningContext(), dunningDoc);
+			documentBL.processEx(dunningDoc, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
 		dunningDoc = null;

@@ -1,28 +1,6 @@
 package de.metas.document.engine.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,12 +21,10 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -407,44 +383,31 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return false;
 	}
 
-	protected final Timestamp getDocumentDate(final Object model)
+	protected final LocalDate getDocumentDate(final Object model)
 	{
 		if (model == null)
 		{
 			return null;
 		}
 
-		// FIXME: hardcoded... we shall introduce it in IDocument
-
-		if (model instanceof I_C_Invoice)
-		{
-			return ((I_C_Invoice)model).getDateInvoiced();
-		}
-
-		if (model instanceof I_C_Order)
-		{
-			return ((I_C_Order)model).getDateOrdered();
-		}
-
 		if (model instanceof I_C_OrderLine)
 		{
-			return ((I_C_OrderLine)model).getDateOrdered();
+			return TimeUtil.asLocalDate(((I_C_OrderLine)model).getDateOrdered());
 		}
 
-		if (model instanceof I_M_InOut)
+		final IDocument doc = getDocumentOrNull(model);
+		if (doc != null)
 		{
-			return ((I_M_InOut)model).getMovementDate();
+			return doc.getDocumentDate();
 		}
 
-		// in case the log is not made for one of these table,s leave the dateDoc empty
+		// in case the log is not made for one of these tables leave the dateDoc empty
 		return null;
 	}
 
 	@Override
-	public final String getSummary(final Object model)
+	public final String getSummary(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		final IDocument doc = getDocumentOrNull(model);
 		if (doc != null)
 		{
