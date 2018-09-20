@@ -48,7 +48,6 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-// @Ignore
 public class PlainDocumentBL extends AbstractDocumentBL
 {
 	public static Boolean isDocumentTableResponse = null;
@@ -63,44 +62,6 @@ public class PlainDocumentBL extends AbstractDocumentBL
 
 		return isDocumentTableResponse;
 	}
-
-	// @Override
-	// protected IDocument getDocument(Object document, boolean throwEx)
-	// {
-	// if (document == null)
-	// {
-	// if (throwEx)
-	// {
-	// throw new IllegalArgumentException("document is null");
-	// }
-	// return null;
-	// }
-	//
-	// if (document instanceof IDocument)
-	// {
-	// return (IDocument)document;
-	// }
-	//
-	// //
-	// // WARNING: this is just a partial implementation
-	// final POJOWrapper wrapper = POJOWrapper.getWrapper(document);
-	// final Class<?> interfaceClass = wrapper.getInterfaceClass();
-	// if (hasMethod(interfaceClass, String.class, "getDocStatus")
-	// && hasMethod(interfaceClass, String.class, "getDocAction")
-	// // allow for now to consider documents also the ones that don't have DocumentNo; see <code>I_C_Flatrate_Term</code>
-	//// && hasMethod(interfaceClass, String.class, "getDocumentNo")
-	// )
-	//
-	// {
-	// return POJOWrapper.create(document, IDocument.class);
-	// }
-	//
-	// if (throwEx)
-	// {
-	// throw new IllegalArgumentException("Document '" + document + "' cannot be converted to " + IDocument.class);
-	// }
-	// return null;
-	// }
 
 	private static final boolean hasMethod(Class<?> clazz, Class<?> returnType, String methodName, Class<?>... parameterTypes)
 	{
@@ -191,7 +152,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 			return super.processIt0(document, action);
 		}
 
-		// for "normal" POJOWrappers that are not backed by a DocumentHandler, we need to use IProcessInterceptor and simulate the whole thing
+		// for "normal" POJOWrappers what are not backed by a DocumentHandler, we need to use IProcessInterceptor and simulate the whole thing
 
 		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
