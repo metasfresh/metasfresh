@@ -58,15 +58,9 @@ const filtersToMap = function(filtersArray) {
 
   if (filtersArray && filtersArray.length) {
     filtersArray.forEach(filter => {
-      if (
-        !filter.parameters ||
-        (filter.parameters && filter.parameters.length)
-      ) {
-        filtersMap = filtersMap.set(filter.filterId, filter);
-      }
+      filtersMap = filtersMap.set(filter.filterId, filter);
     });
   }
-
   return filtersMap;
 };
 
