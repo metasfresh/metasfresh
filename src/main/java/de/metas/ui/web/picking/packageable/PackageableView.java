@@ -1,20 +1,15 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
@@ -24,7 +19,6 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -118,17 +112,6 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 				.failOnError(false) // close as much candidates as it's possible
 				.build()
 				.perform();
-	}
-
-	@Override
-	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
-	{
-		final Set<ShipmentScheduleId> shipmentScheduleIds = rowIds.toIds(ShipmentScheduleId::ofRepoId);
-
-		final IPackagingDAO packageablesRepo = Services.get(IPackagingDAO.class);
-		final List<I_M_Packageable_V> records = packageablesRepo.retrievePackageableRecordsByShipmentScheduleIds(shipmentScheduleIds);
-
-		return InterfaceWrapperHelper.createList(records, modelClass);
 	}
 
 	public void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)

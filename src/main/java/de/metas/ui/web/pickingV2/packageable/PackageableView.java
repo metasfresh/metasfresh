@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
@@ -63,7 +62,7 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	@Override
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
-		return I_M_Packageable_V.Table_Name;
+		return null;
 	}
 
 	@Override
