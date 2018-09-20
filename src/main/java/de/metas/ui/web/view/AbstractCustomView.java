@@ -255,7 +255,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 * Also supports {@link DocumentIdsSelection#ALL}, because there won't be too many lines at one time.
 	 */
 	@Override
-	public final Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public final Stream<T> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{
