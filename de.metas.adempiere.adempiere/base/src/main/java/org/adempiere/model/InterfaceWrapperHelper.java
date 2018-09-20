@@ -1120,7 +1120,7 @@ public class InterfaceWrapperHelper
 	public static Optional<OrgId> getOrgId(final Object model)
 	{
 		final Object orgIdObj = getValue(model, "AD_Org_ID").orElse(null);
-		if(orgIdObj == null)
+		if (orgIdObj == null)
 		{
 			return Optional.empty();
 		}
@@ -1268,7 +1268,11 @@ public class InterfaceWrapperHelper
 		return isAllValuesSet;
 	}
 
-	private static boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	private static boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName,
+			@Nullable final Object value,
+			final boolean throwExIfColumnNotFound)
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");

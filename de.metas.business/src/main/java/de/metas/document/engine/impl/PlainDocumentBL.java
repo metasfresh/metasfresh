@@ -191,7 +191,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 			return super.processIt0(document, action);
 		}
 
-		// for "normal" POJOWrappers, we need to use IProcessInterceptor and simulate the whole thing
+		// for "normal" POJOWrappers that are not backed by a DocumentHandler, we need to use IProcessInterceptor and simulate the whole thing
 
 		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
@@ -346,7 +346,8 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		// && hasMethod(interfaceClass, String.class, "getDocumentNo")
 		)
 		{
-			return POJOWrapper.create(documentObj, IDocument.class);
+			final IDocument pojoWrapper = POJOWrapper.create(documentObj, IDocument.class);
+			return pojoWrapper;
 		}
 		if (throwEx)
 		{
@@ -354,4 +355,6 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		}
 		return null;
 	}
+
+
 }
