@@ -140,7 +140,7 @@ public class RemoveQtyFromHUCommand
 
 	private List<PickingCandidate> retrievePickingCandidates()
 	{
-		return pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableList.of(huId));
+		return pickingCandidateRepository.getByHUIds(ImmutableList.of(huId));
 	}
 
 	private IAllocationDestination createAllocationDestinationAsSourceHUs()

@@ -136,7 +136,7 @@ public class PickingCandidateRepository
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(from.getPickingSlotId()));
 	}
 
-	public Set<ShipmentScheduleId> retrieveShipmentScheduleIdsForPickingCandidateIds(final Collection<PickingCandidateId> pickingCandidateIds)
+	public Set<ShipmentScheduleId> getShipmentScheduleIdsByPickingCandidateIds(final Collection<PickingCandidateId> pickingCandidateIds)
 	{
 		if (pickingCandidateIds.isEmpty())
 		{
@@ -155,7 +155,7 @@ public class PickingCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public List<PickingCandidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<HuId> huIds)
+	public List<PickingCandidate> getByHUIds(@NonNull final Collection<HuId> huIds)
 	{
 		// tolerate empty
 		if (huIds.isEmpty())
@@ -217,7 +217,7 @@ public class PickingCandidateRepository
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
-	public List<PickingCandidate> retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
+	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
 			@NonNull final PickingCandidateStatus status)
 	{

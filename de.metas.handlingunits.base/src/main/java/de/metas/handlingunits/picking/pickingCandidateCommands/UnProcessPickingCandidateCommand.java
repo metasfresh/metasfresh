@@ -94,7 +94,7 @@ public class UnProcessPickingCandidateCommand
 		final I_M_HU hu = getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableSet.of(huId));
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByHUIds(ImmutableSet.of(huId));
 
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = retrieveQtyPickedRecords(pickingCandidates);
 

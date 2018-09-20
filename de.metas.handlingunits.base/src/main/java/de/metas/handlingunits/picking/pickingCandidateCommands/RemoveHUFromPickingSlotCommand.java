@@ -65,7 +65,7 @@ public class RemoveHUFromPickingSlotCommand
 
 	private List<PickingCandidate> retrievePickingCandidates()
 	{
-		return pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableSet.of(huId));
+		return pickingCandidateRepository.getByHUIds(ImmutableSet.of(huId));
 	}
 
 }

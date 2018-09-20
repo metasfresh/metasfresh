@@ -148,7 +148,7 @@ public class PickingCandidateService
 
 	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(
 				shipmentScheduleIds,
 				PickingCandidateStatus.Processed);
 		return ClosePickingCandidateCommand.builder()

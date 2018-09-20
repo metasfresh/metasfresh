@@ -186,7 +186,7 @@ public class ProcessPickingCandidateCommand
 	{
 		if (pickingCandidatesByHUId == null)
 		{
-			pickingCandidatesByHUId = pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
+			pickingCandidatesByHUId = pickingCandidateRepository.getByHUIds(huIds)
 					.stream()
 					.filter(pc -> shipmentScheduleId == null || Objects.equals(shipmentScheduleId, pc.getShipmentScheduleId()))
 					.collect(GuavaCollectors.toImmutableListMultimap(PickingCandidate::getHuId));
