@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
@@ -94,7 +95,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			// Append the other fields
 			row.getFieldNames()
 					.stream()
-					.map(createJSONDocumentField(row))
+					.map(createJSONDocumentField(row, adLanguage))
 					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
 
 			jsonRow.setFields(jsonFields);
@@ -141,18 +142,34 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		return jsonRow;
 	}
 
-	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row)
+	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final String adLanguage)
 	{
 		final Map<String, Object> valuesByFieldName = row.getFieldNameAndJsonValues();
 		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
 		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
 
 		return fieldName -> {
-			final Object value = valuesByFieldName.get(fieldName);
+			final Object value = toJsonValue(valuesByFieldName.get(fieldName), adLanguage);
 			return JSONDocumentField.ofNameAndValue(fieldName, value)
 					.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(fieldName)))
 					.setViewEditorRenderMode(viewEditorRenderModeByFieldName.get(fieldName));
 		};
+	}
+
+	private static final Object toJsonValue(final Object valueObj, final String adLanguage)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+		else if (valueObj instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)valueObj).translate(adLanguage);
+		}
+		else
+		{
+			return valueObj;
+		}
 	}
 
 	/**
