@@ -269,10 +269,24 @@ class FiltersItem extends Component {
       return this.handleClear();
     }
 
-    applyFilters(activeFilter, () => {
-      closeFilterMenu();
-      returnBackToDropdown && returnBackToDropdown();
-    });
+    if (!filter.parameters) {
+      this.setState(
+        {
+          activeFilter: filter,
+        },
+        () => {
+          applyFilters(this.state.activeFilter, () => {
+            closeFilterMenu();
+            returnBackToDropdown && returnBackToDropdown();
+          });
+        }
+      );
+    } else {
+      applyFilters(activeFilter, () => {
+        closeFilterMenu();
+        returnBackToDropdown && returnBackToDropdown();
+      });
+    }
   };
 
   handleClear = () => {
@@ -422,14 +436,18 @@ class FiltersItem extends Component {
                   },
                 ]}
               >
-                <button
-                  className="applyBtn btn btn-sm btn-success"
-                  onClick={this.handleApply}
-                  onMouseEnter={() => this.toggleTooltip(true)}
-                  onMouseLeave={() => this.toggleTooltip(false)}
-                >
-                  {counterpart.translate('window.apply.caption')}
-                </button>
+                {!filter.isActive && !filter.parameters ? (
+                  <button
+                    className="applyBtn btn btn-sm btn-success"
+                    onClick={this.handleApply}
+                    onMouseEnter={() => this.toggleTooltip(true)}
+                    onMouseLeave={() => this.toggleTooltip(false)}
+                  >
+                    {counterpart.translate('window.apply.caption')}
+                  </button>
+                ) : (
+                  <span />
+                )}
                 {isTooltipShow && (
                   <Tooltips
                     className="filter-tooltip"
