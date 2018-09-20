@@ -59,6 +59,7 @@ import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.IProductDAO;
 import lombok.NonNull;
 
 /**
@@ -335,7 +336,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			 */
 			private IAllocationRequest createAllocationRequest(final IProductStorage productStorage)
 			{
-				final I_M_Product product = productStorage.getM_Product();
+				final I_M_Product product = Services.get(IProductDAO.class).getById(productStorage.getProductId());
 				final BigDecimal qty = productStorage.getQty();
 				final I_C_UOM uom = productStorage.getC_UOM();
 				final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,

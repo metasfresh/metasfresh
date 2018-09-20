@@ -32,7 +32,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
@@ -537,7 +537,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public Quantity convertQtyToLUTUConfigurationUOM(final BigDecimal qtyValue, final I_C_UOM qtyUOM, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(lutuConfiguration.getM_Product());
+		
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(lutuConfiguration.getM_Product_ID());
 
 		final Quantity qty = new Quantity(qtyValue, qtyUOM);
 		final I_C_UOM uomTo = lutuConfiguration.getC_UOM();

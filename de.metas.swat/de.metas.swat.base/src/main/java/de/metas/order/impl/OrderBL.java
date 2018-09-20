@@ -38,7 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.CollectionUtils;
@@ -887,7 +887,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Create conversion context
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(orderLine.getM_Product());
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM

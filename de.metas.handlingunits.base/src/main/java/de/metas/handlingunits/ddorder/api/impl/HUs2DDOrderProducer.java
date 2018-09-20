@@ -58,10 +58,11 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-//import de.metas.handlingunits.model.I_M_Warehouse;
+// import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 import de.metas.product.LotNumberLock;
 import lombok.Builder;
 import lombok.NonNull;
@@ -118,7 +119,7 @@ public class HUs2DDOrderProducer
 	//
 	// Parameters
 	private Properties _ctx;
-	//private I_M_Warehouse _warehouseTo;
+	// private I_M_Warehouse _warehouseTo;
 	private I_M_Locator _locatorTo;
 	private Iterator<HUToDistribute> _hus;
 	private final Timestamp date = SystemTime.asDayTimestamp();
@@ -151,14 +152,14 @@ public class HUs2DDOrderProducer
 
 		final PlainContextAware ctx = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 
-		final I_DD_Order ddOrderOrNull  = huTrxBL
+		final I_DD_Order ddOrderOrNull = huTrxBL
 				.createHUContextProcessorExecutor(ctx)
 				.call(this::processInTrx);
 
 		return Optional.ofNullable(ddOrderOrNull);
 	}
 
-	protected I_DD_Order processInTrx(IHUContext huContext)
+	protected I_DD_Order processInTrx(final IHUContext huContext)
 	{
 		//
 		// Iterate all HUs and create DD_OrderLine candidates
@@ -251,7 +252,7 @@ public class HUs2DDOrderProducer
 
 	public final HUs2DDOrderProducer setContext(final Properties ctx)
 	{
-		this._ctx = ctx;
+		_ctx = ctx;
 		return this;
 	}
 
@@ -517,19 +518,19 @@ public class HUs2DDOrderProducer
 
 	private final class DDOrderLineCandidate
 	{
-		private I_M_Locator locatorFrom;
-		private I_M_Product product;
-		private I_C_UOM uom;
-		private ArrayKey aggregationKey;
+		private final I_M_Locator locatorFrom;
+		private final I_M_Product product;
+		private final I_C_UOM uom;
+		private final ArrayKey aggregationKey;
 		private final List<I_M_HU> hus = new ArrayList<>();
 
 		private BigDecimal qtyInSourceUOM = BigDecimal.ZERO;
 		private BigDecimal qtyInStockingUOM = BigDecimal.ZERO;
 
-		private I_M_HU_PI_Item_Product piItemProduct;
+		private final I_M_HU_PI_Item_Product piItemProduct;
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
-		private LotNumberLock lotNoLock;
+		private final LotNumberLock lotNoLock;
 
 		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage, final HUToDistribute huToDistribute)
 		{
@@ -540,19 +541,19 @@ public class HUs2DDOrderProducer
 			//
 			// Locator from
 			final I_M_HU hu = huProductStorage.getM_HU();
-			this.locatorFrom = hu.getM_Locator();
+			locatorFrom = hu.getM_Locator();
 			aggregationKeyBuilder.appendId(locatorFrom.getM_Locator_ID());
 
 			//
 			// Product & UOM
-			this.product = huProductStorage.getM_Product();
-			this.uom = huProductStorage.getC_UOM();
+			product = Services.get(IProductDAO.class).getById(huProductStorage.getProductId());
+			uom = huProductStorage.getC_UOM();
 			aggregationKeyBuilder.appendId(product.getM_Product_ID());
 			aggregationKeyBuilder.appendId(uom.getC_UOM_ID());
 
 			//
 			// PI Item Product
-			this.piItemProduct = hu.getM_HU_PI_Item_Product();
+			piItemProduct = hu.getM_HU_PI_Item_Product();
 			aggregationKeyBuilder.appendId(piItemProduct == null ? -1 : piItemProduct.getM_HU_PI_Item_Product_ID());
 
 			//
@@ -561,18 +562,18 @@ public class HUs2DDOrderProducer
 			final IQualityInspectionSchedulable qualityInspectionSchedulable = huMaterialTrackingId.asQualityInspectionSchedulable(huContext, huAttributeStorage).orNull();
 			if (qualityInspectionSchedulable != null)
 			{
-				this.attributes = qualityInspectionSchedulable.getAttributesAsMap();
+				attributes = qualityInspectionSchedulable.getAttributesAsMap();
 			}
-			for (Map.Entry<org.compiere.model.I_M_Attribute, Object> attribute2value : attributes.entrySet())
+			for (final Map.Entry<org.compiere.model.I_M_Attribute, Object> attribute2value : attributes.entrySet())
 			{
 				aggregationKeyBuilder.append(attribute2value.getKey().getValue(), attribute2value.getValue());
 			}
 
-			this.lotNoLock = huToDistribute.getLockLotNo();
+			lotNoLock = huToDistribute.getLockLotNo();
 
 			aggregationKeyBuilder.append(lotNoLock == null ? -1 : lotNoLock.getId());
 
-			this.aggregationKey = aggregationKeyBuilder.build();
+			aggregationKey = aggregationKeyBuilder.build();
 
 			//
 			// Add this HUProductStoarge
@@ -587,27 +588,27 @@ public class HUs2DDOrderProducer
 
 		public void addDDOrderLineCandidate(final DDOrderLineCandidate candidateToAdd)
 		{
-			Check.assume(Objects.equals(this.aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {} \nBut it was: {}", this.aggregationKey, candidateToAdd.getAggregationKey());
+			Check.assume(Objects.equals(aggregationKey, candidateToAdd.getAggregationKey()), "Same aggregation key\n.Expected: {} \nBut it was: {}", aggregationKey, candidateToAdd.getAggregationKey());
 
-			this.hus.addAll(candidateToAdd.getM_HUs());
+			hus.addAll(candidateToAdd.getM_HUs());
 
 			final BigDecimal huQtyInSourceUOM = candidateToAdd.getQtyInSourceUOM();
-			this.qtyInSourceUOM = this.qtyInSourceUOM.add(huQtyInSourceUOM);
+			qtyInSourceUOM = qtyInSourceUOM.add(huQtyInSourceUOM);
 
 			final BigDecimal huQtyInStockingUOM = candidateToAdd.getQtyInStockingUOM();
-			this.qtyInStockingUOM = this.qtyInStockingUOM.add(huQtyInStockingUOM);
+			qtyInStockingUOM = qtyInStockingUOM.add(huQtyInStockingUOM);
 		}
 
 		private void addHUProductStorage(final IHUProductStorage huProductStorage)
 		{
 			final I_M_HU hu = huProductStorage.getM_HU();
-			this.hus.add(hu);
+			hus.add(hu);
 
 			final BigDecimal huQtyInSourceUOM = huProductStorage.getQty();
-			this.qtyInSourceUOM = this.qtyInSourceUOM.add(huQtyInSourceUOM);
+			qtyInSourceUOM = qtyInSourceUOM.add(huQtyInSourceUOM);
 
 			final BigDecimal huQtyInStockingUOM = huProductStorage.getQtyInStockingUOM();
-			this.qtyInStockingUOM = this.qtyInStockingUOM.add(huQtyInStockingUOM);
+			qtyInStockingUOM = qtyInStockingUOM.add(huQtyInStockingUOM);
 		}
 
 		public final I_M_Locator getM_Locator_From()
@@ -690,9 +691,9 @@ public class HUs2DDOrderProducer
 		@Builder
 		private HUToDistribute(
 				@NonNull final I_M_HU hu,
-				LotNumberLock lockLotNo,
-				int bpartnerId,
-				int bpartnerLocationId)
+				final LotNumberLock lockLotNo,
+				final int bpartnerId,
+				final int bpartnerLocationId)
 		{
 			this.hu = hu;
 			this.lockLotNo = lockLotNo;

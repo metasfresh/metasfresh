@@ -36,7 +36,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.I_M_PackagingTreeItem;
@@ -368,8 +368,8 @@ public class Utils
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		return uomConversionBL.convertQty(
-				IUOMConversionContext.of(packingItem.getM_Product()),
-				quantity.getQty(),
+				UOMConversionContext.of(packingItem.getProductId()),
+				quantity.getAsBigDecimal(),
 				quantity.getUOM(),
 				packingItem.getC_UOM());
 	}

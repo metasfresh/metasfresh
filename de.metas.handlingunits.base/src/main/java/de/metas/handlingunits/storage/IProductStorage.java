@@ -25,10 +25,12 @@ package de.metas.handlingunits.storage;
 import java.math.BigDecimal;
 import java.util.Comparator;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
@@ -52,35 +54,18 @@ public interface IProductStorage
 			{
 				return "";
 			}
-			final I_M_Product product = productStorage.getM_Product();
-			if (product == null)
-			{
-				return "";
-			}
-			final String productName = product.getName();
-			if (productName == null)
-			{
-				return "";
-			}
-			return productName;
+			
+			return Services.get(IProductBL.class).getProductName(productStorage.getProductId());
 		}
 	};
 
 	/**
 	 * @return product; never <code>null</code>
 	 */
+	@Deprecated
 	I_M_Product getM_Product();
 
-	default int getM_Product_ID()
-	{
-		final I_M_Product product = getM_Product();
-		return product == null ? -1 : product.getM_Product_ID();
-	}
-
-	default ProductId getProductId()
-	{
-		return ProductId.ofRepoId(getM_Product_ID());
-	}
+	ProductId getProductId();
 
 	I_C_UOM getC_UOM();
 

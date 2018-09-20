@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -34,8 +33,10 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * It's an {@link IHUItemStorage} but on given product level.
@@ -47,27 +48,22 @@ import de.metas.quantity.Quantity;
 {
 	private final IHUItemStorage itemStorage;
 	private final I_M_Product product;
+	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final Date date;
 
-	public HUItemProductStorage(final IHUItemStorage itemStorage,
-			final I_M_Product product,
-			final I_C_UOM uom,
-			final Date date)
+	public HUItemProductStorage(
+			@NonNull final IHUItemStorage itemStorage,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uom,
+			@NonNull final Date date)
 	{
-		super();
-
-		Check.assumeNotNull(itemStorage, "itemStorage not null");
 		this.itemStorage = itemStorage;
-
-		Check.assumeNotNull(product, "product not null");
 		this.product = product;
-
-		Check.assumeNotNull(uom, "uom not null");
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 		this.uom = uom;
-
-		Check.assumeNotNull(date, "date not null");
 		this.date = date;
+
 	}
 
 	@Override
@@ -91,6 +87,12 @@ import de.metas.quantity.Quantity;
 	public I_M_Product getM_Product()
 	{
 		return product;
+	}
+
+	@Override
+	public ProductId getProductId()
+	{
+		return productId;
 	}
 
 	@Override
@@ -120,12 +122,12 @@ import de.metas.quantity.Quantity;
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final BigDecimal qty = getQty();
 		final I_C_UOM uomFrom = getC_UOM();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
+		final BigDecimal convertQty = uomConversionBL.convertQty(productId, qty, uomFrom, uom);
 
 		return Quantity.of(convertQty, uom);
 	}

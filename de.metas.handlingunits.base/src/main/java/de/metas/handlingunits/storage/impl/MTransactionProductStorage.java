@@ -38,6 +38,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 
 public class MTransactionProductStorage extends AbstractProductStorage
@@ -59,14 +61,14 @@ public class MTransactionProductStorage extends AbstractProductStorage
 		this.mtrx = mtrx;
 		inbound = MTransactionUtil.isInboundTransaction(mtrx);
 
-		final I_M_Product product = mtrx.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
 
 		//
 		// Convert transaction qty to storage UOM
 		final BigDecimal qtyMTransactionSrc = mtrx.getMovementQty();
 		final I_C_UOM uomMTransaction = Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx);
 		final BigDecimal qtyMTransaction = Services.get(IUOMConversionBL.class)
-				.convertQty(product, qtyMTransactionSrc, uomMTransaction, uom);
+				.convertQty(productId, qtyMTransactionSrc, uomMTransaction, uom);
 
 		BigDecimal qtyCapacity;
 		if (inbound)
@@ -85,8 +87,10 @@ public class MTransactionProductStorage extends AbstractProductStorage
 			qtyCapacity = qtyCapacity.negate();
 		}
 
-		capacityTotal = Capacity.createCapacity(qtyCapacity,
-				product, uomMTransaction,
+		capacityTotal = Capacity.createCapacity(
+				qtyCapacity,
+				Services.get(IProductDAO.class).getById(productId),
+				uomMTransaction,
 				false// allowNegativeCapacity
 				);
 	}

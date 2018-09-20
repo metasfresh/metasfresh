@@ -135,7 +135,7 @@ public class M_Transaction_HuDescriptor
 		{
 			final ProductDescriptor productDescriptor = ProductDescriptor
 					.forProductAndAttributes(
-							productStorage.getM_Product_ID(),
+							productStorage.getProductId().getRepoId(),
 							attributesKeyAndAsiId.getLeft(),
 							attributesKeyAndAsiId.getRight());
 

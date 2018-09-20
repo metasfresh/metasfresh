@@ -337,7 +337,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quatity's C_UOM_ID
 	 */
-	private final int getSource_UOM_ID()
+	public final int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
 	}

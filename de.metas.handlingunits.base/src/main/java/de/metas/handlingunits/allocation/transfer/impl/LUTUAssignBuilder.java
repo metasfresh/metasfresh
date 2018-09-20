@@ -71,6 +71,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 
 /**
@@ -239,7 +240,7 @@ public class LUTUAssignBuilder
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product mockProduct = mockProductStorage.getM_Product();
+		final I_M_Product mockProduct = Services.get(IProductDAO.class).getById(mockProductStorage.getProductId());
 		final BigDecimal mockQty = BigDecimal.ZERO;
 		final I_C_UOM mockUOM = mockProductStorage.getC_UOM();
 		final Quantity mockQuantity = new Quantity(mockQty, mockUOM);
@@ -321,8 +322,10 @@ public class LUTUAssignBuilder
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 		final IHUStorage huStorageFrom = storageFactory.getStorage(luHU);
 
+		final I_M_Product product = Services.get(IProductDAO.class).getById(documentLine.getProductId());
+		
 		final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-				.setProduct(documentLine.getM_Product())
+				.setProduct(product)
 				.setQty(documentLine.getQty())
 				.setUOM(documentLine.getC_UOM())
 				.setAttributeStorageFrom(asiAttributeStorageFrom)

@@ -30,7 +30,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
@@ -453,7 +453,7 @@ public class HULoader
 		final I_M_Product unloadTrx_Product = unloadTrx.getProduct();
 		final Quantity qtyUnloadFull = unloadTrx.getQuantity();
 
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(unloadTrx_Product.getM_Product_ID());
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(unloadTrx_Product.getM_Product_ID());
 
 		final Quantity qtyUnloadPartial = uomConversionBL.convertQuantityTo(
 				loadTrx

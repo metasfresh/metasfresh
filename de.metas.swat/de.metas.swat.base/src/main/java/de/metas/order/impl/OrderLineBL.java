@@ -36,7 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -495,12 +495,14 @@ public class OrderLineBL implements IOrderLineBL
 
 		final BigDecimal qtyEntered = orderLine.getQtyEntered();
 
-		if (orderLine.getM_Product_ID() <= 0 || orderLine.getC_UOM_ID() <= 0)
+		ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		final I_C_UOM uom = orderLine.getC_UOM();
+		if (productId == null || uom == null)
 		{
 			return qtyEntered;
 		}
 
-		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(ctx, orderLine.getM_Product(), orderLine.getC_UOM(), qtyEntered);
+		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(ctx, productId, uom, qtyEntered);
 		return qtyOrdered;
 	}
 
@@ -520,7 +522,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext conversionCtx = uomConversionBL.createConversionContext(orderLine.getM_Product_ID());
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 		return uomConversionBL.convertQuantityTo(qtyEntered, conversionCtx, priceUOM);
 	}
 

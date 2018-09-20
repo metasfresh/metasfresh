@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
@@ -78,7 +78,7 @@ public final class HUStorageRecord implements IStorageRecord
 		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), huStorage.getC_UOM());
 		// ... and convert it to product's storage UOM
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product);
 		qtyOnHand = uomConversionBL.convertQuantityTo(qtyOnHandSrc, uomConversionCtx, productUOM);
 	}
 
@@ -170,7 +170,7 @@ public final class HUStorageRecord implements IStorageRecord
 	@Override
 	public BigDecimal getQtyOnHand()
 	{
-		return qtyOnHand.getQty();
+		return qtyOnHand.getAsBigDecimal();
 	}
 
 	public I_M_HU getVHU()

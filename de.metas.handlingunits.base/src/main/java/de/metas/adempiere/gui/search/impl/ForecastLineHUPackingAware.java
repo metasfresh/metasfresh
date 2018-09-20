@@ -38,6 +38,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 
 public class ForecastLineHUPackingAware implements IHUPackingAware
 {
@@ -106,7 +107,8 @@ public class ForecastLineHUPackingAware implements IHUPackingAware
 		forecastLine.setQty(qty);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(forecastLine);
-		final BigDecimal qtyCalculated = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, getM_Product(), getC_UOM(), qty);
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		final BigDecimal qtyCalculated = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
 		forecastLine.setQtyCalculated(qtyCalculated);
 	}
 

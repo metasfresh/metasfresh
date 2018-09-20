@@ -52,6 +52,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /**
@@ -108,7 +109,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		newSched.setBPartnerAddress(bPartnerAddress);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, orderLine.getM_Product(), orderLine.getPrice_UOM(), orderLine.getQtyReserved());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
 		newSched.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
 
 		final String groupingOrderLineLabel = DB
@@ -125,7 +127,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// 03152 end
 
 		// only display item products
-		final boolean display = Services.get(IProductBL.class).isItem(orderLine.getM_Product());
+		final boolean display = Services.get(IProductBL.class).isItem(productId);
 		newSched.setIsDisplayed(display);
 
 		InterfaceWrapperHelper.save(newSched);

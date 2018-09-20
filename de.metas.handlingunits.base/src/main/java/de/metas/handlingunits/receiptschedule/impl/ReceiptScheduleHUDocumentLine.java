@@ -31,6 +31,7 @@ import de.metas.handlingunits.document.impl.AbstractHUDocumentLine;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.product.IProductBL;
 
 public class ReceiptScheduleHUDocumentLine extends AbstractHUDocumentLine
 {
@@ -67,8 +68,9 @@ public class ReceiptScheduleHUDocumentLine extends AbstractHUDocumentLine
 	{
 		if (displayName == null)
 		{
+			final String productName = Services.get(IProductBL.class).getProductName(getProductId());
 			displayName = new StringBuilder()
-					.append(getM_Product().getName())
+					.append(productName)
 					.append(" x ")
 					.append(getQty())
 					.append(getC_UOM().getUOMSymbol())

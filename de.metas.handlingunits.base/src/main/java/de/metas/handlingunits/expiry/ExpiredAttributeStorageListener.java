@@ -18,6 +18,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.product.IProductDAO;
 import lombok.NonNull;
 
 /*
@@ -108,7 +109,7 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 				.getProductStorages();
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final I_M_Product productRecord = productStorage.getM_Product();
+			final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productStorage.getProductId());
 			final int currentDays;
 			if (productRecord.getGuaranteeDaysMin() > 0)
 			{

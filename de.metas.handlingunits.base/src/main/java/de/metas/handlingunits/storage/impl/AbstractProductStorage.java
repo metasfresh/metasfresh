@@ -23,6 +23,7 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
@@ -36,6 +37,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.quantity.Bucket;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -116,12 +118,12 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final BigDecimal qty = getQty();
 		final I_C_UOM uomFrom = getC_UOM();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
+		final BigDecimal convertQty = uomConversionBL.convertQty(productId, qty, uomFrom, uom);
 
 		return Quantity.of(convertQty, uom);
 	}
@@ -138,6 +140,12 @@ public abstract class AbstractProductStorage implements IProductStorage
 	public I_M_Product getM_Product()
 	{
 		return getTotalCapacity().getM_Product();
+	}
+
+	@Override
+	public ProductId getProductId()
+	{
+		return getTotalCapacity().getProductId();
 	}
 
 	@Override
@@ -233,7 +241,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 
 	protected boolean isEligible(final IAllocationRequest request, final RequestType type)
 	{
-		if (request.getProduct().getM_Product_ID() != getM_Product().getM_Product_ID())
+		if (!Objects.equals(request.getProductId(), getProductId()))
 		{
 			// NOTE: don't throw exception but just return false,
 			// because we have the case where are multiple storages in a pool and each of them are asked if they can fullfill a given request
@@ -248,11 +256,11 @@ public abstract class AbstractProductStorage implements IProductStorage
 		Check.assumeNotNull(qty, "qty not null");
 		Check.assumeNotNull(uom, "uom not null");
 
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final I_C_UOM storageUOM = getC_UOM();
 
 		final BigDecimal qtyConverted = Services.get(IUOMConversionBL.class)
-				.convertQty(product, qty, uom, storageUOM);
+				.convertQty(productId, qty, uom, storageUOM);
 
 		Check.assumeNotNull(qtyConverted,
 				"qtyConverted not null (Qty={}, FromUOM={}, ToUOM={}, Product={}",

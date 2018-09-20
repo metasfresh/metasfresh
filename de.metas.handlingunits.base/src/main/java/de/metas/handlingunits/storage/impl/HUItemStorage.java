@@ -51,6 +51,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
@@ -162,8 +163,9 @@ public class HUItemStorage implements IHUItemStorage
 
 		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(product, uom);
 
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final I_C_UOM uomStorage = storageLine.getC_UOM();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, uom, uomStorage);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
 		//
 		// Update storage line
 		final BigDecimal qtyOld = storageLine.getQty();
@@ -193,8 +195,9 @@ public class HUItemStorage implements IHUItemStorage
 	{
 		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(product, uom);
 
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final BigDecimal qty = storageLine.getQty();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, storageLine.getC_UOM(), uom);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, storageLine.getC_UOM(), uom);
 
 		return qtyConv;
 	}

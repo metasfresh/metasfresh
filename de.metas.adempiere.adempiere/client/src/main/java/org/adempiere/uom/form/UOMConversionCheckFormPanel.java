@@ -36,7 +36,7 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
@@ -278,7 +278,7 @@ public class UOMConversionCheckFormPanel implements FormPanel, VetoableChangeLis
 			final BigDecimal qtyConv;
 			if (product != null)
 			{
-				final IUOMConversionContext conversionCtx = uomConversionBL.createConversionContext(product);
+				final UOMConversionContext conversionCtx = UOMConversionContext.of(product);
 				qtyConv = uomConversionBL.convertQty(conversionCtx, qty, uomFrom, uomTo);
 			}
 			else

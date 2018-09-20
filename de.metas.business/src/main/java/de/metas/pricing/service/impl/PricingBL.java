@@ -325,7 +325,7 @@ public class PricingBL implements IPricingBL
 			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
-					ProductId.toRepoId(result.getProductId()),
+					result.getProductId(),
 					BigDecimal.ONE,
 					uomFrom,
 					uomTo);

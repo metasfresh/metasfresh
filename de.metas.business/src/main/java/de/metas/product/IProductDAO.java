@@ -77,4 +77,10 @@ public interface IProductDAO extends ISingletonService
 	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
 
 	String retrieveProductValueByProductId(ProductId productId);
+
+	I_M_Product_Category getProductCategoryById(ProductCategoryId id);
+
+	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
+
+	String getProductCategoryNameById(ProductCategoryId id);
 }

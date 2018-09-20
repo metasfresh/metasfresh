@@ -36,6 +36,9 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import lombok.NonNull;
@@ -46,19 +49,19 @@ public class HUCapacityBL implements IHUCapacityBL
 	@Override
 	public Capacity getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
 	{
-		final I_M_Product productToUse;
+		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())
 		{
 			Check.assumeNotNull(product, "product not null");
-			productToUse = product;
+			productToUseId = ProductId.ofRepoId(product.getM_Product_ID());
 		}
 		else
 		{
-			final I_M_Product piipProduct = itemDefProduct.getM_Product();
+			final ProductId piipProductId = ProductId.ofRepoIdOrNull(itemDefProduct.getM_Product_ID());
 			if (product == null)
 			{
-				productToUse = piipProduct;
-				if (productToUse == null || productToUse.getM_Product_ID() <= 0)
+				productToUseId = piipProductId;
+				if (productToUseId == null)
 				{
 					// Case: product was not found in PI_Item_Product nor was given was parameter
 					throw new HUException("@NotFound@ @M_Product_ID@: " + itemDefProduct);
@@ -66,19 +69,20 @@ public class HUCapacityBL implements IHUCapacityBL
 			}
 			else
 			{
-				final int itemDefProduct_ProductId = itemDefProduct.getM_Product_ID();
-				if (itemDefProduct_ProductId > 0 && itemDefProduct_ProductId != product.getM_Product_ID())
+				if (piipProductId != null && piipProductId.getRepoId() != product.getM_Product_ID())
 				{
+					final String piipProductName = Services.get(IProductBL.class).getProductValueAndName(piipProductId);
 					throw new HUException("CU-TU assignment "
 							+ "\n@M_HU_PI_Item_Product_ID@: " + itemDefProduct.getDescription() + " (" + I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "=" + itemDefProduct.getM_HU_PI_Item_Product_ID() + ") "
-							+ "\n@M_HU_PI_Item_Product_ID@ - @M_Product_ID@: " + piipProduct.getValue() + " (" + piipProduct.getName() + ") "
+							+ "\n@M_HU_PI_Item_Product_ID@ - @M_Product_ID@: " + piipProductName
 							+ "\nis not compatible with required product @M_Product_ID@: " + product.getValue() + "_" + product.getName() + "( " + I_M_Product.COLUMNNAME_M_Product_ID + "=" + product.getM_Product_ID() + ")");
 				}
-				productToUse = product;
+				productToUseId = ProductId.ofRepoId(product.getM_Product_ID());
 			}
 		}
 
-		Check.assumeNotNull(productToUse, "productToUse not null");
+		Check.assumeNotNull(productToUseId, "productToUseId not null");
+		final I_M_Product productToUse = Services.get(IProductDAO.class).getById(productToUseId);
 
 		final boolean infiniteCapacity = isInfiniteCapacity(itemDefProduct);
 		if (infiniteCapacity)
@@ -88,7 +92,7 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		final BigDecimal qty = itemDefProduct.getQty();
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productToUse, qty, itemDefProduct.getC_UOM(), uom);
+				.convertQty(productToUseId, qty, itemDefProduct.getC_UOM(), uom);
 
 		final boolean allowNegativeCapacity = false;
 

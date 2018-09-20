@@ -50,6 +50,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -134,9 +135,10 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQty(final I_M_Product product, final I_C_UOM uom)
 	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(product, uom);
 		final BigDecimal qty = storageLine.getQty();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product.getM_Product_ID(), qty, storageLine.getC_UOM(), uom);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, storageLine.getC_UOM(), uom);
 		return qtyConv;
 	}
 
@@ -151,7 +153,8 @@ import lombok.NonNull;
 		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(product, uom);
 
 		final I_C_UOM uomStorage = storageLine.getC_UOM();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uom, uomStorage);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
 
 		//
 		// Update storage line
@@ -356,7 +359,7 @@ import lombok.NonNull;
 		{
 			if (uom.getC_UOM_ID() != productStorage.getC_UOM().getC_UOM_ID())
 			{
-				final BigDecimal qtyInInitialUOM = uomConvertionBL.convertQty(productStorage.getM_Product_ID(), productStorage.getQty(), productStorage.getC_UOM(), uom);
+				final BigDecimal qtyInInitialUOM = uomConvertionBL.convertQty(productStorage.getProductId(), productStorage.getQty(), productStorage.getC_UOM(), uom);
 
 				fullCUQty = fullCUQty.add(qtyInInitialUOM);
 			}

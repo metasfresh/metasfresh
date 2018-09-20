@@ -31,7 +31,7 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -57,7 +57,7 @@ import de.metas.quantity.Quantity;
 
 	private final Map<Integer, I_M_HU> huId2HUs = new HashMap<>();
 
-	private final IUOMConversionContext uomConversionCtx;
+	private final UOMConversionContext uomConversionCtx;
 	private Quantity qtyToShipScheduled;
 	private Quantity qtyToShipRemaining;
 
@@ -66,7 +66,7 @@ import de.metas.quantity.Quantity;
 		Check.assumeNotNull(ddOrderLineOrAlt, "ddOrderLineOrAlt not null");
 		_ddOrderLineOrAlt = ddOrderLineOrAlt;
 
-		uomConversionCtx = uomConversionBL.createConversionContext(ddOrderLineOrAlt.getM_Product());
+		uomConversionCtx = UOMConversionContext.of(ddOrderLineOrAlt.getM_Product_ID());
 
 		final BigDecimal qtyToAllocateMax = ddOrderBL.getQtyToShip(ddOrderLineOrAlt);
 		final I_C_UOM qtyToAllocateMaxUOM = ddOrderLineOrAlt.getC_UOM();

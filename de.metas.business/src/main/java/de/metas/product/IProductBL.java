@@ -48,8 +48,13 @@ public interface IProductBL extends ISingletonService
 	 * @return true if item
 	 */
 	boolean isItem(I_M_Product product);
-
-	boolean isItem(int productId);
+	
+	boolean isItem(ProductId productId);
+	
+	default boolean isItem(int productId)
+	{
+		return isItem(ProductId.ofRepoId(productId));
+	}
 
 	/**
 	 * @param product

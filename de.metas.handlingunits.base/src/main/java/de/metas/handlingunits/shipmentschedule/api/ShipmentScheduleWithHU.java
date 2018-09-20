@@ -47,7 +47,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -80,6 +79,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -243,14 +243,9 @@ public class ShipmentScheduleWithHU
 		return huContext;
 	}
 
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return shipmentSchedule.getM_Product_ID();
-	}
-
-	public I_M_Product getM_Product()
-	{
-		return shipmentSchedule.getM_Product();
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 	}
 
 	public int getM_AttributeSetInstance_ID()
@@ -517,7 +512,7 @@ public class ShipmentScheduleWithHU
 		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
 				huPIItem,
 				bPartner,
-				getM_Product(),
+				getProductId(),
 				preparationDate);
 		if (matchingPiip != null)
 		{

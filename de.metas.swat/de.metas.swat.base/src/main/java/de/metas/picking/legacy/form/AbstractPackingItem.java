@@ -44,7 +44,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -287,7 +287,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		{
 			final Quantity qtyForSched = getQtyForSched(sched);
 			final BigDecimal qtyInProductUOM = uomConversionBL
-					.convertQtyToProductUOM(IUOMConversionContext.of(getM_Product()), qtyForSched.getQty(), qtyForSched.getUOM());
+					.convertQtyToProductUOM(UOMConversionContext.of(getM_Product()), qtyForSched.getQty(), qtyForSched.getUOM());
 			computedWeight = computedWeight.add(weightPerUnit.multiply(qtyInProductUOM));
 		}
 		return computedWeight;

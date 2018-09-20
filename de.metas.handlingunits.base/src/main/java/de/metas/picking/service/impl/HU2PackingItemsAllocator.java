@@ -10,7 +10,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -155,7 +155,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 		final IFreshPackingItem itemToPack = getItemToPack();
 		final I_C_UOM qtyToPackUOM = itemToPack.getC_UOM();
-		Quantity qtyToPack = uomConversionBL.convertQuantityTo(qtyToPackSrc, IUOMConversionContext.of(product), qtyToPackUOM);
+		Quantity qtyToPack = uomConversionBL.convertQuantityTo(qtyToPackSrc, UOMConversionContext.of(product), qtyToPackUOM);
 
 		//
 		qtyToPack = adjustQtyToPackConsideringRemaining(qtyToPack);

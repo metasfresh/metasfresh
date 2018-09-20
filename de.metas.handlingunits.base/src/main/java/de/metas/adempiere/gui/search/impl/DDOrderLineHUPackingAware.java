@@ -38,6 +38,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 
 /**
  * Wraps an {@link I_DD_OrderLine} and makes it behave like an {@link IHUPackingAware}.
@@ -87,7 +88,8 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 		ddOrderLine.setQtyEntered(qty);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ddOrderLine);
-		final BigDecimal qtyOrdered = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, getM_Product(), getC_UOM(), qty);
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
+		final BigDecimal qtyOrdered = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
 		ddOrderLine.setQtyOrdered(qtyOrdered);
 
 		values.setQty(qty);

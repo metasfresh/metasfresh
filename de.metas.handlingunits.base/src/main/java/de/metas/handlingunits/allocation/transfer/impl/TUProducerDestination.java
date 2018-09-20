@@ -277,7 +277,7 @@ import de.metas.quantity.CapacityInterface;
 					+ "this={}", tuPI, getC_BPartner(), materialPIItems, this);
 
 			final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProduct(), request.getDate());
+			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProductId(), request.getDate());
 
 			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProduct(), request.getC_UOM());

@@ -31,6 +31,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.product.ProductId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -72,12 +73,14 @@ public class Capacity implements CapacityInterface
 	 */
 	public static BigDecimal DEFAULT = new BigDecimal(Long.MAX_VALUE);
 
+	private final ProductId productId;
 	private final I_M_Product product;
 	private final I_C_UOM uom;
 	private final BigDecimal capacity;
 
 	private final boolean infiniteCapacity;
 	private final boolean allowNegativeCapacity;
+
 
 	/**
 	 * Constructs a finite capacity definition
@@ -88,6 +91,7 @@ public class Capacity implements CapacityInterface
 			@NonNull final I_C_UOM uom,
 			final boolean allowNegativeCapacity)
 	{
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 		this.product = product;
 		this.uom = uom;
 
@@ -103,6 +107,7 @@ public class Capacity implements CapacityInterface
 	 */
 	private Capacity(@NonNull final I_M_Product product, @NonNull final I_C_UOM uom)
 	{
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 		this.product = product;
 		this.uom = uom;
 
@@ -150,7 +155,7 @@ public class Capacity implements CapacityInterface
 		}
 
 		final BigDecimal qtyCapacityTo = Services.get(IUOMConversionBL.class).convertQty(
-				product,
+				productId,
 				capacity,
 				uom,
 				uomTo);
@@ -174,7 +179,7 @@ public class Capacity implements CapacityInterface
 		}
 
 		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
-				.convertQty(product.getM_Product_ID(),
+				.convertQty(getProductId(),
 						quantity.getAsBigDecimal(),
 						quantity.getUOM(),
 						uom);
@@ -235,7 +240,7 @@ public class Capacity implements CapacityInterface
 		}
 
 		// Convert Qty to Capacity's UOM
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(product, qty, uom, targetUom);
+		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(productId, qty, uom, targetUom);
 
 		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
 		return qtyPacks.intValueExact();
@@ -260,6 +265,11 @@ public class Capacity implements CapacityInterface
 				allowNegativeCapacity);
 	}
 
+	public ProductId getProductId()
+	{
+		return productId;
+	}
+	
 	public I_M_Product getM_Product()
 	{
 		return product;

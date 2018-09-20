@@ -59,6 +59,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
@@ -468,6 +470,13 @@ public class LUTUProducerDestination
 		final Capacity tuCapacity = createCapacity(cuProduct, qtyCUPerTU, cuUOM);
 		addCUPerTU(tuCapacity);
 	}
+	
+	public void addCUPerTU(final ProductId cuProductId, final BigDecimal qtyCUPerTU, final I_C_UOM cuUOM)
+	{
+		final I_M_Product cuProduct = Services.get(IProductDAO.class).getById(cuProductId);
+		addCUPerTU(cuProduct, qtyCUPerTU, cuUOM);
+	}
+
 
 	@Override
 	public Capacity getSingleCUPerTU()

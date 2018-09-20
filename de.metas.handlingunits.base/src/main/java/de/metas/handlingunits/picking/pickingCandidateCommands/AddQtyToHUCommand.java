@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
@@ -210,9 +210,9 @@ public class AddQtyToHUCommand
 		}
 		else
 		{
-			final IUOMConversionContext conversionCtx = uomConversionBL.createConversionContext(productId);
+			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 			final Quantity qty = candidate.getQtyPicked();
-			final Quantity qtyToAddConv = conversionCtx.convertQty(qtyToAdd, qty.getUOM());
+			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qty, conversionCtx, qty.getUOM());
 			qtyNew = qty.add(qtyToAddConv);
 		}
 

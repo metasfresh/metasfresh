@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -35,9 +34,12 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * Read-only HU Product Storage based on {@link IHUStorage} and a particular product.
@@ -49,22 +51,18 @@ import de.metas.quantity.Quantity;
 {
 	private final IHUStorage huStorage;
 	private final I_M_Product product;
+	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final CapacityInterface capacityTotal;
 
-	public HUProductStorage(final IHUStorage huStorage,
-			final I_M_Product product,
-			final I_C_UOM uom)
+	public HUProductStorage(
+			@NonNull final IHUStorage huStorage,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uom)
 	{
-		super();
-
-		Check.assumeNotNull(huStorage, "huStorage not null");
 		this.huStorage = huStorage;
-
-		Check.assumeNotNull(product, "product not null");
 		this.product = product;
-
-		Check.assumeNotNull(uom, "uom not null");
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
 		this.uom = uom;
 
 		// NOTE: we are creating infinite capacity because we cannot determine the capacity at HU Storage Level
@@ -88,6 +86,12 @@ import de.metas.quantity.Quantity;
 	public I_M_Product getM_Product()
 	{
 		return product;
+	}
+
+	@Override
+	public ProductId getProductId()
+	{
+		return productId;
 	}
 
 	@Override
@@ -117,21 +121,20 @@ import de.metas.quantity.Quantity;
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final BigDecimal qty = getQty();
 		final I_C_UOM uomFrom = getC_UOM();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
+		final BigDecimal convertQty = uomConversionBL.convertQty(productId, qty, uomFrom, uom);
 		return Quantity.of(convertQty, uom);
 	}
 
 	@Override
 	public final BigDecimal getQtyInStockingUOM()
 	{
-		final I_M_Product product = getM_Product();
-		final I_C_UOM uom = product.getC_UOM();
-		return getQty(uom).getQty();
+		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(getProductId());
+		return getQty(productUOM).getAsBigDecimal();
 	}
 
 	@Override

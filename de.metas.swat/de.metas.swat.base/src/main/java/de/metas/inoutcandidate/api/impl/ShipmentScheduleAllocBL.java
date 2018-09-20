@@ -40,6 +40,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -83,8 +84,9 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 	{
 		// Convert QtyPicked to shipment schedule's UOM
 		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(sched.getM_Product_ID(),
-				qtyPicked.getQty(),
+		final BigDecimal qtyPickedConv = Services.get(IUOMConversionBL.class).convertQty(
+				ProductId.ofRepoId(sched.getM_Product_ID()),
+				qtyPicked.getAsBigDecimal(),
 				qtyPicked.getUOM(), // from UOM
 				schedUOM // to UOM
 		);

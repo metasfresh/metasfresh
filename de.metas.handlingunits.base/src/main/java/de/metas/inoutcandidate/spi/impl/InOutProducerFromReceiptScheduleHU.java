@@ -81,6 +81,7 @@ import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.product.ProductId;
 
 /**
  * Generates material receipt from {@link I_M_ReceiptSchedule_Alloc} (with HUs).
@@ -403,8 +404,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		// Create Receipt schedule allocations if possible.
 		// If no packing material receipt schedules were found for this product, there is nothing we can do
-		final int productId = candidate.getM_Product_ID();
-		final List<I_M_ReceiptSchedule> packingMaterialReceiptSchedules = huReceiptScheduleDAO.retrievePackingMaterialReceiptSchedules(getCtx(), getCurrentHeaderAggregationKey(), productId);
+		final ProductId productId = candidate.getProductId();
+		final List<I_M_ReceiptSchedule> packingMaterialReceiptSchedules = huReceiptScheduleDAO.retrievePackingMaterialReceiptSchedules(getCtx(), getCurrentHeaderAggregationKey(), productId.getRepoId());
 		if (!packingMaterialReceiptSchedules.isEmpty())
 		{
 			receiptScheduleBL.createReceiptScheduleAllocations(packingMaterialReceiptSchedules, receiptLine);

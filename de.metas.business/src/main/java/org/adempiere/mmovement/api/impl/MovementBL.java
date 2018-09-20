@@ -29,7 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -63,8 +63,8 @@ public class MovementBL implements IMovementBL
 		final Quantity movementQty = new Quantity(movementQtyValue, movementQtyUOM);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final I_M_Product product = movementLine.getM_Product();
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final int productId = movementLine.getM_Product_ID();
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 
 		return uomConversionBL.convertQuantityTo(movementQty, uomConversionCtx, uom);
 	}
@@ -72,11 +72,11 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setMovementQty(final I_M_MovementLine movementLine, final BigDecimal movementQty, final I_C_UOM uom)
 	{
-		final I_M_Product product = movementLine.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 		final I_C_UOM uomTo = getC_UOM(movementLine);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal movementQtyConv = uomConversionBL.convertQty(product, movementQty, uom, uomTo);
+		final BigDecimal movementQtyConv = uomConversionBL.convertQty(productId, movementQty, uom, uomTo);
 
 		movementLine.setMovementQty(movementQtyConv);
 	}

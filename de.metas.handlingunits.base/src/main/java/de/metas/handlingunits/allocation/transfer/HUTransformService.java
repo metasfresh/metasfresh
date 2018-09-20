@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -65,6 +66,7 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -175,12 +177,13 @@ public class HUTransformService
 
 	private IAllocationRequest createCUAllocationRequest(
 			@NonNull final IHUContext huContext,
-			@NonNull final I_M_Product cuProduct,
+			@NonNull final ProductId cuProductId,
 			@NonNull final Quantity qtyCU,
 			final boolean forceAllocation)
 	{
 		//
 		// Create allocation request for the quantity user entered
+		final I_M_Product cuProduct = Services.get(IProductDAO.class).getById(cuProductId);
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
 				cuProduct,
 				qtyCU,
@@ -276,7 +279,7 @@ public class HUTransformService
 				.huToSplit(cuHU)
 				.requestProvider(huContext -> createCUAllocationRequest(
 						huContext,
-						singleProductStorage.getM_Product(),
+						singleProductStorage.getProductId(),
 						qtyCU,
 						false) // forceAllocation = false; no need, because destination has no capacity constraints
 				)
@@ -363,7 +366,7 @@ public class HUTransformService
 					.huContextInitital(huContext)
 					.huToSplit(sourceCuHU)
 					.requestProvider(huContext -> createCUAllocationRequest(huContext,
-							singleProductStorage.getM_Product(),
+							singleProductStorage.getProductId(),
 							qtyCU,
 							true /* forceAllocation */))
 					.destination(destination)
@@ -445,7 +448,7 @@ public class HUTransformService
 				{
 					final List<IHUDocumentLine> huDocumentLines = huDocument.getLines();
 					final Optional<IHUDocumentLine> huDocumentLine = huDocumentLines.stream()
-							.filter(l -> l.getM_Product() != null && l.getM_Product().getM_Product_ID() == singleProductStorage.getM_Product().getM_Product_ID())
+							.filter(l -> l.getProductId() != null && Objects.equals(l.getProductId(), singleProductStorage.getProductId()))
 							.findFirst();
 					if (huDocumentLine.isPresent())
 					{
@@ -561,7 +564,7 @@ public class HUTransformService
 				.huContextInitital(huContext)
 				.huToSplit(cuHU)
 				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), qtyCU, false))
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getProductId(), qtyCU, false))
 				.destination(destination)
 				.build()
 				.withPropagateHUValues()
@@ -934,7 +937,7 @@ public class HUTransformService
 			{
 				sourceQtyCUperTU = qtyOfStorage;
 			}
-			final I_M_Product cuProduct = Preconditions.checkNotNull(firstProductStorage.getM_Product(), "M_Product of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
+			final ProductId cuProductId = Preconditions.checkNotNull(firstProductStorage.getProductId(), "M_Product of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
 			final I_C_UOM cuUOM = Preconditions.checkNotNull(firstProductStorage.getC_UOM(), "C_UOM of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
 
 			final LUTUProducerDestination destination = new LUTUProducerDestination();
@@ -963,12 +966,12 @@ public class HUTransformService
 						.setParameter("tuPI", tuPI);
 			}
 
-			destination.addCUPerTU(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
+			destination.addCUPerTU(cuProductId, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
 			HUSplitBuilderCoreEngine.builder()
 					.huContextInitital(huContext)
 					.huToSplit(sourceTuHU)
-					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProduct, Quantity.of(qtyTU.multiply(sourceQtyCUperTU), cuUOM), false))
+					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProductId, Quantity.of(qtyTU.multiply(sourceQtyCUperTU), cuUOM), false))
 					.destination(destination)
 					.build()
 					.withPropagateHUValues()

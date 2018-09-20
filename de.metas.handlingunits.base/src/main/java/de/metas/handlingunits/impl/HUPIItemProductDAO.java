@@ -67,6 +67,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
@@ -115,18 +116,19 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_PI_Item itemDef,
-			final I_M_Product product,
+			@NonNull final I_M_Product product,
 			final Date date)
 	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final I_C_BPartner partner = null; // N/A
-		return retrievePIMaterialItemProduct(itemDef, partner, product, date);
+		return retrievePIMaterialItemProduct(itemDef, partner, productId, date);
 	}
 
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			@NonNull final I_M_HU_PI_Item itemDef,
 			@Nullable final I_C_BPartner partner,
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@Nullable final Date date)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
@@ -135,7 +137,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			final int partnerId = partner.getC_BPartner_ID();
 			queryVO.setC_BPartner_ID(partnerId);
 		}
-		queryVO.setM_Product_ID(product.getM_Product_ID());
+		queryVO.setM_Product_ID(productId.getRepoId());
 		queryVO.setAllowAnyProduct(true);
 		queryVO.setM_HU_PI_Item_ID(itemDef.getM_HU_PI_Item_ID());
 		queryVO.setDate(date);

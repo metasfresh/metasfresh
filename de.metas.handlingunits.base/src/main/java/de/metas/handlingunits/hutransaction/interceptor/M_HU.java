@@ -54,6 +54,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 
 @Interceptor(I_M_HU.class)
@@ -164,7 +165,7 @@ public final class M_HU
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product product = productStorage.getM_Product();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productStorage.getProductId());
 		final BigDecimal qty = productStorage.getQty();
 		final I_C_UOM uom = productStorage.getC_UOM();
 		final Quantity quantity = new Quantity(qty, uom);

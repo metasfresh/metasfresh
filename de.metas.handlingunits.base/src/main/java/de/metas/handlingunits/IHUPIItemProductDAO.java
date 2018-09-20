@@ -35,6 +35,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 
 /**
  *
@@ -77,11 +78,11 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * this DAO's standard ordering (see class-javadoc) and the first one is returned. Attempt to match partner if available.
 	 *
 	 * @param huItem
-	 * @param product
+	 * @param productId
 	 * @param date
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, I_M_Product product, Date date);
+	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, ProductId productId, Date date);
 
 	I_M_HU_PI_Item_Product retrieveForId(Properties ctx, int M_HU_PI_Item_Product_ID);
 

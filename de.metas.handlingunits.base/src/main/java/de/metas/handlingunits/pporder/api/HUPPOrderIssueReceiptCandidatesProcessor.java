@@ -17,7 +17,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -635,7 +635,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}
 
-			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product.getM_Product_ID());
+			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
 			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
 
 			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getAsBigDecimal());

@@ -120,7 +120,7 @@ public class DraftInventoryLinesCreator
 		inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
 
 		inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
-		inventoryLine.setM_Product_ID(huProductStorage.getM_Product_ID());
+		inventoryLine.setM_Product_ID(huProductStorage.getProductId().getRepoId());
 		inventoryLine.setC_UOM(huProductStorage.getC_UOM());
 
 		inventoryLine.setQtyBook(huProductStorage.getQty());

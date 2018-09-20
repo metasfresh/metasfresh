@@ -2,8 +2,12 @@ package org.adempiere.mm.attributes.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -18,28 +22,30 @@ import org.compiere.model.I_M_Product;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAware
 {
-	private final int productId;
+	private final ProductId productId;
 	private final int attributeSetInstanceId;
-	
+
 	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
 			final int productId,
 			final int attributeSetInstanceId)
 	{
-		return new PlainAttributeSetInstanceAware(productId, attributeSetInstanceId);
+		return new PlainAttributeSetInstanceAware(
+				ProductId.ofRepoIdOrNull(productId),
+				attributeSetInstanceId);
 	}
-		
-	private PlainAttributeSetInstanceAware(final int productId, final int attributeSetInstanceId)
+
+	private PlainAttributeSetInstanceAware(final ProductId productId, final int attributeSetInstanceId)
 	{
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
@@ -48,11 +54,16 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 	@Override
 	public I_M_Product getM_Product()
 	{
-		return load(productId, I_M_Product.class);
+		return Services.get(IProductDAO.class).getById(productId);
 	}
 
 	@Override
 	public int getM_Product_ID()
+	{
+		return ProductId.toRepoId(productId);
+	}
+
+	public ProductId getProductId()
 	{
 		return productId;
 	}

@@ -96,6 +96,7 @@ import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
@@ -233,8 +234,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (olAndSched.getOl().isPresent())
 			{
 				final I_C_OrderLine ol = olAndSched.getOl().get();
-				final org.compiere.model.I_M_Product product = ol.getM_Product();
-				updateLineNewAmt(ctx, olAndSched.getOl().get(), sched, product);
+				final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
+				updateLineNewAmt(ctx, olAndSched.getOl().get(), sched, productId);
 			}
 			else
 			{
@@ -382,16 +383,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 * @task https://github.com/metasfresh/metasfresh/issues/298
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
 	 */
-	private void updateLineNewAmt(final Properties ctx, final I_C_OrderLine ol, final I_M_ShipmentSchedule sched, final org.compiere.model.I_M_Product product)
+	private void updateLineNewAmt(final Properties ctx, final I_C_OrderLine ol, final I_M_ShipmentSchedule sched, final ProductId productId)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, olEx.getPrice_UOM(), ol.getQtyReserved());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, olEx.getPrice_UOM(), ol.getQtyReserved());
 
 		// qtyReservedInPriceUOM might be null. in that case, don't fail the whole updating, but set the value to null
 		if (qtyReservedInPriceUOM == null)
 		{
-			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for M_Product=" + product + ", and C_OrderLine=" + olEx + "; \n"
+			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for M_Product=" + productId + ", and C_OrderLine=" + olEx + "; \n"
 					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule=" + sched + "; \n"
 					+ "Note: if this exception was thrown and not just logged, then check for stale M_ShipmentSchedule_Recompute records";
 			new AdempiereException(msg).throwIfDeveloperModeOrLogWarningElse(logger);

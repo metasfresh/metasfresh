@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -39,6 +40,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 
 public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 {
@@ -65,7 +68,7 @@ public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 	@Override
 	public String getDisplayName()
 	{
-		final I_M_Product product = getM_Product();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(getProductId());
 
 		final StringBuilder name = new StringBuilder()
 				.append(product.getName()).append("#").append(product.getM_Product_ID());
@@ -79,9 +82,9 @@ public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 	}
 
 	@Override
-	public I_M_Product getM_Product()
+	public ProductId getProductId()
 	{
-		return storage.getM_Product();
+		return storage.getProductId();
 	}
 
 	@Override

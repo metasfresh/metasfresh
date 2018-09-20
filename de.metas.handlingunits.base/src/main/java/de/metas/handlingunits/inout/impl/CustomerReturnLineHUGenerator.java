@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -23,6 +24,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.IHUContext;
@@ -45,6 +48,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /*
@@ -275,29 +279,26 @@ public class CustomerReturnLineHUGenerator
 		return this;
 	}
 
-	private I_M_Product getM_Product()
+	private ProductId getSingleProductId()
 	{
-		final Map<Integer, I_M_Product> products = new HashMap<>();
-		for (final I_M_InOutLine inOutLine : getInOutLines())
-		{
-			final IProductStorage productStorage = getProductStorage(inOutLine);
-			final I_M_Product product = productStorage.getM_Product();
-			products.put(product.getM_Product_ID(), product);
-		}
+		final Set<ProductId> productIds = getInOutLines()
+				.stream()
+				.map(this::getProductStorage)
+				.map(IProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		if (products.isEmpty())
+		if (productIds.isEmpty())
 		{
 			throw new HUException("No products were found");
 		}
-		else if (products.size() == 1)
+		else if (productIds.size() == 1)
 		{
-			final I_M_Product product = products.values().iterator().next();
-			return product;
+			return productIds.iterator().next();
 		}
 		else
 		{
 			// shall not happen
-			throw new HUException("More then one products were found: " + products.values());
+			throw new HUException("More then one products were found: " + productIds);
 		}
 	}
 
@@ -331,7 +332,7 @@ public class CustomerReturnLineHUGenerator
 				"The trxName of the given request's HUContext needs to be {} or 'null', but is {}",
 				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
 
-		final List<I_M_HU> result = new ArrayList<I_M_HU>();
+		final List<I_M_HU> result = new ArrayList<>();
 
 		final String trxNamePrefix = getClass().getSimpleName();
 
@@ -438,12 +439,12 @@ public class CustomerReturnLineHUGenerator
 		// * we really want to allocate unload this quantity
 		// * on loading side, HUItemStorage is considering our enforced capacity even if we do force allocation
 		final boolean forceQtyAllocation = true;
-
+		
 		//
 		// Create Allocation Request
 		IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				getM_Product(),
+				getSingleProductId(),
 				qty,
 				SystemTime.asDate(),
 				inOutLine, // referencedModel,

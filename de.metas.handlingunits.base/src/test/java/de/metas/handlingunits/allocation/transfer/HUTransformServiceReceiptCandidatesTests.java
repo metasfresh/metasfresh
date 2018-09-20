@@ -107,7 +107,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
 
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
-		receiptSchedule.setM_Product(storages.get(0).getM_Product());
+		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
 		receiptSchedule.setC_UOM(storages.get(0).getC_UOM());
 		InterfaceWrapperHelper.save(receiptSchedule);
 

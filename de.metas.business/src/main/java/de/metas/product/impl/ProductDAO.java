@@ -210,4 +210,22 @@ public class ProductDAO implements IProductDAO
 	{
 		return ProductAndCategoryAndManufacturerId.of(product.getM_Product_ID(), product.getM_Product_Category_ID(), product.getManufacturer_ID());
 	}
+
+	@Override
+	public I_M_Product_Category getProductCategoryById(@NonNull final ProductCategoryId id)
+	{
+		return getProductCategoryById(id, I_M_Product_Category.class);
+	}
+
+	@Override
+	public <T extends I_M_Product_Category> T getProductCategoryById(@NonNull final ProductCategoryId id, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(id, modelClass);
+	}
+	
+	@Override
+	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
+	{
+		return getProductCategoryById(id).getName();
+	}
 }

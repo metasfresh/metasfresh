@@ -256,7 +256,7 @@ import lombok.NonNull;
 					.map(productStorage -> CreateReceiptCandidateRequest.builder()
 							.locatorId(locatorId)
 							.topLevelHUId(topLevelHUId)
-							.productId(productStorage.getM_Product().getM_Product_ID())
+							.productId(productStorage.getProductId().getRepoId())
 							.build()
 							.addQty(productStorage.getQty(), productStorage.getC_UOM()))
 					//

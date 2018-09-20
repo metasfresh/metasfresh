@@ -47,7 +47,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
@@ -273,19 +272,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return qty;
 		}
-		if (invoiceLine.getM_Product_ID() <= 0)
-		{
-			return qty;
-		}
-
-		final I_M_Product product = invoiceLine.getM_Product();
-		if (product.getC_UOM_ID() <= 0)
+		
+		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
+		if (productId == null)
 		{
 			return qty;
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
-		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertFromProductUOM(ctx, product, priceUOM, qty);
+		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertFromProductUOM(ctx, productId, priceUOM, qty);
 
 		return qtyInPriceUOM;
 	}

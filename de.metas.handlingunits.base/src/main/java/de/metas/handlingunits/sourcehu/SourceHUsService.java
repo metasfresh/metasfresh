@@ -238,8 +238,7 @@ public class SourceHUsService
 
 			final ImmutableSet<ProductId> productIds = storage.getProductStorages().stream()
 					.filter(productStorage -> !productStorage.isEmpty())
-					.map(IProductStorage::getM_Product_ID)
-					.map(ProductId::ofRepoId)
+					.map(IProductStorage::getProductId)
 					.collect(ImmutableSet.toImmutableSet());
 
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(hu.getM_Locator().getM_Warehouse_ID());
