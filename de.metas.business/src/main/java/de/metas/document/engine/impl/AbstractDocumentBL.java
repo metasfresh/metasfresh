@@ -1,5 +1,8 @@
 package de.metas.document.engine.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
@@ -16,6 +19,7 @@ import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -28,7 +32,6 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.Objects;
@@ -65,8 +68,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		if (Adempiere.getSpringApplicationContext() == null)
 		{
-			// here we support the case of a unit test that 
-			// * doesn't care about DocumentHandlerProviders 
+			// here we support the case of a unit test that
+			// * doesn't care about DocumentHandlerProviders
 			// * and does not want to do the @SpringBootTest dance
 			return ImmutableMap.of();
 		}
@@ -96,15 +99,14 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		final IDocument document = getDocument(documentObj);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final String trxName = document.get_TrxName();
+		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
 		final Boolean processed = trxManager.call(trxName, new TrxCallable<Boolean>()
 		{
-
 			@Override
 			public Boolean call() throws Exception
 			{
-				document.set_TrxName(ITrx.TRXNAME_ThreadInherited);
+				setTrxName(document.getDocumentModel(), ITrx.TRXNAME_ThreadInherited, true /* ignoreIfNotHandled */);
 				final boolean processed = processIt0(document, action);
 				if (!processed && throwExIfNotSuccess)
 				{
@@ -126,7 +128,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			public void doFinally()
 			{
 				// put back the transaction which document had initially
-				document.set_TrxName(trxName);
+				setTrxName(document.getDocumentModel(), trxName, true /* ignoreIfNotHandled */);
 			}
 		});
 
@@ -138,12 +140,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
 		// Guard: save the document if new, else the processing could be corrupted.
-		final Object documentModel = Util.coalesce(doc.getDocumentModel(), doc);
-		if (InterfaceWrapperHelper.isNew(documentModel))
+		if (InterfaceWrapperHelper.isNew(doc.getDocumentModel()))
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
-			InterfaceWrapperHelper.save(documentModel);
+			InterfaceWrapperHelper.save(doc.getDocumentModel());
 		}
 
 		// Actual document processing
@@ -160,7 +161,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		// IMPORTANT: we need to save 'doc', not 'document', because in case 'document' is a grid tab, then the PO 'doc'
 		// is a different instance. If we save 'document' in that case, the changes to 'doc' will be lost.
-		InterfaceWrapperHelper.save(doc);
+		final Object documentModel = doc.getDocumentModel();
+		InterfaceWrapperHelper.save(documentModel);
 		InterfaceWrapperHelper.refresh(document);
 
 		if (expectedDocStatus != null && !expectedDocStatus.equals(doc.getDocStatus()))
@@ -224,8 +226,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return getDocument(document, throwEx);
 	}
 
-	// protected abstract IDocument getDocument(final Object document, boolean throwEx);
-
 	private IDocument getDocument(
 			@Nullable final Object documentObj,
 			final boolean throwEx)
@@ -250,7 +250,17 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		if (handlerProvider != null)
 		{
 			final DocumentHandler handler = handlerProvider.provideForDocument(documentObj);
-			return DocumentWrapper.wrapModelUsingHandler(documentObj, handler);
+			final Object documentObjToUse;
+			if (POJOWrapper.isHandled(documentObj))
+			{
+				documentObjToUse = documentObj;
+			}
+			else
+			{
+				// if possible, try to make sure that we work on the PO. Otherwise all changes might get lost when we try to save documentObjToUse after processing.
+				documentObjToUse = InterfaceWrapperHelper.getPO(documentObj);
+			}
+			return DocumentWrapper.wrapModelUsingHandler(documentObjToUse, handler);
 		}
 
 		return getLegacyDocumentOrNull(documentObj, throwEx);
