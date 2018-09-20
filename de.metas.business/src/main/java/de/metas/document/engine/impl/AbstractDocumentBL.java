@@ -9,6 +9,8 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
@@ -26,14 +28,17 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.DocumentTableFields;
+import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
@@ -58,9 +63,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
-		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getSpringApplicationContext()
-				.getBeansOfType(DocumentHandlerProvider.class)
-				.values()
+		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
 		logger.debug("Retrieved providers: {}", providersByTableName);
@@ -123,17 +126,17 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return processed != null && processed.booleanValue();
 	}
 
-	protected boolean processIt0(final IDocument doc, final String action) throws Exception
+	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception
 	{
-		Check.assumeNotNull(doc, "doc not null");
+		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
-		//
 		// Guard: save the document if new, else the processing could be corrupted.
-		if (doc.get_ID() <= 0)
+		final Object documentModel = Util.coalesce(doc.getDocumentModel(),doc);
+		if (InterfaceWrapperHelper.isNew(documentModel))
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
-			InterfaceWrapperHelper.save(doc);
+			InterfaceWrapperHelper.save(documentModel);
 		}
 
 		// Actual document processing
@@ -214,7 +217,39 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return getDocument(document, throwEx);
 	}
 
-	protected abstract IDocument getDocument(final Object document, boolean throwEx);
+	// protected abstract IDocument getDocument(final Object document, boolean throwEx);
+
+	private IDocument getDocument(
+			@Nullable final Object documentObj,
+			final boolean throwEx)
+	{
+		if (documentObj == null)
+		{
+			if (throwEx)
+			{
+				throw new AdempiereException("document is null");
+			}
+			return null;
+		}
+
+		//
+		if (documentObj instanceof IDocument)
+		{
+			return (IDocument)documentObj;
+		}
+
+		final String tableName = InterfaceWrapperHelper.getModelTableNameOrNull(documentObj);
+		final DocumentHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
+		if (handlerProvider != null)
+		{
+			final DocumentHandler handler = handlerProvider.provideForDocument(documentObj);
+			return DocumentWrapper.wrapModelUsingHandler(documentObj, handler);
+		}
+
+		return getLegacyDocumentOrNull(documentObj, throwEx);
+	}
+
+	protected abstract IDocument getLegacyDocumentOrNull(Object documentObj, boolean throwEx);
 
 	@Override
 	public boolean issDocumentDraftedOrInProgress(final Object document)
