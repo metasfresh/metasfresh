@@ -96,7 +96,7 @@ class PickingTerminalViewInvalidationAdvisor implements IViewInvalidationAdvisor
 
 		if (!pickingCandidateIds.isEmpty())
 		{
-			shipmentScheduleIds.addAll(pickingCandidateRepository.retrieveShipmentScheduleIdsForPickingCandidateIds(pickingCandidateIds));
+			shipmentScheduleIds.addAll(pickingCandidateRepository.getShipmentScheduleIdsByPickingCandidateIds(pickingCandidateIds));
 		}
 
 		return shipmentScheduleIds;
