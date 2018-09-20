@@ -17,6 +17,8 @@ Here come the actual release notes:
     * Hiding the Organisation Field in Organisation Window.
 
 * metasfresh-webui-frontend
+  * [#1926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1926) Make window tabs cypress friendly
+    * Improvement of WebUI Tab Names, making it easie to use them in Cypress Test instructions.
   * [#1957](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1957) On password reset, show the error message
     * Enhancing the error messages in Forgot Password workflow.
 
