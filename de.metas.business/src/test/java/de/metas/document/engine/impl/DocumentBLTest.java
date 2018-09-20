@@ -26,6 +26,7 @@ package de.metas.document.engine.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -113,7 +114,7 @@ public class DocumentBLTest
 	}
 
 	// NOTE: this test applies only for PlainDocumentBL
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AdempiereException.class)
 	public void test_getDocument_NonDocument()
 	{
 		final Properties ctx = Env.getCtx();

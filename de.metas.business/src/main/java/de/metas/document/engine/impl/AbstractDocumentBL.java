@@ -63,6 +63,13 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
+		if (Adempiere.getSpringApplicationContext() == null)
+		{
+			// here we support the case of a unit test that 
+			// * doesn't care about DocumentHandlerProviders 
+			// * and does not want to do the @SpringBootTest dance
+			return ImmutableMap.of();
+		}
 		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
@@ -131,7 +138,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
 		// Guard: save the document if new, else the processing could be corrupted.
-		final Object documentModel = Util.coalesce(doc.getDocumentModel(),doc);
+		final Object documentModel = Util.coalesce(doc.getDocumentModel(), doc);
 		if (InterfaceWrapperHelper.isNew(documentModel))
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)

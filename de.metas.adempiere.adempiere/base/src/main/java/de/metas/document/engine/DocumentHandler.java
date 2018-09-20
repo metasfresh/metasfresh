@@ -26,6 +26,9 @@ import java.time.LocalDate;
  * #L%
  */
 
+/**
+ * Instances of this SPI are supposed to be created by their respective {@link DocumentHandlerProvider}.
+ */
 public interface DocumentHandler
 {
 	//
