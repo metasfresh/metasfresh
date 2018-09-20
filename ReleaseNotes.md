@@ -16,6 +16,10 @@ Here come the actual release notes:
   * [#4605](https://github.com/metasfresh/metasfresh/issues/4605) Webui: Org window: hide the AD_Org_ID field
     * Hiding the Organisation Field in Organisation Window.
 
+* metasfresh-webui-frontend
+  * [#1957](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1957) On password reset, show the error message
+    * Enhancing the error messages in Forgot Password workflow.
+
 ## Fixes
 
 # metasfresh 5.75
