@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1463121846L;
+	private static final long serialVersionUID = -911011841L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -174,6 +174,43 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public int getC_BPartner_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -498,6 +535,28 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Zeilennetto.
+		@param LineNetAmt 
+		Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	  */
+	@Override
+	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
+	{
+		set_ValueNoCheck (COLUMNNAME_LineNetAmt, LineNetAmt);
+	}
+
+	/** Get Zeilennetto.
+		@return Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	  */
+	@Override
+	public java.math.BigDecimal getLineNetAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override

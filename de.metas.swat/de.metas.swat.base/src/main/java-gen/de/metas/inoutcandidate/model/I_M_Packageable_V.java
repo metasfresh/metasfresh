@@ -219,6 +219,35 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Currency>(I_M_Packageable_V.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Auftragsposition.
 	 * Auftragsposition
 	 *
@@ -507,6 +536,31 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_IsDisplayed = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "IsDisplayed", null);
     /** Column name IsDisplayed */
     public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
+
+	/**
+	 * Set Zeilennetto.
+	 * Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
+
+	/**
+	 * Get Zeilennetto.
+	 * Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getLineNetAmt();
+
+    /** Column definition for LineNetAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_LineNetAmt = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "LineNetAmt", null);
+    /** Column name LineNetAmt */
+    public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
 	 * Set Merkmale.

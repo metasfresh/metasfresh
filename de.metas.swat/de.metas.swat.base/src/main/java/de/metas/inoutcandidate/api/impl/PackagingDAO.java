@@ -28,6 +28,8 @@ import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -115,6 +117,8 @@ public class PackagingDAO implements IPackagingDAO
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+
 		final PackageableBuilder packageable = Packageable.builder();
 		packageable.customerId(bpartnerId);
 		packageable.customerBPValue(record.getBPartnerValue());
@@ -154,6 +158,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.salesOrderDocSubType(record.getDocSubType());
 
 		packageable.salesOrderLineIdOrNull(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()));
+		packageable.salesOrderLineNetAmt(Money.of(record.getLineNetAmt(), currencyId));
 
 		packageable.freightCostRule(record.getFreightCostRule());
 
