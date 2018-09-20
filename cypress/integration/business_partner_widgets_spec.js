@@ -12,9 +12,7 @@ describe('Business partner window widgets test', function() {
   context('Tabs', function() {
     context('Vendor', function() {
       it('Check if list widget works properly', function() {
-        cy
-          .get('.nav-item[title="Vendor"]')
-          .click()
+        cy.selectTab('Vendor')
           .get('.tab-content tbody td:nth-of-type(4)')
           .dblclick()
           .find('.input-dropdown-container')
