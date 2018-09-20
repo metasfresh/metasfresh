@@ -85,7 +85,9 @@ public class PackageableRowsRepository
 
 	private PackageableRow createPackageableRow(final ViewId viewId, final Packageable packageable)
 	{
-		final Quantity qtyPicked = packageable.getQtyPicked().add(packageable.getQtyPickedPlanned());
+		final Quantity qtyDeliveredOrPicked = packageable.getQtyDelivered()
+				.add(packageable.getQtyPicked())
+				.add(packageable.getQtyPickedPlanned());
 		final Optional<OrderLineId> orderLineId = Optional.ofNullable(packageable.getSalesOrderLineIdOrNull());
 
 		return PackageableRow.builder()
@@ -99,7 +101,7 @@ public class PackageableRowsRepository
 				.preparationDate(packageable.getPreparationDate())
 				//
 				.qtyOrdered(packageable.getQtyOrdered())
-				.qtyPicked(qtyPicked)
+				.qtyPicked(qtyDeliveredOrPicked)
 				//
 				.build();
 	}
