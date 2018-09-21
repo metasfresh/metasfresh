@@ -1,4 +1,4 @@
-package de.metas.handlingunits.locking;
+package de.metas.handlingunits.quarantine;
 
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -36,15 +36,15 @@ import lombok.NonNull;
  */
 
 @Component
-public class LockedAttributeStorageListener implements IAttributeStorageListener
+public class QuarantineAttributeStorageListener implements IAttributeStorageListener
 {
 
-	private final transient HULotNumberLockService lotNumberLockService;
+	private final transient HULotNumberQuarantineService lotNumberQuarantineService;
 
-	public LockedAttributeStorageListener(@NonNull final HULotNumberLockService lotNumberLockService)
+	public QuarantineAttributeStorageListener(@NonNull final HULotNumberQuarantineService lotNumberQuarantineService)
 	{
 
-		this.lotNumberLockService = lotNumberLockService;
+		this.lotNumberQuarantineService = lotNumberQuarantineService;
 
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
@@ -64,7 +64,7 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 			return;
 		}
 
-		if (!storage.hasAttribute(Constants.ATTR_Locked))
+		if (!storage.hasAttribute(Constants.ATTR_Quarantine))
 		{
 			return;
 		}
@@ -77,13 +77,13 @@ public class LockedAttributeStorageListener implements IAttributeStorageListener
 			return;
 		}
 
-		if (lotNumberLockService.isQuarantineLotNumber(huAttributeStorage))
+		if (lotNumberQuarantineService.isQuarantineLotNumber(huAttributeStorage))
 		{
-			storage.setValue(Constants.ATTR_Locked, Constants.ATTR_Locked_Value_Locked);
+			storage.setValue(Constants.ATTR_Quarantine, Constants.ATTR_Quarantine_Value_Quarantine);
 		}
 		else
 		{
-			storage.setValue(Constants.ATTR_Locked, null);
+			storage.setValue(Constants.ATTR_Quarantine, null);
 		}
 	}
 

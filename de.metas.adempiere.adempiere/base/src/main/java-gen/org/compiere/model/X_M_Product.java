@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 476144568L;
+	private static final long serialVersionUID = -1894571372L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -60,6 +60,22 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Obligatorische Zusatzangaben.
+		@param Additional_produktinfos Obligatorische Zusatzangaben	  */
+	@Override
+	public void setAdditional_produktinfos (java.lang.String Additional_produktinfos)
+	{
+		set_Value (COLUMNNAME_Additional_produktinfos, Additional_produktinfos);
+	}
+
+	/** Get Obligatorische Zusatzangaben.
+		@return Obligatorische Zusatzangaben	  */
+	@Override
+	public java.lang.String getAdditional_produktinfos () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Additional_produktinfos);
+	}
 
 	@Override
 	public org.compiere.model.I_C_RevenueRecognition getC_RevenueRecognition() throws RuntimeException
@@ -413,16 +429,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return (java.lang.String)get_Value(COLUMNNAME_ImageURL);
 	}
 
-	/** Set Ingredients.
-		@param Ingredients Ingredients	  */
+	/** Set Zutaten.
+		@param Ingredients Zutaten	  */
 	@Override
 	public void setIngredients (java.lang.String Ingredients)
 	{
 		set_Value (COLUMNNAME_Ingredients, Ingredients);
 	}
 
-	/** Get Ingredients.
-		@return Ingredients	  */
+	/** Get Zutaten.
+		@return Zutaten	  */
 	@Override
 	public java.lang.String getIngredients () 
 	{
@@ -1560,6 +1576,22 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Lager- und Transporttemperatur.
+		@param Warehouse_temperature Lager- und Transporttemperatur	  */
+	@Override
+	public void setWarehouse_temperature (java.lang.String Warehouse_temperature)
+	{
+		set_Value (COLUMNNAME_Warehouse_temperature, Warehouse_temperature);
+	}
+
+	/** Get Lager- und Transporttemperatur.
+		@return Lager- und Transporttemperatur	  */
+	@Override
+	public java.lang.String getWarehouse_temperature () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Warehouse_temperature);
 	}
 
 	/** Set Gewicht.

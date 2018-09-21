@@ -86,7 +86,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.stream()
 				.map(hu -> HUToDistribute.builder()
 						.hu(hu)
-						.lockLotNo(receiptLine.getLockLotNo())
+						.quarantineLotNo(receiptLine.getLotNumberQuarantine())
 						.bpartnerId(receiptLine.getBpartnerId())
 						.bpartnerLocationId(receiptLine.getBpartnerLocationId())
 						.build())
