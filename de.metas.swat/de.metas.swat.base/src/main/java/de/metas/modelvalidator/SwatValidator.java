@@ -102,9 +102,6 @@ import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.inventory.model.interceptor.M_Inventory;
 import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
-import de.metas.invoice.model.validator.C_Invoice;
-import de.metas.invoice.model.validator.C_InvoiceLine;
-import de.metas.invoice.model.validator.M_MatchInv;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
@@ -179,11 +176,9 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new Order(), client);
 		engine.addModelValidator(new OrderLine(), client);
-		engine.addModelValidator(new C_Invoice(), client); // 03771
 		engine.addModelValidator(new M_InOut(), client); // 03771
 		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
-		engine.addModelValidator(new C_InvoiceLine(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
 		// engine.addModelValidator(new PurchaseModelValidator(), client);
@@ -264,11 +259,6 @@ public class SwatValidator implements ModelValidator
 
 		//
 		engine.addModelValidator(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator(), client);
-
-		// de.metas.invoice submodule
-		{
-			engine.addModelValidator(new M_MatchInv(), client);
-		}
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);

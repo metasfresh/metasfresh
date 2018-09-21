@@ -5,7 +5,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.bpartner.DefaultAddressType;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.process.JavaProcess;

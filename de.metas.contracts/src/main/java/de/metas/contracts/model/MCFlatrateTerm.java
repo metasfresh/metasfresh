@@ -1,5 +1,7 @@
 package de.metas.contracts.model;
 
+import static java.math.BigDecimal.ZERO;
+
 /*
  * #%L
  * de.metas.contracts
@@ -33,7 +35,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
@@ -142,7 +143,7 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
-		return Env.ZERO;
+		return ZERO;
 	}
 
 	@Override
