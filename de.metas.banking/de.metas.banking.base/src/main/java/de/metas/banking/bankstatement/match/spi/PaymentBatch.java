@@ -2,7 +2,6 @@ package de.metas.banking.bankstatement.match.spi;
 
 import java.util.Date;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -10,6 +9,7 @@ import org.compiere.util.Env;
 
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /*
  * #%L

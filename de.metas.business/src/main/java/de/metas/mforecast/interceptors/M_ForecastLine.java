@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.WarehouseInvalidForOrgException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Forecast;
@@ -15,6 +14,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MOrg;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import de.metas.util.Services;
 
 /*
  * #%L

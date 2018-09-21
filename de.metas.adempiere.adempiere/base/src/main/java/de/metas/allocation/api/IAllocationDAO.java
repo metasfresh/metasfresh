@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.util.ISingletonService;
 
 public interface IAllocationDAO extends ISingletonService
 {

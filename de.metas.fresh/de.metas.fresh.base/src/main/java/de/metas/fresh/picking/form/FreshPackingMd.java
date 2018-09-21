@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
@@ -42,6 +40,8 @@ import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class FreshPackingMd extends PackingMd
 {

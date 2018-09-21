@@ -7,10 +7,11 @@ import org.adempiere.acct.api.GLDistributionNotValidException;
 import org.adempiere.acct.api.IGLDistributionBL;
 import org.adempiere.acct.api.IGLDistributionDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -28,10 +28,10 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Currency;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.util.ISingletonService;
 
 /**
  * Currency conversion services.

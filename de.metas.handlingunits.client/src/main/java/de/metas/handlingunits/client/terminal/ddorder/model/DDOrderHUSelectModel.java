@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
@@ -63,6 +61,8 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class DDOrderHUSelectModel extends AbstractHUSelectModel

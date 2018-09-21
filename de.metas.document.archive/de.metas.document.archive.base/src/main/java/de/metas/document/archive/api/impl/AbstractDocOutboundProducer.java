@@ -25,8 +25,6 @@ package de.metas.document.archive.api.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -40,6 +38,8 @@ import de.metas.document.archive.async.spi.impl.ProcessPrintingQueueWorkpackageP
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

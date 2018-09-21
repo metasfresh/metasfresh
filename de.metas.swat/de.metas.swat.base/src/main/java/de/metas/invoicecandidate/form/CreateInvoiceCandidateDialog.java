@@ -53,10 +53,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -94,6 +91,9 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import net.miginfocom.swing.MigLayout;
 
 public class CreateInvoiceCandidateDialog

@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MUOM;
@@ -30,6 +29,7 @@ import org.compiere.util.Env;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 
 /**

@@ -33,7 +33,6 @@ import java.util.Set;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
@@ -57,6 +56,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.api.impl.FreightCostBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * This model validator checks for each new invoice line if there needs to be an additional invoice line for freight

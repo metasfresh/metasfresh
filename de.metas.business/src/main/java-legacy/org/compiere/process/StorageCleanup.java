@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
@@ -35,6 +34,7 @@ import org.compiere.util.Env;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 
 /**
  * 	StorageCleanup

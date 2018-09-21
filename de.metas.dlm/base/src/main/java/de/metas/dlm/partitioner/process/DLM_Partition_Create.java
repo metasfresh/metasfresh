@@ -1,6 +1,5 @@
 package de.metas.dlm.partitioner.process;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -15,6 +14,7 @@ import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.process.Param;
 import de.metas.process.Process;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 
 /*
  * #%L

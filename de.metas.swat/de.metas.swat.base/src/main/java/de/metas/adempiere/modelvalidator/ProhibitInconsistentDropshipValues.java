@@ -26,8 +26,6 @@ package de.metas.adempiere.modelvalidator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
@@ -45,6 +43,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.modelvalidator.SwatValidator;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Makes sure that the IsDropShip checkbox in various tables is consistent with the selected warehouse and other dropship related settings.

@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CacheMapType;
@@ -51,6 +50,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.util.cache.CacheCtxParamDescriptor;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class ModelCacheService implements IModelCacheService
 {

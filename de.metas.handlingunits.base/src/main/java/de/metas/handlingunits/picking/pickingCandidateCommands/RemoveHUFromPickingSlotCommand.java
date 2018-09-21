@@ -3,8 +3,6 @@ package de.metas.handlingunits.picking.pickingCandidateCommands;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -12,6 +10,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

@@ -3,12 +3,11 @@ package de.metas.product;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

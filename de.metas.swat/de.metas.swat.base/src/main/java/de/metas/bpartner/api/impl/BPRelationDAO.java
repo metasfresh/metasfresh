@@ -4,11 +4,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.util.Services;
 
 /*
  * #%L

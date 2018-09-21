@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
@@ -44,6 +43,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class TaxDAO implements ITaxDAO

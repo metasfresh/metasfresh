@@ -12,10 +12,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IContextAware;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.feature.Feature;
@@ -48,6 +44,10 @@ import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
 import de.metas.jax.rs.model.X_AD_JAXRS_Endpoint;
 import de.metas.jms.IJMSService;
 import de.metas.logging.LogManager;
+import de.metas.util.ISingletonService;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

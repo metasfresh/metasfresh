@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -39,6 +37,8 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 {

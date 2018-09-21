@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -40,6 +38,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class HUAndItemsDAO extends AbstractHUAndItemsDAO

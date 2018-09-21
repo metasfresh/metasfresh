@@ -30,7 +30,8 @@ import java.util.Properties;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IMigrationExecutorProvider;
 import org.adempiere.ad.migration.executor.IPostponedExecutable;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class MigrationExecutorContext implements IMigrationExecutorContext
 {

@@ -32,7 +32,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.hamcrest.Matchers;
@@ -43,6 +42,7 @@ import org.junit.Test;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitResult;
+import de.metas.util.Services;
 
 public class LinearDistributionAttributeSplitterStrategyTest
 {

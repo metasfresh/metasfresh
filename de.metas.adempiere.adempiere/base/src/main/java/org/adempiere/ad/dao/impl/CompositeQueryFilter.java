@@ -37,9 +37,9 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

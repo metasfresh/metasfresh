@@ -28,11 +28,11 @@ import java.util.Properties;
 import org.adempiere.processing.exception.ProcessingException;
 import org.adempiere.processing.interfaces.IProcessablePO;
 import org.adempiere.processing.model.MADProcessablePO;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.ISingletonService;
 
 /**
  * Singleton with generic methods for deferred processing of POs

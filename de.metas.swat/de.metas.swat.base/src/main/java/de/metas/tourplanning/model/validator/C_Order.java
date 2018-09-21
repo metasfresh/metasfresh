@@ -32,12 +32,12 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Order.class)
 public class C_Order

@@ -27,12 +27,12 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.Converter;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.util.Check;
+import de.metas.util.collections.Converter;
 
 /**
  * Handles a generic method parameter.

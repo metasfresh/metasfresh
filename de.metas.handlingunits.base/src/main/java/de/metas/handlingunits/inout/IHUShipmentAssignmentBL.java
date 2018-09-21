@@ -24,13 +24,13 @@ package de.metas.handlingunits.inout;
 
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.util.ISingletonService;
 
 /**
  * Service used to manage the relation between {@link I_M_HU} and shipment line.

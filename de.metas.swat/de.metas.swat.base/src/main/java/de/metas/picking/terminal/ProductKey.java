@@ -16,15 +16,14 @@ package de.metas.picking.terminal;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.math.BigDecimal;
@@ -32,8 +31,6 @@ import java.math.BigDecimal;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -51,6 +48,8 @@ import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg
@@ -75,7 +74,7 @@ public class ProductKey extends TerminalKey
 		return usedBin;
 	}
 
-	/*package*/void setUsedBin(final DefaultMutableTreeNode usedBin)
+	/* package */void setUsedBin(final DefaultMutableTreeNode usedBin)
 	{
 		this.usedBin = usedBin;
 	}
@@ -219,21 +218,19 @@ public class ProductKey extends TerminalKey
 
 	/**
 	 * Builds the key ID.
+	 * 
 	 * @return key ID
 	 */
 	protected final String buildId()
 	{
 		return Util.mkKey(
-				value == null ? "" : value.getKey()
-				, product == null ? -1 : product.getM_Product_ID()
+				value == null ? "" : value.getKey(), product == null ? -1 : product.getM_Product_ID()
 				// , boxNo // i.e. the picking slot => not needed
-				, bpartner == null ? -1 : bpartner.getC_BPartner_ID()
-				, bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID()
-				)
+				, bpartner == null ? -1 : bpartner.getC_BPartner_ID(), bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID())
 				.toString();
 		// id = "" + key.getC_POSKey_ID()
 		// + (value != null ? "#" + value.getKey() : "")
-		//		+ "-" + UUID.randomUUID();
+		// + "-" + UUID.randomUUID();
 
 	}
 
@@ -371,6 +368,7 @@ public class ProductKey extends TerminalKey
 
 	/**
 	 * Gets Qty inside this Product key (i.e. sum of Qtys from underlying shipment schedules)
+	 * 
 	 * @return
 	 */
 	public BigDecimal getQty()

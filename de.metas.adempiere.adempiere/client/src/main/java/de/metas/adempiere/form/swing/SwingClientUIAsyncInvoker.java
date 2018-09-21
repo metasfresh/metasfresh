@@ -13,7 +13,6 @@ import javax.swing.SwingWorker;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.MetasfreshGlassPane;
-import org.adempiere.util.Check;
 import org.compiere.apps.AEnv;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -22,6 +21,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

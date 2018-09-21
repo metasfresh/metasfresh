@@ -35,7 +35,6 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_M_Warehouse;
@@ -61,6 +60,7 @@ import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.PickingTerminalPanel;
+import de.metas.util.Services;
 
 /**
  * Picking First Window Panel.

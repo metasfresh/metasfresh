@@ -24,10 +24,10 @@ package de.metas.handlingunits;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.util.ISingletonService;
 
 public interface IHUWarehouseDAO extends ISingletonService
 {

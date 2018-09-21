@@ -26,14 +26,13 @@ package de.metas.invoicecandidate.api.impl;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
+import de.metas.util.Check;
 
 public class InvoiceCandidateListeners implements IInvoiceCandidateListeners
 {

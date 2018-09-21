@@ -22,9 +22,9 @@ import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext.MigrationOperation;
 import org.adempiere.ad.migration.executor.IMigrationExecutorProvider;
-import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 public class MigrationApply extends JavaProcess

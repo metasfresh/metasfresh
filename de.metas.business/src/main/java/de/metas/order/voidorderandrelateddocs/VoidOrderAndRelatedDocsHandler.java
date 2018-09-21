@@ -3,7 +3,6 @@ package de.metas.order.voidorderandrelateddocs;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 
@@ -12,6 +11,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.util.RelatedRecordsProvider;
+import de.metas.util.Services;
 import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import lombok.NonNull;
 import lombok.Value;

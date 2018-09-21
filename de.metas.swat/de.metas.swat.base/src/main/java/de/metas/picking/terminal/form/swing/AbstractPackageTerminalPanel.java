@@ -37,8 +37,6 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -61,6 +59,8 @@ import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.process.ProcessExecutor;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
 
 /**

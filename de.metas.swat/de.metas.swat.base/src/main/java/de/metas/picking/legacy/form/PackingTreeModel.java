@@ -41,7 +41,6 @@ import javax.swing.tree.DefaultTreeModel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.PackagingTreeItemComparable;
@@ -63,6 +62,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Services;
 
 /**
  *

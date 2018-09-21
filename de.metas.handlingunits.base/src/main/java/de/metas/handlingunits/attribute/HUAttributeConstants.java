@@ -2,7 +2,6 @@ package de.metas.handlingunits.attribute;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.util.Check;
 
 /*
  * #%L
@@ -28,6 +27,7 @@ import org.adempiere.util.Check;
 
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.util.Check;
 import lombok.experimental.UtilityClass;
 
 /**

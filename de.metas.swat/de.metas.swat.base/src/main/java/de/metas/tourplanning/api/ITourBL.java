@@ -26,10 +26,10 @@ package de.metas.tourplanning.api;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.tourplanning.model.I_M_TourVersion;
+import de.metas.util.ISingletonService;
 
 public interface ITourBL extends ISingletonService
 {

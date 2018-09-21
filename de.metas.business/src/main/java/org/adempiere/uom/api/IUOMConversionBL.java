@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.uom.UomId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IUOMConversionBL extends ISingletonService

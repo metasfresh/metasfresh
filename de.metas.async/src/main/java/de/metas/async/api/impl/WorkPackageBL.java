@@ -27,10 +27,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_User;
 
 import de.metas.async.api.IWorkPackageBL;
@@ -38,6 +34,10 @@ import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Log;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class WorkPackageBL implements IWorkPackageBL
 {

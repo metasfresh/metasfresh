@@ -1,13 +1,13 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

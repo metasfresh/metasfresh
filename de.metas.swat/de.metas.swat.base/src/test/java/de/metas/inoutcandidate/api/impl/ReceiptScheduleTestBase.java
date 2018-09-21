@@ -36,8 +36,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -65,6 +63,8 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import mockit.Expectations;
 import mockit.Mocked;
 

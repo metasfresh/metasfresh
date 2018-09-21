@@ -1,7 +1,6 @@
 package org.adempiere.ad.table;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

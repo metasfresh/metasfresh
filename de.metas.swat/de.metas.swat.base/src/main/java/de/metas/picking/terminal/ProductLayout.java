@@ -37,7 +37,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
@@ -52,6 +51,7 @@ import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * @author cg

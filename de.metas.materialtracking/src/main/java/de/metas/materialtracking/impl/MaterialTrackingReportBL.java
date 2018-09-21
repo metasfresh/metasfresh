@@ -2,8 +2,6 @@ package de.metas.materialtracking.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.dimension.DimensionSpec;
@@ -15,6 +13,8 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line_Alloc;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.process.MaterialTrackingReportAgregationItem;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

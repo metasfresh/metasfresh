@@ -24,9 +24,6 @@ package de.metas.handlingunits.materialtracking.spi.impl;
 
 import java.util.List;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -42,6 +39,9 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * For link requests whose <code>model</code> has an {@link I_M_HU_Assignment} this listener updates the <code>M_Material_Tracking</code> HU-attributes of the assigned HUs.

@@ -26,8 +26,6 @@ import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -38,6 +36,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class CalloutExecutor implements ICalloutExecutor
 {

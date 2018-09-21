@@ -26,7 +26,6 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
@@ -53,6 +52,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  * Tests for {@link FIFOAllocationStrategy} and {@link FIFODeallocationStrategy}.

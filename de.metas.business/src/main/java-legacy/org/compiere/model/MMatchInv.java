@@ -24,14 +24,14 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  *	Match Invoice (Receipt<>Invoice) Model.

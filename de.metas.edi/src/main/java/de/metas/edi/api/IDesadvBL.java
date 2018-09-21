@@ -26,8 +26,6 @@ package de.metas.edi.api;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -35,6 +33,7 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.util.ISingletonService;
 
 public interface IDesadvBL extends ISingletonService
 {

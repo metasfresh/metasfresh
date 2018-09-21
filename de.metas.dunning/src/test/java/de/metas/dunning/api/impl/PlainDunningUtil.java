@@ -25,12 +25,12 @@ package de.metas.dunning.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.junit.Ignore;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.util.Services;
 
 @Ignore
 public class PlainDunningUtil extends DunningUtil

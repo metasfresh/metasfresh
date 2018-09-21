@@ -29,14 +29,14 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.proxy.Cached;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
 import de.metas.handlingunits.pos.IPOSHUEditorFilterDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * POS Filter configuration retrieval

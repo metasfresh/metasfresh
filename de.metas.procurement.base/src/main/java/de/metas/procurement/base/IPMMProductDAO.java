@@ -4,12 +4,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

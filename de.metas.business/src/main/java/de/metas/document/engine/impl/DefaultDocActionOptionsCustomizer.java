@@ -3,7 +3,6 @@ package de.metas.document.engine.impl;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Cash;
@@ -27,6 +26,7 @@ import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
 
 /*
  * #%L

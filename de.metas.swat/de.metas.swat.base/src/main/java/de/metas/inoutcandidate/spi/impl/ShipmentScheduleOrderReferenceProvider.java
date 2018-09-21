@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.spi.impl;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
@@ -16,6 +15,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

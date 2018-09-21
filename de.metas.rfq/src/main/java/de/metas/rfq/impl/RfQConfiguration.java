@@ -1,7 +1,5 @@
 package de.metas.rfq.impl;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.rfq.IRfQConfiguration;
@@ -10,6 +8,7 @@ import de.metas.rfq.IRfQResponseProducerFactory;
 import de.metas.rfq.IRfQResponsePublisher;
 import de.metas.rfq.IRfQResponseRankingStrategy;
 import de.metas.rfq.model.I_C_RfQ;
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -2,8 +2,6 @@ package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -17,6 +15,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

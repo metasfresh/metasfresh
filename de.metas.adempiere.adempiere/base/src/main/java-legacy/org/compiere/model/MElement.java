@@ -20,9 +20,9 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  *	Accounting Element Model.

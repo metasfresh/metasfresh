@@ -25,8 +25,6 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -35,6 +33,8 @@ import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.quantity.Capacity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Product storage for a manufacturing order BOM Line.

@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -31,6 +28,9 @@ import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

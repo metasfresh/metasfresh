@@ -25,7 +25,6 @@ package de.metas.dunning.spi.impl;
 
 import java.util.Iterator;
 
-import org.adempiere.util.collections.FilterIterator;
 import org.slf4j.Logger;
 
 import de.metas.dunning.api.IDunnableDoc;
@@ -33,6 +32,7 @@ import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.logging.LogManager;
+import de.metas.util.collections.FilterIterator;
 
 public abstract class AbstractDunnableSource implements IDunnableSource
 {

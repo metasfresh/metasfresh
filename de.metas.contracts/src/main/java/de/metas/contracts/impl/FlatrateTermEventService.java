@@ -4,13 +4,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.spi.IFlatrateTermEventListener;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -25,8 +25,9 @@ package org.adempiere.acct.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_ElementValue;
+
+import de.metas.util.ISingletonService;
 
 public interface IElementValueDAO extends ISingletonService
 {

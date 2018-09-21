@@ -28,9 +28,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
@@ -46,6 +44,8 @@ import de.metas.aggregation.api.IAggregationItem;
 import de.metas.aggregation.api.IAggregationItem.Type;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.time.SimpleDateFormatThreadLocal;
 import lombok.NonNull;
 
 /* package */

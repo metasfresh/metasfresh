@@ -29,8 +29,6 @@ import java.util.Date;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -43,6 +41,8 @@ import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvBuilder;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoice.MatchInvException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used to create a quantity matching between {@link I_C_InvoiceLine} and {@link I_M_InOutLine} (i.e. {@link I_M_MatchInv}).

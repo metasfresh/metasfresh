@@ -24,13 +24,13 @@ import java.beans.PropertyVetoException;
 import javax.swing.JLabel;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  *  Checkbox Control

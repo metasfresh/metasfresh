@@ -26,10 +26,10 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Unit of Measure Conversion Model

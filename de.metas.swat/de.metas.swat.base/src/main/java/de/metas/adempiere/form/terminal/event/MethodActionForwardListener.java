@@ -28,12 +28,12 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.reflections.ReflectionUtils;
 
 import com.google.common.base.Predicate;
 
 import de.metas.adempiere.form.terminal.IComponent;
+import de.metas.util.Check;
 
 /**
  * A UI property change listener that invokes a target method using reflection.

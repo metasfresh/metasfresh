@@ -26,13 +26,14 @@ package org.adempiere.acct.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.acct.api.ITaxAccountable;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
+
+import de.metas.util.Check;
 
 /**
  * Adapts {@link I_GL_JournalLine} to {@link ITaxAccountable}

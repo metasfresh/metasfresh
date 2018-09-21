@@ -26,8 +26,9 @@ package org.adempiere.archive.api;
 import java.util.Properties;
 
 import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Factory helper which creates instances of {@link IArchiveStorage} based on given context or given archive.

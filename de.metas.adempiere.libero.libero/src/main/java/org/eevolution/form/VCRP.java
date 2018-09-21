@@ -56,7 +56,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
@@ -90,6 +89,7 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Services;
 
 
 

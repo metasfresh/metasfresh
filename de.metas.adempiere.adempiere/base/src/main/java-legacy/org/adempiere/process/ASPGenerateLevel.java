@@ -32,7 +32,6 @@ package org.adempiere.process;
 import java.util.Enumeration;
 
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
@@ -60,6 +59,7 @@ import org.compiere.wf.MWorkflow;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * 	Generate ASP entries for a level

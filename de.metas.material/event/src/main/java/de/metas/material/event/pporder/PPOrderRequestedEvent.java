@@ -2,7 +2,6 @@ package de.metas.material.event.pporder;
 
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Order;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

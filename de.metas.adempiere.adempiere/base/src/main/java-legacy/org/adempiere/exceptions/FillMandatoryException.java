@@ -15,7 +15,7 @@ package org.adempiere.exceptions;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Throwed when there are some fields that are mandatory but unfilled.

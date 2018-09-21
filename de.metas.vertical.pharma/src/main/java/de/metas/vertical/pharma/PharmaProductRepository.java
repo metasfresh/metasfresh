@@ -1,11 +1,11 @@
 package de.metas.vertical.pharma;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_M_Product;
 import lombok.NonNull;
 

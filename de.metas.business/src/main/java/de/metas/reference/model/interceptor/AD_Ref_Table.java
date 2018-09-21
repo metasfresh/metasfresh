@@ -2,10 +2,11 @@ package de.metas.reference.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Check;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Check;
 
 /*
  * #%L

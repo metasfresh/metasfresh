@@ -26,8 +26,6 @@ import java.util.Collection;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -43,6 +41,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.util.ISingletonService;
 import lombok.Builder.Default;
 import lombok.NonNull;
 

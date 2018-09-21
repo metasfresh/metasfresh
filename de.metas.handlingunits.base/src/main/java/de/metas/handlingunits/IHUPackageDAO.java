@@ -27,13 +27,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.ISingletonService;
 
 public interface IHUPackageDAO extends ISingletonService
 {

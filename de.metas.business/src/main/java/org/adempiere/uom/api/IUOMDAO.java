@@ -25,8 +25,9 @@ package org.adempiere.uom.api;
 import java.util.Properties;
 
 import org.adempiere.uom.UomId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
+
+import de.metas.util.ISingletonService;
 
 public interface IUOMDAO extends ISingletonService
 {

@@ -25,12 +25,12 @@ package de.metas.adempiere.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 public class NoContainerException extends AdempiereException {
 

@@ -30,11 +30,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.util.Services;
 
 public class SubProducerAttributeDAO implements ISubProducerAttributeDAO
 {

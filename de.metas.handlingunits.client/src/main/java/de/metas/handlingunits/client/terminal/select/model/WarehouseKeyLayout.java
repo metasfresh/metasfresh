@@ -28,13 +28,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /**
  * Plain key layout for {@link I_M_Warehouse}s.

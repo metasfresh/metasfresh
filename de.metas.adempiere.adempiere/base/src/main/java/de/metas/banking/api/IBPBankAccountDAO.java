@@ -25,8 +25,9 @@ package de.metas.banking.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BP_BankAccount;
+
+import de.metas.util.ISingletonService;
 
 /**
  * 

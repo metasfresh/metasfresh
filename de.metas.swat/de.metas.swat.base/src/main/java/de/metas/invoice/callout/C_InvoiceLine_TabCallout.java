@@ -28,10 +28,10 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.util.Services;
 
 /**
  * @task http://dewiki908/mediawiki/index.php/09182_Manuelle_EDI_Rechnungen_Retourenbestellung_%28102698247514%29

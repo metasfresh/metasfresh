@@ -14,7 +14,6 @@ import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -24,6 +23,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 import mockit.Expectations;
 

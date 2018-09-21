@@ -2,12 +2,12 @@ package de.metas.shipper.gateway.go;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import de.metas.shipper.gateway.go.model.I_GO_Shipper_Config;
+import de.metas.util.Services;
 
 /*
  * #%L

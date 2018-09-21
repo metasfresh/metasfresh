@@ -7,7 +7,6 @@ import java.util.function.Function;
 import javax.xml.bind.JAXBElement;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.util.Check;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.MSV3OrderResponsePackageItemPartRepoId;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;

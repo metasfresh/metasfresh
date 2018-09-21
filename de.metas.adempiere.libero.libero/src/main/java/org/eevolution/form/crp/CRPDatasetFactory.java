@@ -49,7 +49,6 @@ import java.util.HashMap;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MProduct;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
@@ -66,6 +65,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import de.metas.i18n.Msg;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.util.Services;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany

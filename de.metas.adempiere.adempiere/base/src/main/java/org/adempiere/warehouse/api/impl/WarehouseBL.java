@@ -25,8 +25,6 @@ package org.adempiere.warehouse.api.impl;
 import java.util.List;
 
 import org.adempiere.location.CountryId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -38,6 +36,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class WarehouseBL implements IWarehouseBL

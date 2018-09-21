@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_OrderTax;
 import org.compiere.model.MAccount;
@@ -40,6 +39,7 @@ import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 
 /**
  * Post Order Documents.

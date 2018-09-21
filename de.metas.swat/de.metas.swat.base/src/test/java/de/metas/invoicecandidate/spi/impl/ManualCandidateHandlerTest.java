@@ -33,9 +33,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -58,6 +55,9 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 
 public class ManualCandidateHandlerTest extends AbstractICTestSupport
 {

@@ -4,12 +4,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
 
 import com.google.common.base.Objects;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

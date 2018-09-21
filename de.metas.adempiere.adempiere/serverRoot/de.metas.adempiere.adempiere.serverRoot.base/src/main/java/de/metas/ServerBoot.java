@@ -13,9 +13,6 @@ import org.adempiere.ad.dao.impl.QuerySelectionToDeleteHelper;
 import org.adempiere.ad.dao.model.I_T_Query_Selection;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
@@ -44,6 +41,9 @@ import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
 import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
 import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

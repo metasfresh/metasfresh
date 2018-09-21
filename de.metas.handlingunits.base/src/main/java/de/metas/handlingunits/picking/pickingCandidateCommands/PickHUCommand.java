@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
@@ -23,6 +22,7 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

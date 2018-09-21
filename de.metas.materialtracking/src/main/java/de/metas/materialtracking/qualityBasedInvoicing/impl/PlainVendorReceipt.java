@@ -27,13 +27,13 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+import de.metas.util.Check;
 
 /**
  * Plain implementation of {@link IVendorReceipt}.

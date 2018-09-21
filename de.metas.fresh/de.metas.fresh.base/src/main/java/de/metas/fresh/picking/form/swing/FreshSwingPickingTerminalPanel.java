@@ -37,7 +37,6 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.util.Check;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.util.KeyNamePair;
@@ -68,6 +67,7 @@ import de.metas.picking.legacy.form.NullTableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
+import de.metas.util.Check;
 
 /**
  * Picking First Window Panel.

@@ -26,12 +26,12 @@ package de.metas.shipping.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

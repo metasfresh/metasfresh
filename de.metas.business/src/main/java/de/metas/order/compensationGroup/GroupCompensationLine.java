@@ -5,10 +5,10 @@ import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.UomId;
-import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

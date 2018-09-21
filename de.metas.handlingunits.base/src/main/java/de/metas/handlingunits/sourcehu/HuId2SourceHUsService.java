@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.HuId;
@@ -18,6 +17,7 @@ import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

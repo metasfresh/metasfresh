@@ -9,11 +9,12 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+
+import de.metas.util.Services;
 
 /*
  * #%L

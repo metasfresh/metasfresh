@@ -43,8 +43,6 @@ import org.adempiere.images.Images;
 import org.adempiere.ui.IContextMenuAction;
 import org.adempiere.ui.IContextMenuActionContext;
 import org.adempiere.ui.IContextMenuProvider;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
@@ -52,6 +50,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * {@link VEditor}'s context menu

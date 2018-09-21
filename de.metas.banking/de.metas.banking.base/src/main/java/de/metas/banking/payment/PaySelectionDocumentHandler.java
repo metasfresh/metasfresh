@@ -3,13 +3,13 @@ package de.metas.banking.payment;
 import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

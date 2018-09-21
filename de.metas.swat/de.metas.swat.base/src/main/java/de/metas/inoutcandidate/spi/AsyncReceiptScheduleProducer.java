@@ -27,13 +27,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.inoutcandidate.async.GenerateReceiptScheduleWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AsyncReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {

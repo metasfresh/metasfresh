@@ -25,7 +25,6 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -38,6 +37,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
+import de.metas.util.Services;
 
 /**
  * Subclass of {@link ShipmentScheduleInvalidateBL} with HU-aware code. The concrete benefit of this is that we can create BPartner-specific storage segments which in turn allow us to invalidate less

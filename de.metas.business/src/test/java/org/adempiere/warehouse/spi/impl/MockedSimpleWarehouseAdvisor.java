@@ -22,10 +22,11 @@ package org.adempiere.warehouse.spi.impl;
  * #L%
  */
 
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
+
+import de.metas.util.Services;
 
 public class MockedSimpleWarehouseAdvisor extends WarehouseAdvisor
 {

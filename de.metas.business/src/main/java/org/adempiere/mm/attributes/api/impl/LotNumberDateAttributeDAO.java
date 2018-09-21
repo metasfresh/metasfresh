@@ -3,8 +3,9 @@ package org.adempiere.mm.attributes.api.impl;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
+
+import de.metas.util.Services;
 
 /*
  * #%L

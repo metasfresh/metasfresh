@@ -2,9 +2,10 @@ package org.eevolution.callout;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
+
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -25,8 +25,9 @@ package org.adempiere.util.trxConstraints.api;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
-import org.adempiere.util.ISingletonService;
 import org.compiere.util.Trx;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Service contains methods to be called from {@link Trx} on certain events to check against {@link ITrxConstraints}. Implementers of this service are responsible for the enforcement of the

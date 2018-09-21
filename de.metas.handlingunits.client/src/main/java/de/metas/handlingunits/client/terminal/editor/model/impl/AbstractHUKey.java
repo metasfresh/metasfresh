@@ -35,8 +35,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
@@ -54,6 +52,8 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyVisitor;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyVisitor.VisitResult;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.collections.IdentityHashSet;
 
 /* package */abstract class AbstractHUKey extends TerminalKey implements IHUKey
 {

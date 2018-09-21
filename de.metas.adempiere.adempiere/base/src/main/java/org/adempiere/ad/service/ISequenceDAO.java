@@ -24,8 +24,9 @@ package org.adempiere.ad.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Sequence;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Service to access the actual {@link I_AD_Sequence} table. To generate sequences, use {@link de.metas.document.impl.DocumentNoBuilder}.

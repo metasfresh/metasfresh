@@ -30,9 +30,10 @@ import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.location.CountryId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Tax;
+
+import de.metas.util.ISingletonService;
 
 public interface ITaxBL extends ISingletonService
 {

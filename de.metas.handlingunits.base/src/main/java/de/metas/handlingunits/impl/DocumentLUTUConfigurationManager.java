@@ -26,12 +26,11 @@ package de.metas.handlingunits.impl;
 import java.util.List;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
 
 public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUConfigurationManager
 {

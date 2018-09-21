@@ -32,8 +32,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.jmx.IJMXNameAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.text.IndentedStringBuilder;
@@ -51,6 +49,8 @@ import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class JMXMRPStatus implements JMXMRPStatusMBean, IJMXNameAware
 {

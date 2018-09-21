@@ -24,12 +24,12 @@ package de.metas.fresh.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Order.class)
 public class C_Order

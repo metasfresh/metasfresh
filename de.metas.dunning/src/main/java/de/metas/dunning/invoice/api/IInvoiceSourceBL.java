@@ -25,10 +25,10 @@ package de.metas.dunning.invoice.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.dunning.interfaces.I_C_Dunning;
+import de.metas.util.ISingletonService;
 
 public interface IInvoiceSourceBL extends ISingletonService
 {

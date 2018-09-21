@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
@@ -49,6 +48,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {

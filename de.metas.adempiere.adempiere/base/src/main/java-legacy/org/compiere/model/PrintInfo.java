@@ -16,9 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import org.adempiere.util.Check;
-
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 
 
 /**

@@ -4,9 +4,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.location.LocationId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

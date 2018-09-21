@@ -25,8 +25,9 @@ package de.metas.adempiere.form.terminal.table;
 
 import java.lang.reflect.Method;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /* package */class TableColumnInfo implements ITableColumnInfo
 {

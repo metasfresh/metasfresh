@@ -27,7 +27,6 @@ import java.io.ObjectInputStream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_C_BPartner;
@@ -47,6 +46,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
+import de.metas.util.Services;
 import net.sf.jasperreports.engine.JasperPrint;
 
 public final class JRClient

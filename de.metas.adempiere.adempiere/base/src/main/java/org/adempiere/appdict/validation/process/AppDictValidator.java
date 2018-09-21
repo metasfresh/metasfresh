@@ -29,9 +29,9 @@ import org.adempiere.appdict.validation.api.IADValidatorRegistryBL;
 import org.adempiere.appdict.validation.api.IADValidatorResult;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.IADValidator;
-import org.adempiere.util.Services;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * 

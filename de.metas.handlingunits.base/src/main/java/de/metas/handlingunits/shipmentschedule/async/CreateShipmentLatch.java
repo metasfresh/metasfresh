@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -41,6 +40,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Makes sure that if a workpackage is locked that references shipment schedules with a certain header aggregation key, then no further workpackages which reference scheds with the same key can be

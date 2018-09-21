@@ -53,7 +53,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.grid.ed.VLocator;
@@ -72,6 +71,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * GUI to configure the actual packaging (which goods go into which package)

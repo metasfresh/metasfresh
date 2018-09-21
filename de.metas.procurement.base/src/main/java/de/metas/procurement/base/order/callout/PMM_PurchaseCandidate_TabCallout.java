@@ -10,11 +10,11 @@ import org.adempiere.facet.impl.FacetExecutor;
 import org.adempiere.facet.impl.GridTabFacetFilterable;
 import org.adempiere.facet.sideactions.impl.SideActionFacetsPool;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.facet.IPurchaseCandidateFacetCollectorFactory;
+import de.metas.util.Services;
 
 /*
  * #%L

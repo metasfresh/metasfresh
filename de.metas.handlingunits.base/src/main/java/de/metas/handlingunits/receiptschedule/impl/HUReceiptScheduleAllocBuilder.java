@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -37,6 +36,7 @@ import de.metas.inoutcandidate.api.impl.ReceiptScheduleAllocBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public class HUReceiptScheduleAllocBuilder extends ReceiptScheduleAllocBuilder
 {

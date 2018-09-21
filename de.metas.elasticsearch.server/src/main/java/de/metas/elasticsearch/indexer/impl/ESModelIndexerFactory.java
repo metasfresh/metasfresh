@@ -1,8 +1,5 @@
 package de.metas.elasticsearch.indexer.impl;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.ESIncludedModelsConfig;
@@ -14,6 +11,8 @@ import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexer.ESModelIndexerBuilder;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;

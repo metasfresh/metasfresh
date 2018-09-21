@@ -29,11 +29,12 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.mm.attributes.api.IAttributeExcludeDAO;
 import org.adempiere.model.I_M_AttributeSetExcludeLine;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AttributeExcludeBL implements IAttributeExcludeBL
 {

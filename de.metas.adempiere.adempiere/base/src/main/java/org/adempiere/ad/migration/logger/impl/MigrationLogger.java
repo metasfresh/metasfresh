@@ -46,8 +46,6 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
@@ -75,6 +73,8 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MigrationLogger implements IMigrationLogger
 {

@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 
 import de.metas.async.model.I_C_Async_Batch;
@@ -39,6 +38,7 @@ import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.ISingletonService;
 
 /**
  * Async Queue related DAO

@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -40,6 +39,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.UOMConstants;
+import de.metas.util.Services;
 
 public class UOMConversionBLTest extends UOMTestBase
 {

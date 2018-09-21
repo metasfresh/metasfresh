@@ -25,7 +25,6 @@ package org.adempiere.ad.service;
 
 import java.util.List;
 
-import org.adempiere.util.ILoggable;
 import org.compiere.model.I_AD_Table;
 
 public interface ITableSequenceChecker

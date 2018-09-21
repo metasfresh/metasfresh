@@ -26,7 +26,6 @@ package de.metas.inoutcandidate.agg.key.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 import org.adempiere.util.lang.ObjectUtils;
 
@@ -34,6 +33,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /**
  * AggregationKey value handler for shipment schedules.

@@ -3,11 +3,10 @@ package de.metas.picking.service;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface IPackingService extends ISingletonService
 {

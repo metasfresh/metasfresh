@@ -19,7 +19,6 @@ package org.compiere.process;
 import java.sql.Timestamp;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_AcctSchema;
@@ -29,6 +28,7 @@ import org.compiere.util.DB;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 
 /**

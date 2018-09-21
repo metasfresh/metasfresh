@@ -28,10 +28,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
 
 public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLUTUConfigurationHandler<List<T>>
 {

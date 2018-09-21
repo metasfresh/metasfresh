@@ -25,13 +25,13 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

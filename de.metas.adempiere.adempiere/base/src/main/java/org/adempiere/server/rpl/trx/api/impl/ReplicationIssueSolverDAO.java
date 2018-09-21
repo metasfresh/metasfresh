@@ -30,8 +30,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.server.rpl.trx.api.IReplicationIssueSolverDAO;
 import org.adempiere.server.rpl.trx.spi.IReplicationIssueAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ReplicationIssueSolverDAO implements IReplicationIssueSolverDAO
 {

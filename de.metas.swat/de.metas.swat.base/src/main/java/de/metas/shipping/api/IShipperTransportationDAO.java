@@ -26,11 +26,11 @@ package de.metas.shipping.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Package;
 
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.ISingletonService;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {

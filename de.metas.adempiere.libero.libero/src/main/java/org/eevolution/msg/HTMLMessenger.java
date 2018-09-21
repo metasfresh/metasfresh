@@ -42,7 +42,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -65,6 +64,7 @@ import org.eevolution.model.wrapper.BOMLineWrapper;
 import org.eevolution.model.wrapper.BOMWrapper;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany

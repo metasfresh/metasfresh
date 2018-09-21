@@ -20,10 +20,11 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.acct.api.ITaxAcctBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  * Document Tax Line

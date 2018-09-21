@@ -3,7 +3,6 @@ package de.metas.inout.event;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -16,6 +15,7 @@ import de.metas.event.Topic;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

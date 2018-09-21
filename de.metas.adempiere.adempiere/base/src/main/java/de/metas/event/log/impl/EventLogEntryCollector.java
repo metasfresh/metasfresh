@@ -3,13 +3,13 @@ package de.metas.event.log.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 
 import de.metas.event.Event;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService.EventLogEntryRequest;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 

@@ -26,10 +26,10 @@ package org.adempiere.tax.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Tax;
 
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 @Callout(I_C_Tax.class)
 public class C_Tax

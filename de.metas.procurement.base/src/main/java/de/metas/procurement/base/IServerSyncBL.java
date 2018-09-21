@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.javaclasses.AD_JavaClass;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
@@ -16,6 +14,7 @@ import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
 import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

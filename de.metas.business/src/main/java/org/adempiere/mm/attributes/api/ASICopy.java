@@ -6,12 +6,12 @@ import java.util.function.Predicate;
 
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * An {@link ThreadPoolExecutor} which blocks on submitting new tasks, if the maximum pool size was reached. This implementation is taken from <a

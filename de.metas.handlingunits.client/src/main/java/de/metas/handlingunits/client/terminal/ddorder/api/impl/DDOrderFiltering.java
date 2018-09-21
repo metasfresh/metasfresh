@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
@@ -54,6 +53,7 @@ import de.metas.handlingunits.client.terminal.select.api.impl.AbstractFiltering;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.util.Services;
 
 public class DDOrderFiltering extends AbstractFiltering
 {

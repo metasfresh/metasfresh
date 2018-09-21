@@ -2,12 +2,12 @@ package org.adempiere.mm.attributes.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /*
  * #%L

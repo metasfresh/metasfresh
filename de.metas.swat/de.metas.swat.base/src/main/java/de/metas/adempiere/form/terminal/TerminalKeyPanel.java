@@ -38,13 +38,13 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * @author tsa

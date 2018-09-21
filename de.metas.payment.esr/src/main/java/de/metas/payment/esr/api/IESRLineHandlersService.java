@@ -3,12 +3,12 @@
  */
 package de.metas.payment.esr.api;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.spi.IESRLineHandler;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

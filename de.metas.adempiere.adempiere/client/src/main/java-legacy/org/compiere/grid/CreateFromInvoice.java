@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.adempiere.util.Check;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.GridTab;
 import org.compiere.model.MInOut;
@@ -64,6 +63,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Check;
 
 /**
  *  Create Invoice Transactions from PO Orders or Receipt

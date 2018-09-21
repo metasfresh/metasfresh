@@ -26,7 +26,6 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_S_Resource;
@@ -35,6 +34,8 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
+
+import de.metas.util.ISingletonService;
 
 public interface IDDOrderBL extends ISingletonService
 {

@@ -26,12 +26,12 @@ package de.metas.adempiere.form.terminal.swing.jmx;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.jmx.IJMXNameAware;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.util.Check;
 
 public class JMXSwingTerminalFactory implements JMXSwingTerminalFactoryMBean, IJMXNameAware
 {

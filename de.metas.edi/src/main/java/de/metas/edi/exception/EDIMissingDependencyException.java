@@ -24,7 +24,8 @@ package de.metas.edi.exception;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class EDIMissingDependencyException extends AdempiereException
 {

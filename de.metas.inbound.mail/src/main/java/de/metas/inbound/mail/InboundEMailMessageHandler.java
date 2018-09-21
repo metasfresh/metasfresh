@@ -5,7 +5,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.Util;
 import org.springframework.integration.mail.MailHeaders;
 import org.springframework.messaging.Message;
@@ -19,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inbound.mail.config.InboundEMailConfig;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
 

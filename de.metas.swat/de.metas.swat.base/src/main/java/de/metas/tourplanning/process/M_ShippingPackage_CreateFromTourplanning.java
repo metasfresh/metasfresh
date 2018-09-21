@@ -31,8 +31,6 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -51,6 +49,8 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implements IProcessPrecondition
 {

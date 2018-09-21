@@ -27,7 +27,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.location.CountryId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -35,6 +34,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IBPartnerOrgBL extends ISingletonService

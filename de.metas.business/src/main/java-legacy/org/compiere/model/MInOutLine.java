@@ -25,7 +25,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -35,6 +34,7 @@ import org.compiere.util.Env;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * InOut Line

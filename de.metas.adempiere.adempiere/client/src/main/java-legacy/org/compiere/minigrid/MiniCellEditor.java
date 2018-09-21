@@ -27,7 +27,6 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoColumnController;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VEditor;
@@ -40,6 +39,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.util.Services;
 
 /**
  * MiniTable Cell Editor based on class - Timestamp, BigDecimal

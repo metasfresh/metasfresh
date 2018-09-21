@@ -2,7 +2,6 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
-import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +25,7 @@ import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

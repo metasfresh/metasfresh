@@ -35,7 +35,7 @@ import de.metas.adempiere.form.IClientUIInvoker;
 import de.metas.logging.LogManager;
 
 /**
- * Providing a simple IClientUI implementation that can be automatically loaded by {@link org.adempiere.util.Services#get(Class)} in the early stages of Adempiere startup.<br>
+ * Providing a simple IClientUI implementation that can be automatically loaded by {@link de.metas.util.Services#get(Class)} in the early stages of Adempiere startup.<br>
  * This client implementation is supposed to be replaced with a "real" client implementation during adempiere-startup.
  *
  * Also, this implementation is used on server side.

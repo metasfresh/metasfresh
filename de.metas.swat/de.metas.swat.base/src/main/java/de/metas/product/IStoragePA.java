@@ -26,9 +26,10 @@ package de.metas.product;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Storage;
+
+import de.metas.util.ISingletonService;
 
 public interface IStoragePA extends ISingletonService {
 

@@ -40,7 +40,6 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
 import org.adempiere.ui.editor.IZoomableEditor;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -61,6 +60,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Warehouse Locator Control

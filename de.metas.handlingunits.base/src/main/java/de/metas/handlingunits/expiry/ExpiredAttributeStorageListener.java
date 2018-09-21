@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -19,6 +18,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

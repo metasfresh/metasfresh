@@ -3,9 +3,9 @@ package org.adempiere.acct.api;
 import java.math.BigDecimal;
 
 import org.adempiere.acct.api.impl.AccountDimension;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 

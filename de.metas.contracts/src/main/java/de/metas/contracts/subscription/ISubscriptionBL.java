@@ -29,7 +29,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
@@ -42,6 +41,7 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.util.ISingletonService;
 
 public interface ISubscriptionBL extends ISingletonService
 {

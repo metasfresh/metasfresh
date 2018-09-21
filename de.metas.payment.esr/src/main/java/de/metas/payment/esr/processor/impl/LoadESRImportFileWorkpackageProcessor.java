@@ -27,13 +27,12 @@ package de.metas.payment.esr.processor.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.util.Services;
 
 /**
  * Import the esr from the file which is stored in attachment

@@ -1,18 +1,18 @@
 package de.metas.material.cockpit.view.detailrecord;
 
+import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.util.NumberUtils.stripTrailingDecimalZeros;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

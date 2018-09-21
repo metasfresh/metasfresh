@@ -1,7 +1,8 @@
 package de.metas.invoice.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /**
  *

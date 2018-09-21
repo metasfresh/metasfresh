@@ -26,10 +26,10 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoiceLine;

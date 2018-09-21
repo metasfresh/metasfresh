@@ -27,12 +27,12 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Services;
 
 @Interceptor(I_M_Material_Tracking_Ref.class)
 public class M_Material_Tracking_Ref

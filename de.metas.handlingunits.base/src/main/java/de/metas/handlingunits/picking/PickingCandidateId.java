@@ -2,13 +2,12 @@ package de.metas.handlingunits.picking;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

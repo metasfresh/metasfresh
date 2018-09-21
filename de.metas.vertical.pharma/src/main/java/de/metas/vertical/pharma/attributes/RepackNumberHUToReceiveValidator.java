@@ -1,8 +1,6 @@
 package de.metas.vertical.pharma.attributes;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.IHUContextFactory;
@@ -10,6 +8,8 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

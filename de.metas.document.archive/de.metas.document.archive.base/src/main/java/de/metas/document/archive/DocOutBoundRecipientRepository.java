@@ -3,12 +3,12 @@ package de.metas.document.archive;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.springframework.stereotype.Repository;
 
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*

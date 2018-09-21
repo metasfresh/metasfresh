@@ -27,12 +27,12 @@ import java.util.Properties;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 
 import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 /**
  * @author al

@@ -1,7 +1,5 @@
 package org.compiere.db;
 
-import org.adempiere.util.Check;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,6 +25,7 @@ import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 

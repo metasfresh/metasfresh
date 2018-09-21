@@ -17,9 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-
 import de.metas.i18n.Msg;
+import de.metas.util.Check;
 
 /**
  * Export excel from ArrayList of data

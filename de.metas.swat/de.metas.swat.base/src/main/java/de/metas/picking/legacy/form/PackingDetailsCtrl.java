@@ -15,7 +15,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
@@ -28,6 +27,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 
 /**
  *

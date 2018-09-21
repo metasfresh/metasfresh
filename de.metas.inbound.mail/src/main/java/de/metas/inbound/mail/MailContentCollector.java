@@ -13,10 +13,10 @@ import javax.mail.Part;
 import javax.mail.internet.ContentType;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.FileUtils;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.FileUtils;
 import groovy.transform.ToString;
 import lombok.NonNull;
 

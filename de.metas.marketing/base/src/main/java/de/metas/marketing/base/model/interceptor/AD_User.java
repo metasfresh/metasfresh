@@ -8,7 +8,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +18,7 @@ import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_AD_User;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

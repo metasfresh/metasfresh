@@ -25,9 +25,8 @@ package de.metas.printing.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.printing.model.I_AD_Print_Clients;
+import de.metas.util.ISingletonService;
 
 public interface IPrintClientsBL extends ISingletonService
 {

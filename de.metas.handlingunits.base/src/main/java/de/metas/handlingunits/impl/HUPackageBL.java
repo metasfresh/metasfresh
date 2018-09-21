@@ -25,8 +25,6 @@ package de.metas.handlingunits.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.IHUPackageBL;
@@ -39,6 +37,8 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUPackageBL implements IHUPackageBL
 {

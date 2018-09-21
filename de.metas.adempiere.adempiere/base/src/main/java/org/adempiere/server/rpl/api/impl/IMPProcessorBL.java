@@ -37,10 +37,6 @@ import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_Column;
@@ -59,6 +55,10 @@ import org.w3c.dom.Document;
 
 import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class IMPProcessorBL implements IIMPProcessorBL
 {

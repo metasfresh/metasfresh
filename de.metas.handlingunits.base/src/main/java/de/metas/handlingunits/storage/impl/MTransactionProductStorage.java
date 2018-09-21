@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -41,6 +39,8 @@ import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MTransactionProductStorage extends AbstractProductStorage
 {

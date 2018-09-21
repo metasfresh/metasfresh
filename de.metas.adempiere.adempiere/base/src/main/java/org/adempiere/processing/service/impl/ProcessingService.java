@@ -35,7 +35,6 @@ import org.adempiere.processing.exception.ProcessingException;
 import org.adempiere.processing.interfaces.IProcessablePO;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.MIssue;
 import org.compiere.model.ModelValidator;
@@ -48,6 +47,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 public class ProcessingService implements IProcessingService
 {

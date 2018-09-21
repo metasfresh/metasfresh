@@ -7,13 +7,13 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
 import de.metas.lang.Percent;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

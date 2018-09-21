@@ -1,6 +1,5 @@
 package de.metas.jax.rs;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
 import org.compiere.db.CConnection.IStatusServiceEndPointProvider;
@@ -8,6 +7,7 @@ import org.compiere.util.Ini;
 
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.session.jaxrs.IStatusService;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;

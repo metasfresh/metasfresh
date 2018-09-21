@@ -26,9 +26,10 @@ package de.metas.acct.callout;
 import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
+
+import de.metas.util.Services;
 
 public class GL_JournalLine_TabCallout extends TabCalloutAdapter
 {

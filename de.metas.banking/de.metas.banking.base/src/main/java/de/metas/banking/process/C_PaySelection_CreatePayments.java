@@ -1,6 +1,5 @@
 package de.metas.banking.process;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.banking.model.I_C_PaySelectionLine;
@@ -10,6 +9,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /**
  * Creates an links {@link I_C_Payment}s to {@link I_C_PaySelectionLine}s.

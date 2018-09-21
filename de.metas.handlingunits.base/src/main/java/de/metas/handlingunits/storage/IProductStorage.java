@@ -25,7 +25,6 @@ package de.metas.handlingunits.storage;
 import java.math.BigDecimal;
 import java.util.Comparator;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -33,6 +32,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public interface IProductStorage
 {

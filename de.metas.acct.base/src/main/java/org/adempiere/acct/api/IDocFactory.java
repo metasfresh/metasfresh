@@ -27,11 +27,12 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.MAcctSchema;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Accountable document factory. Use this interface to create the right {@link Doc} instance for your accountable document.

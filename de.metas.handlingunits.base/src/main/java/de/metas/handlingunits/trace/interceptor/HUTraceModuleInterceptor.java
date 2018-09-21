@@ -3,7 +3,6 @@ package de.metas.handlingunits.trace.interceptor;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
@@ -12,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.trace.HUTraceEventsService;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

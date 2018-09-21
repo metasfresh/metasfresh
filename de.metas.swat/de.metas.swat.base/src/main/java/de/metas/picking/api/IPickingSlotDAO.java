@@ -4,9 +4,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.util.ISingletonService;
 
 public interface IPickingSlotDAO extends ISingletonService
 {

@@ -26,13 +26,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.

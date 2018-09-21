@@ -35,8 +35,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
@@ -50,6 +48,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

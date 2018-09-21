@@ -34,7 +34,6 @@ import javax.swing.JPasswordField;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.compiere.db.connectiondialog.i18n.DBRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -48,6 +47,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  *  Connection Dialog.

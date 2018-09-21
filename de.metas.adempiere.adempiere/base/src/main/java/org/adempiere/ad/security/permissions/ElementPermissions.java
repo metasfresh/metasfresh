@@ -28,7 +28,8 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 @Immutable
 public final class ElementPermissions extends AbstractPermissions<ElementPermission>

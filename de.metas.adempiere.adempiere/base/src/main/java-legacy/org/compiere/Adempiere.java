@@ -39,9 +39,6 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.DefaultServiceNamePolicy;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_System;
@@ -62,6 +59,9 @@ import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.DefaultServiceNamePolicy;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

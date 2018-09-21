@@ -39,9 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
@@ -104,6 +102,8 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.testsupport.AbstractTestSupport;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public abstract class AbstractICTestSupport extends AbstractTestSupport
 {

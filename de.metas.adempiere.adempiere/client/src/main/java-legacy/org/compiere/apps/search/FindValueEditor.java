@@ -23,10 +23,11 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.MQuery.Operator;
+
+import de.metas.util.Services;
 
 /**
  * Cell editor for Find Value/ValueTo fields. Editor depends on Column setting. Has to save entries how they are used in the query, i.e. '' for strings.

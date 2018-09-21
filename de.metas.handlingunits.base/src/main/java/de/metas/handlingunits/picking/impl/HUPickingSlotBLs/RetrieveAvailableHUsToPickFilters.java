@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 
@@ -17,6 +16,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

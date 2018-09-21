@@ -25,11 +25,11 @@ package de.metas.handlingunits.storage.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.quantity.Capacity;
+import de.metas.util.Check;
 
 public class PlainProductStorage extends AbstractProductStorage
 {

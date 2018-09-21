@@ -33,7 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -44,6 +43,7 @@ import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 @Validator(I_C_Invoice.class)
 public class C_Invoice

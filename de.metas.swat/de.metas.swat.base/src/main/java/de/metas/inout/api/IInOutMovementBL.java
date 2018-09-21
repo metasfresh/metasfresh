@@ -24,7 +24,6 @@ package de.metas.inout.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.LocatorId;
 import org.apache.ecs.xhtml.code;
 import org.compiere.model.I_M_InOut;
@@ -33,6 +32,7 @@ import org.compiere.model.I_M_Locator;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.util.ISingletonService;
 
 public interface IInOutMovementBL extends ISingletonService
 {

@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,6 +16,7 @@ import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.impl.PrintingQueueBL;
 import de.metas.printing.model.I_AD_User;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Services;
 
 /*
  * #%L

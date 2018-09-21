@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrg;
 import org.compiere.model.MTable;
@@ -45,6 +44,7 @@ import de.metas.adempiere.service.IPOProcessorBL;
 import de.metas.adempiere.service.impl.POProcessorBL;
 import de.metas.logging.LogManager;
 import de.metas.processor.spi.IPOProcessor;
+import de.metas.util.Services;
 
 public class POProcessorDispacher implements ModelValidator
 {

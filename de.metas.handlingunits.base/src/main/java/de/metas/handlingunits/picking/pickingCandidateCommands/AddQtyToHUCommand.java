@@ -6,7 +6,6 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
@@ -39,6 +38,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

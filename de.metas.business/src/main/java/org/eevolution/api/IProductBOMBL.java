@@ -25,12 +25,12 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 public interface IProductBOMBL extends ISingletonService
 {

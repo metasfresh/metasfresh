@@ -28,11 +28,11 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
 
 public class InOutADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

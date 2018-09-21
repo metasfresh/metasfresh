@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
+
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -30,7 +30,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
@@ -40,6 +39,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IStoragePA;
+import de.metas.util.Services;
 
 public final class StoragePA implements IStoragePA
 {

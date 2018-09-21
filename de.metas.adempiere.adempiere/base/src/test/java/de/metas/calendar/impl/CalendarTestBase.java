@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,6 +36,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.impl.PlainCalendarDAO;
+import de.metas.util.Services;
 
 public class CalendarTestBase
 {

@@ -23,7 +23,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -32,6 +31,7 @@ import org.compiere.util.Env;
 import org.eevolution.model.MDDOrderLine;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  *	Inventory Move Line Model

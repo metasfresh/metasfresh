@@ -31,9 +31,10 @@ import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 public class ModelCopyHelper implements IModelCopyHelper
 {

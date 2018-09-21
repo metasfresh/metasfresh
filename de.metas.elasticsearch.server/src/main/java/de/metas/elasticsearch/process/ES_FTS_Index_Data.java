@@ -2,7 +2,6 @@ package de.metas.elasticsearch.process;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -11,6 +10,7 @@ import de.metas.elasticsearch.config.FTSIndexConfig;
 import de.metas.elasticsearch.config.FTSIndexRepository;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.model.I_ES_FTS_Index;
+import de.metas.util.Check;
 
 /*
  * #%L

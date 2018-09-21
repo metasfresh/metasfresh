@@ -5,8 +5,6 @@ import java.util.Set;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
@@ -17,6 +15,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Validation rule used to filter out attribute handler {@link I_AD_JavaClass}es which are not compatible with current {@link I_M_Attribute}.

@@ -46,13 +46,13 @@ import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 {

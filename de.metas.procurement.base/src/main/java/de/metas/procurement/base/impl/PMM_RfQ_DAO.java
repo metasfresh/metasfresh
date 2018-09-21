@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
@@ -15,6 +14,7 @@ import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.X_C_RfQResponseLine;
+import de.metas.util.Services;
 
 /*
  * #%L

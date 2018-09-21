@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.base.Predicates;
@@ -27,6 +26,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.AbstractPackingItem;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

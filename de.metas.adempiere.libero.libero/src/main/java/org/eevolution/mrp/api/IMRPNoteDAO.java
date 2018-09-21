@@ -26,10 +26,10 @@ package org.eevolution.mrp.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_AD_Note;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.ISingletonService;
 
 public interface IMRPNoteDAO extends ISingletonService
 {

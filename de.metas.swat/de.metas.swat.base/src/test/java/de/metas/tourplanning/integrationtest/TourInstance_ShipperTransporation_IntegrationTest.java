@@ -24,7 +24,6 @@ package de.metas.tourplanning.integrationtest;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.junit.Test;
 
 import de.metas.document.engine.IDocument;
@@ -35,6 +34,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Services;
 
 /**
  * Tests the interaction between {@link I_M_Tour_Instance} and {@link I_M_ShipperTransportation}

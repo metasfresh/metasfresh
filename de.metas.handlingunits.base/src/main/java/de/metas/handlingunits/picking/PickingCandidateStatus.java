@@ -3,11 +3,11 @@ package de.metas.handlingunits.picking;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 

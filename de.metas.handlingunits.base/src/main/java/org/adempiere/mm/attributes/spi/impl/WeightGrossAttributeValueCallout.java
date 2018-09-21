@@ -28,12 +28,12 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
+import de.metas.util.Check;
 
 public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeValueCallout
 {

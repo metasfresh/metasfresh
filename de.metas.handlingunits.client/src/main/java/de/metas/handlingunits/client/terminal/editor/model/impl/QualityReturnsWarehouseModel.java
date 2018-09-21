@@ -2,7 +2,6 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Movement;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -10,6 +9,7 @@ import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.util.Services;
 
 /*
  * #%L

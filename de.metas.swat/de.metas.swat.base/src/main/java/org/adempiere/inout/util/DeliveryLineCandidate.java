@@ -3,11 +3,11 @@ package org.adempiere.inout.util;
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

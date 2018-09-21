@@ -27,9 +27,9 @@ import java.math.BigDecimal;
 
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 public class ProcessPendingPOs extends JavaProcess

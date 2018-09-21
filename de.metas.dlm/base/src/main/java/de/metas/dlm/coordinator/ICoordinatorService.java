@@ -1,8 +1,7 @@
 package de.metas.dlm.coordinator;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.dlm.Partition;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

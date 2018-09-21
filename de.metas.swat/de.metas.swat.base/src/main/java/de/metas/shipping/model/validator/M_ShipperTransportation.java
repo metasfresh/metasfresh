@@ -26,9 +26,9 @@ package de.metas.shipping.model.validator;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 
 @Validator(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

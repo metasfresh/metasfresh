@@ -19,7 +19,6 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ws.test.client.MockWebServiceServer;
@@ -29,6 +28,7 @@ import org.w3c.dom.Document;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.time.SystemTime;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;

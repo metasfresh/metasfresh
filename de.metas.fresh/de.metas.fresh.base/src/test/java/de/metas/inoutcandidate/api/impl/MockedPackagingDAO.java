@@ -2,11 +2,11 @@ package de.metas.inoutcandidate.api.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.junit.Ignore;
 
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
+import de.metas.util.Check;
 
 @Ignore
 public class MockedPackagingDAO extends PackagingDAO
@@ -14,7 +14,7 @@ public class MockedPackagingDAO extends PackagingDAO
 	private List<Packageable> packageables;
 
 	public void setPackableLines(final List<Packageable> packageables)
-	{
+	{	
 		this.packageables = packageables;
 
 	}

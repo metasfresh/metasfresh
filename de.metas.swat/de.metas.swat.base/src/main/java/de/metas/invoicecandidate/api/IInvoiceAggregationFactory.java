@@ -25,14 +25,13 @@ package de.metas.invoicecandidate.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ISingletonService;
 
 /**
  * It's an extension of {@link IAggregationFactory} but addressing invoicing concerns.

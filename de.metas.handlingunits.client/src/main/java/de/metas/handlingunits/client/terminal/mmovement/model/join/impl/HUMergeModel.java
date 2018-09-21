@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -53,6 +51,8 @@ import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTU
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class HUMergeModel extends AbstractMaterialMovementModel
 {

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -46,6 +45,7 @@ import de.metas.i18n.Msg;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 
 /**
  * 

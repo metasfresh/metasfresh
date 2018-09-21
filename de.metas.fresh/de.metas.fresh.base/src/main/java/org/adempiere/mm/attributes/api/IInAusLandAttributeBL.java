@@ -24,7 +24,8 @@ package org.adempiere.mm.attributes.api;
 
 
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareAttributeService;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface IInAusLandAttributeBL extends ISingletonService, ICountryAwareAttributeService
 {

@@ -29,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
@@ -39,6 +38,7 @@ import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOM;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 
 public class PPOrderDAO implements IPPOrderDAO
 {
