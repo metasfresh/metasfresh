@@ -72,7 +72,9 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		docOutboundLogRecord.setRecord_ID(invoiceRecord.getC_Invoice_ID());
 		saveRecord(docOutboundLogRecord);
 
-		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(new DocOutBoundRecipientRepository(), new BPartnerBL(new UserRepository()));
+		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
+				new DocOutBoundRecipientRepository(),
+				new BPartnerBL(new UserRepository()));
 	}
 
 	@Test

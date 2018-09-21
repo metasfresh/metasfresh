@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +39,7 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
@@ -2473,6 +2475,12 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateOrdered());
+	}
 
 	/**
 	 * Get Process Message

@@ -41,6 +41,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -883,6 +885,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String getSummary()
 	{
 		return "" + getDocumentNo() + "/" + getDatePromised();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateOrdered());
 	}
 
 	@Override

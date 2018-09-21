@@ -16,7 +16,17 @@ Here come the actual release notes:
   * [#4605](https://github.com/metasfresh/metasfresh/issues/4605) Webui: Org window: hide the AD_Org_ID field
     * Hiding the Organisation Field in Organisation Window.
 
+* metasfresh-webui-frontend
+  * [#1926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1926) Make window tabs cypress friendly
+    * Improvement of WebUI Tab Names, making it easie to use them in Cypress Test instructions.
+  * [#1957](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1957) On password reset, show the error message
+    * Enhancing the error messages in Forgot Password workflow.
+
 ## Fixes
+
+* metasfresh-webui-frontend
+  *[#1949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1949) Shortcuts not working properly in Tabs after changing sth in grid view + [Tab]
+    * Improvement of Shortcut Handling after Delete in Subtab.
 
 # metasfresh 5.75
 ## Features
@@ -38,6 +48,9 @@ Here come the actual release notes:
   * [#4595](https://github.com/metasfresh/metasfresh/issues/4595) WebUI: Window EMail Server Routing
     * New Window for the eMail Server Routing Configration in WebUI.
   * [#4602](https://github.com/metasfresh/metasfresh/issues/4602) Cannot complete flatrate term conditions / transition in swing
+  * [#4613](https://github.com/metasfresh/metasfresh/issues/4613) provide doc-outbound mail receiver for dunning docs
+  * [#4615](https://github.com/metasfresh/metasfresh/issues/4615) Turn C_DunningDoc into a real document
+
 
 * metasfresh-webui-api
   * [#1038](https://github.com/metasfresh/metasfresh-webui-api/issues/1038) Use user language for messages and errors in Forgot Password feature

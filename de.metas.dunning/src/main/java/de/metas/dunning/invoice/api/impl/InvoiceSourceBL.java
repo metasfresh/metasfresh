@@ -12,6 +12,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
@@ -82,14 +83,14 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final int[] countWriteOff = new int[] { 0 };
+		final Mutable<Integer> countWriteOff = new Mutable<>(0);
 
 		// NOTE: is very important to fetch candidates out of transaction in order to process each of them in a separate transaction
 		final IDunningContext dunningContext = Services.get(IDunningBL.class).createDunningContext(ctx,
 				null, // dunningLevel
 				null, // dunningDate
 				ITrx.TRXNAME_None // make sure we are fetching everything out of trx
-				);
+		);
 
 		final Iterator<I_C_DunningDoc_Line_Source> sources = dunningDAO.retrieveDunningDocLineSourcesToWriteOff(dunningContext);
 		while (sources.hasNext())
@@ -110,7 +111,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 					source.setIsWriteOffApplied(true);
 					InterfaceWrapperHelper.save(source);
 
-					countWriteOff[0]++;
+					countWriteOff.setValue(countWriteOff.getValue() + 1);
 				}
 
 				@Override
@@ -133,14 +134,14 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 			});
 		}
 
-		return countWriteOff[0];
+		return countWriteOff.getValue();
 	}
 
 	/**
 	 *
 	 * @param candidate
 	 * @param writeOffDescription
-	 * @return true if candidate's invoice was wrote-off
+	 * @return true if candidate's invoice was written-off
 	 */
 	protected boolean writeOffDunningCandidate(final I_C_Dunning_Candidate candidate, final String writeOffDescription)
 	{

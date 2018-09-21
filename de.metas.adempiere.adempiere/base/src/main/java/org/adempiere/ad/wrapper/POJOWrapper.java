@@ -61,6 +61,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -207,7 +208,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		return result;
 	}
-	
+
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
 	{
 		if (ids.isEmpty())
@@ -595,6 +596,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final String trxName = (String)args[0];
 			this.setTrxName(trxName);
 			return null;
+		}
+		else if (methodName.startsWith(IDocument.METHOD_NAME_getDocumentModel) && (args == null || args.length == 0))
+		{
+			return this; // return this instance; similar to the default implementation of IDocument.getDocumentModel()
 		}
 		else if (methodName.startsWith("set") && args.length == 1)
 		{

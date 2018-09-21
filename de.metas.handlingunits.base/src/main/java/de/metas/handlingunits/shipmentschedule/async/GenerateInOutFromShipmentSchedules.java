@@ -506,6 +506,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			}
 
 			final I_M_HU tuHU = qtyPickedRecord.getM_TU_HU();
+
+			// 4507
+			// make sure the TU from qtyPicked is a real TU
+			if(!handlingUnitsBL.isTransportUnit(tuHU))
+			{
+				continue;
+			}
+
 			luLoader.addTU(tuHU);
 
 			// NOTE: after TU was added to an LU we expect this qtyPickedRecord to be updated and M_LU_HU_ID to be set

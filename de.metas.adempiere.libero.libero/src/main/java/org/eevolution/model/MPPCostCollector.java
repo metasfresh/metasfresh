@@ -42,6 +42,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -815,6 +816,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		final StringBuffer sb = new StringBuffer();
 		sb.append(getDescription());
 		return sb.toString();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getMovementDate());
 	}
 
 	@Override
