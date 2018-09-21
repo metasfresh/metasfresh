@@ -33,6 +33,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -155,7 +156,9 @@ class ProductsToPickRowsDataFactory
 		final ReservableStorage storage = getStorage(huId, productId);
 		final Quantity qty = storage.reserve(packageable, pickingCandidate.getQtyPicked());
 
-		return createRow(packageable, huId, qty);
+		final PickingCandidateId pickingCandidateId = pickingCandidate.getId();
+
+		return createRow(packageable, qty, huId, pickingCandidateId);
 	}
 
 	private List<ProductsToPickRow> createRowsFromHUs(final AllocablePackageable packageable)
@@ -174,8 +177,11 @@ class ProductsToPickRowsDataFactory
 				.listIds();
 		getHUs(huIds); // pre-load all HUs
 
+		final Quantity qtyZero = packageable.getQtyToAllocate().toZero();
+		final PickingCandidateId noPickingCandidateId = null;
+
 		final List<ProductsToPickRow> rows = huIds.stream()
-				.map(huId -> createRow(packageable, huId, packageable.getQtyToAllocate().toZero()))
+				.map(huId -> createRow(packageable, qtyZero, huId, noPickingCandidateId))
 				.sorted(Comparator.comparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX)))
 				.collect(ImmutableList.toImmutableList());
 
@@ -204,7 +210,10 @@ class ProductsToPickRowsDataFactory
 		return row.withQty(qty);
 	}
 
-	private ProductsToPickRow createRow(final AllocablePackageable packageable, final HuId huId, final Quantity qty)
+	private ProductsToPickRow createRow(final AllocablePackageable packageable,
+			final Quantity qty,
+			final HuId huId,
+			final PickingCandidateId pickingCandidateId)
 	{
 		final ProductId productId = packageable.getProductId();
 		final ImmutableAttributeSet attributes = getAttributes(huId);
@@ -221,7 +230,6 @@ class ProductsToPickRowsDataFactory
 				.rowId(rowId)
 				.product(product)
 				.locator(locator)
-				.huId(huId)
 				//
 				// Attributes:
 				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElse(null))
@@ -230,7 +238,8 @@ class ProductsToPickRowsDataFactory
 				.damaged(attributes.getValueAsBooleanIfExists(ATTR_Damaged).orElse(null))
 				//
 				.qty(qty)
-				.processed(false)
+				//
+				.pickingCandidateId(pickingCandidateId)
 				.build();
 	}
 

@@ -1,9 +1,14 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -75,6 +80,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		final ProductsToPickView view = ProductsToPickView.builder()
 				.viewId(viewId)
 				.rowsData(rowsData)
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickSelected.class))
 				.build();
 
 		viewsRepository.getViewsStorageFor(viewId).put(view);
@@ -82,4 +88,20 @@ public class ProductsToPickViewFactory implements IViewFactory
 		return view;
 	}
 
+	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final int processId = adProcessDAO.retrieveProcessIdByClass(processClass);
+		if (processId <= 0)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.anyTable()
+				.anyWindow()
+				.webuiQuickAction(true)
+				.build();
+	}
 }

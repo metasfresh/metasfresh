@@ -1,12 +1,19 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -37,13 +44,18 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 		return (ProductsToPickView)view;
 	}
 
+	private final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors;
+
 	@Builder
 	private ProductsToPickView(
-			final ViewId viewId,
+			@NonNull final ViewId viewId,
 			final ITranslatableString description,
-			final ProductsToPickRowsData rowsData)
+			@NonNull final ProductsToPickRowsData rowsData,
+			@NonNull @Singular final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors)
 	{
 		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
+
+		this.relatedProcessDescriptors = relatedProcessDescriptors;
 	}
 
 	@Override
@@ -53,4 +65,9 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 		return null;
 	}
 
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return relatedProcessDescriptors;
+	}
 }

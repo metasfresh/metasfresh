@@ -7,6 +7,8 @@ import java.util.Objects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
@@ -65,6 +67,7 @@ public class ProductsToPickRow implements IViewRow
 	private final Boolean damaged;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
+	@Getter
 	private final Quantity qty;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Processed", seqNo = 80)
@@ -74,31 +77,37 @@ public class ProductsToPickRow implements IViewRow
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final ProductsToPickRowId rowId;
 	@Getter
-	private final HuId huId;
+	private final ShipmentScheduleId shipmentScheduleId;
+	@Getter
+	private final PickingCandidateId pickingCandidateId;
 
 	@Builder(toBuilder = true)
 	private ProductsToPickRow(
 			@NonNull final ProductsToPickRowId rowId,
 			@NonNull final LookupValue product,
 			@NonNull final LookupValue locator,
-			@NonNull final HuId huId,
+			//
 			final String lotNumber,
 			final LocalDate expiringDate,
 			final String repackNumber,
 			final Boolean damaged,
+			//
 			@NonNull final Quantity qty,
-			final boolean processed)
+			//
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			final PickingCandidateId pickingCandidateId)
 	{
 		this.rowId = rowId;
 		this.product = product;
 		this.locator = locator;
-		this.huId = huId;
 		this.lotNumber = lotNumber;
 		this.expiringDate = expiringDate;
 		this.repackNumber = repackNumber;
 		this.damaged = damaged;
 		this.qty = qty;
-		this.processed = processed;
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.pickingCandidateId = pickingCandidateId;
+		this.processed = pickingCandidateId != null;
 	}
 
 	@Override
@@ -128,6 +137,11 @@ public class ProductsToPickRow implements IViewRow
 			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
+	}
+
+	public HuId getHuId()
+	{
+		return rowId.getHuId();
 	}
 
 	public ProductsToPickRow withQty(@NonNull final Quantity qty)
