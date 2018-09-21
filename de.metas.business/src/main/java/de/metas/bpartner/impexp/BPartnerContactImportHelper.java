@@ -149,6 +149,7 @@ import lombok.NonNull;
 		user.setIsDefaultContact(importRecord.isDefaultContact());
 		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
 		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
+		setUserMemoFields(importRecord, user);
 	}
 
 	/**
