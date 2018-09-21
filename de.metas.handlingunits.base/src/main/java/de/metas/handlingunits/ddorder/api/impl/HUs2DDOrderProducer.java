@@ -55,12 +55,16 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.product.LotNumberQuarantine;
+=======
+import de.metas.product.LotNumberLock;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+>>>>>>> master
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -2,6 +2,7 @@ package de.metas.handlingunits.quarantine;
 
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.attribute.Constants;
@@ -10,7 +11,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
