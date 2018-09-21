@@ -8,11 +8,6 @@ UPDATE AD_Table SET Name='M_Product_LotNumber_Quarantine', TableName='M_Product_
 UPDATE AD_Sequence SET Name='M_Product_LotNumber_Quarantine',Updated=TO_TIMESTAMP('2018-09-18 13:29:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=554518
 ;
 
--- 2018-09-18T13:29:49.261
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE M_Product_LotNumber_Lock_SEQ RENAME TO M_Product_LotNumber_Quarantine_SEQ
-;
-
 
 
 
