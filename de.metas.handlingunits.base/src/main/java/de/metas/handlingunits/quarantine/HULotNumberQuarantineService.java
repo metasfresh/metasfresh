@@ -7,7 +7,6 @@ import java.util.List;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +19,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.LotNumberQuarantine;
 import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
