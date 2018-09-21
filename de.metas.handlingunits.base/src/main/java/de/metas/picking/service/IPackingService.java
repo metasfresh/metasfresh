@@ -20,7 +20,8 @@ public interface IPackingService extends ISingletonService
 	 * @param qtyToPack how much qty we need to take out
 	 * @param itemPackedProcessor processor used to process our resulting packed item
 	 */
-	void packItem(PackingContext packingContext,
+	void packItem(
+			PackingContext packingContext,
 			IFreshPackingItem itemToPack,
 			Quantity qtyToPack,
 			IPackingHandler itemPackedProcessor);

@@ -3,7 +3,6 @@ package de.metas.picking.service.impl;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -127,11 +126,8 @@ public class PackingService implements IPackingService
 		// => itemToPackRemaining will be added back to unpacked items
 		// => itemPacked will be added to packed items
 		{
-			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate = //
-					shipmentSchedule ->  packingHandler.isPackingAllowedForShipmentSchedule(shipmentSchedule);
-
 			final IFreshPackingItem itemToPackRemaining = itemToPack.copy();
-			final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, acceptShipmentSchedulePredicate);
+			final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, packingHandler::isPackingAllowedForShipmentSchedule);
 
 			//
 			// Process our packed item
