@@ -32,16 +32,16 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 {
 	public static final String MSG_WEBUI_HUs_IN_Quarantine = "WEBUI_HUs_IN_Quarantine";
 
-	private final transient HULotNumberQuarantineService lotNumberLockService = Adempiere.getBean(HULotNumberQuarantineService.class);
+	private final transient HULotNumberQuarantineService lotNumberQuarantineService = Adempiere.getBean(HULotNumberQuarantineService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final boolean lockedHUs = streamSelectedHUs(Select.ONLY_TOPLEVEL)
-				.filter(huRecord -> lotNumberLockService.isQuarantineHU(huRecord))
+		final boolean quarantineHUs = streamSelectedHUs(Select.ONLY_TOPLEVEL)
+				.filter(huRecord -> lotNumberQuarantineService.isQuarantineHU(huRecord))
 				.findAny()
 				.isPresent();
-		if (lockedHUs)
+		if (quarantineHUs)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_HUs_IN_Quarantine));
 		}
