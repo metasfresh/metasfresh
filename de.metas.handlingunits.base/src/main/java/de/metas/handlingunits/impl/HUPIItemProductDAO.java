@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -57,6 +59,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU;
@@ -73,7 +76,13 @@ import lombok.NonNull;
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
 	@VisibleForTesting
-	public static final int NO_HU_PI_Item_Product_ID = 100;
+	public static final HUPIItemProductId NO_HU_PI_Item_Product_ID = HUPIItemProductId.ofRepoId(100);
+
+	@Override
+	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	{
+		return loadOutOfTrx(id, I_M_HU_PI_Item_Product.class);
+	}
 
 	@Override
 	public IHUPIItemProductQuery createHUPIItemProductQuery()
@@ -92,21 +101,10 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product retrieveForId(final Properties ctx, final int M_HU_PI_Item_Product_ID)
-	{
-		if (M_HU_PI_Item_Product_ID < 0)
-		{
-			return null;
-		}
-
-		return InterfaceWrapperHelper.create(ctx, M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
-	}
-
-	@Override
 	@Cached
 	public I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item_Product piip = retrieveForId(ctx, VIRTUAL_HU_PI_Item_Product_ID);
+		final I_M_HU_PI_Item_Product piip = getById(VIRTUAL_HU_PI_Item_Product_ID);
 
 		return Check.assumeNotNull(piip,
 				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",

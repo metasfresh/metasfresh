@@ -35,9 +35,9 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -60,14 +60,14 @@ public class FreshProductKey extends ProductKey
 	 */
 	private String retrievePackingMaterialInfos()
 	{
-		final I_M_HU_PI_Item_Product pip = getM_HU_PI_Item_Product();
-		if (pip == null)
+		final HUPIItemProductId pipId = getHUPIItemProductId();
+		if (pipId == null)
 		{
 			return "";
 		}
 
 		final String pipStr = Services.get(IHUPIItemProductBL.class).buildDisplayName()
-				.setM_HU_PI_Item_Product(pip)
+				.setM_HU_PI_Item_Product(pipId)
 				.build();
 
 		return "<br>" + pipStr;
@@ -76,7 +76,7 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * @return default/suggested PI item product or <code>null</code>
 	 */
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public HUPIItemProductId getHUPIItemProductId()
 	{
 		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
 		final IFreshPackingItem allocatedPackingItem = getPackingItem();
@@ -84,7 +84,7 @@ public class FreshProductKey extends ProductKey
 		{
 			final IFreshPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
 
-			final I_M_HU_PI_Item_Product pip = pck.getM_HU_PI_Item_Product();
+			final HUPIItemProductId pip = pck.getHUPIItemProductId();
 			return pip;
 		}
 

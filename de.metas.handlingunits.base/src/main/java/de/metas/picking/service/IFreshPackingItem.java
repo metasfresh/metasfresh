@@ -7,7 +7,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.quantity.Quantity;
@@ -49,7 +49,7 @@ public interface IFreshPackingItem extends IPackingItem
 
 	BPartnerLocationId getBPartnerLocationId();
 
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
+	HUPIItemProductId getHUPIItemProductId();
 
 	Set<WarehouseId> getWarehouseIds();
 

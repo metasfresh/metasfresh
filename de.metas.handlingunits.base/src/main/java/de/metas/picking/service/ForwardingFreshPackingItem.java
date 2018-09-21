@@ -12,7 +12,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.quantity.Quantity;
@@ -100,9 +100,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public HUPIItemProductId getHUPIItemProductId()
 	{
-		return getDelegate().getM_HU_PI_Item_Product();
+		return getDelegate().getHUPIItemProductId();
 	}
 
 	@Override

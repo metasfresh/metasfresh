@@ -52,7 +52,9 @@ import de.metas.product.ProductId;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
-	int VIRTUAL_HU_PI_Item_Product_ID = 101;
+	HUPIItemProductId VIRTUAL_HU_PI_Item_Product_ID = HUPIItemProductId.ofRepoId(101);
+	
+	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
 
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 
@@ -83,8 +85,6 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, ProductId productId, Date date);
-
-	I_M_HU_PI_Item_Product retrieveForId(Properties ctx, int M_HU_PI_Item_Product_ID);
 
 	I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(Properties ctx);
 

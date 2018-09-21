@@ -667,7 +667,7 @@ public class HUTestHelper
 		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
-		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
+		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID.getRepoId());
 
 		return huDefNone;
 	}
@@ -684,7 +684,7 @@ public class HUTestHelper
 				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
-		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
+		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId());
 
 		return huDefVirtual;
 	}

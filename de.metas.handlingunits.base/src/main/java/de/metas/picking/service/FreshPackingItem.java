@@ -21,8 +21,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -113,7 +113,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public HUPIItemProductId getHUPIItemProductId()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -123,7 +123,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 
 		// all scheds must have the same pip
 		final de.metas.handlingunits.model.I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentSchedules.iterator().next(), de.metas.handlingunits.model.I_M_ShipmentSchedule.class);
-		final I_M_HU_PI_Item_Product pip = shipmentSchedule.getM_HU_PI_Item_Product();
+		final HUPIItemProductId pip = HUPIItemProductId.ofRepoIdOrNull(shipmentSchedule.getM_HU_PI_Item_Product_ID());
 		if (pip != null)
 		{
 			return pip;
@@ -133,7 +133,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 		{
 			// if is not set, return the one form order line
 			final I_C_OrderLine ol = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-			return ol.getM_HU_PI_Item_Product();
+			return HUPIItemProductId.ofRepoIdOrNull(ol.getM_HU_PI_Item_Product_ID());
 		}
 
 		return null;

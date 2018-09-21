@@ -38,6 +38,7 @@ import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
@@ -61,7 +62,7 @@ public class PackingMaterialKey extends TerminalKey
 	private final I_M_HU_PI huPI;
 	private final KeyNamePair value;
 
-	private final Set<I_M_HU_PI_Item_Product> restrictions = new LinkedHashSet<I_M_HU_PI_Item_Product>();
+	private final Set<I_M_HU_PI_Item_Product> restrictions = new LinkedHashSet<>();
 	private final Set<I_M_HU_PI_Item_Product> restrictionsRO = Collections.unmodifiableSet(restrictions);
 
 	PackingMaterialKey(final ITerminalContext terminalContext, final I_M_HU_PI_Item_Product itemProduct)
@@ -226,17 +227,16 @@ public class PackingMaterialKey extends TerminalKey
 		}
 
 		// If product key has no default PIP => return false
-		final I_M_HU_PI_Item_Product productKeyDefaultPIP = productKey.getM_HU_PI_Item_Product();
-		if (productKeyDefaultPIP == null)
+		final HUPIItemProductId productKeyDefaultPIPId = productKey.getHUPIItemProductId();
+		if (productKeyDefaultPIPId == null)
 		{
 			return false;
 		}
-		final int productKeyDefaultPIP_Id = productKeyDefaultPIP.getM_HU_PI_Item_Product_ID();
 
 		//
 		// Check if the product key's default packing material is the same as this packing material
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
-		if (piItemProduct.getM_HU_PI_Item_Product_ID() == productKeyDefaultPIP_Id)
+		if (piItemProduct.getM_HU_PI_Item_Product_ID() == productKeyDefaultPIPId.getRepoId())
 		{
 			return true;
 		}
@@ -246,7 +246,7 @@ public class PackingMaterialKey extends TerminalKey
 		// NOTE: additional restrictions is kind of legacy but i've implemented because it might be that we will re-use it in future.
 		for (final I_M_HU_PI_Item_Product pip : getRestrictions())
 		{
-			if (pip.getM_HU_PI_Item_Product_ID() == productKeyDefaultPIP_Id)
+			if (pip.getM_HU_PI_Item_Product_ID() == productKeyDefaultPIPId.getRepoId())
 			{
 				return true;
 			}

@@ -201,7 +201,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem;
-		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
+		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId() == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
 		{
 			luPIItem = null; // we don't care if there is a matching PIItem, because with noLUForVirtualTU we don't want to put the virtual HU onto an LU
 		}
