@@ -3,9 +3,6 @@ package de.metas.ui.web.order.pricingconditions.view;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
@@ -20,6 +17,8 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

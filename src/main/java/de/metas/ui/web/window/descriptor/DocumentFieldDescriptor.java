@@ -17,7 +17,6 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -50,6 +49,7 @@ import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 

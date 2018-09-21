@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -20,6 +19,7 @@ import de.metas.ui.web.cache.ETag;
 import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.util.Check;
 
 /*
  * #%L

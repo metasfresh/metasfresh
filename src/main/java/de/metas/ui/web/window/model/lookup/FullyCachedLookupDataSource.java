@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 
 /*
  * #%L

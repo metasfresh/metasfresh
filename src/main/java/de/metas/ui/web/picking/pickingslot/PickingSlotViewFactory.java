@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

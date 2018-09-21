@@ -2,7 +2,6 @@ package de.metas.ui.web.order.pricingconditions.process;
 
 import java.util.Set;
 
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 
@@ -15,6 +14,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.pricingconditions.view.OrderLinePricingConditionsViewFactory;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L

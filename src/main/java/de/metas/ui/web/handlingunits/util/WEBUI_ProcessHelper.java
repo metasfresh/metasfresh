@@ -8,8 +8,6 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -18,6 +16,8 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

@@ -15,9 +15,6 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
@@ -63,6 +60,9 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

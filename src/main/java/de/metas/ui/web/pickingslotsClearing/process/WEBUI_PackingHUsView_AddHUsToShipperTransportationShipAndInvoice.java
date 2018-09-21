@@ -2,9 +2,6 @@ package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
@@ -12,6 +9,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
 
 /*
  * #%L

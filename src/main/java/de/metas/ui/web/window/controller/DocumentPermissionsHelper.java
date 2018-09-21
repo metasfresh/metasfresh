@@ -8,7 +8,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -20,6 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentPermissionException;
 import de.metas.ui.web.window.exceptions.DocumentPermissionException.DocumentPermission;
 import de.metas.ui.web.window.model.Document;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

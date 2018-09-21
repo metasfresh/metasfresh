@@ -2,8 +2,6 @@ package de.metas.ui.web.notification.json;
 
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,6 +9,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.notification.UserNotificationsList;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

@@ -1,14 +1,14 @@
 package de.metas.ui.web.material.cockpit;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

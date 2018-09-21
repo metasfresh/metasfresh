@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
@@ -21,6 +19,8 @@ import de.metas.purchasecandidate.SalesOrderLine;
 import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

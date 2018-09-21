@@ -3,7 +3,6 @@ package de.metas.ui.web.order.pricingconditions.view;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
@@ -29,6 +28,7 @@ import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

@@ -3,11 +3,12 @@ package de.metas.ui.web.window.descriptor;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.X_AD_UI_Element;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

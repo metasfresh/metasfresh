@@ -3,13 +3,12 @@ package de.metas.ui.web.process.json;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

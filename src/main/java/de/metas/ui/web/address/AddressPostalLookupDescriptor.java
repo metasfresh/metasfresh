@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.DB;
@@ -28,6 +27,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
+import de.metas.util.Check;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import lombok.NonNull;
 

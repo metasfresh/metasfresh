@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.util.Check;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -19,6 +18,7 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 

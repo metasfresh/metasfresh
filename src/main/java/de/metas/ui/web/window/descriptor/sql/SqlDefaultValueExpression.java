@@ -15,7 +15,6 @@ import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -27,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

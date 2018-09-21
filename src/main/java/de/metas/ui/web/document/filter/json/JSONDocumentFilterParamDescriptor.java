@@ -3,8 +3,6 @@ package de.metas.ui.web.document.filter.json;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,6 +13,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.GuavaCollectors;
 import lombok.ToString;
 
 /*

@@ -2,14 +2,13 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /*
  * #%L
