@@ -83,7 +83,7 @@ public class AddQtyToHUCommand
 	private final HuId targetHUId;
 	private final PickingSlotId pickingSlotId;
 	private final ShipmentScheduleId shipmentScheduleId;
-	private final boolean isAllowOverdelivery;
+	private final boolean allowOverDelivery;
 
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
@@ -91,10 +91,10 @@ public class AddQtyToHUCommand
 	private AddQtyToHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final BigDecimal qtyCU,
-			final boolean isAllowOverdelivery,
-			final HuId targetHUId,
-			final PickingSlotId pickingSlotId,
-			final ShipmentScheduleId shipmentScheduleId)
+			final boolean allowOverDelivery,
+			@NonNull final HuId targetHUId,
+			@NonNull final PickingSlotId pickingSlotId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		if (qtyCU.signum() <= 0)
 		{
@@ -106,7 +106,7 @@ public class AddQtyToHUCommand
 		this.targetHUId = targetHUId;
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
-		this.isAllowOverdelivery = isAllowOverdelivery;
+		this.allowOverDelivery = allowOverDelivery;
 
 	}
 
@@ -115,31 +115,22 @@ public class AddQtyToHUCommand
 	 */
 	public Quantity performAndGetQtyPicked()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
-
-		final boolean overdeliveryError = !isAllowOverdelivery && isOverDelivery();
+		final boolean overdeliveryError = !allowOverDelivery && isOverDelivery();
 		if (overdeliveryError)
 		{
 			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
 		}
 
-		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
-		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
+		final PickingCandidate candidate = getOrCreatePickingCandidate();
 
-		final PickingCandidate candidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(targetHUId, shipmentScheduleId, pickingSlotId)
-				.orElseGet(() -> PickingCandidate.builder()
-						.qtyPicked(Quantity.zero(uom))
-						.huId(targetHUId)
-						.shipmentScheduleId(shipmentScheduleId)
-						.pickingSlotId(pickingSlotId)
-						.build());
-		pickingCandidateRepository.save(candidate);
-
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 		final HUListAllocationSourceDestination source = createAllocationSource(shipmentSchedule);
 		final IAllocationDestination destination = createAllocationDestination(targetHUId);
 
 		// NOTE: create the context with the tread-inherited transaction,
 		// otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContextFactory.createMutableHUContextForProcessing())
 				.setProduct(productsRepo.getById(productId))
@@ -161,6 +152,25 @@ public class AddQtyToHUCommand
 		addQtyToCandidate(candidate, productId, qtyPicked);
 
 		return qtyPicked;
+	}
+
+	private PickingCandidate getOrCreatePickingCandidate()
+	{
+		final PickingCandidate existingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(targetHUId, shipmentScheduleId, pickingSlotId).orElse(null);
+		if (existingCandidate != null)
+		{
+			return existingCandidate;
+		}
+
+		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(getShipmentSchedule());
+		final PickingCandidate newCandidate = PickingCandidate.builder()
+				.qtyPicked(Quantity.zero(uom))
+				.huId(targetHUId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.pickingSlotId(pickingSlotId)
+				.build();
+		pickingCandidateRepository.save(newCandidate);
+		return newCandidate;
 	}
 
 	/**
