@@ -355,7 +355,7 @@ public class PackingInfoProcessParams
 		final int M_HU_PI_Item_Product_ID = getTU_HU_PI_Item_Product_ID();
 		final BigDecimal qtyCU = getQtyCU();
 
-		final boolean isVirtualHU = M_HU_PI_Item_Product_ID == IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
+		final boolean isVirtualHU = M_HU_PI_Item_Product_ID == IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId();
 		final BigDecimal qtyTU = isVirtualHU ? BigDecimal.ONE : this.qtyTU;
 
 		if (M_HU_PI_Item_Product_ID <= 0)
