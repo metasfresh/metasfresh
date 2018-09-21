@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -36,6 +34,8 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageAttributeSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.ToString;
 
 @ToString

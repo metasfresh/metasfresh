@@ -6,8 +6,6 @@ import java.util.Properties;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 
 import de.metas.async.Async_Constants;
@@ -17,6 +15,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

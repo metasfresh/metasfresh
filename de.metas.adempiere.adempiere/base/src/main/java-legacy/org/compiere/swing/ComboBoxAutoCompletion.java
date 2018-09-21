@@ -31,9 +31,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
 import org.adempiere.plaf.AdempiereComboBoxUI;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Auto completion behavior for a combo box

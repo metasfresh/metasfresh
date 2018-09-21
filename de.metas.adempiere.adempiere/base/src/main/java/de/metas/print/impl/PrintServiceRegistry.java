@@ -1,9 +1,8 @@
 package de.metas.print.impl;
 
-import org.adempiere.util.Check;
-
 import de.metas.print.IPrintService;
 import de.metas.print.IPrintServiceRegistry;
+import de.metas.util.Check;
 
 public class PrintServiceRegistry implements IPrintServiceRegistry
 {

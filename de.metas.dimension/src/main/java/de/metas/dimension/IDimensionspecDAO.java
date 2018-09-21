@@ -24,12 +24,12 @@ package de.metas.dimension;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Column;
 
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
+import de.metas.util.ISingletonService;
 
 public interface IDimensionspecDAO extends ISingletonService
 {

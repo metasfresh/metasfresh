@@ -3,10 +3,11 @@ package de.metas.jax.rs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.db.CConnection;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /*
  * #%L

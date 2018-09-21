@@ -4,8 +4,6 @@ import java.util.Collection;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.model.MClient;
 import org.compiere.model.MProduct;
@@ -29,6 +27,8 @@ import de.metas.product.IProductBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.StorageListenerAdapter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Shipment Schedule / Receipt Schedule module activator

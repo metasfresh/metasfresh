@@ -3,7 +3,6 @@ package de.metas.material.dispo.service.event.handler.ddorder;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +27,7 @@ import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

@@ -23,8 +23,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -37,6 +35,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)

@@ -2,8 +2,9 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.Lookup;
+
+import de.metas.util.ISingletonService;
 
 /**
  * 

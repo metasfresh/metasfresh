@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
@@ -44,6 +43,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Table Print Format

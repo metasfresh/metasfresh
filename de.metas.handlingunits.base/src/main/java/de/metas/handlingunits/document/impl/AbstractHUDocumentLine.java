@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public abstract class AbstractHUDocumentLine implements IHUDocumentLine
 {

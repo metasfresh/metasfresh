@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.document.engine.IDocument;
@@ -44,6 +43,7 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

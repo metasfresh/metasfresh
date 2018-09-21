@@ -3,11 +3,12 @@ package de.metas.banking.bankstatement.match.model;
 import java.text.DateFormat;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.Check;
 
 /*
  * #%L

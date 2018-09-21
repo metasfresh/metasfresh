@@ -2,12 +2,12 @@ package de.metas.shipper.gateway.go;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Log;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -1,8 +1,7 @@
 package de.metas.shipper.gateway.spi;
 
-import org.adempiere.util.Check;
-
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

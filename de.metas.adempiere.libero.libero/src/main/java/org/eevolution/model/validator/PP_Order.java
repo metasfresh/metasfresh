@@ -34,7 +34,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
@@ -58,6 +57,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_PP_Order.class)

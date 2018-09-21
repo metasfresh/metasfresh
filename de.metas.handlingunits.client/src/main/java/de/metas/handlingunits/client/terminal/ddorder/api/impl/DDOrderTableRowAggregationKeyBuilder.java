@@ -28,8 +28,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -38,6 +36,8 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
+import de.metas.util.Pair;
 
 /**
  * @author al

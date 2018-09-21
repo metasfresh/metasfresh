@@ -4,10 +4,10 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Util;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

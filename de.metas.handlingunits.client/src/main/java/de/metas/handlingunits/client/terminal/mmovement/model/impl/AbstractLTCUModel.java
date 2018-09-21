@@ -26,9 +26,6 @@ import java.math.BigDecimal;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -46,6 +43,8 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
 import de.metas.handlingunits.client.terminal.mmovement.model.ILTCUModel;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Abstract LU/TU/CU editor model.

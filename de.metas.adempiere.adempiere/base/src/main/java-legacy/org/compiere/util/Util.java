@@ -50,8 +50,6 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.reflect.ClassInstanceProvider;
 import org.adempiere.util.reflect.IClassInstanceProvider;
 import org.slf4j.Logger;
@@ -62,6 +60,8 @@ import com.google.common.base.Predicates;
 import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**

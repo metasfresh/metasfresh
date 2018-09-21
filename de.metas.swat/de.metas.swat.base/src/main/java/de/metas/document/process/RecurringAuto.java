@@ -25,12 +25,12 @@ package de.metas.document.process;
 
 import java.util.Collection;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Recurring;
 
 import de.metas.document.IRecurringBL;
 import de.metas.document.IRecurringPA;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 public class RecurringAuto extends JavaProcess {
 

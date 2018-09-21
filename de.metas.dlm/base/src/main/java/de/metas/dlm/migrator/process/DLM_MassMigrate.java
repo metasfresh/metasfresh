@@ -4,9 +4,6 @@ import java.sql.ResultSet;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.DB;
@@ -17,6 +14,9 @@ import com.google.common.base.Stopwatch;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

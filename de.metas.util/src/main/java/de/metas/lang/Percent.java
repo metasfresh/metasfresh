@@ -5,9 +5,8 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 

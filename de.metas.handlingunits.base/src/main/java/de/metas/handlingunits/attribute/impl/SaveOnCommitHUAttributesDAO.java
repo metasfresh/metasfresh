@@ -28,8 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 
@@ -38,6 +36,8 @@ import com.google.common.base.Supplier;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 {

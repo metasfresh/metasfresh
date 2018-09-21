@@ -4,12 +4,13 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+
+import de.metas.util.Services;
 
 /*
  * #%L

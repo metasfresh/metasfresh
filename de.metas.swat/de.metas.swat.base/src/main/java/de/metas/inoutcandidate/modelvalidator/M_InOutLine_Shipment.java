@@ -25,11 +25,11 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.IInOutBL;
+import de.metas.util.Services;
 
 @Validator(I_M_InOutLine.class)
 public class M_InOutLine_Shipment

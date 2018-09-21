@@ -32,14 +32,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
+import de.metas.util.Check;
 
 /**
  * @author cg

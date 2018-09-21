@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.model.I_C_BPartner;
@@ -48,6 +46,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.util.Services;
+import de.metas.util.TypedAccessor;
 import lombok.NonNull;
 
 public class PickingSlotKeyBuilder

@@ -3,10 +3,6 @@ package de.metas.shipper.gateway.commons;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +14,8 @@ import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
 /*

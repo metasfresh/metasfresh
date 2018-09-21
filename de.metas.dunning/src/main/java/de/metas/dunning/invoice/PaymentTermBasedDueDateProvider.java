@@ -5,13 +5,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.invoice.InvoiceId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

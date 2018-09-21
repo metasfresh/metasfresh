@@ -46,7 +46,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MAttributeSetInstance;
@@ -64,6 +63,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 
 /**
  * Storage Engine

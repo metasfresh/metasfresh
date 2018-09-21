@@ -2,10 +2,10 @@ package de.metas.contracts.flatrate.callout;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.util.Services;
 
 @Callout(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term

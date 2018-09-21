@@ -12,13 +12,14 @@ import java.util.function.Supplier;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -28,14 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.dunning.api.IDunningEventDispatcher;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL.DunningDocLineSourceEvent;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningCandidateListener;
 import de.metas.dunning.spi.IDunningDocLineSourceListener;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class DunningEventDispatcher implements IDunningEventDispatcher

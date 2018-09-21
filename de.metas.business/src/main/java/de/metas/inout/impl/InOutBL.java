@@ -32,8 +32,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_InOut;
@@ -61,6 +59,8 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InOutBL implements IInOutBL
 {

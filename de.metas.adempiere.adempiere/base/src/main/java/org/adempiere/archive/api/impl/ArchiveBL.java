@@ -33,7 +33,6 @@ import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
@@ -46,6 +45,7 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 
 public class ArchiveBL implements IArchiveBL
 {

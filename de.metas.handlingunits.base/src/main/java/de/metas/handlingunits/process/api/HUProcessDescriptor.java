@@ -3,11 +3,11 @@ package de.metas.handlingunits.process.api;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

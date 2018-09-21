@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.storage.impl;
 import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -36,6 +35,7 @@ import com.google.common.cache.RemovalNotification;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.util.Check;
 
 /**
  * Abstract implementation of {@link IAttributeStorageFactory} which is oriented by having an underlying data-type from which we can get the {@link IAttributeStorage} in a standard way.

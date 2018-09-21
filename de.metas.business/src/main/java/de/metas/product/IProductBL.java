@@ -26,13 +26,13 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IProductBL extends ISingletonService

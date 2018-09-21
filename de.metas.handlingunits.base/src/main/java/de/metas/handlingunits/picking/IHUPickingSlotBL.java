@@ -24,8 +24,6 @@ package de.metas.handlingunits.picking;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -37,6 +35,7 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
+import de.metas.util.ISingletonService;
 import lombok.Builder.Default;
 import lombok.NonNull;
 

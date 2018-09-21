@@ -5,8 +5,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -28,6 +26,8 @@ import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.procurement.sync.protocol.SyncRfQ;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

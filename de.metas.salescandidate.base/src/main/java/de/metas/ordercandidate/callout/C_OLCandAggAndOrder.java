@@ -2,12 +2,12 @@ package de.metas.ordercandidate.callout;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.DisplayType;
 
 import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
+import de.metas.util.Check;
 
 @Callout(I_C_OLCandAggAndOrder.class)
 public class C_OLCandAggAndOrder

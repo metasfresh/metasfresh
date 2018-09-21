@@ -25,9 +25,10 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
+
+import de.metas.util.Check;
 
 public class QtyAndQualityExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {

@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 
 import javax.swing.JFrame;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 
 import de.metas.adempiere.form.terminal.IComponent;
@@ -22,6 +21,7 @@ import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.select.view.AbstractHUSelectFrame;
 import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.util.Check;
 
 /*
  * #%L

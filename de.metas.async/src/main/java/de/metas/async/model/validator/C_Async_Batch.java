@@ -5,12 +5,12 @@ package de.metas.async.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.X_C_Async_Batch_Type;
+import de.metas.util.Services;
 
 /**
  * @author cg

@@ -7,11 +7,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
-import org.adempiere.util.Check;
 
 import de.metas.lang.Percent;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

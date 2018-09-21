@@ -2,8 +2,9 @@ package org.adempiere.acct.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Currency_Acct;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

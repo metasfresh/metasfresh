@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderDAO;
@@ -23,6 +22,7 @@ import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

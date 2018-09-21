@@ -1,9 +1,9 @@
 package de.metas.payment.paymentterm;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_PaymentTerm;
 
 import de.metas.lang.Percent;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

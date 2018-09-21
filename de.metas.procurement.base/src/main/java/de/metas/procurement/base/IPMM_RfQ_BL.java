@@ -1,10 +1,9 @@
 package de.metas.procurement.base;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Validator(I_M_HU.class)

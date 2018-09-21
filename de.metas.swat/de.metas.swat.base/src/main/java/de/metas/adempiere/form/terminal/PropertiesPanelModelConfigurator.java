@@ -28,12 +28,13 @@ import java.math.BigDecimal;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_PropertiesConfig;
 import org.compiere.model.I_M_PropertiesConfig_Line;
+
+import de.metas.util.Services;
 
 /**
  * Provides configuration for Properties Panel attributes

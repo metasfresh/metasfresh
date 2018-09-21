@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
@@ -51,6 +50,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Check;
 
 /**
  * Model responsible for assigning TUs on LUs (LU zuteilen)

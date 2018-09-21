@@ -29,8 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -38,6 +36,8 @@ import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AggregationFactory implements IAggregationFactory
 {

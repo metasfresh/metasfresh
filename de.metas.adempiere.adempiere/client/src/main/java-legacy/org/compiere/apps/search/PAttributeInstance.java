@@ -30,7 +30,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -51,6 +50,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 
 /**

@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
@@ -30,6 +28,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

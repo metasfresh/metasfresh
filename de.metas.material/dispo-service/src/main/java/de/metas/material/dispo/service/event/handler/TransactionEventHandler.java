@@ -10,8 +10,6 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +41,8 @@ import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

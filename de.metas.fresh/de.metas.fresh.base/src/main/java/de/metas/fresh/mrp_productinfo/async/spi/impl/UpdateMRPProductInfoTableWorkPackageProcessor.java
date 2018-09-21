@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -15,6 +14,7 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
+import de.metas.util.Services;
 
 /*
  * #%L

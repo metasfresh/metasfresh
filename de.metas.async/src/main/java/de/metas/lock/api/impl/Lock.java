@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.lang.ObjectUtils;
 import org.slf4j.Logger;
@@ -42,6 +40,8 @@ import de.metas.lock.exceptions.LockAlreadyClosedException;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class Lock implements ILock
 {

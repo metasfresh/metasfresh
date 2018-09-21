@@ -24,8 +24,9 @@ package org.adempiere.ad.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_System;
+
+import de.metas.util.ISingletonService;
 
 public interface ISystemBL extends ISingletonService
 {

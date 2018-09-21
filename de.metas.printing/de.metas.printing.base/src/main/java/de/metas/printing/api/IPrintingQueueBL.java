@@ -28,11 +28,11 @@ import java.util.Set;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintingQueueHandler;
+import de.metas.util.ISingletonService;
 
 public interface IPrintingQueueBL extends ISingletonService
 {

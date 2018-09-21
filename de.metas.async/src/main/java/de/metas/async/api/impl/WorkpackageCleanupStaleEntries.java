@@ -31,14 +31,14 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Identify and deactivates stale {@link I_C_Queue_WorkPackage}s.

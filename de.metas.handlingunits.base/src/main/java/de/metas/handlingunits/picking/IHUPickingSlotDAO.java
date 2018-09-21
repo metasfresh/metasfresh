@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
@@ -39,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.util.ISingletonService;
 
 public interface IHUPickingSlotDAO extends ISingletonService
 {

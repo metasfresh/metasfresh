@@ -30,11 +30,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.grid.CTableColumns2GridTabSynchronizer;
 import org.compiere.grid.GridController;
 import org.compiere.grid.VTable;
 import org.compiere.model.GridTab;
+
+import de.metas.util.Check;
 
 /**
  * 

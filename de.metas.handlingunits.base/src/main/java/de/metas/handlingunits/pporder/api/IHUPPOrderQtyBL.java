@@ -1,8 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

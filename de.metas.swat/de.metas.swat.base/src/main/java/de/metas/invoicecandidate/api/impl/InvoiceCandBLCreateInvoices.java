@@ -47,11 +47,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
@@ -89,6 +84,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
+import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
@@ -834,7 +834,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	/**
 	 *
-	 * @param aggregationEngine note that this is a {@link org.adempiere.util.IMultitonService}, i.e. a service with internal state.
+	 * @param aggregationEngine note that this is a {@link de.metas.util.IMultitonService}, i.e. a service with internal state.
 	 */
 	private void aggregateAndInvoice(final IAggregationEngine aggregationEngine)
 	{

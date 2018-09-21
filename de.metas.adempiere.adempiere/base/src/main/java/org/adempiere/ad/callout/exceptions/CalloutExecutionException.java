@@ -1,7 +1,8 @@
 package org.adempiere.ad.callout.exceptions;
 
 import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class CalloutExecutionException extends CalloutException
 {	

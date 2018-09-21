@@ -3,12 +3,12 @@ package de.metas.procurement.base.model.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_C_Flatrate_Conditions;
+import de.metas.util.Services;
 
 /*
  * #%L

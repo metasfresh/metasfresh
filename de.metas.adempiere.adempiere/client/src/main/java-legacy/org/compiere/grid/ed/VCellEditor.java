@@ -27,6 +27,7 @@ import java.util.EventObject;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -37,7 +38,6 @@ import javax.swing.table.TableCellEditor;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.Services;
 import org.compiere.grid.VTable;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;

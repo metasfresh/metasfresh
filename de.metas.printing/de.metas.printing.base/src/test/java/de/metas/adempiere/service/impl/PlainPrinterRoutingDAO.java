@@ -32,13 +32,13 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.Check;
 import org.junit.Ignore;
 
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.printing.model.I_AD_PrinterRouting;
+import de.metas.util.Check;
 
 @Ignore
 public class PlainPrinterRoutingDAO implements IPrinterRoutingDAO

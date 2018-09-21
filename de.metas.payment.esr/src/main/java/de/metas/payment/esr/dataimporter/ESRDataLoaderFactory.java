@@ -2,12 +2,11 @@ package de.metas.payment.esr.dataimporter;
 
 import java.io.InputStream;
 
-import org.adempiere.util.Check;
-
 import de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRDataImporterV11;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.X_ESR_Import;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

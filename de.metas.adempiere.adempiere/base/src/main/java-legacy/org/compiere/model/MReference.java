@@ -41,8 +41,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.Services;
 
 /**
  * Note: maybe what you are looking for is here: {@link DisplayType}.

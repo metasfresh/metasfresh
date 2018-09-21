@@ -26,12 +26,12 @@ package de.metas.freighcost.api;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.MOrder;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
+import de.metas.util.ISingletonService;
 
 /**
  * 

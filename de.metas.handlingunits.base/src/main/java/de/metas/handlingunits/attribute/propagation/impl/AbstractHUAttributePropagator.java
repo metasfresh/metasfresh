@@ -3,7 +3,6 @@ package de.metas.handlingunits.attribute.propagation.impl;
 import java.util.Objects;
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 
 /*
@@ -37,6 +36,7 @@ import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagatorFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public abstract class AbstractHUAttributePropagator implements IHUAttributePropagator
 {

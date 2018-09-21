@@ -58,9 +58,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
@@ -76,6 +74,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

@@ -6,7 +6,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -24,6 +23,7 @@ import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.compiere.model.X_C_NonBusinessDay;
 
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 
 /*

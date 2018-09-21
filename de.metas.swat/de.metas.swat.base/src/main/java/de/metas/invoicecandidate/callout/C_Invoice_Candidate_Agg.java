@@ -2,10 +2,10 @@ package de.metas.invoicecandidate.callout;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.util.Services;
 
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.util.Services;
 
 @Callout(I_C_Invoice_Candidate_Agg.class)
 public class C_Invoice_Candidate_Agg

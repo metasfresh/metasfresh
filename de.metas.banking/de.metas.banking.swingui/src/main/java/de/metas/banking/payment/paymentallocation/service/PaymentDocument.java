@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -36,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
+import de.metas.util.Check;
 
 /**
  * Mutable payment allocation candidate.

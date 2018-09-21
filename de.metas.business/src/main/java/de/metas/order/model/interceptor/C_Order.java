@@ -10,8 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 
@@ -22,6 +20,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.IOrderPA;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

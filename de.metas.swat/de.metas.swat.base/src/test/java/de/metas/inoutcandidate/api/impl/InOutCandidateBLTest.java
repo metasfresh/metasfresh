@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -38,6 +37,7 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.expectations.InOutLineExpectation;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.QtyAndQualityExpectation;
+import de.metas.util.Services;
 
 public class InOutCandidateBLTest
 {

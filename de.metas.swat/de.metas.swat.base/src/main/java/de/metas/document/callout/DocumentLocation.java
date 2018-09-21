@@ -2,7 +2,6 @@ package de.metas.document.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -10,6 +9,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
+import de.metas.util.Services;
 
 public class DocumentLocation extends CalloutEngine
 {

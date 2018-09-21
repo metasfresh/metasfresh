@@ -26,11 +26,11 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.util.ISingletonService;
 
 /**
  *
@@ -73,7 +73,7 @@ public interface IInvoiceLineBL extends ISingletonService
 	 *
 	 * @param invoiceLine
 	 * @return C_TaxCategory_ID
-	 * @see org.adempiere.util.Check#assume(boolean, String, Object...)
+	 * @see de.metas.util.Check#assume(boolean, String, Object...)
 	 */
 	int getC_TaxCategory_ID(org.compiere.model.I_C_InvoiceLine invoiceLine);
 

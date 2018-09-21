@@ -39,12 +39,12 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>

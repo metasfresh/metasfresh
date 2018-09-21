@@ -4,14 +4,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
@@ -16,6 +15,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public class OrderLine extends CalloutEngine
 {

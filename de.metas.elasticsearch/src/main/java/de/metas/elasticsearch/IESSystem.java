@@ -1,10 +1,9 @@
 package de.metas.elasticsearch;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

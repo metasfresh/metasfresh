@@ -2,9 +2,8 @@ package de.metas.order.compensationGroup;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
-
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

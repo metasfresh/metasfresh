@@ -11,9 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
@@ -27,6 +24,9 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliver
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
@@ -49,6 +48,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
+import de.metas.util.Services;
 
 /**
  * HR Process Model

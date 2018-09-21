@@ -2,8 +2,6 @@ package de.metas.procurement.base.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -14,6 +12,8 @@ import com.google.common.base.Optional;
 
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

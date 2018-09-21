@@ -27,8 +27,9 @@ import org.adempiere.ad.dao.cache.IMutableTableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
-import org.adempiere.util.Check;
 import org.compiere.util.CCache.CacheMapType;
+
+import de.metas.util.Check;
 
 /* package */class TableCacheConfigBuilder implements ITableCacheConfigBuilder
 {

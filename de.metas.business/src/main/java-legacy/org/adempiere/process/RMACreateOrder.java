@@ -18,7 +18,6 @@
 package org.adempiere.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -28,6 +27,7 @@ import org.compiere.model.MRMALine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  *  Creates Order from RMA document

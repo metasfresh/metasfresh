@@ -9,12 +9,12 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 
 public final class DocumentBL extends AbstractDocumentBL
 {

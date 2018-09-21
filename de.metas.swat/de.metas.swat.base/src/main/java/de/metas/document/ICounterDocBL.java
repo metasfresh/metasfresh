@@ -1,10 +1,10 @@
 package de.metas.document;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.spi.ICounterDocHandler;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

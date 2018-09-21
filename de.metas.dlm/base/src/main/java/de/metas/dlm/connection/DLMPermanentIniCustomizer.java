@@ -2,8 +2,9 @@ package de.metas.dlm.connection;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Ini;
+
+import de.metas.util.Check;
 
 /*
  * #%L

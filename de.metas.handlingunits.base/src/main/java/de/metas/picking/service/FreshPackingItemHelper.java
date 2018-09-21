@@ -2,11 +2,10 @@ package de.metas.picking.service;
 
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

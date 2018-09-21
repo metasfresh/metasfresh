@@ -3,13 +3,13 @@ package org.adempiere.ad.table.process;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 import org.compiere.util.DB;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L

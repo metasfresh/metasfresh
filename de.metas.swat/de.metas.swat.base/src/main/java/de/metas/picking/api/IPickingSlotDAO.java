@@ -3,9 +3,8 @@ package de.metas.picking.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;

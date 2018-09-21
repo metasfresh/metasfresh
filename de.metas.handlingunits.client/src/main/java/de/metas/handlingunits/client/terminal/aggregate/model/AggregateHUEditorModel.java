@@ -36,8 +36,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullSafeComparator;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.DisplayType;
@@ -52,6 +50,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Verdichtung (POS) HU Editor Model (second window)

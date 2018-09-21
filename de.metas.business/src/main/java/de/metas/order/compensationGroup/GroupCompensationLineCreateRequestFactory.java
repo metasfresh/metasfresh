@@ -3,7 +3,6 @@ package de.metas.order.compensationGroup;
 import java.math.BigDecimal;
 
 import org.adempiere.uom.UomId;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_OrderLine;
@@ -18,6 +17,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

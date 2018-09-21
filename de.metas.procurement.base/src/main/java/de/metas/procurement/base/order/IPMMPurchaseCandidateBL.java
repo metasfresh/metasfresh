@@ -2,11 +2,10 @@ package de.metas.procurement.base.order;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

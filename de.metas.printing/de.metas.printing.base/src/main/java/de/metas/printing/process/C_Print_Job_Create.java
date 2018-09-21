@@ -28,11 +28,12 @@ package de.metas.printing.process;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.adempiere.util.Check;
+
 import org.compiere.model.Query;
 
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Check;
 
 /**
  * Process all {@link I_C_Printing_Queue}s from user selection and create corresponding {@link I_C_Print_Job}s

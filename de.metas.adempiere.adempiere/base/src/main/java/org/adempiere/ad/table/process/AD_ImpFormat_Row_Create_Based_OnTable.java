@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
@@ -16,6 +15,7 @@ import org.compiere.model.X_AD_ImpFormat_Row;
 import org.compiere.util.DisplayType;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.model.I_M_Product_PlanningSchema;
+import de.metas.util.Check;
 
 /*
  * #%L

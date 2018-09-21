@@ -27,7 +27,6 @@ package de.metas.picking.terminal;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.slf4j.Logger;
 
@@ -41,6 +40,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * @author cg

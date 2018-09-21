@@ -25,12 +25,11 @@ package de.metas.handlingunits.client.terminal.mmovement.model.join.service;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.ISingletonService;
 
 public interface ILUTUJoinOrMergeBL extends ISingletonService
 {

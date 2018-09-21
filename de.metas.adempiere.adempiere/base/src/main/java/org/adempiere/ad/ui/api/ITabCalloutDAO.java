@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.I_AD_Tab_Callout;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface ITabCalloutDAO extends ISingletonService
 {

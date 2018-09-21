@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,6 +39,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Services;
 
 /**
  * NOTE: Tests propagation WITH TareAdjust CONSTANT ZERO.

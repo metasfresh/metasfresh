@@ -28,11 +28,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -53,6 +49,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.time.SystemTime;
 
 /**
  * Tool used to take a given Qty from a given VHU and load it to each given TUs.

@@ -6,11 +6,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Services;
-
 import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Services;
 
 /*
  * #%L

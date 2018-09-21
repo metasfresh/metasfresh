@@ -35,7 +35,6 @@ import org.adempiere.impexp.inventory.InventoryImportProcess;
 import org.adempiere.impexp.product.ProductImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_I_Inventory;
@@ -47,6 +46,7 @@ import com.google.common.base.Supplier;
 
 import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
+import de.metas.util.Check;
 
 public class ImportProcessFactory implements IImportProcessFactory
 {

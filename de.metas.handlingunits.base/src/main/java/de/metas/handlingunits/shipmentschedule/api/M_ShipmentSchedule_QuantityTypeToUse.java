@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 

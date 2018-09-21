@@ -1,10 +1,10 @@
 package org.adempiere.util.logging;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
 
 /*
  * #%L

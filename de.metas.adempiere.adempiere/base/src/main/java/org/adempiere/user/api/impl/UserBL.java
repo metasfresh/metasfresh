@@ -18,8 +18,6 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -34,6 +32,8 @@ import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class UserBL implements IUserBL
 {

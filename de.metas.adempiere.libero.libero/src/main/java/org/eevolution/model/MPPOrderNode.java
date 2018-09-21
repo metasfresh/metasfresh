@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -54,6 +53,7 @@ import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderWorkflowBL;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * PP Order Workflow Node Model

@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -42,6 +41,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Services;
 
 public class ESRImportDAO extends AbstractESRImportDAO
 {

@@ -41,9 +41,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
@@ -65,6 +62,9 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL

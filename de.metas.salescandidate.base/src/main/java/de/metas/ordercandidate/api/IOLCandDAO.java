@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.util.ISingletonService;
 
 public interface IOLCandDAO extends ISingletonService
 {

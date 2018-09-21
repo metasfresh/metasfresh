@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MInOut;
@@ -41,6 +40,7 @@ import de.metas.dpd.service.IDPDRoutingService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public class PackageLabel extends JavaProcess
 {

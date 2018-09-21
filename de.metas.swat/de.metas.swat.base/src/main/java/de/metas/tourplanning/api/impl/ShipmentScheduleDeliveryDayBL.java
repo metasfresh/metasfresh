@@ -28,7 +28,6 @@ import java.sql.Timestamp;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -37,6 +36,7 @@ import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryDayBL

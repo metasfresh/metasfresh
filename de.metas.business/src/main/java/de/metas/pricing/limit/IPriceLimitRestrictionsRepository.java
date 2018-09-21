@@ -3,7 +3,7 @@ package de.metas.pricing.limit;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

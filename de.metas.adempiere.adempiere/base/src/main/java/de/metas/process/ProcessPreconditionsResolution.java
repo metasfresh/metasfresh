@@ -4,15 +4,14 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

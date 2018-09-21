@@ -30,8 +30,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -47,6 +45,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class QualityInspectionOrder implements IQualityInspectionOrder
 {

@@ -28,12 +28,12 @@ import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.service.ITaskExecutorService;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.storage.IStorageListener;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class StorageListeners implements IStorageListeners
 {

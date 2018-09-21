@@ -26,9 +26,9 @@ package org.adempiere.appdict.validation.spi.impl;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Check;
 
 public class ADJavaClassTypeValidator extends AbstractADValidator<I_AD_JavaClass_Type>
 {

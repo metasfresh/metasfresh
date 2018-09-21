@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -15,6 +13,8 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

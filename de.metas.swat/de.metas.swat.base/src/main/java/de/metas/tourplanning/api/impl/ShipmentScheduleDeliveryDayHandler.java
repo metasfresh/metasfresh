@@ -26,7 +26,6 @@ package de.metas.tourplanning.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -37,6 +36,7 @@ import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.spi.DeliveryDayHandlerAdapter;
 import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandlerAdapter implements IDeliveryDayCreateHandler

@@ -42,11 +42,12 @@ import org.adempiere.facet.IFacet;
 import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetFilterable;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.GridTab;
 import org.compiere.model.MQuery;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps a {@link GridTab} and make it behave like an {@link IFacetFilterable}.

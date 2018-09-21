@@ -2,8 +2,6 @@ package de.metas.shipper.gateway.derkurier.misc;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +17,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -31,7 +31,6 @@ import java.text.DateFormat;
 
 import javax.swing.TransferHandler;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
@@ -43,6 +42,7 @@ import org.slf4j.Logger;
 
 import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class AttachmentDnDTransferHandler extends TransferHandler
 {

@@ -1,7 +1,6 @@
 package de.metas.inout.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -12,6 +11,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcessPrecondition
 {

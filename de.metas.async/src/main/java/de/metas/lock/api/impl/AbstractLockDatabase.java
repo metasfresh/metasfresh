@@ -28,8 +28,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -44,6 +42,8 @@ import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Abstract lock database which does not implement any database specific logic.

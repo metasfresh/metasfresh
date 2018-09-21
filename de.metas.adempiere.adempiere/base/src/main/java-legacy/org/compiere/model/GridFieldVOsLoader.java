@@ -9,7 +9,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -17,6 +16,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

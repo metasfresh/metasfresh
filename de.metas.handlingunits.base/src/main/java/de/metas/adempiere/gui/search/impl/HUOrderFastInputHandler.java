@@ -26,13 +26,13 @@ package de.metas.adempiere.gui.search.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.model.GridTab;
 
 import de.metas.adempiere.callout.IOrderFastInputHandler;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.util.Services;
 
 public class HUOrderFastInputHandler implements IOrderFastInputHandler
 {

@@ -26,14 +26,14 @@ package de.metas.handlingunits.attributes.sscc18.impl;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class SSCC18CodeBL implements ISSCC18CodeBL
 {

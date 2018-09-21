@@ -29,10 +29,11 @@ import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.MColumn;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Services;
 
 @Validator(I_AD_ColumnCallout.class)
 public class AD_ColumnCallout

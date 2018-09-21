@@ -26,11 +26,11 @@ package de.metas.processor.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_AD_POProcessor;
 import de.metas.processor.spi.IPOProcessor;
+import de.metas.util.ISingletonService;
 
 public interface IPOProcessorBL extends ISingletonService
 {

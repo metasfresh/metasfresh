@@ -25,7 +25,7 @@ package de.metas.aggregation.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * Factory service used to create {@link IAggregationKeyBuilder}s.

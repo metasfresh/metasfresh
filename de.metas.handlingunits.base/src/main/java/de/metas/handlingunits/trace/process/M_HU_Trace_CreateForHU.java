@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOutLine;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

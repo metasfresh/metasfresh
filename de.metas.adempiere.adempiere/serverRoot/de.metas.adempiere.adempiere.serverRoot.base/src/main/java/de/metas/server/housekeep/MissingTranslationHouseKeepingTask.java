@@ -1,9 +1,9 @@
 package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.util.Services;
 
 import de.metas.i18n.ILanguageDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -6,7 +6,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.contracts.IContractChangeBL;
@@ -16,6 +15,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 
 public class C_Flatrate_Term_Change extends JavaProcess
 {

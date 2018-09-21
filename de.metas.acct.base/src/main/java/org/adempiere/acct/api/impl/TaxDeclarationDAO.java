@@ -25,9 +25,11 @@ package org.adempiere.acct.api.impl;
 
 import org.adempiere.acct.api.ITaxDeclarationDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import org.compiere.model.I_C_TaxDeclaration;
 import org.compiere.model.I_C_TaxDeclarationAcct;
 import org.compiere.model.I_C_TaxDeclarationLine;

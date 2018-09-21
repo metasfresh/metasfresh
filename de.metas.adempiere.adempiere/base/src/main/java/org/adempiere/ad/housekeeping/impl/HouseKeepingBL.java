@@ -27,10 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.LoggerLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
@@ -38,6 +35,9 @@ import com.google.common.base.Stopwatch;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HouseKeepingBL implements IHouseKeepingBL

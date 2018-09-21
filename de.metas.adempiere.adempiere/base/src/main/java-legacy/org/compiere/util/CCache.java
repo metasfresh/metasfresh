@@ -33,7 +33,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -47,6 +46,7 @@ import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

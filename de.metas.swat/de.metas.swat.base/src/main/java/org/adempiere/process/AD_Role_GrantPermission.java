@@ -30,11 +30,11 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.RolePermGrandAccess;
-import org.adempiere.util.Services;
 import org.compiere.model.MRolePermRequest;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Grant Permission

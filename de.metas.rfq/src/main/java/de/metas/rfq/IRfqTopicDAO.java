@@ -2,11 +2,10 @@ package de.metas.rfq;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriberOnly;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -52,6 +50,8 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.model.X_C_DunningDoc;
 import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DefaultDunningProducer implements IDunningProducer
 {

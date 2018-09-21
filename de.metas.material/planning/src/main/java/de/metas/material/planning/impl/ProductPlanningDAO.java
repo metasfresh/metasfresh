@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -48,6 +47,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProductPlanningDAO implements IProductPlanningDAO

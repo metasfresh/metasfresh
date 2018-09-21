@@ -26,12 +26,12 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Services;
 
 /**
  * Payment Callouts. org.compiere.model.CalloutPayment.*

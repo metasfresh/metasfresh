@@ -31,7 +31,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
@@ -46,6 +45,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.util.Services;
 
 @Callout(I_C_Invoice.class)
 @Component("de.metas.invoice.callout.C_Invoice")

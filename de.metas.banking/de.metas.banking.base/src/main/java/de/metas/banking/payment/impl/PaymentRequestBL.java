@@ -26,8 +26,6 @@ package de.metas.banking.payment.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 
@@ -37,6 +35,8 @@ import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author al

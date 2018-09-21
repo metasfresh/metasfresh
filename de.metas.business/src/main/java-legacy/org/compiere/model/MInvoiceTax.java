@@ -25,7 +25,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -35,6 +34,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  * Invoice Tax Model

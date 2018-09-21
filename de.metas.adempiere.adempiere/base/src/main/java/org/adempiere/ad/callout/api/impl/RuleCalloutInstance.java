@@ -32,8 +32,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Rule;
@@ -47,6 +45,8 @@ import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class RuleCalloutInstance implements ICalloutInstance
 {

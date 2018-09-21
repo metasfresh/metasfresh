@@ -3,10 +3,10 @@ package de.metas.inout.api;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -29,13 +29,13 @@ package de.metas.tourplanning.api;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.ISingletonService;
 
 /**
  * {@link I_M_DeliveryDay} related DAO

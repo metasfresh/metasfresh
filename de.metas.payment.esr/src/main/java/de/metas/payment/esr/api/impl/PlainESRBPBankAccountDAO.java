@@ -30,11 +30,11 @@ import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.model.I_AD_Org;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.util.TypedAccessor;
 
 public class PlainESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 {	

@@ -1,7 +1,6 @@
 package org.compiere.report.email.service.impl;
 
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 
 /**
  * Returns generic email parameters for a process that contains a

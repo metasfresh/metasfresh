@@ -11,11 +11,11 @@ import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.util.Services;
 
 /*
  * #%L

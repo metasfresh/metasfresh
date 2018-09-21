@@ -24,11 +24,12 @@ package org.eevolution.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_CostDetail;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorDAO extends ISingletonService
 {

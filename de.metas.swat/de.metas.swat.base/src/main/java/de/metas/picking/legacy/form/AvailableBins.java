@@ -26,10 +26,10 @@ package de.metas.picking.legacy.form;
 import java.util.Properties;
 
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 
 import de.metas.product.IProductPA;
+import de.metas.util.Services;
 
 public class AvailableBins implements Comparable<AvailableBins>
 {

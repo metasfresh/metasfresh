@@ -3,7 +3,7 @@ package de.metas.session.jaxrs;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

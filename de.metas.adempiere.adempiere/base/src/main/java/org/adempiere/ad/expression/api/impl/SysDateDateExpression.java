@@ -7,11 +7,12 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

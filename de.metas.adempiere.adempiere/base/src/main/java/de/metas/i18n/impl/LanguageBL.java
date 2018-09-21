@@ -4,8 +4,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -18,6 +16,8 @@ import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class LanguageBL implements ILanguageBL
 {

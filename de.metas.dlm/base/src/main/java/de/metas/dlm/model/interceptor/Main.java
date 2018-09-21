@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.connection.IConnectionCustomizerService;
@@ -16,6 +15,7 @@ import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.coordinator.impl.LastUpdatedInspector;
 import de.metas.dlm.exception.DLMReferenceExceptionWrapper;
 import de.metas.dlm.po.UnArchiveRecordHandler;
+import de.metas.util.Services;
 
 /*
  * #%L

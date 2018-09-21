@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.util.Ini;
 
@@ -49,6 +47,8 @@ import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.process.RunOutOfTrx;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess

@@ -2,11 +2,11 @@ package de.metas.printing.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_PrinterHW_MediaTray.class)
 public class AD_PrinterHW_MediaTray

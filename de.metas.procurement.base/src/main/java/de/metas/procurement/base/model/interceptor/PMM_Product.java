@@ -6,13 +6,13 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.Services;
 
 /*
  * #%L

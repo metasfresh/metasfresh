@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -46,6 +45,7 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
 
 public class DunningDAO extends AbstractDunningDAO
 {

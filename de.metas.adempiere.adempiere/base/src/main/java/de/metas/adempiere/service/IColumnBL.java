@@ -4,7 +4,8 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

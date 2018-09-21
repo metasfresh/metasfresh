@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.strategy.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -33,6 +32,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.util.Check;
 
 /* package */final class HUAttributeTransferRequest implements IHUAttributeTransferRequest
 {

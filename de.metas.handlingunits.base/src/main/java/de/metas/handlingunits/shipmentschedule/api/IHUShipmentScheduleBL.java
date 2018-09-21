@@ -3,7 +3,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -13,6 +12,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
 {

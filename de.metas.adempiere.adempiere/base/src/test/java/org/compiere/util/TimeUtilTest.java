@@ -38,9 +38,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.util.time.SystemTime;
 
 /**
  * @author Teo Sarca

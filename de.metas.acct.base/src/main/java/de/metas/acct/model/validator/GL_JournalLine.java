@@ -33,7 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
@@ -41,6 +40,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 
 import de.metas.acct.spi.impl.GLJournalLineCopyRecordSupport;
+import de.metas.util.Services;
 
 @Interceptor(I_GL_JournalLine.class)
 public class GL_JournalLine

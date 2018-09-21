@@ -27,12 +27,12 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.util.Services;
 
 public class WarehouseDAO implements IWarehouseDAO
 {

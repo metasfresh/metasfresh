@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -49,6 +48,7 @@ import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

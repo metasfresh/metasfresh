@@ -1,6 +1,5 @@
 package org.adempiere.service;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -9,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

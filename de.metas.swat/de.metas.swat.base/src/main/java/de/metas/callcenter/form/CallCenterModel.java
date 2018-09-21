@@ -33,7 +33,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
-import org.adempiere.util.Services;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
@@ -62,6 +61,7 @@ import de.metas.callcenter.model.I_R_RequestUpdate;
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * 

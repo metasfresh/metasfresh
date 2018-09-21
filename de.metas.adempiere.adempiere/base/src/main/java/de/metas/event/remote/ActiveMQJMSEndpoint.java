@@ -44,8 +44,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.transport.TransportListener;
@@ -65,6 +63,8 @@ import de.metas.jms.IJMSService;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint

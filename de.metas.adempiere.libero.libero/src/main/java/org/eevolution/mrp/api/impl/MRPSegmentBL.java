@@ -35,8 +35,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -50,6 +48,8 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MRPSegmentBL implements IMRPSegmentBL
 {

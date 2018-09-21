@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.async.api.IAsyncBatchBL;
@@ -16,6 +15,7 @@ import de.metas.letter.service.async.spi.impl.C_Letter_CreateFromMKTG_ContactPer
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

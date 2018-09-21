@@ -1,6 +1,5 @@
 package de.metas.report.xls.engine;
 
-import org.adempiere.util.Check;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jxls.area.Area;
@@ -16,6 +15,7 @@ import org.jxls.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

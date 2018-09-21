@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -43,6 +42,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

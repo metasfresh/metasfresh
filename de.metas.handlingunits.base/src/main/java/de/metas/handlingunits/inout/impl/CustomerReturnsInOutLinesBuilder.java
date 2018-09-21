@@ -1,6 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_M_InOut;
 
@@ -8,6 +7,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

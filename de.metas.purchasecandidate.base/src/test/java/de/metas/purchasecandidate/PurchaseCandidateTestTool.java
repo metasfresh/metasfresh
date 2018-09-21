@@ -4,7 +4,6 @@ import java.time.temporal.ChronoUnit;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
@@ -16,6 +15,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

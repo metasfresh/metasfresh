@@ -28,8 +28,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -48,6 +46,8 @@ import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class TUMergeBuilder implements ITUMergeBuilder
 {

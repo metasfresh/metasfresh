@@ -26,13 +26,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.util.Services;
 
 /**
  * Code moved here form de.metas.swat de.metas.banking.model.MBankStatementLineRef.

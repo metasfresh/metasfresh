@@ -24,9 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -34,6 +31,9 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Inventory Storage Model

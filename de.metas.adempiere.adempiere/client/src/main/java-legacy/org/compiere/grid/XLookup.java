@@ -21,13 +21,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.util.Check;
 import org.compiere.model.Lookup;
 import org.compiere.model.MQuery;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.util.Check;
 
 /**
  *  Manual Lookup (Model)- loaded by the put method

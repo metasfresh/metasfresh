@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -63,6 +62,7 @@ import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

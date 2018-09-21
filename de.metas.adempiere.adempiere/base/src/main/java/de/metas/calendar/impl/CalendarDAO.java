@@ -28,11 +28,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.Query;
+
+import de.metas.util.Check;
 
 public class CalendarDAO extends AbstractCalendarDAO
 {

@@ -45,9 +45,9 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

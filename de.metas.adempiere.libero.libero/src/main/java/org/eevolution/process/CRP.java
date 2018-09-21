@@ -44,7 +44,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
@@ -57,6 +56,7 @@ import org.eevolution.model.MPPOrderWorkflow;
 import org.eevolution.model.reasoner.CRPReasoner;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;

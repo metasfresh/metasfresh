@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.async.api.IAsyncBatchBuilder;
@@ -36,6 +34,8 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class AsyncBatchBuilder implements IAsyncBatchBuilder
 {

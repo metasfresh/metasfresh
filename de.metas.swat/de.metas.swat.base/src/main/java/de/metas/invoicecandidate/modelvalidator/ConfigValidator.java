@@ -39,7 +39,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -64,6 +63,7 @@ import de.metas.invoicecandidate.housekeeping.sqi.impl.Reset_C_Invoice_Candidate
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
+import de.metas.util.Services;
 
 /**
  * Main Invoice Candidates validator

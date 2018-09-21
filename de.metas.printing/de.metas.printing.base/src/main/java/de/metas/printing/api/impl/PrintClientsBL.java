@@ -27,13 +27,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 
 import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_Print_Clients;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class PrintClientsBL implements IPrintClientsBL
 {

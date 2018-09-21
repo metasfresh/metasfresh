@@ -27,12 +27,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
 
 import de.metas.shipping.api.IShipperDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ShipperDAO implements IShipperDAO
 {

@@ -27,10 +27,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Role_Included;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.util.ISingletonService;
 
 /**
  * {@link I_AD_Role} related DAO.

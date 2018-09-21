@@ -26,7 +26,6 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.MockedAllocationSourceDestination;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.util.Services;
 
 /**
  *

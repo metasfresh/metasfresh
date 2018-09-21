@@ -31,8 +31,6 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -40,6 +38,8 @@ import org.compiere.util.TimeUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 {

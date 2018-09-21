@@ -1,7 +1,6 @@
 package de.metas.rfq.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQ;
@@ -9,6 +8,7 @@ import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.Services;
 
 /*
  * #%L

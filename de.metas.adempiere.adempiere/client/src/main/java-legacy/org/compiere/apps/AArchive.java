@@ -25,7 +25,6 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.ArchiveViewer;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_C_BPartner;
@@ -36,6 +35,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 
 /**

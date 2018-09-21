@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.junit.Test;
@@ -31,6 +30,7 @@ import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
@@ -38,6 +36,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

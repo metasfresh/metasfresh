@@ -25,10 +25,11 @@ package org.adempiere.context;
 
 import java.util.Properties;
 
-import org.adempiere.util.AbstractPropertiesProxy;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
+
+import de.metas.util.AbstractPropertiesProxy;
+import de.metas.util.Check;
 
 /* package */final class ThreadLocalServerContext extends AbstractPropertiesProxy
 {

@@ -1,10 +1,9 @@
 package de.metas.dlm.migrator;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.model.IDLMAware;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

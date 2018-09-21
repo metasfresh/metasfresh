@@ -45,9 +45,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
@@ -65,6 +63,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *	Grid Table Model for JDBC access including buffering.

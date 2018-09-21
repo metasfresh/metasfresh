@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

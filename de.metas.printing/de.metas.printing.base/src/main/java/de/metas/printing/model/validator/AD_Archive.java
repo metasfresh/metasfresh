@@ -26,7 +26,6 @@ package de.metas.printing.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.printing.api.IPrintJobBL;
@@ -36,6 +35,7 @@ import de.metas.printing.api.impl.SingletonPrintingQueueSource;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Services;
 
 @Validator(I_AD_Archive.class)
 public class AD_Archive

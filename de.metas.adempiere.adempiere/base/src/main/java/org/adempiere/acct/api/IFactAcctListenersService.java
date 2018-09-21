@@ -1,6 +1,6 @@
 package org.adempiere.acct.api;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

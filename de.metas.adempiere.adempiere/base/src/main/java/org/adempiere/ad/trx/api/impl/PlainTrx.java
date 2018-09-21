@@ -31,13 +31,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.exceptions.TrxException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Plain implementation of {@link ITrx}.

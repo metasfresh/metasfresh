@@ -8,12 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.letters.spi.INotifyAsyncBatch;
+import de.metas.util.Check;
 
 /**
  * @author cg

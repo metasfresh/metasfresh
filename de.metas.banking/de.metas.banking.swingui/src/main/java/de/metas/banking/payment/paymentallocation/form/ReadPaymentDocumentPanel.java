@@ -51,8 +51,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -80,6 +78,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.LogManager;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
 
 class ReadPaymentDocumentPanel

@@ -27,14 +27,14 @@ package de.metas.invoicecandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

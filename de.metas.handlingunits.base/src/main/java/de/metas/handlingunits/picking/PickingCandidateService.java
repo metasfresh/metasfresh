@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +24,7 @@ import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCo
 import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

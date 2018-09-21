@@ -25,12 +25,11 @@ package de.metas.tourplanning.spi;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
-
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Check;
 
 public class CompositeDeliveryDayHandler implements IDeliveryDayHandler
 {

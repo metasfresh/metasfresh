@@ -38,7 +38,6 @@ import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
@@ -57,6 +56,7 @@ import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
+import de.metas.util.Services;
 
 public class ProductPA implements IProductPA
 {

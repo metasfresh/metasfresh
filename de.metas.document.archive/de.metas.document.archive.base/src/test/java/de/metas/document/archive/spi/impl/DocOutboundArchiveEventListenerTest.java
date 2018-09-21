@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
@@ -50,6 +49,7 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, DocOutboundLogMailRecipientRegistry.class })

@@ -3,11 +3,11 @@ package de.metas.material.dispo.commons.repository.atp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

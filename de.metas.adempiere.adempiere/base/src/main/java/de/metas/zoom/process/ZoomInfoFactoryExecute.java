@@ -4,11 +4,11 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
 
 /*
  * #%L

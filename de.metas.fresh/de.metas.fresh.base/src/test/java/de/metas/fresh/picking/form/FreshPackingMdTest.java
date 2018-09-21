@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -52,6 +51,7 @@ import de.metas.inoutcandidate.api.impl.Packageable;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 public class FreshPackingMdTest
 {

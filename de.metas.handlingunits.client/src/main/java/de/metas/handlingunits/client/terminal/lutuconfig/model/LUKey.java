@@ -25,12 +25,11 @@ package de.metas.handlingunits.client.terminal.lutuconfig.model;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 
 public class LUKey extends AbstractLUTUKey
 {

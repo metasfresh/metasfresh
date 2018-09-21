@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +30,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.util.Services;
 
 /*
  * #%L

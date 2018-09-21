@@ -8,9 +8,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -24,6 +22,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

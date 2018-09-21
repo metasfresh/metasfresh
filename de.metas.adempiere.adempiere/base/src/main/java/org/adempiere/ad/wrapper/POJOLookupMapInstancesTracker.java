@@ -32,10 +32,11 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.WeakList;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
+
+import de.metas.util.Services;
+import de.metas.util.WeakList;
 
 /**
  * Tool which is plugged into {@link POJOLookupMap} and makes sure that only one object instance for a given table record is returned by system.

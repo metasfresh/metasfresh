@@ -26,7 +26,8 @@ import java.util.Optional;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.TypedAccessor;
+
+import de.metas.util.TypedAccessor;
 
 public class ModelAccessor<T> implements TypedAccessor<T>
 {

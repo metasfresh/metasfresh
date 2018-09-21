@@ -26,8 +26,6 @@ package de.metas.handlingunits.expectations;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_UOM;
@@ -40,6 +38,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

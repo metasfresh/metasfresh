@@ -29,9 +29,6 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
@@ -44,6 +41,9 @@ import de.metas.currency.ICurrencyConversionResult;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class CurrencyBL implements ICurrencyBL
 {

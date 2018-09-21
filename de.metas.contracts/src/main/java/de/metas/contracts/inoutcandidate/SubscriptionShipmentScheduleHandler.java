@@ -15,12 +15,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
@@ -52,6 +48,10 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.product.IProductBL;
 import de.metas.storage.impl.ImmutableStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler

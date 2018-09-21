@@ -34,8 +34,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAggregator;
+
+import de.metas.util.Check;
 
 
 

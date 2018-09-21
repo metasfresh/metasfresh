@@ -28,7 +28,7 @@ import de.metas.logging.LogManager;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -37,6 +37,7 @@ import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
+import de.metas.util.Services;
 
 /**
  * The job of this handler is

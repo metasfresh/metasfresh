@@ -12,12 +12,13 @@ import java.util.TreeMap;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+
+import de.metas.util.Check;
 
 /*
  * #%L

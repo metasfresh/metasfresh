@@ -25,12 +25,11 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.banking.payment.paymentallocation.model.IInvoiceCandidateRow;
 import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
+import de.metas.util.ISingletonService;
 
 public interface IPaymentAllocationFormDAO extends ISingletonService
 {

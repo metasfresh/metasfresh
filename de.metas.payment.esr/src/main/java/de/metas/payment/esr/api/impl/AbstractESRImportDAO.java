@@ -32,8 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.util.comparator.ComparatorChain;
@@ -50,6 +48,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Services;
+import de.metas.util.TypedAccessor;
 
 public abstract class AbstractESRImportDAO implements IESRImportDAO
 {

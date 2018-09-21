@@ -32,7 +32,6 @@ import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.service.impl.PlainSysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +39,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+
+import de.metas.util.Services;
 
 public class LogicExpressionCompilerTests
 {

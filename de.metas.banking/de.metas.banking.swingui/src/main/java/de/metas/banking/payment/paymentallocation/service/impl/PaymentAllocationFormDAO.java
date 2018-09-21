@@ -36,8 +36,6 @@ import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.FindHelper;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
@@ -60,6 +58,8 @@ import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 {

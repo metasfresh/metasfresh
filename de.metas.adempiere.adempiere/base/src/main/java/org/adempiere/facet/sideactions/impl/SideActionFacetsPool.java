@@ -43,7 +43,8 @@ import org.adempiere.ui.sideactions.model.ISideActionExecuteDelegate;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Wraps an {@link ISideActionsGroupsListModel} to {@link IFacetsPool}.

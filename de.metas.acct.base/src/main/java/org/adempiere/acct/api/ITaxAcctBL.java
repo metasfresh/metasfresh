@@ -25,10 +25,11 @@ package org.adempiere.acct.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Tax Accounting

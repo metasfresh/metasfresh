@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
@@ -25,6 +24,7 @@ import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

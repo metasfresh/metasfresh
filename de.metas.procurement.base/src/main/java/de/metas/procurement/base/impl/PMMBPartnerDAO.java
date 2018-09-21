@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.procurement.base.IPMMBPartnerDAO;
 import de.metas.procurement.base.model.I_AD_User;
+import de.metas.util.Services;
 
 /*
  * #%L

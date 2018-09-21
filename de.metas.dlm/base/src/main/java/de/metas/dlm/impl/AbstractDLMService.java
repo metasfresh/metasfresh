@@ -18,9 +18,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
@@ -51,6 +48,9 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

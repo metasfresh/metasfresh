@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.trigger.ESDocumentIndexTriggerInterceptor;
 import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor;
 import de.metas.elasticsearch.trigger.ESOnChangeTriggerInterceptor.ESOnChangeTriggerInterceptorBuilder;
+import de.metas.util.Check;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import lombok.AccessLevel;
 import lombok.Getter;

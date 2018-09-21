@@ -9,13 +9,13 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionCompiler;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

@@ -1,11 +1,10 @@
 package de.metas.contracts.refund.exceedingqty;
 
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.Mutable;
@@ -27,6 +26,7 @@ import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

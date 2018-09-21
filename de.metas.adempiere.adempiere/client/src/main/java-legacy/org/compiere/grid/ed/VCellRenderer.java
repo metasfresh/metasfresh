@@ -31,9 +31,7 @@ import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.ITableColorProvider;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.Services;
 import org.compiere.grid.GridController;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTabLayoutMode;
@@ -44,6 +42,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Table Cell Renderer based on DisplayType

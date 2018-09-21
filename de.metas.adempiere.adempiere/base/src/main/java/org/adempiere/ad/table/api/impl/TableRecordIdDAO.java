@@ -17,7 +17,6 @@ import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.proxy.Cached;
@@ -33,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

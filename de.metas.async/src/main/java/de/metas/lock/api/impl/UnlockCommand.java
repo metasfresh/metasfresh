@@ -28,8 +28,6 @@ import java.util.concurrent.Future;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.FutureValue;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
@@ -38,6 +36,8 @@ import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.lock.spi.ILockDatabase;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class UnlockCommand implements IUnlockCommand
 {

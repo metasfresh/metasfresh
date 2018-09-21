@@ -33,9 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -46,6 +43,9 @@ import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  * Helper class used to filter/match {@link I_M_HU_Attribute}s, {@link IAttributeSet}s.

@@ -29,7 +29,6 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.MLocator;
 import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
@@ -44,6 +43,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 @Callout(I_DD_OrderLine.class)
 public class DD_OrderLine
