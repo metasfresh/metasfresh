@@ -18,6 +18,14 @@ const plugins = [
   }),
   new WebpackGitHash(),
 ];
+const entries = {
+  index: [
+    'webpack-dev-server/client?http://localhost:3000',
+    'webpack/hot/only-dev-server',
+    'babel-polyfill',
+    './src/index.jsx',
+  ],
+};
 
 if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
   plugins.push(
@@ -25,20 +33,17 @@ if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
       PLUGINS: JSON.stringify([]),
     })
   );
+} else {
+  entries.plugins = './plugins.js';
 }
 
 module.exports = {
   mode: 'development',
   devtool: 'eval',
-  entry: [
-    'webpack-dev-server/client?http://localhost:3000',
-    'webpack/hot/only-dev-server',
-    'babel-polyfill',
-    './src/index.jsx',
-  ],
+  entry: entries,
   output: {
     path: '/',
-    filename: 'bundle-[hash]-git-[githash].js',
+    filename: '[name].bundle-[hash]-git-[githash].js',
     publicPath: '/',
   },
   plugins,
