@@ -79,6 +79,8 @@ Here come the actual release notes:
     * Fixes a Number Fomat Exception in Webcam Foto Upload of Material Receipt Candidates.
   * [#4602](https://github.com/metasfresh/metasfresh/issues/4602) Cannot complete flatrate term conditions / transition in swing
     * Fixes a Null Pointer Exception in metasfresh Swing Client when completing flatrate term conditions.
+  * [#4623](https://github.com/metasfresh/metasfresh/issues/4623) Invoice candidate recompute flag not always removed in webui
+    * Fixes the behavior of the Invoice Candidate recompute flag for some minor cases.
   
 
 * metasfresh-webui-api

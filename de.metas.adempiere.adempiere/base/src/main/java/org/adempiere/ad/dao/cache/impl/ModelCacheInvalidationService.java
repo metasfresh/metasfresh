@@ -77,8 +77,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		if (timing != ModelCacheInvalidationTiming.NEW)
 		{
 			final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
-			request.getRecordsEffective()
-					.forEach(record -> modelCacheService.invalidate(record.getTableName(), record.getRecord_ID(), ITrx.TRXNAME_ThreadInherited));
+			modelCacheService.invalidate(request);
 		}
 
 		//
