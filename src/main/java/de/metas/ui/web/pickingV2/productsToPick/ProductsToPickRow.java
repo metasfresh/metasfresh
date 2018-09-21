@@ -2,9 +2,11 @@ package de.metas.ui.web.pickingV2.productsToPick;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
@@ -14,6 +16,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -49,16 +52,17 @@ public class ProductsToPickRow implements IViewRow
 	private final LookupValue locator;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber", seqNo = 30)
-	private final String lotNumberAttr;
+	private final String lotNumber;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate", seqNo = 40)
-	private final LocalDate expiringDateAttr;
+	@Getter
+	private final LocalDate expiringDate;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", seqNo = 50)
-	private final String repackNumberAttr;
+	private final String repackNumber;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60) // Damaged
-	private final Boolean bruchAttr;
+	private final Boolean damaged;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
 	private final Quantity qty;
@@ -69,26 +73,30 @@ public class ProductsToPickRow implements IViewRow
 	//
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final ProductsToPickRowId rowId;
+	@Getter
+	private final HuId huId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ProductsToPickRow(
 			@NonNull final ProductsToPickRowId rowId,
 			@NonNull final LookupValue product,
 			@NonNull final LookupValue locator,
-			final String lotNumberAttr,
-			final LocalDate expiringDateAttr,
-			final String repackNumberAttr,
-			final Boolean bruchAttr,
+			@NonNull final HuId huId,
+			final String lotNumber,
+			final LocalDate expiringDate,
+			final String repackNumber,
+			final Boolean damaged,
 			@NonNull final Quantity qty,
 			final boolean processed)
 	{
 		this.rowId = rowId;
 		this.product = product;
 		this.locator = locator;
-		this.lotNumberAttr = lotNumberAttr;
-		this.expiringDateAttr = expiringDateAttr;
-		this.repackNumberAttr = repackNumberAttr;
-		this.bruchAttr = bruchAttr;
+		this.huId = huId;
+		this.lotNumber = lotNumber;
+		this.expiringDate = expiringDate;
+		this.repackNumber = repackNumber;
+		this.damaged = damaged;
 		this.qty = qty;
 		this.processed = processed;
 	}
@@ -120,5 +128,15 @@ public class ProductsToPickRow implements IViewRow
 			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
+	}
+
+	public ProductsToPickRow withQty(@NonNull final Quantity qty)
+	{
+		if (Objects.equals(this.qty, qty))
+		{
+			return this;
+		}
+
+		return toBuilder().qty(qty).build();
 	}
 }
