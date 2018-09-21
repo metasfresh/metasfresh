@@ -202,7 +202,7 @@ public class PickingSlotViewRepository
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
-				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.barcode(repoQuery.getPickingSlotBarcode())
 				.build();

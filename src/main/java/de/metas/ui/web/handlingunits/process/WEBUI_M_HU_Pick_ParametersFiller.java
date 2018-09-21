@@ -168,7 +168,7 @@ final class WEBUI_M_HU_Pick_ParametersFiller
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
-				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule))
 				.build();
 		final List<I_M_PickingSlot> availablePickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(pickingSlotQuery);
 
