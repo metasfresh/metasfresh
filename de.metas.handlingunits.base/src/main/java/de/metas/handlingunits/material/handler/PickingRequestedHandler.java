@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -91,17 +93,19 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 			pickingSlotId = allocatePickingSlot(shipmentScheduleId);
 		}
 
-		for (final int huId : event.getTopLevelHuIdsToPick())
+		final Set<HuId> huIds = HuId.ofRepoIds(event.getTopLevelHuIdsToPick());
+		for (final HuId huId : huIds)
 		{
 			// NOTE: we are not moving the HU to shipment schedule's locator.
-			pickingCandidateService.addHUToPickingSlot(
-					HuId.ofRepoId(huId),
-					pickingSlotId,
-					shipmentScheduleId);
+			pickingCandidateService.pickHU(PickHURequest.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.huId(huId)
+					.pickingSlotId(pickingSlotId)
+					.build());
 		}
 
 		pickingCandidateService.processForHUIds(
-				HuId.ofRepoIds(event.getTopLevelHuIdsToPick()),
+				huIds,
 				pickingSlotId,
 				shipmentScheduleId);
 	}
@@ -127,7 +131,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 		Loggables.get().addLog(
 				"Retrieved an available picking slot, because none was set in the event; pickingSlot={}",
 				firstPickingSlot);
-		
+
 		return PickingSlotId.ofRepoId(firstPickingSlot.getM_PickingSlot_ID());
 	}
 

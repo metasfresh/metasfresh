@@ -147,7 +147,9 @@ public class AddQtyToHUCommand
 
 	private PickingCandidate getOrCreatePickingCandidate()
 	{
-		final PickingCandidate existingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(targetHUId, shipmentScheduleId, pickingSlotId).orElse(null);
+		final PickingCandidate existingCandidate = pickingCandidateRepository
+				.getByShipmentScheduleIdAndHuIdAndPickingSlotId(shipmentScheduleId, targetHUId, pickingSlotId)
+				.orElse(null);
 		if (existingCandidate != null)
 		{
 			return existingCandidate;
@@ -156,8 +158,8 @@ public class AddQtyToHUCommand
 		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(getShipmentSchedule());
 		final PickingCandidate newCandidate = PickingCandidate.builder()
 				.qtyPicked(Quantity.zero(uom))
-				.huId(targetHUId)
 				.shipmentScheduleId(shipmentScheduleId)
+				.huId(targetHUId)
 				.pickingSlotId(pickingSlotId)
 				.build();
 		pickingCandidateRepository.save(newCandidate);

@@ -1,8 +1,5 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
@@ -15,12 +12,15 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,56 +47,70 @@ import lombok.NonNull;
  * #L%
  */
 
-public class AddHUToPickingSlotCommand
+public class PickHUCommand
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
+	private final ShipmentScheduleId shipmentScheduleId;
 	private final HuId huId;
 	private final PickingSlotId pickingSlotId;
-	private final ShipmentScheduleId shipmentScheduleId;
+	private final Quantity qtyToPick;
 
-	private I_M_ShipmentSchedule shipmentSchedule;
+	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
 	@Builder
-	private AddHUToPickingSlotCommand(
+	private PickHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId huId,
-			@NonNull final PickingSlotId pickingSlotId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId)
+			@NonNull final PickHURequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
-		this.huId = huId;
-		this.pickingSlotId = pickingSlotId;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.shipmentScheduleId = request.getShipmentScheduleId();
+		this.huId = request.getHuId();
+		this.pickingSlotId = request.getPickingSlotId();
+		this.qtyToPick = request.getQtyToPick();
 	}
 
 	public void perform()
 	{
-		shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final Quantity qtyToPick = getQtyToPick();
 
-		final Quantity qty = getQtyFromHU();
-
-		final PickingCandidate pickingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(huId, shipmentScheduleId, pickingSlotId)
+		final PickingCandidate pickingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(shipmentScheduleId, huId, pickingSlotId)
 				.orElseGet(() -> PickingCandidate.builder()
-						.qtyPicked(qty)
-						.huId(huId)
+						.status(PickingCandidateStatus.InProgress)
+						.qtyPicked(qtyToPick)
 						.shipmentScheduleId(shipmentScheduleId)
+						.huId(huId)
 						.pickingSlotId(pickingSlotId)
 						.build());
-		pickingCandidate.setQtyPicked(qty);
+		pickingCandidate.setQtyPicked(qtyToPick);
 		pickingCandidateRepository.save(pickingCandidate);
 
 		//
 		// Try allocating the picking slot
+		if (pickingSlotId != null)
 		{
+			final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
 			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 			final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule);
 			huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
+		}
+	}
+
+	private Quantity getQtyToPick()
+	{
+		if (qtyToPick != null)
+		{
+			return qtyToPick;
+		}
+		else
+		{
+			return getQtyFromHU();
 		}
 	}
 
@@ -104,28 +118,31 @@ public class AddHUToPickingSlotCommand
 	{
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
-		final List<IHUProductStorage> productStorages = huContextFactory
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+
+		final IHUProductStorage productStorage = huContextFactory
 				.createMutableHUContext()
 				.getHUStorageFactory()
 				.getStorage(hu)
-				.getProductStorages();
-		if (productStorages.isEmpty())
-		{
-			// TODO: don't return null but return ZERO using product's UOM
+				.getProductStorageOrNull(productId);
 
-			// Allow empty storage. That's the case when we are adding a newly created HU
-			final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
+		// Allow empty storage. That's the case when we are adding a newly created HU
+		if (productStorage == null)
+		{
+			final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 			return Quantity.zero(uom);
-			// throw new AdempiereException("HU is empty").setParameter("hu", hu);
 		}
-		else if (productStorages.size() > 1)
+
+		return Quantity.of(productStorage.getQty(), productStorage.getC_UOM());
+	}
+
+	private I_M_ShipmentSchedule getShipmentSchedule()
+	{
+		if (_shipmentSchedule == null)
 		{
-			throw new AdempiereException("HU has more than one product").setParameter("productStorages", productStorages);
+			_shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		}
-		else
-		{
-			final IHUProductStorage productStorage = productStorages.get(0);
-			return Quantity.of(productStorage.getQty(), productStorage.getC_UOM());
-		}
+		return _shipmentSchedule;
 	}
 }

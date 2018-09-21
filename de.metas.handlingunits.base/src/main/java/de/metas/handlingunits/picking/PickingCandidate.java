@@ -55,9 +55,9 @@ public class PickingCandidate
 	private Quantity qtyPicked;
 
 	@NonNull
-	private final HuId huId;
-	@NonNull
 	private final ShipmentScheduleId shipmentScheduleId;
+	@NonNull
+	private final HuId huId;
 	@Nullable
 	private final PickingSlotId pickingSlotId;
 

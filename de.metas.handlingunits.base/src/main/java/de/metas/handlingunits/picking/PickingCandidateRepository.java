@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryUpdater;
@@ -178,16 +180,16 @@ public class PickingCandidateRepository
 	}
 
 	public Optional<PickingCandidate> getByShipmentScheduleIdAndHuIdAndPickingSlotId(
-			@NonNull final HuId huId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final PickingSlotId pickingSlotId)
+			@NonNull final HuId huId,
+			@Nullable final PickingSlotId pickingSlotId)
 	{
 		final I_M_Picking_Candidate existingRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
 				.create()
 				.firstOnly(I_M_Picking_Candidate.class);
 
@@ -296,9 +298,14 @@ public class PickingCandidateRepository
 
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+				.addOnlyActiveRecordsFilter();
 
+		//
+		// Shipment schedules
+		queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingCandidatesQuery.getShipmentScheduleIds());
+
+		//
+		// Not Closed + Not Rack System Picking slots
 		if (pickingCandidatesQuery.isOnlyNotClosedOrNotRackSystem())
 		{
 			final IHUPickingSlotDAO huPickingSlotsRepo = Services.get(IHUPickingSlotDAO.class);
@@ -327,12 +334,17 @@ public class PickingCandidateRepository
 		}
 
 		//
-		// HU filter
-		final IQuery<I_M_HU> husQuery = queryBL.createQueryBuilder(I_M_HU.class)
-				.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Shipped) // not already shipped (https://github.com/metasfresh/metasfresh-webui-api/issues/647)
-				.create();
-		queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+		// HU filter: not already shipped
+		if (!pickingCandidatesQuery.isIncludeShippedHUs())
+		{
+			final IQuery<I_M_HU> husQuery = queryBL.createQueryBuilder(I_M_HU.class)
+					.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Shipped) // not already shipped (https://github.com/metasfresh/metasfresh-webui-api/issues/647)
+					.create();
+			queryBuilder.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+		}
 
+		//
+		// Execute query & Fetch picking candidates
 		return queryBuilder
 				.orderBy(I_M_Picking_Candidate.COLUMNNAME_M_Picking_Candidate_ID)
 				.create()

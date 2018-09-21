@@ -12,15 +12,16 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand;
+import de.metas.handlingunits.picking.pickingCandidateCommands.PickHUCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveHUFromPickingSlotCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -68,13 +69,11 @@ public class PickingCandidateService
 		this.pickingCandidateRepository = pickingCandidateRepository;
 	}
 
-	public void addHUToPickingSlot(final HuId huId, final PickingSlotId pickingSlotId, final ShipmentScheduleId shipmentScheduleId)
+	public void pickHU(final PickHURequest request)
 	{
-		AddHUToPickingSlotCommand.builder()
+		PickHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.huId(huId)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(shipmentScheduleId)
+				.request(request)
 				.build()
 				.perform();
 	}

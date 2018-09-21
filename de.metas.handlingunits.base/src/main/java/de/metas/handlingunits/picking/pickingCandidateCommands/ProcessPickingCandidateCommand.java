@@ -229,7 +229,7 @@ public class ProcessPickingCandidateCommand
 				.stream()
 				.peek(pc -> pc.setStatus(PickingCandidateStatus.Processed))
 				.collect(ImmutableList.toImmutableList());
-		
+
 		pickingCandidateRepository.saveAll(processedPickingCandidates);
 	}
 
