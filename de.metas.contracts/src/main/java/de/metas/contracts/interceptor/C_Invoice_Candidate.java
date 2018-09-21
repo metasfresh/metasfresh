@@ -94,7 +94,7 @@ public class C_Invoice_Candidate
 		final boolean dateOrdereChanged = InterfaceWrapperHelper.isValueChanged(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_DateOrdered) && !InterfaceWrapperHelper.isNew(invoiceCand);
 		if (newIsToClear && dateOrdereChanged)
 		{
-			Check.assume(false, "Column I_C_Invoice_Cand." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " is not updatable");
+			Check.assume(false, "Column I_C_Invoice_Cand." + I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " is not updatable; I_C_Invoice_Cand={}", invoiceCand);
 			// If the column was updatable, we would have to
 			// *check if new and old term are the same
 			// *check if ICAs need update, creation or deletion and do it;
