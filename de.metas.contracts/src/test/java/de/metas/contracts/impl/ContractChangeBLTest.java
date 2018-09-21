@@ -29,8 +29,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +45,8 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class ContractChangeBLTest extends AbstractFlatrateTermTest

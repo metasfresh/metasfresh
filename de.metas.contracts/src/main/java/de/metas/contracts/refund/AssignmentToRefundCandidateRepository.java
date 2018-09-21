@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +22,8 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

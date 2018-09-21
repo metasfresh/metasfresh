@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Column;
 
@@ -14,6 +13,7 @@ import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.config.PartitionConfig;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

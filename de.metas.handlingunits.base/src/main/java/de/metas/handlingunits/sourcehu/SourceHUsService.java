@@ -14,8 +14,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -34,6 +32,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Singular;
 

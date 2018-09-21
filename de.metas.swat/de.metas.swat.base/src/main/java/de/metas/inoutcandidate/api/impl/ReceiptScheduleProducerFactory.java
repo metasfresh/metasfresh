@@ -7,7 +7,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
@@ -20,6 +19,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.inoutcandidate.spi.impl.OrderLineReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.impl.OrderReceiptScheduleProducer;
+import de.metas.util.Check;
 
 public class ReceiptScheduleProducerFactory implements IReceiptScheduleProducerFactory
 {

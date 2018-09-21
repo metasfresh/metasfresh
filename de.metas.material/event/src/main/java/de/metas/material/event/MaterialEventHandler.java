@@ -2,8 +2,8 @@ package de.metas.material.event;
 
 import java.util.Collection;
 
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 
 /*
  * #%L

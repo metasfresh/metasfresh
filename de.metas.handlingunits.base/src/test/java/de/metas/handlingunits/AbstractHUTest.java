@@ -27,7 +27,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -41,6 +40,7 @@ import org.junit.runner.Description;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.util.Services;
 
 public abstract class AbstractHUTest
 {

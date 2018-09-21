@@ -1,11 +1,11 @@
 package de.metas.document;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Sequence;
 
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.JavaClassId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 

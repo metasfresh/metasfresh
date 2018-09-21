@@ -24,13 +24,14 @@ package org.adempiere.ad.callout.spi;
 
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Instances can be used to register callouts "programatically", i.e. not by database.
  * The preferred way to obtain an instance of this interface is to subclass {@link AbstractModuleInterceptor} and override its {@link AbstractModuleInterceptor#registerCallouts(IProgramaticCalloutProvider) registerCallouts} method.<br>
  * In other words, programatic callouts should be registered per-module and at one place within each module.<br>
- * However, since this interface extends {@link ISingletonService}, an instance can also be obtained via {@link org.adempiere.util.Services#get(Class)}.
+ * However, since this interface extends {@link ISingletonService}, an instance can also be obtained via {@link de.metas.util.Services#get(Class)}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -33,12 +33,12 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import org.compiere.util.Env;
 import org.compiere.util.Ini;

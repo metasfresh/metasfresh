@@ -27,11 +27,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+
+import de.metas.util.Check;
 
 public class OrderLineCountryAware implements ICountryAware
 {

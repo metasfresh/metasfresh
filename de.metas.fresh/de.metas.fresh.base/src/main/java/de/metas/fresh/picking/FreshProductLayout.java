@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -42,6 +40,7 @@ import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.ProductLayout;
+import de.metas.util.Check;
 
 /**
  * @author cg

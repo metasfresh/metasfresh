@@ -27,7 +27,8 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Comparator which compares 2 models by their ID.

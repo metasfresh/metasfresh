@@ -1,9 +1,10 @@
 package de.metas.adempiere.util.cache;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.AvailableSingletonServicesTester;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.AvailableSingletonServicesTester;
 
 /*
  * #%L

@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
@@ -13,6 +12,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -5,8 +5,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.commons.lang.NotImplementedException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -23,6 +21,8 @@ import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.Setter;
 

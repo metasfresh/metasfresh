@@ -13,7 +13,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -23,6 +22,7 @@ import org.compiere.util.Env;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)

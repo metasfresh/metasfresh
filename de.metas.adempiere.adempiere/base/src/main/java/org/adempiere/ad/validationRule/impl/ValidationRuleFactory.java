@@ -13,9 +13,7 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleDAO;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
@@ -31,6 +29,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ValidationRuleFactory implements IValidationRuleFactory
 {

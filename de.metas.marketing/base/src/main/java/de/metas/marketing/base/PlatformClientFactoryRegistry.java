@@ -3,8 +3,6 @@ package de.metas.marketing.base;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
@@ -12,6 +10,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.marketing.base.spi.PlatformClientFactory;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
 /*

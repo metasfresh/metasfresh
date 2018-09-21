@@ -4,11 +4,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
 
+import de.metas.util.Services;
 import lombok.Builder;
 
 /**

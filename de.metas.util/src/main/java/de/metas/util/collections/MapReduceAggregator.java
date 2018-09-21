@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.apache.commons.collections4.map.LRUMap;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

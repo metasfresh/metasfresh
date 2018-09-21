@@ -31,12 +31,12 @@ import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;

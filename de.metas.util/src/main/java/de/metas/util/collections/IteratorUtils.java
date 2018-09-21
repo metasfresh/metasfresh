@@ -33,10 +33,9 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.adempiere.util.EmptyIterator;
-
 import com.google.common.base.Throwables;
 
+import de.metas.util.EmptyIterator;
 import de.metas.util.collections.PagedIterator.PagedIteratorBuilder;
 
 public final class IteratorUtils

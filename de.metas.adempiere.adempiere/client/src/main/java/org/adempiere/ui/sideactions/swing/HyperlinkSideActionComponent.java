@@ -27,13 +27,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import org.adempiere.ui.sideactions.model.ISideAction;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Env;
 import org.jdesktop.swingx.JXHyperlink;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Renders a {@link ISideAction} as a "button" which looks like a "web browser URL link".

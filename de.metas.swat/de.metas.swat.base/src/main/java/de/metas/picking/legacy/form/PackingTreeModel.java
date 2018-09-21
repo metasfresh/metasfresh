@@ -41,7 +41,6 @@ import javax.swing.tree.DefaultTreeModel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.PackagingTreeItemComparable;
@@ -61,6 +60,7 @@ import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Services;
 
 /**
  *

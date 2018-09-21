@@ -37,8 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMConversionDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -54,6 +52,8 @@ import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class UOMConversionBL implements IUOMConversionBL

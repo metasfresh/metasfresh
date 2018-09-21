@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DisplayType;
 
@@ -52,6 +50,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.field.constraint.PositiveNumericFieldConstraint;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * UI panel which starts from a given initial {@link DistributeQtyToNewHUsRequest}, allows the user to edit it and at the end provides the final {@link DistributeQtyToNewHUsResult}.

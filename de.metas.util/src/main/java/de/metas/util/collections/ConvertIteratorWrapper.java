@@ -25,7 +25,7 @@ package de.metas.util.collections;
 
 import java.util.Iterator;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Adapter class which converts online between one parameterized iterator to other parameterized iterator

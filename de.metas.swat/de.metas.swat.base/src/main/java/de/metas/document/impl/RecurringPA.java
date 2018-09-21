@@ -28,11 +28,11 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.db.IDatabaseBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Recurring;
 import org.compiere.model.MRecurring;
 
 import de.metas.document.IRecurringPA;
+import de.metas.util.Services;
 
 public final class RecurringPA implements IRecurringPA {
 

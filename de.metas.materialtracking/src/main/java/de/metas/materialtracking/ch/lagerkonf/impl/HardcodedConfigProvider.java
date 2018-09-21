@@ -24,11 +24,11 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider;
+import de.metas.util.Check;
 
 public class HardcodedConfigProvider implements IQualityBasedConfigProvider
 {

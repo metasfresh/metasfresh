@@ -26,7 +26,6 @@ package de.metas.printing.api.impl;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.invoice.service.impl.PlainInvoiceDAO;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -36,6 +35,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
+import de.metas.util.Services;
 
 public abstract class AbstractPrintingTest
 {

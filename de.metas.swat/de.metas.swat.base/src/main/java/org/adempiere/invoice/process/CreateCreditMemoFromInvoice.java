@@ -29,12 +29,12 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
 import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public class CreateCreditMemoFromInvoice extends JavaProcess
 {

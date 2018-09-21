@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.util.Ini;
@@ -18,6 +17,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
+import de.metas.util.Check;
 
 /**
  * Log Management.

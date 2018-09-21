@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
@@ -46,6 +44,8 @@ import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.NonBusinessDay;
 import de.metas.calendar.RecurrentNonBusinessDay;
 import de.metas.calendar.RecurrentNonBusinessDayFrequency;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractCalendarDAO implements ICalendarDAO

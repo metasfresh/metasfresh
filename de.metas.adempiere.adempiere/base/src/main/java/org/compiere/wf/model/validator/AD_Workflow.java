@@ -2,7 +2,6 @@ package org.compiere.wf.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.ModelValidator;
 import org.compiere.wf.api.IADWorkflowBL;
@@ -34,6 +33,7 @@ import org.compiere.wf.exceptions.WorkflowNotValidException;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Workflow.class)
 public class AD_Workflow

@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.user.User;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -22,6 +20,8 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 

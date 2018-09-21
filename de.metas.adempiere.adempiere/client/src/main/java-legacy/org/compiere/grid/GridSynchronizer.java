@@ -16,11 +16,12 @@ package org.compiere.grid;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.adempiere.util.Check;
 import org.compiere.model.GridTabMaxRows;
 import org.compiere.model.GridWindow;
 import org.compiere.model.StateChangeEvent;
 import org.compiere.model.StateChangeListener;
+
+import de.metas.util.Check;
 
 /**
  * Parent tab - child/included tab synchronizer.

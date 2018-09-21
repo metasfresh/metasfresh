@@ -16,7 +16,6 @@ package org.adempiere.impexp;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabLayoutMode;
@@ -27,6 +26,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Services;
 
 /**
  * Excel Exporter Adapter for GridTab

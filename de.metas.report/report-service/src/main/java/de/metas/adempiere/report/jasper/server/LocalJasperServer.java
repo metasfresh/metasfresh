@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -44,6 +42,8 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.engine.IReportEngine;
 import de.metas.report.engine.ReportContext;
 import de.metas.report.xls.engine.XlsReportEngine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class LocalJasperServer implements IJasperServer
 {

@@ -29,7 +29,6 @@ import java.math.RoundingMode;
 
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.util.Services;
 
 public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {

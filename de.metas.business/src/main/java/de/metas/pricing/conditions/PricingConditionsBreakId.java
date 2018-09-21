@@ -3,8 +3,8 @@ package de.metas.pricing.conditions;
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

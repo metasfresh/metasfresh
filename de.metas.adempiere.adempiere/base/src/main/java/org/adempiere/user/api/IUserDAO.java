@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.util.ISingletonService;
 
 public interface IUserDAO extends ISingletonService
 {

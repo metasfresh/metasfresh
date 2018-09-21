@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
@@ -43,6 +42,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ISingletonService;
 
 public interface IFlatrateDAO extends ISingletonService
 {

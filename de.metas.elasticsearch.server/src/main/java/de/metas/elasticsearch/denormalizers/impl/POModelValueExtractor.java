@@ -1,10 +1,11 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.PO;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

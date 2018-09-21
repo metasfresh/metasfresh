@@ -1,7 +1,6 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

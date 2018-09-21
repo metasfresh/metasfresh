@@ -21,15 +21,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.time.generator.BusinessDayShifter;
-import org.adempiere.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
-import org.adempiere.util.time.generator.DateSequenceGenerator;
-import org.adempiere.util.time.generator.Frequency;
-import org.adempiere.util.time.generator.FrequencyType;
-import org.adempiere.util.time.generator.IDateShifter;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
@@ -43,6 +35,14 @@ import de.metas.tourplanning.api.ITourVersionRange;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.generator.BusinessDayShifter;
+import de.metas.util.time.generator.DateSequenceGenerator;
+import de.metas.util.time.generator.Frequency;
+import de.metas.util.time.generator.FrequencyType;
+import de.metas.util.time.generator.IDateShifter;
+import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import lombok.NonNull;
 
 /**

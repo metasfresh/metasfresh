@@ -8,8 +8,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -18,6 +16,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

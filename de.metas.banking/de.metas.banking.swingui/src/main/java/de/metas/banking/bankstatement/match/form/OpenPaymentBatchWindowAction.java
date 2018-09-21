@@ -2,12 +2,12 @@ package de.metas.banking.bankstatement.match.form;
 
 import java.awt.event.ActionEvent;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
+import de.metas.util.Services;
 
 /*
  * #%L

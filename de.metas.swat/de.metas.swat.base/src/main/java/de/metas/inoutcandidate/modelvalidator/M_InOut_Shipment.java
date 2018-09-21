@@ -25,12 +25,12 @@ package de.metas.inoutcandidate.modelvalidator;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut_Shipment

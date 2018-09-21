@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.process.ProcessInfo;
+import de.metas.util.ISingletonService;
 
 /**
  * this services acts as a composite HU document factory.

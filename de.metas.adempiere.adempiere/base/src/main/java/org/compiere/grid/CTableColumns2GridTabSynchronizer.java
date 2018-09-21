@@ -39,12 +39,13 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import org.adempiere.util.Check;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.swing.CTable;
 import org.compiere.swing.CTable.ITableColumnWidthCallback;
+
+import de.metas.util.Check;
 
 /**
  * Synchronize {@link TableColumn} settings with {@link GridFieldVO} settings.

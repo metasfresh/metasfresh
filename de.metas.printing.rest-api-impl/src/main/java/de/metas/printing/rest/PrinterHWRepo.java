@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import de.metas.printing.api.IPrinterBL;
@@ -17,6 +16,7 @@ import de.metas.printing.esb.api.PrinterHWList;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

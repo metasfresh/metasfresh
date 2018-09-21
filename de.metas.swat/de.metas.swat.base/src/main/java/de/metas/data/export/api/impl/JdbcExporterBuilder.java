@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -39,6 +38,7 @@ import com.google.common.base.Joiner;
 
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Helper class for building {@link JdbcExportDataSource}s.

@@ -2,7 +2,6 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +22,7 @@ import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

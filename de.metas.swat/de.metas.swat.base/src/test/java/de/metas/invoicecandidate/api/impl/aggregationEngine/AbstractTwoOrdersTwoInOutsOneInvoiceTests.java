@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -39,6 +38,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 /**
  * In this scenario we have two invoice candidates (also referencing two orders). The first ic has two iols, the 2nd ic has one iol.

@@ -47,8 +47,6 @@ import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.proxy.Cached;
@@ -76,6 +74,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class LookupDAO implements ILookupDAO

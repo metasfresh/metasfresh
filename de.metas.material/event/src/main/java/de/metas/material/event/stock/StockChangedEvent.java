@@ -2,13 +2,12 @@ package de.metas.material.event.stock;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

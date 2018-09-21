@@ -31,10 +31,10 @@ import org.adempiere.facet.IFacet;
 import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetCollectorResult;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import de.metas.util.collections.IncludeExcludeListPredicate;
 
 /**

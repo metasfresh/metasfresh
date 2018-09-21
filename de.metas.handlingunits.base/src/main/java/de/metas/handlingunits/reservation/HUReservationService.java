@@ -12,8 +12,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
@@ -34,6 +32,8 @@ import de.metas.handlingunits.reservation.HUReservation.HUReservationBuilder;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Setter;
 

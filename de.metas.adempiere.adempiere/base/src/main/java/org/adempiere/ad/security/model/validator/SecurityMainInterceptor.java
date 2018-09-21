@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsEventBus;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 

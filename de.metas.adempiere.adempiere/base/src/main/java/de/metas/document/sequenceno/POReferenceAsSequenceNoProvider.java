@@ -1,8 +1,8 @@
 package de.metas.document.sequenceno;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

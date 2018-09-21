@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util;
 
@@ -39,6 +38,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

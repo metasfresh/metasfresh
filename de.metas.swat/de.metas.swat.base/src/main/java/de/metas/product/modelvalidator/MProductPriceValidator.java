@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -35,6 +34,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
 import de.metas.product.IProductPA;
+import de.metas.util.Services;
 
 public class MProductPriceValidator implements ModelValidator
 {

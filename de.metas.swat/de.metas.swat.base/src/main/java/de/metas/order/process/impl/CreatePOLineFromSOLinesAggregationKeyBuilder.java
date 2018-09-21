@@ -1,11 +1,12 @@
 package de.metas.order.process.impl;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+
+import de.metas.util.Services;
 
 
 

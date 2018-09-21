@@ -11,7 +11,6 @@ import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -21,6 +20,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

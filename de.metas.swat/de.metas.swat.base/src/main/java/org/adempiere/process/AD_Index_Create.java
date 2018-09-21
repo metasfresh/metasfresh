@@ -31,12 +31,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
 
 /**
  * @author teo_sarca

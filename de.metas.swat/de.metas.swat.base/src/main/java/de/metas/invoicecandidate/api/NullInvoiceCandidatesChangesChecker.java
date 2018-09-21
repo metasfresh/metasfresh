@@ -25,9 +25,8 @@ package de.metas.invoicecandidate.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ILoggable;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ILoggable;
 
 /**
  * Do nothing implementation of {@link IInvoiceCandidatesChangesChecker}.

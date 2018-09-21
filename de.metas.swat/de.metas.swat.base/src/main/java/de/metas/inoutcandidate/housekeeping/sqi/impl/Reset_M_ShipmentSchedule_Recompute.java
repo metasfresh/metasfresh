@@ -2,8 +2,9 @@ package de.metas.inoutcandidate.housekeeping.sqi.impl;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Loggables;
 import org.compiere.util.DB;
+
+import de.metas.util.Loggables;
 
 /*
  * #%L

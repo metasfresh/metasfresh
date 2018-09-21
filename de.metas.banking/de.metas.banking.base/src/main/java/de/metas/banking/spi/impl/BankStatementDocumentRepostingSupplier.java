@@ -4,10 +4,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

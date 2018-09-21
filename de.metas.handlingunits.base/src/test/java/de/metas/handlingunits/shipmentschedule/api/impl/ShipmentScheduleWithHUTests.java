@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.X_M_InOut;
@@ -27,6 +26,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
 /*

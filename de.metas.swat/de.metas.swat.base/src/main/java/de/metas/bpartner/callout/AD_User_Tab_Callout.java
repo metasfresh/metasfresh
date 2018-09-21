@@ -26,10 +26,10 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 
 // TODO delete it; it's not used
 public class AD_User_Tab_Callout extends TabCalloutAdapter

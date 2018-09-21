@@ -9,8 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
@@ -31,6 +29,8 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 

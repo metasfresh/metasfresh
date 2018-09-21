@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
@@ -43,6 +42,7 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Assignment;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
+import de.metas.util.Services;
 
 public class DimensionspecDAO implements IDimensionspecDAO
 {

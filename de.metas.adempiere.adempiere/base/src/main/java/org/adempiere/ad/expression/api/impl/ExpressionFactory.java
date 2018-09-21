@@ -36,10 +36,10 @@ import org.adempiere.ad.expression.api.impl.BooleanStringExpressionSupport.Boole
 import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStringExpression;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class ExpressionFactory implements IExpressionFactory
 {

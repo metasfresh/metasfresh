@@ -15,9 +15,9 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.adempiere.ad.security.UserNotAuthorizedException;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 
 /*

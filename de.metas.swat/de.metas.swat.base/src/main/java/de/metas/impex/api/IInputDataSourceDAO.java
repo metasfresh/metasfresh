@@ -24,9 +24,8 @@ package de.metas.impex.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.util.ISingletonService;
 
 public interface IInputDataSourceDAO extends ISingletonService
 {

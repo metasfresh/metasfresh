@@ -28,13 +28,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

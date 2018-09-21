@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 

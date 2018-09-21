@@ -28,8 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
@@ -37,6 +35,8 @@ import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUWarehouseDAO implements IHUWarehouseDAO

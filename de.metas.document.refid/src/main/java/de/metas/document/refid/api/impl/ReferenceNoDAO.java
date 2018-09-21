@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 
@@ -39,6 +38,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
+import de.metas.util.Check;
 
 public class ReferenceNoDAO extends AbstractReferenceNoDAO
 {

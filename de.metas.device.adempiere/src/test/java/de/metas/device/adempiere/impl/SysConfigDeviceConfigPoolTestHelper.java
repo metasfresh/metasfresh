@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.util.Env;
@@ -15,6 +13,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.device.adempiere.AttributesDevicesHub;
 import de.metas.device.adempiere.DeviceConfig;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
 /*

@@ -25,11 +25,10 @@ package de.metas.materialtracking.qualityBasedInvoicing.invoicing.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+import de.metas.util.Check;
 
 public class QualityInvoiceLineGroup implements IQualityInvoiceLineGroup
 {

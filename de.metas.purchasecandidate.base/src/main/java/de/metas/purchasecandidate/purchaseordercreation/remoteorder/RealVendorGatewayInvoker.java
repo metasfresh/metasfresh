@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
@@ -24,6 +22,8 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Loggables;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;

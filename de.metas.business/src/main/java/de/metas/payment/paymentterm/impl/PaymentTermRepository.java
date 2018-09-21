@@ -5,13 +5,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 
 import de.metas.lang.Percent;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

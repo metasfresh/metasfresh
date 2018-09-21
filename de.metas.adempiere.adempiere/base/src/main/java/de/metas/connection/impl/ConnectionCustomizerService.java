@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.connection.IConnectionCustomizer;
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.connection.ITemporaryConnectionCustomizer;
+import de.metas.util.Check;
 import de.metas.util.collections.IdentityHashSet;
 import lombok.NonNull;
 

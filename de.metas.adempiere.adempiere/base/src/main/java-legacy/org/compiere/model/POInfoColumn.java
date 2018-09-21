@@ -23,13 +23,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * PO Info Column Info Value Object

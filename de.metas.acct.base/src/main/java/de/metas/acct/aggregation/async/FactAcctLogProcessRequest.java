@@ -4,7 +4,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /*
  * #%L

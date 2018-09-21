@@ -26,8 +26,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
@@ -42,6 +40,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUPPCostCollectorBL implements IHUPPCostCollectorBL

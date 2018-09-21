@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -47,6 +45,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.MTransactionProductStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class StaticHUAssert
 {

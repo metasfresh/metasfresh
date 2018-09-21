@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery.Aggregate;
@@ -38,6 +37,7 @@ import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class SysConfigDAO extends AbstractSysConfigDAO
 {

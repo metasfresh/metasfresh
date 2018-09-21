@@ -24,12 +24,12 @@ package de.metas.async.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.util.Services;
 
 @Validator(I_C_Queue_Processor.class)
 public class C_Queue_Processor

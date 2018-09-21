@@ -7,8 +7,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -30,6 +28,8 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AttributePricing implements IPricingRule
 {

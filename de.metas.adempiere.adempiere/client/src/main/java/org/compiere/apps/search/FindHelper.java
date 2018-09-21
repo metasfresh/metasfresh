@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.adempiere.db.DBConstants;
-import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.util.Permutation;
+import de.metas.util.Check;
 
 /**
  * 

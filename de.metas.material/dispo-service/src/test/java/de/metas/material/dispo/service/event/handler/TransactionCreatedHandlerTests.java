@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +27,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Injectable;

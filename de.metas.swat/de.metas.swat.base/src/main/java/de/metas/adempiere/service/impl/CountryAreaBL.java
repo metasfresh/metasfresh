@@ -32,8 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.Query;
@@ -43,6 +41,8 @@ import de.metas.adempiere.model.I_C_CountryArea_Assign;
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class CountryAreaBL implements ICountryAreaBL
 {

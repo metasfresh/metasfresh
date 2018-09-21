@@ -29,11 +29,10 @@ package de.metas.fresh.picking.form.swing;
 import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.picking.terminal.form.swing.QtyListener;
+import de.metas.util.Check;
 import de.metas.util.collections.IdentityHashSet;
 
 /**

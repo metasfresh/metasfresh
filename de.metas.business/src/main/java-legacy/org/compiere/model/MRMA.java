@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -36,6 +35,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
+import de.metas.util.Services;
 
 /**
  *	RMA Model

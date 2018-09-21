@@ -7,11 +7,12 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+
+import de.metas.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;

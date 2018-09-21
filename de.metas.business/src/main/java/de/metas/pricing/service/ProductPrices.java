@@ -6,8 +6,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -20,6 +18,8 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

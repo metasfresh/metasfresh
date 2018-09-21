@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_TreeNode;
 import org.compiere.model.MClient;
 import org.compiere.model.MProductCategory;
@@ -49,6 +48,7 @@ import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.product.tree.spi.impl.MProductCategoryTreeSupport;
+import de.metas.util.Services;
 
 public final class MProductCategoryValidator implements ModelValidator
 {

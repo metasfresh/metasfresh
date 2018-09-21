@@ -29,13 +29,13 @@ import java.util.Date;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps a {@link I_M_HU_Attribute} to {@link IAttributeValue}

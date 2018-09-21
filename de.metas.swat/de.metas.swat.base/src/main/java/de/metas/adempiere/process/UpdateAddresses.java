@@ -34,7 +34,6 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MTable;
@@ -50,6 +49,7 @@ import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * @author cg

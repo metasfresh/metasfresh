@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.jgoodies.common.base.Objects;
@@ -55,6 +53,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates TUs.

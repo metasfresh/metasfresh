@@ -27,9 +27,7 @@ import java.util.Map;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -47,6 +45,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Post Allocation Documents.

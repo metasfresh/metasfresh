@@ -9,8 +9,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
@@ -23,6 +21,8 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

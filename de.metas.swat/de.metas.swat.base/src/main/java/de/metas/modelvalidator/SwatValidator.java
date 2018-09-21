@@ -52,8 +52,6 @@ import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
@@ -113,6 +111,8 @@ import de.metas.report.ReportStarter;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Model Validator for SWAT general features

@@ -36,7 +36,6 @@ import javax.swing.JLabel;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.GridField;
 import org.compiere.model.MInvoice;
@@ -51,6 +50,7 @@ import com.google.common.collect.Sets;
 
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
 
 /* package */abstract class AbstractPaymentForm

@@ -2,12 +2,11 @@ package de.metas.bpartner;
 
 import java.util.Optional;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

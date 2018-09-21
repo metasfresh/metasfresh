@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 
 import de.metas.handlingunits.IHUContext;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 
 public class GenericListAllocationSourceDestination implements IAllocationSource, IAllocationDestination

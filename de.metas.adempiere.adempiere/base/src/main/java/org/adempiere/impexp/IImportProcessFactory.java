@@ -24,9 +24,10 @@ package org.adempiere.impexp;
 
 
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.util.ISingletonService;
 
 import com.google.common.base.Supplier;
+
+import de.metas.util.ISingletonService;
 
 /**
  * {@link IImportProcess} factory.

@@ -47,7 +47,6 @@ import java.util.ArrayList;
 
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.util.Constants;
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
@@ -72,6 +71,7 @@ import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 
 

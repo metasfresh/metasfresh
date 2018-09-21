@@ -25,8 +25,6 @@ package de.metas.payment.api.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Currency;
 
@@ -36,6 +34,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author al

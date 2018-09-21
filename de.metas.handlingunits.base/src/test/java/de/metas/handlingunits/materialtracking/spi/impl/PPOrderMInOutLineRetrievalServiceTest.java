@@ -13,10 +13,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -42,6 +40,8 @@ import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

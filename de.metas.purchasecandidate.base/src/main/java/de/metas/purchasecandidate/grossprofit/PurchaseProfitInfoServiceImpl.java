@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

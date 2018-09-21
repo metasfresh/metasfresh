@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -70,6 +68,8 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.

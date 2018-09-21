@@ -5,13 +5,14 @@ import java.util.Map;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
-import org.adempiere.util.Services;
 import org.compiere.util.Evaluatees;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Services;
 
 /*
  * #%L

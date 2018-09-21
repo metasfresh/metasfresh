@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -37,6 +36,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Org.class)
 public class AD_Org

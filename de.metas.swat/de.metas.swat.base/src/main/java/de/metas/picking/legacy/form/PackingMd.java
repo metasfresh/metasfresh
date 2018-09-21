@@ -39,8 +39,6 @@ import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
@@ -61,6 +59,8 @@ import de.metas.inoutcandidate.api.IPackageableQuery;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PackingMd extends MvcMdGenForm
 {

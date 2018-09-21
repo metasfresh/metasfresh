@@ -35,8 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.User;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -57,6 +55,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Service

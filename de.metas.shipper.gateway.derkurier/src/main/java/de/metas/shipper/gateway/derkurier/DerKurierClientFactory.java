@@ -1,6 +1,5 @@
 package de.metas.shipper.gateway.derkurier;
 
-import org.adempiere.util.Check;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,7 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

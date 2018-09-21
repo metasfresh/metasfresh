@@ -23,9 +23,9 @@ package de.metas.materialtracking.impl;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
+import de.metas.util.Check;
 
 public class PlainHandlingUnitsInfo implements IHandlingUnitsInfo
 {

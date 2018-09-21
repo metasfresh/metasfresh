@@ -24,12 +24,12 @@ package de.metas.payment.esr.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
+import de.metas.util.ISingletonService;
 
 public interface IESRBPBankAccountDAO extends ISingletonService
 {

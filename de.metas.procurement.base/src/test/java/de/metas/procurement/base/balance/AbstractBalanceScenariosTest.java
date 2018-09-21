@@ -8,12 +8,13 @@ import java.util.Random;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 /*
  * #%L

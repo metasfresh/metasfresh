@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +25,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
+import de.metas.util.Services;
 
 /*
  * #%L

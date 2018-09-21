@@ -25,12 +25,11 @@ package de.metas.inoutcandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 public final class UpdateShipmentScheds extends JavaProcess
 {

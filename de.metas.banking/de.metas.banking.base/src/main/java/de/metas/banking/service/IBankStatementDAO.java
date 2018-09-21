@@ -27,12 +27,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.util.ISingletonService;
 
 public interface IBankStatementDAO extends ISingletonService
 {

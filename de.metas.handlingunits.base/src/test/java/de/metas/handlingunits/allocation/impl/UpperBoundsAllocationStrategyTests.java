@@ -7,8 +7,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,6 +20,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.quantity.Capacity;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

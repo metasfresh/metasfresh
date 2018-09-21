@@ -26,9 +26,9 @@ package de.metas.document.archive.rpl.requesthandler;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.util.Services;
 import de.metas.util.collections.Converter;
 
 public class ArchiveGetDataHandlerConverter implements Converter<I_AD_Archive, I_AD_Archive>

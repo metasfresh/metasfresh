@@ -15,13 +15,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Role.class)
 public class AD_Role

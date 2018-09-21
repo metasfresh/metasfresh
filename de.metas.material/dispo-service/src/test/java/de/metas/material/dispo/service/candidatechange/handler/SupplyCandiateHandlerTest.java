@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +30,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

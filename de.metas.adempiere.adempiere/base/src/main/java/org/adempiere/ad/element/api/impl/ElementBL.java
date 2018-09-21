@@ -5,11 +5,12 @@ import java.util.List;
 import org.adempiere.ad.element.api.IElementBL;
 import org.adempiere.ad.element.api.IElementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.util.Util;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

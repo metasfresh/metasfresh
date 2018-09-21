@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -21,6 +20,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.ISingletonService;
 
 /**
  * Implementers give database access to {@link I_M_ShipmentSchedule} instances (DAO).

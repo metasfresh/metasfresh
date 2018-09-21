@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -18,6 +17,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

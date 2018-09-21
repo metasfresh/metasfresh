@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
@@ -45,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.util.ISingletonService;
 
 /**
  *

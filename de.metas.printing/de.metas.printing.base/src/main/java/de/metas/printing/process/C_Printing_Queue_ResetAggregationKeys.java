@@ -28,13 +28,13 @@ import java.util.Iterator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 public class C_Printing_Queue_ResetAggregationKeys extends JavaProcess
 {

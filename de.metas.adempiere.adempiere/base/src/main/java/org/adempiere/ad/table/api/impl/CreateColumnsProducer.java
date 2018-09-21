@@ -14,8 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.M_Element;
@@ -23,6 +21,8 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

@@ -34,7 +34,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
@@ -46,6 +45,7 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.

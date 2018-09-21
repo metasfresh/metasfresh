@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_Test;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +19,7 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

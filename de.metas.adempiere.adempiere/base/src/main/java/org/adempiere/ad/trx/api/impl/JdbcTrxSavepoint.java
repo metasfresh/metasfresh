@@ -27,7 +27,8 @@ import java.sql.Savepoint;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * JDBC {@link ITrxSavepoint} implementation

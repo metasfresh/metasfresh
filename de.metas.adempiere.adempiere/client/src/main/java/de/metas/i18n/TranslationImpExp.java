@@ -22,7 +22,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Language;
 import org.compiere.util.DB;
@@ -35,6 +34,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Translation Table Import + Export

@@ -26,7 +26,7 @@ import java.util.UUID;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Lock Owner.

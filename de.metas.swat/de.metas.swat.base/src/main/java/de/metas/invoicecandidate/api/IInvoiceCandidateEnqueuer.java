@@ -27,11 +27,10 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.adempiere.util.ILoggable;
-
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ILoggable;
 
 /**
  * Helper interface to mass-enqueue {@link I_C_Invoice_Candidate}s to be invoiced.

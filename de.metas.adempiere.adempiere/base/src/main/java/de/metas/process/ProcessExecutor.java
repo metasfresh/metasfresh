@@ -15,8 +15,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Rule;
@@ -39,6 +37,8 @@ import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
 import de.metas.session.jaxrs.IServerService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

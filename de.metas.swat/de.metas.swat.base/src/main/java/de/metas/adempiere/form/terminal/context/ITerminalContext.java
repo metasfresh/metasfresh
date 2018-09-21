@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.IContextAware;
 
@@ -37,6 +36,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyDialog;
+import de.metas.util.Services;
 
 /**
  * Terminal API Context which will provide following capabilities:

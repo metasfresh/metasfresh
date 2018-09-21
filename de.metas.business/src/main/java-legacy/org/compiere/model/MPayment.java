@@ -30,8 +30,6 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -54,6 +52,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Payment Model. - retrieve and create payments for invoice

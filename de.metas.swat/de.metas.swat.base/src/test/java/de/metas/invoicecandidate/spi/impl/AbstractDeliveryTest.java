@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -53,6 +52,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 

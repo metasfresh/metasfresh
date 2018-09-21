@@ -7,7 +7,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
@@ -16,6 +15,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.Services;
 
 /*
  * #%L

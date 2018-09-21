@@ -29,12 +29,13 @@ import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.report.core.RColumn;
 import org.compiere.report.core.RModel;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.Check;
 
 public class FactAcctBL implements IFactAcctBL
 {

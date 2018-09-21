@@ -36,14 +36,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.adempiere.util.trxConstraints.api.TrxConstraintException;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class OpenTrxBL implements IOpenTrxBL
 {

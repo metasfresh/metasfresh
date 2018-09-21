@@ -10,9 +10,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -27,6 +24,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

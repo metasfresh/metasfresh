@@ -1,6 +1,5 @@
 package de.metas.jax.rs;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -11,6 +10,7 @@ import org.springframework.context.annotation.Profile;
 import de.metas.Profiles;
 import de.metas.jms.JmsEmbeddedBrokerConfig;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

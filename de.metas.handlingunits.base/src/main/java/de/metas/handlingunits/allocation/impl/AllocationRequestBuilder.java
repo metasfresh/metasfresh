@@ -28,10 +28,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
@@ -40,6 +38,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /* package */class AllocationRequestBuilder implements IAllocationRequestBuilder

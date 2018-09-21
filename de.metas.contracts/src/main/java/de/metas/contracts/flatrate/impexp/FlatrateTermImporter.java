@@ -9,8 +9,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -25,6 +23,8 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

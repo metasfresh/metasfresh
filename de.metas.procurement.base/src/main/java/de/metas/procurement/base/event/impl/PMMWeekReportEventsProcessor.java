@@ -5,11 +5,11 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -9,13 +9,13 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.model.I_M_HU_BestBefore_V;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

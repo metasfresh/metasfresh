@@ -31,8 +31,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
 
@@ -51,6 +49,8 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Send EDI documents for selected entries.

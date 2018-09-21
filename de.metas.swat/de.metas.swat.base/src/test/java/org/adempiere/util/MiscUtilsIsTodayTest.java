@@ -24,9 +24,10 @@ package org.adempiere.util;
 
 
 import org.adempiere.test.UnitTestTools;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.util.time.SystemTime;
 
 public class MiscUtilsIsTodayTest {
 

@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -49,8 +51,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.search.Info;

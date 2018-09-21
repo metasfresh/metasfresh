@@ -1,12 +1,12 @@
 package de.metas.order.document.documentNo;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_Order;
 
 import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.document.sequence.spi.IDocumentNoListener;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

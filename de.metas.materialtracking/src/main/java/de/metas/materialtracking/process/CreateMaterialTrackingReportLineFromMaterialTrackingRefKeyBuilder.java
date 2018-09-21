@@ -3,8 +3,6 @@ package de.metas.materialtracking.process;
 import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.KeyNamePair;
@@ -13,6 +11,8 @@ import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.materialtracking.MaterialTrackingConstants;
 import de.metas.materialtracking.model.I_M_InOutLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

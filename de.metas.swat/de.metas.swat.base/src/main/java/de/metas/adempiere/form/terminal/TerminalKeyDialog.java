@@ -29,12 +29,12 @@ import java.text.Format;
 import java.text.ParseException;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public abstract class TerminalKeyDialog
 		implements ITerminalKeyDialog

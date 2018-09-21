@@ -43,14 +43,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IAggregator;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements IQueryAggregateBuilder<SourceModelType, TargetModelType>
 {

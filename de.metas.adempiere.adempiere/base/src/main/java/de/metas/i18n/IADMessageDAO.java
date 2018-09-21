@@ -26,9 +26,10 @@ package de.metas.i18n;
 import java.util.Properties;
 import java.util.function.Consumer;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Message;
 import org.compiere.util.Env;
+
+import de.metas.util.ISingletonService;
 
 public interface IADMessageDAO extends ISingletonService
 {

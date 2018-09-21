@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.assertj.core.api.AbstractAssert;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

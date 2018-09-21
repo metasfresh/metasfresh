@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -42,6 +41,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 public interface IPriceListDAO extends ISingletonService
 {

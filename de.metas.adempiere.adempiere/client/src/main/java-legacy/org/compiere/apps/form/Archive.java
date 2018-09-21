@@ -19,7 +19,6 @@ import java.util.List;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DB;
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class Archive {
 

@@ -29,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -39,6 +38,7 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.model.I_PP_Product_Planning;
+import de.metas.util.Services;
 
 public class OrderCheckupDAO implements IOrderCheckupDAO
 {

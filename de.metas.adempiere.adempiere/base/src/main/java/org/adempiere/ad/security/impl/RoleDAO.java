@@ -33,7 +33,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_User_Roles;
@@ -44,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.util.Services;
 
 public class RoleDAO implements IRoleDAO
 {

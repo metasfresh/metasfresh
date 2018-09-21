@@ -27,13 +27,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DisplayType;
 
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
 
 /* package */class HUPIItemProductDisplayNameBuilder implements IHUPIItemProductDisplayNameBuilder
 {

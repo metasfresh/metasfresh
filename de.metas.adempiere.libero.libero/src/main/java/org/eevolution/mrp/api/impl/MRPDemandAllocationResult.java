@@ -28,10 +28,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.mrp.api.IMRPDemandAllocationResult;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
+
+import de.metas.util.Check;
 
 /**
  * Immutable MRP Demands allocation result.

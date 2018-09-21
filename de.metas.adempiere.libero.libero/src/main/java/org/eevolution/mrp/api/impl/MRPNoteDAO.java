@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -41,6 +40,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPNoteDAO;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Services;
 
 public class MRPNoteDAO implements IMRPNoteDAO
 {

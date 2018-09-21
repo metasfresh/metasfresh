@@ -28,12 +28,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.adempiere.ad.security.TableAccessLevel;
-import org.adempiere.util.Pair;
 import org.compiere.model.X_AD_Role;
 import org.compiere.model.X_AD_Table;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Pair;
 
 /**
  * Tests {@link TableAccessLevel} logic.

@@ -29,11 +29,12 @@ import java.util.Map.Entry;
 
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_InfoWindow;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import org.compiere.util.Env;
 
 public class InfoSimpleFactory

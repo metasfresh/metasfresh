@@ -9,9 +9,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -26,6 +23,9 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 public class AttributePricingBL implements IAttributePricingBL
 {

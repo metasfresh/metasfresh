@@ -2,10 +2,10 @@ package de.metas.report.xls.engine;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -34,10 +34,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
@@ -50,6 +46,10 @@ import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 
 public class DeliveryDayGenerator implements IDeliveryDayGenerator
 {

@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.impl.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
+import de.metas.util.Check;
 
 /**
  * Using this name for lack of better inspiration to differentiate from the {@link ESRRegularLineParser}.<br>

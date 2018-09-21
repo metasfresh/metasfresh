@@ -2,9 +2,10 @@ package de.metas.relation;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.util.Env;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -5,10 +5,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /*
  * #%L

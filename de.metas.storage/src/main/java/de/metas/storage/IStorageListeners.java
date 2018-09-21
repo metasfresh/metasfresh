@@ -25,7 +25,7 @@ package de.metas.storage;
 
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IStorageListeners extends ISingletonService
 {

@@ -30,13 +30,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.util.Check;
 
 /**
  * Executes a group of {@link IReceiptScheduleProducer}s.

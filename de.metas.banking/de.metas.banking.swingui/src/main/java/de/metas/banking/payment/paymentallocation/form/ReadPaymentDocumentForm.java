@@ -27,8 +27,6 @@ import java.awt.Frame;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
@@ -41,6 +39,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Custom Form to read the payment string and create the {@link I_C_Payment_Request}.

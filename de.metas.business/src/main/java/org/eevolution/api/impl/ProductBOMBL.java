@@ -27,8 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -42,6 +40,8 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import de.metas.lang.Percent;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProductBOMBL implements IProductBOMBL

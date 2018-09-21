@@ -28,9 +28,10 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.exceptions.PeriodClosedException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
+
+import de.metas.util.ISingletonService;
 
 public interface IPeriodBL extends ISingletonService
 {

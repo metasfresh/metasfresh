@@ -3,7 +3,8 @@ package org.adempiere.ad.trx.processor.api.impl;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -33,7 +33,6 @@ import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -42,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public final class AnnotatedCalloutInstance implements ICalloutInstance
 {

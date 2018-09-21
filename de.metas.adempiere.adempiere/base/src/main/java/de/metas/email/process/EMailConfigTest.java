@@ -27,7 +27,6 @@ package de.metas.email.process;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
@@ -37,6 +36,7 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

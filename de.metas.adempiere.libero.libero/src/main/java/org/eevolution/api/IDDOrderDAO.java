@@ -26,13 +26,14 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_PP_Order;
+
+import de.metas.util.ISingletonService;
 
 public interface IDDOrderDAO extends ISingletonService
 {

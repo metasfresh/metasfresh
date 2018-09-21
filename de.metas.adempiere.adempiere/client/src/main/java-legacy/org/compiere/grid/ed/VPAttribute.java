@@ -41,7 +41,6 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
@@ -55,6 +54,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Product Attribute Set Instance Editor

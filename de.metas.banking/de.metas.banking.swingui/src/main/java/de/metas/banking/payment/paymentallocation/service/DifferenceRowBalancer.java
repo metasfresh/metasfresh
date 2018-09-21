@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
@@ -43,6 +41,7 @@ import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 import de.metas.banking.payment.paymentallocation.model.InvoiceWriteOffAmountType;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
+import de.metas.util.Check;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.util.collections.ListUtils;
 

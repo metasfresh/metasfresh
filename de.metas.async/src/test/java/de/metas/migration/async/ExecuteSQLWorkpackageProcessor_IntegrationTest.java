@@ -2,7 +2,6 @@ package de.metas.migration.async;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Test;
 
@@ -14,6 +13,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.QueueProcessorsExecutor;
 import de.metas.logging.LogManager;
 import de.metas.migration.async.MockedExecuteSQLWorkpackageProcessor.ExecuteSQLWorkpackageExpectation;
+import de.metas.util.Services;
 
 /*
  * #%L

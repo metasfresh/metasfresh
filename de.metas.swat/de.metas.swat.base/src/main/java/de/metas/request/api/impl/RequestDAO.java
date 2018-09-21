@@ -10,8 +10,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_RequestType;
@@ -29,6 +27,8 @@ import de.metas.inout.model.I_M_QualityNote;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

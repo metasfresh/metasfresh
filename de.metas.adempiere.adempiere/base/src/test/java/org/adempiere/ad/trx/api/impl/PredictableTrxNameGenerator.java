@@ -24,7 +24,8 @@ package org.adempiere.ad.trx.api.impl;
 
 
 import org.adempiere.ad.trx.api.ITrxNameGenerator;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * An {@link ITrxNameGenerator} where generated names are predictable.

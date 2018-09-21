@@ -6,11 +6,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.service.ILocationDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

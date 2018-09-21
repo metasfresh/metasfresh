@@ -12,8 +12,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
@@ -33,6 +31,8 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.PriceListVersion;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This class sets up basic master data like partners, addresses, users, flatrate conditions, flarate transitions that can be used in testing.

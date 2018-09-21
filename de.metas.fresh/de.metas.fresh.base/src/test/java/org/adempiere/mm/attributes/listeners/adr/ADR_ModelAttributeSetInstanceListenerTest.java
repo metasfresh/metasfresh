@@ -30,8 +30,6 @@ import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTes
 import org.adempiere.mm.attributes.spi.impl.ADRAttributeGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
@@ -46,6 +44,8 @@ import de.metas.edi.api.impl.EDIOLCandBL;
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Tests:

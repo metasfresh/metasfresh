@@ -26,11 +26,10 @@ package de.metas.banking.payment.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.util.Check;
 
 public class PaymentStringParserFactory implements IPaymentStringParserFactory
 {

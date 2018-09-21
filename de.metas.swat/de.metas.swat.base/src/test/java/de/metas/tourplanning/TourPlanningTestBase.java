@@ -42,10 +42,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.TimeUtil;
@@ -73,6 +70,9 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import de.metas.util.time.TimeSource;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.

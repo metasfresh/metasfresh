@@ -26,10 +26,9 @@ package de.metas.storage.spi.hu;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageQuery;
+import de.metas.util.ISingletonService;
 
 /**
  * Misc helpers for {@link IStorageEngine} and handling units integration module.

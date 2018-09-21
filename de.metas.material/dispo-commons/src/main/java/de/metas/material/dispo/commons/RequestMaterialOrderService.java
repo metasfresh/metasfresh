@@ -3,7 +3,6 @@ package de.metas.material.dispo.commons;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +29,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

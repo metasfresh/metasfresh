@@ -34,10 +34,11 @@ import org.adempiere.ad.migration.xml.IXMLHandler;
 import org.adempiere.ad.migration.xml.IXMLHandlerFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Table;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+
 import org.compiere.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

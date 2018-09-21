@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
@@ -17,6 +16,7 @@ import com.jgoodies.common.base.Objects;
 
 import de.metas.adempiere.util.CacheModel;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

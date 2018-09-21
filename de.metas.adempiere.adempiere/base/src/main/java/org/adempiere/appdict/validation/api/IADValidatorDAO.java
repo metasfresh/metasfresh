@@ -26,7 +26,7 @@ package org.adempiere.appdict.validation.api;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IADValidatorDAO extends ISingletonService
 {

@@ -27,14 +27,14 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUReceiptScheduleAllocExpectations<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {

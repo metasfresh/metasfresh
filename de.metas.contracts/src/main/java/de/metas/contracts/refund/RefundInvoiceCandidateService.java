@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -28,6 +27,7 @@ import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

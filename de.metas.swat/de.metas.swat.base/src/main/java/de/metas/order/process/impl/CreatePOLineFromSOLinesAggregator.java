@@ -12,9 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -22,6 +19,9 @@ import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.order.IOrderLineBL;
 import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 

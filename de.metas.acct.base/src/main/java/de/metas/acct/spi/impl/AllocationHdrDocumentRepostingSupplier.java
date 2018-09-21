@@ -4,10 +4,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

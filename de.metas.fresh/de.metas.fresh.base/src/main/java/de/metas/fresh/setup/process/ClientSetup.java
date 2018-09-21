@@ -8,8 +8,6 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -34,6 +32,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

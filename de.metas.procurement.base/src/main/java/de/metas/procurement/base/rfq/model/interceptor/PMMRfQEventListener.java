@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
@@ -19,6 +18,7 @@ import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
 import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.rfq.event.RfQEventListenerAdapter;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Services;
 
 /*
  * #%L

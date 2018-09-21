@@ -18,10 +18,10 @@ package org.compiere.process;
 
 import org.adempiere.acct.api.GLDistributionNotValidException;
 import org.adempiere.acct.api.IGLDistributionBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * Verify GL Distribution

@@ -28,13 +28,13 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

@@ -26,8 +26,6 @@ package de.metas.handlingunits.client.terminal.lutuconfig.model;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
@@ -37,6 +35,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 
 public class TUKey extends AbstractLUTUKey
 {

@@ -32,8 +32,6 @@ import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
@@ -55,6 +53,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL

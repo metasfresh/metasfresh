@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * An interator wrapper which it's {@link #hasNext()} and {@link #next()} methods will always return the same element until configured <code>isValidPredicate</code> predicate will say the element is

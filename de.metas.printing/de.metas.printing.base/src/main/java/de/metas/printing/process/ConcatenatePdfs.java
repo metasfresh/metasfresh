@@ -33,8 +33,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
 
@@ -48,6 +46,8 @@ import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 
 public class ConcatenatePdfs extends JavaProcess

@@ -30,8 +30,9 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
 import org.compiere.util.TimeUtil;
+
+import de.metas.util.Check;
 
 /**
  * Column Value Modifier which adds hours (from specified SQL Column) to the main column value.

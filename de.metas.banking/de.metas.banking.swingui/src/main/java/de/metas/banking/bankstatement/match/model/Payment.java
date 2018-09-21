@@ -3,12 +3,12 @@ package de.metas.banking.bankstatement.match.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
+import de.metas.util.Check;
 
 /*
  * #%L

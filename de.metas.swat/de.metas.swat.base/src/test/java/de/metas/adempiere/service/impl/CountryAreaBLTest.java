@@ -29,13 +29,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_CountryArea_Assign;
 import de.metas.adempiere.service.ICountryAreaBL;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 

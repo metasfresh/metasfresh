@@ -25,9 +25,10 @@ package org.adempiere.inout.replenish.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_T_Replenish;
+
+import de.metas.util.ISingletonService;
 
 public interface IReplenishForFutureQty extends ISingletonService {
 

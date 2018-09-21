@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Accessor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Note;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.util.Accessor;
+import de.metas.util.Services;
 
 /* package */class InvoiceGenerateResult implements IInvoiceGenerateResult
 {

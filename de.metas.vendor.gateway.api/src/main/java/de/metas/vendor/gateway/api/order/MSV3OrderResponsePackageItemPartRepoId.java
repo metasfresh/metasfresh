@@ -1,8 +1,7 @@
 package de.metas.vendor.gateway.api.order;
 
-import org.adempiere.util.Check;
-
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

@@ -3,7 +3,6 @@ package de.metas.rfq.process;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -17,6 +16,7 @@ import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQResponse;
+import de.metas.util.Services;
 
 /*
  * #%L

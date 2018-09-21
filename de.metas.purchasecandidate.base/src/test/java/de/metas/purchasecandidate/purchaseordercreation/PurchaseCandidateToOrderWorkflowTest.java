@@ -12,7 +12,6 @@ import java.util.Iterator;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -41,6 +40,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewa
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import de.metas.util.time.SystemTime;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;

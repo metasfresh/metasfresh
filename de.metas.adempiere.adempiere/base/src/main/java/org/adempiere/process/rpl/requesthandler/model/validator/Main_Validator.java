@@ -26,13 +26,14 @@ package org.adempiere.process.rpl.requesthandler.model.validator;
 import org.adempiere.process.rpl.requesthandler.RequestHandler_Constants;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
 import org.adempiere.process.rpl.requesthandler.spi.impl.LoadPORequestHandler;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Ini;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 // TODO: add to AD_ModelValidator table
 public class Main_Validator implements ModelValidator

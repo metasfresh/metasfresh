@@ -5,8 +5,7 @@ import java.time.LocalDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

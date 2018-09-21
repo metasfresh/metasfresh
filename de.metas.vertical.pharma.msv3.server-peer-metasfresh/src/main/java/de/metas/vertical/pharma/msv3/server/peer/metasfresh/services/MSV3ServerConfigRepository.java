@@ -1,12 +1,12 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import de.metas.product.ProductCategoryId;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server;
 import de.metas.vertical.pharma.msv3.server.model.I_MSV3_Server_Product_Category;
 import de.metas.vertical.pharma.msv3.server.peer.metasfresh.model.MSV3ServerConfig;

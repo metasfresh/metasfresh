@@ -34,8 +34,6 @@ import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -51,6 +49,8 @@ import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pos.IPOSHUEditorFilterDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to filter available HUs.

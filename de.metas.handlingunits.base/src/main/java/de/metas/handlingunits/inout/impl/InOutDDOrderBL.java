@@ -8,8 +8,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
@@ -28,6 +26,8 @@ import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

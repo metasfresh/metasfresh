@@ -29,8 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * Iterator implementation for {@link List} which also supports {@link #current()} value.

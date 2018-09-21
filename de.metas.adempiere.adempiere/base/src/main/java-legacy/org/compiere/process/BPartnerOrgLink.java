@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role_OrgAccess;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
@@ -31,6 +30,7 @@ import org.compiere.util.AdempiereUserError;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Link Business Partner to Organization.

@@ -25,9 +25,8 @@ package de.metas.inoutcandidate.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.ISingletonService;
 
 /**
  * Implementors update invalid {@link I_M_ShipmentSchedule} instance and make them valid again.

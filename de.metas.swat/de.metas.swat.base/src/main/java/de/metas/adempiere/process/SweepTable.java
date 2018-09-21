@@ -24,8 +24,6 @@ package de.metas.adempiere.process;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -34,6 +32,8 @@ import org.compiere.util.Trx;
 
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 public class SweepTable extends JavaProcess

@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -16,6 +15,7 @@ import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.event.Topic;
 import de.metas.order.event.OrderUserNotifications;
+import de.metas.util.Services;
 
 /**
  *

@@ -11,7 +11,6 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
-import org.adempiere.util.Services;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
@@ -24,6 +23,7 @@ import de.metas.banking.bankstatement.match.model.BankStatement;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /*
  * #%L

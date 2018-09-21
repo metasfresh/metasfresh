@@ -10,9 +10,6 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
-import org.adempiere.util.StringUtils.TruncateAt;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Service;
@@ -35,6 +32,9 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.StringUtils.TruncateAt;
 import lombok.NonNull;
 
 /*

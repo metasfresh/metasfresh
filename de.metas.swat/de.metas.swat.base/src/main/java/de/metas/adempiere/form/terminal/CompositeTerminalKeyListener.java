@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 import de.metas.util.collections.IdentityHashSet;
 
 public class CompositeTerminalKeyListener implements ITerminalKeyListener

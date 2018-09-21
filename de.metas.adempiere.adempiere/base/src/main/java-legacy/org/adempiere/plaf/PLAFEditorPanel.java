@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -55,7 +56,6 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.plaf.PlafRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;

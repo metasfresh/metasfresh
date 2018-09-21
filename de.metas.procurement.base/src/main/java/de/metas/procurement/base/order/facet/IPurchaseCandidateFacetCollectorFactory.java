@@ -1,9 +1,9 @@
 package de.metas.procurement.base.order.facet;
 
 import org.adempiere.facet.IFacetCollector;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -7,8 +7,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt.ResetMode;
 import org.slf4j.Logger;
 
@@ -21,6 +19,8 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

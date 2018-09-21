@@ -34,7 +34,6 @@ import javax.xml.bind.DatatypeConverter;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -43,6 +42,7 @@ import org.springframework.context.annotation.Profile;
 import de.metas.Profiles;
 import de.metas.hash.HashableString;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Server Monitor Filter. Application Server independent check of username/password

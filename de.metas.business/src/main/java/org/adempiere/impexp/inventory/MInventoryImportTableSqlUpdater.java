@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Locator;
@@ -13,6 +12,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

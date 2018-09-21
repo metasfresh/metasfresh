@@ -27,9 +27,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
+
+import de.metas.util.Check;
 
 public class ArchiveEventManager implements IArchiveEventManager
 {

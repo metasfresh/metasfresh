@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -40,6 +39,7 @@ import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
 {

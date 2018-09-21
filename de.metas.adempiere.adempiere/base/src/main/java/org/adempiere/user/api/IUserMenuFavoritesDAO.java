@@ -2,7 +2,7 @@ package org.adempiere.user.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

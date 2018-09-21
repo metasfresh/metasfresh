@@ -26,7 +26,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,6 +35,7 @@ import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.PlainDunningConfigurator;
+import de.metas.util.time.SystemTime;
 
 public class DunningBLTest extends DunningTestBase
 {

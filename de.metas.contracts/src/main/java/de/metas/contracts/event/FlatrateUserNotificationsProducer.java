@@ -1,7 +1,5 @@
 package de.metas.contracts.event;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
@@ -13,6 +11,8 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

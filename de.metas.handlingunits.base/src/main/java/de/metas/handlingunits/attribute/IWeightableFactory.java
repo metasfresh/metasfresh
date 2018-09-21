@@ -24,7 +24,8 @@ package de.metas.handlingunits.attribute;
 
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.IMultitonService;
+
+import de.metas.util.IMultitonService;
 
 /**
  * Service used to wrap various objects and create {@link IWeightable} interfaces for them.

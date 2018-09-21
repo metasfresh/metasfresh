@@ -6,7 +6,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.X_C_DocType;
@@ -15,6 +14,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -25,13 +25,13 @@ package de.metas.tourplanning.api;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
 import de.metas.tourplanning.spi.IDeliveryDayHandler;
+import de.metas.util.ISingletonService;
 
 public interface IDeliveryDayBL extends ISingletonService
 {

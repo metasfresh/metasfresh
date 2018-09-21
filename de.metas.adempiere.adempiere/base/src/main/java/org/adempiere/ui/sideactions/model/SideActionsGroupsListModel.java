@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * {@link ISideActionsGroupsListModel} default implemetation.

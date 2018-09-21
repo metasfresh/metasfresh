@@ -2,8 +2,6 @@ package de.metas.contracts.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.IFlatrateBL;
@@ -12,6 +10,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

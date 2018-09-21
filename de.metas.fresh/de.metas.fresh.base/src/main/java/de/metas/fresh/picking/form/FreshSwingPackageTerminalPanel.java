@@ -28,8 +28,6 @@ package de.metas.fresh.picking.form;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Supplier;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -49,6 +47,7 @@ import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
 import de.metas.quantity.CapacityInterface;
+import de.metas.util.Check;
 
 /**
  * Packing window main panel (second window)

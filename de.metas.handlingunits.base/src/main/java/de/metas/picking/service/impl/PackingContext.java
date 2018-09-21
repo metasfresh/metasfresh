@@ -25,10 +25,9 @@ package de.metas.picking.service.impl;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.util.Check;
 
 public class PackingContext implements IPackingContext
 {

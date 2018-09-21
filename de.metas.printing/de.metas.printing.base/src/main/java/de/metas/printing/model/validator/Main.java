@@ -33,7 +33,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -68,6 +67,7 @@ import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
+import de.metas.util.Services;
 
 /**
  * Printing base - Main Validator

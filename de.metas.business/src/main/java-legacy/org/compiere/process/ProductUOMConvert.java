@@ -21,10 +21,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MUOM;

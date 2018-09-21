@@ -26,10 +26,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+
+import de.metas.util.ISingletonService;
 
 public interface IProductDAO extends ISingletonService
 {

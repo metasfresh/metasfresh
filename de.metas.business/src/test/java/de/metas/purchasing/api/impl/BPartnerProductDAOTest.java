@@ -6,7 +6,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -21,6 +20,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

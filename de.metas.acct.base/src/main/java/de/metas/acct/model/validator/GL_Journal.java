@@ -30,13 +30,13 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.ModelValidator;
 
 import de.metas.acct.impexp.GLJournalImportProcess;
+import de.metas.util.Services;
 
 @Interceptor(I_GL_Journal.class)
 public class GL_Journal

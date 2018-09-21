@@ -28,8 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -41,6 +39,8 @@ import de.metas.materialtracking.ch.lagerkonf.ILagerKonfQualityBasedConfig;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionLine;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Abstract implementation of {@link ILagerKonfQualityBasedConfig}.

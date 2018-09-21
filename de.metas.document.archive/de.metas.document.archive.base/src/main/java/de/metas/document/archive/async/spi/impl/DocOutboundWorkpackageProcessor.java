@@ -26,8 +26,6 @@ import java.util.List;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -38,6 +36,8 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Process work packages from queue and:

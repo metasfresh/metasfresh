@@ -31,8 +31,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -45,6 +43,8 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Scan keys, get available product categories from product storages and filter by them

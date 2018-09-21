@@ -28,11 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.acct.api.IFactAcctCubeUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_PA_ReportCube;
 import org.slf4j.Logger;

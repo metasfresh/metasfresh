@@ -30,7 +30,6 @@ import java.util.Arrays;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.proxy.AroundInvoke;
@@ -48,6 +47,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public @Cached// @Interceptor
 class CacheInterceptor implements Serializable

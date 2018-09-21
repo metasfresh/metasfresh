@@ -26,12 +26,11 @@ package de.metas.dunning.api.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.api.IDunningCandidateProducerFactory;
 import de.metas.dunning.exception.DunningException;
+import de.metas.util.Check;
 
 public class DefaultDunningCandidateProducerFactory implements IDunningCandidateProducerFactory
 {

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -14,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

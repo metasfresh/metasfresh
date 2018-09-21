@@ -24,8 +24,6 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Attribute;
@@ -45,6 +43,8 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.lang.SOTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO

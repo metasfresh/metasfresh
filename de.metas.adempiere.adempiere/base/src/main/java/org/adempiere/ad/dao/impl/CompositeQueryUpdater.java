@@ -33,7 +33,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /* package */class CompositeQueryUpdater<T> implements ICompositeQueryUpdater<T>
 {

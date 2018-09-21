@@ -10,11 +10,12 @@ import org.adempiere.ad.trx.api.impl.PredictableTrxNameGenerator;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 /*
  * #%L

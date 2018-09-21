@@ -26,8 +26,6 @@ package de.metas.handlingunits.callout;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -35,6 +33,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class C_Order extends OrderFastInput
 {

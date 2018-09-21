@@ -23,8 +23,6 @@ package de.metas.handlingunits.ddorder.spi.impl;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Product;
 
@@ -33,6 +31,8 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * A handler for the <code>DD_OrderLine</code> table.

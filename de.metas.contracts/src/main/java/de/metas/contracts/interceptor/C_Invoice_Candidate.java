@@ -28,8 +28,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
@@ -42,6 +40,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate

@@ -1,7 +1,5 @@
 package de.metas.material.planning.impl;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -16,6 +14,8 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Service

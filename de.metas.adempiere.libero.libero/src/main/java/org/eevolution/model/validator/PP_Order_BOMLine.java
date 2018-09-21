@@ -31,7 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -43,6 +42,7 @@ import org.eevolution.model.X_PP_Order_BOMLine;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Services;
 
 @Validator(I_PP_Order_BOMLine.class)
 public class PP_Order_BOMLine

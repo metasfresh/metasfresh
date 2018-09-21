@@ -28,12 +28,12 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 
 public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase

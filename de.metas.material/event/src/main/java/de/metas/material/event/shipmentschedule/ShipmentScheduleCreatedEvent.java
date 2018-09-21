@@ -2,13 +2,12 @@ package de.metas.material.event.shipmentschedule;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

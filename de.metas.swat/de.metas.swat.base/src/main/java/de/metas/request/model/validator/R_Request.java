@@ -10,7 +10,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
@@ -19,6 +18,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.util.Services;
 
 /*
  * #%L

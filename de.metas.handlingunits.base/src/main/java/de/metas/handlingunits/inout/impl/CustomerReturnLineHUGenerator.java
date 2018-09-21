@@ -15,10 +15,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
@@ -46,6 +43,9 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

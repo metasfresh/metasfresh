@@ -7,8 +7,6 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
@@ -20,6 +18,8 @@ import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

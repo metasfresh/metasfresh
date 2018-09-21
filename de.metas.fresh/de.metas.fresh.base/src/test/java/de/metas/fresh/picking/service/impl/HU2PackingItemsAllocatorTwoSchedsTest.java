@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Services;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -44,6 +43,7 @@ import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

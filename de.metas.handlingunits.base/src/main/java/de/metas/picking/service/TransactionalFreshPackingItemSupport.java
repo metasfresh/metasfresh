@@ -11,9 +11,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Services;
 
 import com.google.common.base.Supplier;
+
+import de.metas.util.Services;
 
 /*
  * #%L

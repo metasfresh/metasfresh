@@ -27,11 +27,11 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
+import de.metas.util.Services;
 
 /**
  * 

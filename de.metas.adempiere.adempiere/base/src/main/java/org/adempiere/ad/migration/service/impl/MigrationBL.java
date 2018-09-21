@@ -33,7 +33,8 @@ import org.adempiere.ad.migration.model.X_AD_Migration;
 import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.ad.migration.service.IMigrationDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 public class MigrationBL implements IMigrationBL
 {

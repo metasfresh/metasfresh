@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_System;
 import org.compiere.util.Env;
@@ -14,6 +13,7 @@ import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

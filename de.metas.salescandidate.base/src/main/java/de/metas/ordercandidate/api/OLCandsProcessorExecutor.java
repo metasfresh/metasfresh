@@ -10,10 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.util.ArrayKeyBuilder;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -33,6 +29,10 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

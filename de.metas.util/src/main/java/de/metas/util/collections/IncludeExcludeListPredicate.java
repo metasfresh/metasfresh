@@ -27,10 +27,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Implementation of Include/Exclude List pattern which acts like a {@link Predicate}.

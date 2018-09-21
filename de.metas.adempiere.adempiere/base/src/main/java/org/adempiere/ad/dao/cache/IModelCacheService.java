@@ -26,8 +26,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Model level caching service. Use it to enable e.g.

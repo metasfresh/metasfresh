@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
@@ -41,6 +40,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
