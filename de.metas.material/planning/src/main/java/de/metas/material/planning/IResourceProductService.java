@@ -2,10 +2,11 @@ package de.metas.material.planning;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

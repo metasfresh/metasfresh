@@ -4,7 +4,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -24,6 +23,7 @@ import de.metas.document.spi.ICounterDocHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 
 /*
  * #%L

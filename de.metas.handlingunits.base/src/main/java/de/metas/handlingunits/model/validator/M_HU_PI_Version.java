@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.Services;
 
 @Validator(I_M_HU_PI_Version.class)
 public class M_HU_PI_Version

@@ -29,8 +29,6 @@ import java.sql.ResultSet;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_C_Currency;
@@ -44,6 +42,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Provides the summary message which is displayed at the window's bottom, when we deal with invoice candidates tab.

@@ -46,7 +46,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_M_PackagingTree;
@@ -74,6 +73,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /**
  * Packing View

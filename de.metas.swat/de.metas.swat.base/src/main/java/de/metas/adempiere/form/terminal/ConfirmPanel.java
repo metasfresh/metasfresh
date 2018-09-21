@@ -30,10 +30,10 @@ import java.beans.PropertyChangeListener;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /**
  * @author tsa

@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -49,6 +48,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /**
  * Links a given purchase order line and its inOut lines to a given <code>M_Material_Tracking_ID</code>. <br>

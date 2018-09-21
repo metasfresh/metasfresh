@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_WF_NodeNext;
 import org.compiere.model.MColumn;
 import org.compiere.model.X_AD_WF_Node;
@@ -36,6 +35,8 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.api.IADWorkflowDAO;
+
+import de.metas.util.Services;
 
 /**
  *	Workflow Node Model

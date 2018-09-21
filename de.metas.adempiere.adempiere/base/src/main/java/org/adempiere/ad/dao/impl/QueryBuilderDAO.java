@@ -33,9 +33,9 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class QueryBuilderDAO extends AbstractQueryBuilderDAO

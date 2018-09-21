@@ -33,8 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
@@ -52,6 +50,8 @@ import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 // Note: this model validator used to have the class name 'OLCand'
 

@@ -11,7 +11,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -27,6 +26,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

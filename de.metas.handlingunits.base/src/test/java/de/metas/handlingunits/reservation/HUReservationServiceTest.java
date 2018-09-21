@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
@@ -30,6 +29,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

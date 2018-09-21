@@ -2,10 +2,10 @@ package org.adempiere.service;
 
 import java.util.Optional;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

@@ -4,12 +4,12 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

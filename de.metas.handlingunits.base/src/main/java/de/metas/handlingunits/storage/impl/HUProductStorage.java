@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -38,6 +36,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Read-only HU Product Storage based on {@link IHUStorage} and a particular product.

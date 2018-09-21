@@ -25,8 +25,9 @@ package de.metas.event;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.util.Services;
 import org.compiere.util.Ini;
+
+import de.metas.util.Services;
 
 /**
  * Module activator which is initializing the {@link IEventBus} infrastructure.

@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
 
@@ -37,6 +36,7 @@ import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class SEPADocumentDAO implements ISEPADocumentDAO

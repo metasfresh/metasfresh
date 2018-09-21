@@ -6,8 +6,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.ILotNumberBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Movement;
@@ -27,8 +25,15 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+<<<<<<< HEAD
 import de.metas.product.LotNumberQuarantine;
 import de.metas.product.LotNumberQuarantineRepository;
+=======
+import de.metas.product.LotNumberLock;
+import de.metas.product.LotNumberLockRepository;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> master
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

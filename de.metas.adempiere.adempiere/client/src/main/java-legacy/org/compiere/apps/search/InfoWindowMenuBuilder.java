@@ -13,8 +13,6 @@ import javax.swing.KeyStroke;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.images.Images;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
 import org.compiere.apps.AMenuStartItem;
@@ -28,6 +26,8 @@ import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used to create, add and handle the Info windows menu items.

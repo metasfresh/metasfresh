@@ -1,10 +1,9 @@
 package de.metas.dlm.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.dlm.IDLMService;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /*
  * #%L

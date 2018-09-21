@@ -14,8 +14,6 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_DocType;
@@ -40,6 +38,8 @@ import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

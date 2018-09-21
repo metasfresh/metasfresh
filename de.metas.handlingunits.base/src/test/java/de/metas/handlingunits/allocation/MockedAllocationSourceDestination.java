@@ -26,7 +26,6 @@ package de.metas.handlingunits.allocation;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.compiere.util.Util;
 
@@ -35,6 +34,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.util.Check;
 
 public class MockedAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {

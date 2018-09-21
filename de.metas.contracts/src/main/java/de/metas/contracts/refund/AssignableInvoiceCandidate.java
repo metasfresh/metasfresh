@@ -7,13 +7,12 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

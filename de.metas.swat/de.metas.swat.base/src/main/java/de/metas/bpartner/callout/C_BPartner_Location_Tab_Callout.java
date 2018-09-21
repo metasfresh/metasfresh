@@ -26,10 +26,10 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 
 
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 
 // TODO: consider removing it; it's used only in Cockpit window (which is deprecated!)
 public class C_BPartner_Location_Tab_Callout extends TabCalloutAdapter

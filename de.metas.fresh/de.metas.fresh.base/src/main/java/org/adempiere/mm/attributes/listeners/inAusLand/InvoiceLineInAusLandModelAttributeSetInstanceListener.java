@@ -30,9 +30,9 @@ import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.countryattribute.impl.CountryAwareAttributeUpdater;
 import org.adempiere.mm.attributes.countryattribute.impl.InvoiceLineCountryAware;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.util.Services;
 
 public class InvoiceLineInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

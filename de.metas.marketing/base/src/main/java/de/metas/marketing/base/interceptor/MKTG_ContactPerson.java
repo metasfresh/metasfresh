@@ -5,7 +5,6 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -15,6 +14,7 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.UnsupportedEncodingException;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -17,6 +16,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+import de.metas.util.Services;
 
 /*
  * #%L

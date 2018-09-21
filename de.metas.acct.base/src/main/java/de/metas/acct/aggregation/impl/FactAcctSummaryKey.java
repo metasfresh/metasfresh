@@ -2,7 +2,6 @@ package de.metas.acct.aggregation.impl;
 
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -10,6 +9,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.acct.aggregation.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.util.Check;
 
 /*
  * #%L

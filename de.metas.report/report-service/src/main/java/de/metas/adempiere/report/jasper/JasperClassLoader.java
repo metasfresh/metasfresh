@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -47,6 +46,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.FileUtil;
 
 /**

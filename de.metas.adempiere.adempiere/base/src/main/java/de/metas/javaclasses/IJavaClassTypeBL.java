@@ -23,10 +23,10 @@ package de.metas.javaclasses;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.ISingletonService;
 
 public interface IJavaClassTypeBL extends ISingletonService
 {

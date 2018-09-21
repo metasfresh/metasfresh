@@ -3,7 +3,6 @@ package de.metas.material.cockpit.view.eventhandler;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Loggables;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -20,6 +19,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

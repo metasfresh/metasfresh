@@ -33,8 +33,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_M_Product;
@@ -42,6 +40,8 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_EDI_M_Product_Lookup_UPC_v;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.TableRowKey;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Matchers all rows for given barcode. M_Product.UPC and M_Product.Value are matched.

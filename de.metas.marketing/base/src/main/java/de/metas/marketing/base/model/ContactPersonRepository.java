@@ -12,10 +12,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.location.LocationId;
 import org.adempiere.user.UserId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
@@ -28,6 +24,10 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

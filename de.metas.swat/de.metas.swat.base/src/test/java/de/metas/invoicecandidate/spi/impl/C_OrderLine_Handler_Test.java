@@ -34,7 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.UserRepository;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_DocType;
@@ -60,6 +59,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 

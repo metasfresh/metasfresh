@@ -48,7 +48,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
@@ -58,6 +57,7 @@ import org.compiere.model.MCost;
 import org.compiere.model.X_C_AcctSchema;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

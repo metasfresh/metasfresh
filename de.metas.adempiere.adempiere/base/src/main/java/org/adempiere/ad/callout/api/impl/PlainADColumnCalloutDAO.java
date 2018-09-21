@@ -1,8 +1,9 @@
 package org.adempiere.ad.callout.api.impl;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_ColumnCallout;
+
+import de.metas.util.Check;
 
 /*
  * #%L

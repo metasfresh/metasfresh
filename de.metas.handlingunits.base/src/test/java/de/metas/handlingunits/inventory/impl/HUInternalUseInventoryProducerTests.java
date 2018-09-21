@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.impl.InventoryBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import mockit.Mocked;
 

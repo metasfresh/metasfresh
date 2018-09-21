@@ -13,7 +13,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -25,6 +24,7 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

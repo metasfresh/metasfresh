@@ -26,14 +26,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Sets log level which is configured in {@link ISysConfigBL}.

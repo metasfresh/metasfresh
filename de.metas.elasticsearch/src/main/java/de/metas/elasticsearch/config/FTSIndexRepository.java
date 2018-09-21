@@ -9,8 +9,6 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +17,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.elasticsearch.model.I_ES_FTS_Index;
 import de.metas.elasticsearch.model.I_ES_FTS_IndexInclude;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

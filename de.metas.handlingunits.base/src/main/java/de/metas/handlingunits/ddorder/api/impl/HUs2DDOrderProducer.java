@@ -16,11 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -60,7 +55,16 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+<<<<<<< HEAD
 import de.metas.product.LotNumberQuarantine;
+=======
+import de.metas.product.LotNumberLock;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+>>>>>>> master
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

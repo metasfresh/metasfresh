@@ -27,13 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.MultiValueMap;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.util.Check;
+import de.metas.util.collections.MultiValueMap;
+import de.metas.util.time.SystemTime;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessorEventDispatcher;
 import de.metas.async.processor.IQueueProcessorListener;

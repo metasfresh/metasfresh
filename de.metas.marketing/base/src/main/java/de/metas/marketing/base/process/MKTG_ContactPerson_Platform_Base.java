@@ -2,7 +2,6 @@ package de.metas.marketing.base.process;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 
 import de.metas.marketing.base.PlatformClientService;
@@ -15,6 +14,7 @@ import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

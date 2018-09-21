@@ -24,13 +24,13 @@ package de.metas.handlingunits.client.terminal.select.model;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /**
  * Immutable {@link ITerminalKey} implementation which wraps an {@link I_C_BPartner_Location}.

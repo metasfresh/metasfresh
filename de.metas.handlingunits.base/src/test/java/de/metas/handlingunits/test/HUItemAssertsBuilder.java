@@ -26,7 +26,6 @@ package de.metas.handlingunits.test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Services;
 
 public class HUItemAssertsBuilder
 {

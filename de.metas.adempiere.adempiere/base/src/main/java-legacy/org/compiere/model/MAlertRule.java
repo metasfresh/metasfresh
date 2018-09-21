@@ -25,10 +25,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.StringUtils;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+
+import de.metas.util.StringUtils;
 
 
 /**

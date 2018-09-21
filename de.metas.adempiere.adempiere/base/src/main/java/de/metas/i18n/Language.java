@@ -15,7 +15,6 @@ import java.util.function.Supplier;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
@@ -26,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

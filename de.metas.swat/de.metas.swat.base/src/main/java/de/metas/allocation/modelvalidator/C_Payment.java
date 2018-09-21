@@ -25,9 +25,10 @@ package de.metas.allocation.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Check;
 
 @Validator(I_C_Payment.class)
 public class C_Payment

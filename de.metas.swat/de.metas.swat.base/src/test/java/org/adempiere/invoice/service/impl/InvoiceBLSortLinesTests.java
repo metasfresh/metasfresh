@@ -29,13 +29,13 @@ import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 

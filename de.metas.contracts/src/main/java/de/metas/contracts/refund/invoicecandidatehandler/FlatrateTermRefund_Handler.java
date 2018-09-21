@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 
@@ -24,6 +23,7 @@ import de.metas.contracts.refund.RefundConfigRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.product.ProductId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*

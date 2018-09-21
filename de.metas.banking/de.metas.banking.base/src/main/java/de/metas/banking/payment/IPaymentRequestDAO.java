@@ -27,10 +27,10 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.util.ISingletonService;
 
 /**
  * Provides retrieval methods {@link I_C_Payment_Request}s

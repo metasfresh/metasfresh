@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
@@ -48,6 +47,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestWatcher;
+
+import de.metas.util.Services;
 
 /**
  * Integration test for {@link RemoteArchiveStorage}

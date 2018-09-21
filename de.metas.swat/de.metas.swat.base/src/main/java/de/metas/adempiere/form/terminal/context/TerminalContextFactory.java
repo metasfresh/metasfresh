@@ -27,8 +27,6 @@ package de.metas.adempiere.form.terminal.context;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.WeakWrapper;
@@ -40,6 +38,8 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.POSKeyLayout;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.collections.IdentityHashSet;
 
 /**
  * @author tsa

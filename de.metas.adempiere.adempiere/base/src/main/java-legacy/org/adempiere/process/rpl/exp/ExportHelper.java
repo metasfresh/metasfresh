@@ -54,8 +54,6 @@ import org.adempiere.server.rpl.api.impl.ImportHelper;
 import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ReplicationStrategy;
@@ -84,6 +82,8 @@ import org.w3c.dom.Text;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author Trifon N. Trifonov

@@ -28,11 +28,11 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.pricing.service.IPricingDAO;
+import de.metas.util.Services;
 
 public class PricingDAO implements IPricingDAO
 {

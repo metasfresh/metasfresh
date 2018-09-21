@@ -2,7 +2,6 @@ package org.adempiere.ad.dao.cache;
 
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -11,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

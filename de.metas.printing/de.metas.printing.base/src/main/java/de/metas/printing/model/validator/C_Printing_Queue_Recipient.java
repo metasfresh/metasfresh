@@ -26,13 +26,13 @@ package de.metas.printing.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Printing_Queue_Recipient.class)
 public class C_Printing_Queue_Recipient

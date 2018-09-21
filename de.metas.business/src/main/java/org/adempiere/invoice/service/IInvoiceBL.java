@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -42,6 +41,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.util.ISingletonService;
 
 public interface IInvoiceBL extends ISingletonService
 {

@@ -30,7 +30,6 @@ import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 import org.compiere.util.KeyNamePair;
 
@@ -41,6 +40,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
 import de.metas.handlingunits.document.IHUDocumentLineFinder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
 
 /**
  * The "+10 items" button which is fetching from underlying {@link IHUQueryBuilder} a specified number of items, each time is pressed.

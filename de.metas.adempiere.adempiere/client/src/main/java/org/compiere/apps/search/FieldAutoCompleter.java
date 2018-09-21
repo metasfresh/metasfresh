@@ -55,14 +55,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.jgoodies.looks.Options;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * @author Santhosh Kumar T - santhosh@in.fiorano.com
@@ -398,8 +398,8 @@ public abstract class FieldAutoCompleter implements MouseListener
 	 */
 	protected static boolean startsWithIgnoreCase(final String str1, final String str2)
 	{
-		final String s1 = org.adempiere.util.StringUtils.stripDiacritics(str1.toUpperCase()).trim();
-		final String s2 = org.adempiere.util.StringUtils.stripDiacritics(str2.toUpperCase()).trim();
+		final String s1 = de.metas.util.StringUtils.stripDiacritics(str1.toUpperCase()).trim();
+		final String s2 = de.metas.util.StringUtils.stripDiacritics(str2.toUpperCase()).trim();
 		return s1.startsWith(s2);
 	}
 

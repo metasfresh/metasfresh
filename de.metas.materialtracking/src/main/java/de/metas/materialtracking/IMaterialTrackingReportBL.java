@@ -1,12 +1,11 @@
 package de.metas.materialtracking;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line_Alloc;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.process.MaterialTrackingReportAgregationItem;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

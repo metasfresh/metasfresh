@@ -32,9 +32,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.util.Check;
 
 /**
  * This map helps to keep track about which item is packed into which place..it's sort of legacy..

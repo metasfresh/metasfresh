@@ -42,9 +42,6 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.search.IInfoQueryCriteria;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.grid.ed.VDate;
@@ -60,6 +57,9 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import net.miginfocom.swing.MigLayout;
 
 /**

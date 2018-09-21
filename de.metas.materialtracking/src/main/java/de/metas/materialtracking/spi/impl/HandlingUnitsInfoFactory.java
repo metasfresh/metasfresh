@@ -23,13 +23,13 @@ package de.metas.materialtracking.spi.impl;
  */
 
 import org.adempiere.model.I_C_Invoice_Detail;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.impl.PlainHandlingUnitsInfo;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.util.Check;
 
 /**
  * Default implementation of {@link IHandlingUnitsInfoFactory} which does nothing.

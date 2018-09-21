@@ -25,8 +25,9 @@ package org.adempiere.db;
 
 import java.sql.PreparedStatement;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.util.DB;
+
+import de.metas.util.ISingletonService;
 
 /**
  * 

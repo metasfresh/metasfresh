@@ -9,9 +9,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -29,6 +26,9 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

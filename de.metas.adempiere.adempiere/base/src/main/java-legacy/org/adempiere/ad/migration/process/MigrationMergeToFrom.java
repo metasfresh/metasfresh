@@ -20,9 +20,9 @@ import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

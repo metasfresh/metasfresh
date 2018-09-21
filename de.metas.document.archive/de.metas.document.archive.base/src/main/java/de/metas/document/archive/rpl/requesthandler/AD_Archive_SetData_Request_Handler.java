@@ -24,9 +24,9 @@ package de.metas.document.archive.rpl.requesthandler;
 
 
 import org.adempiere.process.rpl.requesthandler.spi.impl.LoadConvertPORequestHandler;
-import org.adempiere.util.collections.Converter;
 
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.util.collections.Converter;
 
 public class AD_Archive_SetData_Request_Handler extends LoadConvertPORequestHandler<I_AD_Archive, I_AD_Archive>
 {

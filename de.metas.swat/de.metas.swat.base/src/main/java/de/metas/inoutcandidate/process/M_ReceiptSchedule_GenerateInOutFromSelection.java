@@ -29,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ProcessInfoSelectionQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 
@@ -41,6 +40,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

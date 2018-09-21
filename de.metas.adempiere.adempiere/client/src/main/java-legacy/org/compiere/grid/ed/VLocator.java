@@ -39,7 +39,6 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
 import org.adempiere.ui.editor.IZoomableEditor;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
@@ -58,6 +57,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *	Warehouse Locator Control

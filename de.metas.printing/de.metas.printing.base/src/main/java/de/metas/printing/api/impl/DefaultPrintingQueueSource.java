@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.Query;
 
@@ -36,6 +34,8 @@ import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 {

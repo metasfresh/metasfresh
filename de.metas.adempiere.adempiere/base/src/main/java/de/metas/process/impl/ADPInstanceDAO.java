@@ -44,9 +44,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance;
@@ -70,6 +67,9 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
 {

@@ -27,7 +27,8 @@ import java.util.Properties;
 
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface IReplicationTrxBL extends ISingletonService
 {

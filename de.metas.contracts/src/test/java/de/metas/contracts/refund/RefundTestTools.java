@@ -1,12 +1,12 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.collections.CollectionUtils.singleElement;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -14,8 +14,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
@@ -51,6 +49,8 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 

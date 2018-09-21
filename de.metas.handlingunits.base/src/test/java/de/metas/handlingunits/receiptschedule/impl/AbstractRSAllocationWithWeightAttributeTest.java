@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeSetInstance;
 
@@ -50,6 +48,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Base class for quickly setting up tests with RS-HU-WeightAttribute allocations & operations

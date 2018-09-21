@@ -3,9 +3,6 @@ package de.metas.money;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +11,9 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
 import de.metas.lang.Percent;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

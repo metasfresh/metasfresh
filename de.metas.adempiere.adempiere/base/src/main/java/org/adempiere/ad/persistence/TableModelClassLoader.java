@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
@@ -42,6 +41,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Class responsible for loading model classes by given Table Name.

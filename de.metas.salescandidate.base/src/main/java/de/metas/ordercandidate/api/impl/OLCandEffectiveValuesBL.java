@@ -25,8 +25,6 @@ package de.metas.ordercandidate.api.impl;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -34,6 +32,8 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {

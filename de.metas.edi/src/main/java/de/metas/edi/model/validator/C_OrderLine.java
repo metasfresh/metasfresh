@@ -25,11 +25,11 @@ package de.metas.edi.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_C_OrderLine;
+import de.metas.util.Services;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine

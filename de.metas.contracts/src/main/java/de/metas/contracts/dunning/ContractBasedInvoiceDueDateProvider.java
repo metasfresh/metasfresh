@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
@@ -20,6 +19,7 @@ import de.metas.dunning.invoice.InvoiceDueDateProvider;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

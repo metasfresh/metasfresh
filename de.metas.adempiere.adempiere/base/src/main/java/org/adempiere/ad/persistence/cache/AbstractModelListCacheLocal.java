@@ -35,8 +35,9 @@ import org.adempiere.ad.wrapper.POJOLookupMapInstancesTracker;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IContextAware;
+
+import de.metas.util.Check;
 
 /**
  * Abstract list of models which expires when parent model's context or transaction was changed.

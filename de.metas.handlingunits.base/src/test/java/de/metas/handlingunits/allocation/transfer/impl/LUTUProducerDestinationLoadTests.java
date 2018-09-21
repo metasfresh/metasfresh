@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
@@ -59,6 +58,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_LUTU_Configuration;
+import de.metas.util.Services;
 
 /**
  * Note the "load" means "to create HUs and load qty into them from somewhere else". It's not about performance and stuff.

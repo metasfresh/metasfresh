@@ -15,8 +15,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Attribute;
@@ -38,6 +36,8 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

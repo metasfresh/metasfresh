@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.HUProcessDescriptor.HUProcessDescriptorBuilder;
+import de.metas.util.Services;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 
 public class MHUProcessDAO implements IMHUProcessDAO

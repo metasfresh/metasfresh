@@ -1,10 +1,9 @@
 package de.metas.dlm.partitioner.process;
 
-import org.adempiere.util.Services;
-
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -25,13 +25,13 @@ package org.adempiere.user.api;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
 import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 
 public interface IUserBL extends ISingletonService
 {

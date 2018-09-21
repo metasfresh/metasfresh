@@ -1,7 +1,5 @@
 package de.metas.device.scales.impl;
 
-import org.adempiere.util.StringUtils;
-
 /*
  * #%L
  * de.metas.device.scales
@@ -26,6 +24,7 @@ import org.adempiere.util.StringUtils;
 
 
 import de.metas.device.api.DeviceException;
+import de.metas.util.StringUtils;
 
 /**
  * Exception to be thrown by {@link IParser} implementations in case of errors

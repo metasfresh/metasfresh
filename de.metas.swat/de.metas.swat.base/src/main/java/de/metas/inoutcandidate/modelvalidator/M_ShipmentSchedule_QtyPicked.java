@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableList;
@@ -13,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Validator(I_M_ShipmentSchedule_QtyPicked.class)

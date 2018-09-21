@@ -3,11 +3,10 @@ package de.metas.shipper.gateway.go.schema;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.shipper.gateway.spi.model.SelfDelivery;
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 

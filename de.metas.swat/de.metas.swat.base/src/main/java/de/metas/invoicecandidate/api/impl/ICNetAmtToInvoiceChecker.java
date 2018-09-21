@@ -27,13 +27,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAggregator;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 
 /**
  * Checker used to make sure we are enqueueing and invoicing exactly the same amount that user seen on screen.

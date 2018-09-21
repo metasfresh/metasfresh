@@ -10,8 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Activity;
@@ -27,6 +25,8 @@ import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUMovementBL implements IHUMovementBL

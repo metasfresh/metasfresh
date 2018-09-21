@@ -28,11 +28,11 @@ import java.util.Calendar;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * This callout is supposed to be usable for <b>any</b> tab with a DatePromised field.

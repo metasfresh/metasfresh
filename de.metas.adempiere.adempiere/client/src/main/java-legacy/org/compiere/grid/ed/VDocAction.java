@@ -31,7 +31,6 @@ import javax.swing.JTextArea;
 
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -54,6 +53,7 @@ import de.metas.document.engine.IDocumentBL.IDocActionItem;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Displays valid Document Action Options based on context

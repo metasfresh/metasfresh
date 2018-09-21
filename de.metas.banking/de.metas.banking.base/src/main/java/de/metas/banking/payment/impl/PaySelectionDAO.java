@@ -9,8 +9,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
@@ -19,6 +17,8 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author al

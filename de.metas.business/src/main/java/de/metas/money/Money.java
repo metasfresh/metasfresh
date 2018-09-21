@@ -12,15 +12,15 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.collections.CollectionUtils;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

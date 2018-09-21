@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,7 @@ import de.metas.event.log.impl.EventLogEntry;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.event.remote.JacksonJsonEventSerializer;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

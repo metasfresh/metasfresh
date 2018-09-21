@@ -10,8 +10,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
@@ -33,6 +31,8 @@ import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

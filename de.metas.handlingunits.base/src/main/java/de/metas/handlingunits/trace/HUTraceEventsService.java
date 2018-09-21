@@ -11,8 +11,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -38,6 +36,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

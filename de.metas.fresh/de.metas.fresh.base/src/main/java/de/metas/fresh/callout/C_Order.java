@@ -1,12 +1,12 @@
 package de.metas.fresh.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.util.Services;
 
 public class C_Order extends CalloutEngine
 {

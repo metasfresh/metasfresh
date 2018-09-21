@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +37,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;

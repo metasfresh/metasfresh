@@ -26,10 +26,9 @@ package de.metas.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.util.ISingletonService;
 
 public interface IPrinterRoutingDAO extends ISingletonService
 {

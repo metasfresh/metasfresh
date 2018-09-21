@@ -31,8 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -59,6 +57,8 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class HUKeyNameBuilder extends AbstractHUKeyNameBuilder<HUKey>
 {

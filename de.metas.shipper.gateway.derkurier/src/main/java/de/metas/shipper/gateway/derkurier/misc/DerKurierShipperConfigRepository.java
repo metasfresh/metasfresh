@@ -5,8 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
@@ -14,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

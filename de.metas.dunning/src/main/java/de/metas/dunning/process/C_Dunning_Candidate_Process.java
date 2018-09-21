@@ -24,9 +24,6 @@ package de.metas.dunning.process;
 
 import java.util.Iterator;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -40,6 +37,8 @@ import de.metas.dunning.api.impl.AbstractDunningCandidateSource;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates

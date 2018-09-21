@@ -3,14 +3,14 @@ package de.metas.banking.bankstatement.match.model;
 import java.util.Comparator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
 
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

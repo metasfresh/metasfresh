@@ -47,7 +47,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.junit.After;
@@ -77,6 +76,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
+import de.metas.util.Services;
 
 public class DunningTestBase
 {

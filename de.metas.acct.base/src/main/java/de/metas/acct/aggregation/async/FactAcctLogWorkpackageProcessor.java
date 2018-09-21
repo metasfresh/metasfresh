@@ -4,13 +4,13 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.util.Services;
 
 /*
  * #%L

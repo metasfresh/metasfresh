@@ -1,11 +1,11 @@
 package de.metas.material.planning.ddorder;
 
-import org.adempiere.util.Loggables;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Loggables;
 
 /*
  * #%L

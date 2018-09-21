@@ -34,12 +34,12 @@ import java.util.function.Predicate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 
 import de.metas.handlingunits.client.terminal.select.api.IPOSFiltering;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
+import de.metas.util.Services;
 
 public abstract class AbstractFiltering implements IPOSFiltering
 {

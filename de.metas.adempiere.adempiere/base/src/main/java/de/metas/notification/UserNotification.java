@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -18,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

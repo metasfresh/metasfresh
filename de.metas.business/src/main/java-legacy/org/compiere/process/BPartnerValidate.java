@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MInvoice;
@@ -36,6 +35,7 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUp
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Validate Business Partner

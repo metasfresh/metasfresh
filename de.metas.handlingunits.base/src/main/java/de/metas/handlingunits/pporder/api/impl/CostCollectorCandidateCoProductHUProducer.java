@@ -4,8 +4,6 @@ import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Preconditions;
@@ -18,6 +16,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderReceiptHUProducer
 {

@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.AdempiereProcessor2;
 import org.compiere.model.AdempiereProcessorLog;
@@ -43,6 +41,8 @@ import org.compiere.wf.MWorkflowProcessor;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Adempiere Server Base

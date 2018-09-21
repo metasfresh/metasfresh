@@ -1,12 +1,11 @@
 package de.metas.contracts.refund.allqties.refundconfigchange;
 
-import org.adempiere.util.Check;
-
 import de.metas.contracts.refund.AssignmentToRefundCandidate;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

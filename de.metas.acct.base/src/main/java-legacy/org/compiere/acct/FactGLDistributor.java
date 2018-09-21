@@ -16,7 +16,6 @@ import org.adempiere.acct.api.impl.AccountDimension;
 import org.adempiere.acct.api.impl.AcctSegmentType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_GL_Distribution;
@@ -26,6 +25,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

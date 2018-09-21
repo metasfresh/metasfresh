@@ -5,12 +5,12 @@ import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

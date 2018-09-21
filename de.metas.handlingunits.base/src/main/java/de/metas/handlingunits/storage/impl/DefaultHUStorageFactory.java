@@ -25,7 +25,6 @@ package de.metas.handlingunits.storage.impl;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class DefaultHUStorageFactory implements IHUStorageFactory

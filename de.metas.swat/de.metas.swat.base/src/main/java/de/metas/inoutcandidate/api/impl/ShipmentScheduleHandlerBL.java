@@ -40,8 +40,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.slf4j.Logger;
 
@@ -57,6 +55,8 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingCandidate;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

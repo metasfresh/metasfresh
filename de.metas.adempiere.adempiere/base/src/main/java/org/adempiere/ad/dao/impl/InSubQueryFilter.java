@@ -35,8 +35,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
@@ -44,6 +42,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Filters out only records which are present in sub-query.

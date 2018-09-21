@@ -2,8 +2,6 @@ package de.metas.invoicecandidate.spi.impl;
 
 import java.util.Set;
 
-import org.adempiere.util.Services;
-
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -12,6 +10,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListenerAdapter

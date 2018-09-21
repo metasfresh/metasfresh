@@ -28,7 +28,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.GridTabModelInternalAccessor;
 import org.adempiere.ad.wrapper.IInterfaceWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.PO;
@@ -39,6 +38,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Wrap GridTab to ADempiere Bean Interface (i.e. generated interfaces). Usage example:

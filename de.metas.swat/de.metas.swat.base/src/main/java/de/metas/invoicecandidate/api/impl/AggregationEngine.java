@@ -35,11 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -73,6 +68,11 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AggregationEngine implements IAggregationEngine

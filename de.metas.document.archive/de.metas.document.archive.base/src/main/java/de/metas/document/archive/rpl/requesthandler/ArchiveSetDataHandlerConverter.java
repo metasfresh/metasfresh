@@ -28,12 +28,12 @@ import java.util.Properties;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 import org.compiere.model.MTable;
 
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.Converter;
 
 public class ArchiveSetDataHandlerConverter implements Converter<I_AD_Archive, I_AD_Archive>
 {

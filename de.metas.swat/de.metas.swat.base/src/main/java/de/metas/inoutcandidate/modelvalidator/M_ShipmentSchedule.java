@@ -36,9 +36,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -62,6 +60,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

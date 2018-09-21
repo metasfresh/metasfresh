@@ -3,7 +3,6 @@ package de.metas.rfq.model.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.rfq.IRfqDAO;
@@ -11,6 +10,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.util.IRfQWorkDatesAware;
 import de.metas.rfq.util.RfQWorkDatesUtil;
+import de.metas.util.Services;
 
 /*
  * #%L

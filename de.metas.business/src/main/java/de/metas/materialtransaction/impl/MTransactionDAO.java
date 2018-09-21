@@ -31,8 +31,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
@@ -41,6 +39,8 @@ import org.compiere.model.I_M_Transaction;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class MTransactionDAO implements IMTransactionDAO

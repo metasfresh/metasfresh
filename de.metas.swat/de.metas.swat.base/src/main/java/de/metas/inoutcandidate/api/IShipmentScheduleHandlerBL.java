@@ -25,12 +25,11 @@ package de.metas.inoutcandidate.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.util.ISingletonService;
 
 /**
  * This interface declares methods to

@@ -2,8 +2,6 @@ package de.metas.adempiere.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -22,6 +20,8 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This model validator checks for each new invoice line if there needs to be an additional invoice line for freight cost.

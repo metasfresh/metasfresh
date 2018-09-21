@@ -2,9 +2,6 @@ package de.metas.materialtracking.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 
 /*
  * #%L
@@ -38,6 +35,9 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.spi.impl.listeners.CompositeMaterialTrackingListener;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 public class MaterialTrackingBL implements IMaterialTrackingBL
 {

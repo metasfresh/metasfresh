@@ -8,7 +8,7 @@ import javax.swing.JComboBox;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

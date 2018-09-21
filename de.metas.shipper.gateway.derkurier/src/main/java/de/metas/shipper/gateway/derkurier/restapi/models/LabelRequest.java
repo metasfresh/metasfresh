@@ -3,10 +3,9 @@ package de.metas.shipper.gateway.derkurier.restapi.models;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

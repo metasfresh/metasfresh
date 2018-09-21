@@ -27,8 +27,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -39,6 +37,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 {

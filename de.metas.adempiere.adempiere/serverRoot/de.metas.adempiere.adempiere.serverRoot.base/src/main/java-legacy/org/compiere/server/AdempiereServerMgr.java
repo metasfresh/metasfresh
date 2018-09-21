@@ -26,7 +26,6 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
-import org.adempiere.util.Services;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MRequestProcessor;
@@ -37,6 +36,7 @@ import org.compiere.wf.MWorkflowProcessor;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Adempiere Server Manager

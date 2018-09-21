@@ -26,9 +26,8 @@ package de.metas.dunning.api.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.dunning.api.IDunningContext;
+import de.metas.util.Check;
 
 public abstract class AbstractDunningContext implements IDunningContext
 {

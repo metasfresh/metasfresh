@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -52,6 +50,8 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Contains BL for easily sampling / creating or splitting Handling Units

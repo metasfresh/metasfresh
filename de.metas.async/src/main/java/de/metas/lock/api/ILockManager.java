@@ -25,10 +25,10 @@ package de.metas.lock.api;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 
 import de.metas.lock.exceptions.LockFailedException;
+import de.metas.util.ISingletonService;
 
 /**
  * Lock manager - this is the starting point for manipulating the locks

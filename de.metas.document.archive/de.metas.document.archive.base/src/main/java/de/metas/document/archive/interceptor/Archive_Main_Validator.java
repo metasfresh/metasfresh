@@ -33,7 +33,6 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -51,6 +50,7 @@ import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
+import de.metas.util.Services;
 
 /**
  * Main de.metas.document.document-archive module's entry point

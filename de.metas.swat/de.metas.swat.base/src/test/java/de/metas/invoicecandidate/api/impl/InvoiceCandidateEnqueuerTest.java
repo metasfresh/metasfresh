@@ -28,11 +28,8 @@ import java.math.BigDecimal;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.time.FixedTimeSource;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -44,6 +41,9 @@ import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
 
 public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 {

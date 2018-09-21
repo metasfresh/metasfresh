@@ -25,9 +25,10 @@ package org.adempiere.process.rpl.requesthandler.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.Converter;
 import org.compiere.model.PO;
+
+import de.metas.util.Check;
+import de.metas.util.collections.Converter;
 
 /**
  * An extension of {@link LoadPORequestHandler} which takes an {@link Converter} for creating the response based on request

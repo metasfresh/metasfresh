@@ -10,10 +10,7 @@ import java.util.Properties;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
@@ -30,6 +27,9 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter

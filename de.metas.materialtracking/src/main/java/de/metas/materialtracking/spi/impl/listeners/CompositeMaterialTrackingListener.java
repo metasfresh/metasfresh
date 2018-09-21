@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.materialtracking.IMaterialTrackingListener;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Check;
 
 public final class CompositeMaterialTrackingListener implements IMaterialTrackingListener
 {

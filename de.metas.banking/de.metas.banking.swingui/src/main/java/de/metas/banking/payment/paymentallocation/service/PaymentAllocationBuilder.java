@@ -34,9 +34,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
@@ -56,6 +53,9 @@ import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.ListUtils;
 
 /**
  * Builds one {@link I_C_AllocationHdr} of all given {@link IInvoiceRow}s and {@link IPaymentRow}s.

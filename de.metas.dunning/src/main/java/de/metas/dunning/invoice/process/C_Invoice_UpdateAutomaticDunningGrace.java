@@ -2,13 +2,13 @@ package de.metas.dunning.invoice.process;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /** Gets all open invoices for the selected org and updates dunning grace dates */
 public class C_Invoice_UpdateAutomaticDunningGrace extends JavaProcess

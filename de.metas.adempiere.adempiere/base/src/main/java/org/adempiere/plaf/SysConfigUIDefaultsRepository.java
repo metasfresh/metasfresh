@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
@@ -33,8 +35,6 @@ import javax.swing.UIManager;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IDeveloperModeBL.ContextRunnable;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DB;
 import org.compiere.util.Env;

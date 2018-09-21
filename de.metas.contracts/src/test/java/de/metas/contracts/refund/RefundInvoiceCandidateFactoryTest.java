@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
@@ -32,6 +31,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.Percent;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

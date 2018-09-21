@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +12,7 @@ import de.metas.dunning.DunningDocId;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

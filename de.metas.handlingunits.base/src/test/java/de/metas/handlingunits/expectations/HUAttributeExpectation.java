@@ -29,8 +29,6 @@ import java.util.Date;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -43,6 +41,8 @@ import de.metas.handlingunits.attribute.storage.impl.ASIAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

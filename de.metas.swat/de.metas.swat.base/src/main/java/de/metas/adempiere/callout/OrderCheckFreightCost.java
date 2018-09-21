@@ -28,12 +28,12 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_FreightCostDetail;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.X_C_Order;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.IOrderBL;
+import de.metas.util.Services;
 
 /**
  * 

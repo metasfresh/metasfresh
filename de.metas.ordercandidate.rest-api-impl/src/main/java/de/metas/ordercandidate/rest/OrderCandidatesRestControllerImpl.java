@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +21,7 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -25,8 +25,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -34,6 +32,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocument
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 {

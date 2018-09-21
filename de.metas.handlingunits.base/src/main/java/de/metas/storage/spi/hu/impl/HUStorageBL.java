@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.storage.spi.hu.IHUStorageBL;
+import de.metas.util.Services;
 
 public class HUStorageBL implements IHUStorageBL
 {

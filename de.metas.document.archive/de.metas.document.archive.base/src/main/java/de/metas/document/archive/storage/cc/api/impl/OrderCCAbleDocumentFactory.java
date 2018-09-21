@@ -24,11 +24,11 @@ package de.metas.document.archive.storage.cc.api.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactory;
+import de.metas.util.Check;
 
 public class OrderCCAbleDocumentFactory implements ICCAbleDocumentFactory
 {

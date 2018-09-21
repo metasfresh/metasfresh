@@ -4,8 +4,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -15,6 +13,8 @@ import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

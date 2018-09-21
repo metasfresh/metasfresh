@@ -1,7 +1,8 @@
 package org.compiere.acct;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Exception thrown when

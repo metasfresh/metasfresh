@@ -29,7 +29,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -41,6 +40,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.InvoiceCandid
 import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.InvoiceDetailWriter;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.pricing.IPricingResult;
+import de.metas.util.Check;
 
 /**
  *

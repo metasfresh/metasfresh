@@ -43,10 +43,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.IQuery;
@@ -61,6 +57,10 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 
 /**
  * Builder class which creates the {@link I_C_TaxDeclarationLine}s and {@link I_C_TaxDeclarationAcct}s.

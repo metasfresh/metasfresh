@@ -28,10 +28,11 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
+
+import de.metas.util.ISingletonService;
 
 public interface IADTableDAO extends ISingletonService
 {

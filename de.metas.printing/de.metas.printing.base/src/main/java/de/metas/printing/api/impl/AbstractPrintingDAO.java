@@ -38,8 +38,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
@@ -66,6 +64,8 @@ import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.X_AD_PrinterHW;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO

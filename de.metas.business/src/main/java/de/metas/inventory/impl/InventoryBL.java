@@ -35,9 +35,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
@@ -49,6 +46,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocument;
 import de.metas.inventory.IInventoryBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InventoryBL implements IInventoryBL

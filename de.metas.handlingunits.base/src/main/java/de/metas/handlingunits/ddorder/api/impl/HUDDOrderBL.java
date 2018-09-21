@@ -8,7 +8,6 @@ import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -29,6 +28,7 @@ import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
 import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -33,8 +33,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_ProcessorParameter;
+
+import de.metas.util.Services;
 
 public abstract class AbstractIMPProcessorDAO implements IIMPProcessorDAO
 {

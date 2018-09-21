@@ -48,7 +48,6 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModel
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
@@ -57,6 +56,7 @@ import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextPr
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.picking.terminal.form.swing.PickingTerminal;
+import de.metas.util.Services;
 
 public class Main extends AbstractModuleInterceptor
 {

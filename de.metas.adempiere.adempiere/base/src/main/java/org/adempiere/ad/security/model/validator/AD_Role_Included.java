@@ -36,10 +36,11 @@ import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
+
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Role_Included.class)
 public class AD_Role_Included

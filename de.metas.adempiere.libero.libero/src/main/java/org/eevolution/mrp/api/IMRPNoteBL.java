@@ -25,7 +25,7 @@ package org.eevolution.mrp.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IMRPNoteBL extends ISingletonService
 {

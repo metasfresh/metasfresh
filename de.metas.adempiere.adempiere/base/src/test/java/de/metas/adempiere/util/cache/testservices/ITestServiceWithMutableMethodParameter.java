@@ -26,7 +26,7 @@ package de.metas.adempiere.util.cache.testservices;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface ITestServiceWithMutableMethodParameter extends ISingletonService
 {

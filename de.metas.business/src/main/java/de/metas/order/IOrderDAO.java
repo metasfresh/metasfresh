@@ -32,13 +32,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IOrderDAO extends ISingletonService

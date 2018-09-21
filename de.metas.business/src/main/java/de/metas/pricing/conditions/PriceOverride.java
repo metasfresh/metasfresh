@@ -4,11 +4,10 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.NumberUtils;
-
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -4,7 +4,6 @@
 package de.metas.dunning.process;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -13,6 +12,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.ReportStarter;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

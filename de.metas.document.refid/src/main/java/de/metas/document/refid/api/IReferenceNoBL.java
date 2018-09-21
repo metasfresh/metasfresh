@@ -26,12 +26,12 @@ package de.metas.document.refid.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.util.ISingletonService;
 
 public interface IReferenceNoBL extends ISingletonService
 {

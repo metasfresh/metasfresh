@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
+import de.metas.util.Services;
 
 /**
  * Constant values for ESR.

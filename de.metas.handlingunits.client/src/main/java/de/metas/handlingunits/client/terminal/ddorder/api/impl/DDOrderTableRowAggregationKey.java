@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -41,6 +39,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.client.terminal.ddorder.model.DDOrderTableRow;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
+import de.metas.util.Pair;
 
 /**
  * Immutable {@link DDOrderTableRow}'s aggregation key

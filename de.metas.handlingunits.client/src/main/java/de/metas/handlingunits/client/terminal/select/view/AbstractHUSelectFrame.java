@@ -32,7 +32,6 @@ import java.lang.reflect.Method;
 
 import javax.swing.JFrame;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 
 import de.metas.adempiere.form.terminal.IComponent;
@@ -41,6 +40,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
 import de.metas.adempiere.form.terminal.event.MethodActionForwardListener;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
+import de.metas.util.Check;
 
 /**
  * Frame Panel for HU POS, first screens.

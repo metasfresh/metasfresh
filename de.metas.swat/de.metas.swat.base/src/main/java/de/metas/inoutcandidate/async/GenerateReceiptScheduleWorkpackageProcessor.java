@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
@@ -37,6 +35,8 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
 
 /**
  * Process given models and creates {@link I_M_ReceiptSchedule} records.

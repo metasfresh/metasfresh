@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
@@ -42,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.util.Check;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.

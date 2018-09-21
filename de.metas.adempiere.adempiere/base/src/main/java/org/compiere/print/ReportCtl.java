@@ -22,8 +22,6 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.util.Env;
@@ -33,6 +31,8 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Report Controller.

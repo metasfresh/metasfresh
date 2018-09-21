@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.HUTestHelper;
@@ -42,6 +41,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /**
  * Miscellaneous helpers for writing tests which involve {@link I_M_HU} and {@link I_M_ShipmentSchedule}.

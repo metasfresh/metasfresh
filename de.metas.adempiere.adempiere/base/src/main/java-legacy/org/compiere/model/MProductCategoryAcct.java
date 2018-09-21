@@ -22,9 +22,10 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * 	Product Category Account Model

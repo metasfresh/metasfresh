@@ -6,13 +6,13 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.util.Services;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;

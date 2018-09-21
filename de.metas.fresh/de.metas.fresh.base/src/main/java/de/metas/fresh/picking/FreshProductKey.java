@@ -29,8 +29,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -45,6 +43,8 @@ import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.ProductKey;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

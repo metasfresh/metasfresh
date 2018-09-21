@@ -27,11 +27,10 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage_Snapshot;
+import de.metas.util.Check;
 
 class M_HU_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Storage, I_M_HU_Storage_Snapshot, I_M_HU>
 {

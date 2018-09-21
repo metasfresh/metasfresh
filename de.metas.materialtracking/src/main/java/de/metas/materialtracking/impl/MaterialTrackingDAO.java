@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
@@ -55,6 +53,8 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MaterialTrackingDAO implements IMaterialTrackingDAO
 {

@@ -26,11 +26,11 @@ package de.metas.shipping.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Shipper;
 
 import de.metas.shipping.api.IShipperDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Services;
 
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

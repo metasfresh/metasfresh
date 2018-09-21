@@ -26,8 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -36,6 +34,8 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Workpackage used to update all invalid {@link I_M_ShipmentSchedule}s.

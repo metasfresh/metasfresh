@@ -30,14 +30,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pos.IPOSKeyKayoutDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_POSKey;
 import org.compiere.model.I_C_POSKeyLayout;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class POSKeyKayoutDAO implements IPOSKeyKayoutDAO
 {

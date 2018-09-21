@@ -25,12 +25,12 @@ package de.metas.handlingunits.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IReference;
 
 import de.metas.handlingunits.IHUAssignmentListener;
 import de.metas.handlingunits.exceptions.HUNotAssignableException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
 
 public final class CompositeHUAssignmentListener implements IHUAssignmentListener
 {

@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
@@ -21,6 +20,7 @@ import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.printing.api.IPrintJobDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
+import de.metas.util.Services;
 
 /*
  * #%L

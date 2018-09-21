@@ -27,10 +27,10 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

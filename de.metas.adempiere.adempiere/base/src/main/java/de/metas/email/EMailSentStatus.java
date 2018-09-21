@@ -8,7 +8,6 @@ import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.SendFailedException;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -19,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

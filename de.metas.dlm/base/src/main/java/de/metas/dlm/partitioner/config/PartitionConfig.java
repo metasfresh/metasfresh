@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 
 import com.google.common.collect.ImmutableList;
@@ -15,6 +14,7 @@ import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
+import de.metas.util.Check;
 
 /*
  * #%L

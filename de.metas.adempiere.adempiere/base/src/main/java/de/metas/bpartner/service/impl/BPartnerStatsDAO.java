@@ -13,8 +13,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -25,6 +23,8 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

@@ -41,8 +41,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
@@ -50,6 +48,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Abstract {@link IKeyLayout} implementation of general methods.

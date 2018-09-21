@@ -30,13 +30,13 @@ import java.lang.ref.WeakReference;
 
 import javax.swing.JPanel;
 
-import org.adempiere.util.Check;
 import org.jdesktop.swingx.JXPanel;
 
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 import net.miginfocom.swing.MigLayout;
 
 /**

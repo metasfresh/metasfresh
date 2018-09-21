@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,6 +42,7 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class QueueProcessorTestBase
 {

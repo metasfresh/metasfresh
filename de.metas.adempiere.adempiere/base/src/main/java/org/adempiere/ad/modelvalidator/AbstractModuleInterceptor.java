@@ -29,14 +29,14 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * To be extended by module/project main interceptors.

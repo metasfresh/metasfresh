@@ -43,7 +43,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_I_BankStatement;
@@ -60,6 +59,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /**
  * Renamed and refactored from <code>de.metas.banking.process.BankStatementPayment</code> (swat).

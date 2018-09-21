@@ -31,8 +31,6 @@ import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IAccountDimensionValidator;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
@@ -50,6 +48,8 @@ import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_C_ElementValue;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AccountBL implements IAccountBL
 {

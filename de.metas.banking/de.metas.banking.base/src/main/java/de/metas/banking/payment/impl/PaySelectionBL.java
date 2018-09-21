@@ -31,8 +31,6 @@ import java.util.StringJoiner;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
@@ -51,6 +49,8 @@ import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.IDocument;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.payment.api.IPaymentBL;
 
 public class PaySelectionBL implements IPaySelectionBL

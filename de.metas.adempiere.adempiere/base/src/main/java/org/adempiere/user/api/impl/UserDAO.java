@@ -34,10 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
@@ -47,6 +44,9 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class UserDAO implements IUserDAO

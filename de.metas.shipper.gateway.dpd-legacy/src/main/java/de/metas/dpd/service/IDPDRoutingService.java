@@ -26,10 +26,10 @@ import java.math.BigDecimal;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Package;
 
 import de.metas.inout.model.I_M_InOut;
+import de.metas.util.ISingletonService;
 
 /**
  *

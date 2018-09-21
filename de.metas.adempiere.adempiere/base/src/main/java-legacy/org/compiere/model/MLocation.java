@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -31,6 +30,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  *	Location (Address)

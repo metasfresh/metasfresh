@@ -1,6 +1,6 @@
 package de.metas.event;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * Creates and manages {@link IEventBus}es.

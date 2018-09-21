@@ -5,7 +5,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableModel;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

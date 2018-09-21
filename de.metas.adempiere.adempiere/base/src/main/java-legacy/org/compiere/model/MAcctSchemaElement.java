@@ -23,11 +23,11 @@ import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  *  Account Schema Element Object

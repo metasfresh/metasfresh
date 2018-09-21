@@ -27,12 +27,12 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  *	System Display Types.

@@ -33,8 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.WarehouseId;
@@ -53,6 +51,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {

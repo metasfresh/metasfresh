@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -21,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 

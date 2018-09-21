@@ -2,11 +2,11 @@ package de.metas.inventory;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 /**
  * @author ad

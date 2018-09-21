@@ -34,8 +34,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IReference;
 import org.compiere.util.DisplayType;
@@ -48,6 +46,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessParams;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class WorkpackageParamDAO implements IWorkpackageParamDAO
 {

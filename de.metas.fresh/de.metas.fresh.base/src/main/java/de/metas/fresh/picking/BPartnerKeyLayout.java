@@ -29,12 +29,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /**
  * Plain key layout for BPartners

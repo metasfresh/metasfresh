@@ -24,13 +24,13 @@ package de.metas.pricing.service;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.ISingletonService;
 
 /**
  * @author RC

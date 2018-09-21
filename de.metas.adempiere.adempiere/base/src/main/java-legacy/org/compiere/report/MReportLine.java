@@ -24,11 +24,12 @@ import java.util.Properties;
 import java.util.TreeSet;
 import org.adempiere.acct.api.IAcctSchemaBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.X_PA_ReportLine;
 import org.compiere.util.DB;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 
 /**

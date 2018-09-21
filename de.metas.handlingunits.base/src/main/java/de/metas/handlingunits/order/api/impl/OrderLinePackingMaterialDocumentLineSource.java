@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
@@ -38,6 +36,8 @@ import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /* package */class OrderLinePackingMaterialDocumentLineSource implements IPackingMaterialDocumentLineSource

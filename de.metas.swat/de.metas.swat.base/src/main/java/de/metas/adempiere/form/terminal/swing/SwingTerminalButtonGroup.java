@@ -35,12 +35,11 @@ import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JToggleButton;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalButtonGroup;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 /* package */class SwingTerminalButtonGroup<T> implements ITerminalButtonGroup<T>
 {

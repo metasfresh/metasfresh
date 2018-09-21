@@ -16,8 +16,6 @@ package org.compiere.apps.form;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.IStatusBar;
 import org.compiere.model.GridField;
@@ -34,6 +32,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Base class for Material Transactions Info form (Warenbewegungen - Übersicht)

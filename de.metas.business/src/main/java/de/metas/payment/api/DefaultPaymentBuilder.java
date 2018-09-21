@@ -28,8 +28,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -39,6 +37,8 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class DefaultPaymentBuilder implements IBuilder
 {

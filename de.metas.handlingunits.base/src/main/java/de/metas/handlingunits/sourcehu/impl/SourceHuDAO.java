@@ -7,7 +7,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -23,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -34,7 +34,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
@@ -45,6 +44,7 @@ import org.junit.Test;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Services;
 
 public class HUAssignmentBLTest
 {

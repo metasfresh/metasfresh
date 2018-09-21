@@ -26,7 +26,8 @@ package org.adempiere.ui.sideactions.swing;
 import javax.swing.JLabel;
 
 import org.adempiere.ui.sideactions.model.ISideAction;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Renders a {@link ISideAction} as a "label" which looks like a "line/paragraph of text".

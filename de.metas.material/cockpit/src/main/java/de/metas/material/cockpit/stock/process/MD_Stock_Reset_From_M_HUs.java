@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -23,6 +22,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

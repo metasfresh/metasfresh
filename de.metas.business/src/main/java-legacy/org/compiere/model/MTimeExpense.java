@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -39,6 +38,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /**
  * 	Time + Expense Model

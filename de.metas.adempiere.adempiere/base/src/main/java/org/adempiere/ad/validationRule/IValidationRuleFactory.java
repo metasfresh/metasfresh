@@ -24,10 +24,11 @@ package org.adempiere.ad.validationRule;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.Evaluatee;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Factory class used to create {@link IValidationRule} instances

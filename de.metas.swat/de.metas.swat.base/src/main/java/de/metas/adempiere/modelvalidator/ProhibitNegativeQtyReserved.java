@@ -25,7 +25,6 @@ package de.metas.adempiere.modelvalidator;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
@@ -39,6 +38,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.modelvalidator.SwatValidator;
 import de.metas.order.model.interceptor.C_OrderLine;
+import de.metas.util.Services;
 
 /**
  * Makes sure that there are no negative QtyReserved values.

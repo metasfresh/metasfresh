@@ -74,9 +74,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
@@ -106,6 +103,9 @@ import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**

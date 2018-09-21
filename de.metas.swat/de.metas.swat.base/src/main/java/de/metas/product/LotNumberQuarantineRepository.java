@@ -3,11 +3,15 @@ package de.metas.product;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
+<<<<<<< HEAD:de.metas.swat/de.metas.swat.base/src/main/java/de/metas/product/LotNumberQuarantineRepository.java
 import de.metas.product.model.I_M_Product_LotNumber_Quarantine;
+=======
+import de.metas.product.model.I_M_Product_LotNumber_Lock;
+import de.metas.util.Check;
+import de.metas.util.Services;
+>>>>>>> master:de.metas.swat/de.metas.swat.base/src/main/java/de/metas/product/LotNumberLockRepository.java
 
 /*
  * #%L

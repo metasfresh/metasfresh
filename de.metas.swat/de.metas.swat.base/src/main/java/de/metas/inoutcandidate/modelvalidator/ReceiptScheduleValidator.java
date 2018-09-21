@@ -26,7 +26,6 @@ package de.metas.inoutcandidate.modelvalidator;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.model.I_AD_Client;
 
@@ -36,6 +35,7 @@ import de.metas.inoutcandidate.api.impl.ReceiptScheduleASIAwareFactory;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.impl.OrderLineReceiptScheduleListener;
+import de.metas.util.Services;
 
 public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 {

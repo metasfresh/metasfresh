@@ -15,8 +15,6 @@ import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -37,6 +35,8 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

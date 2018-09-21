@@ -27,9 +27,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.ISingletonService;
 
 /**
  * Misc Dunning Utils which are referencing other projects.

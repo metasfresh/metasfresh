@@ -26,12 +26,12 @@ package de.metas.handlingunits.client.terminal.helper;
 import java.awt.Font;
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class HUTerminalHelper
 {

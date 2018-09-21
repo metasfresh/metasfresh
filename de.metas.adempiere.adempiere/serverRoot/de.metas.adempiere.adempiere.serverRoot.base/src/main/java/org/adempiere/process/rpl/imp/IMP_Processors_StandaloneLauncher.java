@@ -29,12 +29,13 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.Query;
 import org.compiere.server.ReplicationProcessor;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  * Start all active {@link I_IMP_Processor}s.

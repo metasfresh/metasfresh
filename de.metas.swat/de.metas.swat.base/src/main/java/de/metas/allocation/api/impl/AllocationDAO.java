@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationHdr;
@@ -55,6 +54,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AllocationDAO implements IAllocationDAO

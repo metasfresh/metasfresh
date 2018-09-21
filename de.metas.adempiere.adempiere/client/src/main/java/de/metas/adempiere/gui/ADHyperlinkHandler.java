@@ -30,12 +30,12 @@ import java.util.Map;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-import org.adempiere.util.Check;
 import org.compiere.apps.AEnv;
 import org.compiere.model.MQuery;
 
 import de.metas.adempiere.util.ADHyperlink;
 import de.metas.adempiere.util.ADHyperlinkBuilder;
+import de.metas.util.Check;
 
 /**
  * @author tsa

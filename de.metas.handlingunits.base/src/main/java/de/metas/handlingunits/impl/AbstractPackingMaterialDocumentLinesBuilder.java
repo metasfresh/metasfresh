@@ -34,13 +34,13 @@ import java.util.Set;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

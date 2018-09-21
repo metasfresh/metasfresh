@@ -27,12 +27,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
+import de.metas.util.TypedAccessor;
 
 public class PlainAllocationDAO extends AllocationDAO
 {

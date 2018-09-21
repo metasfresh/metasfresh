@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -36,6 +35,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Services;
 
 class C_OLCand_HandlerDAO
 {

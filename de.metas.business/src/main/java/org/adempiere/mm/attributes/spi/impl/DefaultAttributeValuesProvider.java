@@ -10,8 +10,6 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
@@ -25,6 +23,9 @@ import org.compiere.util.ValueNamePair;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Implementation of {@link IAttributeValuesProvider} which is fetching the attributes from {@link I_M_AttributeValue}.

@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.async.api.IQueueDAO;
@@ -15,6 +13,8 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.document.ICounterDocBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

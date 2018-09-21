@@ -3,9 +3,9 @@ package org.adempiere.ad.dao.cache;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 /*

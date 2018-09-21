@@ -2,9 +2,8 @@ package de.metas.notification;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.notification.spi.IRecordTextProvider;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

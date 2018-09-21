@@ -6,7 +6,6 @@ import java.util.Date;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -23,6 +22,7 @@ import de.metas.rfq.exceptions.RfQDocumentNotClosedException;
 import de.metas.rfq.exceptions.RfQException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.Services;
 
 /*
  * #%L

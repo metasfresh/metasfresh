@@ -35,12 +35,13 @@ import org.adempiere.ad.security.permissions.OrgPermissions;
 import org.adempiere.ad.security.permissions.TableColumnPermissions;
 import org.adempiere.ad.security.permissions.TablePermissions;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Record_Access;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_OrgAccess;
 
 import com.google.common.base.Optional;
+
+import de.metas.util.ISingletonService;
 
 /**
  * {@link IUserRolePermissions} retrieval DAO.

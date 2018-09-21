@@ -17,8 +17,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Mail;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -32,6 +30,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 import de.metas.request.RequestId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

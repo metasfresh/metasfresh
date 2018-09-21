@@ -7,7 +7,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_R_MailText;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_StandardResponse;
@@ -16,6 +15,7 @@ import org.compiere.util.Env;
 
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.util.Services;
 
 /*
  * #%L

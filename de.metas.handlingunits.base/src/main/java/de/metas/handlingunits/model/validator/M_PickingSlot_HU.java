@@ -26,8 +26,6 @@ package de.metas.handlingunits.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -35,6 +33,8 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Validator(I_M_PickingSlot_HU.class)
 public class M_PickingSlot_HU

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 
@@ -36,6 +35,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.client.terminal.inventory.model.IDummyPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
+import de.metas.util.Services;
 
 public class AggregateHUFiltering extends AbstractFiltering
 {

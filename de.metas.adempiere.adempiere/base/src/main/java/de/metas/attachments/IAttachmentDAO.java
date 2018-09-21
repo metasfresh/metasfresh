@@ -26,9 +26,10 @@ import java.util.List;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
+
+import de.metas.util.ISingletonService;
 
 public interface IAttachmentDAO extends ISingletonService
 {

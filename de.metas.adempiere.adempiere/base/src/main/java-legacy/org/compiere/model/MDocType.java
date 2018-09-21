@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.util.Services;
 
 /**
  *	Document Type Model

@@ -38,8 +38,6 @@ import java.util.List;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -82,6 +80,8 @@ import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

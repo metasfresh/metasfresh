@@ -26,7 +26,6 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
@@ -36,6 +35,7 @@ import org.compiere.util.Util;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
+import de.metas.util.Check;
 
 /**
  * Customer Unit Key (aka Product)

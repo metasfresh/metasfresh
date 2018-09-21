@@ -2,11 +2,11 @@ package de.metas.handlingunits.inout;
 
 import java.util.Optional;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

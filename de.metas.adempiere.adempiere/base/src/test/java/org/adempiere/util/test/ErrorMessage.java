@@ -25,7 +25,7 @@ package org.adempiere.util.test;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Immutable error message

@@ -6,7 +6,6 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
@@ -22,6 +21,7 @@ import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

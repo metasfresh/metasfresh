@@ -44,7 +44,6 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
@@ -64,6 +63,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * @author Cristina Ghita, METAS.RO

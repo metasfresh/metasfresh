@@ -26,8 +26,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.model.validator.SecurityMainInterceptor;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +37,8 @@ import de.metas.StartupListener;
 import de.metas.event.log.EventBus2EventLogHandler;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,

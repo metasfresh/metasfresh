@@ -44,10 +44,7 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
@@ -67,6 +64,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO

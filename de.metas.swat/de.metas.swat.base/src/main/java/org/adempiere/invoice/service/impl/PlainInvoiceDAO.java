@@ -31,8 +31,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.TypedAccessor;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -44,6 +42,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
+import de.metas.util.TypedAccessor;
 
 public class PlainInvoiceDAO extends AbstractInvoiceDAO
 {

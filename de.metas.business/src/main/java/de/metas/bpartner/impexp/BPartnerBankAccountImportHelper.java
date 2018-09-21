@@ -3,8 +3,6 @@ package de.metas.bpartner.impexp;
 import org.adempiere.bank.BankRepository;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -13,6 +11,8 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

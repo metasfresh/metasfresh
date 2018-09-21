@@ -15,8 +15,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.IQuery;
@@ -28,6 +26,8 @@ import de.metas.acct.aggregation.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

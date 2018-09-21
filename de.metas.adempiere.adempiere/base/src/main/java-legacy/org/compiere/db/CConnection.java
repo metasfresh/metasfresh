@@ -30,8 +30,6 @@ import javax.swing.JOptionPane;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBNoConnectionException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -43,6 +41,8 @@ import de.metas.jms.IJMSService;
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IStatusService;
 import de.metas.session.jaxrs.StatusServiceResult;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Adempiere Connection Descriptor

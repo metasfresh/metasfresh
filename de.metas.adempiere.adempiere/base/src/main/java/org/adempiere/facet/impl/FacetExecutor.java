@@ -32,8 +32,9 @@ import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetFilterable;
 import org.adempiere.facet.IFacetsPool;
 import org.adempiere.facet.IFacetsPoolListener;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * Facets executor: acts like a mediator between {@link IFacetsPool} and {@link IFacetFilterable}.

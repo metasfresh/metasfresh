@@ -25,7 +25,7 @@ package de.metas.tourplanning.api;
 import java.sql.Timestamp;
 import java.util.Date;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Plain implementation of {@link IDeliveryDayQueryParams}

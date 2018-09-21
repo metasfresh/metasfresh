@@ -1,6 +1,5 @@
 package de.metas.bpartner.process;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Stats;
 
 import de.metas.bpartner.service.BPartnerStats;
@@ -10,6 +9,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implements IProcessPrecondition
 {

@@ -43,7 +43,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.serverRoot.util.WebEnv;
 import org.adempiere.serverRoot.util.WebUtil;
-import org.adempiere.util.Services;
 import org.apache.ecs.Element;
 import org.apache.ecs.HtmlColor;
 import org.apache.ecs.xhtml.a;
@@ -85,6 +84,7 @@ import org.springframework.context.annotation.Profile;
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Server Monitor

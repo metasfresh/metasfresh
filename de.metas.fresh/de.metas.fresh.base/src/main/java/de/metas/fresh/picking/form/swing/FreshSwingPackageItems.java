@@ -38,8 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.IContainer;
@@ -79,6 +77,8 @@ import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
