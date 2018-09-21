@@ -2,6 +2,7 @@ package de.metas.document.engine;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -25,6 +26,9 @@ import java.math.BigDecimal;
  * #L%
  */
 
+/**
+ * Instances of this SPI are supposed to be created by their respective {@link DocumentHandlerProvider}.
+ */
 public interface DocumentHandler
 {
 	//
@@ -33,6 +37,7 @@ public interface DocumentHandler
 	String getSummary(DocumentTableFields docFields);
 	String getDocumentInfo(DocumentTableFields docFields);
 	int getDoc_User_ID(DocumentTableFields docFields);
+	LocalDate getDocumentDate(DocumentTableFields docFields);
 	//@formatter:on
 
 	default int getC_Currency_ID(DocumentTableFields docFields)

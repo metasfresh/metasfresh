@@ -2,13 +2,16 @@ package de.metas.mforecast;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -136,5 +139,12 @@ class ForecastDocumentHandler implements DocumentHandler
 		final I_M_Forecast forecast = extractForecast(docFields);
 		forecast.setProcessed(false);
 		forecast.setDocAction(IDocument.ACTION_Complete);
+	}
+
+	@Override
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	{
+		final I_M_Forecast forecast = extractForecast(docFields);
+		return TimeUtil.asLocalDate(forecast.getDatePromised());
 	}
 }

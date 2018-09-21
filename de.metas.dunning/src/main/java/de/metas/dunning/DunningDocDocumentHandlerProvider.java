@@ -1,10 +1,16 @@
 package de.metas.dunning;
 
+import org.springframework.stereotype.Component;
+
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
+import de.metas.dunning.model.I_C_DunningDoc;
+
 /*
  * #%L
- * de.metas.dunning
+ * de.metas.banking.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,25 +27,19 @@ package de.metas.dunning;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-/**
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public final class Dunning_Constants
+@Component
+public class DunningDocDocumentHandlerProvider implements DocumentHandlerProvider
 {
-	private Dunning_Constants()
-	{
 
+	@Override
+	public String getHandledTableName()
+	{
+		return I_C_DunningDoc.Table_Name;
 	}
 
-	public static final String ENTITY_TYPE = "de.metas.dunning";
-
-	/**
-	 * Internal Name for dunning docs async batch
-	 */
-	public static final String C_Async_Batch_InternalName_DunningDoc = "DunningDoc";
-
-	public static final String DocBaseType_Dunnig = "DUN";
+	@Override
+	public DocumentHandler provideForDocument(final Object model)
+	{
+		return new DunningDocDocumentHandler();
+	}
 }

@@ -2,6 +2,7 @@ package de.metas.document.engine;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
@@ -152,6 +153,8 @@ public interface IDocument
 
 	String getDocAction();
 
+	LocalDate getDocumentDate();
+
 	Properties getCtx();
 
 	int get_ID();
@@ -171,6 +174,12 @@ public interface IDocument
 	{
 		return TableRecordReference.of(get_Table_ID(), get_ID());
 	}
+
+	/** 
+	 * We use this constant in {@link org.adempiere.ad.wrapper.POJOWrapper}. 
+	 * Please keep it in sync with {@link #getDocumentModel()}. 
+	 */
+	String METHOD_NAME_getDocumentModel = "getDocumentModel";
 
 	default Object getDocumentModel()
 	{
