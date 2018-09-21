@@ -1159,21 +1159,6 @@ public final class Document
 			throw new DocumentProcessingException("Not all changes could be saved", this, docAction);
 		}
 
-		// TODO: Check Existence of Workflow Activities
-		// final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID);
-		// if (wfStatus != null)
-		// {
-		// ADialog.error(m_WindowNo, this, "WFActiveForRecord", wfStatus);
-		// return;
-		// }
-
-		// TODO: make sure the DocStatus column is up2date
-		// if (!checkStatus(m_mTab.getTableName(), Record_ID, DocStatus))
-		// {
-		// ADialog.error(m_WindowNo, this, "DocumentStatusChanged");
-		// return;
-		// }
-
 		//
 		// Actually process the document
 		// TODO: trigger the document workflow instead!

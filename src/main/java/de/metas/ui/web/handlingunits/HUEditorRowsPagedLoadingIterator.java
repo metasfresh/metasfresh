@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.collections.IteratorUtils;
 import org.compiere.util.CCache;
 
 import com.google.common.base.Predicates;
@@ -18,6 +17,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.collections.IteratorUtils;
 import lombok.Builder;
 import lombok.NonNull;
 

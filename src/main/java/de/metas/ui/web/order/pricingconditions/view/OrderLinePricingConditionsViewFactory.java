@@ -9,7 +9,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
@@ -37,6 +36,7 @@ import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowsLoader.
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*

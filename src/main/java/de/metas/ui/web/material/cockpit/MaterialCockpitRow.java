@@ -14,8 +14,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
-import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
@@ -48,6 +46,8 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.collections.ListUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
