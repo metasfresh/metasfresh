@@ -11,8 +11,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
@@ -33,6 +31,8 @@ import de.metas.ui.web.window.descriptor.ListLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

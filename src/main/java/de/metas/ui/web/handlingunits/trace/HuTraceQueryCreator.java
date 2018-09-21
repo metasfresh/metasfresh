@@ -8,8 +8,6 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -22,6 +20,8 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*

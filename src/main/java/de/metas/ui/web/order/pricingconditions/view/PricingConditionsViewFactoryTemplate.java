@@ -3,7 +3,6 @@ package de.metas.ui.web.order.pricingconditions.view;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 
 import com.google.common.cache.Cache;
@@ -30,6 +29,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -12,8 +12,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CCache;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -51,6 +49,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -46,6 +45,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

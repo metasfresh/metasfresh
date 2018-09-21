@@ -5,8 +5,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
@@ -17,6 +15,8 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
@@ -21,6 +20,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.pporder.PPOrderLinesView;
+import de.metas.util.Services;
 
 /*
  * #%L

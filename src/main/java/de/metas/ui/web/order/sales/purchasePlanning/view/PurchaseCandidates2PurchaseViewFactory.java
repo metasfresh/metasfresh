@@ -3,8 +3,6 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -19,6 +17,7 @@ import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_PurchaseCandid
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

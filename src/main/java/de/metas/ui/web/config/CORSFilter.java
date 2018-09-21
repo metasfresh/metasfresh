@@ -12,13 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.util.Services;
 
 /*
  * #%L

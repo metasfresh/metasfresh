@@ -2,7 +2,6 @@ package de.metas.ui.web.quickinput.invoiceline;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -13,6 +12,7 @@ import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Services;
 
 /*
  * #%L

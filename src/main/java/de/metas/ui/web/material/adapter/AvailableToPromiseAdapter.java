@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
@@ -27,6 +26,7 @@ import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Availab
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.GroupBuilder;
 import de.metas.ui.web.material.adapter.AvailableToPromiseResultForWebui.Group.Type;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

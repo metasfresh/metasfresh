@@ -8,8 +8,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
@@ -29,6 +27,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.pickingslotsClearing.PickingSlotsClearingView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -15,6 +14,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.purchasecandidate.PurchaseDemandId;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

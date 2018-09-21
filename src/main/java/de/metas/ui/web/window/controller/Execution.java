@@ -4,7 +4,6 @@ import java.util.concurrent.Callable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
@@ -17,6 +16,7 @@ import de.metas.ui.web.exceptions.InvalidDocumentVersionException;
 import de.metas.ui.web.window.model.DocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Services;
 
 /*
  * #%L

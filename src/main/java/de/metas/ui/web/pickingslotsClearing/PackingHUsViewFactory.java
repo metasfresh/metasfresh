@@ -3,7 +3,6 @@ package de.metas.ui.web.pickingslotsClearing;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -28,6 +27,7 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 
 /*
  * #%L

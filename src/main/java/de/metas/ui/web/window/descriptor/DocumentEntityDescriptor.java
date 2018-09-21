@@ -28,8 +28,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -57,6 +55,8 @@ import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollecti
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

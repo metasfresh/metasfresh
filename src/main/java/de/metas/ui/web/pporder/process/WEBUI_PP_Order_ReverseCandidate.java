@@ -1,7 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -10,6 +8,8 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

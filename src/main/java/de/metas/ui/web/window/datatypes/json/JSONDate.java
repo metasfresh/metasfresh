@@ -12,14 +12,14 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.time.SimpleDateFormatThreadLocal;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.time.SimpleDateFormatThreadLocal;
+import de.metas.util.time.SystemTime;
 import lombok.experimental.UtilityClass;
 
 /*

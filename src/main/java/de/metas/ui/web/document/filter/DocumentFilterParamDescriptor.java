@@ -1,7 +1,5 @@
 package de.metas.ui.web.document.filter;
 
-import org.adempiere.util.Check;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -11,6 +9,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

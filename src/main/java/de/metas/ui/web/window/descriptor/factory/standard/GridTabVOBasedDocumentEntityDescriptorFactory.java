@@ -12,8 +12,6 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
@@ -59,6 +57,8 @@ import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -245,7 +245,7 @@ import lombok.NonNull;
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
-	private boolean isTreatFieldAsKey(
+	private static boolean isTreatFieldAsKey(
 			@NonNull final GridFieldVO gridFieldVO,
 			@NonNull final GridTabVO gridTabVO,
 			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
@@ -256,7 +256,10 @@ import lombok.NonNull;
 		{
 			return gridFieldVO.isKey();
 		}
-		return gridFieldVO.isParentLink();
+		else
+		{
+			return gridFieldVO.isParentLink();
+		}
 	}
 
 	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final int adFieldId)
@@ -268,7 +271,7 @@ import lombok.NonNull;
 	public DocumentFieldDescriptor.Builder documentFieldByAD_UI_ElementField(@NonNull final I_AD_UI_ElementField elementFieldRecord)
 	{
 		final Builder builder = documentFieldByAD_Field_ID(elementFieldRecord.getAD_Field_ID());
-		if(X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
+		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
 					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
@@ -300,10 +303,22 @@ import lombok.NonNull;
 		final LookupDescriptor lookupDescriptor;
 		ILogicExpression readonlyLogic;
 
-		final boolean isParentLinkColumn = isFieldTheCurrentlyUsedParentLink(gridFieldVO, entityDescriptorBuilder);
+		final boolean isParentLinkColumn = isCurrentlyUsedParentLinkField(gridFieldVO, entityDescriptorBuilder);
 		final String sqlColumnName = gridFieldVO.getColumnName();
 
 		if (isParentLinkColumn) // assumes that the column is not only flagged as parent link, but is also the parent link *in this particular document*
+		{
+			widgetType = DocumentFieldWidgetType.Integer;
+			valueClass = widgetType.getValueClass();
+			alwaysUpdateable = false;
+
+			lookupDescriptorProvider = LookupDescriptorProvider.NULL;
+			lookupDescriptor = null;
+
+			defaultValueExpression = Optional.empty();
+			readonlyLogic = ConstantLogicExpression.TRUE;
+		}
+		else if (gridFieldVO.isKey()) // single key column
 		{
 			widgetType = DocumentFieldWidgetType.Integer;
 			valueClass = widgetType.getValueClass();
@@ -449,7 +464,7 @@ import lombok.NonNull;
 	 * @return true if the given {@code gridFieldVO} is flagged as parent link and also matches the parent-link columName.
 	 *         Logically there can be only one parent link field.
 	 */
-	private boolean isFieldTheCurrentlyUsedParentLink(
+	private static boolean isCurrentlyUsedParentLinkField(
 			@NonNull final GridFieldVO gridFieldVO,
 			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
 	{

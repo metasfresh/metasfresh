@@ -12,7 +12,6 @@ import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -31,6 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

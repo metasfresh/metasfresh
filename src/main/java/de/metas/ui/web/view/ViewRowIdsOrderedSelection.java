@@ -4,13 +4,12 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 
 /*

@@ -7,8 +7,6 @@ import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.NamePair;
 
 import com.google.common.collect.ImmutableSet;
@@ -19,6 +17,8 @@ import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
