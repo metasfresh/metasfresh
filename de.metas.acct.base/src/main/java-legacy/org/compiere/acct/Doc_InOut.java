@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -45,6 +44,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  * Post Shipment/Receipt Documents.

@@ -52,8 +52,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
@@ -75,6 +73,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Windows Application Environment and utilities

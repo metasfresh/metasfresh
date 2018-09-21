@@ -14,7 +14,6 @@ import org.adempiere.ad.expression.api.impl.StringExpressionsHelper;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
@@ -22,6 +21,8 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /*
  * #%L

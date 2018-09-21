@@ -5,11 +5,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 
 import de.metas.jax.rs.IJaxRsDAO;
 import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
 import de.metas.jax.rs.model.X_AD_JAXRS_Endpoint;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -30,8 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
@@ -39,6 +37,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MatchInvDAO implements IMatchInvDAO
 {

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -16,6 +15,7 @@ import de.metas.printing.model.I_AD_User;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
+import de.metas.util.Services;
 
 /*
  * #%L

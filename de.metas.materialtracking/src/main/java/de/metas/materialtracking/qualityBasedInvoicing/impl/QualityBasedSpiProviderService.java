@@ -23,8 +23,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  */
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Util;
@@ -33,6 +31,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderS
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IInvoicedSumProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfigProvider;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityInvoiceLineGroupsBuilderProvider;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class QualityBasedSpiProviderService implements IQualityBasedSpiProviderService
 {

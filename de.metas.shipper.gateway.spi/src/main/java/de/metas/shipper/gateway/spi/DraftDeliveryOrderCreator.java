@@ -3,9 +3,8 @@ package de.metas.shipper.gateway.spi;
 import java.time.LocalDate;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -31,9 +31,10 @@ import java.util.List;
 
 import javax.swing.text.JTextComponent;
 
-import org.adempiere.util.StringUtils;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.util.Env;
+
+import de.metas.util.StringUtils;
 
 /**
  * @author metas GmbH, m.ostermann@metas.de

@@ -38,8 +38,6 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
@@ -49,6 +47,8 @@ import org.compiere.util.Util.ArrayKey;
 import org.jdesktop.swingx.JXTaskPane;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InfoProductDetails
 {

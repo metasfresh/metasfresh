@@ -1,11 +1,10 @@
 package de.metas.document.archive.process;
 
-import org.adempiere.util.Check;
-
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class C_Doc_Outbound_Log_SendPDFMails

@@ -8,9 +8,6 @@ import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -32,6 +29,9 @@ import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateDAO;
 import de.metas.procurement.base.order.PMMPurchaseCandidateSegment;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L

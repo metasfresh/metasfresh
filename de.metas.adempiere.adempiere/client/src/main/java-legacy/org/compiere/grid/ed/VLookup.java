@@ -60,8 +60,6 @@ import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.APanel;
 import org.compiere.apps.search.FindHelper;
 import org.compiere.apps.search.Info;
@@ -95,6 +93,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Lookup Visual Field.

@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IClientOrgAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +23,8 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.ValueSequenceInfoProvider;
 import de.metas.document.sequence.ValueSequenceInfoProvider.ProviderResult;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Service

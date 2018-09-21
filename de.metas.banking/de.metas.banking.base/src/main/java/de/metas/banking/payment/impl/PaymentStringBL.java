@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.banking.payment.IPaymentString;
@@ -37,6 +35,8 @@ import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author al

@@ -27,11 +27,11 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.util.Check;
 
 public class PlainDocOutboundDAO extends AbstractDocOutboundDAO
 {

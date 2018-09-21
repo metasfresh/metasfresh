@@ -8,11 +8,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

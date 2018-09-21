@@ -38,7 +38,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -50,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

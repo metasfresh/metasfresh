@@ -2,7 +2,6 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
@@ -10,6 +9,7 @@ import org.junit.Assert;
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

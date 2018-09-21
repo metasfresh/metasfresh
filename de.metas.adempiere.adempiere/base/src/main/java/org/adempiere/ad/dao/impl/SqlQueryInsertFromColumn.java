@@ -2,7 +2,7 @@ package org.adempiere.ad.dao.impl;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

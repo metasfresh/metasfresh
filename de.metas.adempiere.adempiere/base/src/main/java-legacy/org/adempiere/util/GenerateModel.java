@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  *  Generate Model Classes extending PO.

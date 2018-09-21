@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -38,6 +37,7 @@ import org.eevolution.model.I_PP_MRP_Alternative;
 
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.IMRPSegment;
+import de.metas.util.ISingletonService;
 
 public interface IMRPDAO extends ISingletonService
 {

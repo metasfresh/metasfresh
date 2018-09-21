@@ -30,12 +30,11 @@ import java.util.List;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

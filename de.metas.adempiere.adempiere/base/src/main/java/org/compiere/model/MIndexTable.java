@@ -38,12 +38,13 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.adempiere.util.Check;
 import org.compiere.util.CCache;
 import org.compiere.util.CacheInterface;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.Check;
 
 /**
  * AD Index Table

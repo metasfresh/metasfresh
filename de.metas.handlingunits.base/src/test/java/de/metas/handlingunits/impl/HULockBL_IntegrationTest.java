@@ -7,7 +7,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +28,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.PlainLockManager;
+import de.metas.util.Services;
 
 /*
  * #%L

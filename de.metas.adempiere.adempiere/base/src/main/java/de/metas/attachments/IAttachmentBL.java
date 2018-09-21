@@ -29,10 +29,11 @@ import java.util.List;
 
 import javax.activation.DataSource;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Attachment;
 import org.springframework.core.io.Resource;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Record attachments repository.

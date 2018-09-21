@@ -28,8 +28,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
@@ -42,6 +40,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.swing.SwingAskDialogBuilder;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *  Info Dialog Management

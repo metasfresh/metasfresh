@@ -19,11 +19,11 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 
 import de.metas.i18n.IADMessageDAO;
+import de.metas.util.Services;
 
 
 /**

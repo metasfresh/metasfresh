@@ -3,8 +3,7 @@ package org.compiere.util;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Functions;
-
+import de.metas.util.Functions;
 import lombok.NonNull;
 import lombok.ToString;
 

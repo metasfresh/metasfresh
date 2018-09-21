@@ -25,8 +25,8 @@ package de.metas.handlingunits;
 
 import java.util.Date;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 
 /**
  * Provider used to get the initial DateTrx when an {@link IHUContext} is created.

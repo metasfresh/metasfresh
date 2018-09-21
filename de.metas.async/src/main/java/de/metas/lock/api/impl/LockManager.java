@@ -25,7 +25,6 @@ package de.metas.lock.api.impl;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
 import de.metas.lock.api.ILock;
@@ -35,6 +34,7 @@ import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.spi.ILockDatabase;
 import de.metas.lock.spi.impl.SqlLockDatabase;
+import de.metas.util.Check;
 
 public class LockManager implements ILockManager
 {

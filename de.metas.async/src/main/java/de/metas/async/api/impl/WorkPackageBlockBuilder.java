@@ -29,13 +29,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /* package */class WorkPackageBlockBuilder implements IWorkPackageBlockBuilder

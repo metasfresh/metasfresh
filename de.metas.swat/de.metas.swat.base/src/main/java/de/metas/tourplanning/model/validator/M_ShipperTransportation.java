@@ -26,7 +26,6 @@ package de.metas.tourplanning.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -35,6 +34,7 @@ import de.metas.tourplanning.api.ITourInstanceDAO;
 import de.metas.tourplanning.api.ITourInstanceQueryParams;
 import de.metas.tourplanning.api.impl.PlainTourInstanceQueryParams;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Services;
 
 @Interceptor(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

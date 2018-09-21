@@ -31,7 +31,6 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -53,6 +52,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import de.metas.Profiles;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
+import de.metas.util.Check;
 
 @RestController
 @RequestMapping(value = BarcodeRestController.ENDPOINT)

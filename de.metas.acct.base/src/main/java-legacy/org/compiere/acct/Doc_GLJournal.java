@@ -25,13 +25,14 @@ import org.adempiere.acct.api.IGLJournalLineDAO;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.PO;
 import org.compiere.model.X_GL_JournalLine;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  * Post GL Journal Documents.

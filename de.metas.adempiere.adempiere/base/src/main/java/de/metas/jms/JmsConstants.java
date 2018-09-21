@@ -1,12 +1,12 @@
 package de.metas.jms;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

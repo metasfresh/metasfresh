@@ -27,10 +27,9 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.TableRowKey;
+import de.metas.util.Check;
 
 /**
  * 

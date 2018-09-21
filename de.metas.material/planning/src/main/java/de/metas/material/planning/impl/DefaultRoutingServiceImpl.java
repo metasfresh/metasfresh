@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
@@ -51,6 +50,7 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.uom.UOMUtil;
+import de.metas.util.Services;
 
 /**
  * Default Routing Service Implementation

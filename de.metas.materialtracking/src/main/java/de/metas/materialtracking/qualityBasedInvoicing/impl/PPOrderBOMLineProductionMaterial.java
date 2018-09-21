@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -38,6 +36,8 @@ import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class PPOrderBOMLineProductionMaterial extends AbstractProductionMaterial implements IModelWrapper
 {

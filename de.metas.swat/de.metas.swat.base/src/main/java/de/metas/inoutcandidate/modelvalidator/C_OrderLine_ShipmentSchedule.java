@@ -25,11 +25,11 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.util.Services;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine_ShipmentSchedule

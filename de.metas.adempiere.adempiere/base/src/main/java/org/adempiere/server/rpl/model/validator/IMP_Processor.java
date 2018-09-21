@@ -28,9 +28,10 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.server.rpl.IImportProcessor;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Services;
 
 @Validator(I_IMP_Processor.class)
 public class IMP_Processor

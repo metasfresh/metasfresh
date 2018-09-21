@@ -25,11 +25,11 @@ package de.metas.payment.sepa.api.impl;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.payment.sepa.api.IPaymentDAO;
 import de.metas.payment.sepa.model.I_SEPA_Export;
+import de.metas.util.Services;
 
 public class PaymentDAO implements IPaymentDAO
 {

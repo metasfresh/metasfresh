@@ -24,7 +24,8 @@ package org.adempiere.ad.dao.cache.jmx;
 
 
 import org.adempiere.ad.dao.cache.ITableCacheStatisticsCollector;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class JMXCacheStatisticsManager implements JMXCacheStatisticsManagerMBean
 {

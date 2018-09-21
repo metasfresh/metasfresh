@@ -30,7 +30,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
@@ -51,6 +50,7 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

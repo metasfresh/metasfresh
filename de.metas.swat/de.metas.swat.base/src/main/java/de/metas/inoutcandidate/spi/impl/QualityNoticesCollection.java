@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Quality Notices Collection.

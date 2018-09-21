@@ -33,8 +33,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -45,6 +43,8 @@ import de.metas.data.export.api.IExporterMonitor;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper monitor which logs the given parameters by using <code>adProcessId</code> when export started. When export finished, it logs the status.

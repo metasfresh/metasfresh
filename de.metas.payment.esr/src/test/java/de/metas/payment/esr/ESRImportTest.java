@@ -48,7 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.RepeatRule;
 import org.adempiere.util.test.RepeatRule.Repeat;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
@@ -93,6 +92,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
+import de.metas.util.Services;
 
 /**
  * This class tests the entire module of importing ESR

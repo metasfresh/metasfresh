@@ -31,9 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.IService;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.proxy.WeakWrapper;
 import org.compiere.util.Env;
@@ -47,6 +44,9 @@ import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.IService;
+import de.metas.util.Services;
 
 public final class TerminalContext implements ITerminalContext, ITerminalContextReferences
 {

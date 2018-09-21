@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -30,6 +29,7 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

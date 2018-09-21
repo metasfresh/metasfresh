@@ -1,7 +1,6 @@
 package de.metas.order.process;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -12,6 +11,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 
 /*
  * #%L

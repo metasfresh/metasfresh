@@ -35,7 +35,6 @@ import javax.swing.JScrollPane;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CFrame;
@@ -43,6 +42,7 @@ import org.compiere.swing.CPanel;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Init Dialog

@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.time.SystemTime;
+import de.metas.util.time.SystemTime;
 
 /**
  * Material Transaction Model

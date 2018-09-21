@@ -24,12 +24,12 @@ package de.metas.handlingunits.inout;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.util.ISingletonService;
 
 public interface IHUInOutDAO extends ISingletonService
 {

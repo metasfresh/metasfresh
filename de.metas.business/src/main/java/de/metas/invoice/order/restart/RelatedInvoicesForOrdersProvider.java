@@ -3,7 +3,6 @@ package de.metas.invoice.order.restart;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.order.OrderId;
 import de.metas.util.RelatedRecordsProvider;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -4,7 +4,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
@@ -19,6 +18,7 @@ import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.model.C_Aggregation_Builder;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.util.Services;
 
 public class AggregationDAOTest
 {

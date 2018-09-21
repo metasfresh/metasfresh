@@ -2,15 +2,14 @@ package de.metas.handlingunits.picking.pickingCandidateCommands;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

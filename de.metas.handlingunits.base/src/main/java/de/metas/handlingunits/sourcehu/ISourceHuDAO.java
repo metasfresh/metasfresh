@@ -3,13 +3,13 @@ package de.metas.handlingunits.sourcehu;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.proxy.Cached;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

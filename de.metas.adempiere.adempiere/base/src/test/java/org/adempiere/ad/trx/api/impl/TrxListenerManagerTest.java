@@ -8,11 +8,12 @@ import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.trxConstraints.api.impl.TrxConstraintsBL;
 import org.compiere.util.Trx;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 /*
  * #%L

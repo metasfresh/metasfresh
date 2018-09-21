@@ -29,8 +29,9 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ModelAttributeSetInstanceListenerService implements IModelAttributeSetInstanceListenerService
 {

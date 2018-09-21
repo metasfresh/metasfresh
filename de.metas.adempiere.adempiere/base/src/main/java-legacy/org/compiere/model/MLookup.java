@@ -38,15 +38,17 @@ import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.util.AbstractPropertiesProxy;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.InstantFuture;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
+
+import de.metas.util.AbstractPropertiesProxy;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import org.compiere.util.ValueNamePair;
 
 /**

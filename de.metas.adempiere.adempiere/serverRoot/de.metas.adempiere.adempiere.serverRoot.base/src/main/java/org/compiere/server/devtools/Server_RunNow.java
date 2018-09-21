@@ -25,10 +25,11 @@ package org.compiere.server.devtools;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.server.AdempiereServerMgr;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /**
  * Start ADempiere server (for development use).

@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
+
+import de.metas.util.ISingletonService;
 
 public interface IQueryBuilderDAO extends ISingletonService
 {

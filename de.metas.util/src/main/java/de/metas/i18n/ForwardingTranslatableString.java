@@ -3,8 +3,7 @@ package de.metas.i18n;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

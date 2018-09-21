@@ -26,8 +26,6 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
@@ -39,6 +37,8 @@ import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Class used for inner IC-IOL mapping

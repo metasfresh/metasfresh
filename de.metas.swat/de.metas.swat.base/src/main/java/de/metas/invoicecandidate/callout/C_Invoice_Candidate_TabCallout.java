@@ -34,11 +34,11 @@ import org.adempiere.facet.impl.FacetExecutor;
 import org.adempiere.facet.impl.GridTabFacetFilterable;
 import org.adempiere.facet.sideactions.impl.SideActionFacetsPool;
 import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 public class C_Invoice_Candidate_TabCallout extends TabCalloutAdapter implements IStatefulTabCallout
 {

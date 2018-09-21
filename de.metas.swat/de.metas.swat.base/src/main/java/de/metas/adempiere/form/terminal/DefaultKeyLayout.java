@@ -26,9 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 public class DefaultKeyLayout
 		extends KeyLayout

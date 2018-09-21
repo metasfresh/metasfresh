@@ -32,14 +32,14 @@ import java.util.Properties;
 import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CompositePredicate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.freighcost.api.IFreightCostBL;
+import de.metas.util.Services;
+import de.metas.util.collections.CompositePredicate;
 
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {

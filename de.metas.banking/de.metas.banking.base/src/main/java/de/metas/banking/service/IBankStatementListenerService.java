@@ -1,6 +1,6 @@
 package de.metas.banking.service;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

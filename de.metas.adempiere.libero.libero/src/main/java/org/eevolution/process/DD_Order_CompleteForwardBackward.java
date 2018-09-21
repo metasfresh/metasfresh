@@ -25,11 +25,11 @@ package org.eevolution.process;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * Process used to manually trigger the completion of forward and backward {@link I_DD_Order}s

@@ -29,7 +29,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.AbstractTerminalCheckboxField;
@@ -37,6 +36,7 @@ import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.WrongValueException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * Swing terminal checkbox

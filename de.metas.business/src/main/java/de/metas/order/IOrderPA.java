@@ -2,9 +2,10 @@ package de.metas.order;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+
+import de.metas.util.ISingletonService;
 
 /**
  * 

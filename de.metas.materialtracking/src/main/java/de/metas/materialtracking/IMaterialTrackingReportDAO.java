@@ -2,14 +2,13 @@ package de.metas.materialtracking;
 
 import java.util.Iterator;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

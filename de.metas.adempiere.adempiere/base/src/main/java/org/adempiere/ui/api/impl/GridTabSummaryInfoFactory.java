@@ -30,10 +30,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
 import org.adempiere.ui.spi.impl.DefaultGridTabSummaryInfoProvider;
-import org.adempiere.util.Check;
 import org.compiere.model.GridTab;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+
+import de.metas.util.Check;
 
 public class GridTabSummaryInfoFactory implements IGridTabSummaryInfoFactory
 {

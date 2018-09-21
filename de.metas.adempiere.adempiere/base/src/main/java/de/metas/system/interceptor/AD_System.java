@@ -6,11 +6,11 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Ini;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

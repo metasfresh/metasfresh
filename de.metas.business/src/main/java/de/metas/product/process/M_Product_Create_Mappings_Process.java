@@ -3,7 +3,6 @@ package de.metas.product.process;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.process.Param;
 import de.metas.process.JavaProcess;
@@ -11,6 +10,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductConstants;
 import de.metas.product.model.I_M_Product;
 import de.metas.product.model.I_M_Product_Mapping;
+import de.metas.util.Services;
 
 /*
  * #%L

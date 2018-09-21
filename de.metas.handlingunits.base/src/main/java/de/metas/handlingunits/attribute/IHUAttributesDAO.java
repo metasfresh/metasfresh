@@ -25,16 +25,16 @@ package de.metas.handlingunits.attribute;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 
 import de.metas.handlingunits.attribute.impl.HUAttributesBySeqNoComparator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.util.ISingletonService;
 
 /**
- * Note: there are multiple implementations of this API. One (the "default" one) of them is returned by {@link org.adempiere.util.Services#get(Class)}, the others are only instantiated and returned by
+ * Note: there are multiple implementations of this API. One (the "default" one) of them is returned by {@link de.metas.util.Services#get(Class)}, the others are only instantiated and returned by
  * factories.
  *
  *

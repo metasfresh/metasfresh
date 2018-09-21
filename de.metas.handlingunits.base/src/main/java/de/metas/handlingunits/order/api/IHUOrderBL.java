@@ -26,13 +26,13 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.function.Consumer;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.ISingletonService;
 
 /**
  * Order and Handling Units integration BL

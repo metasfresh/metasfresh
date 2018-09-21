@@ -28,14 +28,14 @@ package org.adempiere.exceptions;
 import java.sql.SQLException;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Unique Constraint Exception

@@ -26,10 +26,11 @@ package org.adempiere.ad.service;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_InfoWindow_From;
+
+import de.metas.util.ISingletonService;
 
 public interface IADInfoWindowDAO extends ISingletonService
 {

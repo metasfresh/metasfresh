@@ -2,10 +2,9 @@ package de.metas.datev;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;

@@ -20,12 +20,12 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * 	Project Issue Model

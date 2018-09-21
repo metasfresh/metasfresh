@@ -29,7 +29,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Helper class used to delayed start a given {@link Runnable}.

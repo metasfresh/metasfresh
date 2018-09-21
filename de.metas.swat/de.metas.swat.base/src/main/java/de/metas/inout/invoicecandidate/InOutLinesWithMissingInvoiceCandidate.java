@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -40,6 +39,7 @@ import org.springframework.stereotype.Service;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.Services;
 
 /**
  * DAO to support {@link M_InOut_Handler} and {@link M_InOutLine_Handler}.

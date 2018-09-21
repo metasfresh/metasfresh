@@ -26,9 +26,8 @@ package org.compiere.model;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 public class Tax
 {

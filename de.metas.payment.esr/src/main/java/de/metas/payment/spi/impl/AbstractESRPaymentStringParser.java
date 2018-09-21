@@ -33,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -41,6 +40,7 @@ import org.compiere.util.Util;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
+import de.metas.util.Services;
 
 public abstract class AbstractESRPaymentStringParser implements IPaymentStringParser
 {

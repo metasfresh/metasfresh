@@ -33,8 +33,9 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.jmx.exceptions.JMXException;
+
+import de.metas.util.Check;
 
 /**
  * Helper class for registering and un-registering JMX MBeans.

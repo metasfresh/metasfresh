@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -43,6 +42,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
+import de.metas.util.Services;
 
 public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 {

@@ -27,9 +27,8 @@ import java.beans.PropertyChangeListener;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.util.Check;
 
 public abstract class TerminalDialog implements ITerminalDialog
 {

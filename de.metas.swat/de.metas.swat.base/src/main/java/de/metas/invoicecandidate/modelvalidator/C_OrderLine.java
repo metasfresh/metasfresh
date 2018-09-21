@@ -2,12 +2,12 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.util.Services;
 
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine

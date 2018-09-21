@@ -26,10 +26,9 @@ package de.metas.async.processor.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Check;
 
 class StatefulWorkpackageProcessorFactory extends WorkpackageProcessorFactory implements IStatefulWorkpackageProcessorFactory
 {

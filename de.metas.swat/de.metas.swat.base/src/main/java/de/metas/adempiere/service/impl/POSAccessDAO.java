@@ -30,12 +30,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.I_C_POS_Profile;
 import org.adempiere.model.I_C_POS_Profile_Warehouse;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 
 import de.metas.adempiere.service.IPOSAccessDAO;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.util.Services;
 
 public class POSAccessDAO implements IPOSAccessDAO
 {

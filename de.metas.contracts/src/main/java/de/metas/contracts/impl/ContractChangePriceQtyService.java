@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -16,6 +15,7 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

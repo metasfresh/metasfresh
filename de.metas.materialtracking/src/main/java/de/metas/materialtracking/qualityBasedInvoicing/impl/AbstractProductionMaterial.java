@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */abstract class AbstractProductionMaterial implements IProductionMaterial
 {

@@ -30,8 +30,9 @@ import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.countryattribute.impl.CountryAwareAttributeUpdater;
 import org.adempiere.mm.attributes.countryattribute.impl.InOutLineCountryAware;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
+
+import de.metas.util.Services;
 
 public class InOutLineInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

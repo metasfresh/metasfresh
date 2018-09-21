@@ -1,11 +1,11 @@
 package de.metas.i18n.process;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Language;
 
 import de.metas.i18n.ILanguageDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /**
  * Created/Re-Create/Delete language translations for currently selected {@link I_AD_Language}.

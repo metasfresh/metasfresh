@@ -3,7 +3,8 @@ package org.adempiere.ad.table.api;
 import java.util.List;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

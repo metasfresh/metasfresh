@@ -27,7 +27,8 @@ import java.lang.ref.WeakReference;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class JMXPOJOLookupMap implements JMXPOJOLookupMapMBean
 {

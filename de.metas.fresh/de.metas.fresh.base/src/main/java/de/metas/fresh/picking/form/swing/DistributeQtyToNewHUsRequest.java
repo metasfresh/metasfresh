@@ -25,11 +25,11 @@ package de.metas.fresh.picking.form.swing;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
 
 /**
  * Valid immutable object used to define how much we want to distribute to new TUs.

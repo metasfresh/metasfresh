@@ -6,8 +6,6 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.util.Collection;
 import java.util.Date;
 
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
 import org.springframework.context.annotation.Profile;
@@ -21,6 +19,8 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

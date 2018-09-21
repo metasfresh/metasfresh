@@ -25,7 +25,6 @@ package de.metas.handlingunits.attribute.propagation.impl;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.IAttributeValueListener;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.util.Check;
 
 public class BottomUpHUAttributePropagator extends AbstractHUAttributePropagator
 {

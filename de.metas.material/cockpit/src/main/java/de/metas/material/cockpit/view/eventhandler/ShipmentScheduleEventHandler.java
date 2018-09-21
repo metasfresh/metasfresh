@@ -2,8 +2,6 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +26,8 @@ import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

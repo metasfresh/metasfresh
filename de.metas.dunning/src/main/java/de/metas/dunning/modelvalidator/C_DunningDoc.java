@@ -24,7 +24,6 @@ package de.metas.dunning.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.document.DocTypeQuery;
@@ -33,6 +32,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.dunning.Dunning_Constants;
 import de.metas.dunning.api.impl.DunningDocDocumentLocationAdapter;
 import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.util.Services;
 import de.metas.workflow.api.IWorkflowBL;
 
 @Validator(I_C_DunningDoc.class)

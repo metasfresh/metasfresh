@@ -26,13 +26,13 @@ package de.metas.invoicecandidate.api.impl;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.lock.api.ILock;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author al

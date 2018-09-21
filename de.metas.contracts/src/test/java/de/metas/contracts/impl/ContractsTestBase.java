@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.TimeSource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -39,6 +37,8 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.impl.PlainContractChangeDAO;
+import de.metas.util.Services;
+import de.metas.util.time.TimeSource;
 
 public class ContractsTestBase
 {

@@ -2,7 +2,6 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.ModelValidator;
 
@@ -10,6 +9,7 @@ import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageAttributeSegment;
 import de.metas.storage.impl.ImmutableStorageSegment;
+import de.metas.util.Services;
 
 @Validator(I_M_AttributeInstance.class)
 public class M_AttributeInstance

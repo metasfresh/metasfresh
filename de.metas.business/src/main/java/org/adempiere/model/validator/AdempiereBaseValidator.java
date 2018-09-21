@@ -37,7 +37,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Column;
@@ -87,6 +86,7 @@ import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
+import de.metas.util.Services;
 
 /**
  * ADempiere Base Module Activator

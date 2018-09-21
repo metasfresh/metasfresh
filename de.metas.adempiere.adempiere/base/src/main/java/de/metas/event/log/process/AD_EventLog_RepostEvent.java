@@ -1,6 +1,5 @@
 package de.metas.event.log.process;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.event.Event;
@@ -11,6 +10,7 @@ import de.metas.event.Type;
 import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

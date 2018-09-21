@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
 
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.EventBusConstants;
 import de.metas.event.Topic;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

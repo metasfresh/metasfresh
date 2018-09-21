@@ -25,10 +25,11 @@ package de.metas.materialtracking.qualityBasedInvoicing;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
+
+import de.metas.util.ISingletonService;
 
 public interface IQualityBasedInvoicingBL extends ISingletonService
 {

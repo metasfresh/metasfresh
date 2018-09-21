@@ -3,7 +3,6 @@ package de.metas.handlingunits.movement.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -11,6 +10,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.util.ISingletonService;
 
 public interface IHUMovementBL extends ISingletonService
 {

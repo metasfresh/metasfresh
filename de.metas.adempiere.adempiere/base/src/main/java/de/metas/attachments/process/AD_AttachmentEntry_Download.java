@@ -1,11 +1,11 @@
 package de.metas.attachments.process;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_AttachmentEntry;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

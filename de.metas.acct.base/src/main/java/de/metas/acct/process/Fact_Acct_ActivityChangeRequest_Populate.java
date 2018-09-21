@@ -7,14 +7,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest_Source_v;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.Process;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

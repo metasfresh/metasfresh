@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.DocumentHandler;
@@ -21,6 +20,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.X_C_RfQResponse;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

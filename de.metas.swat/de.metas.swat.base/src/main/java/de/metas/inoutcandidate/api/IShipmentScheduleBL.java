@@ -27,7 +27,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
@@ -37,6 +36,7 @@ import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackagePr
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.storage.IStorageQuery;
+import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {

@@ -24,9 +24,10 @@ package org.adempiere.ad.model.util;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import com.google.common.base.Function;
+
+import de.metas.util.Check;
 
 /**
  * Function which returns the ID of given model.

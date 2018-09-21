@@ -5,13 +5,13 @@ import java.sql.Timestamp;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L

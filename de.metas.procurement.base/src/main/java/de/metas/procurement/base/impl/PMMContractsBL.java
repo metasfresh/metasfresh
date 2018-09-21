@@ -5,12 +5,12 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.procurement.base.IPMMContractsBL;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.util.Services;
 
 /*
  * #%L

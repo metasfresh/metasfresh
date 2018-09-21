@@ -25,7 +25,6 @@ package de.metas.banking.payment.paymentallocation.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
@@ -33,6 +32,7 @@ import org.compiere.util.Env;
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Services;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
 {

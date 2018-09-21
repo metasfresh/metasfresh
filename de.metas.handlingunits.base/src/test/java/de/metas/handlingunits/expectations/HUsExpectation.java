@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.util.Check;
 
 /**
  * Allows a tester to declare HU related expectations.

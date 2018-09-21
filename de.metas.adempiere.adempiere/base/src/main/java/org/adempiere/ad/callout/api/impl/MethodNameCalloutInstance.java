@@ -9,12 +9,13 @@ import org.adempiere.ad.callout.api.ICalloutInstance;
 import org.adempiere.ad.callout.exceptions.CalloutException;
 import org.adempiere.ad.callout.exceptions.CalloutExecutionException;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 public final class MethodNameCalloutInstance implements ICalloutInstance
 {

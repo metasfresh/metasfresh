@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
+import de.metas.util.Services;
 
 /*
  * #%L

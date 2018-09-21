@@ -28,11 +28,11 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.order.IOrderDAO;
+import de.metas.util.Services;
 
 public class OrderCountryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

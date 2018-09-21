@@ -9,12 +9,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -25,6 +20,11 @@ import de.metas.acct.aggregation.IFactAcctSummaryKey;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.model.X_Fact_Acct_Log;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.MapReduceAggregator;
 
 /*
  * #%L

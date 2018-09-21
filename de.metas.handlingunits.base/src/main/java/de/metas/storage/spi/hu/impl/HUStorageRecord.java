@@ -28,8 +28,6 @@ import java.math.BigDecimal;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -44,6 +42,8 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageRecord;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public final class HUStorageRecord implements IStorageRecord
 {

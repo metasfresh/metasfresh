@@ -3,7 +3,6 @@ package de.metas.elasticsearch.scheduler.impl;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
@@ -13,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

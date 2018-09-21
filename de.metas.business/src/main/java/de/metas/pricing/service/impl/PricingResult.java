@@ -31,7 +31,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import de.metas.lang.Percent;
@@ -46,6 +45,7 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

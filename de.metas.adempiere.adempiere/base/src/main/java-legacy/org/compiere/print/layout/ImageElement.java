@@ -26,7 +26,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MImage;
@@ -38,6 +37,7 @@ import org.compiere.util.Env;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.attachments.IAttachmentDAO;
+import de.metas.util.Services;
 
 /**
  *	Image Element

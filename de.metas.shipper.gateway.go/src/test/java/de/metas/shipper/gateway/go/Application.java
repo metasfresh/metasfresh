@@ -8,7 +8,6 @@ import java.time.Month;
 import java.util.List;
 import java.util.Locale;
 
-import org.adempiere.util.Check;
 import org.junit.Ignore;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,6 +28,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

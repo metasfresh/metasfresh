@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
@@ -39,6 +38,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
 
 /**
  * Default immutable implementation of {@link IInvoiceLineAggregationRequest}.

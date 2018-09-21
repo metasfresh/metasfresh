@@ -37,11 +37,12 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.MimeType;
+
+import de.metas.util.Check;
 
 /**
  * Image Model

@@ -30,12 +30,12 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
 
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
+import de.metas.util.Services;
 
 @Interceptor(I_DIM_Dimension_Spec_Attribute.class)
 @Callout(I_DIM_Dimension_Spec_Attribute.class)

@@ -25,7 +25,6 @@ package de.metas.handlingunits.client.terminal.pporder.receipt.model;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 
@@ -34,6 +33,7 @@ import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.util.Check;
 
 public class HUPPOrderReceiptCUKey extends CUKey
 {

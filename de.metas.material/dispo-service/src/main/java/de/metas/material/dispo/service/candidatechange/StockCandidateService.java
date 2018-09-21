@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -21,6 +20,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

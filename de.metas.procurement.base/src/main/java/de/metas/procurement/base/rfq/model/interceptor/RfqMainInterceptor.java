@@ -2,13 +2,13 @@ package de.metas.procurement.base.rfq.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.procurement.base.rfq.PMMRfQResponseProducerFactory;
 import de.metas.procurement.base.rfq.PMMWebuiRfQResponsePublisher;
 import de.metas.rfq.IRfQConfiguration;
 import de.metas.rfq.event.IRfQEventDispacher;
+import de.metas.util.Services;
 
 /*
  * #%L

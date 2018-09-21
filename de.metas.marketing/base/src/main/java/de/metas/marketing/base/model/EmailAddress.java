@@ -4,8 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

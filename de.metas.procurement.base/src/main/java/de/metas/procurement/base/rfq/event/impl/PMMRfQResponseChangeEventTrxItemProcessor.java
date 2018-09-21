@@ -8,9 +8,6 @@ import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -24,6 +21,9 @@ import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
 import de.metas.rfq.exceptions.RfQDocumentClosedException;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

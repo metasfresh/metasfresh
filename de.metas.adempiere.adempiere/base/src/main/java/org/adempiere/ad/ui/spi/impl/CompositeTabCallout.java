@@ -29,10 +29,11 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 @Immutable
 public final class CompositeTabCallout implements ITabCallout

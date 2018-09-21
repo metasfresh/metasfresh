@@ -32,14 +32,14 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Validator(I_M_ProductPrice.class)
 public class M_ProductPrice

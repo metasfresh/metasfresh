@@ -25,7 +25,7 @@ package de.metas.data.export.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * {@link IExporter} Factory.

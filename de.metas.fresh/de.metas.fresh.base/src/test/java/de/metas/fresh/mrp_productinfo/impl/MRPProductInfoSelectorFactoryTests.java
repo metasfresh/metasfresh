@@ -12,7 +12,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.api.Params;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Transaction;
 import org.junit.Before;
@@ -23,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

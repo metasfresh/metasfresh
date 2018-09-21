@@ -25,9 +25,6 @@ package de.metas.handlingunits.client.terminal.mmovement.view.impl;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.AbstractVMSynchronizer;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -39,6 +36,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.IMaterialMovementModel;
 import de.metas.handlingunits.client.terminal.mmovement.view.IMaterialMovementPanel;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Base class for material movement panels

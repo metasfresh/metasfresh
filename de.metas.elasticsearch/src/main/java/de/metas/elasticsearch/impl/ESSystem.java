@@ -4,8 +4,6 @@ import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
@@ -19,6 +17,8 @@ import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -26,13 +26,12 @@ package de.metas.document.refid.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
+import de.metas.util.ISingletonService;
 
 public interface IReferenceNoDAO extends ISingletonService
 {

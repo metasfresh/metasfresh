@@ -4,7 +4,6 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -12,6 +11,7 @@ import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine

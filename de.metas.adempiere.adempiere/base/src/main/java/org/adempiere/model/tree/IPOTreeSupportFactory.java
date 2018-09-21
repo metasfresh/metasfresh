@@ -24,7 +24,8 @@ package org.adempiere.model.tree;
 
 
 import org.adempiere.model.tree.spi.IPOTreeSupport;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface IPOTreeSupportFactory extends ISingletonService
 {

@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
+
+import de.metas.util.ISingletonService;
 
 public interface IDocumentBL extends ISingletonService
 {

@@ -27,8 +27,6 @@ import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -42,6 +40,8 @@ import com.google.common.base.MoreObjects;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

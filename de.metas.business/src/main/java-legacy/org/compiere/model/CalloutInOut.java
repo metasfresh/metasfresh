@@ -23,8 +23,6 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DisplayType;
@@ -38,6 +36,8 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Shipment/Receipt Callouts

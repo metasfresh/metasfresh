@@ -3,11 +3,11 @@ package de.metas.inoutcandidate.modelvalidator;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.util.Services;
 
 /*
  * #%L

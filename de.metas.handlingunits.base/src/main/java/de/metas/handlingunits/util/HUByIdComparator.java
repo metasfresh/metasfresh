@@ -27,9 +27,9 @@ import java.util.Comparator;
 
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.Check;
 
 /**
  * Comparator which is comparing {@link I_M_HU}s by their M_HU_ID.

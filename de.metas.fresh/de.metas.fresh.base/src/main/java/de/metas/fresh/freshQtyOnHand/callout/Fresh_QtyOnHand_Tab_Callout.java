@@ -28,11 +28,11 @@ import java.sql.Timestamp;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.apache.commons.lang3.time.DateUtils;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * The tab callout makes sure that, if a new <code>Fresh_QtyOnHand</code> record is created, then that record receives a <code>DateDoc</code> that was not yet "taken" by another

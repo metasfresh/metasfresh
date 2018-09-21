@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
 import org.junit.Before;
@@ -19,6 +17,8 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L

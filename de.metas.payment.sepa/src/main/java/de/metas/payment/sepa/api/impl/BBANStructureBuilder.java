@@ -30,13 +30,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.builder.BuilderSupport;
 import de.metas.payment.sepa.api.IBBANStructureBuilder;
 import de.metas.payment.sepa.api.IBBANStructureEntryBuilder;
 import de.metas.payment.sepa.wrapper.BBANStructure;
 import de.metas.payment.sepa.wrapper.BBANStructureEntry;
+import de.metas.util.Check;
 
 /**
  * @author cg

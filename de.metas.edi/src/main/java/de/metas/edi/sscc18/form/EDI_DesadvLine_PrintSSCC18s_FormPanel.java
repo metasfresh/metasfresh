@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
@@ -55,6 +54,7 @@ import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.util.Services;
 
 /**
  * Form panel used to generate and print {@link I_EDI_DesadvLine_SSCC} records for a given {@link I_EDI_Desadv}.

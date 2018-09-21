@@ -4,17 +4,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.time.generator.BusinessDayShifter;
-import org.adempiere.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
-import org.adempiere.util.time.generator.DateSequenceGenerator;
-import org.adempiere.util.time.generator.IDateShifter;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.NullBusinessDayMatcher;
+import de.metas.util.Services;
+import de.metas.util.time.generator.BusinessDayShifter;
+import de.metas.util.time.generator.DateSequenceGenerator;
+import de.metas.util.time.generator.IDateShifter;
+import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import lombok.NonNull;
 
 /*

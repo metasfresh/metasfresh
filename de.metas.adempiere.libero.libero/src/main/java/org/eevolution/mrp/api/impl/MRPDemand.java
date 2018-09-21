@@ -29,11 +29,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPDemand;
+
+import de.metas.util.Check;
 
 public final class MRPDemand implements IMRPDemand
 {

@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
@@ -49,6 +48,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.shipping.interfaces.I_M_Package;
+import de.metas.util.Services;
 
 /**
  * Test case:

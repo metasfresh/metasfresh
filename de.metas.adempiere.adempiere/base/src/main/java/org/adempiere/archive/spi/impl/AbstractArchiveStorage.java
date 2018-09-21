@@ -30,8 +30,9 @@ import java.util.Properties;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
+
+import de.metas.util.Services;
 
 /**
  * Abstract implementation of {@link IArchiveStorage}. At this level there is no reference to a particular storage support.

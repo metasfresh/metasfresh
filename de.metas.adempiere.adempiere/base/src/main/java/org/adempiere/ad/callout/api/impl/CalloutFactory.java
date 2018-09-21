@@ -31,13 +31,13 @@ import org.adempiere.ad.callout.spi.CompositeCalloutProvider;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.IDefaultCalloutProvider;
 import org.adempiere.ad.callout.spi.impl.NullCalloutProvider;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class CalloutFactory implements ICalloutFactory
 {

@@ -34,7 +34,6 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -56,6 +55,7 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  * Record Access Dialog

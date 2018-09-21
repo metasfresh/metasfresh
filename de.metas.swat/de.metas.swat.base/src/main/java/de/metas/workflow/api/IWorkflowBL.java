@@ -25,9 +25,9 @@ package de.metas.workflow.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_WF_Responsible;
 
+import de.metas.util.ISingletonService;
 import de.metas.workflow.model.I_C_Doc_Responsible;
 
 public interface IWorkflowBL extends ISingletonService

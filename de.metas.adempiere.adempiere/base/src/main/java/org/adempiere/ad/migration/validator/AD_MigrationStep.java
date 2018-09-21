@@ -27,8 +27,9 @@ import org.adempiere.ad.migration.model.I_AD_MigrationStep;
 import org.adempiere.ad.migration.service.IMigrationBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
+
+import de.metas.util.Services;
 
 @Validator(I_AD_MigrationStep.class)
 public class AD_MigrationStep

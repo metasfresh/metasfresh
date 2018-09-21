@@ -28,13 +28,13 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.spi.IHUTrxAttributeProcessor;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
+import de.metas.util.Services;
 
 /**
  * Process an {@link I_M_HU_Trx_Attribute} for an {@link I_M_AttributeSetInstance}.

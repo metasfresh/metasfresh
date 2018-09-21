@@ -4,13 +4,13 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_I_BPartner;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

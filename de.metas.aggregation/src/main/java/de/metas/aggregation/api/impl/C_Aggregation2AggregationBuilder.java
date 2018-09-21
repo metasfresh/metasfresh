@@ -35,8 +35,6 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 
 import de.metas.aggregation.api.IAggregation;
@@ -49,6 +47,8 @@ import de.metas.aggregation.model.I_C_AggregationItem;
 import de.metas.aggregation.model.I_C_Aggregation_Attribute;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates {@link IAggregation} from {@link I_C_Aggregation} structure.

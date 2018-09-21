@@ -43,9 +43,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Archive;
@@ -78,6 +75,9 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.util.Check;
+import de.metas.util.Pair;
+import de.metas.util.Services;
 
 public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 {

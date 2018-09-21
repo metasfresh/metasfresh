@@ -25,9 +25,9 @@ import java.util.TreeSet;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
+import de.metas.util.Services;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 
 

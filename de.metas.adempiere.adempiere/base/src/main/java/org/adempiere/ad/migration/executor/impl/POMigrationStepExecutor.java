@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -41,7 +42,6 @@ import org.adempiere.ad.migration.util.DefaultDataConverter;
 import org.adempiere.ad.migration.util.IDataConverter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;

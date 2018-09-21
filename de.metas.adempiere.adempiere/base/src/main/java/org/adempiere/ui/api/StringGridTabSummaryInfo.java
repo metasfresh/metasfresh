@@ -25,9 +25,8 @@ package org.adempiere.ui.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  * Immutable implementation of {@link IGridTabSummaryInfo} which wraps a {@link String}.

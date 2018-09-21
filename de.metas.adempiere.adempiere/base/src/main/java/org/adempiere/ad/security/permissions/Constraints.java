@@ -26,12 +26,13 @@ package org.adempiere.ad.security.permissions;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /**
  * {@link Constraint}s collections.

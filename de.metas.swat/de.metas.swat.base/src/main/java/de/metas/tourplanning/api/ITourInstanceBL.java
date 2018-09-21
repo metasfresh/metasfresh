@@ -1,10 +1,10 @@
 package de.metas.tourplanning.api;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.ISingletonService;
 
 public interface ITourInstanceBL extends ISingletonService
 {

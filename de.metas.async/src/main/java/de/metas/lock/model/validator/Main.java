@@ -27,11 +27,11 @@ import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.lock.housekeeping.spi.impl.ClearLocks;
 import de.metas.lock.model.I_T_Lock;
+import de.metas.util.Services;
 
 /**
  * Lock Module Activator

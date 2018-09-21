@@ -1,7 +1,6 @@
 package de.metas.fresh.ordercheckup.process;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 /*
@@ -35,6 +34,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements IProcessPrecondition
 {

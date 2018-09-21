@@ -22,8 +22,6 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -44,6 +42,8 @@ import org.slf4j.Logger;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Abstract MS Excel Format (xls) Exporter

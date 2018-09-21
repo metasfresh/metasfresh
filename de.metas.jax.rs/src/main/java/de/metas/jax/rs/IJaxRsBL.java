@@ -3,11 +3,10 @@ package de.metas.jax.rs;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.jax.rs.model.I_AD_JAXRS_Endpoint;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L
@@ -53,7 +52,7 @@ public interface IJaxRsBL extends ISingletonService
 
 	/**
 	 * Get {@link I_AD_JAXRS_Endpoint} records by invoking {@link IJaxRsDAO#retrieveClientEndpoints(Properties)} create a JAX-RS <b>client</b> endpoint for each of them, <br>
-	 * and register each of them using {@link org.adempiere.util.Services#registerService(Class, ISingletonService)}.
+	 * and register each of them using {@link de.metas.util.Services#registerService(Class, ISingletonService)}.
 	 * That way, <code>Services</code> will return the JAX-RS client instead of the implementation and therefore.
 	 */
 	void createClientEndPoints(Properties ctx);

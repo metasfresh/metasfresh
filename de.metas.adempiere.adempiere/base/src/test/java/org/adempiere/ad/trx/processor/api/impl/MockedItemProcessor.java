@@ -29,10 +29,11 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Ignore;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * A mocked processor for testing.

@@ -26,12 +26,12 @@ package de.metas.handlingunits.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_C_OLCand;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.util.Check;
 
 @Validator(I_C_Order_Line_Alloc.class)
 public class C_Order_Line_Alloc

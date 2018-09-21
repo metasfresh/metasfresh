@@ -1,7 +1,6 @@
 package de.metas.purchasing.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
@@ -11,6 +10,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

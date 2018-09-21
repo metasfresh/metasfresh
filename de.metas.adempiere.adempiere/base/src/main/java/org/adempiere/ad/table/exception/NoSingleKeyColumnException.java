@@ -2,8 +2,9 @@ package org.adempiere.ad.table.exception;
 
 import org.adempiere.ad.table.process.AD_Table_CreatePK;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.POInfo;
+
+import de.metas.util.StringUtils;
 
 /*
  * #%L

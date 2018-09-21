@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +49,7 @@ import de.metas.printing.model.I_AD_PrinterTray_Matching;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
+import de.metas.util.Services;
 
 public class PrinterBLTest extends AbstractPrintingTest
 {

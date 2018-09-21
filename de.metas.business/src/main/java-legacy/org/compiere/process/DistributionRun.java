@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionRun;
 import org.compiere.model.MDistributionRunDetail;
@@ -47,6 +46,7 @@ import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Create Distribution	

@@ -28,10 +28,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
+import de.metas.util.ISingletonService;
 
 public interface IAggregationDAO extends ISingletonService
 {

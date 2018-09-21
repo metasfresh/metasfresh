@@ -62,8 +62,6 @@ import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.plaf.AdempiereTabbedPaneUI;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.ui.sideactions.swing.SideActionsGroupsListPanel;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.apps.AppsAction;
@@ -109,8 +107,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
+import de.metas.util.Services;
 
 
 /**

@@ -25,11 +25,12 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * Immutable allocation candidate.

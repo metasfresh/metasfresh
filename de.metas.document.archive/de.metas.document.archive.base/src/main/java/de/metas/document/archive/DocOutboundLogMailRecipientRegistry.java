@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

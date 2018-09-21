@@ -30,8 +30,6 @@ import java.util.List;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.swing.KeyStroke;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.GridController;
 import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
@@ -41,6 +39,9 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+
 import org.compiere.util.Env;
 
 public abstract class AbstractContextMenuAction implements IContextMenuAction

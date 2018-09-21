@@ -13,7 +13,6 @@ import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -23,6 +22,8 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /*
  * #%L

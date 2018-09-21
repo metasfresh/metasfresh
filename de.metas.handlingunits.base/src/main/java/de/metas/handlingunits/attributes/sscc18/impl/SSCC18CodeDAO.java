@@ -2,11 +2,11 @@ package de.metas.handlingunits.attributes.sscc18.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
+import de.metas.util.Services;
 
 public class SSCC18CodeDAO implements ISSCC18CodeDAO
 {

@@ -25,12 +25,12 @@ package de.metas.aggregation.api.impl;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Evaluatee;
 
 import de.metas.aggregation.api.IAggregationAttribute;
 import de.metas.aggregation.api.IAggregationItem;
+import de.metas.util.Check;
 
 /**
  * Immutable {@link IAggregationItem} implementation

@@ -32,8 +32,6 @@ import org.adempiere.acct.api.IGLJournalLineGroup;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
@@ -43,6 +41,8 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_Journal;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class GLJournalLineBL implements IGLJournalLineBL
 {

@@ -24,11 +24,10 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.swing.DefaultComboBoxModel;
 
-import org.adempiere.util.Services;
 import org.compiere.swing.CComboBox;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.util.Services;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 
 /**

@@ -33,8 +33,6 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -47,6 +45,8 @@ import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.impl.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Listens on {@link IAttributeStorage}s changes and logs the change.

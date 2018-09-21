@@ -28,14 +28,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.util.Services;
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;

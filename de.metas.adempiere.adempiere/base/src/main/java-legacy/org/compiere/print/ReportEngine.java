@@ -55,8 +55,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.ecs.XhtmlDocument;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.link;
@@ -93,7 +91,9 @@ import de.metas.logging.LogManager;
 import de.metas.print.IPrintService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 import de.metas.util.FileUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

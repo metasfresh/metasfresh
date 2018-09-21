@@ -31,14 +31,14 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DB;
 
 import com.google.common.base.Supplier;
 
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * {@link IAsyncImportProcessBuilder} implementation which creates and enqueues an {@link AsyncImportWorkpackageProcessor} workpackage.

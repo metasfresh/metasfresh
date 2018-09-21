@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +22,7 @@ import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIAnnotatedS
 import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestsIServiceAnnotation;
 import de.metas.javaclasses.impl.classesForJavaClassTypeBLTests.TestServiceImplementation;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Services;
 
 /*
  * #%L

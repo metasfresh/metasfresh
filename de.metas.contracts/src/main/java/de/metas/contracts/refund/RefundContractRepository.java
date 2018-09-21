@@ -14,9 +14,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
@@ -32,6 +29,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*

@@ -26,11 +26,11 @@ package org.eevolution.mrp.api.impl;
 import java.math.BigDecimal;
 import java.util.ConcurrentModificationException;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_MRP;
 
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
 
 /**
  * Wraps an {@link IMutableMRPRecordAndQty} and makes sure a minimum qty is reserved and not allowed to be subtracted.

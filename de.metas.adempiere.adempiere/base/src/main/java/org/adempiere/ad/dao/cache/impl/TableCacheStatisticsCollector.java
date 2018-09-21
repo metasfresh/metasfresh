@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -39,7 +40,6 @@ import org.adempiere.ad.dao.cache.ITableCacheStatistics;
 import org.adempiere.ad.dao.cache.ITableCacheStatisticsCollector;
 import org.adempiere.ad.dao.cache.jmx.JMXCacheStatisticsManager;
 import org.adempiere.ad.dao.cache.jmx.JMXTableCacheStatistics;
-import org.adempiere.util.Check;
 import org.compiere.util.CacheMgt;
 
 /* package */class TableCacheStatisticsCollector implements ITableCacheStatisticsCollector

@@ -25,10 +25,9 @@ package org.adempiere.util.text;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Simple {@link StringBuilder} like class which is appending a given separator between each {@link #append(Object)} method calls.

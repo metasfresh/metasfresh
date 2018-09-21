@@ -18,8 +18,6 @@ import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -27,6 +25,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

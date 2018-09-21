@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inbound.mail.config.InboundEMailConfig;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

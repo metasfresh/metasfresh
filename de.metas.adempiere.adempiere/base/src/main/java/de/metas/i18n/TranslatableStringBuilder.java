@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

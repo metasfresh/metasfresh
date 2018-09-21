@@ -29,10 +29,10 @@ import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.api.impl.AbstractTrx;
 import org.adempiere.ad.trx.api.impl.JdbcTrxSavepoint;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 // import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 

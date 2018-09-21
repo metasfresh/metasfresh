@@ -21,11 +21,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
+
+import de.metas.util.Services;
 
 /**
  *	Warehouse Model

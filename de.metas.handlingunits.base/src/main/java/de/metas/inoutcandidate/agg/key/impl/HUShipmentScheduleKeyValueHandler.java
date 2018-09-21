@@ -27,13 +27,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Services;
 
 /**
  * AggregationKey value handler for Invoice Candidates in Material Tracking

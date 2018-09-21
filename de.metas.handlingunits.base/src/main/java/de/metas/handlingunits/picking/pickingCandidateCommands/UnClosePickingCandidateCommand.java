@@ -3,13 +3,13 @@ package de.metas.handlingunits.picking.pickingCandidateCommands;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

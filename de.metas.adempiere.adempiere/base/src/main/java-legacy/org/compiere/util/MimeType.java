@@ -18,9 +18,9 @@ package org.compiere.util;
 
 import java.util.Map;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /**
  * Mime - Content type map.

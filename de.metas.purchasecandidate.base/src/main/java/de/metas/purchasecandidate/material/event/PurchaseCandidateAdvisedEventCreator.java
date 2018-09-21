@@ -3,7 +3,6 @@ package de.metas.purchasecandidate.material.event;
 import java.util.Optional;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Loggables;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +12,7 @@ import de.metas.material.planning.IMutableMRPContext;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*

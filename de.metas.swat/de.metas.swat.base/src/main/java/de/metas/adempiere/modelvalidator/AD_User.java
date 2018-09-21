@@ -7,11 +7,11 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.user.api.IUserBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This model validator

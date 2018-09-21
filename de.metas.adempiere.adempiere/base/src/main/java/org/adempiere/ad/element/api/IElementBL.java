@@ -1,7 +1,8 @@
 package org.adempiere.ad.element.api;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Element;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

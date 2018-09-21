@@ -4,14 +4,15 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.X_GL_JournalLine;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

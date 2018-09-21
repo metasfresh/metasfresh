@@ -4,11 +4,11 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.util.Services;
 import org.compiere.model.I_GL_JournalBatch;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.util.Services;
 
 /*
  * #%L

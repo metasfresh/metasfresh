@@ -29,10 +29,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MovementDAO implements IMovementDAO
 {

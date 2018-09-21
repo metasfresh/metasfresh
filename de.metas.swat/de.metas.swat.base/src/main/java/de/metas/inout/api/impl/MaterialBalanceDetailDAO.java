@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOutLine;
@@ -48,6 +47,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
+import de.metas.util.Services;
 
 public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 {

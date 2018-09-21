@@ -33,7 +33,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.util.Services;
 import org.compiere.apps.APanel;
 import org.compiere.apps.search.FindPanelContainer;
 import org.compiere.grid.ed.VEditor;
@@ -48,6 +47,7 @@ import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import com.google.common.base.MoreObjects;
 

@@ -38,7 +38,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
@@ -49,6 +48,7 @@ import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.

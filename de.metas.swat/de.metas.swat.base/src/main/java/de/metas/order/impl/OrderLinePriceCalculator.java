@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
 
@@ -36,6 +35,7 @@ import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

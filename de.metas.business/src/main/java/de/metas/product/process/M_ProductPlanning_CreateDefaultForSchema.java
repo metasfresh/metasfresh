@@ -1,11 +1,10 @@
 package de.metas.product.process;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.process.JavaProcess;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.model.I_M_Product_PlanningSchema;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

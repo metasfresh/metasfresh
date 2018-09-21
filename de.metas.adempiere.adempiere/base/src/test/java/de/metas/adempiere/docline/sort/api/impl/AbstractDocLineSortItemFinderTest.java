@@ -29,8 +29,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BP_DocLine_Sort;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocLine_Sort;
@@ -43,6 +41,8 @@ import org.junit.Before;
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.testsupport.AbstractTestSupport;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.ISingletonService;
 
 /**
  * Packaging related DAO

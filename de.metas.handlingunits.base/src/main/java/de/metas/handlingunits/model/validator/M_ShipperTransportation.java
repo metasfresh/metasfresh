@@ -29,7 +29,6 @@ import java.util.TreeSet;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidator;
 
@@ -40,6 +39,7 @@ import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Services;
 
 @Validator(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation

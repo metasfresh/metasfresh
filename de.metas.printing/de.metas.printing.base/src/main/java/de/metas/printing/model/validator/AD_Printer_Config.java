@@ -30,14 +30,14 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Ini;
 
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.client.IPrintingClientDelegate;
 import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

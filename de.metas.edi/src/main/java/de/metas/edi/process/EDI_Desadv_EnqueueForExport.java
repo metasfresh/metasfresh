@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -49,6 +48,7 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

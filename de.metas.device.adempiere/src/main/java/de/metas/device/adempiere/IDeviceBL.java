@@ -24,11 +24,10 @@ package de.metas.device.adempiere;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceResponse;
+import de.metas.util.ISingletonService;
 
 /**
  * Service to find and configure available devices
