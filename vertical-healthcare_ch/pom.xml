@@ -15,11 +15,11 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440_request</module>
-		<module>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440_response</module>
-		<module>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_450_request</module>
-		<module>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_450_response</module>
-		<module>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons</module>
+		<module>invoice_gateway.forum_datenaustausch_ch.invoice_440_request</module>
+		<module>invoice_gateway.forum_datenaustausch_ch.invoice_440_response</module>
+		<module>invoice_gateway.forum_datenaustausch_ch.invoice_450_request</module>
+		<module>invoice_gateway.forum_datenaustausch_ch.invoice_450_response</module>
+		<module>invoice_gateway.forum_datenaustausch_ch.invoice_commons</module>
 	</modules>
 
 </project>

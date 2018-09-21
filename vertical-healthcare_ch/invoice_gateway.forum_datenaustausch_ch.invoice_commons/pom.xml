@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>de.metas.vertical.healthcare_ch</groupId>
-		<artifactId>de.metas.vertical.healthcare_ch</artifactId>
+		<artifactId>vertical-healthcare_ch</artifactId>
 		<version>[1,10.0.0]</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
@@ -23,7 +23,7 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
 			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request</artifactId>
@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_450.response</artifactId>
+			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_450.response</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -62,7 +62,7 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>

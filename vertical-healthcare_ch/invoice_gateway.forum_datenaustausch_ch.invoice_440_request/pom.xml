@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request</artifactId>
+	<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request</artifactId>
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
