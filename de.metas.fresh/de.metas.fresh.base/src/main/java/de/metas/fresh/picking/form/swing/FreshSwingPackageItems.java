@@ -69,8 +69,8 @@ import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
@@ -505,7 +505,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// Create packing context (i.e. workfile to work on)
-		final IPackingContext packingContext = createPackingContext();
+		final PackingContext packingContext = createPackingContext();
 
 		//
 		// Execute Packing
@@ -933,7 +933,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		//
 		// Create packing context (i.e. workfile to work on)
-		final IPackingContext packingContext = createPackingContext();
+		final PackingContext packingContext = createPackingContext();
 
 		//
 		// Allocate given HUs to "itemToPack"
@@ -948,28 +948,27 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		updateFromPackingContext(packingContext);
 	}
 
-	private IPackingContext createPackingContext()
+	private PackingContext createPackingContext()
 	{
-		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
-
 		//
-		// Set PackingItemMap Key
 		final PickingSlotKey selectedPickingSlotKey = getSelectedPickingSlotKey();
 		Check.assumeNotNull(selectedPickingSlotKey, "selectedPickingSlotKey not null");
 		final PackingItemsMapKey packingItemsMapKey = PackingItemsMapKey.ofPickingSlotId(selectedPickingSlotKey.getPickingSlotId());
-		packingContext.setPackingItemsMapKey(packingItemsMapKey);
 
 		//
 		// Set PackingItemsMap
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
 		final FreshSwingPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
 		final PackingItemsMap packingItems = terminalPanel.getPackItems().copy();
-		packingContext.setPackingItemsMap(packingItems);
 
-		return packingContext;
+		return PackingContext.builder()
+				.ctx(getCtx())
+				.packingItemsMapKey(packingItemsMapKey)
+				.packingItemsMap(packingItems)
+				.build();
 	}
 
-	private void updateFromPackingContext(final IPackingContext packingContext)
+	private void updateFromPackingContext(final PackingContext packingContext)
 	{
 		//
 		// Copy back: PackingItemsMap

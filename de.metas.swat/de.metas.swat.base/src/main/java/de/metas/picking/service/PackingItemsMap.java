@@ -29,13 +29,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.picking.legacy.form.IPackingItem;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -49,6 +48,20 @@ import lombok.ToString;
 @ToString
 public final class PackingItemsMap
 {
+	public static PackingItemsMap ofUnpackedItems(final Collection<IPackingItem> unpackedItems)
+	{
+		PackingItemsMap map = new PackingItemsMap();
+		map.addUnpackedItems(unpackedItems);
+		return map;
+	}
+
+	public static PackingItemsMap ofUnpackedItem(@NonNull final IPackingItem unpackedItem)
+	{
+		PackingItemsMap map = new PackingItemsMap();
+		map.addUnpackedItem(unpackedItem);
+		return map;
+	}
+
 	private final Map<PackingItemsMapKey, List<IPackingItem>> itemsMap = new HashMap<>();
 
 	public PackingItemsMap()
@@ -87,7 +100,7 @@ public final class PackingItemsMap
 		return itemsMap.get(key);
 	}
 
-	public void addUnpackedItems(final Collection<? extends IPackingItem> unpackedItemsToAdd)
+	private void addUnpackedItems(final Collection<? extends IPackingItem> unpackedItemsToAdd)
 	{
 		if (unpackedItemsToAdd == null || unpackedItemsToAdd.isEmpty())
 		{
@@ -103,9 +116,8 @@ public final class PackingItemsMap
 		return itemsMap.computeIfAbsent(PackingItemsMapKey.UNPACKED, k -> new ArrayList<>());
 	}
 
-	public void addUnpackedItem(final IPackingItem unpackedItemToAdd)
+	public void addUnpackedItem(@NonNull final IPackingItem unpackedItemToAdd)
 	{
-		Check.assumeNotNull(unpackedItemToAdd, "unpackedItemToAdd not null");
 		final List<IPackingItem> unpackedItems = getUnpackedItems();
 		unpackedItems.add(unpackedItemToAdd);
 	}
@@ -130,9 +142,8 @@ public final class PackingItemsMap
 		return itemsMap.remove(key);
 	}
 
-	public void removeUnpackedItem(final IPackingItem itemToRemove)
+	public void removeUnpackedItem(@NonNull final IPackingItem itemToRemove)
 	{
-		Check.assumeNotNull(itemToRemove, "itemToRemove not null");
 		final List<IPackingItem> unpackedItems = getUnpackedItems();
 		for (final Iterator<IPackingItem> it = unpackedItems.iterator(); it.hasNext();)
 		{
@@ -190,8 +201,7 @@ public final class PackingItemsMap
 		for (final Entry<PackingItemsMapKey, List<IPackingItem>> key2itemsList : itemsMap.entrySet())
 		{
 			final PackingItemsMapKey key = key2itemsList.getKey();
-
-			if (Objects.equals(key, PackingItemsMapKey.UNPACKED))
+			if (key.isUnpacked())
 			{
 				continue;
 			}

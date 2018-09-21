@@ -24,35 +24,24 @@ package de.metas.picking.service;
 
 import java.util.Properties;
 
-/**
- * Packing Context.
- * 
- * It's just a "workfile" on which {@link IPackingService} methods will work.
- * 
- * @author tsa
- * 
- */
-public interface IPackingContext
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+
+@Data
+@Builder
+public final class PackingContext
 {
-	Properties getCtx();
-
-	PackingItemsMap getPackingItemsMap();
-
-	/**
-	 * Set the map used to keep track of that is packed where while the packing takes place.
-	 * 
-	 * @param packingItems
-	 */
-	void setPackingItemsMap(PackingItemsMap packingItems);
-
-	PackingItemsMapKey getPackingItemsMapKey();
+	@NonNull
+	private final Properties ctx;
 
 	/**
-	 * Sets the key for {@link PackingItemsMap} under which those items are stored that are "packed".
-	 * Apparently, using a {@code M_PickingSlot_ID} is a good idea, while using {@link PackingItemsMap#KEY_UnpackedItems} is probably a bad idea.
-	 * 
-	 * @param packingItemsMapKey
+	 * The key for {@link #packingItemsMap} under which those items are stored that are "packed".
 	 */
-	void setPackingItemsMapKey(PackingItemsMapKey packingItemsMapKey);
+	@NonNull
+	private final PackingItemsMapKey packingItemsMapKey;
 
+	/** map used to keep track of that is packed where while the packing takes place. */
+	@NonNull
+	private PackingItemsMap packingItemsMap;
 }

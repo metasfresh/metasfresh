@@ -16,15 +16,14 @@ package de.metas.fresh.picking.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -56,24 +55,21 @@ public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 	public void createBoxes(final Object model)
 	{
 		final FreshPackingDetailsMd freshModel = (FreshPackingDetailsMd)model;
-		
-		final PackingItemsMap packItems = new PackingItemsMap();
 
 		// get packing items
 		final Collection<IPackingItem> unallocatedLines = freshModel.getUnallocatedLines();
-		packItems.addUnpackedItems(unallocatedLines);
-		
-		setPackingItems(packItems);
+
+		setPackingItems(PackingItemsMap.ofUnpackedItems(unallocatedLines));
 	}
 
 	@Override
 	public AbstractPackageTerminalPanel createPackageTerminalPanel()
 	{
 		final FreshSwingPackageTerminalPanel packageTerminalPanel = new FreshSwingPackageTerminalPanel(getTerminalContext(), this);
-		
+
 		final AbstractPackageDataPanel packageDataPanel = packageTerminalPanel.getPickingData();
 		packageDataPanel.validateModel();
-		
+
 		return packageTerminalPanel;
 	}
 

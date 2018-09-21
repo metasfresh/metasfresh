@@ -35,9 +35,9 @@ import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingHandlerAdapter;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -49,7 +49,7 @@ import lombok.NonNull;
  * As a result of an allocation, you shall get:
  * <ul>
  * <li>From {@link #getItemToPack()}'s Qty, the HU's Qtys will be subtracted
- * <li>to {@link IPackingContext#getPackingItemsMap()} we will have newly packed items and also current Item to Pack
+ * <li>to {@link PackingContext#getPackingItemsMap()} we will have newly packed items and also current Item to Pack
  * <li>{@link I_M_ShipmentSchedule_QtyPicked} records will be created (shipment schedules are taken from Item to Pack)
  * </ul>
  *
@@ -73,32 +73,31 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 	//
 	// Parameters
-	private IPackingContext _packingContext;
+	private PackingContext _packingContext;
 	private IFreshPackingItem _itemToPack;
 	private boolean _isAllowOverdelivery;
 
 	public HU2PackingItemsAllocator()
 	{
-		super();
 	}
 
 	@Override
 	protected IHUContext createHUContextInitial()
 	{
-		final IPackingContext packingContext = getPackingContext();
+		final PackingContext packingContext = getPackingContext();
 		final Properties ctx = packingContext.getCtx();
 		final PlainContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(ctx);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(contextProvider);
 		return huContext;
 	}
 
-	public HU2PackingItemsAllocator setPackingContext(final IPackingContext packingContext)
+	public HU2PackingItemsAllocator setPackingContext(final PackingContext packingContext)
 	{
 		this._packingContext = packingContext;
 		return this;
 	}
 
-	private IPackingContext getPackingContext()
+	private PackingContext getPackingContext()
 	{
 		Check.assumeNotNull(_packingContext, "packingContext set");
 		return _packingContext;
@@ -191,7 +190,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			}
 		};
 
-		final IPackingContext packingContext = getPackingContext();
+		final PackingContext packingContext = getPackingContext();
 		packingService.packItem(packingContext, itemToPack, qtyToPack, itemPackedProcessor);
 	}
 
@@ -223,7 +222,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 		final IFreshPackingItem itemToPack = getItemToPack();
 
-		final IPackingContext packingContext = getPackingContext();
+		final PackingContext packingContext = getPackingContext();
 		final IPackingHandler itemPackedProcessor = new PackingHandlerAdapter()
 		{
 			@Override

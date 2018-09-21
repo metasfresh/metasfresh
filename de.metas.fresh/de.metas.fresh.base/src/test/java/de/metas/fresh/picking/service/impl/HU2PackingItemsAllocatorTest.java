@@ -67,8 +67,7 @@ import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
-import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
@@ -79,7 +78,6 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	//
 	// Services & helpers
 	private ShipmentScheduleHelper shipmentScheduleHelper;
-	private IPackingService packingService;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHUTrxBL huTrxBL;
 	private IQueryBL queryBL;
@@ -93,7 +91,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	// Context
 	private I_M_ShipmentSchedule shipmentSchedule;
 	private IFreshPackingItem itemToPack;
-	private IPackingContext packingContext;
+	private PackingContext packingContext;
 
 	@Override
 	protected HUTestHelper createHUTestHelper()
@@ -106,7 +104,6 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	{
 		// Services & Helpers
 		shipmentScheduleHelper = new ShipmentScheduleHelper(helper);
-		packingService = Services.get(IPackingService.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huTrxBL = Services.get(IHUTrxBL.class);
 		queryBL = Services.get(IQueryBL.class);
@@ -133,15 +130,15 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		//
 		// Create Packing Items
-		final PackingItemsMap packingItems = new PackingItemsMap();
-		packingItems.addUnpackedItem(itemToPack);
+		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 
 		//
 		// Create Packing Context
-		this.packingContext = packingService.createPackingContext(helper.ctx);
-		packingContext.setPackingItemsMap(packingItems);
-		final PackingItemsMapKey packingItemsMapKey = PackingItemsMapKey.ofInt(123); // just a dummy value for now
-		packingContext.setPackingItemsMapKey(packingItemsMapKey);
+		this.packingContext = PackingContext.builder()
+				.ctx(helper.ctx)
+				.packingItemsMapKey(PackingItemsMapKey.ofInt(123))
+				.packingItemsMap(packingItems)
+				.build();
 
 		//
 		// Validate initial context state

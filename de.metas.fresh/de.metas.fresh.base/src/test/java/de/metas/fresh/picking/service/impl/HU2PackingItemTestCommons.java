@@ -15,7 +15,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
+import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import lombok.NonNull;
 
@@ -147,7 +147,7 @@ public class HU2PackingItemTestCommons
 	 * Creates HU to Packing Items Allocator (i.e. class under test)
 	 */
 	public static HU2PackingItemsAllocator createHU2PackingItemsAllocator(
-			@NonNull final IPackingContext packingContext,
+			@NonNull final PackingContext packingContext,
 			@NonNull final IFreshPackingItem itemToPack)
 	{
 		final HU2PackingItemsAllocator hu2PackingItemsAllocator = new HU2PackingItemsAllocator();

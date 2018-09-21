@@ -28,9 +28,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.quantity.Quantity;
@@ -75,7 +75,7 @@ public class PackingService implements IPackingService
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				schedule.getM_Product(),
-				qtyToRemove.getQty(),
+				qtyToRemove.getAsBigDecimal(),
 				qtyToRemove.getUOM(),
 				SystemTime.asDate(),
 				schedule // reference model
@@ -105,14 +105,8 @@ public class PackingService implements IPackingService
 	}
 
 	@Override
-	public IPackingContext createPackingContext(final Properties ctx)
-	{
-		return new PackingContext(ctx);
-	}
-
-	@Override
 	public void packItem(
-			@NonNull final IPackingContext packingContext,
+			@NonNull final PackingContext packingContext,
 			@NonNull final IFreshPackingItem itemToPack,
 			@NonNull final Quantity qtyToPack,
 			@NonNull final IPackingHandler packingHandler)

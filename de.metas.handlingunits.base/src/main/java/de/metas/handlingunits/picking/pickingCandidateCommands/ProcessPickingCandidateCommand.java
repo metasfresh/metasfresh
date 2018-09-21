@@ -38,8 +38,7 @@ import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
-import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
@@ -83,7 +82,6 @@ public class ProcessPickingCandidateCommand
 
 	private static final Logger logger = LogManager.getLogger(ProcessPickingCandidateCommand.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final transient IPackingService packingService = Services.get(IPackingService.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 
@@ -143,12 +141,11 @@ public class ProcessPickingCandidateCommand
 	{
 		final IFreshPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
-		final PackingItemsMap packingItemsMap = new PackingItemsMap();
-		packingItemsMap.addUnpackedItem(itemToPack);
-
-		final IPackingContext packingContext = packingService.createPackingContext(Env.getCtx());
-		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(PackingItemsMapKey.ofPickingSlotId(pickingSlotId));
+		final PackingContext packingContext = PackingContext.builder()
+				.ctx(Env.getCtx())
+				.packingItemsMapKey(PackingItemsMapKey.ofPickingSlotId(pickingSlotId))
+				.packingItemsMap(PackingItemsMap.ofUnpackedItem(itemToPack))
+				.build();
 
 		final boolean isAllowOverdelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
 
