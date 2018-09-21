@@ -38,8 +38,6 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_InclQuarantined extends WEBUI_M_H
 	public void assertHUsEligible()
 	{
 		// Nothing to do. This process includes also quarantine HUs
-		return;
-
 	}
 
 }
