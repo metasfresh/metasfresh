@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
-import org.adempiere.util.StringUtils;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 
@@ -16,6 +15,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

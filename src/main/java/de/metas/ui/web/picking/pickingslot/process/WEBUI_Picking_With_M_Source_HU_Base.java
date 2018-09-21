@@ -3,8 +3,6 @@ package de.metas.ui.web.picking.pickingslot.process;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -14,6 +12,7 @@ import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -8,8 +8,6 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
 import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
@@ -25,6 +23,8 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.base.model.I_WEBUI_KPI_Field;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /*
  * #%L

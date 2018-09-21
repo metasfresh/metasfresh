@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 
@@ -14,6 +13,7 @@ import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.util.Check;
 
 /*
  * #%L

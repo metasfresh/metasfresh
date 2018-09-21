@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
@@ -17,6 +16,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.util.Check;
 
 /*
  * #%L

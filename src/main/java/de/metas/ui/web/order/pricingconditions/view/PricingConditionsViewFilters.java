@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Services;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
@@ -20,6 +18,7 @@ import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvide
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Services;
 
 /*
  * #%L

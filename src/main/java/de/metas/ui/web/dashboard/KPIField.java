@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Check;
 
 /*
  * #%L

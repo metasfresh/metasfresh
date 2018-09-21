@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
@@ -15,6 +13,8 @@ import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

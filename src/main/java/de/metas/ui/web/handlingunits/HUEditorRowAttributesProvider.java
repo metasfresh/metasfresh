@@ -2,7 +2,6 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +22,7 @@ import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Value;
 

@@ -2,12 +2,12 @@ package de.metas.ui.web.devices;
 
 import java.io.Serializable;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L

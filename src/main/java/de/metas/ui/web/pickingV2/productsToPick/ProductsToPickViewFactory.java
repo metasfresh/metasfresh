@@ -1,7 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IADProcessDAO;
@@ -18,6 +17,7 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -11,8 +11,6 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -51,6 +49,8 @@ import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.upload.WebuiImageService;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

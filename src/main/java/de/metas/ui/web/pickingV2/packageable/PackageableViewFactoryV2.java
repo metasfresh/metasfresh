@@ -2,7 +2,6 @@
 package de.metas.ui.web.pickingV2.packageable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
@@ -20,6 +19,7 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

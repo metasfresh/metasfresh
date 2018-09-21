@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -16,6 +15,7 @@ import de.metas.hostkey.spi.IHostKeyStorage;
 import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
 import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.ui.web.base.util.IHttpSessionProvider;
+import de.metas.util.Services;
 
 /*
  * #%L

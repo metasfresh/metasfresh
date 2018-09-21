@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -12,6 +11,8 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.X_AD_UI_Element;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /*
  * #%L

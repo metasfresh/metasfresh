@@ -3,7 +3,6 @@ package de.metas.ui.web.pickingslotsClearing.process;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
@@ -22,6 +21,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
+import de.metas.util.Services;
 
 /*
  * #%L

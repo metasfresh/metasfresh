@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import com.google.common.base.Predicates;
 
@@ -12,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
 import de.metas.util.stream.StreamUtils;
 import lombok.NonNull;
 

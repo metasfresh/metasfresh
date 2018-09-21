@@ -1,7 +1,5 @@
 package de.metas.ui.web.session.json;
 
-import org.adempiere.util.time.SystemTime;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.ToString;
 

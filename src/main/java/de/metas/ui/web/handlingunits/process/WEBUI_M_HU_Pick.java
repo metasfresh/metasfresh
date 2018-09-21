@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,6 +32,7 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Value;
 

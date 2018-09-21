@@ -1,6 +1,5 @@
 package de.metas.ui.web.pporder.process;
 
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.handlingunits.model.I_PP_Order;
@@ -9,6 +8,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.util.Services;
 
 /*
  * #%L

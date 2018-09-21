@@ -2,7 +2,6 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import java.util.Set;
 
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
@@ -23,6 +22,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*

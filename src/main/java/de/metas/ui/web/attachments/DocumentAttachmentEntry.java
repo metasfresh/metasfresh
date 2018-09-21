@@ -2,12 +2,11 @@ package de.metas.ui.web.attachments;
 
 import java.net.URI;
 
-import org.adempiere.util.Services;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.IAttachmentDAO;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Services;
 import lombok.ToString;
 
 /*

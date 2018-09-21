@@ -4,7 +4,6 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.X_M_InOut;
 
@@ -15,6 +14,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /*
  * #%L

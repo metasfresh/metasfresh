@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.api.IPackagingDAO;
@@ -38,6 +36,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

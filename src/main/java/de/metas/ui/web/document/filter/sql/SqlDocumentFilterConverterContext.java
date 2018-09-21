@@ -2,11 +2,10 @@ package de.metas.ui.web.document.filter.sql;
 
 import java.util.Map;
 
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.NumberUtils;
-
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

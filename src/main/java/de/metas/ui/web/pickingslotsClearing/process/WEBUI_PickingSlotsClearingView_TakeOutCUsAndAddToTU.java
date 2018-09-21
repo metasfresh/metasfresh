@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -30,6 +28,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

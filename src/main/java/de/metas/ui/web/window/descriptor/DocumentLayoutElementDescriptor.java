@@ -7,9 +7,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -23,6 +20,9 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

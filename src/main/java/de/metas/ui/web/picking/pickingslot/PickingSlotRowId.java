@@ -2,14 +2,13 @@ package de.metas.ui.web.picking.pickingslot;
 
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
 import de.metas.handlingunits.HuId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

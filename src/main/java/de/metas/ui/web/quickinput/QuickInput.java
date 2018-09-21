@@ -9,8 +9,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
@@ -25,6 +23,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 
 /*

@@ -10,9 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DisplayType;
@@ -63,6 +60,9 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
 
 /*

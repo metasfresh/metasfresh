@@ -2,8 +2,6 @@ package de.metas.ui.web.pickingV2.packageable;
 
 import java.util.Collection;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -12,6 +10,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
 /*

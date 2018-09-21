@@ -1,7 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -18,6 +16,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.NonNull;
 

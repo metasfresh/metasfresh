@@ -5,9 +5,6 @@ import java.util.Iterator;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -24,6 +21,9 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
