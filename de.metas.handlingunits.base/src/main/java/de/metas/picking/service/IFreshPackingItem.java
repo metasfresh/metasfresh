@@ -3,10 +3,10 @@ package de.metas.picking.service;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
@@ -45,31 +45,13 @@ public interface IFreshPackingItem extends IPackingItem
 	@Override
 	IFreshPackingItem copy();
 
-	I_C_BPartner getC_BPartner();
+	BPartnerId getBPartnerId();
 
-	int getC_BPartner_ID();
-	
-	default BPartnerId getBPartnerId()
-	{
-		return BPartnerId.ofRepoIdOrNull(getC_BPartner_ID());
-	}
+	BPartnerLocationId getBPartnerLocationId();
 
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 
-	/**
-	 * Similar to {@link #getC_BPartner_Location()}.
-	 *
-	 * @return
-	 */
-	I_C_BPartner_Location getC_BPartner_Location();
-
-	/**
-	 *
-	 * @return the <i>effective</i> <code>C_BPartner_Location_ID</code> (can be the override value) where the item is supposed to be shipped.
-	 */
-	int getC_BPartner_Location_ID();
-
-	Set<Integer> getWarehouseIds();
+	Set<WarehouseId> getWarehouseIds();
 
 	/**
 	 * Subtract the given quantity from this packing item and create a new packing item with it. Don't alter this packing item.

@@ -34,6 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -100,8 +101,8 @@ public class FreshProductKey extends ProductKey
 		super(terminalContext,
 				pck,
 				boxNo,
-				pck.getC_BPartner(),   // BPartner
-				pck.getC_BPartner_Location() // BPartner Location
+				Services.get(IBPartnerDAO.class).getById(pck.getBPartnerId()), // BPartner
+				Services.get(IBPartnerDAO.class).getBPartnerLocationById(pck.getBPartnerLocationId()) // BPartner Location
 		);
 	}
 
@@ -178,7 +179,7 @@ public class FreshProductKey extends ProductKey
 		}
 		final Quantity qtyUnallocated = unallocPackingItem.getQtySum();
 
-		return qtyUnallocated.getQty();
+		return qtyUnallocated.getAsBigDecimal();
 	}
 
 	public I_C_UOM getQtyUnallocatedUOM()

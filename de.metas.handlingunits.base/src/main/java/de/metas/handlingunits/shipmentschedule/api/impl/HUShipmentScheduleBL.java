@@ -54,6 +54,7 @@ import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
@@ -197,10 +198,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerId schedEffectiveBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
-		final int schedEffectiveBP_Location_ID = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
+		final BPartnerLocationId schedEffectiveBPLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
 		hu.setC_BPartner_ID(schedEffectiveBPartnerId.getRepoId());
-		hu.setC_BPartner_Location_ID(schedEffectiveBP_Location_ID);
+		hu.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(schedEffectiveBPLocationId));
 	}
 
 	@Override
@@ -349,8 +350,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// BPartner, Location & Contact
 		{
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule));
-			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveValuesBL.getBPartnerLocation(shipmentSchedule)
-					.getC_BPartner_Location_ID());
+			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule));
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, shipmentScheduleEffectiveValuesBL.getAD_User_ID(shipmentSchedule));
 		}
 
@@ -524,7 +524,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_Product cuProduct = schedule.getM_Product();
 
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(schedule);
-		final int bpartnerLocationId = shipmentScheduleEffectiveValuesBL.getC_BP_Location_ID(schedule);
+		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(schedule);
 		final LocatorId locatorId = shipmentScheduleEffectiveValuesBL.getDefaultLocatorId(schedule);
 
 		// NOTE: we are not checking if tuPIItemProduct is for an PI of Type Transport Unit (TU)
@@ -537,7 +537,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 		lutuConfiguration.setC_BPartner(bpartner);
-		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
+		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
 		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Planning);
 

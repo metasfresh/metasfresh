@@ -16,21 +16,19 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.adempiere.util.Check;
+import java.util.Objects;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
@@ -53,7 +51,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	public FreshProductLayout(ITerminalContext tc)
 	{
 		super(tc);
-		
+
 		//
 		// Configure the selection model:
 		final IKeyLayoutSelectionModel selectionModel = getKeyLayoutSelectionModel();
@@ -67,7 +65,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	{
 		return (FreshSwingPackageItems)getPackageTerminalPanel().getProductKeysPanel();
 	}
-	
+
 	private PickingSlotKey getSelectedPickingSlotKey()
 	{
 		FreshSwingPackageItems packageItems = getPackageItems();
@@ -75,7 +73,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		{
 			return null;
 		}
-		return packageItems.getSelectedPickingSlotKey(); 
+		return packageItems.getSelectedPickingSlotKey();
 	}
 
 	@Override
@@ -140,7 +138,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 			for (final IPackingItem apck : items)
 			{
 				final IFreshPackingItem packingItem = FreshPackingItemHelper.cast(apck);
-				
+
 				// if the item exist in the list, do not create the key again
 				final FreshProductKey productKeyExisting = getExistentProductKey(productKeys, packingItem);
 				if (productKeyExisting != null)
@@ -156,7 +154,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 				{
 					continue;
 				}
-				
+
 				productKey.setPackingItem(null);
 				productKey.setUnAllocatedPackingItem(packingItem);
 				productKey.setStatus(getProductState(packingItem, PackingItemsMap.KEY_UnpackedItems));
@@ -178,7 +176,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		{
 			return null;
 		}
-		
+
 		return productKey;
 	}
 
@@ -187,7 +185,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		for (final ITerminalKey keyItem : productKeys)
 		{
 			final FreshProductKey productKey = (FreshProductKey)keyItem;
-			if (productKey.getPackingItem() != null && Check.equals(productKey.getPackingItem().getGroupingKey(), apck.getGroupingKey()))
+			if (productKey.getPackingItem() != null && Objects.equals(productKey.getPackingItem().getGroupingKey(), apck.getGroupingKey()))
 			{
 				return productKey;
 			}
@@ -200,7 +198,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	{
 		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
 		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
-		return freshItem1.getC_BPartner_ID() == freshItem2.getC_BPartner_ID();
+		return Objects.equals(freshItem1.getBPartnerId(), freshItem2.getBPartnerId());
 	}
 
 	@Override
@@ -208,7 +206,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	{
 		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
 		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
-		return freshItem1.getC_BPartner_Location_ID() == freshItem2.getC_BPartner_Location_ID();
+		return Objects.equals(freshItem1.getBPartnerLocationId(), freshItem2.getBPartnerLocationId());
 	}
 
 }

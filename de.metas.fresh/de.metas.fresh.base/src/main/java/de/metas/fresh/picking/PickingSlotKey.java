@@ -45,6 +45,7 @@ import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -572,7 +573,7 @@ public class PickingSlotKey extends TerminalKey
 		//
 		// Check if bpartner/location is accepted
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(productKey.getC_BPartner_ID());
-		final int bpartnerLocationId = productKey.getC_BPartner_Location_ID();
+		final BPartnerLocationId bpartnerLocationId = productKey.getBPartnerLocationId();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
 			return false;
@@ -609,8 +610,8 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if picking slot accepts packingItem's BPartner and Location
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(packingItem.getC_BPartner_ID());
-		final int bpartnerLocationId = packingItem.getC_BPartner_Location_ID();
+		final BPartnerId bpartnerId = packingItem.getBPartnerId();
+		final BPartnerLocationId bpartnerLocationId = packingItem.getBPartnerLocationId();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
 			return false;
@@ -641,7 +642,7 @@ public class PickingSlotKey extends TerminalKey
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	public void allocateDynamicPickingSlotIfPossible(final BPartnerId bpartnerId, final int bpartnerLocationId)
+	public void allocateDynamicPickingSlotIfPossible(final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_M_PickingSlot pickingSlot = getM_PickingSlot();
 		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);

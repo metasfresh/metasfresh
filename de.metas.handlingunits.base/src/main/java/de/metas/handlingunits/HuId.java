@@ -75,6 +75,6 @@ public class HuId implements RepoIdAware
 
 	private HuId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_ID");
 	}
 }

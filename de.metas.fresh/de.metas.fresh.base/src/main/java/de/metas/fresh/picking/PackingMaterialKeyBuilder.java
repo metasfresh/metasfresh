@@ -42,6 +42,7 @@ import org.adempiere.util.Services;
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
@@ -86,7 +87,7 @@ public class PackingMaterialKeyBuilder
 	public void addProduct(
 			final ProductId productId,
 			final BPartnerId bpartnerId,
-			final int bpartnerLocationId // will be used in future
+			final BPartnerLocationId bpartnerLocationId // will be used in future
 	)
 	{
 		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();

@@ -3,6 +3,7 @@ package de.metas.picking.api;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
@@ -45,12 +46,12 @@ public class PickingSlotQuery
 	 * {@code -1} means "no restriction".
 	 */
 	@Default
-	int availableForBPartnerLocationId = -1;
+	BPartnerLocationId availableForBPartnerLocationId = null;
 	
 	BPartnerId assignedToBPartnerId;
 
 	@Default
-	int assignedToBPartnerLocationId = -1;
+	BPartnerLocationId assignedToBPartnerLocationId = null;
 
 	WarehouseId warehouseId;
 

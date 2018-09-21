@@ -78,6 +78,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -814,18 +815,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		final BPartnerId bpartnerId;
-		final int bpLocId;
+		final BPartnerLocationId bpLocId;
 		if (includeBPartner)
 		{
 			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 			bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
-			bpLocId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched);
+			bpLocId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 		}
 		else
 		{
 			bpartnerId = null;
-			bpLocId = 0;
+			bpLocId = null;
 		}
 
 		return Util.mkKey(productId, adTableId, recordId, bpartnerId, bpLocId);
@@ -859,18 +860,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final I_C_BPartner bPartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
+		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
 		final I_C_BPartner_Location location = shipmentScheduleEffectiveValuesBL.getBPartnerLocation(sched);
 		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getAD_User(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final String adress = bPartnerBL.mkFullAddress(
-				bPartner,
+		final String address = bPartnerBL.mkFullAddress(
+				bpartner,
 				location,
 				user,
 				InterfaceWrapperHelper.getTrxName(sched));
 
-		sched.setBPartnerAddress_Override(adress);
+		sched.setBPartnerAddress_Override(address);
 	}
 
 	@Override

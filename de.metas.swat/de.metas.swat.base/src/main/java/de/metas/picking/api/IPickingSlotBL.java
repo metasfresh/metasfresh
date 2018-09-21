@@ -25,6 +25,7 @@ package de.metas.picking.api;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.model.I_M_PickingSlot;
 
 public interface IPickingSlotBL extends ISingletonService
@@ -36,5 +37,5 @@ public interface IPickingSlotBL extends ISingletonService
 
 	boolean isAvailableForBPartnerId(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId);
 
-	boolean isAvailableForBPartnerAndLocation(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, int bpartnerLocationId);
+	boolean isAvailableForBPartnerAndLocation(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
 }

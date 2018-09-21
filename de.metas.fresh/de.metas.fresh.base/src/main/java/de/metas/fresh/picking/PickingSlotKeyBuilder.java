@@ -37,6 +37,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -81,7 +82,7 @@ public class PickingSlotKeyBuilder
 		this.terminalContext = terminalContext;
 	}
 
-	public void addBPartner(final BPartnerId bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
+	public void addBPartner(final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId, final Set<WarehouseId> allowedWarehouseIds)
 	{
 		final PickingSlotQuery pickingSlotRequest = PickingSlotQuery.builder()
 				.availableForBPartnerId(bpartnerId)
@@ -105,7 +106,7 @@ public class PickingSlotKeyBuilder
 		}
 
 		final BPartnerId bpartnerId = query.getAvailableForBPartnerId();
-		final BPartnerLocationId bpartnerLocationId = bpartnerId != null ? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, query.getAvailableForBPartnerLocationId()) : null;
+		final BPartnerLocationId bpartnerLocationId = query.getAvailableForBPartnerLocationId();
 
 		final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
 		final String bpartnerStr = bpartnersService.getBPartnerValue(bpartnerId);
@@ -120,7 +121,7 @@ public class PickingSlotKeyBuilder
 
 	private void addIfValid(
 			@NonNull final I_M_PickingSlot pickingSlot,
-			@NonNull final Set<Integer> allowedWarehouseIds)
+			@NonNull final Set<WarehouseId> allowedWarehouseIds)
 	{
 		if (!pickingSlot.isActive())
 		{
@@ -136,7 +137,7 @@ public class PickingSlotKeyBuilder
 		// Filter by warehouse
 		if (allowedWarehouseIds != null && !allowedWarehouseIds.isEmpty())
 		{
-			final int warehouseId = pickingSlot.getM_Warehouse_ID();
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
 			if (!allowedWarehouseIds.contains(warehouseId))
 			{
 				return; // skip because it's not in our list of accepted warehouses

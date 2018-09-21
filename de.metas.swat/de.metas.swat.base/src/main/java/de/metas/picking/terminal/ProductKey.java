@@ -46,6 +46,7 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.terminal.Utils.PackingStates;
 
@@ -362,9 +363,9 @@ public class ProductKey extends TerminalKey
 		return bpLocation;
 	}
 
-	public int getC_BPartner_Location_ID()
+	public BPartnerLocationId getBPartnerLocationId()
 	{
-		return bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID();
+		return bpLocation != null ? BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID()) : null;
 	}
 
 	/**

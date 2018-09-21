@@ -1,6 +1,9 @@
 package de.metas.picking.api.impl;
 
+import java.util.Objects;
+
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.model.I_M_PickingSlot;
 import lombok.NonNull;
@@ -58,7 +61,7 @@ public class PickingSlotBL implements IPickingSlotBL
 	public boolean isAvailableForBPartnerAndLocation(
 			@NonNull final I_M_PickingSlot pickingSlot,
 			final BPartnerId bpartnerId,
-			final int bpartnerLocationId)
+			final BPartnerLocationId bpartnerLocationId)
 	{
 		//
 		// General use Picking Slot, accept it right away
@@ -76,20 +79,24 @@ public class PickingSlotBL implements IPickingSlotBL
 
 		//
 		// Check BPartner Location
-		final int pickingSlotBPartnerLocationId = pickingSlot.getC_BPartner_Location_ID();
+		final BPartnerId pickingSlotBPartnerId = BPartnerId.ofRepoId(pickingSlot.getC_BPartner_ID());
+		final BPartnerLocationId pickingSlotBPartnerLocationId = pickingSlotBPartnerId != null
+				? BPartnerLocationId.ofRepoIdOrNull(pickingSlotBPartnerId, pickingSlot.getC_BPartner_Location_ID())
+				: null;
+
 		// Any BP Location Picking Slot
-		if (pickingSlotBPartnerLocationId <= 0)
+		if (pickingSlotBPartnerLocationId == null)
 		{
 			// accept any location
 		}
 		// Picking slot specific for BP Location
 		else
 		{
-			if (bpartnerLocationId <= 0)
+			if (bpartnerLocationId == null)
 			{
 				// no particular location was requested, accept it
 			}
-			else if (bpartnerLocationId == pickingSlotBPartnerLocationId)
+			else if (Objects.equals(bpartnerLocationId, pickingSlotBPartnerLocationId))
 			{
 				// same BP Location, accept it
 			}

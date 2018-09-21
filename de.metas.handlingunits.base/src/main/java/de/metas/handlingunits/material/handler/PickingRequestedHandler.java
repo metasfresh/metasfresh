@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickHURequest;
@@ -113,7 +114,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 	private PickingSlotId allocatePickingSlot(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
-		final int bpLocationId = Services.get(IShipmentScheduleEffectiveBL.class).getC_BP_Location_ID(shipmentSchedule);
+		final BPartnerLocationId bpLocationId = Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerLocationId(shipmentSchedule);
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.availableForBPartnerLocationId(bpLocationId)
 				.build();

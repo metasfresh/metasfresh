@@ -48,6 +48,7 @@ import org.compiere.util.TrxRunnable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
@@ -533,7 +534,7 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public void allocatePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final BPartnerId bpartnerId, final int bpartnerLocationId)
+	public void allocatePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
 	{
 		//
 		// Not dynamic picking slot; gtfo
@@ -550,13 +551,13 @@ public class HUPickingSlotBL
 		}
 
 		pickingSlot.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
-		pickingSlot.setC_BPartner_Location_ID(bpartnerLocationId);
+		pickingSlot.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 
 		InterfaceWrapperHelper.save(pickingSlot);
 	}
 
 	@Override
-	public void allocatePickingSlotIfPossible(final PickingSlotId pickingSlotId, final BPartnerId bpartnerId, final int bpartnerLocationId)
+	public void allocatePickingSlotIfPossible(final PickingSlotId pickingSlotId, final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_M_PickingSlot pickingSlot = Services.get(IPickingSlotDAO.class).getById(pickingSlotId, I_M_PickingSlot.class);
 		allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);

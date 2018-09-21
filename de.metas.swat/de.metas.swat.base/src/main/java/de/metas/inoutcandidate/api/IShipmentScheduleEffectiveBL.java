@@ -32,6 +32,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 
@@ -61,7 +62,13 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
 
-	int getC_BP_Location_ID(I_M_ShipmentSchedule sched);
+	@Deprecated
+	default int getC_BP_Location_ID(final I_M_ShipmentSchedule sched)
+	{
+		return BPartnerLocationId.toRepoId(getBPartnerLocationId(sched));
+	}
+
+	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule sched);
 
 	I_AD_User getAD_User(I_M_ShipmentSchedule sched);
 

@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
@@ -92,14 +93,14 @@ public class PickingSlotDAO implements IPickingSlotDAO
 
 		// Check assigned BP
 		final BPartnerId assignedToBPartnerId = query.getAssignedToBPartnerId();
-		final int assignedToBPartnerLocationId = query.getAssignedToBPartnerLocationId();
+		final BPartnerLocationId assignedToBPartnerLocationId = query.getAssignedToBPartnerLocationId();
 		if (assignedToBPartnerId != null)
 		{
 			if (assignedToBPartnerId.getRepoId() != pickingSlot.getC_BPartner_ID())
 			{
 				return false;
 			}
-			if (assignedToBPartnerLocationId > 0 && assignedToBPartnerLocationId != pickingSlot.getC_BPartner_Location_ID())
+			if (assignedToBPartnerLocationId != null && assignedToBPartnerLocationId.getRepoId() != pickingSlot.getC_BPartner_Location_ID())
 			{
 				return false;
 			}

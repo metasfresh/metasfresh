@@ -3,8 +3,6 @@
  */
 package de.metas.picking.service;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,14 +10,17 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.Env;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -81,30 +82,34 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
-	{
-		if (partner == null)
-		{
-			final int partnerId = getC_BPartner_ID();
-			if (partnerId > 0)
-			{
-				partner = InterfaceWrapperHelper.create(Env.getCtx(), partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-			}
-		}
-		return partner;
-	}
-
-	@Override
-	public int getC_BPartner_ID()
+	public BPartnerId getBPartnerId()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
-			return -1;
+			return null;
 		}
 
 		// all scheds must have the same partner, so it's enough to only look at the first one
-		return shipmentSchedules.iterator().next().getC_BPartner_ID();
+		final I_M_ShipmentSchedule firstShipmentSchedule = shipmentSchedules.get(0);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		return shipmentScheduleEffectiveBL.getBPartnerId(firstShipmentSchedule);
+	}
+
+	@Override
+	public BPartnerLocationId getBPartnerLocationId()
+	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		if (shipmentSchedules.isEmpty())
+		{
+			return null;
+		}
+
+		// all scheds must have the same partner, so it's enough to only look at the first one
+		// #100 FRESH-435: use the schedule's *effective* location, just as everywhere else.
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final I_M_ShipmentSchedule firstShipmentSchedule = shipmentSchedules.get(0);
+		return shipmentScheduleEffectiveBL.getBPartnerLocationId(firstShipmentSchedule);
 	}
 
 	@Override
@@ -135,61 +140,20 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	}
 
 	@Override
-	public I_C_BPartner_Location getC_BPartner_Location()
-	{
-		if (bpLocation == null)
-		{
-			final int partnerLocId = getC_BPartner_Location_ID();
-			if (partnerLocId > 0)
-			{
-				bpLocation = InterfaceWrapperHelper.create(Env.getCtx(), partnerLocId, I_C_BPartner_Location.class, ITrx.TRXNAME_None);
-			}
-		}
-		return bpLocation;
-	}
-
-	@Override
-	public int getC_BPartner_Location_ID()
+	public Set<WarehouseId> getWarehouseIds()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
-			return -1;
-		}
-
-		// all scheds must have the same partner, so it's enough to only look at the first one
-
-		// #100 FRESH-435: use the schedule's *effective* location, just as everywhere else.
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedules.iterator().next());
-		return bpartnerLocationId;
-	}
-
-	@Override
-	public Set<Integer> getWarehouseIds()
-	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
-		if (shipmentSchedules.isEmpty())
-		{
-			return Collections.emptySet();
+			return ImmutableSet.of();
 		}
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final Set<Integer> warehouseIds = new HashSet<>();
-		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-		{
-			final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule);
-			if (warehouseId == null)
-			{
-				// shall not be the case, but just to make sure
-				continue;
-			}
-
-			warehouseIds.add(warehouseId.getRepoId());
-		}
-
-		return warehouseIds;
+		return shipmentSchedules.stream()
+				.map(shipmentScheduleEffectiveBL::getWarehouseId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

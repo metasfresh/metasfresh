@@ -50,6 +50,7 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.FreshProductLayout;
 import de.metas.fresh.picking.PickingSlotKey;
@@ -524,7 +525,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// fresh_06178: Allocate picking slot on the newly packed item
-		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getBPartnerId(), itemToPack.getC_BPartner_Location_ID());
+		selectedPickingSlotKey.allocateDynamicPickingSlotIfPossible(itemToPack.getBPartnerId(), itemToPack.getBPartnerLocationId());
 	}
 
 	private void removeProductQty(
@@ -907,11 +908,11 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
 		final BPartnerId bpartnerId = unallocatedPackingItem.getBPartnerId();
-		final int bPartnerLocationId = unallocatedPackingItem.getC_BPartner_Location_ID();
+		final BPartnerLocationId bpartnerLocationId = unallocatedPackingItem.getBPartnerLocationId();
 
 		//
 		// Make sure the picking slot (this is necessary if it's a dynamic one) is allocated to them (fresh_06974)
-		pickingSlotKey.allocateDynamicPickingSlotIfPossible(bpartnerId, bPartnerLocationId);
+		pickingSlotKey.allocateDynamicPickingSlotIfPossible(bpartnerId, bpartnerLocationId);
 
 		// 07161: this also associates the HUs to the shipment schedule we are currently picking for,
 		// causing the hu's C_BPartner_ID and C_BPartner_Location_ID to be updated from the schedule.

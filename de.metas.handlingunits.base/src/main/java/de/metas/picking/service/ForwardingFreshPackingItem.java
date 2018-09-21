@@ -6,11 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
@@ -81,15 +82,15 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public BPartnerId getBPartnerId()
 	{
-		return getDelegate().getC_BPartner();
+		return getDelegate().getBPartnerId();
 	}
 
 	@Override
-	public int getC_BPartner_ID()
+	public BPartnerLocationId getBPartnerLocationId()
 	{
-		return getDelegate().getC_BPartner_ID();
+		return getDelegate().getBPartnerLocationId();
 	}
 
 	@Override
@@ -111,21 +112,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public I_C_BPartner_Location getC_BPartner_Location()
-	{
-		return getDelegate().getC_BPartner_Location();
-	}
-
-	@Override
 	public void addSchedules(final Map<I_M_ShipmentSchedule, Quantity> toAdd)
 	{
 		getDelegate().addSchedules(toAdd);
-	}
-
-	@Override
-	public int getC_BPartner_Location_ID()
-	{
-		return getDelegate().getC_BPartner_Location_ID();
 	}
 
 	@Override
@@ -137,7 +126,7 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public Set<Integer> getWarehouseIds()
+	public Set<WarehouseId> getWarehouseIds()
 	{
 		return getDelegate().getWarehouseIds();
 	}

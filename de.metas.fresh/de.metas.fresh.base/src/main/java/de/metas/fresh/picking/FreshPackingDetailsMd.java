@@ -36,9 +36,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.time.SystemTime;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
@@ -87,9 +89,9 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 			final IFreshPackingItem freshPackingItem = FreshPackingItemHelper.cast(pi);
 
 			final ProductId productId = ProductId.ofRepoIdOrNull(freshPackingItem.getProductId());
-			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(freshPackingItem.getC_BPartner_ID());
-			final int bpartnerLocationId = freshPackingItem.getC_BPartner_Location_ID();
-			final Set<Integer> warehouseIds = freshPackingItem.getWarehouseIds();
+			final BPartnerId bpartnerId = freshPackingItem.getBPartnerId();
+			final BPartnerLocationId bpartnerLocationId = freshPackingItem.getBPartnerLocationId();
+			final Set<WarehouseId> warehouseIds = freshPackingItem.getWarehouseIds();
 
 			//
 			// Get/Create PackingMaterialKeys

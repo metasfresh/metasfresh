@@ -287,7 +287,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		{
 			final Quantity qtyForSched = getQtyForSched(sched);
 			final BigDecimal qtyInProductUOM = uomConversionBL
-					.convertQtyToProductUOM(UOMConversionContext.of(getM_Product()), qtyForSched.getQty(), qtyForSched.getUOM());
+					.convertQtyToProductUOM(UOMConversionContext.of(getProductId()), qtyForSched.getAsBigDecimal(), qtyForSched.getUOM());
 			computedWeight = computedWeight.add(weightPerUnit.multiply(qtyInProductUOM));
 		}
 		return computedWeight;
