@@ -1,4 +1,4 @@
-package org.adempiere.util.collections;
+package de.metas.util.collections;
 
 import java.util.Iterator;
 

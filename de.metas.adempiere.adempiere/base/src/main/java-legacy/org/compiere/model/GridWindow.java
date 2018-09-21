@@ -32,7 +32,6 @@ import javax.swing.Icon;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.h2;
 import org.apache.ecs.xhtml.h3;
@@ -53,6 +52,7 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
+import de.metas.util.collections.IdentityHashSet;
 
 /**
  *	Window Model

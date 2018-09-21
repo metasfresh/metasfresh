@@ -28,6 +28,8 @@ import java.util.NoSuchElementException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.util.collections.SingletonIterator;
+
 /**
  * Tests for {@link SingletonIterator}
  * 

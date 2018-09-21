@@ -1,6 +1,4 @@
-package org.adempiere.util.collections;
-
-import java.util.function.Predicate;
+package de.metas.util.collections;
 
 /*
  * #%L
@@ -25,35 +23,45 @@ import java.util.function.Predicate;
  */
 
 
+import java.util.Iterator;
+
 /**
- * A pass-through {@link Predicate} implementation, which alreadys returns <code>true</code>.
+ * Wraps a given iterator and makes it readonly (i.e. {@link #remove()} will throw exception)
  * 
  * @author tsa
  *
+ * @param <T>
  */
-public final class NullPredicate implements Predicate<Object>
+/* package */final class UnmodifiableIterator<T> implements Iterator<T>
+// , IteratorWrapper<E> // don't implement it because we want to hide the implementation
 {
-	public static final <T> Predicate<T> of()
-	{
-		@SuppressWarnings("unchecked")
-		final Predicate<T> predicate = (Predicate<T>)instance;
-		return predicate;
-	}
+	private final Iterator<T> iterator;
 
-	private static final transient NullPredicate instance = new NullPredicate();
-
-	private NullPredicate()
+	public UnmodifiableIterator(final Iterator<T> iterator)
 	{
 		super();
+		this.iterator = iterator;
+	}
+
+	@Override
+	public boolean hasNext()
+	{
+		return iterator.hasNext();
+	}
+
+	@Override
+	public T next()
+	{
+		return iterator.next();
 	}
 
 	/**
-	 * @return true
+	 * @throws UnsupportedOperationException
 	 */
 	@Override
-	public final boolean test(final Object value)
+	public void remove()
 	{
-		return true;
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -27,9 +27,9 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Converter;
 
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.util.collections.Converter;
 
 public class ArchiveGetDataHandlerConverter implements Converter<I_AD_Archive, I_AD_Archive>
 {

@@ -33,7 +33,6 @@ import java.util.Map;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -62,6 +61,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.quantity.Quantity;
+import de.metas.util.collections.IdentityHashSet;
 
 public class HUKeyFactory implements IHUKeyFactory
 {

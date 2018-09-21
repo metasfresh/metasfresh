@@ -28,9 +28,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import org.adempiere.util.collections.BlindIterator;
-import org.adempiere.util.collections.BlindIteratorWrapper;
 import org.compiere.util.DB;
+
+import de.metas.util.collections.BlindIterator;
+import de.metas.util.collections.BlindIteratorWrapper;
 
 /**
  * Abstract class useful for implementing iterators over {@link PreparedStatement}s.

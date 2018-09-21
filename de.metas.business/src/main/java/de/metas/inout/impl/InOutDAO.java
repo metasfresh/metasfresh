@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -50,6 +49,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO

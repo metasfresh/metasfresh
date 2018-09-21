@@ -1,4 +1,4 @@
-package org.adempiere.util.collections;
+package de.metas.util.collections;
 
 /*
  * #%L
@@ -23,66 +23,58 @@ package org.adempiere.util.collections;
  */
 
 
-import java.io.Closeable;
 import java.util.Iterator;
 
+import org.adempiere.util.Check;
+
 /**
- * Converts a {@link BlindIterator} to a true {@link Iterator} (which has {@link #hasNext()}).
+ * Adapter class which converts online between one parameterized iterator to other parameterized iterator
  * 
  * @author tsa
  * 
- * @param <E>
+ * @param <OT> Output data type
+ * @param <IT> Input data type
  */
-public class BlindIteratorWrapper<E> implements Iterator<E>, Closeable
+public class ConvertIteratorWrapper<OT, IT> implements Iterator<OT>, IteratorWrapper<IT>
 {
-	private final BlindIterator<E> iterator;
+	private final Iterator<IT> iterator;
+	private final Converter<OT, IT> converter;
 
-	private E next;
-
-	public BlindIteratorWrapper(final BlindIterator<E> iterator)
+	public ConvertIteratorWrapper(final Iterator<IT> iterator, final Converter<OT, IT> converter)
 	{
 		super();
-		if (iterator == null)
-		{
-			throw new IllegalArgumentException("iterator is null");
-		}
+
+		Check.assumeNotNull(iterator, "iterator not null");
+		Check.assumeNotNull(converter, "converter not null");
+
 		this.iterator = iterator;
+		this.converter = converter;
+	}
+
+	@Override
+	public Iterator<IT> getParentIterator()
+	{
+		return iterator;
 	}
 
 	@Override
 	public boolean hasNext()
 	{
-		if (next == null)
-		{
-			next = iterator.next();
-		}
-
-		return next != null;
+		return iterator.hasNext();
 	}
 
 	@Override
-	public E next()
+	public OT next()
 	{
-		if (next != null)
-		{
-			final E retValue = next;
-			next = null;
-			return retValue;
-		}
-
-		return iterator.next();
+		final IT valueIn = iterator.next();
+		final OT valueOut = converter.convert(valueIn);
+		return valueOut;
 	}
 
 	@Override
 	public void remove()
 	{
-		throw new UnsupportedOperationException("remove operation not supported");
-	}
-
-	@Override
-	public void close()
-	{
-		IteratorUtils.close(iterator);
+		iterator.remove();
 	}
 
 }

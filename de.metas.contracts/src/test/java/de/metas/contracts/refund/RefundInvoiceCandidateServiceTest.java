@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*

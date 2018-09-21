@@ -34,10 +34,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.CollectionUtils;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.collections.IdentityHashSet;
 
 public class EnvTests
 {

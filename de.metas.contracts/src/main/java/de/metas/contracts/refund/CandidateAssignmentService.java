@@ -1,7 +1,7 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.Collections;
 import java.util.Comparator;

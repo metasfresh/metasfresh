@@ -30,6 +30,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.util.collections.IteratorChain;
+
 public class IteratorChainTest
 {
 	@Test

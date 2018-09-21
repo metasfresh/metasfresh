@@ -1,4 +1,4 @@
-package org.adempiere.util.collections;
+package de.metas.util.collections;
 
 /*
  * #%L
@@ -23,45 +23,66 @@ package org.adempiere.util.collections;
  */
 
 
+import java.io.Closeable;
 import java.util.Iterator;
 
 /**
- * Wraps a given iterator and makes it readonly (i.e. {@link #remove()} will throw exception)
+ * Converts a {@link BlindIterator} to a true {@link Iterator} (which has {@link #hasNext()}).
  * 
  * @author tsa
- *
- * @param <T>
+ * 
+ * @param <E>
  */
-/* package */final class UnmodifiableIterator<T> implements Iterator<T>
-// , IteratorWrapper<E> // don't implement it because we want to hide the implementation
+public class BlindIteratorWrapper<E> implements Iterator<E>, Closeable
 {
-	private final Iterator<T> iterator;
+	private final BlindIterator<E> iterator;
 
-	public UnmodifiableIterator(final Iterator<T> iterator)
+	private E next;
+
+	public BlindIteratorWrapper(final BlindIterator<E> iterator)
 	{
 		super();
+		if (iterator == null)
+		{
+			throw new IllegalArgumentException("iterator is null");
+		}
 		this.iterator = iterator;
 	}
 
 	@Override
 	public boolean hasNext()
 	{
-		return iterator.hasNext();
+		if (next == null)
+		{
+			next = iterator.next();
+		}
+
+		return next != null;
 	}
 
 	@Override
-	public T next()
+	public E next()
 	{
+		if (next != null)
+		{
+			final E retValue = next;
+			next = null;
+			return retValue;
+		}
+
 		return iterator.next();
 	}
 
-	/**
-	 * @throws UnsupportedOperationException
-	 */
 	@Override
 	public void remove()
 	{
-		throw new UnsupportedOperationException();
+		throw new UnsupportedOperationException("remove operation not supported");
+	}
+
+	@Override
+	public void close()
+	{
+		IteratorUtils.close(iterator);
 	}
 
 }

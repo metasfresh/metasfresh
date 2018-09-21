@@ -1,8 +1,10 @@
-package de.metas.document.archive.rpl.requesthandler;
+package de.metas.util.collections;
+
+import java.util.function.Predicate;
 
 /*
  * #%L
- * de.metas.document.archive.base
+ * de.metas.util
  * %%
  * Copyright (C) 2015 metas GmbH
  * %%
@@ -23,16 +25,35 @@ package de.metas.document.archive.rpl.requesthandler;
  */
 
 
-import org.adempiere.process.rpl.requesthandler.spi.impl.LoadConvertPORequestHandler;
-
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.util.collections.Converter;
-
-public class AD_Archive_SetData_Request_Handler extends LoadConvertPORequestHandler<I_AD_Archive, I_AD_Archive>
+/**
+ * A pass-through {@link Predicate} implementation, which alreadys returns <code>true</code>.
+ * 
+ * @author tsa
+ *
+ */
+public final class NullPredicate implements Predicate<Object>
 {
-
-	public AD_Archive_SetData_Request_Handler(final Class<I_AD_Archive> requestModelClass, final Converter<I_AD_Archive, I_AD_Archive> converter)
+	public static final <T> Predicate<T> of()
 	{
-		super(I_AD_Archive.class, ArchiveSetDataHandlerConverter.instance);
+		@SuppressWarnings("unchecked")
+		final Predicate<T> predicate = (Predicate<T>)instance;
+		return predicate;
 	}
+
+	private static final transient NullPredicate instance = new NullPredicate();
+
+	private NullPredicate()
+	{
+		super();
+	}
+
+	/**
+	 * @return true
+	 */
+	@Override
+	public final boolean test(final Object value)
+	{
+		return true;
+	}
+
 }

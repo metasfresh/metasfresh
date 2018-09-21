@@ -7,13 +7,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.materialtracking.IMaterialTrackingReportBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
+import de.metas.util.collections.MapReduceAggregator;
 
 /*
  * #%L

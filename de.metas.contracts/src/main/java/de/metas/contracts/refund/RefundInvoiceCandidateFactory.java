@@ -1,12 +1,12 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.adempiere.util.collections.CollectionUtils.extractSingleElement;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

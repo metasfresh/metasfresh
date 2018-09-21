@@ -1,6 +1,6 @@
 package de.metas.contracts.refund.exceedingqty;
 
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.ArrayList;
 import java.util.List;

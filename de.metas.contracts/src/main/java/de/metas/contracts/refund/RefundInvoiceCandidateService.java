@@ -1,8 +1,8 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.collections.CollectionUtils.singleElement;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

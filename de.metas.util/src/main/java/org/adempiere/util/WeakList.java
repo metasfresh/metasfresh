@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.util.collections.IteratorUtils;
+import de.metas.util.collections.IteratorUtils;
 
 /**
  * List that supports weakly referenced elements.

@@ -1,11 +1,4 @@
-/**
- * 
- */
-/**
- * @author ts
- *
- */
-package org.adempiere.util.collections;
+package de.metas.util.collections;
 
 /*
  * #%L
@@ -28,3 +21,23 @@ package org.adempiere.util.collections;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+
+import java.util.Iterator;
+
+/**
+ * An iterator that supports a one-element lookahead while iterating.
+ * 
+ * @author tsa
+ * 
+ * @param <E>
+ */
+public interface PeekIterator<E> extends Iterator<E>
+{
+	/**
+	 * Returns the next element in the iteration, without advancing the iteration.
+	 * 
+	 * @return
+	 */
+	public E peek();
+}

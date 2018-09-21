@@ -37,13 +37,14 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.collections.CollectionUtils;
 
 public class QueryBuilderTests
 {

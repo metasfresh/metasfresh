@@ -29,7 +29,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.Env;
@@ -39,6 +38,7 @@ import org.junit.Test;
 
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.impl.InvoiceLineAttribute;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  * Tests {@link CommonInvoiceLineAttributeAggregator}.

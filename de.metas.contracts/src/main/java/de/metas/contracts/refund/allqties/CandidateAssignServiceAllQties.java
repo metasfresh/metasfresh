@@ -1,6 +1,6 @@
 package de.metas.contracts.refund.allqties;
 
-import static org.adempiere.util.collections.CollectionUtils.singleElement;
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.List;
 

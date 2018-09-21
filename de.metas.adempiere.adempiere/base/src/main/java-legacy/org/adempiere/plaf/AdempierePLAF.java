@@ -38,7 +38,6 @@ import javax.swing.plaf.metal.MetalTheme;
 
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.plaf.PlafRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.ColorBlind;
@@ -53,6 +52,7 @@ import com.jgoodies.looks.plastic.PlasticTheme;
 
 import de.metas.logging.LogManager;
 import de.metas.util.MFColor;
+import de.metas.util.collections.CollectionUtils;
 
 /**
  *  Variable Pluggable Look And Feel.

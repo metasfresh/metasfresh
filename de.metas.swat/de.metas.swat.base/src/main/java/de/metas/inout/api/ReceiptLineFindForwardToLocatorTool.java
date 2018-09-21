@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_InOutLine;
@@ -22,6 +21,7 @@ import org.compiere.util.Util;
 import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*

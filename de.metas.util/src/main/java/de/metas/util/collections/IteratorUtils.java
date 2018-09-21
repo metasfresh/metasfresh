@@ -1,4 +1,4 @@
-package org.adempiere.util.collections;
+package de.metas.util.collections;
 
 /*
  * #%L
@@ -34,9 +34,10 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.adempiere.util.EmptyIterator;
-import org.adempiere.util.collections.PagedIterator.PagedIteratorBuilder;
 
 import com.google.common.base.Throwables;
+
+import de.metas.util.collections.PagedIterator.PagedIteratorBuilder;
 
 public final class IteratorUtils
 {
