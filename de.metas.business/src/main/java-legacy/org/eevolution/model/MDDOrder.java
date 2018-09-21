@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,6 +43,7 @@ import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocument;
@@ -810,6 +812,12 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getCreated());
+	}
 
 	@Override
 	public String getProcessMsg()

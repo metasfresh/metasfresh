@@ -14,7 +14,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1167743973L;
+	private static final long serialVersionUID = -1280603864L;
 
     /** Standard Constructor */
     public X_C_DunningDoc (Properties ctx, int C_DunningDoc_ID, String trxName)
@@ -26,6 +26,8 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 			setC_BPartner_Location_ID (0);
 			setC_DunningDoc_ID (0);
 			setC_DunningLevel_ID (0);
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
 			setDunningDate (new Timestamp( System.currentTimeMillis() ));
 			setIsUseBPartnerAddress (false); // N
@@ -139,6 +141,43 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	}
 
 	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_AD_User getC_Dunning_Contact() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Dunning_Contact_ID, org.compiere.model.I_AD_User.class);
@@ -244,6 +283,110 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
+	public static final String DOCACTION_Complete = "CO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
+	/** Void = VO */
+	public static final String DOCACTION_Void = "VO";
+	/** Close = CL */
+	public static final String DOCACTION_Close = "CL";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
+	/** None = -- */
+	public static final String DOCACTION_None = "--";
+	/** Prepare = PR */
+	public static final String DOCACTION_Prepare = "PR";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		Der zukünftige Status des Belegs
+	  */
+	@Override
+	public void setDocAction (java.lang.String DocAction)
+	{
+
+		set_Value (COLUMNNAME_DocAction, DocAction);
+	}
+
+	/** Get Belegverarbeitung.
+		@return Der zukünftige Status des Belegs
+	  */
+	@Override
+	public java.lang.String getDocAction () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+	}
+
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
+	{
+
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
+	@Override
+	public java.lang.String getDocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+	}
+
 	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
@@ -296,6 +439,28 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	public boolean isUseBPartnerAddress () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsUseBPartnerAddress);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Massenaustritt.
+		@param IsWriteOff Massenaustritt	  */
+	@Override
+	public void setIsWriteOff (boolean IsWriteOff)
+	{
+		throw new IllegalArgumentException ("IsWriteOff is virtual column");	}
+
+	/** Get Massenaustritt.
+		@return Massenaustritt	  */
+	@Override
+	public boolean isWriteOff () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsWriteOff);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

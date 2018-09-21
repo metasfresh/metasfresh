@@ -996,13 +996,8 @@ public class InterfaceWrapperHelper
 	 * @return table name
 	 * @throws AdempiereException if model is null or model is not supported
 	 */
-	public static String getModelTableName(final Object model)
+	public static String getModelTableName(@NonNull final Object model)
 	{
-		if (model == null)
-		{
-			throw new AdempiereException("Cannot get TableName for a null model. Possible development issue.");
-		}
-
 		final String modelTableName = getModelTableNameOrNull(model);
 		if (modelTableName == null)
 		{
@@ -1281,7 +1276,11 @@ public class InterfaceWrapperHelper
 		return isAllValuesSet;
 	}
 
-	private static boolean setValue(final Object model, final String columnName, final Object value, final boolean throwExIfColumnNotFound)
+	private static boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName,
+			@Nullable final Object value,
+			final boolean throwExIfColumnNotFound)
 	{
 		Check.assumeNotNull(model, "model is not null");
 		Check.assumeNotNull(columnName, "columnName is not null");

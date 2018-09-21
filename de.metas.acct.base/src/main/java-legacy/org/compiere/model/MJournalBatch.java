@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -30,6 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -787,6 +789,12 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	//	getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateDoc());
+	}
 
 	/**
 	 * 	String Representation

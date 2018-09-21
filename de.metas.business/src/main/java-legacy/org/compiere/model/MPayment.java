@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,6 +35,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
@@ -406,7 +408,7 @@ public final class MPayment extends X_C_Payment
 		setA_Zip(zip);
 		setA_Country(country);
 	}   // setAccountAddress
-	
+
 	/**
 	 * Before Save
 	 *
@@ -2596,6 +2598,12 @@ public final class MPayment extends X_C_Payment
 		}
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateTrx());
+	}
 
 	/**
 	 * Get Process Message

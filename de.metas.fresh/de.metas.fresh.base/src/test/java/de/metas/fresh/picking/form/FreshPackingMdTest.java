@@ -181,6 +181,7 @@ public class FreshPackingMdTest
 		return Packageable.builder()
 				.qtyOrdered(Quantity.zero(uom))
 				.qtyToDeliver(Quantity.of(qtyToDeliver, uom))
+				.qtyDelivered(Quantity.zero(uom))
 				.qtyPicked(Quantity.zero(uom))
 				.qtyPickedPlanned(Quantity.zero(uom))
 				//

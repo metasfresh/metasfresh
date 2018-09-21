@@ -15,10 +15,10 @@
  * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,6 +30,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -514,6 +515,12 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getMovementDate());
 	}
 
 	/**

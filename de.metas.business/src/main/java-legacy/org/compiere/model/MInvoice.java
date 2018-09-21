@@ -26,6 +26,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -2381,6 +2383,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateInvoiced());
+	}
 
 	/**
 	 * Get Process Message
