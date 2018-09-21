@@ -71,7 +71,7 @@ Here come the actual release notes:
 * metasfresh
   * [#4563](https://github.com/metasfresh/metasfresh/issues/4563) Sometimes missing purchase candidates aren't created
     * Fixes a cornercase of missing Purchase Candidates.
-  * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) msv3 - local purchase order is not created if remote order confirmation lacks deliveryDate
+  * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) MSV3 - local purchase order is not created if remote order confirmation lacks deliveryDate
     * Fix for the Pharma MSV3 Purchase order creation.
   * [#4591](https://github.com/metasfresh/metasfresh/issues/4591) Printing problem on multi-org-system
     * Configuration Fix for Printing on Multi Org Systems.
