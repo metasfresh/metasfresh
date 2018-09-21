@@ -340,12 +340,10 @@ public class PickingCandidateRepository
 				.map(this::toPickingCandidate)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	/**
-	 * @return Return {@code true} if the given HU is referenced by an active picking candidate.<br>
-	 *         Note that we use the ID for performance reasons.
+	 * @return {@code true} if the given HU is referenced by an active picking candidate.
 	 */
-	//@Cached(cacheName = I_M_Picking_Candidate.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
 	public boolean isHuIdPicked(@NonNull final HuId huId)
 	{
 		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
@@ -356,6 +354,5 @@ public class PickingCandidateRepository
 				.match();
 		return isAlreadyPicked;
 	}
-
 
 }
