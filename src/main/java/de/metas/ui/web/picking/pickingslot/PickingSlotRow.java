@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -427,9 +429,9 @@ public final class PickingSlotRow implements IViewRow
 		return pickingSlotRowId.isPickingSourceHURow();
 	}
 
-	public int getPickingSlotWarehouseId()
+	public WarehouseId getPickingSlotWarehouseId()
 	{
-		return pickingSlotWarehouse != null ? pickingSlotWarehouse.getIdAsInt() : -1;
+		return pickingSlotWarehouse != null ? WarehouseId.ofRepoId(pickingSlotWarehouse.getIdAsInt()) : null;
 	}
 
 	public BigDecimal getHuQtyCU()

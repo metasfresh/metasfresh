@@ -10,11 +10,10 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
@@ -143,14 +142,14 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (qtyCU.signum() > 0)
 		{
-			final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+			final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
 			pickingCandidateService.addQtyToHU()
 					.qtyCU(qtyCU)
 					.targetHUId(HuId.ofRepoId(hu.getM_HU_ID()))
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
-					.isAllowOverdelivery(isAllowOverdelivery)
+					.allowOverDelivery(allowOverDelivery)
 					.build()
 					.performAndGetQtyPicked();
 		}
@@ -212,15 +211,14 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 	}
 
-	private static final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
+	private final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
 	{
-		final int pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
-		if (pickingSlotWarehouseId <= 0)
+		final WarehouseId pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
+		if (pickingSlotWarehouseId == null)
 		{
 			throw new AdempiereException("Picking slot with M_PickingSlot_ID=" + pickingSlotRow.getPickingSlotId() + " has no warehouse configured");
 		}
-		final I_M_Warehouse pickingSlotWarehouse = InterfaceWrapperHelper.loadOutOfTrx(pickingSlotWarehouseId, I_M_Warehouse.class);
-		final I_M_Locator pickingSlotLocator = Services.get(IWarehouseBL.class).getDefaultLocator(pickingSlotWarehouse);
+		final I_M_Locator pickingSlotLocator = Services.get(IWarehouseBL.class).getDefaultLocator(pickingSlotWarehouseId);
 		return pickingSlotLocator;
 	}
 

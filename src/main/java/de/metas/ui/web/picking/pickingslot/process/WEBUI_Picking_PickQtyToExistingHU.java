@@ -97,14 +97,14 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
 		pickingCandidateService.addQtyToHU()
 				.qtyCU(qtyCU)
 				.targetHUId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
-				.isAllowOverdelivery(isAllowOverdelivery)
+				.allowOverDelivery(allowOverDelivery)
 				.build()
 				.performAndGetQtyPicked();
 
