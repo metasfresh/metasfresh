@@ -88,16 +88,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
 
 	/**
-	 * Create grouping key for given shipment schedule.
-	 *
-	 * NOTE: BPartner won't be included in grouping key.
-	 *
-	 * @param sched
-	 * @return key
-	 */
-	ArrayKey mkKeyForGrouping(I_M_ShipmentSchedule sched);
-
-	/**
 	 * Create grouping key for given shipment schedule
 	 *
 	 * @param sched

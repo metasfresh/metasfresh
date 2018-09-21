@@ -67,7 +67,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -95,6 +94,7 @@ import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageEngine;
@@ -787,17 +787,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public ArrayKey mkKeyForGrouping(final I_M_ShipmentSchedule sched)
-	{
-		final boolean includeBPartner = false;
-		return mkKeyForGrouping(sched, includeBPartner);
-	}
-
-	@Override
 	public ArrayKey mkKeyForGrouping(final I_M_ShipmentSchedule sched, final boolean includeBPartner)
 	{
-		final int productId = sched.getM_Product_ID();
-		final de.metas.adempiere.model.I_M_Product product = InterfaceWrapperHelper.create(sched.getM_Product(), de.metas.adempiere.model.I_M_Product.class);
+		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final de.metas.adempiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId, de.metas.adempiere.model.I_M_Product.class);
 
 		final int adTableId;
 		final int recordId;
@@ -829,7 +822,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			bpLocId = null;
 		}
 
-		return Util.mkKey(productId, adTableId, recordId, bpartnerId, bpLocId);
+		return ArrayKey.of(productId, adTableId, recordId, bpartnerId, bpLocId);
 	}
 
 	/**
