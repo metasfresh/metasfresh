@@ -32,21 +32,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4507](https://github.com/metasfresh/metasfresh/issues/4507) Picked and Non-Picked Quantities Shipment generation
-    * New action available in Shipment Schedules. Now it's possible to create shipments that include picked quantities and non-picked quantities as fallback szenario.
+    * New action available in Shipment Schedules. Now it's possible to create shipments that include picked quantities and non-picked quantities as fallback scenario.
   * [#4549](https://github.com/metasfresh/metasfresh/issues/4549) Sales Order Candidates REST API improvements
-    * Improvements of the REST API endpoin for Sales Order Candidates.
+    * Improvements of the REST API endpoint for Sales Order Candidates.
   * [#4556](https://github.com/metasfresh/metasfresh/issues/4556) Show Product note as tooltip in order line
     * Adding a Toltip functionality for Products in Orderline.
   * [#4557](https://github.com/metasfresh/metasfresh/issues/4557) Improve BPartner Memo-Import
     * Improves the Data Import of Business Partner Memo fields.
   * [#4558](https://github.com/metasfresh/metasfresh/issues/4558) Show BPartner memo as tooltip in order
     * Adding a Toltip functionality for Business Partner in Order Header.
-  * [#4566](https://github.com/metasfresh/metasfresh/issues/4566) save AdempiereProcessor lastRun/nextRun timestamp out-of-trx
+  * [#4566](https://github.com/metasfresh/metasfresh/issues/4566) Save AdempiereProcessor lastRun/nextRun timestamp out-of-trx
     * Internal Housekeeping improvement for ADempiere Processor.
   * [#4568](https://github.com/metasfresh/metasfresh/issues/4568) Add note field to invoice candidates
-    * Adding a Toltip functionality in Invoice Candidates.
+    * Adding a Tooltip functionality in Invoice Candidates.
   * [#4575](https://github.com/metasfresh/metasfresh/issues/4575) Allow custom, POReference-based document number
-    * New Feature that allows a custom document/ sequence number based on Purchase Orde Reference.
+    * New Feature that allows a custom document/ sequence number based on Purchase Order Reference.
   * [#4576](https://github.com/metasfresh/metasfresh/issues/4576) Introduce Warehouse Type
     * Improvement of Warehouse configuration. Now it's possible to define warehouse types and add types to warehouses.
   * [#4587](https://github.com/metasfresh/metasfresh/issues/4587) Allow custom PDF-creating code to be called via print-format
@@ -57,7 +57,7 @@ Here come the actual release notes:
     * New Window for the Outbound eMail Server Configuration in WebUI.
   * [#4595](https://github.com/metasfresh/metasfresh/issues/4595) WebUI: Window EMail Server Routing
     * New Window for the eMail Server Routing Configration in WebUI.
-  * [#4613](https://github.com/metasfresh/metasfresh/issues/4613) provide doc-outbound mail receiver for dunning docs
+  * [#4613](https://github.com/metasfresh/metasfresh/issues/4613) Provide doc-outbound mail receiver for dunning docs
     * Extension of Document Outbound, now also setting a Mail Receiver User for Dunning Documents.
   * [#4615](https://github.com/metasfresh/metasfresh/issues/4615) Turn C_DunningDoc into a real document
     * Transforming the Dunning Documents into real document model of metasfresh.
@@ -69,9 +69,9 @@ Here come the actual release notes:
 ## Fixes
 
 * metasfresh
-  * [#4563](https://github.com/metasfresh/metasfresh/issues/4563) sometimes missing purchase candidates aren't created
+  * [#4563](https://github.com/metasfresh/metasfresh/issues/4563) Sometimes missing purchase candidates aren't created
     * Fixes a cornercase of missing Purchase Candidates.
-  * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) msv3 - local purchase order is not created if remote order confirmation lacks deliveryDate
+  * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) MSV3 - local purchase order is not created if remote order confirmation lacks deliveryDate
     * Fix for the Pharma MSV3 Purchase order creation.
   * [#4591](https://github.com/metasfresh/metasfresh/issues/4591) Printing problem on multi-org-system
     * Configuration Fix for Printing on Multi Org Systems.
@@ -79,6 +79,8 @@ Here come the actual release notes:
     * Fixes a Number Fomat Exception in Webcam Foto Upload of Material Receipt Candidates.
   * [#4602](https://github.com/metasfresh/metasfresh/issues/4602) Cannot complete flatrate term conditions / transition in swing
     * Fixes a Null Pointer Exception in metasfresh Swing Client when completing flatrate term conditions.
+  * [#4623](https://github.com/metasfresh/metasfresh/issues/4623) Invoice candidate recompute flag not always removed in webui
+    * Fixes the behavior of the Invoice Candidate recompute flag for some minor cases.
   
 
 * metasfresh-webui-api
