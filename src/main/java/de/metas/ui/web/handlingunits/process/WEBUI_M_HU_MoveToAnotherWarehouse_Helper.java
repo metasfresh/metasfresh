@@ -110,6 +110,8 @@ public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorP
 	protected String doIt() throws Exception
 	{
 		final List<I_M_HU> hus = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+
+		assertHUsEligible();
 		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
 
 		return MSG_OK;
@@ -125,4 +127,7 @@ public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorP
 			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
 		}
 	}
+
+	public abstract void assertHUsEligible();
+
 }
