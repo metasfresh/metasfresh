@@ -3,13 +3,8 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.Comparator;
 import java.util.List;
 
-<<<<<<< HEAD:src/main/java/de/metas/ui/web/handlingunits/process/WEBUI_M_HU_MoveToAnotherWarehouse_Helper.java
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.util.Services;
-
-=======
->>>>>>> master:src/main/java/de/metas/ui/web/handlingunits/process/WEBUI_M_HU_MoveToAnotherWarehouse.java
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUStatusBL;
