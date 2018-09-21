@@ -6,8 +6,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.IInvoiceLineBL;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
