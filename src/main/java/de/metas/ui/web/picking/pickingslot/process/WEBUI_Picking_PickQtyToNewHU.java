@@ -25,6 +25,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -114,7 +115,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
@@ -144,14 +145,13 @@ public class WEBUI_Picking_PickQtyToNewHU
 		{
 			final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
-			pickingCandidateService.addQtyToHU()
+			pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
 					.qtyCU(qtyCU)
 					.targetHUId(HuId.ofRepoId(hu.getM_HU_ID()))
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 					.allowOverDelivery(allowOverDelivery)
-					.build()
-					.performAndGetQtyPicked();
+					.build());
 		}
 	}
 

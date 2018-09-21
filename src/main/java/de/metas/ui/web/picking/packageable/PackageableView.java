@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
@@ -107,11 +108,11 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 				.collect(ImmutableSet.toImmutableSet());
 
 		// Close all picking candidates which are on a rack system picking slot (gh2740)
-		pickingCandidateService.prepareCloseForShipmentSchedules(shipmentScheduleIds)
+		pickingCandidateService.closeForShipmentSchedules(CloseForShipmentSchedulesRequest.builder()
+				.shipmentScheduleIds(shipmentScheduleIds)
 				.pickingSlotIsRackSystem(true)
 				.failOnError(false) // close as much candidates as it's possible
-				.build()
-				.perform();
+				.build());
 	}
 
 	public void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)

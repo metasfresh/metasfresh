@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -99,14 +100,13 @@ public class WEBUI_Picking_PickQtyToExistingHU
 
 		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
-		pickingCandidateService.addQtyToHU()
+		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
 				.qtyCU(qtyCU)
 				.targetHUId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 				.allowOverDelivery(allowOverDelivery)
-				.build()
-				.performAndGetQtyPicked();
+				.build());
 
 		invalidateView();
 		invalidateParentView();
