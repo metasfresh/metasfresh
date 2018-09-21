@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
@@ -31,6 +32,11 @@ import lombok.Builder;
 
 public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 {
+	public static ProductsToPickView cast(final IView view)
+	{
+		return (ProductsToPickView)view;
+	}
+
 	@Builder
 	private ProductsToPickView(
 			final ViewId viewId,
