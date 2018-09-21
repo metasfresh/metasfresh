@@ -216,6 +216,13 @@ public class PickingCandidateRepository
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
+	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull final PickingCandidateStatus status)
+	{
+		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(shipmentScheduleId), status);
+	}
+
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
 			@NonNull final PickingCandidateStatus status)
