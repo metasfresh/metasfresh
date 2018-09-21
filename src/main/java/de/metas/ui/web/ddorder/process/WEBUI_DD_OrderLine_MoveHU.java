@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -25,6 +24,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.Services;
 
 /*
  * #%L

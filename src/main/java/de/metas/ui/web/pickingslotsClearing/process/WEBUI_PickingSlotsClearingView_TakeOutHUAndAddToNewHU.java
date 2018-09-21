@@ -3,7 +3,6 @@ package de.metas.ui.web.pickingslotsClearing.process;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,6 +23,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

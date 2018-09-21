@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
-import org.adempiere.util.Services;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -29,6 +28,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
+import de.metas.util.Services;
 import lombok.Data;
 
 /*

@@ -14,7 +14,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.ICacheResetListener;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -22,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Services;
 
 /*
  * #%L

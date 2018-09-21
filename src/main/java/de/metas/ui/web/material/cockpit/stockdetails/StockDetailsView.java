@@ -1,13 +1,12 @@
 package de.metas.ui.web.material.cockpit.stockdetails;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.model.I_M_HU_Stock_Detail_V;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 
 /*
  * #%L

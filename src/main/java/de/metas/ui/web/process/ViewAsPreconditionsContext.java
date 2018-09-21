@@ -5,9 +5,6 @@ import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Functions;
-import org.adempiere.util.Functions.MemoizingFunction;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
@@ -22,6 +19,9 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.Functions;
+import de.metas.util.Functions.MemoizingFunction;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

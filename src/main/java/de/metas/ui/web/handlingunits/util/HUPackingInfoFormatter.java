@@ -3,12 +3,12 @@ package de.metas.ui.web.handlingunits.util;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DisplayType;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.util.Services;
 
 /*
  * #%L

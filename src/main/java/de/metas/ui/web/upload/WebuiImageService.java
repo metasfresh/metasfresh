@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.FileUtils;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
@@ -15,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.util.FileUtils;
 import lombok.NonNull;
 
 /*

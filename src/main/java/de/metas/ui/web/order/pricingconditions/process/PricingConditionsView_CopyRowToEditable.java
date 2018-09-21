@@ -3,8 +3,6 @@ package de.metas.ui.web.order.pricingconditions.process;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.adempiere.util.Services;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.Percent;
@@ -17,6 +15,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.CompletePriceChange;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

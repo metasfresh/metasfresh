@@ -3,13 +3,12 @@ package de.metas.ui.web.login.json;
 import java.util.Collection;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

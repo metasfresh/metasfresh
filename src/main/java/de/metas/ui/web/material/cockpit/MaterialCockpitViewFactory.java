@@ -3,8 +3,6 @@ package de.metas.ui.web.material.cockpit;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 
@@ -28,6 +26,8 @@ import de.metas.ui.web.view.descriptor.ViewLayout.Builder;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

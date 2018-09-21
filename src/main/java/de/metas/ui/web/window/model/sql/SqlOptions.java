@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.model.sql;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

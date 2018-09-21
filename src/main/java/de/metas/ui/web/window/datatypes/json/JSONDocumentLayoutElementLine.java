@@ -3,8 +3,6 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
+import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 
 /*

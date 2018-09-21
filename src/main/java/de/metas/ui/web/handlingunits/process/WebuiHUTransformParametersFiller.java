@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DisplayType;
@@ -43,6 +42,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

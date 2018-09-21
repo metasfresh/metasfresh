@@ -3,8 +3,6 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUStatusBL;
@@ -23,6 +21,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.util.Services;
 
 /*
  * #%L

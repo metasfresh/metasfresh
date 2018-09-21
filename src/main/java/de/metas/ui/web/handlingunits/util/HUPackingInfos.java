@@ -1,13 +1,12 @@
 package de.metas.ui.web.handlingunits.util;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

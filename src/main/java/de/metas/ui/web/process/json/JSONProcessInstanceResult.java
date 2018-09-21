@@ -3,7 +3,6 @@ package de.metas.ui.web.process.json;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -25,6 +24,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.Getter;
 
 /*

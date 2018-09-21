@@ -3,7 +3,6 @@ package de.metas.ui.web.order.pricingconditions.process;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.conditions.PricingConditionsBreak;
@@ -15,6 +14,7 @@ import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest.P
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRow;
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowActions;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

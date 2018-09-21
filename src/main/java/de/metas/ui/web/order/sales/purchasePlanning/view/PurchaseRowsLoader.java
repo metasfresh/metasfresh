@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -29,6 +28,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
 import lombok.Getter;

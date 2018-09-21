@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
