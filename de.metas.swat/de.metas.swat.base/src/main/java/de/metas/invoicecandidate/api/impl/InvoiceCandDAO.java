@@ -48,10 +48,16 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
+import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
+import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -920,14 +926,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	/**
 	 * Deletes those records from table I_C_Invoice_Candidate_Recompute.Table_Name that were formerly tagged with the given recompute tag.
-	 *
-	 * @param recomputeTag
-	 * @param onlyInvoiceCandidateIds
-	 * @param trxName
 	 */
-	protected final void deleteRecomputeMarkers(
+	protected final void deleteRecomputeMarkersAndInvalidateCache(
 			@NonNull final InvoiceCandRecomputeTagger tagger,
-			final Collection<Integer> onlyInvoiceCandidateIds)
+			@Nullable final Collection<Integer> onlyInvoiceCandidateIds)
 	{
 		final Properties ctx = tagger.getCtx();
 		final InvoiceCandRecomputeTag recomputeTag = tagger.getRecomputeTag();
@@ -948,6 +950,33 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final int count = query.deleteDirectly();
 		logger.debug("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
 		logger.debug("Query: {}", query);
+
+		// invalidate the invoice candidate cache after commit
+		Services.get(ITrxManager.class)
+				.getTrxListenerManagerOrAutoCommit(trxName)
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> invalidateInvoiceCandidateCache(onlyInvoiceCandidateIds));
+	}
+
+	private void invalidateInvoiceCandidateCache(@Nullable final Collection<Integer> onlyInvoiceCandidateIds)
+	{
+		final CacheInvalidateMultiRequest multiRequest;
+		if (Check.isEmpty(onlyInvoiceCandidateIds))
+		{
+			multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_C_Invoice_Candidate.Table_Name);
+		}
+		else
+		{
+			final ImmutableList<CacheInvalidateRequest> cacheInvalidateRequests = onlyInvoiceCandidateIds
+					.stream()
+					.filter(Predicates.notNull())
+					.map(invoiceCandidateId -> CacheInvalidateRequest.fromTableNameAndRecordId(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId))
+					.collect(ImmutableList.toImmutableList());
+			multiRequest = CacheInvalidateMultiRequest.of(cacheInvalidateRequests);
+		}
+
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	protected final int untag(@NonNull final InvoiceCandRecomputeTagger tagger)
