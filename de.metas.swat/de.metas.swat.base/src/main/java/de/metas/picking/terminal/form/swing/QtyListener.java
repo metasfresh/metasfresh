@@ -41,7 +41,6 @@ import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.legacy.form.PackingTreeModel;
-import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.BoxLayout;
 import de.metas.picking.terminal.ProductKey;
@@ -141,13 +140,13 @@ public class QtyListener implements PropertyChangeListener
 					unpackedQty,
 					newQty,
 					qty,
-					selectedProduct.getBoxNo() != PackingItemsMap.KEY_UnpackedItems))
+					!selectedProduct.getBoxNo().isUnpacked()))
 			{
 				this.swingPackageBoxesItems.warn("Max.Qty");
 				return;
 			}
 			// case when the selected product is from the outside of the box
-			else if (selectedProduct.getBoxNo() == PackingItemsMap.KEY_UnpackedItems)
+			else if (selectedProduct.getBoxNo().isUnpacked())
 			{
 
 				// case when we pop into the box

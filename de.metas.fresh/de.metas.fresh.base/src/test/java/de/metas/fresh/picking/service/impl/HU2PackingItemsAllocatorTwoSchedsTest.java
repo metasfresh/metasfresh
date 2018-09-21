@@ -42,6 +42,7 @@ import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 
@@ -126,7 +127,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
 		// Validate
 
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getQty(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 
 		//
 		// Create Packing Items
@@ -137,12 +138,12 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		// Create Packing Context
 		this.packingContext = packingService.createPackingContext(helper.ctx);
 		packingContext.setPackingItemsMap(packingItems);
-		final int packingItemsMapKey = 123; // just a dummy value for now
+		final PackingItemsMapKey packingItemsMapKey = PackingItemsMapKey.ofInt(123); // just a dummy value for now
 		packingContext.setPackingItemsMapKey(packingItemsMapKey);
 
 		//
 		// Validate initial context state
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getQty(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 		assertFalse("We shall NOT have packed items", packingItems.hasPackedItems());
 

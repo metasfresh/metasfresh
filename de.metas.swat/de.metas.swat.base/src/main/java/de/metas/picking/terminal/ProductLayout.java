@@ -47,6 +47,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.product.IProductBL;
@@ -103,7 +104,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		final boolean isSelectedBox = getSelectedBox() != null;
 
 		// get objects from box 0: means unpacked items
-		final List<IPackingItem> unpacked = map.get(PackingItemsMap.KEY_UnpackedItems);
+		final List<IPackingItem> unpacked = map.getUnpackedItems();
 		// add to layout unpacked items
 		{
 			if (!(unpacked == null || unpacked.isEmpty()))
@@ -122,10 +123,10 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 					key.setName(Services.get(IProductBL.class).getProductName(productId));
 
 					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, productId);
-					tk.setBoxNo(PackingItemsMap.KEY_UnpackedItems);
+					tk.setBoxNo(PackingItemsMapKey.UNPACKED);
 					tk.setPackingItem(pck);
-					tk.setUsedBin(boxes.get(PackingItemsMap.KEY_UnpackedItems));
-					tk.setStatus(getProductState(pck, PackingItemsMap.KEY_UnpackedItems));
+					tk.setUsedBin(boxes.get(PackingItemsMapKey.UNPACKED));
+					tk.setStatus(getProductState(pck, PackingItemsMapKey.UNPACKED));
 					tk.setEnabledKey(isSelectedBox);
 					list.add(tk);
 				}
@@ -176,7 +177,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		return false;
 	}
 
-	protected PackingStates getProductState(final IPackingItem pck, final int boxNo)
+	protected PackingStates getProductState(final IPackingItem pck, final PackingItemsMapKey boxNo)
 	{
 		if (pck.isClosed())
 		{
@@ -185,15 +186,11 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 
 		final PackingItemsMap packItems = getPackageTerminalPanel().getPackItems();
 		boolean unpacked = false;
-		boolean packed = false;
-		if (boxNo == PackingItemsMap.KEY_UnpackedItems)
-		{
-			unpacked = true;
-		}
+		boolean packed = boxNo.isUnpacked();
 
-		for (Entry<Integer, List<IPackingItem>> e : packItems.entrySet())
+		for (Entry<PackingItemsMapKey, List<IPackingItem>> e : packItems.entrySet())
 		{
-			if (e.getKey() == PackingItemsMap.KEY_UnpackedItems)
+			if (e.getKey().isUnpacked())
 			{
 				// skip unpacked items
 				continue;

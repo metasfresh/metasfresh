@@ -63,7 +63,6 @@ import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.exceptions.HULoadException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
@@ -73,6 +72,7 @@ import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.picking.terminal.DefaultPackingStateAggregator;
 import de.metas.picking.terminal.IPackingStateAggregator;
@@ -407,9 +407,9 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	private PackingStates getPackingState(final PickingSlotKey pickingSlotKey)
 	{
 		final PackingItemsMap map = getPackageTerminalPanel().getPackItems();
-		final int key = pickingSlotKey.getM_PickingSlot().getM_PickingSlot_ID();
+		final PackingItemsMapKey key = PackingItemsMapKey.ofPickingSlotId(pickingSlotKey.getPickingSlotId());
 		final List<IPackingItem> packedItems = map.get(key);
-		final List<IPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(map.get(PackingItemsMap.KEY_UnpackedItems), pickingSlotKey);
+		final List<IPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(map.get(PackingItemsMapKey.UNPACKED), pickingSlotKey);
 
 		if (unpackedItems == null || unpackedItems.isEmpty())
 		{
@@ -539,13 +539,13 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
 		final PackingItemsMap packItems = terminalPanel.getPackItems().copy();
 
-		List<IPackingItem> itemsUnpacked = packItems.get(PackingItemsMap.KEY_UnpackedItems);
+		List<IPackingItem> itemsUnpacked = packItems.get(PackingItemsMapKey.UNPACKED);
 
 		IPackingItem itemUnpacked = null;
 		if (itemsUnpacked == null)
 		{
 			itemsUnpacked = new ArrayList<>();
-			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemsUnpacked);
+			packItems.put(PackingItemsMapKey.UNPACKED, itemsUnpacked);
 		}
 		else
 		{
@@ -559,8 +559,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			}
 		}
 
-		final I_M_PickingSlot pickingSlot = selectedPickingSlotKey.getM_PickingSlot();
-		final int key = pickingSlot.getM_PickingSlot_ID();
+		final PackingItemsMapKey key = PackingItemsMapKey.ofPickingSlotId(selectedPickingSlotKey.getPickingSlotId());
 		// we need to remove the recently unpacked item from packed
 		final List<IPackingItem> itemsPacked = packItems.remove(key);
 		Check.assumeNotNull(itemsPacked, "Packed items shall exist for key={}", key);
@@ -957,7 +956,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// Set PackingItemMap Key
 		final PickingSlotKey selectedPickingSlotKey = getSelectedPickingSlotKey();
 		Check.assumeNotNull(selectedPickingSlotKey, "selectedPickingSlotKey not null");
-		final int packingItemsMapKey = selectedPickingSlotKey.getM_PickingSlot().getM_PickingSlot_ID();
+		final PackingItemsMapKey packingItemsMapKey = PackingItemsMapKey.ofPickingSlotId(selectedPickingSlotKey.getPickingSlotId());
 		packingContext.setPackingItemsMapKey(packingItemsMapKey);
 
 		//

@@ -39,6 +39,7 @@ import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.terminal.ProductLayout;
 
 /**
@@ -89,7 +90,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		if (selectedPickingSlot == null)
 		{
 			// get objects from box 0: means unpacked items
-			final int key = PackingItemsMap.KEY_UnpackedItems;
+			final PackingItemsMapKey key = PackingItemsMapKey.UNPACKED;
 			final List<IPackingItem> unpacked = map.get(key);
 			// add to layout unpacked items
 			{
@@ -115,7 +116,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		else
 		{
 			// put to layout items from selected box
-			final int key = selectedPickingSlot.getM_PickingSlot().getM_PickingSlot_ID();
+			final PackingItemsMapKey key = PackingItemsMapKey.ofPickingSlotId(selectedPickingSlot.getPickingSlotId());
 			final List<IPackingItem> selected = map.get(key);
 			if (selected != null && !selected.isEmpty())
 			{
@@ -133,7 +134,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 			}
 
 			// now show unpacked for that specific partner
-			final List<IPackingItem> unpacked = map.get(PackingItemsMap.KEY_UnpackedItems);
+			final List<IPackingItem> unpacked = map.get(PackingItemsMapKey.UNPACKED);
 			final List<IPackingItem> items = getPackageItems().createUnpackedForBpAndBPLoc(unpacked, selectedPickingSlot);
 			for (final IPackingItem apck : items)
 			{
@@ -145,7 +146,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 				{
 					// first set unallocated
 					productKeyExisting.setUnAllocatedPackingItem(packingItem);
-					productKeyExisting.setStatus(getProductState(packingItem, PackingItemsMap.KEY_UnpackedItems));
+					productKeyExisting.setStatus(getProductState(packingItem, PackingItemsMapKey.UNPACKED));
 					continue;
 				}
 
@@ -157,7 +158,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 
 				productKey.setPackingItem(null);
 				productKey.setUnAllocatedPackingItem(packingItem);
-				productKey.setStatus(getProductState(packingItem, PackingItemsMap.KEY_UnpackedItems));
+				productKey.setStatus(getProductState(packingItem, PackingItemsMapKey.UNPACKED));
 				productKeys.add(productKey);
 			}
 
@@ -166,7 +167,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	}
 
 	private FreshProductKey createProductKey(final IFreshPackingItem pck,
-			final int key,
+			final PackingItemsMapKey key,
 			final PickingSlotKey selectedPickingSlot)
 	{
 		final FreshProductKey productKey = new FreshProductKey(getTerminalContext(), pck, key);

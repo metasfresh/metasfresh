@@ -58,7 +58,6 @@ import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.legacy.form.PackingDetailsMd;
 import de.metas.picking.legacy.form.PackingTreeModel;
-import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.BoxLayout;
 import de.metas.picking.terminal.ProductKey;
@@ -445,7 +444,7 @@ public class SwingPackageBoxesItems
 				warn(SwingPackageBoxesItems.ERR_NO_PRODUCT_SELECTED);
 				return;
 			}
-			else if (selectedProduct.getBoxNo() != PackingItemsMap.KEY_UnpackedItems)
+			else if (!selectedProduct.getBoxNo().isUnpacked())
 			{
 				warn(SwingPackageBoxesItems.ERR_UNPACKED_PRODUCT);
 				return;
@@ -483,7 +482,7 @@ public class SwingPackageBoxesItems
 				warn(SwingPackageBoxesItems.ERR_NO_PRODUCT_SELECTED);
 				return;
 			}
-			else if (selectedProduct.getBoxNo() == PackingItemsMap.KEY_UnpackedItems)
+			else if (selectedProduct.getBoxNo().isUnpacked())
 			{
 				warn(SwingPackageBoxesItems.ERR_PACKED_PRODUCT);
 				return;

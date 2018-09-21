@@ -45,7 +45,7 @@ public interface IPackingContext
 	 */
 	void setPackingItemsMap(PackingItemsMap packingItems);
 
-	int getPackingItemsMapKey();
+	PackingItemsMapKey getPackingItemsMapKey();
 
 	/**
 	 * Sets the key for {@link PackingItemsMap} under which those items are stored that are "packed".
@@ -53,6 +53,6 @@ public interface IPackingContext
 	 * 
 	 * @param packingItemsMapKey
 	 */
-	void setPackingItemsMapKey(int packingItemsMapKey);
+	void setPackingItemsMapKey(PackingItemsMapKey packingItemsMapKey);
 
 }

@@ -57,7 +57,6 @@ import de.metas.picking.legacy.form.AvailableBins;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.PackingDetailsMd;
 import de.metas.picking.legacy.form.PackingTreeModel;
-import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.NewKartonKey;
 import de.metas.picking.terminal.NewKartonLayout;
@@ -198,7 +197,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 			pickingData.setReadOnly(false);
 			updatePackingItemPanel(productKey.getPackingItem(), productKey.getUsedBin(), false);
 			getProductKeysPanel().setEnableAddRemoveButtons(true);
-			if (productKey.getBoxNo() == PackingItemsMap.KEY_UnpackedItems)
+			if (productKey.getBoxNo().isUnpacked())
 			{
 				pickingData.setQtyFieldReadOnly(false, true, false); //plus, minus, field
 			}

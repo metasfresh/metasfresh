@@ -41,6 +41,7 @@ import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -147,7 +148,7 @@ public class ProcessPickingCandidateCommand
 
 		final IPackingContext packingContext = packingService.createPackingContext(Env.getCtx());
 		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(pickingSlotId.getRepoId());
+		packingContext.setPackingItemsMapKey(PackingItemsMapKey.ofPickingSlotId(pickingSlotId));
 
 		final boolean isAllowOverdelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
 

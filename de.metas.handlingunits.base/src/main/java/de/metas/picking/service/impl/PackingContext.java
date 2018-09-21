@@ -13,15 +13,14 @@ package de.metas.picking.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -29,18 +28,17 @@ import org.adempiere.util.Check;
 
 import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
+import lombok.NonNull;
 
 public class PackingContext implements IPackingContext
 {
 	private final Properties ctx;
-	private Integer packingItemsMapKey;
+	private PackingItemsMapKey packingItemsMapKey;
 	private PackingItemsMap packingItems;
 
-	public PackingContext(final Properties ctx)
+	public PackingContext(@NonNull final Properties ctx)
 	{
-		super();
-
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
 	}
 
@@ -51,13 +49,13 @@ public class PackingContext implements IPackingContext
 	}
 
 	@Override
-	public void setPackingItemsMapKey(final int packingItemsMapKey)
+	public void setPackingItemsMapKey(final PackingItemsMapKey packingItemsMapKey)
 	{
 		this.packingItemsMapKey = packingItemsMapKey;
 	}
 
 	@Override
-	public int getPackingItemsMapKey()
+	public PackingItemsMapKey getPackingItemsMapKey()
 	{
 		Check.assumeNotNull(packingItemsMapKey, "packingItemsMapKey set");
 		return packingItemsMapKey;

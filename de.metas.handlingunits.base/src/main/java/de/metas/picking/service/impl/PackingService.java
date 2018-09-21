@@ -32,6 +32,7 @@ import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -116,7 +117,7 @@ public class PackingService implements IPackingService
 			@NonNull final Quantity qtyToPack,
 			@NonNull final IPackingHandler packingHandler)
 	{
-		final int key = packingContext.getPackingItemsMapKey();
+		final PackingItemsMapKey key = packingContext.getPackingItemsMapKey();
 
 		// Packing items
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back

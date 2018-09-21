@@ -42,6 +42,7 @@ import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.legacy.form.PackingDetailsMd;
 import de.metas.picking.legacy.form.UsedBin;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.terminal.Utils;
 
 /**
@@ -94,7 +95,7 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 					itemList.add(item);
 				}
 			}
-			packItems.put(boxNo, itemList);
+			packItems.put(PackingItemsMapKey.ofInt(boxNo), itemList);
 			boxNo++;
 		}
 		// put unpacked products
@@ -112,7 +113,7 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		}
 		if (itemList != null && itemList.size() != 0)
 		{
-			packItems.put(PackingItemsMap.KEY_UnpackedItems, itemList);
+			packItems.put(PackingItemsMapKey.UNPACKED, itemList);
 		}
 
 		// get available boxes

@@ -10,12 +10,12 @@ package de.metas.picking.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,40 +29,40 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import de.metas.picking.legacy.form.IPackingItem;
+import lombok.ToString;
 
 /**
  * This map helps to keep track about which item is packed into which place..it's sort of legacy..
  * <p>
  * As far as i see, it needs to be initialized using {@link #addUnpackedItem(IPackingItem)} or {@link #addUnpackedItems(Collection)}, before the fun can start.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PackingItemsMap
+@ToString
+public final class PackingItemsMap
 {
-	public static final int KEY_UnpackedItems = 0;
-	private final Map<Integer, List<IPackingItem>> itemsMap = new HashMap<>();
+	private final Map<PackingItemsMapKey, List<IPackingItem>> itemsMap = new HashMap<>();
 
 	public PackingItemsMap()
 	{
 		final List<IPackingItem> unpackedItems = new ArrayList<>();
-		itemsMap.put(KEY_UnpackedItems, unpackedItems);
+		itemsMap.put(PackingItemsMapKey.UNPACKED, unpackedItems);
 	}
 
 	/** Copy constructor */
 	private PackingItemsMap(final PackingItemsMap copyFrom)
 	{
-		super();
-
 		//
 		// Do a deep-copy of "copyFrom"'s map
-		for (final Entry<Integer, List<IPackingItem>> key2itemsList : copyFrom.itemsMap.entrySet())
+		for (final Entry<PackingItemsMapKey, List<IPackingItem>> key2itemsList : copyFrom.itemsMap.entrySet())
 		{
 			final List<IPackingItem> items = key2itemsList.getValue();
 
@@ -76,13 +76,13 @@ public class PackingItemsMap
 
 			final List<IPackingItem> itemsCopy = new ArrayList<>(items);
 
-			final Integer key = key2itemsList.getKey();
+			final PackingItemsMapKey key = key2itemsList.getKey();
 
 			itemsMap.put(key, itemsCopy);
 		}
 	}
 
-	public List<IPackingItem> get(final int key)
+	public List<IPackingItem> get(final PackingItemsMapKey key)
 	{
 		return itemsMap.get(key);
 	}
@@ -98,16 +98,9 @@ public class PackingItemsMap
 		unpackedItems.addAll(unpackedItemsToAdd);
 	}
 
-	private final List<IPackingItem> getUnpackedItems()
+	public final List<IPackingItem> getUnpackedItems()
 	{
-		List<IPackingItem> unpackedItems = itemsMap.get(KEY_UnpackedItems);
-		if (unpackedItems == null)
-		{
-			unpackedItems = new ArrayList<>();
-			itemsMap.put(KEY_UnpackedItems, unpackedItems);
-		}
-
-		return unpackedItems;
+		return itemsMap.computeIfAbsent(PackingItemsMapKey.UNPACKED, k -> new ArrayList<>());
 	}
 
 	public void addUnpackedItem(final IPackingItem unpackedItemToAdd)
@@ -117,12 +110,12 @@ public class PackingItemsMap
 		unpackedItems.add(unpackedItemToAdd);
 	}
 
-	public void put(int key, List<IPackingItem> items)
+	public void put(final PackingItemsMapKey key, final List<IPackingItem> items)
 	{
 		itemsMap.put(key, items);
 	}
 
-	public Set<Entry<Integer, List<IPackingItem>>> entrySet()
+	public Set<Entry<PackingItemsMapKey, List<IPackingItem>>> entrySet()
 	{
 		return itemsMap.entrySet();
 	}
@@ -132,11 +125,7 @@ public class PackingItemsMap
 		return new PackingItemsMap(this);
 	}
 
-	/**
-	 * @param key
-	 * @return see {@link Map#remove(Object)}
-	 */
-	public List<IPackingItem> remove(int key)
+	public List<IPackingItem> remove(final PackingItemsMapKey key)
 	{
 		return itemsMap.remove(key);
 	}
@@ -160,11 +149,11 @@ public class PackingItemsMap
 
 	/**
 	 * Append given <code>itemPacked</code> to existing packed items
-	 * 
+	 *
 	 * @param key
 	 * @param itemPacked
 	 */
-	public void appendPackedItem(final int key, final IPackingItem itemPacked)
+	public void appendPackedItem(final PackingItemsMapKey key, final IPackingItem itemPacked)
 	{
 		List<IPackingItem> existingPackedItems = get(key);
 		if (existingPackedItems == null)
@@ -193,16 +182,16 @@ public class PackingItemsMap
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if there exists at least one packed item
 	 */
 	public boolean hasPackedItems()
 	{
-		for (final Entry<Integer, List<IPackingItem>> key2itemsList : itemsMap.entrySet())
+		for (final Entry<PackingItemsMapKey, List<IPackingItem>> key2itemsList : itemsMap.entrySet())
 		{
-			final Integer key = key2itemsList.getKey();
+			final PackingItemsMapKey key = key2itemsList.getKey();
 
-			if (key == KEY_UnpackedItems)
+			if (Objects.equals(key, PackingItemsMapKey.UNPACKED))
 			{
 				continue;
 			}
@@ -221,7 +210,7 @@ public class PackingItemsMap
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if there exists at least one unpacked item
 	 */
 	public boolean hasUnpackedItems()
@@ -234,11 +223,4 @@ public class PackingItemsMap
 
 		return true;
 	}
-
-	@Override
-	public String toString()
-	{
-		return String.format("PackingItemsMap [itemsMap=%s, hasPackedItems()=%s, hasUnpackedItems()=%s]", itemsMap, hasPackedItems(), hasUnpackedItems());
-	}
-
 }

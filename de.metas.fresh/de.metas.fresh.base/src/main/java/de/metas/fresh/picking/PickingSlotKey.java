@@ -53,6 +53,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
@@ -135,6 +136,11 @@ public class PickingSlotKey extends TerminalKey
 	public I_M_PickingSlot getM_PickingSlot()
 	{
 		return pickingSlot;
+	}
+
+	public PickingSlotId getPickingSlotId()
+	{
+		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 	}
 
 	@Override

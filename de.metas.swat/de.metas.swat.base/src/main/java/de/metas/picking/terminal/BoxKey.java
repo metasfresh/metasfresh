@@ -38,6 +38,7 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.terminal.Utils.PackingStates;
 
 /**
@@ -49,7 +50,7 @@ public class BoxKey extends TerminalKey
 	private I_C_POSKey key;
 	private KeyNamePair value;
 	private String tableName;
-	private int boxNo;
+	private PackingItemsMapKey boxNo;
 	private I_M_PackagingContainer container;
 	private DefaultMutableTreeNode node;
 	private boolean ready = false;
@@ -121,12 +122,12 @@ public class BoxKey extends TerminalKey
 		setStatus(new BoxStatus());
 	}
 
-	public void setBoxNo(int no)
+	public void setBoxNo(PackingItemsMapKey no)
 	{
 		this.boxNo = no;
 	}
 
-	public int getBoxNo()
+	public PackingItemsMapKey getBoxNo()
 	{
 		return this.boxNo;
 	}
@@ -138,36 +139,43 @@ public class BoxKey extends TerminalKey
 				+ (value != null ? "#" + value.getKey() : "" + boxNo);
 	}
 
+	@Override
 	public Object getName()
 	{
 		return value.getName() + "#" + boxNo;
 	}
 
+	@Override
 	public String getTableName()
 	{
 		return this.tableName;
 	}
 
+	@Override
 	public KeyNamePair getValue()
 	{
 		return value;
 	}
 
+	@Override
 	public String getText()
 	{
 		return key.getText();
 	}
 
+	@Override
 	public int getSpanX()
 	{
 		return key.getSpanX();
 	}
 
+	@Override
 	public int getSpanY()
 	{
 		return key.getSpanY();
 	}
 
+	@Override
 	public boolean isActive()
 	{
 		return key.isActive();
