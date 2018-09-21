@@ -511,9 +511,10 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// Execute Packing
 
 		// Allocate given HUs to "itemToPack"
-		final HU2PackingItemsAllocator allocator = new HU2PackingItemsAllocator();
-		allocator.setItemToPack(itemToPack);
-		allocator.setPackingContext(packingContext);
+		final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
+				.packingContext(packingContext)
+				.itemToPack(itemToPack)
+				.build();
 		allocator.setFromHUs(availableSourceHUs);
 		allocator.setQtyToPack(qtyToPack);
 		allocator.setTargetHU(targetHU);
@@ -937,9 +938,10 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// Allocate given HUs to "itemToPack"
-		final HU2PackingItemsAllocator allocator = new HU2PackingItemsAllocator();
-		allocator.setItemToPack(itemToPack);
-		allocator.setPackingContext(packingContext);
+		final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
+				.packingContext(packingContext)
+				.itemToPack(itemToPack)
+				.build();
 		allocator.setFromHUs(hus);
 		allocator.allocate();
 

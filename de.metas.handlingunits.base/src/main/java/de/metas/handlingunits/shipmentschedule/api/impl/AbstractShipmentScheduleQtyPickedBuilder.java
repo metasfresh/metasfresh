@@ -23,9 +23,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -33,17 +31,16 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -76,7 +73,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 
 	//
 	// Parameters
-	private List<I_M_HU> _fromHUs;
+	private List<I_M_HU> _fromHUs = ImmutableList.of();
 	private I_M_HU _targetHU;
 
 	//
@@ -87,19 +84,18 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 
 	public AbstractShipmentScheduleQtyPickedBuilder()
 	{
-		super();
 	}
 
 	/**
 	 * @return processing {@link IHUContext}; never returns <code>null</code>
 	 */
-	protected final IHUContext getHUContext()
+	private final IHUContext getHUContext()
 	{
 		Check.assumeNotNull(_huContext, "_huContext not null");
 		return _huContext;
 	}
 
-	protected final void setHUContext(final IHUContext huContext)
+	private final void setHUContext(final IHUContext huContext)
 	{
 		Check.assumeNotNull(huContext, "huContext not null");
 		Check.assumeNull(_huContext, "huContext not already configured");
@@ -124,16 +120,16 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 
 		if (fromHUs == null || fromHUs.isEmpty())
 		{
-			_fromHUs = Collections.emptyList();
+			_fromHUs = ImmutableList.of();
 		}
 		else
 		{
-			_fromHUs = new ArrayList<>(fromHUs);
+			_fromHUs = ImmutableList.copyOf(fromHUs);
 		}
 		return this;
 	}
 
-	protected final List<I_M_HU> getFromHUs()
+	private final List<I_M_HU> getFromHUs()
 	{
 		return _fromHUs;
 	}
@@ -224,7 +220,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		// shall not happen, but just to be sure
 		if (qtyToPack == null || qtyToPack.signum() <= 0)
 		{
-			return  qtyToPack.toZero();
+			return qtyToPack.toZero();
 		}
 
 		final Quantity qtyToPackActual = _qtyToPackRemaining.min(qtyToPack);
@@ -234,7 +230,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	/**
 	 * Asserts this builder is still in configuration stage
 	 */
-	protected final void assertConfigurable()
+	private final void assertConfigurable()
 	{
 		final boolean configurable = _huContext == null; // i.e. processing HUContext was not already set
 		Check.assume(configurable, "Builder is in configurable mode: {}", this);
@@ -259,7 +255,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 *
 	 * @param hus
 	 */
-	public void allocate()
+	public final void allocate()
 	{
 		// Make sure we did not run "allocate" before
 		// i.e. this builder is still configurable
@@ -287,26 +283,17 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		// Allocate
 		final IHUContext huContextInitial = createHUContextInitial();
 		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
-				.run(new IHUContextProcessor()
-				{
-
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
-					{
-						setHUContext(huContext);
-						allocate0();
-						return NULL_RESULT;
-					}
-				});
+				.run(this::allocate0);
 	}
 
-	private final void allocate0()
+	private final void allocate0(final IHUContext huContext)
 	{
+		setHUContext(huContext);
+
 		//
 		// Iterate the HUs which we need to "back" allocate to our shipment schedules
 		// and try allocating them.
-		final List<I_M_HU> hus = getFromHUs();
-		for (final I_M_HU hu : hus)
+		for (final I_M_HU hu : getFromHUs())
 		{
 			// Stop if we transfered everything
 			if (!hasRemainingQtyToPack())
@@ -330,10 +317,8 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 *
 	 * @param hu LU or TU
 	 */
-	private final void allocateHU(final I_M_HU hu)
+	private final void allocateHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
 		//
 		// Case: Loading Unit
 		if (handlingUnitsBL.isLoadingUnit(hu))
@@ -435,23 +420,28 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		huShipmentScheduleBL.addQtyPicked(sched, qtyPicked, vhu);
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
-		final I_M_HU targetHU = getTargetHU();
-		if (targetHU != null)
-		{
-			final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(vhu);
-			final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(targetHU);
-
-			final HULoader loader = HULoader.of(source, destination)
-					.setAllowPartialUnloads(false)
-					.setAllowPartialLoads(true);
-
-			final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyPicked);
-
-			loader.load(request);
-		}
+		transferQtyFromVHUToTargetHU(sched, qtyPicked, vhu);
 
 		// Adjust remaining Qty to be packed
 		subtractFromQtyToPackRemaining(qtyPicked);
+	}
+
+	private void transferQtyFromVHUToTargetHU(final I_M_ShipmentSchedule sched, final Quantity qtyToTransfer, final I_M_HU fromVHU)
+	{
+		final I_M_HU targetHU = getTargetHU();
+		if (targetHU == null)
+		{
+			return;
+		}
+
+		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(fromVHU);
+		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(targetHU);
+		final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyToTransfer);
+
+		HULoader.of(source, destination)
+				.setAllowPartialUnloads(false)
+				.setAllowPartialLoads(true)
+				.load(request);
 	}
 
 	protected final IAllocationRequest createShipmentScheduleAllocationRequest(
@@ -463,9 +453,9 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		final boolean forceQtyAllocation = true;
 
 		final IHUContext huContext = getHUContext();
-		final I_M_Product product = sched.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
-				product,
+				productId,
 				qty,
 				huContext.getDate(), // date
 				sched, // referenceModel,

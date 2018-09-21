@@ -1,7 +1,5 @@
 package de.metas.picking.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Map;
@@ -26,7 +24,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.impl.AbstractShipmentScheduleQtyPickedBuilder;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
@@ -39,8 +36,8 @@ import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingHandlerAdapter;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /**
@@ -73,12 +70,20 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 	//
 	// Parameters
-	private PackingContext _packingContext;
-	private IFreshPackingItem _itemToPack;
-	private boolean _isAllowOverdelivery;
+	private final PackingContext _packingContext;
+	private final IFreshPackingItem _itemToPack;
+	private final boolean _allowOverDelivery;
 
-	public HU2PackingItemsAllocator()
+	@Builder
+	private HU2PackingItemsAllocator(
+			@NonNull final PackingContext packingContext,
+			@NonNull final IFreshPackingItem itemToPack,
+			final boolean allowOverDelivery)
 	{
+		this._packingContext = packingContext;
+		this._itemToPack = itemToPack;
+		this._allowOverDelivery = allowOverDelivery;
+
 	}
 
 	@Override
@@ -91,45 +96,24 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return huContext;
 	}
 
-	public HU2PackingItemsAllocator setPackingContext(final PackingContext packingContext)
-	{
-		this._packingContext = packingContext;
-		return this;
-	}
-
 	private PackingContext getPackingContext()
 	{
-		Check.assumeNotNull(_packingContext, "packingContext set");
 		return _packingContext;
-	}
-
-	public HU2PackingItemsAllocator setItemToPack(final IFreshPackingItem itemToPack)
-	{
-		this._itemToPack = itemToPack;
-		return this;
 	}
 
 	private IFreshPackingItem getItemToPack()
 	{
-		Check.assumeNotNull(_itemToPack, "itemToPack set");
 		return _itemToPack;
-	}
-
-	public HU2PackingItemsAllocator setAllowOverdelivery(final boolean isAllowOverdelivery)
-	{
-		this._isAllowOverdelivery = isAllowOverdelivery;
-		return this;
 	}
 
 	private boolean isAllowOverdelivery()
 	{
-		return _isAllowOverdelivery;
+		return _allowOverDelivery;
 	}
 
 	private ProductId getProductId()
 	{
-		final IFreshPackingItem itemToPack = getItemToPack();
-		return itemToPack.getProductId();
+		return getItemToPack().getProductId();
 	}
 
 	@Override
@@ -196,14 +180,12 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 	private void validateQtyPicked(final I_M_ShipmentSchedule schedule, final Quantity qtyPickCandidate)
 	{
-
 		final BigDecimal currentQtyToDeliver = schedule.getQtyToDeliver();
 
 		if (currentQtyToDeliver.compareTo(qtyPickCandidate.getAsBigDecimal()) < 0)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(schedule), PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed));
+			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
 		}
-
 	}
 
 	@Override
@@ -220,9 +202,6 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			return;
 		}
 
-		final IFreshPackingItem itemToPack = getItemToPack();
-
-		final PackingContext packingContext = getPackingContext();
 		final IPackingHandler itemPackedProcessor = new PackingHandlerAdapter()
 		{
 			@Override
@@ -230,13 +209,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			{
 				// We are accepting only those shipment schedules which have Force Delivery
 				final String deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(shipmentSchedule);
-				final boolean forceDelivery = X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule);
-				if (!forceDelivery)
-				{
-					return false;
-				}
-
-				return true;
+				return X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule);
 			}
 
 			@Override
@@ -245,23 +218,18 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 				transferQtyToTargetHU(item.getQtys());
 			}
 		};
+
+		final PackingContext packingContext = getPackingContext();
+		final IFreshPackingItem itemToPack = getItemToPack();
 		packingService.packItem(packingContext, itemToPack, qtyToPack, itemPackedProcessor);
 	}
 
 	private void transferQtyToTargetHU(final Map<I_M_ShipmentSchedule, Quantity> schedules2qty)
 	{
-		for (final Map.Entry<I_M_ShipmentSchedule, Quantity> e : schedules2qty.entrySet())
-		{
-			final I_M_ShipmentSchedule schedule = e.getKey();
-			final Quantity qty = e.getValue();
-
-			transferQtyToTargetHU(schedule, qty);
-		}
+		schedules2qty.forEach(this::transferQtyToTargetHU);
 	}
 
-	private void transferQtyToTargetHU(
-			final I_M_ShipmentSchedule schedule,
-			final Quantity qty)
+	private void transferQtyToTargetHU(final I_M_ShipmentSchedule schedule, final Quantity qty)
 	{
 		//
 		// Allocation Request

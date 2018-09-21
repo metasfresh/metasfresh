@@ -109,7 +109,7 @@ public class ProcessPickingCandidateCommand
 
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
-		
+
 		this.pickingConfigRepository = pickingConfigRepository;
 
 		this.huIds = ImmutableSet.copyOf(huIds);
@@ -148,13 +148,14 @@ public class ProcessPickingCandidateCommand
 				.packingItemsMap(PackingItemsMap.ofUnpackedItem(itemToPack))
 				.build();
 
-		final boolean isAllowOverdelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
+		final boolean allowOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
 
 		// Allocate given HUs to "itemToPack"
-		new HU2PackingItemsAllocator()
-				.setItemToPack(itemToPack)
-				.setAllowOverdelivery(isAllowOverdelivery)
-				.setPackingContext(packingContext)
+		HU2PackingItemsAllocator.builder()
+				.packingContext(packingContext)
+				.itemToPack(itemToPack)
+				.allowOverDelivery(allowOverDelivery)
+				.build()
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();
 	}

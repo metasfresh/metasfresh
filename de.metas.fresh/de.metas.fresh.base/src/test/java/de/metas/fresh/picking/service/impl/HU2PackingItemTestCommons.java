@@ -68,7 +68,7 @@ public class HU2PackingItemTestCommons
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), helper.uomEach );
+		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), helper.uomEach);
 
 		return huPiItemProduct;
 	}
@@ -150,9 +150,9 @@ public class HU2PackingItemTestCommons
 			@NonNull final PackingContext packingContext,
 			@NonNull final IFreshPackingItem itemToPack)
 	{
-		final HU2PackingItemsAllocator hu2PackingItemsAllocator = new HU2PackingItemsAllocator();
-		hu2PackingItemsAllocator.setItemToPack(itemToPack);
-		hu2PackingItemsAllocator.setPackingContext(packingContext);
-		return hu2PackingItemsAllocator;
+		return HU2PackingItemsAllocator.builder()
+				.packingContext(packingContext)
+				.itemToPack(itemToPack)
+				.build();
 	}
 }
