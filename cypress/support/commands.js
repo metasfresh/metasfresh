@@ -198,10 +198,16 @@ describe('Execute a doc action', function() {
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
     cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
   })
-  });
+});
 
-  describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    Cypress.Commands.add('openAdvancedEdit', () => {
-      cy.get('body').type('{alt}E')
-    })
+describe('Open the advanced edit overlay via ALT+E shortcut', function() {
+  Cypress.Commands.add('openAdvancedEdit', () => {
+    cy.get('body').type('{alt}E')
+  })
+});
+
+describe('Select and activate the tab with a certain name', function() {
+  Cypress.Commands.add('selectTab', (tabName) => {
+    return cy.get(`#tab_${tabName}`).click()
   });
+});
