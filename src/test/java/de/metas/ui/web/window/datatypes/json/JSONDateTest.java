@@ -4,13 +4,13 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.function.Supplier;
 
-import org.adempiere.util.time.FixedTimeSource;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

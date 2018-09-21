@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -25,6 +24,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;

@@ -14,7 +14,6 @@ import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStri
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -25,6 +24,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
 import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

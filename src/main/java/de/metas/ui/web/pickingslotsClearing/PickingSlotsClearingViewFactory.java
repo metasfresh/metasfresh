@@ -5,8 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,6 +32,8 @@ import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

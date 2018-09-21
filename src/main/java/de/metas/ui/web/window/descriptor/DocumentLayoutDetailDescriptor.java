@@ -1,11 +1,10 @@
 package de.metas.ui.web.window.descriptor;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

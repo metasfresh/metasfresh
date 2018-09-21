@@ -3,7 +3,6 @@ package de.metas.ui.web.quickinput;
 import java.util.List;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +37,7 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.util.Check;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;

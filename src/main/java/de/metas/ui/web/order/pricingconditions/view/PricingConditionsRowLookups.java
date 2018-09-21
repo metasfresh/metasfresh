@@ -3,7 +3,6 @@ package de.metas.ui.web.order.pricingconditions.view;
 import java.awt.Color;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_PricingSystem;
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

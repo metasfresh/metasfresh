@@ -1,7 +1,5 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
-import org.adempiere.util.Services;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IADProcessDAO;
@@ -17,6 +15,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

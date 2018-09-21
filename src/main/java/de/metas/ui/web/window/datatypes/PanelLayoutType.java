@@ -2,11 +2,11 @@ package de.metas.ui.web.window.datatypes;
 
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L

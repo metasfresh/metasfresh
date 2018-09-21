@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -41,6 +40,7 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

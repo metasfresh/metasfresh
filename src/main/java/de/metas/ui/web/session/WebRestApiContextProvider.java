@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import org.adempiere.context.ContextProvider;
-import org.adempiere.util.AbstractPropertiesProxy;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.util.Env;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.util.AbstractPropertiesProxy;
 import lombok.NonNull;
 
 /*

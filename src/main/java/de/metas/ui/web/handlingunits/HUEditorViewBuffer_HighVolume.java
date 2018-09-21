@@ -10,8 +10,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import org.adempiere.util.collections.IteratorUtils;
-import org.adempiere.util.collections.PagedIterator.PageFetcher;
 import org.adempiere.util.lang.Mutables;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.compiere.util.CCache;
@@ -32,6 +30,8 @@ import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.collections.PagedIterator.PageFetcher;
 import lombok.NonNull;
 
 /*

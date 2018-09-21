@@ -3,8 +3,8 @@ package de.metas.ui.web.window.descriptor;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Functions;
+import de.metas.util.Check;
+import de.metas.util.Functions;
 
 /*
  * #%L

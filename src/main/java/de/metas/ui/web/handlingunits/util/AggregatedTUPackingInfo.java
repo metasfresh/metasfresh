@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
@@ -19,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.adempiere.util.GuavaCollectors;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
