@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
@@ -178,7 +179,11 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final HuId huId = row.getHuId();
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlotIdInt);
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleIdInt);
-		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.pickHU(PickHURequest.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.huId(huId)
+				.pickingSlotId(pickingSlotId)
+				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
 
 		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), pickingSlotId, shipmentScheduleId);

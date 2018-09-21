@@ -166,7 +166,11 @@ public class PickingHUsRepositoryTests
 		}
 
 		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(huEditorViewRepository, new PickingCandidateRepository());
-		final ListMultimap<PickingSlotId, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.of(M_SHIPMENT_SCHEDULE_ID));
+		final ListMultimap<PickingSlotId, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(
+				PickingCandidatesQuery.builder()
+						.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
+						.onlyNotClosedOrNotRackSystem(true)
+						.build());
 
 		if (expectNoRows)
 		{

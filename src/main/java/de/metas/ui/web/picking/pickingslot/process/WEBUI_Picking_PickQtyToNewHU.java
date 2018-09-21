@@ -26,6 +26,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -166,7 +167,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final ShipmentScheduleId shipmentScheduleId = getView().getCurrentShipmentScheduleId();
 
-		pickingCandidateService.addHUToPickingSlot(HuId.ofRepoId(hu.getM_HU_ID()), pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.pickHU(PickHURequest.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.pickingSlotId(pickingSlotId)
+				.build());
 
 		return hu;
 	}

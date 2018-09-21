@@ -183,6 +183,7 @@ public class PickingSlotViewRepository
 				.shipmentScheduleIds(query.getShipmentScheduleIds())
 				.onlyNotClosedOrNotRackSystem(query.isOnlyNotClosedOrNotRackSystem())
 				.pickingSlotBarcode(query.getPickingSlotBarcode())
+				.includeShippedHUs(false)
 				.build();
 	}
 

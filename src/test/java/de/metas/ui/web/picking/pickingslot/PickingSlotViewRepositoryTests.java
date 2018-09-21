@@ -83,10 +83,12 @@ public class PickingSlotViewRepositoryTests
 			pickingSlot.setIsPickingRackSystem(true);
 		});
 
-
 		// @formatter:off return an empty list
 		new Expectations() {{
-			pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.of(shipmentScheduleId));
+			pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.onlyNotClosedOrNotRackSystem(true)
+					.build());
 			result = ImmutableListMultimap.of();
 		}};
 		// @formatter:on
@@ -110,7 +112,6 @@ public class PickingSlotViewRepositoryTests
 
 		final boolean pickingSlotRowProcessed = false;
 
-
 		// set up a picked TU with a CU to be returned by the pickingHUsRepo.
 		{
 			final ListMultimap<PickingSlotId, PickedHUEditorRow> husIndexedByPickingSlotId = ImmutableListMultimap.of(
@@ -132,7 +133,10 @@ public class PickingSlotViewRepositoryTests
 
 			// @formatter:off return an empty list
 			new Expectations() {{ 
-				pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.of(shipmentScheduleId));
+				pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(PickingCandidatesQuery.builder()
+						.shipmentScheduleId(shipmentScheduleId)
+						.onlyNotClosedOrNotRackSystem(true)
+						.build());
 				result = husIndexedByPickingSlotId; 
 			}};
 			// @formatter:on
