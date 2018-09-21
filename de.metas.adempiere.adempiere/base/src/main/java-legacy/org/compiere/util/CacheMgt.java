@@ -76,8 +76,6 @@ public final class CacheMgt
 	 */
 	private CacheMgt()
 	{
-		super();
-
 		JMXRegistry.get().registerJMX(new JMXCacheMgt(), OnJMXAlreadyExistsPolicy.Replace);
 	}
 

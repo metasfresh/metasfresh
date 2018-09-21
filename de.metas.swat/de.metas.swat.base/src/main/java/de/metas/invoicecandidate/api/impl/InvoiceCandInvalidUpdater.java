@@ -107,7 +107,7 @@ import lombok.NonNull;
 			// Remove from "invoice candidates to recompute" all those which were tagged with our tag
 			// because now we consider them valid
 			// NOTE: usually, this method shall delete 0 records because the recompute records are deleted after each chunk is processed.
-			icTagger.deleteAllTagged();
+			icTagger.deleteAllTaggedAndInvalidateCache();
 		}
 		catch (final Exception updateException)
 		{
@@ -213,7 +213,7 @@ import lombok.NonNull;
 						@Override
 						public void completeChunk()
 						{
-							icTagger.deleteTagged(chunkInvoiceCandidateIds);
+							icTagger.deleteTaggedAndInvalidateCache(chunkInvoiceCandidateIds);
 							chunkInvoiceCandidateIds.clear();
 						}
 					})

@@ -99,7 +99,7 @@ public final class CacheInvalidateRequest
 
 	@JsonProperty("id")
 	private final String id;
-	
+
 	@JsonProperty("rootTableName")
 	private final String rootTableName;
 	@JsonProperty("rootRecordId")
@@ -128,6 +128,22 @@ public final class CacheInvalidateRequest
 	public boolean isAll()
 	{
 		return this == ALL;
+	}
+
+	public boolean isAllRecords()
+	{
+		if (!Check.isEmpty(childTableName))
+		{
+			return childRecordId == CacheMgt.RECORD_ID_ALL;
+		}
+		else if (!Check.isEmpty(rootTableName))
+		{
+			return rootRecordId == CacheMgt.RECORD_ID_ALL;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public TableRecordReference getRootRecordOrNull()

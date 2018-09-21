@@ -94,5 +94,5 @@ public interface IModelCacheService extends ISingletonService
 	 */
 	void addToCache(PO po);
 
-	void invalidate(String tableName, int recordId, String trxName);
+	void invalidate(CacheInvalidateMultiRequest request);
 }

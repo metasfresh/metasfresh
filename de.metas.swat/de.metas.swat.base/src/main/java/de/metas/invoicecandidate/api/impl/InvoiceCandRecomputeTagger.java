@@ -90,20 +90,20 @@ import de.metas.lock.api.ILock;
 	}
 	
 	@Override
-	public void deleteAllTagged()
+	public void deleteAllTaggedAndInvalidateCache()
 	{
 		final Collection<Integer> onlyInvoiceCandidateIds = null; // i.e. ALL
-		invoiceCandDAO.deleteRecomputeMarkers(this, onlyInvoiceCandidateIds);
+		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, onlyInvoiceCandidateIds);
 	}
 	
 	@Override
-	public void deleteTagged(final Collection<Integer> invoiceCandidateIds)
+	public void deleteTaggedAndInvalidateCache(final Collection<Integer> invoiceCandidateIds)
 	{
 		if (Check.isEmpty(invoiceCandidateIds))
 		{
 			return;
 		}
-		invoiceCandDAO.deleteRecomputeMarkers(this, invoiceCandidateIds);
+		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, invoiceCandidateIds);
 	}
 
 	@Override
