@@ -70,8 +70,11 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4563](https://github.com/metasfresh/metasfresh/issues/4563) sometimes missing purchase candidates aren't created
+    * Fixes a cornercase of missing Purchase Candidates.
   * [#4579](https://github.com/metasfresh/metasfresh/issues/4579) msv3 - local purchase order is not created if remote order confirmation lacks deliveryDate
+    * Fix for the Pharma MSV3 Purchase order creation.
   * [#4591](https://github.com/metasfresh/metasfresh/issues/4591) Printing problem on multi-org-system
+    * Configuration Fix for Printing on Multi Org Systems.
   * [#4592](https://github.com/metasfresh/metasfresh/issues/4592) Number Format Exception
     * Fixes a Number Fomat Exception in Webcam Foto Upload of Material Receipt Candidates.
   * [#4602](https://github.com/metasfresh/metasfresh/issues/4602) Cannot complete flatrate term conditions / transition in swing
@@ -80,10 +83,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1046](https://github.com/metasfresh/metasfresh-webui-api/issues/1046) Sometimes there are no available DocActions for Sales Orders
+    * Adjusting the retrieval of possible Document Actions, avoiding cornercases that these were sometimes not shown in WebUI Documents.
   * [#1047](https://github.com/metasfresh/metasfresh-webui-api/issues/1047) Allow purchase disposition from sales order only for drafted sales orders
+    * Restricting the usage of purchase disposition from Sales Orders, now only for drafted sales Orders.
 
 * metasfresh-webui-frontend
   * [#1944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1944) Filter for attributes in picking terminal is not set on Y altough should be
+    * Fix for the Handling Unit Panel default filtering in Picking Terminal.
   
 # metasfresh 5.74
 ## Features
