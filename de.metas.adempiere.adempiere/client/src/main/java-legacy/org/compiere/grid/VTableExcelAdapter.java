@@ -66,7 +66,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-
+import de.metas.util.Services;
 import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
@@ -75,7 +75,6 @@ import javax.swing.KeyStroke;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
 import org.compiere.model.Lookup;

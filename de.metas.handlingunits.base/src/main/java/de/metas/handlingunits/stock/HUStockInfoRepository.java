@@ -7,7 +7,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.springframework.stereotype.Repository;
 
@@ -20,6 +19,7 @@ import de.metas.handlingunits.stock.HUStockInfoQuery.HUStockInfoSingleQuery.Attr
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -25,10 +25,11 @@ package org.adempiere.acct.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Business logic used to manipulate accounts (i.e. {@link I_C_ValidCombination}s)

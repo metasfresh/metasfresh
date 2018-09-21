@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
@@ -56,6 +55,7 @@ import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Accounting module activator

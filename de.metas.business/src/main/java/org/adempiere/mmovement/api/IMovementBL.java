@@ -25,12 +25,12 @@ package org.adempiere.mmovement.api;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface IMovementBL extends ISingletonService
 {

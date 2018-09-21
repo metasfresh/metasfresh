@@ -35,13 +35,14 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.CCachedRowSet;
 import org.compiere.util.CStatement;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */abstract class AbstractCStatementProxy<ST extends Statement> implements CStatement
 {

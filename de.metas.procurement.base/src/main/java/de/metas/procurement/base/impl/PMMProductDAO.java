@@ -9,7 +9,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -17,6 +16,7 @@ import org.compiere.util.Env;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.Services;
 
 /*
  * #%L

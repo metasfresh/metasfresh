@@ -34,10 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Issue;
 
@@ -50,6 +47,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class C_Flatrate_Term_Extend_And_Notify_User

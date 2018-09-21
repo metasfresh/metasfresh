@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Attribute;
@@ -59,6 +58,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
 
 public class AttributesPropagationTest extends AbstractHUTest
 {

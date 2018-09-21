@@ -27,13 +27,14 @@ import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 public class AttributeDAOTest
 {

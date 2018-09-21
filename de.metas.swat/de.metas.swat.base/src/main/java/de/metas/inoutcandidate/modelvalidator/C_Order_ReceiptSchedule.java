@@ -30,8 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -44,6 +42,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Validator(I_C_Order.class)
 public class C_Order_ReceiptSchedule

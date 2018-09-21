@@ -1,7 +1,8 @@
 package de.metas.request.api;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_R_RequestType;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -26,12 +26,12 @@ package de.metas.fresh.api.invoicecandidate.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.util.Services;
 
 public class FreshAggregationTestHelper
 {

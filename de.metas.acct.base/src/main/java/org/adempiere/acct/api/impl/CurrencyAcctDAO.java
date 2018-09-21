@@ -5,11 +5,11 @@ import java.util.Properties;
 import org.adempiere.acct.api.ICurrencyAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_Currency_Acct;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.util.Services;
 
 /*
  * #%L

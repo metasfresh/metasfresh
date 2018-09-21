@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
@@ -23,6 +22,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.util.Services;
 
 /*
  * #%L

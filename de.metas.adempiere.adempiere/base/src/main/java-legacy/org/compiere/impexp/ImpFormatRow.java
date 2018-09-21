@@ -25,10 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Callout;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ImpFormat_Row;

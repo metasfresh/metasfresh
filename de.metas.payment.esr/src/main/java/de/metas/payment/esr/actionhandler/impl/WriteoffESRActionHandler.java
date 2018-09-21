@@ -30,14 +30,14 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Write_Off_Amount}. This handler writes of the open amount of the line's invoice. For lines that don't have an

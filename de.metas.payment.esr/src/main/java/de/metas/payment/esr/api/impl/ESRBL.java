@@ -2,8 +2,6 @@ package de.metas.payment.esr.api.impl;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 /*
@@ -33,6 +31,8 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.api.IESRBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ESRBL implements IESRBL
 {

@@ -27,8 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.Query;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -38,6 +36,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.I_M_ProductGroup_Product;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class AggregationDAO implements IAggregationDAO
 {

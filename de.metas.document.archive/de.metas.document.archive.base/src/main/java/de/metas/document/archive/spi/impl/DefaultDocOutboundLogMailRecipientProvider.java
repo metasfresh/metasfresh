@@ -6,9 +6,6 @@ import java.util.Optional;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
@@ -20,6 +17,9 @@ import de.metas.document.archive.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailBL.MailboxNotFoundException;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.email.Mailbox;
 import lombok.NonNull;
 

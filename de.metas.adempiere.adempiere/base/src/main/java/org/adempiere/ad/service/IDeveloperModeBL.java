@@ -24,7 +24,7 @@ package org.adempiere.ad.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 /**
  * Developer Model BL

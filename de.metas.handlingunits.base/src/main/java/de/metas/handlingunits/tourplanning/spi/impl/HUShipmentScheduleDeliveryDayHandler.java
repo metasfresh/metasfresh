@@ -23,7 +23,6 @@ package de.metas.handlingunits.tourplanning.spi.impl;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay;
@@ -34,6 +33,7 @@ import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import de.metas.tourplanning.spi.DeliveryDayHandlerAdapter;
+import de.metas.util.Services;
 
 /**
  * Handles specific case of HU fields for Shipment Schedules that needs to be allocated to delivery days.

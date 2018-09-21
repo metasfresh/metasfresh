@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -36,7 +37,6 @@ import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.xml.XMLLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 public class MigrationLoader

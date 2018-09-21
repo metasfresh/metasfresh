@@ -29,13 +29,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 
 import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 public class OLCandSetOverrideValues extends JavaProcess
 {

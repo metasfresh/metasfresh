@@ -27,9 +27,10 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
-import org.adempiere.util.Check;
+
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 
 public final class CompositeCandidateProcessor implements IShipmentSchedulesAfterFirstPassUpdater

@@ -34,7 +34,6 @@ import javax.swing.filechooser.FileFilter;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.util.Env;
@@ -45,6 +44,7 @@ import de.metas.adempiere.form.AbstractClientUIInstance;
 import de.metas.adempiere.form.IAskDialogBuilder;
 import de.metas.adempiere.form.IClientUIAsyncInvoker;
 import de.metas.adempiere.form.IClientUIInvoker;
+import de.metas.util.Check;
 
 class SwingClientUIInstance extends AbstractClientUIInstance
 {

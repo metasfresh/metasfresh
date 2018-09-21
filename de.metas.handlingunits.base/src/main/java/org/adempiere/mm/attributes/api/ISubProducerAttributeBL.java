@@ -25,7 +25,7 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface ISubProducerAttributeBL extends ISingletonService
 {

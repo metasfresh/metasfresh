@@ -25,12 +25,11 @@ package de.metas.materialtracking.ch.lagerkonf;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_AdditionalFee;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Month_Adj;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_ProcessingFee;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
+import de.metas.util.ISingletonService;
 
 public interface IQualityInspLagerKonfDAO extends ISingletonService
 {

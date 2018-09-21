@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -37,6 +36,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.util.ISingletonService;
 
 public interface IDunningBL extends ISingletonService
 {

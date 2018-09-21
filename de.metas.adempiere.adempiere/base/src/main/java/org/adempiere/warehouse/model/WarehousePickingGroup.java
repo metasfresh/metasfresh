@@ -1,10 +1,10 @@
 package org.adempiere.warehouse.model;
 
-import org.adempiere.util.Check;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

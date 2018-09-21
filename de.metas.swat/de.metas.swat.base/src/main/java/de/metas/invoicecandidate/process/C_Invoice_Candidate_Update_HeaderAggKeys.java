@@ -31,7 +31,6 @@ import java.util.Iterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.ModelValidationEngine;
@@ -41,6 +40,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /**
  * @author ts

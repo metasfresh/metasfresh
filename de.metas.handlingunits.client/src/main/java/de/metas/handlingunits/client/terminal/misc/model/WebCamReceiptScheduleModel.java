@@ -33,8 +33,6 @@ import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import com.github.sarxos.webcam.Webcam;
@@ -43,6 +41,8 @@ import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *

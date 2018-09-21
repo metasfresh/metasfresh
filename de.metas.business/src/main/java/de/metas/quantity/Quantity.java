@@ -30,11 +30,11 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

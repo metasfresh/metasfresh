@@ -26,11 +26,12 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_NonBusinessDay;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
+
+import de.metas.util.ISingletonService;
 
 public interface ICalendarDAO extends ISingletonService
 {

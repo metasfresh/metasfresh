@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 
 /**

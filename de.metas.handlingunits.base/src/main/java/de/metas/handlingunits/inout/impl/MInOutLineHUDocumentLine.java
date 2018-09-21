@@ -1,8 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Transaction;
@@ -12,6 +10,8 @@ import de.metas.handlingunits.document.impl.AbstractHUDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.impl.MTransactionProductStorage;
 import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /* package */class MInOutLineHUDocumentLine extends AbstractHUDocumentLine
 {

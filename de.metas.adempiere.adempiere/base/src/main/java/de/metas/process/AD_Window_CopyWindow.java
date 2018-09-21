@@ -1,7 +1,8 @@
 package de.metas.process;
 
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 /*
  * #%L

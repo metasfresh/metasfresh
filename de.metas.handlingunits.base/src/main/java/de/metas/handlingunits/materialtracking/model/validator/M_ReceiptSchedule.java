@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
@@ -38,6 +37,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Services;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule

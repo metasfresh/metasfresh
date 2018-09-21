@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -32,6 +31,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

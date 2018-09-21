@@ -27,10 +27,10 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.ad.security.ISecurityRule;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Check;
 
 final class CompositeSecurityRule implements ISecurityRule
 {

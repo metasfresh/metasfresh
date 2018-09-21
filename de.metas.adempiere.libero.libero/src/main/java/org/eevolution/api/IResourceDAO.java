@@ -26,8 +26,9 @@ package org.eevolution.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_S_Resource;
+
+import de.metas.util.ISingletonService;
 
 public interface IResourceDAO extends ISingletonService
 {

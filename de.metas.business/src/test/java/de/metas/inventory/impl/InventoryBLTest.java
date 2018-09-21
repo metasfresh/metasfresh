@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inventory.IInventoryBL;
+import de.metas.util.Services;
 
 /*
  * #%L

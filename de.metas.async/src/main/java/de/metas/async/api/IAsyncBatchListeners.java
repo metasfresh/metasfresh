@@ -3,11 +3,10 @@
  */
 package de.metas.async.api;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.letters.spi.INotifyAsyncBatch;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

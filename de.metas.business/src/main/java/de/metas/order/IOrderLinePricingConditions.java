@@ -1,9 +1,8 @@
 package de.metas.order;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

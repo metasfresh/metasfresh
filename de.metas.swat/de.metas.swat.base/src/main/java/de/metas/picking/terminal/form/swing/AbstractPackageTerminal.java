@@ -33,7 +33,6 @@ import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.util.Check;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 
@@ -43,6 +42,7 @@ import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.PickingOKPanel;
+import de.metas.util.Check;
 
 /**
  * Packing window (second window)

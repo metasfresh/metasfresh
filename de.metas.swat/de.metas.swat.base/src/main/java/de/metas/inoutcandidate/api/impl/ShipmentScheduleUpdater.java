@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -39,6 +37,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {

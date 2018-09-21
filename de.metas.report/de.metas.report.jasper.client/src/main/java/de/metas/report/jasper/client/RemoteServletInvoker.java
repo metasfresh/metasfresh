@@ -32,10 +32,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
+
 import com.google.common.io.Closeables;
 
 import de.metas.adempiere.report.jasper.IJasperServer;

@@ -25,7 +25,7 @@ package org.adempiere.util.proxy;
 
 import java.lang.annotation.Annotation;
 
-import org.adempiere.util.IService;
+import de.metas.util.IService;
 
 /**
  * Be sure to know about the current implementations' restrictions.

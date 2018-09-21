@@ -25,9 +25,10 @@ package org.adempiere.pos;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_POSKey;
 import org.compiere.model.I_C_POSKeyLayout;
+
+import de.metas.util.ISingletonService;
 
 public interface IPOSKeyKayoutDAO extends ISingletonService
 {

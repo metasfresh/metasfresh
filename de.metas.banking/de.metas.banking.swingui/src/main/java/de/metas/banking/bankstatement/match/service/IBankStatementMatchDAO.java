@@ -2,7 +2,6 @@ package de.metas.banking.bankstatement.match.service;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.bankstatement.match.model.BankAccount;
@@ -10,6 +9,7 @@ import de.metas.banking.bankstatement.match.model.BankStatement;
 import de.metas.banking.bankstatement.match.model.IBankStatementLine;
 import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

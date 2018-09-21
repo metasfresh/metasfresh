@@ -32,8 +32,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.api.IPPOrderWorkflowDAO;
@@ -47,6 +45,8 @@ import org.eevolution.model.I_PP_Order_Workflow;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class PPOrderWorkflowDAO implements IPPOrderWorkflowDAO
 {

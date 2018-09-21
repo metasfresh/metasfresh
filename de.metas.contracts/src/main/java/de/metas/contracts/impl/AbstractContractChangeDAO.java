@@ -27,7 +27,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.flatrate.exceptions.SubscriptionChangeException;
@@ -35,6 +34,7 @@ import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractContractChangeDAO implements IContractChangeDAO

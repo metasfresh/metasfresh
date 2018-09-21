@@ -27,13 +27,13 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Services;
 
 
 public class JavaClassDAOTests extends JavaClassTestBase

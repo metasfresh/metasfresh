@@ -48,7 +48,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column_Access;
@@ -86,6 +85,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO

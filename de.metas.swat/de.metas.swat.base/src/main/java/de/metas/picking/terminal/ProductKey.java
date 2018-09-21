@@ -34,7 +34,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -48,6 +47,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.util.Check;
 
 /**
  * @author cg

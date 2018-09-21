@@ -28,12 +28,12 @@ package de.metas.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

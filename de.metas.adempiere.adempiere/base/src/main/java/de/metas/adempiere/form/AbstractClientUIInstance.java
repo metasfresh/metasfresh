@@ -1,7 +1,5 @@
 package de.metas.adempiere.form;
 
-import org.adempiere.util.Check;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,6 +26,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Implements some common methods which are not directly related to a particular user interface

@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MAsset;
 import org.compiere.model.MAssetDelivery;
@@ -36,6 +35,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Deliver Assets Electronically

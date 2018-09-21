@@ -32,10 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ConsoleLoggable;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
@@ -65,6 +61,10 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.util.Check;
+import de.metas.util.ConsoleLoggable;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
 
 /**
  * Standard test:

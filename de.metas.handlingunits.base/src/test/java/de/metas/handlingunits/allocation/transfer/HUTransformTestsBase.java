@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.nullValue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
@@ -35,6 +34,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 /*
  * #%L

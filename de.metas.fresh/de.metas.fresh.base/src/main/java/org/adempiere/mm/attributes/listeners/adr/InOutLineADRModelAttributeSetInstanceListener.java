@@ -30,8 +30,9 @@ import org.adempiere.mm.attributes.api.IADRAttributeBL;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.BPartnerAwareAttributeUpdater;
 import org.adempiere.mm.attributes.api.impl.InOutLineBPartnerAware;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
+
+import de.metas.util.Services;
 
 public class InOutLineADRModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {

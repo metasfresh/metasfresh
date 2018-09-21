@@ -30,11 +30,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

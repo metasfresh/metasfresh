@@ -5,8 +5,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
@@ -18,6 +16,8 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.i18n.Language;
 import de.metas.print.IPrintService;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

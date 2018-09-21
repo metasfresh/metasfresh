@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.test.ErrorMessage;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.util.Services;
 
 public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {

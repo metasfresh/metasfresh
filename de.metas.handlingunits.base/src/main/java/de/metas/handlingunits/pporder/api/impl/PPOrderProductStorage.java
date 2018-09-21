@@ -26,7 +26,6 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
@@ -34,6 +33,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.quantity.Capacity;
+import de.metas.util.Services;
 
 /**
  * Product storage for {@link I_PP_Order} header (i.e. finished goods).

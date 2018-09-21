@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.StringElement;
@@ -22,6 +20,8 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

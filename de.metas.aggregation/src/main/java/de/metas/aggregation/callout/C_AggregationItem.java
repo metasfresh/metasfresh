@@ -26,13 +26,13 @@ package de.metas.aggregation.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
 import de.metas.aggregation.model.I_C_Aggregation_Attribute;
+import de.metas.util.Services;
 
 @Callout(I_C_AggregationItem.class)
 public class C_AggregationItem

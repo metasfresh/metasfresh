@@ -2,9 +2,8 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
+import de.metas.util.Check;
 
 /*
  * #%L

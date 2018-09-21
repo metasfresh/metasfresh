@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import com.google.common.base.Stopwatch;
@@ -17,6 +16,7 @@ import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.util.Services;
 
 /*
  * #%L

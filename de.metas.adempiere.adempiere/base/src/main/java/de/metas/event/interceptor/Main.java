@@ -2,10 +2,10 @@ package de.metas.event.interceptor;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.util.Services;
 
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
+import de.metas.util.Services;
 
 /*
  * #%L

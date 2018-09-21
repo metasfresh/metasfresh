@@ -27,8 +27,6 @@ import java.util.Objects;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -54,6 +52,8 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 
 public class AbstractTestSupport

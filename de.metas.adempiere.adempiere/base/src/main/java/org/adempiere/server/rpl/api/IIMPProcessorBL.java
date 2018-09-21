@@ -27,14 +27,15 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.server.rpl.IImportProcessor;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_IMP_ProcessorLog;
 import org.compiere.model.I_IMP_ProcessorParameter;
+
+import de.metas.util.ILoggable;
+import de.metas.util.ISingletonService;
 
 public interface IIMPProcessorBL extends ISingletonService
 {

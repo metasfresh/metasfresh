@@ -1,8 +1,9 @@
 package org.adempiere.mm.attributes.api;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

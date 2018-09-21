@@ -2,10 +2,10 @@ package de.metas.payment.esr.process;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.process.JavaProcess;
+import de.metas.util.Check;
 
 /**
  * 

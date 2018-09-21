@@ -37,8 +37,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.apps.form.FormFrame;
@@ -92,6 +90,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

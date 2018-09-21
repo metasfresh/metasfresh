@@ -26,10 +26,10 @@ package de.metas.async.processor;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.ISingletonService;
 
 public interface IWorkpackageProcessorFactory extends ISingletonService
 {

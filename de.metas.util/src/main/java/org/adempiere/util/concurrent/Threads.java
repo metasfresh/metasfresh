@@ -25,7 +25,7 @@ package org.adempiere.util.concurrent;
 
 import java.util.concurrent.TimeoutException;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Misc {@link Thread} helpers

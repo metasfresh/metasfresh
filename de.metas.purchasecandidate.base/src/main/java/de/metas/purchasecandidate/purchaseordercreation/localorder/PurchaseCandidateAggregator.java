@@ -3,9 +3,8 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.collections.MapReduceAggregator;
-
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 
 /*

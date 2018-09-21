@@ -6,12 +6,12 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.rfq.model.I_C_RfQLine;
+import de.metas.util.Services;
 
 /*
  * #%L

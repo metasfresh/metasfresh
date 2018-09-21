@@ -29,13 +29,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /* package */class MRPSegmentsCollector
 {

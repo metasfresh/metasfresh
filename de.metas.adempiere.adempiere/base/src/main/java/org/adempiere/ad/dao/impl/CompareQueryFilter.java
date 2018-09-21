@@ -33,11 +33,11 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.Check;
 import org.compiere.model.MQuery;
 import org.compiere.util.Util;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter

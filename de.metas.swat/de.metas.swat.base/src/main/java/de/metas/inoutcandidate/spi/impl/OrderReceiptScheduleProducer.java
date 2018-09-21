@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -36,6 +34,8 @@ import de.metas.inoutcandidate.spi.AbstractReceiptScheduleProducer;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates receipt schedules for given order by delegating all work to {@link OrderLineReceiptScheduleProducer}.

@@ -25,7 +25,7 @@ package de.metas.adempiere.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface ITableColumnPathBL extends ISingletonService
 {

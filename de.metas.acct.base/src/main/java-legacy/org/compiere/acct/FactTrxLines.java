@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

@@ -6,8 +6,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
@@ -24,6 +22,8 @@ import de.metas.notification.NotificationGroupName;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

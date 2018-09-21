@@ -15,9 +15,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.UserId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.email.EmailValidator;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
@@ -37,6 +34,9 @@ import de.metas.email.Mailbox;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**

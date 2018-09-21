@@ -32,13 +32,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

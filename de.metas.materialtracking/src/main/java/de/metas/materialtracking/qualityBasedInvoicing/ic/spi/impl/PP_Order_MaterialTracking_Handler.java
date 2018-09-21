@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
@@ -39,6 +38,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.util.Check;
 
 /**
  * Creates invoice candidates for {@link I_PP_Order}s that reference a {@link I_M_Material_Tracking}.<br>

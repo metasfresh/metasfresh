@@ -6,11 +6,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.user.User;
 import org.adempiere.user.UserId;
-import org.adempiere.util.Check;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.letter.BoilerPlateId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

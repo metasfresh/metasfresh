@@ -30,7 +30,6 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import de.metas.data.export.api.IExportDataDestination;
@@ -38,6 +37,7 @@ import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterMonitor;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Abstract implementation of {@link IExporter} which take care about statistic information and status.

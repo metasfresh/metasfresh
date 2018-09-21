@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 public class ComparatorChain<T> implements Comparator<T>
 {

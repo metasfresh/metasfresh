@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -15,6 +14,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
+import de.metas.util.Services;
 
 public class FlatrateTermInvoiceCandidateListener extends InvoiceCandidateListenerAdapter
 {

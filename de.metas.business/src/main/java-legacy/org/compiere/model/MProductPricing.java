@@ -19,7 +19,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.lang.Percent;
@@ -31,6 +30,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Product Price Calculations

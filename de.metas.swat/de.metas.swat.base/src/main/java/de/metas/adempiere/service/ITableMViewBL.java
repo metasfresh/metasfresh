@@ -26,11 +26,11 @@ package de.metas.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
 
 import de.metas.adempiere.engine.MViewMetadata;
 import de.metas.adempiere.model.I_AD_Table_MView;
+import de.metas.util.ISingletonService;
 
 public interface ITableMViewBL extends ISingletonService
 {

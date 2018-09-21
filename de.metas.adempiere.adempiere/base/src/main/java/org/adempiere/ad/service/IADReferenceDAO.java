@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Value;
 

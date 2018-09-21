@@ -26,11 +26,12 @@ package de.metas.allocation.api;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 
 import com.google.common.base.Supplier;
+
+import de.metas.util.Check;
 
 /**
  * Default allocation line build implementation. Other modules/project can subclass this if they need to build extended allocation lines.

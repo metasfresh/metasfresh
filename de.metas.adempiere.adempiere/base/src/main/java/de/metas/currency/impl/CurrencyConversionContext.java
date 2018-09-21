@@ -25,12 +25,12 @@ package de.metas.currency.impl;
 import java.text.DateFormat;
 import java.util.Date;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.util.Check;
 
 public final class CurrencyConversionContext implements ICurrencyConversionContext
 {

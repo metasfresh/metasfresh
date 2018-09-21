@@ -3,8 +3,7 @@ package de.metas.calendar;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

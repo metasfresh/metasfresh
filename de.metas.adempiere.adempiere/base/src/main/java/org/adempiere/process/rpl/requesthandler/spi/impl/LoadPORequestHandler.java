@@ -26,6 +26,7 @@ package org.adempiere.process.rpl.requesthandler.spi.impl;
 import java.util.Properties;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
@@ -33,7 +34,6 @@ import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerResult;
 import org.adempiere.process.rpl.requesthandler.spi.ReplRequestHandlerAdapter;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
-import org.adempiere.util.Services;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;

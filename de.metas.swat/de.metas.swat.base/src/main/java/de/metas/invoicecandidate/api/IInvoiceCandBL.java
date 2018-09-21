@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
@@ -44,6 +42,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.util.ILoggable;
+import de.metas.util.ISingletonService;
 
 /**
  *
@@ -102,7 +102,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param consolidateApprovedICs <b>ignored, unless <code>onlyApprovedForInvoicing</code> is true </b>. If true then the system will rekey the ICs in question according to the default
 	 *            C_Aggregation, assuming that is is the most basic one with the smallest possible number of items and thus the under under which the most ICs have an equal HeaderAggregationKey.
 	 * @param ignoreInvoiceSchedule
-	 * @param loggable <b>may not be null</b>. Use {@link org.adempiere.util.NullLoggable} if you don't have any other loggable.
+	 * @param loggable <b>may not be null</b>. Use {@link de.metas.util.NullLoggable} if you don't have any other loggable.
 	 * @param trxName
 	 *
 	 * @return the number of enqueued workpackages
@@ -118,7 +118,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ic
 	 * @param ignoreInvoiceSchedule
-	 * @param loggable <b>may not be null</b>. Use {@link org.adempiere.util.NullLoggable} if you don't have any other loggable.
+	 * @param loggable <b>may not be null</b>. Use {@link de.metas.util.NullLoggable} if you don't have any other loggable.
 	 * @return true if the invoice candidate is NOT eligible and shall be skipped.
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, ILoggable loggable);

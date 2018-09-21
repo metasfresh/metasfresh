@@ -31,14 +31,15 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.TypedAccessor;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
+import de.metas.util.TypedAccessor;
 
 public class PlainCalendarDAO extends AbstractCalendarDAO
 {

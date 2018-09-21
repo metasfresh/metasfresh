@@ -2,11 +2,11 @@ package org.compiere.grid.ed;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.AbstractContextMenuAction;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.util.Services;
 
 public class DeliveryToAddressRefresh extends AbstractContextMenuAction
 {

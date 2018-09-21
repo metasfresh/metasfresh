@@ -34,10 +34,7 @@ import org.adempiere.misc.service.IPOService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
@@ -64,6 +61,9 @@ import de.metas.invoice.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Shipment Model

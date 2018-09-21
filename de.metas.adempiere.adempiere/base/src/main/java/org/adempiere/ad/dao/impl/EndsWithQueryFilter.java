@@ -33,7 +33,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * @author cg

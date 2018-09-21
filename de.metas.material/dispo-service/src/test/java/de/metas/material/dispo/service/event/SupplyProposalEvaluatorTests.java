@@ -10,7 +10,6 @@ import java.util.Date;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,6 +35,7 @@ import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandl
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.time.SystemTime;
 import mockit.Mocked;
 
 /*

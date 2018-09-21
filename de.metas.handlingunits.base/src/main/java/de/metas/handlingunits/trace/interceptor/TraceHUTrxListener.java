@@ -10,7 +10,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
@@ -22,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

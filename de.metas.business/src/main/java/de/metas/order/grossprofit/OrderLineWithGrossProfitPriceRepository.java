@@ -3,7 +3,6 @@ package de.metas.order.grossprofit;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -14,6 +13,7 @@ import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

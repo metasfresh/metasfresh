@@ -26,9 +26,10 @@ package org.adempiere.uom.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
+
+import de.metas.util.ISingletonService;
 
 public interface IUOMConversionDAO extends ISingletonService
 {

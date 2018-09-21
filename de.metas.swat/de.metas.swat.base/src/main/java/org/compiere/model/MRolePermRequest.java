@@ -32,10 +32,10 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.document.DocTypeId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

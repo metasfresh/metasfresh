@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import de.metas.util.Check;
 
 /*
  * #%L

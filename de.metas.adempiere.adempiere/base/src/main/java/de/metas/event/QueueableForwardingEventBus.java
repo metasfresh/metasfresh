@@ -31,8 +31,10 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+
+import de.metas.util.Services;
+
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 
 import lombok.NonNull;
 

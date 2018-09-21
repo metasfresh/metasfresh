@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 public class ConvertMap
 {

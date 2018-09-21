@@ -34,7 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Constants;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
@@ -49,6 +48,8 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  * Post Invoice Documents.

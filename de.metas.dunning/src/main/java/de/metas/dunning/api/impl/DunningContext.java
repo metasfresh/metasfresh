@@ -27,12 +27,12 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.util.Check;
 import org.compiere.util.TimeUtil;
 
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.util.Check;
 
 /**
  * Dunning context

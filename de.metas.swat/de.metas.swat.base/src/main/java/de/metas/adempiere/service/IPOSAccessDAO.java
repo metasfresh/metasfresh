@@ -28,7 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.model.I_C_POS_Profile;
 import org.adempiere.model.I_C_POS_Profile_Warehouse;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Service that contains methods regarding POS access to data.

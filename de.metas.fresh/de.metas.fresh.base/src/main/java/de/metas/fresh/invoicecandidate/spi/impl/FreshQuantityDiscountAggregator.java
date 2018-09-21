@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 
@@ -47,6 +46,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.util.Services;
 
 /**
  * Quanity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}

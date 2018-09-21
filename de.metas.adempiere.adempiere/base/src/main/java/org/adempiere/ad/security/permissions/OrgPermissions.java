@@ -35,14 +35,15 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.security.permissions.PermissionsBuilder.CollisionPolicy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.NullPredicate;
 import org.compiere.model.MTree_Base;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
+import de.metas.util.collections.NullPredicate;
 
 @Immutable
 public class OrgPermissions extends AbstractPermissions<OrgPermission>

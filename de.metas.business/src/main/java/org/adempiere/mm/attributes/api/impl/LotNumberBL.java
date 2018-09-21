@@ -6,11 +6,11 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

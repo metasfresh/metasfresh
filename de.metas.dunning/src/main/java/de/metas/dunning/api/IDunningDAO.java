@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -35,6 +34,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.ISingletonService;
 
 public interface IDunningDAO extends ISingletonService
 {

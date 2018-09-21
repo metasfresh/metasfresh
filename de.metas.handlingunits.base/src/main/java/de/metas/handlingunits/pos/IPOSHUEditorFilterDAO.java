@@ -25,10 +25,10 @@ package de.metas.handlingunits.pos;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
+import de.metas.util.ISingletonService;
 
 /**
  * POS Filter configuration retrieval

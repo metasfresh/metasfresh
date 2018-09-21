@@ -7,9 +7,6 @@ import org.adempiere.ad.callout.api.IADColumnCalloutBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.M_Element;
@@ -18,6 +15,9 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

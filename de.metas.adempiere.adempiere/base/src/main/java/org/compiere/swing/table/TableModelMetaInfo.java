@@ -40,8 +40,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
@@ -49,6 +47,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Defines the meta informations of an {@link AnnotatedTableModel}.

@@ -25,13 +25,13 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
+import de.metas.util.Check;
 
 /* package */class InvoicingItem implements IInvoicingItem
 {

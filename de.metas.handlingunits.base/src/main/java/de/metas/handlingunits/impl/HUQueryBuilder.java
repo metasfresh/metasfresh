@@ -47,8 +47,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
@@ -74,6 +72,8 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.order.OrderLineId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

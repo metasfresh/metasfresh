@@ -7,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
@@ -20,6 +19,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.util.Services;
 import de.metas.notification.UserNotificationsConfig;
 
 /**

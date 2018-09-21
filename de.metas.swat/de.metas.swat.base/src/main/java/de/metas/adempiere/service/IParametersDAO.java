@@ -26,7 +26,7 @@ package de.metas.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
+import de.metas.util.ISingletonService;
 
 public interface IParametersDAO extends ISingletonService
 {

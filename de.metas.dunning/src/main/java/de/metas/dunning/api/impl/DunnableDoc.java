@@ -28,9 +28,8 @@ package de.metas.dunning.api.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.Check;
-
 import de.metas.dunning.api.IDunnableDoc;
+import de.metas.util.Check;
 
 /**
  * Immutable plain {@link IDunnableDoc}

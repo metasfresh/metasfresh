@@ -1,10 +1,9 @@
 package de.metas.material.event.purchase;
 
-import org.adempiere.util.Check;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;

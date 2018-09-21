@@ -9,10 +9,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -30,6 +27,9 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceVoidAndRecreateWorkpackageProcessor;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import de.metas.process.ProcessInfo;
 
 /**

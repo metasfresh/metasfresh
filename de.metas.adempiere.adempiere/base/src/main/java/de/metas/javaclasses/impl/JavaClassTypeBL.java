@@ -32,9 +32,6 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Util;
 import org.reflections.Reflections;
@@ -46,6 +43,9 @@ import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 public class JavaClassTypeBL implements IJavaClassTypeBL
 {

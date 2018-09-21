@@ -31,8 +31,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
@@ -41,6 +39,8 @@ import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author cg

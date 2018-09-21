@@ -29,11 +29,12 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.AdempiereProcessorLog;
 import org.compiere.model.I_IMP_Processor;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class IMPProcessorAdempiereProcessorAdapter implements AdempiereProcessor
 {

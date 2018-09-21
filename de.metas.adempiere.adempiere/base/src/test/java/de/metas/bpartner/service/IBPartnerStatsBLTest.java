@@ -3,11 +3,11 @@ package de.metas.bpartner.service;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

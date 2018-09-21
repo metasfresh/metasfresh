@@ -10,8 +10,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
@@ -50,6 +48,8 @@ import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

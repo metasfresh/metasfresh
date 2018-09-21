@@ -35,8 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
@@ -57,6 +55,8 @@ import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.validator.AD_Archive;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class OrderCheckupTestHelper
 {

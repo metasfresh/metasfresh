@@ -27,11 +27,11 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IOrgDAO extends ISingletonService

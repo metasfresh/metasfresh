@@ -28,7 +28,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.ModelValidator;
 
@@ -41,6 +40,7 @@ import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.MaterialTrackingInvoiceCandidateListener;
+import de.metas.util.Services;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate

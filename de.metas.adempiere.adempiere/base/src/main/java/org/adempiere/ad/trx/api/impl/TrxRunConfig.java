@@ -26,7 +26,8 @@ package org.adempiere.ad.trx.api.impl;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Default immutable implementation for {@link ITrxRunConfig}

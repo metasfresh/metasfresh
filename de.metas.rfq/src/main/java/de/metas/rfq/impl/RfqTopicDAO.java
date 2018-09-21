@@ -3,12 +3,12 @@ package de.metas.rfq.impl;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import de.metas.rfq.IRfqTopicDAO;
 import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriberOnly;
+import de.metas.util.Services;
 
 /*
  * #%L

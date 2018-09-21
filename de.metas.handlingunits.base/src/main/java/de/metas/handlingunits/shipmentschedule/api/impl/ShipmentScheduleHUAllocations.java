@@ -3,7 +3,6 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 import java.util.Collection;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.handlingunits.document.impl.AbstractHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -11,6 +10,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public class ShipmentScheduleHUAllocations extends AbstractHUAllocations
 {

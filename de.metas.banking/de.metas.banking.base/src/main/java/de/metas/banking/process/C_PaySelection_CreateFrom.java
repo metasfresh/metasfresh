@@ -25,12 +25,12 @@ package de.metas.banking.process;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /**

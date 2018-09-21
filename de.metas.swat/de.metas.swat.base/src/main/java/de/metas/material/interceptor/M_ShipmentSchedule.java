@@ -8,7 +8,6 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
@@ -26,6 +25,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
+import de.metas.util.Services;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import lombok.NonNull;

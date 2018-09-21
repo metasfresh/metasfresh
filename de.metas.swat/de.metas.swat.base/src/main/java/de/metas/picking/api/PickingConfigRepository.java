@@ -1,11 +1,11 @@
 package de.metas.picking.api;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
 
 import de.metas.picking.model.I_M_Picking_Config;
+import de.metas.util.Services;
 
 /*
  * #%L

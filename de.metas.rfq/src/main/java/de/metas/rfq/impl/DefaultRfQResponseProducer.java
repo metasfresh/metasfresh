@@ -11,8 +11,6 @@ import java.util.function.Supplier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.slf4j.Logger;
 
@@ -37,6 +35,8 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.rfq.model.I_C_RfQ_TopicSubscriber;
 import de.metas.rfq.model.X_C_RfQResponse;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

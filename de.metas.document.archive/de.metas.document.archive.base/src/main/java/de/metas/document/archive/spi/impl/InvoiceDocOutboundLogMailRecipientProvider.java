@@ -3,7 +3,6 @@ package de.metas.document.archive.spi.impl;
 import java.util.Optional;
 
 import org.adempiere.user.User;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -17,6 +16,7 @@ import de.metas.document.archive.DocOutBoundRecipientId;
 import de.metas.document.archive.DocOutBoundRecipientRepository;
 import de.metas.document.archive.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

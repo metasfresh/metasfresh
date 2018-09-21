@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.tools.AdempiereToolsHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
@@ -47,6 +46,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * @author ts

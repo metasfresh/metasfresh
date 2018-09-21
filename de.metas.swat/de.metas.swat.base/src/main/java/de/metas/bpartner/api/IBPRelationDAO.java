@@ -1,9 +1,9 @@
 package de.metas.bpartner.api;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

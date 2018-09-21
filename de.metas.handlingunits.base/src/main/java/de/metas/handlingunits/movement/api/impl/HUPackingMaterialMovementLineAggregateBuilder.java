@@ -33,8 +33,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
@@ -44,6 +42,8 @@ import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Gets HUs assigned to movement lines, group them by Locator From/To and creates packing materials movement lines.

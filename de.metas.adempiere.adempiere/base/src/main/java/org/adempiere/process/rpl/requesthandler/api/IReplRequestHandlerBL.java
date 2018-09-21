@@ -30,8 +30,9 @@ import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandler;
 import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandlerType;
 import org.adempiere.process.rpl.requesthandler.spi.IReplRequestHandler;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
-import org.adempiere.util.ISingletonService;
 import org.w3c.dom.Document;
+
+import de.metas.util.ISingletonService;
 
 public interface IReplRequestHandlerBL extends ISingletonService
 {

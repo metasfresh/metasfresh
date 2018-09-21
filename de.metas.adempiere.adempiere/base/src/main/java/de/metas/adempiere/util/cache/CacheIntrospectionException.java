@@ -28,12 +28,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Check;
 
 /**
  * Exception thrown when an annotated cached method could not be introspected or it's not valid.

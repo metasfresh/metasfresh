@@ -30,7 +30,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Used to dynamically create elements based on given generated <code>objectFactory</code>.

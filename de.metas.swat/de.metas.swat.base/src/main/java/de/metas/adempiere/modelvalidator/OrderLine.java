@@ -2,7 +2,6 @@ package de.metas.adempiere.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.ModelValidationEngine;
@@ -44,6 +43,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.util.Services;
 
 /**
  * @deprecated the code form this class shall be moved a new MV de.metas.modelvalidator.C_OrderLine.

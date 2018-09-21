@@ -29,8 +29,6 @@ import java.util.Set;
 
 import org.adempiere.impexp.ArrayExcelExporter;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
@@ -49,6 +47,8 @@ import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *	Alert Processor

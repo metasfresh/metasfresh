@@ -32,7 +32,6 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.junit.Assert;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -42,6 +41,8 @@ import org.reflections.util.ConfigurationBuilder;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Checks all {@link Interceptor} or {@link Validator} annotated classes if they are correctly defined.

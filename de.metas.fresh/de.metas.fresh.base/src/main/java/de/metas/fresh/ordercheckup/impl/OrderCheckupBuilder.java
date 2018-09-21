@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -37,6 +36,7 @@ import org.compiere.model.I_S_Resource;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
+import de.metas.util.Check;
 
 /**
  * {@link I_C_Order_MFGWarehouse_Report} builder.

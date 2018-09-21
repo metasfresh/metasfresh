@@ -45,8 +45,6 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.junit.Ignore;
 import org.w3c.dom.Document;
@@ -67,6 +65,8 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper used to convert HUs to XML to ease validation

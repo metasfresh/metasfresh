@@ -31,8 +31,6 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -49,6 +47,8 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 {

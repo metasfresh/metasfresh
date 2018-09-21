@@ -4,13 +4,13 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

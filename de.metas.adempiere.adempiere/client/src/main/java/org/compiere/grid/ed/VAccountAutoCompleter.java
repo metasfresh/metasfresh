@@ -40,7 +40,6 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ValidCombination;
@@ -50,6 +49,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.autocomplete.model.I_AD_Table;
+import de.metas.util.Services;
 
 public class VAccountAutoCompleter extends FieldAutoCompleter
 {

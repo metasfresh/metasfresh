@@ -27,8 +27,9 @@ import java.math.BigDecimal;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
+
+import de.metas.util.Check;
 
 /* package */class CompositeQueryUpdaterExecutor<T>
 		extends CompositeQueryUpdater<T>

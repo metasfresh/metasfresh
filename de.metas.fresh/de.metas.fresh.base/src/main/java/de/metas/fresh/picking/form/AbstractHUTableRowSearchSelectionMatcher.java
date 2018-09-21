@@ -29,8 +29,6 @@ import java.util.TreeSet;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.handlingunits.IHUAware;
@@ -42,6 +40,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

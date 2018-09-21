@@ -26,8 +26,9 @@ package org.adempiere.model.tree.impl;
 import java.util.List;
 
 import org.adempiere.model.tree.IADTreeBL;
-import org.adempiere.util.Check;
 import org.compiere.model.MTreeNode;
+
+import de.metas.util.Check;
 
 public class ADTreeBL implements IADTreeBL
 {

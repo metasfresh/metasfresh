@@ -2,11 +2,10 @@ package de.metas.pricing.conditions.service;
 
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.util.ISingletonService;
 
 public interface IPricingConditionsRepository extends ISingletonService
 {

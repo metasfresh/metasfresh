@@ -2,10 +2,10 @@ package de.metas.acct.aggregation;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 
 import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

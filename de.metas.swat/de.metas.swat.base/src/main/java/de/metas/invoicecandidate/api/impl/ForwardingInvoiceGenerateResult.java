@@ -26,13 +26,13 @@ package de.metas.invoicecandidate.api.impl;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Note;
 
 import com.google.common.collect.ForwardingObject;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.util.Check;
 
 /**
  * {@link IInvoiceGenerateResult} implementation which is simply forwarding all methods to a given delegate.

@@ -25,12 +25,12 @@ package de.metas.async.processor;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.ISingletonService;
 
 public interface IWorkPackageQueueFactory extends ISingletonService
 {

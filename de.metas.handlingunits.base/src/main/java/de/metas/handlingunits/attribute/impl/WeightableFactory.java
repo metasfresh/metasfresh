@@ -2,12 +2,12 @@ package de.metas.handlingunits.attribute.impl;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.util.Services;
 
 public class WeightableFactory implements IWeightableFactory
 {

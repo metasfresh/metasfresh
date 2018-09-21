@@ -7,13 +7,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -13,8 +13,6 @@ import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.I_AD_Process_Para;
@@ -30,6 +28,8 @@ import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ProcessParameterPanelModel
 {

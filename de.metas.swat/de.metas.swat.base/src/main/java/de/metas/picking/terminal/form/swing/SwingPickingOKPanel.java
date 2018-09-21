@@ -47,8 +47,6 @@ import javax.swing.SwingUtilities;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.Waiting;
 import org.compiere.apps.form.FormFrame;
@@ -100,6 +98,8 @@ import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilte
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IStoragePA;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
 
 /**

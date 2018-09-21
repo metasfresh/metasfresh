@@ -26,8 +26,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -37,6 +35,8 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Assign created invoice to the same material tracking as the invoice candidates were assigned.

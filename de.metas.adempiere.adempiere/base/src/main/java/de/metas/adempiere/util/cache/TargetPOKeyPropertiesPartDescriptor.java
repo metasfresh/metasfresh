@@ -26,11 +26,12 @@ package de.metas.adempiere.util.cache;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.PO;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Extracts some properties (specified by {@link Cached#keyProperties()}) in case the target object is an {@link PO}.

@@ -25,7 +25,6 @@ package org.adempiere.mm.attributes.spi.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -39,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  * Aim: in case we are transferring quantity between a document and a HU and we are dealing with a weightable or non weightable product we need to use it's standard weight.

@@ -1,10 +1,10 @@
 package org.adempiere.ad.element.process;
 
 import org.adempiere.ad.element.api.IElementBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Element;
 
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.modelvalidator;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -33,6 +32,7 @@ import org.compiere.model.PO;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.util.Services;
 
 public class C_Invoice_Candidate_Agg implements ModelValidator
 {

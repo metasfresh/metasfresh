@@ -29,8 +29,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_AD_OrgInfo;
@@ -39,6 +37,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.order.OrderLineId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

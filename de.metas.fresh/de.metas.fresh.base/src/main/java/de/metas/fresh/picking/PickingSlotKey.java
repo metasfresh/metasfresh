@@ -30,8 +30,6 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
@@ -55,6 +53,8 @@ import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.quantity.CapacityInterface;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Picking Slot Terminal Key

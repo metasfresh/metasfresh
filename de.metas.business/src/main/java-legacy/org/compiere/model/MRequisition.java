@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -37,6 +36,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /**
  *	Requisition Model

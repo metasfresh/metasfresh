@@ -25,9 +25,9 @@ package org.adempiere.util.beans;
 
 import java.io.InputStream;
 
-import org.adempiere.util.StreamUtils;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.util.StreamUtils;
 
 public class JsonBeanEncoder implements IBeanEnconder
 {

@@ -18,8 +18,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
 import org.compiere.model.X_AD_PInstance_Log;
 import org.compiere.print.MPrintTableFormat;
@@ -28,6 +26,8 @@ import org.compiere.util.DB;
 import de.metas.i18n.Msg;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoLog;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL

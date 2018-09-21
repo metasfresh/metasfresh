@@ -34,8 +34,6 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
@@ -66,6 +64,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This callout's default behavior is determined by {@link ProductQtyOrderFastInputHandler}. To change the behavior, explicitly add further handlers using

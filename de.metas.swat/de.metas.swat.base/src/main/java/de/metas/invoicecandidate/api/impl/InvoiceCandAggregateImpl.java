@@ -34,13 +34,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.collections.IdentityHashSet;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import de.metas.util.collections.IdentityHashSet;
 
 public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 {

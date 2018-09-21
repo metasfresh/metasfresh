@@ -23,8 +23,9 @@ package org.adempiere.ad.validationRule.impl;
  */
 
 import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.util.Check;
 import org.compiere.util.Evaluatee;
+
+import de.metas.util.Check;
 
 public class EvaluateeValidationContext implements IValidationContext
 {

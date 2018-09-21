@@ -27,13 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.Letter;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
+import de.metas.util.ISingletonService;
 
 public interface ITextTemplateBL extends ISingletonService
 {

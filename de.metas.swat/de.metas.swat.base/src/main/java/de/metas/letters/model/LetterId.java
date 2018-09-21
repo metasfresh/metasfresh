@@ -2,8 +2,7 @@ package de.metas.letters.model;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Value;
 
 /*

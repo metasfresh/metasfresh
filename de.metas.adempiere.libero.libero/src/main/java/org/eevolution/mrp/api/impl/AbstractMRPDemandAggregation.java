@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.eevolution.model.I_PP_MRP;
@@ -37,6 +36,7 @@ import org.eevolution.mrp.api.IMRPDemand;
 import org.eevolution.mrp.api.IMRPDemandAggregation;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public abstract class AbstractMRPDemandAggregation implements IMRPDemandAggregation
 {

@@ -27,8 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -48,6 +46,8 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Default implementation.

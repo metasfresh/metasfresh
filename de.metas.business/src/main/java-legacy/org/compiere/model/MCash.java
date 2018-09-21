@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -39,6 +38,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Services;
 
 /**
  *	Cash Journal Model

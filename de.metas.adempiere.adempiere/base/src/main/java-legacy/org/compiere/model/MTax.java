@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -33,6 +32,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  *  Tax Model

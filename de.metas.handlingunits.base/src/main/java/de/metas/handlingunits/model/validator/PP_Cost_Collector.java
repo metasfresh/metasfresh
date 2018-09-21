@@ -31,7 +31,6 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.I_C_UOM;
@@ -57,6 +56,7 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_PP_Cost_Collector.class)

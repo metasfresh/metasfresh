@@ -34,13 +34,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Table_ScriptValidator;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.util.Services;
 
 public class ADTableScriptValidatorDAO implements IADTableScriptValidatorDAO
 {

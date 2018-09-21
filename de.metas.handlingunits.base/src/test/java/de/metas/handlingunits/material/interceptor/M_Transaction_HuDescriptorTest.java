@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 
 /*
  * #%L

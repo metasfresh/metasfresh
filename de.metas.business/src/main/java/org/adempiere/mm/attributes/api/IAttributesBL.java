@@ -30,12 +30,12 @@ import java.util.Properties;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 public interface IAttributesBL extends ISingletonService
 {

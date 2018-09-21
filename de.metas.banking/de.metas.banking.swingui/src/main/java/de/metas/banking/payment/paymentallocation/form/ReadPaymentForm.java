@@ -56,8 +56,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.LoggerLoggable;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
@@ -95,6 +93,8 @@ import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.form.CreateInvoiceCandidateDialog;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.model.I_C_Payment_Request;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Automatic reading and processing of Payment Document<br>

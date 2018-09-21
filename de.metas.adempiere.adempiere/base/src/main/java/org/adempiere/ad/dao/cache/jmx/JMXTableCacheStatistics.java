@@ -28,7 +28,8 @@ import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.ad.dao.cache.ITableCacheStatistics;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 public class JMXTableCacheStatistics implements JMXTableCacheStatisticsMBean
 {

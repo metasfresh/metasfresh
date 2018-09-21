@@ -2,10 +2,10 @@ package de.metas.vertical.pharma.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.util.time.SystemTime;
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
 import de.metas.vertical.pharma.PharmaVendorPermissions;
 import de.metas.vertical.pharma.model.I_C_BPartner;

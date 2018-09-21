@@ -44,8 +44,6 @@ import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
@@ -66,6 +64,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.quantity.Quantity;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 {

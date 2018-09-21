@@ -8,8 +8,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
-import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.Env;
@@ -19,6 +17,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * SysConfig Service. Most of the code is copy-paste from MSysConfig

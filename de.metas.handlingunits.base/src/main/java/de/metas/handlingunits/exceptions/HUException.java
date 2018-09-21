@@ -23,7 +23,8 @@ package de.metas.handlingunits.exceptions;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Root of Handling Units module exceptions hierarchy.

@@ -41,8 +41,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
@@ -80,6 +78,8 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.payment.esr.model.validator.ESR_Main_Validator;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ESRTestBase

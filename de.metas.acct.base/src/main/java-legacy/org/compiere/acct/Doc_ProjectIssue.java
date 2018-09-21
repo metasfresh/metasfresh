@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 import org.adempiere.acct.api.ProductAcctType;
-import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
@@ -32,6 +31,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  *	Project Issue.

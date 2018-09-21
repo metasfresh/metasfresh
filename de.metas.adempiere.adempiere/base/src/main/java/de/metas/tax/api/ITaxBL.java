@@ -28,9 +28,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
+
+import de.metas.util.ISingletonService;
 
 public interface ITaxBL extends ISingletonService
 {

@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +13,7 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.repository.HuTraceEventToDbRecordUtil;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

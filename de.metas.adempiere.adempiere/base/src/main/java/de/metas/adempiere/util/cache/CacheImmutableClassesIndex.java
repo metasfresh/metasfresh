@@ -29,13 +29,13 @@ import java.math.BigDecimal;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.adempiere.util.Check;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

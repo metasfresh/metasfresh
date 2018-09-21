@@ -35,7 +35,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.exceptions.CalloutInitException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -44,6 +43,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Inspects a given annotated callout object and creates {@link AnnotatedCalloutInstance}s.

@@ -41,8 +41,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -81,6 +79,8 @@ import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Generates material receipt from {@link I_M_ReceiptSchedule_Alloc} (with HUs).

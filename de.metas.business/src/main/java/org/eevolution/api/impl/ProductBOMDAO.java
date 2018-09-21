@@ -36,8 +36,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -51,6 +49,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ProductBOMDAO implements IProductBOMDAO
 {

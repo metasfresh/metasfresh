@@ -2,12 +2,12 @@ package org.adempiere.ad.table.process;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.process.IADProcessBL;
 import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -4,10 +4,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_RelationType;
 
 import de.metas.relation.IRelationTypeDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

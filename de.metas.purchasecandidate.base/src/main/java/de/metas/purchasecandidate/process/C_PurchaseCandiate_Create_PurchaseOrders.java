@@ -2,7 +2,6 @@ package de.metas.purchasecandidate.process;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -13,6 +12,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

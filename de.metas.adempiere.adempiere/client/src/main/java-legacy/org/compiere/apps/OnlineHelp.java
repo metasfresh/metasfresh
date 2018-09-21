@@ -38,9 +38,10 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
+
+import de.metas.util.Check;
 
 /**
  * Online Help Browser & Link.

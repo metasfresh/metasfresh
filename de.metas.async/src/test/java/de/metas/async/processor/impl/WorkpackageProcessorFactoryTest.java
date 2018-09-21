@@ -26,7 +26,6 @@ package de.metas.async.processor.impl;
 import static org.hamcrest.Matchers.sameInstance;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,6 +34,7 @@ import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
 
 /**
  * 

@@ -24,8 +24,9 @@ package org.adempiere.ad.modelvalidator;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Client;
+
+import de.metas.util.Check;
 
 public class ModelInterceptorInitException extends AdempiereException
 {

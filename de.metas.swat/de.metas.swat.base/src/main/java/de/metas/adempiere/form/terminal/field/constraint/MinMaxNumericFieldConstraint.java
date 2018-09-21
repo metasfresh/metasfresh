@@ -25,10 +25,9 @@ package de.metas.adempiere.form.terminal.field.constraint;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.WrongValueException;
+import de.metas.util.Check;
 
 /**
  * Constraint that doesn't allow a numeric value to go below and/or above defined values.

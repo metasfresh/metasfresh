@@ -26,9 +26,10 @@ package org.adempiere.ad.dao.impl;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
-import org.adempiere.util.Check;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.DB;
+
+import de.metas.util.Check;
 
 public class LpadQueryFilterModifier implements IQueryFilterModifier
 {

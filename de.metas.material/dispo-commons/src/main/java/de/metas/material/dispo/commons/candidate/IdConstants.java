@@ -1,7 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

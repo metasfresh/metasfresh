@@ -32,9 +32,6 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.StreamUtils;
 import org.adempiere.util.beans.IBeanEnconder;
 import org.adempiere.util.beans.JsonBeanEncoder;
 import org.adempiere.util.text.MapFormat;
@@ -52,6 +49,9 @@ import de.metas.document.archive.esb.api.ArchiveSetDataRequest;
 import de.metas.document.archive.esb.api.ArchiveSetDataResponse;
 import de.metas.document.archive.esb.api.IArchiveEndpoint;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StreamUtils;
 
 /**
  * Rest HTTP Remote Archive Endpoint connector

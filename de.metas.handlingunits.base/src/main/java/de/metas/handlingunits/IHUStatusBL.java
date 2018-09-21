@@ -27,9 +27,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.ISingletonService;
 
 public interface IHUStatusBL extends ISingletonService
 {

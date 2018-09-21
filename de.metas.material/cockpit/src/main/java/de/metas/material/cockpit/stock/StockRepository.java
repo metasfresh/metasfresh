@@ -9,9 +9,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
@@ -24,6 +21,9 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

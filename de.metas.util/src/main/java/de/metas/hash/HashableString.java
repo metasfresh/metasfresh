@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.adempiere.util.Check;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;

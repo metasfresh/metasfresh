@@ -29,11 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.util.Check;
-
 import de.metas.document.archive.api.IDocOutboundProducer;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /**

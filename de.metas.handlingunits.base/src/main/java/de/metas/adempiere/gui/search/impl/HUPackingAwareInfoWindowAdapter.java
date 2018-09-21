@@ -31,8 +31,6 @@ import java.sql.Timestamp;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -44,6 +42,8 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.IProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps given Info Window grid record and makes it behave like an {@link IHUPackingAware}.

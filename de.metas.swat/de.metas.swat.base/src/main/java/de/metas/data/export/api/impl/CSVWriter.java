@@ -35,10 +35,10 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.DisplayType;
 
 import de.metas.data.export.api.IExportDataDestination;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 public class CSVWriter implements IExportDataDestination

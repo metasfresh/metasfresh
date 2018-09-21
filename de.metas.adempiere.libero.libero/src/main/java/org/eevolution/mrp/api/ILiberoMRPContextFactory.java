@@ -1,9 +1,9 @@
 package org.eevolution.mrp.api;
 
-import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_MRP;
 
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,6 +17,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
+import de.metas.util.Services;
 
 /*
  * #%L

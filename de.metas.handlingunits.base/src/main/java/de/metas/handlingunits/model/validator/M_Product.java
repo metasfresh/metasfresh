@@ -28,13 +28,13 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Services;
 
 @Interceptor(I_M_Product.class)
 public class M_Product

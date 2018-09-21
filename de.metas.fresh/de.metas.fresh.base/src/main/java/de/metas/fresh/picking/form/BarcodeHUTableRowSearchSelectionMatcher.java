@@ -25,9 +25,8 @@ package de.metas.fresh.picking.form;
 
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.util.Check;
 
 /**
  * Gets HU by it's barcode and matches rows which have HU's products (i.e. see {@link IHUQueryBuilder#setOnlyWithBarcode(String)}

@@ -5,9 +5,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+
+import de.metas.util.Services;
 
 /**
  * Document Interface.

@@ -29,7 +29,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
@@ -41,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Services;
 import de.metas.logging.LogManager;
 
 @Validator(I_DD_OrderLine.class)

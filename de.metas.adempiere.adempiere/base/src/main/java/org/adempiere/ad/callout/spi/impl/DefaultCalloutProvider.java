@@ -11,8 +11,6 @@ import org.adempiere.ad.callout.api.TableCalloutsMap;
 import org.adempiere.ad.callout.api.impl.MethodNameCalloutInstance;
 import org.adempiere.ad.callout.api.impl.RuleCalloutInstance;
 import org.adempiere.ad.callout.spi.IDefaultCalloutProvider;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.slf4j.Logger;
@@ -23,6 +21,8 @@ import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.script.ScriptEngineFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Provides {@link ICalloutInstance}s from {@link I_AD_ColumnCallout}.

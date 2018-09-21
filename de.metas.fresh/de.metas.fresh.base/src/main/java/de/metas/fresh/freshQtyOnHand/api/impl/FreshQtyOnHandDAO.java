@@ -26,11 +26,11 @@ package de.metas.fresh.freshQtyOnHand.api.impl;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.util.Services;
 
 public class FreshQtyOnHandDAO implements IFreshQtyOnHandDAO
 {

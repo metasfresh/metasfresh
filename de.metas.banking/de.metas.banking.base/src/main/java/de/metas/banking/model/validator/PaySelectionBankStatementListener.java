@@ -1,11 +1,10 @@
 package de.metas.banking.model.validator;
 
-import org.adempiere.util.Services;
-
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.service.BankStatementListenerAdapter;
+import de.metas.util.Services;
 
 /*
  * #%L

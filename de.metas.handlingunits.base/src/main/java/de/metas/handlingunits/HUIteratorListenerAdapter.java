@@ -24,12 +24,12 @@ package de.metas.handlingunits;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.util.Check;
 
 /**
  * {@link IHUIteratorListener} adapter. To use it, call {@link #setDefaultResult(de.metas.handlingunits.IHUIteratorListener.Result)} to set a default result such as {@link Result#CONTINUE} and only

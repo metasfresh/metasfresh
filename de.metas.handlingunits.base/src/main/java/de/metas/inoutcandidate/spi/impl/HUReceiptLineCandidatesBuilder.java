@@ -28,13 +28,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.util.Check;
 
 /**
  * Collects {@link I_M_ReceiptSchedule_Alloc}s and produces {@link HUReceiptLineCandidate}s.

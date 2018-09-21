@@ -37,11 +37,12 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
 
 /**
  * {@link TableModel} implementation which introspects the a model class, checking the {@link ColumnInfo} annotated methods.

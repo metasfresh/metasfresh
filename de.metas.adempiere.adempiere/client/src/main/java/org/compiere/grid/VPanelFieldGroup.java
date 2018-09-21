@@ -32,13 +32,14 @@ import javax.swing.SwingConstants;
 
 import net.miginfocom.layout.CC;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.swing.CLabel;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Helper class used to hold the UI components of a field group in a {@link VPanel}.

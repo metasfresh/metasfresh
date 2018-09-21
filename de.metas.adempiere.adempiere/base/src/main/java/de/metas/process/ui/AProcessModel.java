@@ -8,9 +8,6 @@ import java.util.Properties;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -24,6 +21,9 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /**
  * @author tsa

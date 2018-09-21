@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.util.Check;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Check;
 
 /*
  * #%L

@@ -27,9 +27,10 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
+
+import de.metas.util.Check;
 
 @Immutable
 final class QueryOrderByItem

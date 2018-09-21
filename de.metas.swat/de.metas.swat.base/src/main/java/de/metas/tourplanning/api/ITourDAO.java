@@ -7,11 +7,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

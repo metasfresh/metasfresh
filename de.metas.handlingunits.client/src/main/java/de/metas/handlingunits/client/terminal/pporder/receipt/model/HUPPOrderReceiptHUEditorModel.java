@@ -1,11 +1,11 @@
 package de.metas.handlingunits.client.terminal.pporder.receipt.model;
 
-import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
+import de.metas.util.Check;
 
 /**
  * HUEditor which displays all HUs for Manufacturing Order's Warehouse and BPartner.

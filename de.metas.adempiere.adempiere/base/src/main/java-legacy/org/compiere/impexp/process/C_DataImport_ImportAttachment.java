@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
@@ -27,6 +26,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 
 /*
  * #%L

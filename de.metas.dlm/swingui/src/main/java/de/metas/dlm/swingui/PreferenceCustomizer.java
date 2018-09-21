@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
-import org.adempiere.util.Services;
 import org.compiere.apps.Preference;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
@@ -21,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.dlm.connection.DLMPermanentIniCustomizer;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /*
  * #%L

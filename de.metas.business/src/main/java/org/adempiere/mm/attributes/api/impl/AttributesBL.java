@@ -40,8 +40,6 @@ import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -60,6 +58,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AttributesBL implements IAttributesBL

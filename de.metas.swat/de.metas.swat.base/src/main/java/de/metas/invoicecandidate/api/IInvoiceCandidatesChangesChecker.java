@@ -26,9 +26,9 @@ package de.metas.invoicecandidate.api;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ILoggable;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ILoggable;
 
 /**
  * Implementations of this interface are responsible to track changes of a group of invoice candidates.

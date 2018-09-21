@@ -3,8 +3,10 @@ package de.metas.script.model.interceptor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery.Aggregate;
+
+import de.metas.util.Services;
+
 import org.compiere.model.I_AD_Table_ScriptValidator;
 import org.compiere.model.ModelValidator;
 

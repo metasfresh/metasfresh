@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_M_Transaction;
 
@@ -31,6 +30,7 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

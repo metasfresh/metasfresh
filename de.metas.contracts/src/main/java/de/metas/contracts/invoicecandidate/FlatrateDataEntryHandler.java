@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -38,6 +36,8 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {

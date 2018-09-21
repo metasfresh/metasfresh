@@ -2,13 +2,13 @@ package de.metas.banking.bankstatement.match.api.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.impl.PaySelectionPaymentBatchProvider;
+import de.metas.util.Check;
 
 /*
  * #%L

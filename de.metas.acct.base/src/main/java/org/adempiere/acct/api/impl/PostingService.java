@@ -3,7 +3,8 @@ package org.adempiere.acct.api.impl;
 import org.adempiere.acct.api.IPostingRequestBuilder;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 public class PostingService implements IPostingService
 {

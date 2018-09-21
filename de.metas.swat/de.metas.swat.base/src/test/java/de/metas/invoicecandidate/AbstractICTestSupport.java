@@ -36,9 +36,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
@@ -96,6 +94,8 @@ import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.testsupport.AbstractTestSupport;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public abstract class AbstractICTestSupport extends AbstractTestSupport
 {
