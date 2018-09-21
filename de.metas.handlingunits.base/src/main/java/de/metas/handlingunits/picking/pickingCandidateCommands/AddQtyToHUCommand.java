@@ -28,6 +28,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -90,24 +91,14 @@ public class AddQtyToHUCommand
 	@Builder
 	private AddQtyToHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final BigDecimal qtyCU,
-			final boolean allowOverDelivery,
-			@NonNull final HuId targetHUId,
-			@NonNull final PickingSlotId pickingSlotId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId)
+			@NonNull final AddQtyToHURequest request)
 	{
-		if (qtyCU.signum() <= 0)
-		{
-			throw new AdempiereException("@Invalid@ @QtyCU@");
-		}
-
 		this.pickingCandidateRepository = pickingCandidateRepository;
-		this.qtyCU = qtyCU;
-		this.targetHUId = targetHUId;
-		this.pickingSlotId = pickingSlotId;
-		this.shipmentScheduleId = shipmentScheduleId;
-		this.allowOverDelivery = allowOverDelivery;
-
+		this.qtyCU = request.getQtyCU();
+		this.targetHUId = request.getTargetHUId();
+		this.pickingSlotId = request.getPickingSlotId();
+		this.shipmentScheduleId = request.getShipmentScheduleId();
+		this.allowOverDelivery = request.isAllowOverDelivery();
 	}
 
 	/**
@@ -115,8 +106,8 @@ public class AddQtyToHUCommand
 	 */
 	public Quantity performAndGetQtyPicked()
 	{
-		final boolean overdeliveryError = !allowOverDelivery && isOverDelivery();
-		if (overdeliveryError)
+		final boolean overDeliveryError = !allowOverDelivery && isOverDelivery();
+		if (overDeliveryError)
 		{
 			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
 		}

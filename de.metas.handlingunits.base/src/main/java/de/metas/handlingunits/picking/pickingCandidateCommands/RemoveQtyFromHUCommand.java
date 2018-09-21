@@ -31,11 +31,11 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -80,20 +80,13 @@ public class RemoveQtyFromHUCommand
 	private RemoveQtyFromHUCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final BigDecimal qtyCU,
-			@NonNull final HuId huId,
-			@NonNull final ProductId productId)
+			@NonNull final RemoveQtyFromHURequest request)
 	{
-		if (qtyCU.signum() <= 0)
-		{
-			throw new AdempiereException("@Invalid@ @QtyCU@");
-		}
-
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
-		this.qtyCU = qtyCU;
-		this.huId = huId;
-		this.product = Services.get(IProductDAO.class).getById(productId);
+		this.qtyCU = request.getQtyCU();
+		this.huId = request.getHuId();
+		this.product = Services.get(IProductDAO.class).getById(request.getProductId());
 		Check.assumeNotNull(product, "Parameter product is not null");
 	}
 

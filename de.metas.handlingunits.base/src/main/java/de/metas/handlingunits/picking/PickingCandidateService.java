@@ -14,18 +14,19 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddHUToPickingSlotCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.AddQtyToHUCommand.AddQtyToHUCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.ClosePickingCandidateCommand.ClosePickingCandidateCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.ProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveHUFromPickingSlotCommand;
 import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand;
-import de.metas.handlingunits.picking.pickingCandidateCommands.RemoveQtyFromHUCommand.RemoveQtyFromHUCommandBuilder;
 import de.metas.handlingunits.picking.pickingCandidateCommands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
+import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
+import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -78,17 +79,26 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public AddQtyToHUCommandBuilder addQtyToHU()
+	/**
+	 * @return the quantity which was effectively added
+	 */
+	public Quantity addQtyToHU(@NonNull final AddQtyToHURequest request)
 	{
 		return AddQtyToHUCommand.builder()
-				.pickingCandidateRepository(pickingCandidateRepository);
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build()
+				.performAndGetQtyPicked();
 	}
 
-	public RemoveQtyFromHUCommandBuilder removeQtyFromHU()
+	public void removeQtyFromHU(final RemoveQtyFromHURequest request)
 	{
-		return RemoveQtyFromHUCommand.builder()
+		RemoveQtyFromHUCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
-				.pickingCandidateRepository(pickingCandidateRepository);
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build()
+				.perform();
 	}
 
 	public void removeHUFromPickingSlot(final HuId huId)
@@ -146,14 +156,19 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public ClosePickingCandidateCommandBuilder prepareCloseForShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	public void closeForShipmentSchedules(@NonNull CloseForShipmentSchedulesRequest request)
 	{
 		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(
-				shipmentScheduleIds,
+				request.getShipmentScheduleIds(),
 				PickingCandidateStatus.Processed);
-		return ClosePickingCandidateCommand.builder()
+
+		ClosePickingCandidateCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidates(pickingCandidates);
+				.pickingCandidates(pickingCandidates)
+				.pickingSlotIsRackSystem(request.getPickingSlotIsRackSystem())
+				.failOnError(request.isFailOnError())
+				.build()
+				.perform();
 	}
 
 	public void inactivateForHUId(@NonNull final HuId huId)
