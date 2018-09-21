@@ -37,8 +37,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MProduct;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -49,6 +49,8 @@ import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 
 /**
  * @author cg
@@ -111,16 +113,15 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 					final IPackingItem apck = unpacked.get(i);
 					final LegacyPackingItem pck = (LegacyPackingItem)apck;
 
-					final I_M_Product product = MProduct.get(getCtx(), pck.getProductId());
+					final ProductId productId = pck.getProductId();
 					de.metas.adempiere.model.I_C_POSKey key = InterfaceWrapperHelper.create(getCtx(), de.metas.adempiere.model.I_C_POSKey.class, ITrx.TRXNAME_None);
 					if (!key.isActive())
 						continue;
 
 					String tableName = I_M_Product.Table_Name;
-					int idValue = product.getM_Product_ID();
-					key.setName(product.getName());
+					key.setName(Services.get(IProductBL.class).getProductName(productId));
 
-					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, idValue);
+					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, productId);
 					tk.setBoxNo(PackingItemsMap.KEY_UnpackedItems);
 					tk.setPackingItem(pck);
 					tk.setUsedBin(boxes.get(PackingItemsMap.KEY_UnpackedItems));
@@ -142,16 +143,15 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 					final IPackingItem apck = selected.get(i);
 					final LegacyPackingItem pck = (LegacyPackingItem)apck;
 
-					final I_M_Product product = MProduct.get(getCtx(), pck.getProductId());
+					final ProductId productId = pck.getProductId();
 					de.metas.adempiere.model.I_C_POSKey key = InterfaceWrapperHelper.create(getCtx(), de.metas.adempiere.model.I_C_POSKey.class, ITrx.TRXNAME_None);
-					key.setName(product.getName());
+					key.setName(Services.get(IProductBL.class).getProductName(productId));
 					if (!key.isActive())
 						continue;
 
 					String tableName = I_M_Product.Table_Name;
-					int idValue = product.getM_Product_ID();
 
-					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, idValue);
+					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, productId);
 					tk.setBoxNo(getSelectedBox().getBoxNo());
 					tk.setPackingItem(pck);
 					tk.setUsedBin(boxes.get(getSelectedBox().getBoxNo()));

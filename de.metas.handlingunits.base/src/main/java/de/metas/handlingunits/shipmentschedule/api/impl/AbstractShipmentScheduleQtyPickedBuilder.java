@@ -54,6 +54,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -397,13 +398,13 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 
 	}
 
-	protected final IProductStorage getProductStorage(final I_M_HU hu, final I_M_Product product)
+	protected final IProductStorage getProductStorage(final I_M_HU hu, final ProductId productId)
 	{
 		final IHUContext huContext = getHUContext();
 		final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 		final IHUStorage huStorage = huStorageFactory.getStorage(hu);
 
-		final IProductStorage productStorage = huStorage.getProductStorageOrNull(product);
+		final IProductStorage productStorage = huStorage.getProductStorageOrNull(productId);
 		if (productStorage == null)
 		{
 			return null;

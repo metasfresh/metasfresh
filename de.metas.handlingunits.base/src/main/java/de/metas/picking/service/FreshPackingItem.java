@@ -13,8 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
@@ -37,11 +35,8 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class FreshPackingItem extends AbstractPackingItem implements IFreshPackingItem
+public final class FreshPackingItem extends AbstractPackingItem implements IFreshPackingItem
 {
-	private I_C_BPartner partner; // lazy loaded
-	private I_C_BPartner_Location bpLocation; // lazy loaded
-
 	FreshPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
 	{
 		super(scheds2Qtys);
@@ -55,10 +50,6 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	FreshPackingItem(final IPackingItem item)
 	{
 		super(item);
-
-		final FreshPackingItem itemCasted = cast(item);
-		partner = itemCasted.partner;
-		bpLocation = itemCasted.bpLocation;
 	}
 
 	/**
@@ -69,9 +60,6 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	public void updateFrom(final IFreshPackingItem item)
 	{
 		super.updateFrom(item);
-		final FreshPackingItem itemCasted = cast(item);
-		partner = itemCasted.partner;
-		bpLocation = itemCasted.bpLocation;
 	}
 
 	@Override
@@ -174,26 +162,10 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public String toString()
 	{
-		return "FreshPackingItem [partner=" + partner
-				+ ", bpLocation=" + bpLocation
-				+ ", isClosed()=" + isClosed()
+		return "FreshPackingItem ["
+				+ "isClosed()=" + isClosed()
 				+ ", getQtySum()=" + getQtySum()
 				+ ", getM_Product()=" + getM_Product()
 				+ ", getC_UOM()=" + getC_UOM() + "]";
-	}
-
-	/**
-	 *
-	 * @param item
-	 * @return
-	 * @throws IllegalArgumentException if the given <code>item</code> is not a {@link FreshPackingItem}
-	 */
-	private static final FreshPackingItem cast(final IPackingItem item)
-	{
-		if (!(item instanceof FreshPackingItem))
-		{
-			throw new IllegalArgumentException("Item " + item + " does not implement " + FreshPackingItem.class);
-		}
-		return (FreshPackingItem)item;
 	}
 }

@@ -35,25 +35,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -73,7 +72,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	private I_M_Product product; // lazy
 	private final I_C_UOM uom;
 	private BigDecimal weightSingle;
-	private boolean isClosed = false;
+	private boolean closed = false;
 
 	/**
 	 * See {@link #AbstractPackingItem(Map, int)}.
@@ -130,7 +129,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 			product = copyFromItem.product;
 			uom = copyFromItem.uom;
 			weightSingle = copyFromItem.weightSingle;
-			isClosed = copyFromItem.isClosed;
+			closed = copyFromItem.closed;
 		}
 		else
 		{
@@ -156,25 +155,19 @@ public abstract class AbstractPackingItem implements IPackingItem
 		product = itemCasted.product;
 		// this.uom = itemCasted.uom;
 		weightSingle = itemCasted.weightSingle;
-		isClosed = itemCasted.isClosed;
+		closed = itemCasted.closed;
 	}
 
-	/**
-	 * @return the closed
-	 */
 	@Override
 	public final boolean isClosed()
 	{
-		return isClosed;
+		return closed;
 	}
 
-	/**
-	 * @param isClosed the isClosed to set
-	 */
 	@Override
-	public final void setClosed(final boolean isClosed)
+	public final void setClosed(final boolean closed)
 	{
-		this.isClosed = isClosed;
+		this.closed = closed;
 	}
 
 	/**
@@ -305,27 +298,24 @@ public abstract class AbstractPackingItem implements IPackingItem
 		// FIXME: refactor this shit
 		if (product == null)
 		{
-			final int productId = getProductId();
-			if (productId > 0)
-			{
-				final Properties ctx = Env.getCtx();
-				product = InterfaceWrapperHelper.create(ctx, productId, I_M_Product.class, ITrx.TRXNAME_None);
-			}
+			final ProductId productId = getProductId();
+			product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
 		}
 		return product;
 	}
 
 	@Override
-	public final int getProductId()
+	public final ProductId getProductId()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
-			return -1;
+			return null;
 		}
 
 		// all scheds must have the same product
-		return shipmentSchedules.iterator().next().getM_Product_ID();
+		final I_M_ShipmentSchedule firstShipmentSchedule = shipmentSchedules.get(0);
+		return ProductId.ofRepoId(firstShipmentSchedule.getM_Product_ID());
 	}
 
 	@Override

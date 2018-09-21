@@ -14,7 +14,6 @@ import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -40,6 +39,7 @@ import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingHandlerAdapter;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -127,10 +127,10 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return _isAllowOverdelivery;
 	}
 
-	private I_M_Product getM_Product()
+	private ProductId getProductId()
 	{
 		final IFreshPackingItem itemToPack = getItemToPack();
-		return itemToPack.getM_Product();
+		return itemToPack.getProductId();
 	}
 
 	@Override
@@ -142,8 +142,8 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			return;
 		}
 
-		final I_M_Product product = getM_Product();
-		final IProductStorage vhuProductStorage = getProductStorage(vhu, product);
+		final ProductId productId = getProductId();
+		final IProductStorage vhuProductStorage = getProductStorage(vhu, productId);
 		if (vhuProductStorage == null)
 		{
 			return;
@@ -155,7 +155,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 
 		final IFreshPackingItem itemToPack = getItemToPack();
 		final I_C_UOM qtyToPackUOM = itemToPack.getC_UOM();
-		Quantity qtyToPack = uomConversionBL.convertQuantityTo(qtyToPackSrc, UOMConversionContext.of(product), qtyToPackUOM);
+		Quantity qtyToPack = uomConversionBL.convertQuantityTo(qtyToPackSrc, UOMConversionContext.of(productId), qtyToPackUOM);
 
 		//
 		qtyToPack = adjustQtyToPackConsideringRemaining(qtyToPack);

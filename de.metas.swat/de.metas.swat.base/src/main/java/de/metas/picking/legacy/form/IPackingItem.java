@@ -9,6 +9,7 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /*
@@ -35,7 +36,6 @@ import de.metas.quantity.Quantity;
 
 public interface IPackingItem
 {
-
 	boolean isSameAs(IPackingItem item);
 
 	IPackingItem copy();
@@ -78,6 +78,7 @@ public interface IPackingItem
 
 	/**
 	 * For this item, return the open quantity to be packed for the given {@code sched}.
+	 * 
 	 * @param sched
 	 * @return
 	 */
@@ -85,7 +86,7 @@ public interface IPackingItem
 
 	void addSingleSched(I_M_ShipmentSchedule sched);
 
-	int getProductId();
+	ProductId getProductId();
 
 	I_M_Product getM_Product();
 

@@ -231,7 +231,7 @@ public class Utils
 						itemTree.setM_PackagingTree_ID(tree.get_ID());
 						itemTree.setGroupID(item1.getGroupingKey());
 						itemTree.setRef_M_PackagingTreeItem_ID(box2.get_ID());
-						itemTree.setM_Product_ID(item1.getProductId());
+						itemTree.setM_Product_ID(item1.getProductId().getRepoId());
 						itemTree.setQty(convertToItemUOM(item1, item1.getQtySum()));
 						itemTree.setWeight(item1.computeWeightInProductUOM());
 						itemTree.setType(X_M_PackagingTreeItem.TYPE_PackedItem);
@@ -273,7 +273,7 @@ public class Utils
 					final LegacyPackingItem item2 = (LegacyPackingItem)userObj3;
 					final X_M_PackagingTreeItem unpacked = new X_M_PackagingTreeItem(ctx, 0, trxName);
 					unpacked.setM_PackagingTree_ID(tree.get_ID());
-					unpacked.setM_Product_ID(item2.getProductId());
+					unpacked.setM_Product_ID(item2.getProductId().getRepoId());
 					unpacked.setQty(convertToItemUOM(item2, item2.getQtySum()));
 					unpacked.setWeight(item2.computeWeightInProductUOM());
 					unpacked.setType(X_M_PackagingTreeItem.TYPE_UnPackedItem);

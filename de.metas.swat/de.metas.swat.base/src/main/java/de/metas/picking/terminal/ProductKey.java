@@ -28,13 +28,12 @@ package de.metas.picking.terminal;
 
 import java.awt.Color;
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
@@ -49,6 +48,8 @@ import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 
 /**
  * @author cg
@@ -199,17 +200,16 @@ public class ProductKey extends TerminalKey
 	}
 
 	@Deprecated
-	ProductKey(final ITerminalContext terminalContext, final I_C_POSKey key, final String tableName, final int productId)
+	ProductKey(final ITerminalContext terminalContext, final I_C_POSKey key, final String tableName, final ProductId productId)
 	{
 		super(terminalContext);
 
 		this.key = key;
 		this.tableName = tableName;
-		this.value = new KeyNamePair(productId, key.getName());
+		this.value = new KeyNamePair(productId.getRepoId(), key.getName());
 		this.status = new ProductStatus();
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(key);
-		this.product = InterfaceWrapperHelper.create(ctx, value.getKey(), I_M_Product.class, ITrx.TRXNAME_None);
+		this.product = Services.get(IProductDAO.class).getById(productId);
 		this.bpartner = null;
 		this.bpLocation = null;
 

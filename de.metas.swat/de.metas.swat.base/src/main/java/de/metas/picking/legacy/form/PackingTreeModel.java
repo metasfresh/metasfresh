@@ -59,6 +59,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.interfaces.I_M_Package;
 
@@ -619,7 +621,8 @@ public class PackingTreeModel extends DefaultTreeModel
 			else if (userObj instanceof LegacyPackingItem)
 			{
 				final LegacyPackingItem item = (LegacyPackingItem)userObj;
-				final I_M_Product prod = item.getM_Product();
+				final ProductId productId = item.getProductId();
+				final I_M_Product prod = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
 
 				BigDecimal qty = id2ItemQty.get(prod.getM_Product_ID());
 				if (qty == null)

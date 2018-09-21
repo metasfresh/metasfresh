@@ -15,6 +15,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /*
@@ -164,7 +165,7 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public int getProductId()
+	public ProductId getProductId()
 	{
 		return getDelegate().getProductId();
 	}
