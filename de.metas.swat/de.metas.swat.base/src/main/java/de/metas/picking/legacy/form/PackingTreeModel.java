@@ -491,7 +491,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final LegacyPackingItem pl = (LegacyPackingItem)node.getUserObject();
 
 			final BigDecimal qtySum = Utils.convertToItemUOM(pl, pl.getQtySum());
-			final BigDecimal volumeSingle = Utils.convertToItemUOM(pl, pl.retrieveVolumeSingle(trxName));
+			final BigDecimal volumeSingle = Utils.convertToItemUOM(pl, pl.retrieveVolumeSingle());
 
 			result = result.add(volumeSingle.multiply(qtySum));
 		}
@@ -510,7 +510,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final LegacyPackingItem pl = (LegacyPackingItem)node.getUserObject();
 
 			final BigDecimal qtySum = Utils.convertToItemUOM(pl, pl.getQtySum());
-			final BigDecimal volumeSingle = Utils.convertToItemUOM(pl, pl.retrieveVolumeSingle(trxName));
+			final BigDecimal volumeSingle = Utils.convertToItemUOM(pl, pl.retrieveVolumeSingle());
 
 			result = result.add(volumeSingle.multiply(qtySum));
 		}
@@ -1011,11 +1011,6 @@ public class PackingTreeModel extends DefaultTreeModel
 				final DefaultMutableTreeNode packingItemNode = piNodeEnum.nextElement();
 
 				final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
-				// is that packing item is closed, don't count
-				if (packingItem.isClosed())
-				{
-					continue;
-				}
 
 				if (packingItem.getGroupingKey() == packingItemToMatch.getGroupingKey())
 				{

@@ -104,8 +104,8 @@ public class BinPacker implements IBinPacker
 		{
 
 			final LegacyPackingItem pi = getPI(currentNode);
-			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle(trxName));
-			final BigDecimal weightSingle = pi.retrieveWeightSingle(trxName);
+			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle());
+			final BigDecimal weightSingle = pi.retrieveWeightSingle();
 
 			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
 
@@ -172,7 +172,7 @@ public class BinPacker implements IBinPacker
 			final BigDecimal freeVolume = maxVolume.subtract(usedVolume);
 
 			final LegacyPackingItem unpackedPi = getPI(packedNode);
-			final BigDecimal singleVol = Utils.convertToItemUOM(unpackedPi, unpackedPi.retrieveVolumeSingle(trxName));
+			final BigDecimal singleVol = Utils.convertToItemUOM(unpackedPi, unpackedPi.retrieveVolumeSingle());
 
 			final Quantity binFreeQty;
 			if (singleVol.signum() > 0)

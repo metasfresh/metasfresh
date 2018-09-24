@@ -177,9 +177,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public Quantity retrieveVolumeSingle(final String trxName)
+	public Quantity retrieveVolumeSingle()
 	{
-		return getDelegate().retrieveVolumeSingle(trxName);
+		return getDelegate().retrieveVolumeSingle();
 	}
 
 	@Override
@@ -189,9 +189,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public BigDecimal retrieveWeightSingle(final String trxName)
+	public BigDecimal retrieveWeightSingle()
 	{
-		return getDelegate().retrieveWeightSingle(trxName);
+		return getDelegate().retrieveWeightSingle();
 	}
 
 	@Override
@@ -210,17 +210,5 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	public List<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
 		return getDelegate().getShipmentSchedules();
-	}
-
-	@Override
-	public void setClosed(final boolean isClosed)
-	{
-		getDelegate().setClosed(isClosed);
-	}
-
-	@Override
-	public boolean isClosed()
-	{
-		return getDelegate().isClosed();
 	}
 }

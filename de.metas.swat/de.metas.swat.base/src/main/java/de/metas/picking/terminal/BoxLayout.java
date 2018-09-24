@@ -204,7 +204,7 @@ public class BoxLayout extends KeyLayout
 		volumeSumContainer = BigDecimal.ZERO;
 		for (final IPackingItem pi : products)
 		{
-			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle(null));
+			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle());
 			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
 
 			volumeSumContainer = volumeSumContainer.add(qtySum.multiply(volSingle));
@@ -230,7 +230,7 @@ public class BoxLayout extends KeyLayout
 
 		for (final IPackingItem pi : products)
 		{
-			final BigDecimal weightSingle = pi.retrieveWeightSingle(null);
+			final BigDecimal weightSingle = pi.retrieveWeightSingle();
 			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
 
 			weightSumContainer = weightSumContainer.add(qtySum.multiply(weightSingle));
@@ -260,8 +260,8 @@ public class BoxLayout extends KeyLayout
 
 		for (final IPackingItem pi : products)
 		{
-			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle(null));
-			final BigDecimal weightSingle = pi.retrieveWeightSingle(null);
+			final BigDecimal volSingle = Utils.convertToItemUOM(pi, pi.retrieveVolumeSingle());
+			final BigDecimal weightSingle = pi.retrieveWeightSingle();
 			final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
 
 			weightSumContainer = weightSumContainer.add(qtySum.multiply(weightSingle));

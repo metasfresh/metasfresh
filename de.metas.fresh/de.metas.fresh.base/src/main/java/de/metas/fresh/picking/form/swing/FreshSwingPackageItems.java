@@ -588,11 +588,6 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 					itemsPackedRemaining.add(itemPackedNew);
 				}
 
-				if (qtyToRemove.compareTo(pckItem.getQtySum()) != 0)
-				{
-					itemPackedNew.setClosed(false);
-				}
-
 				// if we already have an item, add the extracted scheds to the existent one
 				if (itemUnpacked != null)
 				{

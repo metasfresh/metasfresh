@@ -89,20 +89,15 @@ public interface IPackingItem
 
 	I_M_Product getM_Product();
 
-	Quantity retrieveVolumeSingle(String trxName);
+	Quantity retrieveVolumeSingle();
 
 	BigDecimal computeWeightInProductUOM();
 
-	BigDecimal retrieveWeightSingle(String trxName);
+	BigDecimal retrieveWeightSingle();
 
 	void setQtyForSched(I_M_ShipmentSchedule sched, Quantity qty);
 
 	Quantity getQtySum();
 
 	List<I_M_ShipmentSchedule> getShipmentSchedules();
-
-	void setClosed(boolean isClosed);
-
-	boolean isClosed();
-
 }

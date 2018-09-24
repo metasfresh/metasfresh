@@ -157,7 +157,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 					tk.setPackingItem(pck);
 					tk.setUsedBin(boxes.get(getSelectedBox().getBoxNo()));
 					tk.setStatus(getProductState(pck, getSelectedBox().getBoxNo()));
-					tk.setEnabledKey(!pck.isClosed());
+					tk.setEnabledKey(true);
 					list.add(tk);
 				}
 			}
@@ -179,11 +179,6 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 
 	protected PackingStates getProductState(final IPackingItem pck, final PackingItemsMapKey boxNo)
 	{
-		if (pck.isClosed())
-		{
-			return PackingStates.closed; // freezed
-		}
-
 		final PackingItemsMap packItems = getPackageTerminalPanel().getPackItems();
 		boolean unpacked = false;
 		boolean packed = boxNo.isUnpacked();

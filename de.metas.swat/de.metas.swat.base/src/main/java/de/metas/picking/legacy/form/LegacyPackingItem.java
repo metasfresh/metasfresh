@@ -110,10 +110,10 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 		final String trxName = getTrxName();
 
 		final BigDecimal volOther = Utils.convertToItemUOM(o, o.getQtySum())
-				.multiply(Utils.convertToItemUOM(o, o.retrieveVolumeSingle(trxName)));
+				.multiply(Utils.convertToItemUOM(o, o.retrieveVolumeSingle()));
 
 		final BigDecimal volThis = Utils.convertToItemUOM(this, getQtySum())
-				.multiply(Utils.convertToItemUOM(this, retrieveVolumeSingle(trxName)));
+				.multiply(Utils.convertToItemUOM(this, retrieveVolumeSingle()));
 
 		return volThis.compareTo(volOther);
 	}

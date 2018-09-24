@@ -35,7 +35,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
@@ -68,7 +67,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 	private I_M_Product product; // lazy
 	private final I_C_UOM uom;
 	private BigDecimal weightSingle;
-	private boolean closed = false;
 
 	/**
 	 * See {@link #AbstractPackingItem(Map, int)}.
@@ -121,7 +119,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 			product = copyFromItem.product;
 			uom = copyFromItem.uom;
 			weightSingle = copyFromItem.weightSingle;
-			closed = copyFromItem.closed;
 		}
 		else
 		{
@@ -146,19 +143,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		product = itemCasted.product;
 		// this.uom = itemCasted.uom;
 		weightSingle = itemCasted.weightSingle;
-		closed = itemCasted.closed;
-	}
-
-	@Override
-	public final boolean isClosed()
-	{
-		return closed;
-	}
-
-	@Override
-	public final void setClosed(final boolean closed)
-	{
-		this.closed = closed;
 	}
 
 	/**
@@ -241,11 +225,12 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final BigDecimal retrieveWeightSingle(final String trxName)
+	public final BigDecimal retrieveWeightSingle()
 	{
 		if (weightSingle == null)
 		{
-			weightSingle = getM_Product().getWeight();
+			final I_M_Product product = getM_Product();
+			weightSingle = product.getWeight();
 		}
 		return weightSingle;
 	}
@@ -255,7 +240,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	{
 		BigDecimal computedWeight = BigDecimal.ZERO;
 
-		final BigDecimal weightPerUnit = retrieveWeightSingle(ITrx.TRXNAME_None);
+		final BigDecimal weightPerUnit = retrieveWeightSingle();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		for (final I_M_ShipmentSchedule sched : getShipmentSchedules())
@@ -269,9 +254,10 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final Quantity retrieveVolumeSingle(final String trxName)
+	public final Quantity retrieveVolumeSingle()
 	{
-		return Quantity.of(getM_Product().getVolume(), getM_Product().getC_UOM());
+		final I_M_Product product = getM_Product();
+		return Quantity.of(product.getVolume(), product.getC_UOM());
 	}
 
 	@Override
