@@ -45,8 +45,13 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
+import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
+import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.IDBService;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.exceptions.DBException;
@@ -959,6 +964,23 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final int result = DB.executeUpdateEx(sql, trxName);
 		logger.debug("Deleted {} {} entries for AD_Pinstance_ID={}", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId);
+
+		// invalidate the shipment schedule cache after commit
+		Services.get(ITrxManager.class)
+				.getTrxListenerManagerOrAutoCommit(trxName)
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> invalidateShipmentScheduleCache());
+	}
+
+	private void invalidateShipmentScheduleCache()
+	{
+		final CacheInvalidateMultiRequest //
+		multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+
+		final IModelCacheInvalidationService //
+		modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	@Override
