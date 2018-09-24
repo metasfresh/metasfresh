@@ -4,7 +4,7 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.async.spi.impl.C_BPartner_UpdateStatsFromBPartner;
 import lombok.NonNull;
 
-public class AsyncBPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
+public class BPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 {
 
 	@Override
