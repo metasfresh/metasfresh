@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 import de.metas.request.RequestId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -106,7 +105,8 @@ public class InboundEMailRepository
 		mailRecord.setR_Request_ID(RequestId.toRepoId(email.getRequestId()));
 
 		final ClientId adClientId = ClientId.ofRepoId(mailRecord.getAD_Client_ID());
-		final UserId fromUserId = getUserIdByEMailOrNull(email.getFrom(), adClientId);
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		final UserId fromUserId = usersRepo.retrieveUserIdByEMail(email.getFrom(), adClientId);
 		if (fromUserId != null)
 		{
 			mailRecord.setFrom_User_ID(fromUserId.getRepoId());
@@ -126,22 +126,6 @@ public class InboundEMailRepository
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("map", map);
 		}
-	}
-
-	private UserId getUserIdByEMailOrNull(final String email, final ClientId adClientId)
-	{
-		if (Check.isEmpty(email, true))
-		{
-			return null;
-		}
-
-		final String emailNorm = extractEMailAddressOrNull(email);
-		if (Check.isEmpty(emailNorm, true))
-		{
-			return null;
-		}
-
-		return Services.get(IUserDAO.class).retrieveUserIdByEMail(emailNorm, adClientId);
 	}
 
 	private static final String extractEMailAddressOrNull(final String email)

@@ -1,16 +1,21 @@
 package de.metas.inbound.mail.request;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
+import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_R_Request;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inbound.mail.InboundEMail;
 import de.metas.inbound.mail.InboundEMailListener;
 import de.metas.inbound.mail.InboundEMailRepository;
 import de.metas.inbound.mail.config.InboundEMailConfig;
 import de.metas.request.RequestId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -73,10 +78,20 @@ public class RequestFromInboundEMailListener implements InboundEMailListener
 		request.setSummary(email.getSubject());
 		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
 		request.setAD_Org_ID(config.getOrgId().getRepoId());
-		// request.setC_BPartner_ID(...); // TODO
-		// request.setAD_User_ID(...); // TODO
 		request.setR_RequestType_ID(config.getRequestTypeId().getRepoId());
 		request.setStartDate(TimeUtil.asTimestamp(email.getReceivedDate()));
+
+		final ClientId adClientId = ClientId.ofRepoId(request.getAD_Client_ID());
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		final UserId userId = usersRepo.retrieveUserIdByEMail(email.getFrom(), adClientId);
+		if (userId != null)
+		{
+			request.setAD_User_ID(userId.getRepoId());
+
+			final BPartnerId bpartnerId = usersRepo.getBPartnerIdByUserId(userId);
+			request.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		}
+
 		InterfaceWrapperHelper.save(request);
 
 		return RequestId.ofRepoId(request.getR_Request_ID());
