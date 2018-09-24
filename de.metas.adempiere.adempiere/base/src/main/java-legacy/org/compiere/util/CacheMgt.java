@@ -389,7 +389,7 @@ public final class CacheMgt
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx))
+		if (!trxManager.isActive(trx))
 		{
 			reset(request, ResetMode.LOCAL_AND_BROADCAST);
 		}

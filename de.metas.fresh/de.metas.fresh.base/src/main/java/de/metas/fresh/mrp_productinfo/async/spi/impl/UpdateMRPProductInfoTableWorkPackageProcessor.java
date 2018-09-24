@@ -46,25 +46,34 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 		@Override
 		protected Properties extractCtxFromItem(final IMRPProductInfoSelector item)
 		{
-			return InterfaceWrapperHelper.getCtx(item.getModelOrNull());
+			return item.getCtx();
 		}
 
 		@Override
 		protected String extractTrxNameFromItem(final IMRPProductInfoSelector item)
 		{
-			return InterfaceWrapperHelper.getTrxName(item.getModelOrNull());
+			return item.getTrxName();
 		}
 
+		/** @return null
+		 */
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final IMRPProductInfoSelector item)
 		{
-			return item.getModelOrNull();
+			return null;
 		}
 
 		@Override
 		protected Map<String, Object> extractParametersFromItem(final IMRPProductInfoSelector item)
 		{
 			return item.asMap();
+		}
+
+		/** @return {@code true} because we don't enqueue elements, just parameters. */
+		@Override
+		protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
+		{
+			return true;
 		}
 	};
 
