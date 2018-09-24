@@ -61,7 +61,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 		final String trxName = extractTrxNameFromItem(item);
 		final ITrx trx = trxManager.getTrx(trxName);
-		if (trxManager.isNull(trx))
+		if (!trxManager.isActive(trx))
 		{
 			final CollectorType collector = newCollector(item);
 			collectItem(collector, item);
