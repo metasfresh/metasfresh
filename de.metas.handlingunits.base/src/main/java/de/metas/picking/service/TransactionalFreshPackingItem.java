@@ -1,15 +1,13 @@
 package de.metas.picking.service;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.quantity.Quantity;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 
 /*
  * #%L
@@ -50,7 +48,7 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 
 	private final FreshPackingItem root;
 
-	TransactionalFreshPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
+	TransactionalFreshPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
 	{
 		super();
 		id = nextId.incrementAndGet();

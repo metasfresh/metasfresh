@@ -34,7 +34,6 @@ import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -350,7 +349,7 @@ public abstract class Packing extends MvcGenForm
 			{
 				final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
 
-				final Map<I_M_ShipmentSchedule, Quantity> schedWithQty = Collections.singletonMap(
+				final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(
 						sched,
 						Quantity.of(
 								qtyToDeliver,

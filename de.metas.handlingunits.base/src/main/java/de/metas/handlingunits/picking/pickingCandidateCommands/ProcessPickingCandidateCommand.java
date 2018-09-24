@@ -1,9 +1,7 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -33,6 +31,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingContext;
@@ -162,7 +161,7 @@ public class ProcessPickingCandidateCommand
 
 	private IFreshPackingItem createItemToPack(final HuId huId)
 	{
-		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new IdentityHashMap<>();
+		final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
 
 		final List<PickingCandidate> pickingCandidates = getPickingCandidatesForHUId(huId);
 		for (final PickingCandidate pc : pickingCandidates)
@@ -170,11 +169,10 @@ public class ProcessPickingCandidateCommand
 			final ShipmentScheduleId shipmentScheduleId = pc.getShipmentScheduleId();
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId);
 			final Quantity qty = pc.getQtyPicked();
-			scheds2Qtys.put(shipmentSchedule, qty);
+			scheds2Qtys.setQty(shipmentSchedule, qty);
 		}
 
-		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
-		return itemToPack;
+		return FreshPackingItemHelper.create(scheds2Qtys);
 	}
 
 	private ImmutableList<PickingCandidate> getPickingCandidatesForHUId(final HuId huId)

@@ -4,7 +4,6 @@
 package de.metas.picking.service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -25,6 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.AbstractPackingItem;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ import lombok.NonNull;
  */
 public final class FreshPackingItem extends AbstractPackingItem implements IFreshPackingItem
 {
-	FreshPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
+	FreshPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
 	{
 		super(scheds2Qtys);
 	}
@@ -149,7 +149,7 @@ public final class FreshPackingItem extends AbstractPackingItem implements IFres
 			@NonNull final Quantity subtrahent,
 			@Nullable final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
-		final Map<I_M_ShipmentSchedule, Quantity> sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
+		final ShipmentScheduleQtyPickedMap sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
 		return FreshPackingItemHelper.create(sched2qty);
 	}
 

@@ -1,7 +1,6 @@
 package de.metas.picking.service.impl;
 
 import java.text.MessageFormat;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -24,6 +23,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
@@ -46,17 +46,16 @@ public class PackingService implements IPackingService
 	public void removeProductQtyFromHU(
 			final Properties ctx,
 			final I_M_HU hu,
-			final Map<I_M_ShipmentSchedule, Quantity> schedules2qty)
+			final ShipmentScheduleQtyPickedMap schedules2qty)
 	{
 		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> {
 
 			final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
-			for (final Map.Entry<I_M_ShipmentSchedule, Quantity> e : schedules2qty.entrySet())
+			for (final I_M_ShipmentSchedule schedule : schedules2qty.getShipmentSchedules())
 			{
-				final I_M_ShipmentSchedule schedule = e.getKey();
-				final Quantity qtyToRemove = e.getValue();
+				final Quantity qtyToRemove = schedules2qty.getQty(schedule);
 
 				removeProductQtyFromHU(huContext, hu, schedule, qtyToRemove);
 			}
@@ -78,7 +77,7 @@ public class PackingService implements IPackingService
 				qtyToRemove.getUOM(),
 				SystemTime.asDate(),
 				schedule // reference model
-				);
+		);
 
 		//
 		// Allocation Destination

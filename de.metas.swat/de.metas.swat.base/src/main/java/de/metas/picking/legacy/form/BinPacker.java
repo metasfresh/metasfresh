@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -40,7 +39,6 @@ import org.adempiere.model.I_M_PackagingContainer;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.NoContainerException;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
 import de.metas.quantity.Quantity;
@@ -209,7 +207,7 @@ public class BinPacker implements IBinPacker
 			{
 				// split the current item and move a part into a new item to be
 				// located in our bin
-				final Map<I_M_ShipmentSchedule, Quantity> qtysToTransfer = unpackedPi.subtract(binFreeQty);
+				final ShipmentScheduleQtyPickedMap qtysToTransfer = unpackedPi.subtract(binFreeQty);
 				final LegacyPackingItem newPi = new LegacyPackingItem(qtysToTransfer, trxName);
 
 				final DefaultMutableTreeNode newItemNode = new DefaultMutableTreeNode(newPi);

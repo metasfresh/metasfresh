@@ -15,9 +15,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.junit.Ignore;
@@ -36,6 +34,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingContext;
@@ -109,7 +108,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 	private void setupContext(final int... qtysToDeliver)
 	{
-		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new LinkedHashMap<>(); // using LinkedHashMap because we want the ordering to be "stable".
+		final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
 		//
 		// Create Items to Pack
 		int qtyToDeliverSum = 0;
@@ -118,7 +117,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 			final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
 			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
 
-			scheds2Qtys.put(schedule, Quantity.of(qtyToDeliverBD, uomEach));
+			scheds2Qtys.setQty(schedule, Quantity.of(qtyToDeliverBD, uomEach));
 			qtyToDeliverSum += qtyToDeliver;
 		}
 		this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
@@ -187,7 +186,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat(shipmentScheduleWithTen.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithTen.getQty()));
 
 		// packing item guards
-		final Map<I_M_ShipmentSchedule, Quantity> qtys = itemToPack.getQtys();
+		final ShipmentScheduleQtyPickedMap qtys = itemToPack.getQtys();
 		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
 
@@ -250,7 +249,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
 
 		// packing item guards
-		final Map<I_M_ShipmentSchedule, Quantity> qtys = itemToPack.getQtys();
+		final ShipmentScheduleQtyPickedMap qtys = itemToPack.getQtys();
 		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
 		itemToPack.getShipmentSchedules();

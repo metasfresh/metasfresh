@@ -237,7 +237,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		for (final X_M_PackagingTreeItem upck : unPackedItems)
 		{
 			final List<X_M_PackagingTreeItemSched> schedItems = PackingTreeBL.getSchedforItem(upck.getM_PackagingTreeItem_ID());
-			Map<I_M_ShipmentSchedule, Quantity> schedWithQty = new HashMap<>();
+			ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.newInstance();
 			for (final X_M_PackagingTreeItemSched schedItem : schedItems)
 			{
 				final I_M_ShipmentSchedule sched = schedItem.getM_ShipmentSchedule();
@@ -247,7 +247,7 @@ public class PackingTreeModel extends DefaultTreeModel
 					continue;
 				}
 
-				schedWithQty = Collections.singletonMap(sched, Quantity.of(
+				schedWithQty = ShipmentScheduleQtyPickedMap.singleton(sched, Quantity.of(
 						schedItem.getQty(),
 						Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched)));
 			}
@@ -348,7 +348,7 @@ public class PackingTreeModel extends DefaultTreeModel
 				if (pack.getRef_M_PackagingTreeItem_ID() == box.getM_PackagingTreeItem_ID())
 				{
 					final List<X_M_PackagingTreeItemSched> schedItems = PackingTreeBL.getSchedforItem(pack.getM_PackagingTreeItem_ID());
-					final Map<I_M_ShipmentSchedule, Quantity> schedWithQty = new HashMap<>();
+					final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.newInstance();
 					for (final X_M_PackagingTreeItemSched schedItem : schedItems)
 					{
 						final I_M_ShipmentSchedule sched = schedItem.getM_ShipmentSchedule();
@@ -357,7 +357,7 @@ public class PackingTreeModel extends DefaultTreeModel
 							throw new AdempiereException();
 						}
 
-						schedWithQty.put(sched, Quantity.of(
+						schedWithQty.setQty(sched, Quantity.of(
 								schedItem.getQty(),
 								Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched)));
 					}
@@ -665,7 +665,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	@SuppressWarnings("unchecked")
 	public void removeUsedBin(final Properties ctx, final DefaultMutableTreeNode usedBinToRemoveNode)
 	{
-		final Map<ArrayKey, Map<I_M_ShipmentSchedule, Quantity>> key2Scheds = new HashMap<>();
+		final Map<ArrayKey, ShipmentScheduleQtyPickedMap> key2Scheds = new HashMap<>();
 
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -692,23 +692,22 @@ public class PackingTreeModel extends DefaultTreeModel
 				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
 				final boolean includeBPartner = true;
 				final ArrayKey key = shipmentScheduleBL.mkKeyForGrouping(schedToRemove, includeBPartner);
-				Map<I_M_ShipmentSchedule, Quantity> scheds = key2Scheds.get(key);
+				ShipmentScheduleQtyPickedMap scheds = key2Scheds.get(key);
 
 				if (scheds == null)
 				{
-					scheds = new HashMap<>();
+					scheds = ShipmentScheduleQtyPickedMap.newInstance();
 					key2Scheds.put(key, scheds);
 				}
 
-				final Quantity existingRemovedQty = scheds.get(schedToRemove);
-
+				final Quantity existingRemovedQty = scheds.getQty(schedToRemove);
 				if (existingRemovedQty == null)
 				{
-					scheds.put(schedToRemove, itemToRemove.getQtyForSched(schedToRemove));
+					scheds.setQty(schedToRemove, itemToRemove.getQtyForSched(schedToRemove));
 				}
 				else
 				{
-					scheds.put(schedToRemove, existingRemovedQty.add(itemToRemove.getQtyForSched(schedToRemove)));
+					scheds.setQty(schedToRemove, existingRemovedQty.add(itemToRemove.getQtyForSched(schedToRemove)));
 				}
 			}
 			nodesToRemove.add(itemToRemoveNode);
@@ -729,7 +728,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final DefaultMutableTreeNode existingUnpackedItemNode = enUnpackedItems.nextElement();
 			final LegacyPackingItem existingUnpackedItem = (LegacyPackingItem)existingUnpackedItemNode.getUserObject();
 
-			final Map<I_M_ShipmentSchedule, Quantity> newlyUnpackedScheds = key2Scheds.remove(Util.mkKey(existingUnpackedItem.getProductId()));
+			final ShipmentScheduleQtyPickedMap newlyUnpackedScheds = key2Scheds.remove(Util.mkKey(existingUnpackedItem.getProductId()));
 
 			if (newlyUnpackedScheds == null)
 			{
@@ -745,7 +744,7 @@ public class PackingTreeModel extends DefaultTreeModel
 		// create new unpacked items for the products that are still in prodId2Scheds
 		for (final ArrayKey productId : key2Scheds.keySet())
 		{
-			final Map<I_M_ShipmentSchedule, Quantity> sched2qty = key2Scheds.get(productId);
+			final ShipmentScheduleQtyPickedMap sched2qty = key2Scheds.get(productId);
 
 			final LegacyPackingItem newUnpackedItem = new LegacyPackingItem(sched2qty, usedBin.getTrxName());
 
@@ -824,8 +823,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	{
 		final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 
-		final Map<I_M_ShipmentSchedule, Quantity> qtysToTransfer = //
-				subtractPackingItem(packingItemNode, qty);
+		final ShipmentScheduleQtyPickedMap qtysToTransfer = subtractPackingItem(packingItemNode, qty);
 
 		final DefaultMutableTreeNode existingUnpackedItemNode = findUnpackedPackingItemNode(packingItem);
 
@@ -852,13 +850,13 @@ public class PackingTreeModel extends DefaultTreeModel
 		}
 	}
 
-	private Map<I_M_ShipmentSchedule, Quantity> subtractPackingItem(
+	private ShipmentScheduleQtyPickedMap subtractPackingItem(
 			final DefaultMutableTreeNode packingItemNode,
 			final Quantity qty)
 	{
 		final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 
-		final Map<I_M_ShipmentSchedule, Quantity> result = packingItem.subtract(qty);
+		final ShipmentScheduleQtyPickedMap result = packingItem.subtract(qty);
 
 		if (packingItem.getQtySum().signum() > 0)
 		{
@@ -880,7 +878,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	 */
 	private void addPackingItem(
 			final DefaultMutableTreeNode newUsedBinNode,
-			final Map<I_M_ShipmentSchedule, Quantity> qtysToTransfer,
+			final ShipmentScheduleQtyPickedMap qtysToTransfer,
 			final LegacyPackingItem packingItem)
 	{
 		final DefaultMutableTreeNode existingPiNode = findPackingItemNode(newUsedBinNode, packingItem);
@@ -905,7 +903,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final DefaultMutableTreeNode newUsedBin,
 			final Quantity qty)
 	{
-		final Map<I_M_ShipmentSchedule, Quantity> qtyToUse = subtractPackingItem(itemNode, qty);
+		final ShipmentScheduleQtyPickedMap qtyToUse = subtractPackingItem(itemNode, qty);
 
 		final LegacyPackingItem packingItem = (LegacyPackingItem)itemNode.getUserObject();
 

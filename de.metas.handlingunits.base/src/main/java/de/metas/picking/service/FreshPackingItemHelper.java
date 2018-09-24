@@ -1,10 +1,7 @@
 package de.metas.picking.service;
 
-import java.util.Map;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.quantity.Quantity;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -76,7 +73,7 @@ public final class FreshPackingItemHelper
 	 * @param scheds2Qtys
 	 * @return
 	 */
-	public static IFreshPackingItem create(@NonNull final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys)
+	public static IFreshPackingItem create(@NonNull final ShipmentScheduleQtyPickedMap scheds2Qtys)
 	{
 		return new TransactionalFreshPackingItem(scheds2Qtys);
 	}

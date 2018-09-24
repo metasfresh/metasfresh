@@ -2,7 +2,6 @@ package de.metas.picking.service.impl;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -29,6 +28,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
@@ -224,7 +224,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		packingService.packItem(packingContext, itemToPack, qtyToPack, itemPackedProcessor);
 	}
 
-	private void transferQtyToTargetHU(final Map<I_M_ShipmentSchedule, Quantity> schedules2qty)
+	private void transferQtyToTargetHU(final ShipmentScheduleQtyPickedMap schedules2qty)
 	{
 		schedules2qty.forEach(this::transferQtyToTargetHU);
 	}

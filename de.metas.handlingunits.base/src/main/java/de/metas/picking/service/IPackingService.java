@@ -1,16 +1,15 @@
 package de.metas.picking.service;
 
-import java.util.Map;
 import java.util.Properties;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
 public interface IPackingService extends ISingletonService
 {
-	void removeProductQtyFromHU(Properties ctx, I_M_HU hu, Map<I_M_ShipmentSchedule, Quantity> schedules2qty);
+	void removeProductQtyFromHU(Properties ctx, I_M_HU hu, ShipmentScheduleQtyPickedMap schedules2qty);
 
 	/**
 	 * From <code>itemToPack</code> take out the <code>qtyToPack</code>, create a new packed item for that qty and send it to <code>itemPackedProcessor</code>.

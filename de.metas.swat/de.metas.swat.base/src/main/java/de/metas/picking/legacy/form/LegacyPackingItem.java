@@ -26,15 +26,12 @@ package de.metas.picking.legacy.form;
  */
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.picking.terminal.Utils;
-import de.metas.quantity.Quantity;
 
 /**
  *
@@ -61,14 +58,14 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 		}
 	}
 
-	public LegacyPackingItem(final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys, final String trxName)
+	public LegacyPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys, final String trxName)
 	{
 		super(scheds2Qtys);
 		this.trxName = trxName;
 	}
 
 	public LegacyPackingItem(
-			final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys,
+			final ShipmentScheduleQtyPickedMap scheds2Qtys,
 			final int groupingKey,
 			final String trxName)
 	{

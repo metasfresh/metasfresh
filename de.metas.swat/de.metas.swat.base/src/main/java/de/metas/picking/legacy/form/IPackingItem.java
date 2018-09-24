@@ -2,7 +2,6 @@ package de.metas.picking.legacy.form;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 import org.compiere.model.I_C_UOM;
@@ -55,7 +54,7 @@ public interface IPackingItem
 
 	void addSchedules(IPackingItem packingItem);
 
-	void addSchedules(Map<I_M_ShipmentSchedule, Quantity> toAdd);
+	void addSchedules(ShipmentScheduleQtyPickedMap toAdd);
 
 	/**
 	 *
@@ -64,7 +63,7 @@ public interface IPackingItem
 	 * @return subtracted schedule/qty pairs
 	 * @throws PackingItemSubtractException if required qty could not be fully subtracted (and there were no shipment schedules excluded by the accept predicate)
 	 */
-	Map<I_M_ShipmentSchedule, Quantity> subtract(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
+	ShipmentScheduleQtyPickedMap subtract(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 
 	/**
 	 *
@@ -72,9 +71,9 @@ public interface IPackingItem
 	 * @return subtracted schedule/qty pairs
 	 * @throws PackingItemSubtractException if required qty could not be fully subtracted
 	 */
-	Map<I_M_ShipmentSchedule, Quantity> subtract(Quantity subtrahent);
+	ShipmentScheduleQtyPickedMap subtract(Quantity subtrahent);
 
-	Map<I_M_ShipmentSchedule, Quantity> getQtys();
+	ShipmentScheduleQtyPickedMap getQtys();
 
 	/**
 	 * For this item, return the open quantity to be packed for the given {@code sched}.

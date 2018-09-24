@@ -36,9 +36,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -64,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingContext;
@@ -119,7 +118,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		//
 		// Create Item to Pack
 		{
-			final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new HashMap<>();
+			final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
 			this.shipmentSchedule = createAndAppendShipmentSchedule(scheds2Qtys, qtyToDeliver);
 
 			this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
@@ -313,13 +312,13 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	}
 
 	public I_M_ShipmentSchedule createAndAppendShipmentSchedule(
-			final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys,
+			final ShipmentScheduleQtyPickedMap scheds2Qtys,
 			final int qtyToDeliver)
 	{
-		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
+		final BigDecimal qtyToDeliverBD = BigDecimal.valueOf(qtyToDeliver);
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
 
-		scheds2Qtys.put(schedule, Quantity.of(qtyToDeliverBD, uomEach));
+		scheds2Qtys.setQty(schedule, Quantity.of(qtyToDeliverBD, uomEach));
 		return schedule;
 	}
 

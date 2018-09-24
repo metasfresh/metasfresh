@@ -2,7 +2,6 @@ package de.metas.picking.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -15,6 +14,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
@@ -113,13 +113,13 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public void addSchedules(final Map<I_M_ShipmentSchedule, Quantity> toAdd)
+	public void addSchedules(final ShipmentScheduleQtyPickedMap toAdd)
 	{
 		getDelegate().addSchedules(toAdd);
 	}
 
 	@Override
-	public Map<I_M_ShipmentSchedule, Quantity> subtract(
+	public ShipmentScheduleQtyPickedMap subtract(
 			final Quantity subtrahent,
 			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
@@ -141,13 +141,13 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public Map<I_M_ShipmentSchedule, Quantity> subtract(final Quantity subtrahent)
+	public ShipmentScheduleQtyPickedMap subtract(final Quantity subtrahent)
 	{
 		return getDelegate().subtract(subtrahent);
 	}
 
 	@Override
-	public Map<I_M_ShipmentSchedule, Quantity> getQtys()
+	public ShipmentScheduleQtyPickedMap getQtys()
 	{
 		return getDelegate().getQtys();
 	}

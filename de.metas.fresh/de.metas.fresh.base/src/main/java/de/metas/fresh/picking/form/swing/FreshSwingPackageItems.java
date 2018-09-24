@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -61,10 +60,10 @@ import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.exceptions.HULoadException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.IPackingService;
@@ -580,7 +579,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				//
 				// take out qtyToRemove from our packing item
 				final Properties ctx = getTerminalContext().getCtx();
-				final Map<I_M_ShipmentSchedule, Quantity> qtyToRemoveAlloc = itemPackedNew.subtract(qtyToRemove);
+				final ShipmentScheduleQtyPickedMap qtyToRemoveAlloc = itemPackedNew.subtract(qtyToRemove);
 				packingService.removeProductQtyFromHU(ctx, hu, qtyToRemoveAlloc);
 
 				// if all qty is packed, no need to store the current item

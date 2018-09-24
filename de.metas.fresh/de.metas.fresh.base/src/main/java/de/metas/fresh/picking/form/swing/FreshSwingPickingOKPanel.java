@@ -30,7 +30,6 @@ import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
@@ -154,7 +154,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 				// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
 				// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
 				// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-				final Map<I_M_ShipmentSchedule, Quantity> schedWithQty = Collections.singletonMap(
+				final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(
 						sched,
 						Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
 
