@@ -244,17 +244,23 @@ class Lookup extends Component {
   // TODO: Rewrite per widget
   handleClear = () => {
     const { onChange, properties, onSelectBarcode } = this.props;
+    const onChangeResp = onChange && onChange(properties, null, false);
 
-    onChange && onChange(properties, null, false);
-    onSelectBarcode && onSelectBarcode(null);
+    if (onChangeResp && onChangeResp.then) {
+      onChangeResp.then(resp => {
+        if (resp) {
+          onSelectBarcode && onSelectBarcode(null);
 
-    this.setState({
-      isInputEmpty: true,
-      property: '',
-      initialFocus: true,
-      localClearing: true,
-      autofocusDisabled: false,
-    });
+          this.setState({
+            isInputEmpty: true,
+            property: '',
+            initialFocus: true,
+            localClearing: true,
+            autofocusDisabled: false,
+          });
+        }
+      });
+    }
   };
 
   handleListFocus = field => {
