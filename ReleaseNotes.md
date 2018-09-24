@@ -13,8 +13,15 @@ Here come the actual release notes:
 # metasfresh 5.76
 ## Features
 * metasfresh
+  * [#4582](https://github.com/metasfresh/metasfresh/issues/4582) Excel Export and SQL for Product Specifications
+  * [#4601](https://github.com/metasfresh/metasfresh/issues/4601) Allow activating spring profiles via AD_SysConfig
   * [#4605](https://github.com/metasfresh/metasfresh/issues/4605) Webui: Org window: hide the AD_Org_ID field
     * Hiding the Organisation Field in Organisation Window.
+  * [#4610](https://github.com/metasfresh/metasfresh/issues/4610) Billto Location and contact override in invoicecandidates
+  * [#4619](https://github.com/metasfresh/metasfresh/issues/4619) de.metas.util - Rename packages to de.metas.util
+
+* metasfresh-webui-api
+  * [#1049](https://github.com/metasfresh/metasfresh-webui-api/issues/1049) Pipes/Cabling quick input shall not display the BOM products
 
 * metasfresh-webui-frontend
   * [#1926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1926) Make window tabs cypress friendly
@@ -23,6 +30,12 @@ Here come the actual release notes:
     * Enhancing the error messages in Forgot Password workflow.
 
 ## Fixes
+
+* metasfresh
+  * [#4599](https://github.com/metasfresh/metasfresh/issues/4599) Error when posting a zero-sum invoice
+
+* metasfresh-webui-api
+  * [#1051](https://github.com/metasfresh/metasfresh-webui-api/issues/1051) New Org cannot be created anymore
 
 * metasfresh-webui-frontend
   *[#1949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1949) Shortcuts not working properly in Tabs after changing sth in grid view + [Tab]
