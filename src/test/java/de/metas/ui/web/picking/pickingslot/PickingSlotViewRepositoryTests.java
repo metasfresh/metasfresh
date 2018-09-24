@@ -169,6 +169,7 @@ public class PickingSlotViewRepositoryTests
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setC_BPartner_ID(1);
+		shipmentSchedule.setC_BPartner_Location_ID(2);
 		shipmentSchedule.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		save(shipmentSchedule);
 		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
