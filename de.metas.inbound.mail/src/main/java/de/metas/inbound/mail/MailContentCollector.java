@@ -192,7 +192,7 @@ final class MailContentCollector
 
 			attachments.add(InboundEMailAttachment.builder()
 					.filename(fileName)
-					.contentType(contentType.toString())
+					.contentType(contentType.getBaseType())
 					.tempFile(tempFile)
 					.build());
 		}
