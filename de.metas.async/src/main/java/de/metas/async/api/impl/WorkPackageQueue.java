@@ -751,13 +751,18 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		}
 		finally
 		{
-			// Callback: if something went wrong we need to unregister the callback
-			if (!success)
+			try
 			{
-				queueProcessorEventDispatcher.unregisterListener(callback, workPackage.getC_Queue_WorkPackage_ID());
+				// Callback: if something went wrong we need to unregister the callback
+				if (!success)
+				{
+					queueProcessorEventDispatcher.unregisterListener(callback, workPackage.getC_Queue_WorkPackage_ID());
+				}
 			}
-
-			mainLock.unlock();
+			finally
+			{
+				mainLock.unlock(); // make sure we unlock, even if unregisterListener failed
+			}
 		}
 
 	}

@@ -49,9 +49,12 @@ import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Getter;
+import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -414,6 +417,11 @@ public interface IQuery<T>
 	 */
 	List<Integer> listIds();
 
+	default <ID extends RepoIdAware> ImmutableSet<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
+	}
+	
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *

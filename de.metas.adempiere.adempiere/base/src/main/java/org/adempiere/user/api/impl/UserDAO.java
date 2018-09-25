@@ -25,6 +25,11 @@ package org.adempiere.user.api.impl;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -43,6 +48,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -202,14 +208,26 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public UserId retrieveUserIdByEMail(@NonNull final String email, @NonNull final ClientId adClientId)
+	public UserId retrieveUserIdByEMail(@Nullable final String email, @NonNull final ClientId adClientId)
 	{
-		final List<Integer> userIds = Services.get(IQueryBL.class)
+		if (Check.isEmpty(email, true))
+		{
+			return null;
+		}
+
+		final String emailNorm = extractEMailAddressOrNull(email);
+		if (emailNorm == null)
+		{
+			return null;
+		}
+
+		final Set<UserId> userIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, email)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, emailNorm)
 				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
 				.create()
-				.listIds();
+				.listIds(UserId::ofRepoId);
 
 		if (userIds.isEmpty())
 		{
@@ -217,14 +235,27 @@ public class UserDAO implements IUserDAO
 		}
 		else if (userIds.size() == 1)
 		{
-			return UserId.ofRepoId(userIds.get(0));
+			return userIds.iterator().next();
 		}
 		else
 		{
 			// more than one user found for given mail.
 			// shall not happen but it's better to return null instead of returning to first/random one,
 			// because might be that some BL will link confidential infos to that (wrong) user/bpartner.
-			logger.info("Found more than one user for email={} and clientId={}: {}. Returning null", email, adClientId, userIds);
+			logger.info("Found more than one user for email={} (normalized: {}) and clientId={}: {}. Returning null", email, emailNorm, adClientId, userIds);
+			return null;
+		}
+	}
+
+	private static final String extractEMailAddressOrNull(final String email)
+	{
+		try
+		{
+			return new InternetAddress(email).getAddress();
+		}
+		catch (AddressException e)
+		{
+			logger.warn("Invalid email address `{}`. Returning null.", email, e);
 			return null;
 		}
 	}
@@ -240,5 +271,12 @@ public class UserDAO implements IUserDAO
 				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
 				.listIds();
+	}
+
+	@Override
+	public BPartnerId getBPartnerIdByUserId(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = retrieveUser(userId.getRepoId());
+		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
 	}
 }

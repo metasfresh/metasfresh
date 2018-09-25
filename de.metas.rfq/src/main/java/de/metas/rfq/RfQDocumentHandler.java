@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;

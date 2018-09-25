@@ -32,6 +32,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
 import de.metas.util.ISingletonService;
 
 public interface IUserDAO extends ISingletonService
@@ -75,4 +76,6 @@ public interface IUserDAO extends ISingletonService
 	 * @return AD_User_IDs
 	 */
 	List<Integer> retrieveSystemUserIds();
+
+	BPartnerId getBPartnerIdByUserId(final UserId userId);
 }

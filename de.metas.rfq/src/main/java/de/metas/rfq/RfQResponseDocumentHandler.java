@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
