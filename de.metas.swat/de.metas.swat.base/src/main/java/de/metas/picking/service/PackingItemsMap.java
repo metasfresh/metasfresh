@@ -1,37 +1,14 @@
 package de.metas.picking.service;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
 
 import de.metas.picking.legacy.form.IPackingItem;
 import lombok.NonNull;
@@ -62,74 +39,51 @@ public final class PackingItemsMap
 		return map;
 	}
 
-	private final Map<PackingItemsMapKey, List<IPackingItem>> itemsMap = new HashMap<>();
+	private final ListMultimap<PackingSlot, IPackingItem> items;
 
 	public PackingItemsMap()
 	{
-		final List<IPackingItem> unpackedItems = new ArrayList<>();
-		itemsMap.put(PackingItemsMapKey.UNPACKED, unpackedItems);
+		items = MultimapBuilder.hashKeys()
+				.arrayListValues()
+				.build();
 	}
 
 	/** Copy constructor */
 	private PackingItemsMap(final PackingItemsMap copyFrom)
 	{
-		//
-		// Do a deep-copy of "copyFrom"'s map
-		for (final Entry<PackingItemsMapKey, List<IPackingItem>> key2itemsList : copyFrom.itemsMap.entrySet())
-		{
-			final List<IPackingItem> items = key2itemsList.getValue();
-
-			// skip null items (shall not happen)
-			if (items == null)
-			{
-				continue;
-			}
-
-			// NOTE: to avoid NPEs we are also copying empty lists
-
-			final List<IPackingItem> itemsCopy = new ArrayList<>(items);
-
-			final PackingItemsMapKey key = key2itemsList.getKey();
-
-			itemsMap.put(key, itemsCopy);
-		}
+		items = MultimapBuilder.hashKeys()
+				.arrayListValues()
+				.build(copyFrom.items);
 	}
 
-	public List<IPackingItem> get(final PackingItemsMapKey key)
+	public ImmutableList<IPackingItem> getBySlot(final PackingSlot slot)
 	{
-		return itemsMap.get(key);
+		return ImmutableList.copyOf(items.get(slot));
 	}
 
-	private void addUnpackedItems(final Collection<? extends IPackingItem> unpackedItemsToAdd)
+	public final ImmutableList<IPackingItem> getUnpackedItems()
 	{
-		if (unpackedItemsToAdd == null || unpackedItemsToAdd.isEmpty())
-		{
-			return;
-		}
-
-		final List<IPackingItem> unpackedItems = getUnpackedItems();
-		unpackedItems.addAll(unpackedItemsToAdd);
+		return getBySlot(PackingSlot.UNPACKED);
 	}
 
-	public final List<IPackingItem> getUnpackedItems()
+	public void addUnpackedItem(@NonNull final IPackingItem item)
 	{
-		return itemsMap.computeIfAbsent(PackingItemsMapKey.UNPACKED, k -> new ArrayList<>());
+		addItem(PackingSlot.UNPACKED, item);
 	}
 
-	public void addUnpackedItem(@NonNull final IPackingItem unpackedItemToAdd)
+	public void addUnpackedItems(final Collection<? extends IPackingItem> items)
 	{
-		final List<IPackingItem> unpackedItems = getUnpackedItems();
-		unpackedItems.add(unpackedItemToAdd);
+		addItems(PackingSlot.UNPACKED, items);
 	}
 
-	public void put(final PackingItemsMapKey key, final List<IPackingItem> items)
+	public void addItem(@NonNull final PackingSlot slot, @NonNull final IPackingItem item)
 	{
-		itemsMap.put(key, items);
+		items.put(slot, item);
 	}
 
-	public Set<Entry<PackingItemsMapKey, List<IPackingItem>>> entrySet()
+	public void addItems(@NonNull final PackingSlot slot, @NonNull final Collection<? extends IPackingItem> items)
 	{
-		return itemsMap.entrySet();
+		this.items.putAll(slot, items);
 	}
 
 	public PackingItemsMap copy()
@@ -137,59 +91,43 @@ public final class PackingItemsMap
 		return new PackingItemsMap(this);
 	}
 
-	public List<IPackingItem> remove(final PackingItemsMapKey key)
+	public List<IPackingItem> removeBySlot(@NonNull final PackingSlot slot)
 	{
-		return itemsMap.remove(key);
+		return items.removeAll(slot);
 	}
 
 	public void removeUnpackedItem(@NonNull final IPackingItem itemToRemove)
 	{
-		final List<IPackingItem> unpackedItems = getUnpackedItems();
-		for (final Iterator<IPackingItem> it = unpackedItems.iterator(); it.hasNext();)
+		final boolean removed = items.remove(PackingSlot.UNPACKED, itemToRemove);
+		if (!removed)
 		{
-			final IPackingItem item = it.next();
-			if (item.isSameAs(itemToRemove))
-			{
-				it.remove();
-				return;
-			}
+			throw new AdempiereException("Unpacked item " + itemToRemove + " was not found in: " + items.get(PackingSlot.UNPACKED));
 		}
-
-		throw new AdempiereException("Unpacked item " + itemToRemove + " was not found in: " + unpackedItems);
 	}
 
 	/**
 	 * Append given <code>itemPacked</code> to existing packed items
 	 *
-	 * @param key
-	 * @param itemPacked
+	 * @param slot
+	 * @param packedItem
 	 */
-	public void appendPackedItem(final PackingItemsMapKey key, final IPackingItem itemPacked)
+	public void appendPackedItem(@NonNull final PackingSlot slot, @NonNull final IPackingItem packedItem)
 	{
-		List<IPackingItem> existingPackedItems = get(key);
-		if (existingPackedItems == null)
+		for (final IPackingItem item : items.get(slot))
 		{
-			existingPackedItems = new ArrayList<>();
-			put(key, existingPackedItems);
-		}
-		else
-		{
-			for (final IPackingItem item : existingPackedItems)
+			// add new item into the list only if is a real new item
+			// NOTE: should be only one item with same grouping key
+			if (item.getGroupingKey() == packedItem.getGroupingKey())
 			{
-				// add new item into the list only if is a real new item
-				// NOTE: should be only one item with same grouping key
-				if (item.getGroupingKey() == itemPacked.getGroupingKey())
-				{
-					item.addSchedules(itemPacked);
-					return;
-				}
+				item.addSchedules(packedItem);
+				return;
 			}
 		}
 
 		//
 		// No matching existing packed item where our item could be added was found
 		// => add it here as a new item
-		existingPackedItems.add(itemPacked);
+		addItem(slot, packedItem);
 	}
 
 	/**
@@ -198,25 +136,16 @@ public final class PackingItemsMap
 	 */
 	public boolean hasPackedItems()
 	{
-		for (final Entry<PackingItemsMapKey, List<IPackingItem>> key2itemsList : itemsMap.entrySet())
-		{
-			final PackingItemsMapKey key = key2itemsList.getKey();
-			if (key.isUnpacked())
-			{
-				continue;
-			}
+		return streamPackedItems().findAny().isPresent();
+	}
 
-			final List<IPackingItem> items = key2itemsList.getValue();
-			if (items == null || items.isEmpty())
-			{
-				continue;
-			}
-
-			// if we reach this point it means that we just found a list with packed items
-			return true;
-		}
-
-		return false;
+	public Stream<IPackingItem> streamPackedItems()
+	{
+		return items
+				.entries()
+				.stream()
+				.filter(e -> !e.getKey().isUnpacked())
+				.map(e -> e.getValue());
 	}
 
 	/**
@@ -225,12 +154,6 @@ public final class PackingItemsMap
 	 */
 	public boolean hasUnpackedItems()
 	{
-		final List<IPackingItem> unpackedItems = getUnpackedItems();
-		if (unpackedItems == null || unpackedItems.isEmpty())
-		{
-			return false;
-		}
-
-		return true;
+		return !items.get(PackingSlot.UNPACKED).isEmpty();
 	}
 }

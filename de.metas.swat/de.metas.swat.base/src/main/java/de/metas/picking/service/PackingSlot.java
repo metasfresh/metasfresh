@@ -3,6 +3,7 @@ package de.metas.picking.service;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.legacy.form.IPackingItem;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -29,30 +30,38 @@ import lombok.ToString;
  * #L%
  */
 
+/**
+ * It's a logic place used to organize {@link IPackingItem}s.
+ */
 @ToString
 @EqualsAndHashCode
-public final class PackingItemsMapKey
+public final class PackingSlot
 {
-	public static final PackingItemsMapKey UNPACKED = new PackingItemsMapKey(0);
+	public static final PackingSlot UNPACKED = new PackingSlot(0);
+	public static final PackingSlot DEFAULT_PACKED = new PackingSlot(1);
 
-	public static PackingItemsMapKey ofPickingSlotId(@NonNull final PickingSlotId pickingSlotId)
+	public static PackingSlot ofPickingSlotId(@NonNull final PickingSlotId pickingSlotId)
 	{
 		return ofInt(pickingSlotId.getRepoId());
 	}
 
-	public static PackingItemsMapKey ofInt(final int value)
+	public static PackingSlot ofInt(final int value)
 	{
 		if (value == UNPACKED.value)
 		{
 			throw new AdempiereException("Reusing the value of UNPACKED is not allowed: " + value);
 		}
+		if (value == DEFAULT_PACKED.value)
+		{
+			throw new AdempiereException("Reusing the value of DEFAULT_PACKED is not allowed: " + value);
+		}
 
-		return new PackingItemsMapKey(value);
+		return new PackingSlot(value);
 	}
 
 	private int value;
 
-	public PackingItemsMapKey(final int value)
+	public PackingSlot(final int value)
 	{
 		this.value = value;
 	}

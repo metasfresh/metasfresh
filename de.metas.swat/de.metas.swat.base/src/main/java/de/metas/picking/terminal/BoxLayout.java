@@ -45,7 +45,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.UsedBin;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 
@@ -113,7 +113,7 @@ public class BoxLayout extends KeyLayout
 	{
 		final List<ITerminalKey> list = new ArrayList<>(keys);
 		Collections.copy(list, keys);
-		((BoxKey)key).setBoxNo(PackingItemsMapKey.ofInt(getBoxesNo() + 1));
+		((BoxKey)key).setBoxNo(PackingSlot.ofInt(getBoxesNo() + 1));
 		list.add(key);
 		BoxesNo = list.size();
 		keys = null;
@@ -128,7 +128,7 @@ public class BoxLayout extends KeyLayout
 		int i = 1;
 		for (final ITerminalKey tk : list)
 		{
-			((BoxKey)tk).setBoxNo(PackingItemsMapKey.ofInt(i));
+			((BoxKey)tk).setBoxNo(PackingSlot.ofInt(i));
 			i++;
 		}
 		BoxesNo = list.size();
@@ -164,7 +164,7 @@ public class BoxLayout extends KeyLayout
 			}
 			else
 			{
-				tk.setStatus(tk.updateBoxStatus(getContainerState(container, PackingItemsMapKey.ofInt(i + 1))));
+				tk.setStatus(tk.updateBoxStatus(getContainerState(container, PackingSlot.ofInt(i + 1))));
 			}
 			if (usedBin.isMarkedForPacking())
 			{
@@ -176,7 +176,7 @@ public class BoxLayout extends KeyLayout
 			}
 			tk.setContainer(container);
 			tk.setNode(results.get(i + 1));
-			tk.setBoxNo(PackingItemsMapKey.ofInt(i + 1));
+			tk.setBoxNo(PackingSlot.ofInt(i + 1));
 			list.add(tk);
 		}
 		BoxesNo = list.size();
@@ -194,10 +194,10 @@ public class BoxLayout extends KeyLayout
 		return null;
 	}
 
-	public BigDecimal getVolumeSumContainer(I_M_PackagingContainer container, PackingItemsMapKey boxNo)
+	public BigDecimal getVolumeSumContainer(I_M_PackagingContainer container, PackingSlot boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		final List<IPackingItem> products = packItems.get(boxNo);
+		final List<IPackingItem> products = packItems.getBySlot(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 
@@ -219,10 +219,10 @@ public class BoxLayout extends KeyLayout
 		return packageItem;
 	}
 
-	public BigDecimal getWeightSumContainer(I_M_PackagingContainer container, PackingItemsMapKey boxNo)
+	public BigDecimal getWeightSumContainer(I_M_PackagingContainer container, PackingSlot boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		final List<IPackingItem> products = packItems.get(boxNo);
+		final List<IPackingItem> products = packItems.getBySlot(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 
@@ -239,10 +239,10 @@ public class BoxLayout extends KeyLayout
 		return weightSumContainer;
 	}
 
-	public PackingStates getContainerState(I_M_PackagingContainer container, PackingItemsMapKey boxNo)
+	public PackingStates getContainerState(I_M_PackagingContainer container, PackingSlot boxNo)
 	{
 		final PackingItemsMap packItems = getPackageItems().getPackItems();
-		final List<IPackingItem> products = packItems.get(boxNo);
+		final List<IPackingItem> products = packItems.getBySlot(boxNo);
 		if (products == null || products.size() == 0)
 			return null;
 

@@ -35,7 +35,7 @@ import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -141,8 +141,8 @@ public class ProcessPickingCandidateCommand
 		final IFreshPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		final PackingContext packingContext = PackingContext.builder()
-				.packingItemsMapKey(PackingItemsMapKey.ofPickingSlotId(pickingSlotId))
-				.packingItemsMap(PackingItemsMap.ofUnpackedItem(itemToPack))
+				.packedItemsSlot(PackingSlot.ofPickingSlotId(pickingSlotId))
+				.packingItems(PackingItemsMap.ofUnpackedItem(itemToPack))
 				.build();
 
 		final boolean allowOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();

@@ -44,7 +44,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -65,7 +65,7 @@ public class ProductKey extends TerminalKey
 	private final I_C_BPartner bpartner;
 	private final I_C_BPartner_Location bpLocation;
 
-	private PackingItemsMapKey boxNo;
+	private PackingSlot boxNo;
 	private IPackingItem pck;
 	private DefaultMutableTreeNode usedBin;
 
@@ -178,7 +178,7 @@ public class ProductKey extends TerminalKey
 	protected ProductKey(
 			final ITerminalContext terminalContext,
 			final IPackingItem pck,
-			final PackingItemsMapKey boxNo,
+			final PackingSlot boxNo,
 			final I_C_BPartner bpartner,
 			final I_C_BPartner_Location bpLocation)
 	{
@@ -234,12 +234,12 @@ public class ProductKey extends TerminalKey
 
 	}
 
-	void setBoxNo(final PackingItemsMapKey no)
+	void setBoxNo(final PackingSlot no)
 	{
 		boxNo = no;
 	}
 
-	public PackingItemsMapKey getBoxNo()
+	public PackingSlot getBoxNo()
 	{
 		return boxNo;
 	}

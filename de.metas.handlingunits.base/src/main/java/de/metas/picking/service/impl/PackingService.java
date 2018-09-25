@@ -29,7 +29,7 @@ import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -109,11 +109,11 @@ public class PackingService implements IPackingService
 			@NonNull final Quantity qtyToPack,
 			@NonNull final IPackingHandler packingHandler)
 	{
-		final PackingItemsMapKey key = packingContext.getPackingItemsMapKey();
+		final PackingSlot packedItemsSlot = packingContext.getPackedItemsSlot();
 
 		// Packing items
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
-		final PackingItemsMap packingItems = packingContext.getPackingItemsMap().copy();
+		final PackingItemsMap packingItems = packingContext.getPackingItems().copy();
 
 		//
 		// Remove the itemToPack from unpacked items
@@ -136,7 +136,7 @@ public class PackingService implements IPackingService
 			// Add our itemPacked to packed items
 			// If an existing matching packed item will be found, our item will be merged there
 			// If not, it will be added as a new packed item
-			packingItems.appendPackedItem(key, itemPacked);
+			packingItems.appendPackedItem(packedItemsSlot, itemPacked);
 
 			//
 			// Update back "itemToPack" to have a up2date version
@@ -153,6 +153,6 @@ public class PackingService implements IPackingService
 		}
 
 		// Set back the packing items
-		packingContext.setPackingItemsMap(packingItems);
+		packingContext.setPackingItems(packingItems);
 	}
 }

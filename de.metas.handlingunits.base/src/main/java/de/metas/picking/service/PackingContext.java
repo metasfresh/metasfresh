@@ -1,6 +1,7 @@
 package de.metas.picking.service;
 
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -9,12 +10,13 @@ import lombok.NonNull;
 public final class PackingContext
 {
 	/**
-	 * The key for {@link #packingItemsMap} under which those items are stored that are "packed".
+	 * The slot where the packed items shall be placed, inside {@link #packingItems}.
 	 */
 	@NonNull
-	private final PackingItemsMapKey packingItemsMapKey;
+	@Default
+	private final PackingSlot packedItemsSlot = PackingSlot.DEFAULT_PACKED;
 
 	/** map used to keep track of that is packed where while the packing takes place. */
 	@NonNull
-	private PackingItemsMap packingItemsMap;
+	private PackingItemsMap packingItems;
 }

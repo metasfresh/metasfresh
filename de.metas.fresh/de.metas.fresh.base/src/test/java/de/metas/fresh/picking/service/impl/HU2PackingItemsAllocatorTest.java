@@ -67,7 +67,6 @@ import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -134,8 +133,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		//
 		// Create Packing Context
 		this.packingContext = PackingContext.builder()
-				.packingItemsMapKey(PackingItemsMapKey.ofInt(123))
-				.packingItemsMap(packingItems)
+				.packingItems(packingItems)
 				.build();
 
 		//
@@ -170,8 +168,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			// Validate
 			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
-			assertTrue("We shall have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems());
-			assertTrue("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems());
+			assertTrue("We shall have unpacked items", packingContext.getPackingItems().hasUnpackedItems());
+			assertTrue("We shall have packed items", packingContext.getPackingItems().hasPackedItems());
 
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
@@ -193,8 +191,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			// Validate
 			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30 - 60)));
-			assertTrue("We shall have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems());
-			assertTrue("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems());
+			assertTrue("We shall have unpacked items", packingContext.getPackingItems().hasUnpackedItems());
+			assertTrue("We shall have packed items", packingContext.getPackingItems().hasPackedItems());
 
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
@@ -216,8 +214,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			// Validate
 			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(0)));
-			assertFalse("We shall NOT have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems());
-			assertTrue("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems());
+			assertFalse("We shall NOT have unpacked items", packingContext.getPackingItems().hasUnpackedItems());
+			assertTrue("We shall have packed items", packingContext.getPackingItems().hasPackedItems());
 
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
@@ -244,8 +242,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 			// Validate
 			Assert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), Matchers.comparesEqualTo(BigDecimal.valueOf(100 - 30)));
-			Assert.assertTrue("We shall have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems());
-			Assert.assertTrue("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems());
+			Assert.assertTrue("We shall have unpacked items", packingContext.getPackingItems().hasUnpackedItems());
+			Assert.assertTrue("We shall have packed items", packingContext.getPackingItems().hasPackedItems());
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
 					.qtyPicked("30")
@@ -268,8 +266,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		// Validate
 		Assert.assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), Matchers.comparesEqualTo(BigDecimal.valueOf(100)));
-		Assert.assertTrue("We shall have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems());
-		Assert.assertFalse("We shall NOT have packed items", packingContext.getPackingItemsMap().hasPackedItems());
+		Assert.assertTrue("We shall have unpacked items", packingContext.getPackingItems().hasUnpackedItems());
+		Assert.assertFalse("We shall NOT have packed items", packingContext.getPackingItems().hasPackedItems());
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked("0")
@@ -300,8 +298,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		// Validate
 		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - COUNT_Tomatoes_Per_IFCO)));
-		assertTrue("We shall have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems());
-		assertTrue("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems());
+		assertTrue("We shall have unpacked items", packingContext.getPackingItems().hasUnpackedItems());
+		assertTrue("We shall have packed items", packingContext.getPackingItems().hasPackedItems());
 
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)

@@ -39,7 +39,7 @@ import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.ProductLayout;
 
 /**
@@ -89,52 +89,40 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		// do not show all unpacked if a slot is selected
 		if (selectedPickingSlot == null)
 		{
-			// get objects from box 0: means unpacked items
-			final PackingItemsMapKey key = PackingItemsMapKey.UNPACKED;
-			final List<IPackingItem> unpacked = map.get(key);
 			// add to layout unpacked items
+			for (final IPackingItem apck : map.getBySlot(PackingSlot.UNPACKED))
 			{
-				if (!(unpacked == null || unpacked.isEmpty()))
+				final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
+				final FreshProductKey productKey = createProductKey(pck, PackingSlot.UNPACKED, selectedPickingSlot);
+				final IFreshPackingItem allocatedItem = FreshPackingItemHelper.copy(pck);
+				productKey.setUnAllocatedPackingItem(allocatedItem);
+				productKey.setPackingItem(null); // nothing packed yet in the key
+				if (!productKey.isActive())
 				{
-					for (final IPackingItem apck : unpacked)
-					{
-						final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
-						final FreshProductKey productKey = createProductKey(pck, key, selectedPickingSlot); // selectedPickingSlot=null
-						final IFreshPackingItem allocatedItem = FreshPackingItemHelper.copy(pck);
-						productKey.setUnAllocatedPackingItem(allocatedItem);
-						productKey.setPackingItem(null); // nothing packed yet in the key
-						if (!productKey.isActive())
-						{
-							continue;
-						}
-						productKey.setStatus(getProductState(pck, key));
-						productKeys.add(productKey);
-					}
+					continue;
 				}
+				productKey.setStatus(getProductState(pck, PackingSlot.UNPACKED));
+				productKeys.add(productKey);
 			}
 		}
 		else
 		{
 			// put to layout items from selected box
-			final PackingItemsMapKey key = PackingItemsMapKey.ofPickingSlotId(selectedPickingSlot.getPickingSlotId());
-			final List<IPackingItem> selected = map.get(key);
-			if (selected != null && !selected.isEmpty())
+			final PackingSlot key = PackingSlot.ofPickingSlotId(selectedPickingSlot.getPickingSlotId());
+			for (final IPackingItem apck : map.getBySlot(key))
 			{
-				for (final IPackingItem apck : selected)
+				final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
+				final FreshProductKey productKey = createProductKey(pck, key, selectedPickingSlot);
+				if (productKey == null || !productKey.isActive())
 				{
-					final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
-					final FreshProductKey productKey = createProductKey(pck, key, selectedPickingSlot);
-					if (productKey == null || !productKey.isActive())
-					{
-						continue;
-					}
-					productKey.setStatus(getProductState(pck, key));
-					productKeys.add(productKey);
+					continue;
 				}
+				productKey.setStatus(getProductState(pck, key));
+				productKeys.add(productKey);
 			}
 
 			// now show unpacked for that specific partner
-			final List<IPackingItem> unpacked = map.get(PackingItemsMapKey.UNPACKED);
+			final List<IPackingItem> unpacked = map.getBySlot(PackingSlot.UNPACKED);
 			final List<IPackingItem> items = getPackageItems().createUnpackedForBpAndBPLoc(unpacked, selectedPickingSlot);
 			for (final IPackingItem apck : items)
 			{
@@ -146,7 +134,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 				{
 					// first set unallocated
 					productKeyExisting.setUnAllocatedPackingItem(packingItem);
-					productKeyExisting.setStatus(getProductState(packingItem, PackingItemsMapKey.UNPACKED));
+					productKeyExisting.setStatus(getProductState(packingItem, PackingSlot.UNPACKED));
 					continue;
 				}
 
@@ -158,7 +146,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 
 				productKey.setPackingItem(null);
 				productKey.setUnAllocatedPackingItem(packingItem);
-				productKey.setStatus(getProductState(packingItem, PackingItemsMapKey.UNPACKED));
+				productKey.setStatus(getProductState(packingItem, PackingSlot.UNPACKED));
 				productKeys.add(productKey);
 			}
 
@@ -167,7 +155,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	}
 
 	private FreshProductKey createProductKey(final IFreshPackingItem pck,
-			final PackingItemsMapKey key,
+			final PackingSlot key,
 			final PickingSlotKey selectedPickingSlot)
 	{
 		final FreshProductKey productKey = new FreshProductKey(getTerminalContext(), pck, key);

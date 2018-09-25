@@ -16,22 +16,21 @@ package de.metas.picking.terminal;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -46,7 +45,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.product.IProductBL;
@@ -96,7 +95,7 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 	public List<ITerminalKey> createKeys()
 	{
 		// TODO: get rid of this fucked up, legacy code (if is not needed on )
-		
+
 		final PackingItemsMap map = getPackageTerminalPanel().getPackItems();
 		final Map<Integer, DefaultMutableTreeNode> boxes = getPackageTerminalPanel().getBoxes();
 		final List<ITerminalKey> list = new ArrayList<>();
@@ -123,10 +122,10 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 					key.setName(Services.get(IProductBL.class).getProductName(productId));
 
 					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, productId);
-					tk.setBoxNo(PackingItemsMapKey.UNPACKED);
+					tk.setBoxNo(PackingSlot.UNPACKED);
 					tk.setPackingItem(pck);
-					tk.setUsedBin(boxes.get(PackingItemsMapKey.UNPACKED));
-					tk.setStatus(getProductState(pck, PackingItemsMapKey.UNPACKED));
+					tk.setUsedBin(boxes.get(PackingSlot.UNPACKED));
+					tk.setStatus(getProductState(pck, PackingSlot.UNPACKED));
 					tk.setEnabledKey(isSelectedBox);
 					list.add(tk);
 				}
@@ -136,30 +135,25 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		if (isSelectedBox)
 		{
 			// put to layout items from selected box
-			List<IPackingItem> selected = map.get(getSelectedBox().getBoxNo());
-			if (selected != null && !selected.isEmpty())
+			for (final IPackingItem apck : map.getBySlot(getSelectedBox().getBoxNo()))
 			{
-				for (int i = 0; i < selected.size(); i++)
-				{
-					final IPackingItem apck = selected.get(i);
-					final LegacyPackingItem pck = (LegacyPackingItem)apck;
+				final LegacyPackingItem pck = (LegacyPackingItem)apck;
 
-					final ProductId productId = pck.getProductId();
-					de.metas.adempiere.model.I_C_POSKey key = InterfaceWrapperHelper.create(getCtx(), de.metas.adempiere.model.I_C_POSKey.class, ITrx.TRXNAME_None);
-					key.setName(Services.get(IProductBL.class).getProductName(productId));
-					if (!key.isActive())
-						continue;
+				final ProductId productId = pck.getProductId();
+				de.metas.adempiere.model.I_C_POSKey key = InterfaceWrapperHelper.create(getCtx(), de.metas.adempiere.model.I_C_POSKey.class, ITrx.TRXNAME_None);
+				key.setName(Services.get(IProductBL.class).getProductName(productId));
+				if (!key.isActive())
+					continue;
 
-					String tableName = I_M_Product.Table_Name;
+				String tableName = I_M_Product.Table_Name;
 
-					ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, productId);
-					tk.setBoxNo(getSelectedBox().getBoxNo());
-					tk.setPackingItem(pck);
-					tk.setUsedBin(boxes.get(getSelectedBox().getBoxNo()));
-					tk.setStatus(getProductState(pck, getSelectedBox().getBoxNo()));
-					tk.setEnabledKey(true);
-					list.add(tk);
-				}
+				ProductKey tk = new ProductKey(getTerminalContext(), key, tableName, productId);
+				tk.setBoxNo(getSelectedBox().getBoxNo());
+				tk.setPackingItem(pck);
+				tk.setUsedBin(boxes.get(getSelectedBox().getBoxNo()));
+				tk.setStatus(getProductState(pck, getSelectedBox().getBoxNo()));
+				tk.setEnabledKey(true);
+				list.add(tk);
 			}
 		}
 		return Collections.unmodifiableList(list);
@@ -177,29 +171,12 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		return false;
 	}
 
-	protected PackingStates getProductState(final IPackingItem pck, final PackingItemsMapKey boxNo)
+	protected PackingStates getProductState(final IPackingItem pck, final PackingSlot boxNo)
 	{
 		final PackingItemsMap packItems = getPackageTerminalPanel().getPackItems();
-		boolean unpacked = false;
-		boolean packed = boxNo.isUnpacked();
-
-		for (Entry<PackingItemsMapKey, List<IPackingItem>> e : packItems.entrySet())
-		{
-			if (e.getKey().isUnpacked())
-			{
-				// skip unpacked items
-				continue;
-			}
-
-			final List<IPackingItem> products = e.getValue();
-			for (final IPackingItem item : products)
-			{
-				if (item.getProductId() == pck.getProductId() && isSameBPartner(item, pck) && isSameBPLocation(item, pck))
-				{
-					packed = true;
-				}
-			}
-		}
+		boolean unpacked = boxNo.isUnpacked();
+		boolean packed = packItems.streamPackedItems()
+				.anyMatch(item -> isMatching(item, pck));
 		//
 		PackingStates state = PackingStates.unpacked;
 		if (packed && unpacked)
@@ -216,6 +193,14 @@ public class ProductLayout extends KeyLayout implements IKeyLayoutSelectionModel
 		}
 
 		return state;
+	}
+
+	private final boolean isMatching(final IPackingItem item1, final IPackingItem item2)
+	{
+		return Objects.equals(item1.getProductId(), item2.getProductId())
+				&& isSameBPartner(item1, item2)
+				&& isSameBPLocation(item1, item2);
+
 	}
 
 	public boolean isSameBPartner(final IPackingItem item1, final IPackingItem item2)

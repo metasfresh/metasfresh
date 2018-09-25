@@ -38,7 +38,7 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
 
 /**
@@ -50,7 +50,7 @@ public class BoxKey extends TerminalKey
 	private I_C_POSKey key;
 	private KeyNamePair value;
 	private String tableName;
-	private PackingItemsMapKey boxNo;
+	private PackingSlot boxNo;
 	private I_M_PackagingContainer container;
 	private DefaultMutableTreeNode node;
 	private boolean ready = false;
@@ -122,12 +122,12 @@ public class BoxKey extends TerminalKey
 		setStatus(new BoxStatus());
 	}
 
-	public void setBoxNo(PackingItemsMapKey no)
+	public void setBoxNo(PackingSlot no)
 	{
 		this.boxNo = no;
 	}
 
-	public PackingItemsMapKey getBoxNo()
+	public PackingSlot getBoxNo()
 	{
 		return this.boxNo;
 	}

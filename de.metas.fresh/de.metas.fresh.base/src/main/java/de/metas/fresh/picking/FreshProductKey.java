@@ -42,7 +42,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.PackingItemsMapKey;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.ProductKey;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -97,7 +97,7 @@ public class FreshProductKey extends ProductKey
 	 */
 	private IFreshPackingItem _unallocatedPackingItem;
 
-	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck, final PackingItemsMapKey key)
+	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck, final PackingSlot key)
 	{
 		super(terminalContext,
 				pck,

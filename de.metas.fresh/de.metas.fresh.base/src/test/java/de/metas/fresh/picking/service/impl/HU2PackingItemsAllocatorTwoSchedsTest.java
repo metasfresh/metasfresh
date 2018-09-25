@@ -39,7 +39,6 @@ import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingItemsMapKey;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -132,8 +131,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		//
 		// Create Packing Context
 		this.packingContext = PackingContext.builder()
-				.packingItemsMapKey(PackingItemsMapKey.ofInt(123))
-				.packingItemsMap(packingItems)
+				.packingItems(packingItems)
 				.build();
 
 		//
@@ -203,8 +201,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		assertThat(POJOLookupMap.get().getRecords(I_M_ShipmentSchedule.class).size(), is(2));
 
-		assertThat("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems(), is(true));
-		assertThat("We shall not have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems(), is(false));
+		assertThat("We shall have packed items", packingContext.getPackingItems().hasPackedItems(), is(true));
+		assertThat("We shall not have unpacked items", packingContext.getPackingItems().hasUnpackedItems(), is(false));
 
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentScheduleWithTen)
@@ -266,8 +264,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		hu2PackingItemsAllocator.setFromHUs(luHUs);
 		hu2PackingItemsAllocator.allocate();
 
-		assertThat("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems(), is(true));
-		assertThat("We shall not have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems(), is(false));
+		assertThat("We shall have packed items", packingContext.getPackingItems().hasPackedItems(), is(true));
+		assertThat("We shall not have unpacked items", packingContext.getPackingItems().hasUnpackedItems(), is(false));
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
