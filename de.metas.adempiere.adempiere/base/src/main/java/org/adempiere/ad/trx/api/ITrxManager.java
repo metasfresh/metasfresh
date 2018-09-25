@@ -87,7 +87,7 @@ public interface ITrxManager extends ISingletonService
 
 		/**
 		 * The default is {@link TrxPropagation#REQUIRES_NEW}.
-		 * 
+		 *
 		 * @param trxPropagation
 		 * @return
 		 */
@@ -186,7 +186,7 @@ public interface ITrxManager extends ISingletonService
 	String createTrxName(String prefix, boolean createTrx);
 
 	<T> T call(Callable<T> callable);
-	
+
 	void run(Runnable runnable);
 
 	/**
@@ -214,9 +214,9 @@ public interface ITrxManager extends ISingletonService
 	 * @see #run(String, boolean, TrxRunnable)
 	 */
 	void run(String trxName, TrxRunnable r);
-	
+
 	void run(String trxName, Runnable runnable);
-	
+
 	default void runInThreadInheritedTrx(final Runnable runnable)
 	{
 		run(ITrx.TRXNAME_ThreadInherited, runnable);
@@ -361,6 +361,16 @@ public interface ITrxManager extends ISingletonService
 	default boolean isActive(final ITrx trx)
 	{
 		return !isNull(trx) && trx.isActive();
+	}
+
+	default boolean isActive(final String trxName)
+	{
+		if (isNull(trxName))
+		{
+			return false;
+		}
+		final ITrx trx = get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		return isActive(trx);
 	}
 
 	/**

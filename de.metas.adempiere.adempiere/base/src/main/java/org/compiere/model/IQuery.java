@@ -430,7 +430,7 @@ public interface IQuery<T>
 	{
 		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
 	}
-
+	
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *

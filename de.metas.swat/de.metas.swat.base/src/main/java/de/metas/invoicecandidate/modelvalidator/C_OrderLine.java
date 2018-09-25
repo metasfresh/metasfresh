@@ -14,8 +14,7 @@ public class C_OrderLine
 {
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE
 			, ifColumnsChanged = {
-					I_C_OrderLine.COLUMNNAME_QtyDelivered // Using C_OrderLine.QtyDelivered to get notified of changes in the delivery status.
-					, I_C_OrderLine.COLUMNNAME_QtyOrdered // task 08452: make sure the IC gets invalidated when we sort of "close" a single line
+					I_C_OrderLine.COLUMNNAME_QtyOrdered // task 08452: make sure the IC gets invalidated when we sort of "close" a single line
 					, I_C_OrderLine.COLUMNNAME_QtyOrderedOverUnder
 					, I_C_OrderLine.COLUMNNAME_IsPackagingMaterial
 			})

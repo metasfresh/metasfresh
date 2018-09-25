@@ -495,7 +495,7 @@ import lombok.NonNull;
 
 		//
 		// Case: we are running in a transaction.
-		if (!trxManager.isNull(trxName))
+		if (trxManager.isActive(trxName))
 		{
 			trxManager.getTrxListenerManager(trxName)
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
