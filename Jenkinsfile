@@ -183,7 +183,12 @@ node('agent && linux')
 				//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 				//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 
-				final String releaseLinkWithText = misc.createReleaseLinkWithText(MF_UPSTREAM_BRANCH, MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS);
+				String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>";
+				if(MF_UPSTREAM_BRANCH == 'release')
+				{
+					releaseLinkWithText = """	${releaseLinkWithText}
+	<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>"""
+				} 
 
 				currentBuild.description="""
 <h3>Version infos</h3>
