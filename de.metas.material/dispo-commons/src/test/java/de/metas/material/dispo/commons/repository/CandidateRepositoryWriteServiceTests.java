@@ -44,6 +44,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Services;
 
@@ -143,8 +144,8 @@ public class CandidateRepositoryWriteServiceTests
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 15))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, 16))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, AttributesKey.ALL, 0, 15))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.TEN, AttributesKey.ALL, 0, 16))
 				.build();
 
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
@@ -393,7 +394,7 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor()
 						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, 33))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, AttributesKey.ALL, 0, 33))
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);
 
