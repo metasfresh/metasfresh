@@ -183,7 +183,17 @@ node('agent && linux')
 				//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 				//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 
-				final String releaseLinkWithText = misc.createReleaseLinkWithText(MF_UPSTREAM_BRANCH, MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS);
+				final String releaseLinkWithText;
+				if(MF_UPSTREAM_BRANCH == 'release')
+				{
+					releaseLinkWithText = """
+	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>
+	<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>"""
+				} 
+				else 
+				{
+					releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS)}</li>"
+				}
 
 				currentBuild.description="""
 <h3>Version infos</h3>
@@ -215,7 +225,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <h3>Deploy</h3>
 <ul>
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the tar.gz to a host of your choice.</li>
-	<li>..and ${releaseLinkWithText}</li>
+	${releaseLinkWithText}
 </ul>
 <p>
 <h3>Additional notes</h3>
