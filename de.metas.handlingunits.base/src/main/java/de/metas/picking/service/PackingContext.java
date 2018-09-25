@@ -8,9 +8,6 @@ import lombok.NonNull;
 @Builder
 public final class PackingContext
 {
-//	@NonNull
-//	private final Properties ctx;
-
 	/**
 	 * The key for {@link #packingItemsMap} under which those items are stored that are "packed".
 	 */
