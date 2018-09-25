@@ -93,7 +93,7 @@ public class PackingV extends MvcVGenPanel implements IPackingView
 					0, // Column_ID,
 					DisplayType.TableDir, //AD_Reference_ID,
 					null, // tableName
-					Packing.PROP_M_WAREHOUSE_ID, //ColumnName,
+					PackingPanel.PROP_M_WAREHOUSE_ID, //ColumnName,
 					0, //AD_Reference_Value_ID,
 					false, //IsParent,
 					IValidationRule.AD_Val_Rule_ID_Null //ValidationCode
@@ -103,10 +103,10 @@ public class PackingV extends MvcVGenPanel implements IPackingView
 		{
 			throw new AdempiereException(e);
 		}
-		fWarehouse = new VLookup(Packing.PROP_M_WAREHOUSE_ID, true, false, true, warehouseL);
+		fWarehouse = new VLookup(PackingPanel.PROP_M_WAREHOUSE_ID, true, false, true, warehouseL);
 
 		final CLabel lWarehouse = new CLabel();
-		lWarehouse.setText(Msg.translate(Env.getCtx(), Packing.PROP_M_WAREHOUSE_ID));
+		lWarehouse.setText(Msg.translate(Env.getCtx(), PackingPanel.PROP_M_WAREHOUSE_ID));
 
 		lWarehouse.setLabelFor(fWarehouse);
 
@@ -128,7 +128,7 @@ public class PackingV extends MvcVGenPanel implements IPackingView
 	{
 		super.modelPropertyChange(e);
 
-		if (Packing.PROP_INFO_TEXT.equalsIgnoreCase(e.getPropertyName()))
+		if (PackingPanel.PROP_INFO_TEXT.equalsIgnoreCase(e.getPropertyName()))
 		{
 
 			final String newVal = (String)e.getNewValue();

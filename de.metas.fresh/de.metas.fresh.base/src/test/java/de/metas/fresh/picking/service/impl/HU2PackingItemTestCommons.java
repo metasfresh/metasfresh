@@ -14,9 +14,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.PackingContext;
-import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import lombok.NonNull;
 
 /*
@@ -141,18 +138,5 @@ public class HU2PackingItemTestCommons
 		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, helper.uomEach);
 
 		return hus;
-	}
-
-	/**
-	 * Creates HU to Packing Items Allocator (i.e. class under test)
-	 */
-	public static HU2PackingItemsAllocator createHU2PackingItemsAllocator(
-			@NonNull final PackingContext packingContext,
-			@NonNull final IFreshPackingItem itemToPack)
-	{
-		return HU2PackingItemsAllocator.builder()
-				.packingContext(packingContext)
-				.itemToPack(itemToPack)
-				.build();
 	}
 }

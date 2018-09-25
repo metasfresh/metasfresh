@@ -68,7 +68,7 @@ import de.metas.util.Services;
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public abstract class Packing extends MvcGenForm
+public abstract class PackingPanel extends MvcGenForm
 {
 	protected final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
@@ -89,7 +89,7 @@ public abstract class Packing extends MvcGenForm
 	 */
 	private final int adPInstanceId;
 
-	public Packing()
+	public PackingPanel()
 	{
 		super();
 

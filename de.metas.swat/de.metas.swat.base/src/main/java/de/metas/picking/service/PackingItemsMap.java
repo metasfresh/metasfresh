@@ -28,14 +28,14 @@ public final class PackingItemsMap
 {
 	public static PackingItemsMap ofUnpackedItems(final Collection<IPackingItem> unpackedItems)
 	{
-		PackingItemsMap map = new PackingItemsMap();
+		final PackingItemsMap map = new PackingItemsMap();
 		map.addUnpackedItems(unpackedItems);
 		return map;
 	}
 
 	public static PackingItemsMap ofUnpackedItem(@NonNull final IPackingItem unpackedItem)
 	{
-		PackingItemsMap map = new PackingItemsMap();
+		final PackingItemsMap map = new PackingItemsMap();
 		map.addUnpackedItem(unpackedItem);
 		return map;
 	}

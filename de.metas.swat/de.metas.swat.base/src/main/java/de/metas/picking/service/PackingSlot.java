@@ -31,7 +31,7 @@ import lombok.ToString;
  */
 
 /**
- * It's a logic place used to organize {@link IPackingItem}s.
+ * It's a logical place used to organize {@link IPackingItem}s in {@link PackingItemsMap}.
  */
 @ToString
 @EqualsAndHashCode

@@ -24,16 +24,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
-import de.metas.picking.service.PackingContext;
-import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.PackingSlot;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 public class PackingService implements IPackingService
 {
@@ -100,59 +94,5 @@ public class PackingService implements IPackingService
 			final String errmsg = MessageFormat.format(PackingService.ERR_CANNOT_FULLY_UNLOAD_RESULT, hu, result);
 			throw new AdempiereException(errmsg);
 		}
-	}
-
-	@Override
-	public void packItem(
-			@NonNull final PackingContext packingContext,
-			@NonNull final IFreshPackingItem itemToPack,
-			@NonNull final Quantity qtyToPack,
-			@NonNull final IPackingHandler packingHandler)
-	{
-		final PackingSlot packedItemsSlot = packingContext.getPackedItemsSlot();
-
-		// Packing items
-		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
-		final PackingItemsMap packingItems = packingContext.getPackingItems().copy();
-
-		//
-		// Remove the itemToPack from unpacked items
-		// NOTE: If there will be remaining qty, a NEW item with remaining Qty will be added to unpacked items
-		packingItems.removeUnpackedItem(itemToPack);
-
-		//
-		// Pack our "itemToPack": it will be splitted into 2 items as follows
-		// => itemToPackRemaining will be added back to unpacked items
-		// => itemPacked will be added to packed items
-		{
-			final IFreshPackingItem itemToPackRemaining = itemToPack.copy();
-			final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, packingHandler::isPackingAllowedForShipmentSchedule);
-
-			//
-			// Process our packed item
-			packingHandler.itemPacked(itemPacked);
-
-			//
-			// Add our itemPacked to packed items
-			// If an existing matching packed item will be found, our item will be merged there
-			// If not, it will be added as a new packed item
-			packingItems.appendPackedItem(packedItemsSlot, itemPacked);
-
-			//
-			// Update back "itemToPack" to have a up2date version
-			// NOTE: so far we worked on a copy (to avoid inconsistencies in case an exception is thrown in the middle)
-			itemToPack.setSchedules(itemToPackRemaining);
-
-			//
-			// If there was a remaining qty in "itemToPack" then add it back to unpacked items
-			// NOTE: we keep the old object instead of adding "itemToPackRemaining" because if we are not doing like this then subsequent calls to this method, using the same itemToPack will fail
-			if (itemToPack.getQtySum().signum() != 0)
-			{
-				packingItems.addUnpackedItem(itemToPack);
-			}
-		}
-
-		// Set back the packing items
-		packingContext.setPackingItems(packingItems);
 	}
 }

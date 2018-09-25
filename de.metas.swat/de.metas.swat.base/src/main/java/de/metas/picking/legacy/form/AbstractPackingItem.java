@@ -323,8 +323,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		return subtract(subtrahent, acceptShipmentSchedulePredicate);
 	}
 
-	@Override
-	public final ShipmentScheduleQtyPickedMap subtract(
+	protected final ShipmentScheduleQtyPickedMap subtract(
 			@NonNull final Quantity subtrahent,
 			@Nullable final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
@@ -449,21 +448,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 		//
 		// Add shipment schedules
-		for (final I_M_ShipmentSchedule schedToAdd : toAdd.getShipmentSchedules())
-		{
-			final Quantity qtyToAdd = toAdd.getQty(schedToAdd);
-			final Quantity qty = sched2qty.getQty(schedToAdd);
-			if (qty == null)
-			{
-				// don't invoke addSched because we might have been called by addSched ourselves
-				sched2qty.setQty(schedToAdd, qtyToAdd);
-			}
-			else
-			{
-				final Quantity qtyNew = qty.add(qtyToAdd);
-				sched2qty.setQty(schedToAdd, qtyNew);
-			}
-		}
+		sched2qty.add(toAdd);
 	}
 
 	@Override

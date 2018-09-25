@@ -2,7 +2,6 @@ package de.metas.picking.legacy.form;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.compiere.model.I_C_UOM;
 
@@ -53,15 +52,6 @@ public interface IPackingItem
 	void addSchedules(IPackingItem packingItem);
 
 	void addSchedules(ShipmentScheduleQtyPickedMap toAdd);
-
-	/**
-	 *
-	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate evaluates which shipment schedules shall be considered
-	 * @return subtracted schedule/qty pairs
-	 * @throws PackingItemSubtractException if required qty could not be fully subtracted (and there were no shipment schedules excluded by the accept predicate)
-	 */
-	ShipmentScheduleQtyPickedMap subtract(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 
 	/**
 	 *

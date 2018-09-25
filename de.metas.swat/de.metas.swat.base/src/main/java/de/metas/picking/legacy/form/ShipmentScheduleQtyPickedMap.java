@@ -144,6 +144,25 @@ public class ShipmentScheduleQtyPickedMap
 		qtys.putAll(from.qtys);
 	}
 
+	public void add(@NonNull final ShipmentScheduleQtyPickedMap from)
+	{
+		for (final I_M_ShipmentSchedule schedToAdd : from.getShipmentSchedules())
+		{
+			final Quantity qtyToAdd = from.getQty(schedToAdd);
+			final Quantity qty = getQty(schedToAdd);
+			if (qty == null)
+			{
+				// don't invoke addSched because we might have been called by addSched ourselves
+				setQty(schedToAdd, qtyToAdd);
+			}
+			else
+			{
+				final Quantity qtyNew = qty.add(qtyToAdd);
+				setQty(schedToAdd, qtyNew);
+			}
+		}
+	}
+
 	public Optional<Quantity> getQtySum()
 	{
 		return qtys.values()

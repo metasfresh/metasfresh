@@ -72,7 +72,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.MvcMdGenForm;
-import de.metas.picking.legacy.form.Packing;
+import de.metas.picking.legacy.form.PackingPanel;
 import de.metas.picking.legacy.form.PackingDetailsMd;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.TableRow;
@@ -94,7 +94,7 @@ import net.miginfocom.swing.MigLayout;
  * @author cg
  *
  */
-public class SwingPickingOKPanel extends Packing implements PickingOKPanel
+public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 {
 	protected final String ACTION_Switch = "Switch";
 	protected final String ACTION_Today = "Today";

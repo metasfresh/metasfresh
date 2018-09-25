@@ -2,7 +2,6 @@ package de.metas.fresh.picking.service.impl;
 
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.COUNT_Tomatoes_Per_IFCO;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.commonCreateHUTestHelper;
-import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHU2PackingItemsAllocator;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefIFCO;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefPalet;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createLUs;
@@ -10,9 +9,7 @@ import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.crea
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,8 +17,6 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -37,7 +32,6 @@ import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
@@ -83,7 +77,6 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	private I_M_HU_PI_Item_Product huDefIFCOWithEleven;
 
 	private IFreshPackingItem itemToPack;
-	private PackingContext packingContext;
 
 	@Override
 	protected void initialize()
@@ -120,25 +113,13 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 			qtyToDeliverSum += qtyToDeliver;
 		}
 		this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
+
 		// Validate
-
 		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
-
-		//
-		// Create Packing Items
-		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
-
-		//
-		// Create Packing Context
-		this.packingContext = PackingContext.builder()
-				.packingItems(packingItems)
-				.build();
 
 		//
 		// Validate initial context state
 		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
-		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
-		assertFalse("We shall NOT have packed items", packingItems.hasPackedItems());
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : itemToPack.getShipmentSchedules())
 		{
@@ -195,14 +176,18 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat(tuHUsWithEleven.size(), is(1));
 		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithEleven.get(0)), is(true));
 
-		final HU2PackingItemsAllocator hu2PackingItemsAllocator = createHU2PackingItemsAllocator(packingContext, itemToPack);
-		hu2PackingItemsAllocator.setFromHUs(ImmutableList.of(tuHUsWithTen.get(0), tuHUsWithEleven.get(0)));
-		hu2PackingItemsAllocator.allocate();
+		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
+		HU2PackingItemsAllocator.builder()
+				.itemToPack(itemToPack)
+				.packingItems(packingItems)
+				.fromHU(tuHUsWithTen.get(0))
+				.fromHU(tuHUsWithEleven.get(0))
+				.allocate();
 
 		assertThat(POJOLookupMap.get().getRecords(I_M_ShipmentSchedule.class).size(), is(2));
 
-		assertThat("We shall have packed items", packingContext.getPackingItems().hasPackedItems(), is(true));
-		assertThat("We shall not have unpacked items", packingContext.getPackingItems().hasUnpackedItems(), is(false));
+		assertThat("We shall have packed items", packingItems.hasPackedItems(), is(true));
+		assertThat("We shall not have unpacked items", packingItems.hasUnpackedItems(), is(false));
 
 		new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentScheduleWithTen)
@@ -260,12 +245,15 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat(handlingUnitsBL.isVirtual(includedHUs.get(0)), is(true));
 		assertThat(includedHUs.get(0).getM_HU_Item_Parent().getQty(), is(new BigDecimal("2")));
 
-		final HU2PackingItemsAllocator hu2PackingItemsAllocator = createHU2PackingItemsAllocator(packingContext, itemToPack);
-		hu2PackingItemsAllocator.setFromHUs(luHUs);
-		hu2PackingItemsAllocator.allocate();
+		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
+		HU2PackingItemsAllocator.builder()
+				.itemToPack(itemToPack)
+				.packingItems(packingItems)
+				.fromHUs(luHUs)
+				.allocate();
 
-		assertThat("We shall have packed items", packingContext.getPackingItems().hasPackedItems(), is(true));
-		assertThat("We shall not have unpacked items", packingContext.getPackingItems().hasUnpackedItems(), is(false));
+		assertThat("We shall have packed items", packingItems.hasPackedItems(), is(true));
+		assertThat("We shall not have unpacked items", packingItems.hasUnpackedItems(), is(false));
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{

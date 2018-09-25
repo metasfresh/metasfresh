@@ -114,14 +114,6 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public ShipmentScheduleQtyPickedMap subtract(
-			final Quantity subtrahent,
-			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
-	{
-		return getDelegate().subtract(subtrahent, acceptShipmentSchedulePredicate);
-	}
-
-	@Override
 	public Set<WarehouseId> getWarehouseIds()
 	{
 		return getDelegate().getWarehouseIds();

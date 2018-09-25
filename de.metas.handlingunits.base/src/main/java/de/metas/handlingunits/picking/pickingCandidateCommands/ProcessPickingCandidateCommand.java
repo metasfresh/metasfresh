@@ -33,7 +33,6 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.PackingContext;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
@@ -140,20 +139,15 @@ public class ProcessPickingCandidateCommand
 	{
 		final IFreshPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
-		final PackingContext packingContext = PackingContext.builder()
-				.packedItemsSlot(PackingSlot.ofPickingSlotId(pickingSlotId))
-				.packingItems(PackingItemsMap.ofUnpackedItem(itemToPack))
-				.build();
-
 		final boolean allowOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
 
 		// Allocate given HUs to "itemToPack"
 		HU2PackingItemsAllocator.builder()
-				.packingContext(packingContext)
 				.itemToPack(itemToPack)
+				.packingItems(PackingItemsMap.ofUnpackedItem(itemToPack))
+				.packedItemsSlot(PackingSlot.ofPickingSlotId(pickingSlotId))
 				.allowOverDelivery(allowOverDelivery)
-				.build()
-				.setFromHUs(ImmutableList.of(hu))
+				.fromHU(hu)
 				.allocate();
 	}
 
