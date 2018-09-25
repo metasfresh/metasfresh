@@ -9,6 +9,7 @@ import { getItemsByProperty } from '../../../actions/WindowActions';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
+import WidgetTooltip from '../WidgetTooltip';
 
 class Lookup extends Component {
   rawLookupsState = {};
@@ -21,6 +22,7 @@ class Lookup extends Component {
       props.properties.forEach(item => {
         lookupWidgets[`${item.field}`] = {
           dropdownOpen: false,
+          tooltipOpen: false,
           fireClickOutside: false,
           fireDropdownList: false,
           isFocused: false,
@@ -193,6 +195,13 @@ class Lookup extends Component {
         }
       }
     });
+  };
+
+  widgetTooltipToggle = (field, value) => {
+    const curVal = this.getLookupWidget(field).tooltipOpen;
+    const newVal = value != null ? value : !curVal;
+
+    this._changeWidgetProperty(field, 'tooltipOpen', newVal);
   };
 
   resetLocalClearing = () => {
@@ -396,8 +405,27 @@ class Lookup extends Component {
               'field',
               item.field
             )[0];
+            const widgetTooltipToggled = lookupWidget.tooltipOpen;
 
-            if (
+            if (item.type === 'Tooltip') {
+              if (!itemByProperty.value) {
+                return null;
+              }
+
+              return (
+                <div
+                  key={item.field}
+                  className="raw-lookup-wrapper lookup-tooltip"
+                >
+                  <WidgetTooltip
+                    widget={item}
+                    data={itemByProperty}
+                    isToggled={widgetTooltipToggled}
+                    onToggle={val => this.widgetTooltipToggle(item.field, val)}
+                  />
+                </div>
+              );
+            } else if (
               item.source === 'lookup' ||
               item.widgetType === 'Lookup' ||
               (itemByProperty && itemByProperty.widgetType === 'Lookup')

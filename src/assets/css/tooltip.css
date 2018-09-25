@@ -146,3 +146,29 @@
 .tooltip-parent .tooltip-wrapp {
     line-height: 15px;
 }
+
+
+/*********** WIDGET TOOLTIP ************/
+.widget-tooltip {}
+
+.tooltip-content {
+    max-width: 300px;
+    width: auto;
+    height: auto;
+    max-height: 233px;
+    overflow: hidden;
+    text-align: left;
+    overflow-y: scroll;
+
+    &&:after {
+        display: none;
+    }
+    &&:before {
+        display: none;
+    }
+
+    span {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+}
