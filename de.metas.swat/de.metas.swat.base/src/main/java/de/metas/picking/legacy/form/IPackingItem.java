@@ -41,11 +41,9 @@ public interface IPackingItem
 
 	I_C_UOM getC_UOM();
 
-	int getGroupingKey();
+	PackingItemGroupingKey getGroupingKey();
 
 	void setWeightSingle(BigDecimal piWeightSingle);
-
-	boolean canAddSchedule(I_M_ShipmentSchedule schedToAdd);
 
 	/**
 	 * Clears current schedules and set them from given <code>packingItem</code>.

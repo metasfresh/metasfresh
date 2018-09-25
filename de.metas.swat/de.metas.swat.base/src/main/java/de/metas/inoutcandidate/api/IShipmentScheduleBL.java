@@ -30,11 +30,11 @@ import java.util.Properties;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util.ArrayKey;
 
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.storage.IStorageQuery;
 import de.metas.util.ISingletonService;
 
@@ -94,7 +94,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param includeBPartner if <code>true</code>, the effective <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> shall be included in grouping key too.
 	 * @return key
 	 */
-	ArrayKey mkKeyForGrouping(I_M_ShipmentSchedule sched, boolean includeBPartner);
+	PackingItemGroupingKey mkKeyForGrouping(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field

@@ -55,6 +55,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
@@ -67,14 +68,12 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
@@ -93,6 +92,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -787,42 +787,32 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public ArrayKey mkKeyForGrouping(final I_M_ShipmentSchedule sched, final boolean includeBPartner)
+	public PackingItemGroupingKey mkKeyForGrouping(final I_M_ShipmentSchedule sched)
 	{
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
-		final de.metas.adempiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId, de.metas.adempiere.model.I_M_Product.class);
 
-		final int adTableId;
-		final int recordId;
+		final TableRecordReference documentLineRef;
+		final de.metas.adempiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId, de.metas.adempiere.model.I_M_Product.class);
 		if (product.isDiverse())
 		{
 			// Diverse/misc products can't be merged into one pi because they could represent totally different products.
 			// So we are using (AD_Table_ID, Record_ID) (which are unique) to make the group unique.
-			adTableId = sched.getAD_Table_ID();
-			recordId = sched.getRecord_ID();
+			documentLineRef = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
 		}
 		else
 		{
-			adTableId = 0;
-			recordId = 0;
+			documentLineRef = null;
 		}
 
-		final BPartnerId bpartnerId;
-		final BPartnerLocationId bpLocId;
-		if (includeBPartner)
-		{
-			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
-			bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
-			bpLocId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
-		}
-		else
-		{
-			bpartnerId = null;
-			bpLocId = null;
-		}
-
-		return ArrayKey.of(productId, adTableId, recordId, bpartnerId, bpLocId);
+		return PackingItemGroupingKey.builder()
+				.productId(productId)
+				.bpartnerLocationId(bpLocationId)
+				.documentLineRef(documentLineRef)
+				.build();
 	}
 
 	/**

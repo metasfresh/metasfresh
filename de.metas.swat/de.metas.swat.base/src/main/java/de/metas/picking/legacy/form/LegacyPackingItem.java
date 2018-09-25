@@ -66,7 +66,7 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 
 	public LegacyPackingItem(
 			final ShipmentScheduleQtyPickedMap scheds2Qtys,
-			final int groupingKey,
+			final PackingItemGroupingKey groupingKey,
 			final String trxName)
 	{
 		super(scheds2Qtys, groupingKey);

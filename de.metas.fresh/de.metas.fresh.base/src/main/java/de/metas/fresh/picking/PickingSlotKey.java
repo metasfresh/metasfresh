@@ -53,7 +53,6 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
@@ -395,7 +394,7 @@ public class PickingSlotKey extends TerminalKey
 
 		if (pickingSlot.getM_Warehouse_ID() > 0)
 		{
-			final String warehouseName = Utils.mkTruncatedstring(pickingSlot.getM_Warehouse().getName(), maxLength);
+			final String warehouseName = truncatedString(pickingSlot.getM_Warehouse().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
 					.append(Util.maskHTML(warehouseName))
@@ -404,7 +403,7 @@ public class PickingSlotKey extends TerminalKey
 
 		if (null != pickingSlot.getC_BPartner())
 		{
-			final String bpName = Utils.mkTruncatedstring(pickingSlot.getC_BPartner().getName(), maxLength);
+			final String bpName = truncatedString(pickingSlot.getC_BPartner().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
 					.append(Util.maskHTML(bpName))
@@ -413,7 +412,7 @@ public class PickingSlotKey extends TerminalKey
 
 		if (null != pickingSlot.getC_BPartner_Location())
 		{
-			final String bplName = Utils.mkTruncatedstring(pickingSlot.getC_BPartner_Location().getName(), maxLength);
+			final String bplName = truncatedString(pickingSlot.getC_BPartner_Location().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
 					.append(bplName)
@@ -421,6 +420,34 @@ public class PickingSlotKey extends TerminalKey
 		}
 
 		return pickingSlotName.toString();
+	}
+
+	private static String truncatedString(final String text, final int length)
+	{
+		final String[] bits = text.split("\\\\n");
+		final StringBuilder newtxt = new StringBuilder();
+		for (final String s : bits)
+		{
+			if (newtxt.length() > 0)
+			{
+				newtxt.append("<br>");
+			}
+
+			if (s.length() > length)
+			{
+				newtxt.append(s.substring(0, length - 3).concat("..."));
+			}
+			else
+			{
+				newtxt.append(s);
+			}
+		}
+
+		if (newtxt.length() == 0)
+		{
+			return text;
+		}
+		return newtxt.toString();
 	}
 
 	/**

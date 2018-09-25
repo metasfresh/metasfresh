@@ -38,25 +38,19 @@ import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.I_M_PackagingTree;
 import org.compiere.model.PackagingTreeItemComparable;
-import org.compiere.model.PackingTreeBL;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.model.X_M_PackagingTreeItemSched;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -75,8 +69,6 @@ public class PackingTreeModel extends DefaultTreeModel
 	 *
 	 */
 	private static final long serialVersionUID = 447858978512397688L;
-
-	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final DefaultMutableTreeNode nodeUnpackedItemsParent;
 
@@ -231,35 +223,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 	public Collection<LegacyPackingItem> getSavedUnpackedItems(I_M_PackagingTree savedTree)
 	{
-		final List<PackagingTreeItemComparable> unPackedItems = PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_UnPackedItem);
-
-		final ArrayList<LegacyPackingItem> itemCopies = new ArrayList<>(unPackedItems.size());
-		for (final X_M_PackagingTreeItem upck : unPackedItems)
-		{
-			final List<X_M_PackagingTreeItemSched> schedItems = PackingTreeBL.getSchedforItem(upck.getM_PackagingTreeItem_ID());
-			ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.newInstance();
-			for (final X_M_PackagingTreeItemSched schedItem : schedItems)
-			{
-				final I_M_ShipmentSchedule sched = schedItem.getM_ShipmentSchedule();
-				if (sched == null)
-				{
-					logger.warn("No schedule found found " + schedItem + " [SKIP]");
-					continue;
-				}
-
-				schedWithQty = ShipmentScheduleQtyPickedMap.singleton(sched, Quantity.of(
-						schedItem.getQty(),
-						Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched)));
-			}
-			if (schedWithQty.isEmpty())
-			{
-				return new ArrayList<>();
-			}
-			final LegacyPackingItem item = new LegacyPackingItem(schedWithQty, upck.getGroupID(), ITrx.TRXNAME_None);
-			itemCopies.add(item);
-		}
-
-		return Collections.unmodifiableList(itemCopies);
+		throw new UnsupportedOperationException();
 	}
 
 	private void initSavedTree(final Properties ctx, final boolean isGroupByWarehouseDest)
@@ -665,7 +629,7 @@ public class PackingTreeModel extends DefaultTreeModel
 	@SuppressWarnings("unchecked")
 	public void removeUsedBin(final Properties ctx, final DefaultMutableTreeNode usedBinToRemoveNode)
 	{
-		final Map<ArrayKey, ShipmentScheduleQtyPickedMap> key2Scheds = new HashMap<>();
+		final Map<PackingItemGroupingKey, ShipmentScheduleQtyPickedMap> schedules = new HashMap<>();
 
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -689,15 +653,13 @@ public class PackingTreeModel extends DefaultTreeModel
 				// Note: for normal products, there is only item node for each productId, but to div/misc products,
 				// there is one per orderLineId.
 
-				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
-				final boolean includeBPartner = true;
-				final ArrayKey key = shipmentScheduleBL.mkKeyForGrouping(schedToRemove, includeBPartner);
-				ShipmentScheduleQtyPickedMap scheds = key2Scheds.get(key);
+				final PackingItemGroupingKey groupingKey = shipmentScheduleBL.mkKeyForGrouping(schedToRemove);
+				ShipmentScheduleQtyPickedMap scheds = schedules.get(groupingKey);
 
 				if (scheds == null)
 				{
 					scheds = ShipmentScheduleQtyPickedMap.newInstance();
-					key2Scheds.put(key, scheds);
+					schedules.put(groupingKey, scheds);
 				}
 
 				final Quantity existingRemovedQty = scheds.getQty(schedToRemove);
@@ -728,7 +690,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final DefaultMutableTreeNode existingUnpackedItemNode = enUnpackedItems.nextElement();
 			final LegacyPackingItem existingUnpackedItem = (LegacyPackingItem)existingUnpackedItemNode.getUserObject();
 
-			final ShipmentScheduleQtyPickedMap newlyUnpackedScheds = key2Scheds.remove(Util.mkKey(existingUnpackedItem.getProductId()));
+			final ShipmentScheduleQtyPickedMap newlyUnpackedScheds = schedules.remove(existingUnpackedItem.getGroupingKey());
 
 			if (newlyUnpackedScheds == null)
 			{
@@ -742,9 +704,9 @@ public class PackingTreeModel extends DefaultTreeModel
 		final UsedBin usedBin = (UsedBin)usedBinToRemoveNode.getUserObject();
 
 		// create new unpacked items for the products that are still in prodId2Scheds
-		for (final ArrayKey productId : key2Scheds.keySet())
+		for (final PackingItemGroupingKey groupingKey : schedules.keySet())
 		{
-			final ShipmentScheduleQtyPickedMap sched2qty = key2Scheds.get(productId);
+			final ShipmentScheduleQtyPickedMap sched2qty = schedules.get(groupingKey);
 
 			final LegacyPackingItem newUnpackedItem = new LegacyPackingItem(sched2qty, usedBin.getTrxName());
 
@@ -975,7 +937,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final DefaultMutableTreeNode packingItemNode = piNodeEnum.nextElement();
 
 			final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
-			if (packingItem.getGroupingKey() == packingItemToMatch.getGroupingKey())
+			if (PackingItemGroupingKey.equals(packingItem.getGroupingKey(), packingItemToMatch.getGroupingKey()))
 			{
 				return packingItemNode;
 			}
@@ -1012,7 +974,7 @@ public class PackingTreeModel extends DefaultTreeModel
 
 				final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
 
-				if (packingItem.getGroupingKey() == packingItemToMatch.getGroupingKey())
+				if (PackingItemGroupingKey.equals(packingItem.getGroupingKey(), packingItemToMatch.getGroupingKey()))
 				{
 					final BigDecimal qtySum = Utils.convertToItemUOM(packingItem, packingItem.getQtySum());
 

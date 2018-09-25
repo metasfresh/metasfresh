@@ -11,6 +11,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -117,7 +118,7 @@ public final class PackingItemsMap
 		{
 			// add new item into the list only if is a real new item
 			// NOTE: should be only one item with same grouping key
-			if (item.getGroupingKey() == packedItem.getGroupingKey())
+			if (PackingItemGroupingKey.equals(item.getGroupingKey(), packedItem.getGroupingKey()))
 			{
 				item.addSchedules(packedItem);
 				return;

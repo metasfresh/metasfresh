@@ -39,13 +39,10 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.PackingTreeBL;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
@@ -106,15 +103,6 @@ public class PackingMd extends MvcMdGenForm
 	private boolean groupByWarehouseDest = false;
 
 	/**
-	 * Shall we group lines by Product?
-	 *
-	 * Default: true.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/05522_Picking_Terminal_extension_-_Regroup_by_product_%28104598600159%29
-	 */
-	private boolean groupByProduct = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.adempiere.form.PackingMd.groupByProduct", false);
-
-	/**
 	 * Requery {@link #_packageableItemsAll} items from database
 	 */
 	private boolean _requeryNeeded = false;
@@ -148,16 +136,6 @@ public class PackingMd extends MvcMdGenForm
 	public void setGroupByWarehouseDest(final boolean groupByWarehouseDest)
 	{
 		this.groupByWarehouseDest = groupByWarehouseDest;
-	}
-
-	public boolean isGroupByProduct()
-	{
-		return groupByProduct;
-	}
-
-	public void setGroupByProduct(final boolean groupByProduct)
-	{
-		this.groupByProduct = groupByProduct;
 	}
 
 	/**
@@ -617,12 +595,6 @@ public class PackingMd extends MvcMdGenForm
 		final WarehouseId warehouseDestId = null; // M_Warehouse_Dest is gone for a long time by now
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver().getAsBigDecimal();
 
-		final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, warehouseDestId, qtyToDeliver);
-		if (tree != null && tree.getCreatedBy() != packingUserId && tree.getCreatedBy() != 0)
-		{
-			return null;
-		}
-
 		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
 		keyBuilder.bpartnerId(BPartnerId.toRepoIdOr(bpartnerId, -1));
 
@@ -646,24 +618,13 @@ public class PackingMd extends MvcMdGenForm
 			keyBuilder.warehouseDestId(-1);
 		}
 
-		final int productId;
-		final String productName;
-		if (isGroupByProduct())
-		{
-			productId = item.getProductId().getRepoId();
-			productName = item.getProductName();
+		final int productId = item.getProductId().getRepoId();
+		final String productName = item.getProductName();
 
-			keyBuilder.productId(productId);
-			keyBuilder.warehouseDestId(-1);
-			keyBuilder.bpartnerId(-1);
-			keyBuilder.bpartnerAddress(null);
-		}
-		else
-		{
-			productId = -1;
-			productName = null;
-			keyBuilder.productId(-1);
-		}
+		keyBuilder.productId(productId);
+		keyBuilder.warehouseDestId(-1);
+		keyBuilder.bpartnerId(-1);
+		keyBuilder.bpartnerAddress(null);
 
 		final String deliveryVia = item.getDeliveryVia();
 		// final String deliveryViaName = item.getDeliveryViaName();

@@ -158,10 +158,10 @@ public class ProductKey extends TerminalKey
 		// see http://dewiki908/mediawiki/index.php/05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
 		final int maxLength = 25;
 
-		final String pValue = Utils.mkTruncatedstring(product.getValue(), maxLength);
-		final String pName = Utils.mkTruncatedstring(product.getName(), maxLength);
-		final String bpName = Utils.mkTruncatedstring(partner.getName(), maxLength);
-		final String bplName = Utils.mkTruncatedstring(bpLoc.getName(), maxLength);
+		final String pValue = truncatedString(product.getValue(), maxLength);
+		final String pName = truncatedString(product.getName(), maxLength);
+		final String bpName = truncatedString(partner.getName(), maxLength);
+		final String bplName = truncatedString(bpLoc.getName(), maxLength);
 		final String name = pValue
 				+ "<br>"
 				+ pName
@@ -171,6 +171,34 @@ public class ProductKey extends TerminalKey
 				+ bplName;
 		key.setName(name);
 		return key;
+	}
+
+	private static String truncatedString(final String text, final int length)
+	{
+		final String[] bits = text.split("\\\\n");
+		final StringBuilder newtxt = new StringBuilder();
+		for (final String s : bits)
+		{
+			if (newtxt.length() > 0)
+			{
+				newtxt.append("<br>");
+			}
+
+			if (s.length() > length)
+			{
+				newtxt.append(s.substring(0, length - 3).concat("..."));
+			}
+			else
+			{
+				newtxt.append(s);
+			}
+		}
+
+		if (newtxt.length() == 0)
+		{
+			return text;
+		}
+		return newtxt.toString();
 	}
 
 	//

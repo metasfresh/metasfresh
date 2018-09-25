@@ -45,17 +45,12 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.Waiting;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.I_M_PackagingTreeItem;
-import org.compiere.model.PackingTreeBL;
-import org.compiere.model.X_M_PackagingTreeItem;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -73,8 +68,6 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalTable;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
@@ -206,11 +199,6 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		private void initComponents()
 		{
 			confirmPanel = getTerminalFactory().createConfirmPanel(true, Utils.getButtonSize());
-			if (!getModel().isGroupByProduct())
-			{
-				confirmPanel.addButton(ACTION_Switch);
-				confirmPanel.addButton(ACTION_Today, true);
-			}
 			confirmPanel.addListener(new ConfirmPanelListener());
 		}
 	}
@@ -228,62 +216,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		@Override
 		public PackingStates getPackingState(int row)
 		{
-			if (getModel().isGroupByProduct())
-			{
-				return null;
-			}
-
-			String bpValue = "";
-			BigDecimal qtyToDeliver = BigDecimal.ZERO;
-			WarehouseId warehouseDestId = null;
-
-			// restrict the searching;
-			for (int i = 1; i < 4; i++)
-			{
-				if (table.getColumnName(i).equals(COLUMNNAME_BPValue))
-					bpValue = (String)table.getValueAt(row, i);
-				if (table.getColumnName(i).equals(COLUMNNAME_Qty))
-					qtyToDeliver = (BigDecimal)table.getValueAt(row, i);
-				if (table.getColumnName(i).equals(COLUMNNAME_M_Warehouse_Dest_ID))
-					warehouseDestId = WarehouseId.ofRepoIdOrNull((Integer)table.getValueAt(row, i));
-
-			}
-
-			final BPartnerId bpartnerId = Services.get(IBPartnerDAO.class)
-					.getBPartnerIdByValueIfExists(bpValue)
-					.orElse(null);
-
-			final I_M_PackagingTree tree = PackingTreeBL.getPackingTree(bpartnerId, warehouseDestId, qtyToDeliver);
-
-			PackingStates state = PackingStates.unpacked;
-			if (tree != null)
-			{
-				boolean packed = false;
-				boolean unpacked = false;
-				for (final I_M_PackagingTreeItem item : PackingTreeBL.getItems(tree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_Box))
-				{
-					if (item.getStatus().equals(X_M_PackagingTreeItem.STATUS_Packed)
-							|| item.getStatus().equals(X_M_PackagingTreeItem.STATUS_Ready)
-							|| item.getStatus().equals(X_M_PackagingTreeItem.STATUS_PartiallyPacked))
-						packed = true;
-					if (item.getStatus().equals(X_M_PackagingTreeItem.STATUS_UnPacked))
-						unpacked = true;
-				}
-
-				if (!PackingTreeBL.getItems(tree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_UnPackedItem).isEmpty())
-				{
-					unpacked = true;
-				}
-
-				if (packed && unpacked)
-					state = PackingStates.partiallypacked;
-				else if (packed && !unpacked)
-					state = PackingStates.packed;
-				else if (!packed && unpacked)
-					state = PackingStates.unpacked;
-			}
-
-			return state;
+			return null;
 		}
 	};
 
@@ -441,12 +374,6 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		packageTerminalNew.init(terminalContext.getWindowNo(), packageTerminalNewFrame);
 		packageTerminalNewFrame.addWindowListener(packageTerminalWindowListener);
 		packageTerminal = packageTerminalNew;
-
-		// we saving the tree and in this way we assure that only one user can see this specific tree
-		if (!getModel().isGroupByProduct())
-		{
-			Utils.savePackingTree(packageTerminalNew.getPackageTerminalPanel());
-		}
 
 		AEnv.showMaximized(packageTerminalNewFrame);
 
@@ -712,25 +639,10 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		// Create Columns
 		addColumn(miniTable, COLUMNNAME_ROWID);
 
-		if (getModel().isGroupByProduct())
-		{
-			addColumn(miniTable, COLUMNNAME_M_Product_ID);
-			addColumn(miniTable, COLUMNNAME_Qty);
-			addColumn(miniTable, COLUMNNAME_DeliveryDate); // 01676
-			addColumn(miniTable, COLUMNNAME_PreparationDate); // 01676
-		}
-		else
-		{
-			addColumn(miniTable, COLUMNNAME_BPValue);
-			addColumn(miniTable, COLUMNNAME_C_BPartner_Location_ID);
-
-			addColumn(miniTable, COLUMNNAME_Qty);
-			if (getModel().isGroupByWarehouseDest())
-			{
-				addColumn(miniTable, COLUMNNAME_M_Warehouse_Dest_ID);
-			}
-			addColumn(miniTable, COLUMNNAME_DeliveryDate); // 01676
-		}
+		addColumn(miniTable, COLUMNNAME_M_Product_ID);
+		addColumn(miniTable, COLUMNNAME_Qty);
+		addColumn(miniTable, COLUMNNAME_DeliveryDate); // 01676
+		addColumn(miniTable, COLUMNNAME_PreparationDate); // 01676
 
 		addColumn(miniTable, COLUMNNAME_MatchingType);
 
@@ -821,55 +733,40 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		final HashMap<String, BigDecimal> products = new HashMap<>();
 		for (final TableRow currentRow : selectedRows)
 		{
-			if (model.isGroupByProduct())
+			final String productName = currentRow.getProductName().trim();
+			BigDecimal qty = products.get(productName);
+			if (qty == null)
 			{
-				final String productName = currentRow.getProductName().trim();
-				BigDecimal qty = products.get(productName);
-				if (qty == null)
-				{
-					products.put(productName, currentRow.getQtyToDeliver());
-				}
-				else
-				{
-					qty = qty.add(currentRow.getQtyToDeliver());
-					products.remove(productName);
-					products.put(productName, qty);
-				}
-
+				products.put(productName, currentRow.getQtyToDeliver());
 			}
 			else
 			{
-				data.append(currentRow.getBpartnerValue())
-						.append("   ")
-						.append(currentRow.getBpartnerName())
-						.append("<br>")
-						.append(currentRow.getKey().getBpartnerAddress());
-				break; // once is enough
+				qty = qty.add(currentRow.getQtyToDeliver());
+				products.remove(productName);
+				products.put(productName, qty);
 			}
 		}
 
-		if (model.isGroupByProduct())
+		for (final Map.Entry<String, BigDecimal> entry : products.entrySet())
 		{
-			for (final Map.Entry<String, BigDecimal> entry : products.entrySet())
+			final String name = entry.getKey();
+			BigDecimal totalQty = entry.getValue();
+			//
+			if (totalQty.scale() != 0)
 			{
-				final String name = entry.getKey();
-				BigDecimal totalQty = entry.getValue();
-				//
-				if (totalQty.scale() != 0)
-				{
-					totalQty = totalQty.setScale(2, BigDecimal.ROUND_HALF_UP);
-				}
+				totalQty = totalQty.setScale(2, BigDecimal.ROUND_HALF_UP);
+			}
 
-				data.append(totalQty)
-						.append(" x ")
-						.append(name);
+			data.append(totalQty)
+					.append(" x ")
+					.append(name);
 
-				if (products.size() > 1)
-				{
-					data.append("<br>");
-				}
+			if (products.size() > 1)
+			{
+				data.append("<br>");
 			}
 		}
+
 		data.append("</font></html>");
 		return data.toString();
 	}

@@ -85,23 +85,12 @@ public class FreshPackingMd extends PackingMd
 			keyBuilder.warehouseDestId(-1);
 		}
 
-		final int productId;
-		final String productName;
-		if (isGroupByProduct()) // 06940: Note that this will also continue to group by product
-		{
-			productId = item.getProductId().getRepoId();
-			productName = item.getProductName();
+		final int productId = item.getProductId().getRepoId();
+		final String productName = item.getProductName();
 
-			keyBuilder.productId(productId > 0 ? productId : -1);
-			keyBuilder.warehouseDestId(-1);
-			keyBuilder.bpartnerAddress(null);
-		}
-		else
-		{
-			productId = -1;
-			productName = null;
-			keyBuilder.productId(-1);
-		}
+		keyBuilder.productId(productId > 0 ? productId : -1);
+		keyBuilder.warehouseDestId(-1);
+		keyBuilder.bpartnerAddress(null);
 
 		final String deliveryVia = item.getDeliveryVia();
 

@@ -58,12 +58,10 @@ import lombok.NonNull;
  */
 public abstract class AbstractPackingItem implements IPackingItem
 {
-	private static final int GROUPINGKEY_ToBeGenerated = Integer.MIN_VALUE;
-
 	private final ArrayList<I_M_ShipmentSchedule> schedules;
 	private final ShipmentScheduleQtyPickedMap sched2qty;
 
-	private final int groupingKey;
+	private final PackingItemGroupingKey groupingKey;
 	private I_M_Product product; // lazy
 	private final I_C_UOM uom;
 	private BigDecimal weightSingle;
@@ -75,7 +73,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	 */
 	protected AbstractPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
 	{
-		this(scheds2Qtys, GROUPINGKEY_ToBeGenerated);
+		this(scheds2Qtys, (PackingItemGroupingKey)null);
 	}
 
 	/**
@@ -84,7 +82,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	 *            So, if you care for that order, then I suggest to call this constructor with an {@link LinkedHashMap} or similar.
 	 * @param groupingKey
 	 */
-	public AbstractPackingItem(@NonNull final ShipmentScheduleQtyPickedMap sched2qtyParam, final int groupingKey)
+	public AbstractPackingItem(@NonNull final ShipmentScheduleQtyPickedMap sched2qtyParam, final PackingItemGroupingKey groupingKey)
 	{
 		Check.assume(!sched2qtyParam.isEmpty(), "scheds2Qtys not empty");
 		this.sched2qty = sched2qtyParam.copy();
@@ -92,7 +90,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		schedules = new ArrayList<>(sched2qty.getShipmentSchedules());
 
 		final I_M_ShipmentSchedule firstSchedule = schedules.get(0);
-		if (groupingKey == GROUPINGKEY_ToBeGenerated)
+		if (groupingKey == null)
 		{
 			this.groupingKey = computeGroupingKey(firstSchedule);
 		}
@@ -160,15 +158,15 @@ public abstract class AbstractPackingItem implements IPackingItem
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 		I_C_UOM uom = null;
-		int groupingKey = GROUPINGKEY_ToBeGenerated;
+		PackingItemGroupingKey groupingKey = null;
 		boolean firstSched = true;
 		for (final I_M_ShipmentSchedule sched : sched2qty.getShipmentSchedules())
 		{
 			final I_C_UOM currentUOM = shipmentScheduleBL.getUomOfProduct(sched);
-			final int currentKey = computeGroupingKey(sched);
+			final PackingItemGroupingKey currentGroupingKey = computeGroupingKey(sched);
 			if (firstSched)
 			{
-				groupingKey = currentKey;
+				groupingKey = currentGroupingKey;
 				uom = currentUOM;
 				firstSched = false;
 			}
@@ -178,7 +176,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 				{
 					throw new AdempiereException("schedules does not have same UOM");
 				}
-				if (groupingKey != currentKey)
+				if (!PackingItemGroupingKey.equals(groupingKey, currentGroupingKey))
 				{
 					throw new AdempiereException("schedules does not have same grouping key");
 				}
@@ -194,13 +192,10 @@ public abstract class AbstractPackingItem implements IPackingItem
 	 * @param sched
 	 * @return
 	 */
-	protected int computeGroupingKey(final I_M_ShipmentSchedule sched)
+	protected PackingItemGroupingKey computeGroupingKey(final I_M_ShipmentSchedule sched)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
-		final boolean includeBPartner = true;
-		return shipmentScheduleBL.mkKeyForGrouping(sched, includeBPartner).hashCode();
+		return shipmentScheduleBL.mkKeyForGrouping(sched);
 	}
 
 	@Override
@@ -434,7 +429,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		{
 			if (!canAddSchedule(schedToAdd))
 			{
-				throw new IllegalArgumentException(schedToAdd + " can't be added to " + this);
+				throw new AdempiereException(schedToAdd + " can't be added to " + this);
 			}
 		}
 
@@ -481,15 +476,14 @@ public abstract class AbstractPackingItem implements IPackingItem
 		addSchedules(toAdd, removeExistingOnes);
 	}
 
-	@Override
-	public final boolean canAddSchedule(final I_M_ShipmentSchedule schedToAdd)
+	private final boolean canAddSchedule(final I_M_ShipmentSchedule schedToAdd)
 	{
 		if (sched2qty.isEmpty())
 		{
 			return true;
 		}
 
-		return groupingKey == computeGroupingKey(schedToAdd);
+		return PackingItemGroupingKey.equals(groupingKey, computeGroupingKey(schedToAdd));
 	}
 
 	@Override
@@ -499,7 +493,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final int getGroupingKey()
+	public final PackingItemGroupingKey getGroupingKey()
 	{
 		return groupingKey;
 	}

@@ -62,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
@@ -428,7 +429,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		{
 			for (final IPackingItem pItem : packedItems)
 			{
-				if (pItem.getGroupingKey() == upItem.getGroupingKey())
+				if (PackingItemGroupingKey.equals(pItem.getGroupingKey(), upItem.getGroupingKey()))
 				{
 					partialQtyremainingitems.add(upItem);
 				}
@@ -542,7 +543,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		IPackingItem itemUnpacked = null;
 		for (final IPackingItem item : packItems.getUnpackedItems())
 		{
-			if (item.getGroupingKey() == pckItem.getGroupingKey())
+			if (PackingItemGroupingKey.equals(item.getGroupingKey(), pckItem.getGroupingKey()))
 			{
 				Check.assumeNull(itemUnpacked, "Item with grouping key {} shall exist only once in the list", item.getGroupingKey());
 				itemUnpacked = item;

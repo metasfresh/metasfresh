@@ -14,6 +14,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -65,7 +66,7 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public int getGroupingKey()
+	public PackingItemGroupingKey getGroupingKey()
 	{
 		return getDelegate().getGroupingKey();
 	}
@@ -74,12 +75,6 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	public void setWeightSingle(final BigDecimal piWeightSingle)
 	{
 		getDelegate().setWeightSingle(piWeightSingle);
-	}
-
-	@Override
-	public boolean canAddSchedule(final I_M_ShipmentSchedule schedToAdd)
-	{
-		return getDelegate().canAddSchedule(schedToAdd);
 	}
 
 	@Override

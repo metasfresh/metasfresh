@@ -200,7 +200,7 @@ public class SwingPackageBoxesItems
 		return productsKeyLayout;
 	}
 
-	protected QtyListener createQtyListener()
+	protected PropertyChangeListener createQtyListener()
 	{
 		return new QtyListener(this);
 	}
@@ -222,8 +222,7 @@ public class SwingPackageBoxesItems
 			// Qty
 			fQty = factory.createTerminalNumericField("", DisplayType.Quantity, 14f, true, false, getButtonSize());
 			fQty.setEditable(true);
-			final QtyListener listener = createQtyListener();
-			fQty.addListener(listener);
+			fQty.addListener(createQtyListener());
 
 			// Add
 			bAdd = createButtonAction(SwingPackageBoxesItems.ACTION_Add, KeyStroke.getKeyStroke(KeyEvent.VK_F11, Event.F11), 17f);

@@ -51,7 +51,6 @@ import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPackagingBL;
@@ -340,7 +339,7 @@ public abstract class Packing extends MvcGenForm
 
 		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
 
-		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<>();
+		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
 
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
@@ -356,16 +355,15 @@ public abstract class Packing extends MvcGenForm
 								shipmentScheduleBL.getUomOfProduct(sched)));
 
 				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
-				final boolean includeBPartner = true;
-				final ArrayKey key = shipmentScheduleBL.mkKeyForGrouping(sched, includeBPartner);
+				final PackingItemGroupingKey groupingKey = shipmentScheduleBL.mkKeyForGrouping(sched);
 
-				IPackingItem item = key2Sched.get(key);
+				IPackingItem item = packingItems.get(groupingKey);
 				if (item == null)
 				{
 					item = new LegacyPackingItem(schedWithQty, null);
-					assert item.getGroupingKey() == key.hashCode();
+					assert item.getGroupingKey().equals(groupingKey);
 
-					key2Sched.put(key, item);
+					packingItems.put(groupingKey, item);
 					unallocatedLines.add(item);
 				}
 				else

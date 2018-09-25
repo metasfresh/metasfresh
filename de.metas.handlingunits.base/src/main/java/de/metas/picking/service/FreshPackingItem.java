@@ -19,7 +19,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.AbstractPackingItem;
@@ -60,13 +59,6 @@ public final class FreshPackingItem extends AbstractPackingItem implements IFres
 	public void updateFrom(final IFreshPackingItem item)
 	{
 		super.updateFrom(item);
-	}
-
-	@Override
-	protected int computeGroupingKey(final I_M_ShipmentSchedule sched)
-	{
-		final boolean includeBPartner = true;
-		return Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched, includeBPartner).hashCode();
 	}
 
 	@Override

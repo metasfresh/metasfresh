@@ -42,7 +42,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
-import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
@@ -60,6 +59,7 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
@@ -139,7 +139,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, final boolean displayNonItems)
 	{
 		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
-		final Map<ArrayKey, IPackingItem> key2Sched = new HashMap<>();
+		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -158,15 +158,15 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 						sched,
 						Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
 
-				final ArrayKey key = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched, true);
+				final PackingItemGroupingKey groupingKey = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched);
 
-				IPackingItem item = key2Sched.get(key);
+				IPackingItem item = packingItems.get(groupingKey);
 				if (item == null)
 				{
 					item = FreshPackingItemHelper.create(schedWithQty);
-					assert item.getGroupingKey() == key.hashCode();
+					assert item.getGroupingKey().equals(groupingKey);
 
-					key2Sched.put(key, item);
+					packingItems.put(groupingKey, item);
 					unallocatedLines.add(item);
 				}
 				else

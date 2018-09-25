@@ -167,14 +167,6 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 	@Override
 	public AbstractPackageTerminalPanel createPackageTerminalPanel()
 	{
-		final SwingPackageTerminalPanel packageTerminalPanel = new SwingPackageTerminalPanel(getTerminalContext(), this);
-
-		// we saving the tree and in this way we assure that only one user can see this specific tree
-		// save only if is not groupped by product
-		Utils.savePackingTree(packageTerminalPanel);
-
-		packageTerminalPanel.getPickingData().validateModel();
-
-		return packageTerminalPanel;
+		throw new UnsupportedOperationException();
 	}
 }

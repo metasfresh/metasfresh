@@ -26,16 +26,8 @@ package de.metas.picking.legacy.form;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_M_PackagingTree;
-import org.compiere.model.PackagingTreeItemComparable;
-import org.compiere.model.PackingTreeBL;
-import org.compiere.model.X_M_PackagingTreeItem;
-import org.compiere.model.X_M_PackagingTreeItemSched;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -166,33 +158,6 @@ public class PackingDetailsMd implements IPackingDetailsModel
 			selectedShipperId = 1000001; // TODO: HARDCODED
 		}
 		this.nonItems = nonItems;
-	}
-
-	public PackingDetailsMd(final Properties ctx, I_M_PackagingTree savedTree, final boolean useShipper, final int C_BPartnerLocation_ID, final int M_Warehouse_Dest_ID, final boolean isGroupByWarehouseDest)
-	{
-		List<PackagingTreeItemComparable> avail = PackingTreeBL.getItems(savedTree.getM_PackagingTree_ID(), X_M_PackagingTreeItem.TYPE_AvailableBox);
-		Collection<AvailableBins> avalaiableContainers = new ArrayList<AvailableBins>();
-		for (X_M_PackagingTreeItem item : avail)
-		{
-			avalaiableContainers.add(new AvailableBins(ctx, item.getM_PackagingContainer(), item.getQty().intValue(), null));
-		}
-		this.avalaiableContainers = avalaiableContainers;
-		
-		treeModel = new PackingTreeModel(ctx, savedTree, avalaiableContainers, C_BPartnerLocation_ID, M_Warehouse_Dest_ID, isGroupByWarehouseDest);
-		pcs = new PropertyChangeSupport(this);
-		this.useShipper = useShipper;
-		if (!useShipper)
-		{
-			selectedShipperId = 1000001; // TODO: HARDCODED
-		}
-		//
-		List<X_M_PackagingTreeItemSched> nonItems = PackingTreeBL.getNonItems(savedTree.getM_PackagingTree_ID());
-		List<I_M_ShipmentSchedule> scheds = new ArrayList<I_M_ShipmentSchedule>();
-		for (X_M_PackagingTreeItemSched sched : nonItems)
-		{
-			scheds.add(sched.getM_ShipmentSchedule());
-		}
-		this.nonItems = scheds;
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener l)

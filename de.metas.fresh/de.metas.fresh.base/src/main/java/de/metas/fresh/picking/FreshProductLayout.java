@@ -36,6 +36,7 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingItemsMap;
@@ -174,7 +175,8 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		for (final ITerminalKey keyItem : productKeys)
 		{
 			final FreshProductKey productKey = (FreshProductKey)keyItem;
-			if (productKey.getPackingItem() != null && Objects.equals(productKey.getPackingItem().getGroupingKey(), apck.getGroupingKey()))
+			if (productKey.getPackingItem() != null
+					&& PackingItemGroupingKey.equals(productKey.getPackingItem().getGroupingKey(), apck.getGroupingKey()))
 			{
 				return productKey;
 			}
