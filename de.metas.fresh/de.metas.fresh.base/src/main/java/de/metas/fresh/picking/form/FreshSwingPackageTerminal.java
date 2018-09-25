@@ -48,17 +48,8 @@ public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 	{
 		super(freshSwingPickingOKPanel, packingDetailsModel);
 
-		createBoxes(packingDetailsModel);
-	}
-
-	@Override
-	public void createBoxes(final Object model)
-	{
-		final FreshPackingDetailsMd freshModel = (FreshPackingDetailsMd)model;
-
 		// get packing items
-		final Collection<IPackingItem> unallocatedLines = freshModel.getUnallocatedLines();
-
+		final Collection<IPackingItem> unallocatedLines = packingDetailsModel.getUnallocatedLines();
 		setPackingItems(PackingItemsMap.ofUnpackedItems(unallocatedLines));
 	}
 

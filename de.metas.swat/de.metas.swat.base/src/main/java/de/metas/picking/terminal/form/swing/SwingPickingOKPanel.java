@@ -66,15 +66,13 @@ import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
-import de.metas.adempiere.form.terminal.swing.TerminalTable;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.MvcMdGenForm;
-import de.metas.picking.legacy.form.PackingPanel;
-import de.metas.picking.legacy.form.PackingDetailsMd;
 import de.metas.picking.legacy.form.PackingMd;
+import de.metas.picking.legacy.form.PackingPanel;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.picking.terminal.IPackingStateProvider;
@@ -84,7 +82,6 @@ import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel.ResetFilters;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
 
@@ -168,7 +165,7 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 		{
 			final SpecialTerminalTable table = new SpecialTerminalTable(getTerminalContext());
 			table.setAutoResize(true);
-			table.setPackingStateProvider(new PackingStateProvider(table));
+			table.setPackingStateProvider(new PackingStateProvider());
 			return table;
 		}
 
@@ -203,12 +200,8 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 
 	class PackingStateProvider implements IPackingStateProvider
 	{
-		private final TerminalTable table;
-
-		public PackingStateProvider(final TerminalTable table)
+		public PackingStateProvider()
 		{
-			super();
-			this.table = table;
 		}
 
 		@Override
@@ -372,11 +365,7 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 
 	protected AbstractPackageTerminal createPackingTerminal(final IPackingDetailsModel detailsModel)
 	{
-		Check.assumeInstanceOf(detailsModel, PackingDetailsMd.class, "detailsModel");
-		final PackingDetailsMd packingDetailsModel = (PackingDetailsMd)detailsModel;
-
-		final SwingPackageTerminal packageTerminal = new SwingPackageTerminal(this, packingDetailsModel);
-		return packageTerminal;
+		throw new UnsupportedOperationException();
 	}
 
 	/**

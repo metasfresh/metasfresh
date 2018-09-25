@@ -30,15 +30,10 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 
 import javax.swing.KeyStroke;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 
@@ -49,22 +44,13 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalNumericField;
-import de.metas.adempiere.form.terminal.ITerminalTree;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
-import de.metas.adempiere.form.terminal.TerminalKeyPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.LegacyPackingItem;
-import de.metas.picking.legacy.form.PackingDetailsMd;
-import de.metas.picking.legacy.form.PackingTreeModel;
-import de.metas.picking.terminal.BoxKey;
-import de.metas.picking.terminal.BoxLayout;
 import de.metas.picking.terminal.ProductKey;
 import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils;
-import de.metas.picking.terminal.Utils.PackingStates;
-import de.metas.quantity.Quantity;
 
 /**
  * Contains:
@@ -83,10 +69,6 @@ public class SwingPackageBoxesItems
 {
 	protected static final String ERR_NO_PRODUCT_SELECTED = "@NoProductSelected@";
 	protected static final String ERR_NO_BOX_SELECTED = "@NoBoxSelected@";
-
-	private static final String ERR_CLOSED_PACKAGE = "@ClosedPackage@";
-	private static final String ERR_UNPACKED_PRODUCT = "@UnpackedProduct@";
-	private static final String ERR_PACKED_PRODUCT = "@PackedProduct@";
 
 	private ITerminalNumericField fQty;
 	private IContainer buttonsPanel;
@@ -260,8 +242,7 @@ public class SwingPackageBoxesItems
 			productsKeyLayout = createProductsKeyLayout();
 			productsKeyLayout.setBasePanel(p_basePanel);
 			productsKeyLayout.setRows(2);
-			productsKeyLayout.setSelectedBox(null);
-
+			
 			productsKeyLayoutPanel = factory.createTerminalKeyPanel(productsKeyLayout, new ProductsKeyListener());
 			// productsKeyLayoutPanel.setAllowKeySelection(true); // NOTE: not needed, it's supposed to be already configured on productsKeyLayout
 		}
@@ -305,69 +286,7 @@ public class SwingPackageBoxesItems
 
 	protected IKeyLayout createPickingSlotsKeyLayout()
 	{
-		final IKeyLayout boxLayout = new BoxLayout(getTerminalContext());
-		boxLayout.setRows(2);
-		boxLayout.setBasePanel(getTerminalBasePanel());
-		return boxLayout;
-	}
-
-	public void refresh(final boolean resetProducts, final boolean resetBoxes)
-	{
-		final AbstractPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
-		final BoxLayout boxLayout = (BoxLayout)getPickingSlotsKeyLayout();
-
-		if (resetBoxes)
-		{
-			boxLayout.resetKeys();
-			final ArrayList<DefaultMutableTreeNode> lockedNodes = ((PackingDetailsMd)terminalPanel.getModel()).getPackingTreeModel().fetchLockedNodes();
-			if (!lockedNodes.isEmpty())
-			{
-				for (final DefaultMutableTreeNode node : lockedNodes)
-				{
-					final BoxKey boxKey = boxLayout.getBoxKey(node);
-					boxKey.setStatus(boxKey.updateBoxStatus(PackingStates.ready));
-					boxKey.setReady(true);
-				}
-			}
-
-			final ITerminalKeyPanel boxKeyPanel = getPickingSlotsKeyLayoutPanel();
-			boxKeyPanel.removeLayout(boxLayout.getId());
-			boxKeyPanel.addPOSKeyLayout(boxLayout);
-			boxKeyPanel.showPOSKeyKayout(boxLayout);
-			boxKeyPanel.onKeySelected(null);
-
-			getProductsKeyLayout().setSelectedBox(null);
-			terminalPanel.getPickingData().getbDelete().setEnabled(false);
-			terminalPanel.getPickingData().getbClose().setEnabled(false);
-		}
-		boxLayout.checkKeyState();
-
-		if (resetProducts)
-		{
-			final ProductLayout prodLayout = getProductsKeyLayout();
-			final boolean boxReady;
-			final boolean boxClosed;
-			if (((TerminalKeyPanel)getPickingSlotsKeyLayoutPanel()).getSelectedKey() == null)
-			{
-				boxReady = true;
-				boxClosed = false;
-			}
-			else
-			{
-				final BoxKey bk = (BoxKey)((TerminalKeyPanel)getPickingSlotsKeyLayoutPanel()).getSelectedKey();
-				boxReady = bk.isReady();
-				boxClosed = bk.getStatus().getName().equals(PackingStates.closed.name());
-			}
-			//
-			prodLayout.resetKeys();
-			getProductsKeyLayoutPanel().removeLayout(prodLayout.getId());
-			//
-			prodLayout.setEnabledKeys(!boxReady);
-			prodLayout.setEnabledKeys(!boxClosed); // if the box is closed, no product can be add it; so this flag is the most important
-			//
-			getProductsKeyLayoutPanel().addPOSKeyLayout(prodLayout);
-			getProductsKeyLayoutPanel().showPOSKeyKayout(prodLayout);
-		}
+		throw new UnsupportedOperationException();
 	}
 
 	public final void setEnableAddRemoveButtons(final boolean enabled)
@@ -397,160 +316,10 @@ public class SwingPackageBoxesItems
 	/**
 	 * Method called when user presses {@link #bAdd}, {@link #bAddAll}, {@link #bRemove}, {@link #bRemoveAll} buttons.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void propertyChange(final PropertyChangeEvent evt)
 	{
-		//
-		// NOTE: Implementing classes do NOT necessarily call super.propertyChange()!!!
-		// Please do not assume that customer-specific overrides will call it
-		//
-
-		final BoxKey selected = (BoxKey)getPickingSlotsKeyLayoutPanel().getSelectedKey();
-		final ProductKey selectedProduct = getSelectedProduct();
-
-		if (selected == null)
-		{
-			warn(SwingPackageBoxesItems.ERR_NO_BOX_SELECTED);
-			return;
-		}
-
-		if (PackingStates.closed.name().equals(selected.getStatus().getName()))
-		{
-			warn(SwingPackageBoxesItems.ERR_CLOSED_PACKAGE);
-			return;
-		}
-
-		final boolean deleteBin;
-		if (PackingStates.open.name().equals(selected.getStatus().getName()))
-		{
-			deleteBin = false;
-		}
-		else
-		{
-			deleteBin = true;
-		}
-		oldUsedBin = selected.getNode();
-
-		final AbstractPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
-		final PackingDetailsMd model = (PackingDetailsMd)terminalPanel.getModel();
-		final PackingTreeModel packingTreeModel = model.getPackingTreeModel();
-
-		if (SwingPackageBoxesItems.ACTION_Add.equals(evt.getNewValue()))
-		{
-			if (selectedProduct == null)
-			{
-				warn(SwingPackageBoxesItems.ERR_NO_PRODUCT_SELECTED);
-				return;
-			}
-			else if (!selectedProduct.getBoxNo().isUnpacked())
-			{
-				warn(SwingPackageBoxesItems.ERR_UNPACKED_PRODUCT);
-				return;
-			}
-			else
-			{
-				final Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
-				DefaultMutableTreeNode node = null;
-				searchNode: while (en.hasMoreElements())
-				{
-					final DefaultMutableTreeNode currentChild = en.nextElement();
-					final Object userObj = currentChild.getUserObject();
-					if (userObj instanceof LegacyPackingItem)
-					{
-						final LegacyPackingItem pack = (LegacyPackingItem)userObj;
-						if (pck == pack && pck.getProductId() == pack.getProductId())
-						{
-							pck = pack;
-							node = currentChild;
-							break searchNode;
-						}
-					}
-				}
-				final LegacyPackingItem packingItem = (LegacyPackingItem)node.getUserObject();
-				packingTreeModel.movePackItem(
-						node,
-						oldUsedBin,
-						Quantity.of(selectedProduct.getQty(), packingItem.getC_UOM()));
-			}
-		}
-		else if (SwingPackageBoxesItems.ACTION_Remove.equals(evt.getNewValue()))
-		{
-			if (selectedProduct == null)
-			{
-				warn(SwingPackageBoxesItems.ERR_NO_PRODUCT_SELECTED);
-				return;
-			}
-			else if (selectedProduct.getBoxNo().isUnpacked())
-			{
-				warn(SwingPackageBoxesItems.ERR_PACKED_PRODUCT);
-				return;
-			}
-			else
-			{
-				final DefaultMutableTreeNode node = packingTreeModel.findPackingItemNode(oldUsedBin, pck);
-				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
-
-				packingTreeModel.removePackedItem(
-						Env.getCtx(),
-						node,
-						oldUsedBin,
-						Quantity.of(selectedProduct.getQty(), pack.getC_UOM()),
-						deleteBin);
-				((SwingPackageTerminalPanel)terminalPanel).refresh(false, true, true);
-			}
-		}
-		else if (SwingPackageBoxesItems.ACTION_AddAll.equals(evt.getNewValue()))
-		{
-			final Enumeration<DefaultMutableTreeNode> en = packingTreeModel.getUnPackedItems().children();
-			final List<DefaultMutableTreeNode> listNodes = new ArrayList<>();
-			while (en.hasMoreElements())
-			{
-				final DefaultMutableTreeNode currentChild = en.nextElement();
-				final Object userObj = currentChild.getUserObject();
-				if (userObj instanceof LegacyPackingItem)
-				{
-					listNodes.add(currentChild);
-				}
-			}
-
-			for (final DefaultMutableTreeNode node : listNodes)
-			{
-				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
-				packingTreeModel.movePackItem(node, oldUsedBin, pack.getQtySum());
-			}
-		}
-		else if (SwingPackageBoxesItems.ACTION_RemoveAll.equals(evt.getNewValue()))
-		{
-			final Enumeration<DefaultMutableTreeNode> en = oldUsedBin.breadthFirstEnumeration();
-			final List<DefaultMutableTreeNode> listNodes = new ArrayList<>();
-			while (en.hasMoreElements())
-			{
-				final DefaultMutableTreeNode currentChild = en.nextElement();
-				final Object userObj = currentChild.getUserObject();
-				if (userObj instanceof LegacyPackingItem)
-				{
-					listNodes.add(currentChild);
-				}
-			}
-
-			for (final DefaultMutableTreeNode node : listNodes)
-			{
-				final LegacyPackingItem pack = (LegacyPackingItem)node.getUserObject();
-				packingTreeModel.removePackedItem(Env.getCtx(), node, oldUsedBin, pack.getQtySum(), deleteBin);
-			}
-			terminalPanel.refresh(false, true, true);
-		}
-		packingTreeModel.reload();
-		getTree().expandTree(true);
-		terminalPanel.keyPressed(selected);
-	}
-
-	private ITerminalTree getTree()
-	{
-		final AbstractPackageTerminalPanel terminalPanel = getPackageTerminalPanel();
-		final SwingPackageTerminalPanel packingPanel = (SwingPackageTerminalPanel)terminalPanel;
-		return packingPanel.getTree();
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -667,18 +436,6 @@ public class SwingPackageBoxesItems
 	public final void setPck(final IPackingItem pck)
 	{
 		this.pck = pck;
-	}
-
-	DefaultMutableTreeNode oldUsedBin;
-
-	public DefaultMutableTreeNode getOldUsedBin()
-	{
-		return oldUsedBin;
-	}
-
-	public void setOldUsedBin(final DefaultMutableTreeNode oldUsedBin)
-	{
-		this.oldUsedBin = oldUsedBin;
 	}
 
 	/**

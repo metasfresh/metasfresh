@@ -28,10 +28,6 @@ package de.metas.picking.terminal.form.swing;
 
 import java.awt.Dimension;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
@@ -39,7 +35,6 @@ import org.compiere.apps.form.FormPanel;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.LegacyPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.PickingOKPanel;
 import de.metas.util.Check;
@@ -71,8 +66,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	}
 
 	private PackingItemsMap packItems;
-	private Map<Integer, DefaultMutableTreeNode> boxes;
-	private List<DefaultMutableTreeNode> availBoxes;
 
 	public AbstractPackageTerminal(final SwingPickingOKPanel pickingOKPanel, final IPackingDetailsModel packingDetailsModel)
 	{
@@ -177,8 +170,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 		this.packItems = packItems;
 	}
 
-	abstract public void createBoxes(Object model);
-
 	/**
 	 * gets the number of unpacked item fot a certain product
 	 *
@@ -186,34 +177,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	 * @return
 	 */
 	abstract public BigDecimal getQtyUnpacked(IPackingItem pck);
-
-	public boolean isUnpacked(LegacyPackingItem pck)
-	{
-		final BigDecimal qty = getQtyUnpacked(pck);
-		if (qty.compareTo(BigDecimal.ZERO) > 0)
-			return true;
-		return false;
-	}
-
-	public final List<DefaultMutableTreeNode> getAvailableBoxes()
-	{
-		return availBoxes;
-	}
-
-	protected final void setAvailableBoxes(final List<DefaultMutableTreeNode> availBoxes)
-	{
-		this.availBoxes = availBoxes;
-	}
-
-	public final Map<Integer, DefaultMutableTreeNode> getBoxes()
-	{
-		return boxes;
-	}
-
-	protected final void setBoxes(Map<Integer, DefaultMutableTreeNode> boxes)
-	{
-		this.boxes = boxes;
-	}
 
 	abstract public AbstractPackageTerminalPanel createPackageTerminalPanel();
 }

@@ -30,12 +30,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.JFrame;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.apps.form.FormFrame;
 import org.compiere.util.Env;
@@ -98,8 +95,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	private final ITerminalKeyPanel packingMaterialsPanel;
 
 	private PackingItemsMap packItems;
-	private Map<Integer, DefaultMutableTreeNode> boxes;
-	private List<DefaultMutableTreeNode> availBoxes;
 
 	private final IPackingDetailsModel model;
 
@@ -120,8 +115,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		this.model = parent.getPackingDetailsModel();
 
 		this.packItems = parent.getPackingItems();
-		this.boxes = parent.getBoxes();
-		this.availBoxes = parent.getAvailableBoxes();
 		this.panel = factory.createContainer();
 		this.panelCenter = factory.createContainer();
 
@@ -141,11 +134,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		terminalContext.addToDisposableComponents(this);
 	}
 
-	public List<DefaultMutableTreeNode> getAvailBoxes()
-	{
-		return availBoxes;
-	}
-
 	public PackingItemsMap getPackItems()
 	{
 		return packItems;
@@ -154,11 +142,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	public void setPackItems(final PackingItemsMap items)
 	{
 		packItems = items;
-	}
-
-	public Map<Integer, DefaultMutableTreeNode> getBoxes()
-	{
-		return boxes;
 	}
 
 	/**
@@ -239,13 +222,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		return parentPackageTerminal;
 	}
 
-	private void updateBoxes()
-	{
-		packItems = parentPackageTerminal.getPackingItems();
-		boxes = parentPackageTerminal.getBoxes();
-		availBoxes = parentPackageTerminal.getAvailableBoxes();
-	}
-
 	public IPackingDetailsModel getModel()
 	{
 		return model;
@@ -309,18 +285,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 
 	protected abstract void dynInit();
 
-	private void refreshPackingMaterialsKeyLayout()
-	{
-		IKeyLayout newKartonLayout = getPackingMaterialsKeyLayout();
-		ITerminalKeyPanel newKartoPanel = getPackingMaterialsKeyLayoutPanel();
-		//
-		newKartonLayout.resetKeys();
-		//
-		newKartoPanel.removeLayout(newKartonLayout.getId());
-		newKartoPanel.addPOSKeyLayout(newKartonLayout);
-		newKartoPanel.showPOSKeyKayout(newKartonLayout);
-	}
-
 	@Override
 	public Properties getCtx()
 	{
@@ -383,25 +347,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 
 	@Override
 	abstract public void keyPressed(ITerminalKey key);
-
-	/**
-	 * reset new kartons, boxes, products
-	 *
-	 * @param resetNewKartons
-	 * @param resetBoxes
-	 * @param resetProducts
-	 */
-	public void refresh(boolean resetNewKartons, boolean resetBoxes, boolean resetProducts)
-	{
-		getParent().createBoxes(model);
-		updateBoxes();
-		productKeysPanel.refresh(resetProducts, resetBoxes);
-
-		if (resetNewKartons)
-		{
-			refreshPackingMaterialsKeyLayout();
-		}
-	}
 
 	@Override
 	public ITerminalContext getTerminalContext()
