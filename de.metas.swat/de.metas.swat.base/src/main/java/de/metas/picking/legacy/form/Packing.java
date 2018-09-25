@@ -34,9 +34,7 @@ import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -53,10 +51,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.service.IPackagingBL;
 import de.metas.i18n.Msg;
 import de.metas.inoutcandidate.api.IPackagingDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -64,7 +60,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 /**
@@ -175,8 +170,6 @@ public abstract class Packing extends MvcGenForm
 		final PackingMd model = getModel();
 		final IMiniTable miniTable = getMiniTable();
 
-		final boolean displayNonItems = Services.get(IPackagingBL.class).isDisplayNonItemsEnabled(Env.getCtx());
-
 		final Set<TableRowKey> selectedTableRowKeys = model.getSelectedTableRowKeys();
 
 		int rowIdx = 0;
@@ -190,14 +183,10 @@ public abstract class Packing extends MvcGenForm
 			final Collection<TableRow> tableRowsForKey = model.getTableRowsForKey(key);
 			for (final TableRow singleRow : tableRowsForKey)
 			{
-				// System.out.println("key="+hashCode+", qtyToDeliver: "+singleRow.getQtyToDeliver());
-				if (displayNonItems || singleRow.isDisplayed())
+				// sum only if QtyToDeliver>0, other lines are only for user information (if isDisplayNonDeliverableItems is set)
+				if (singleRow.getQtyToDeliver().signum() > 0)
 				{
-					// sum only if QtyToDeliver>0, other lines are only for user information (if isDisplayNonDeliverableItems is set)
-					if (singleRow.getQtyToDeliver().signum() > 0)
-					{
-						sumQtyToDeliver = sumQtyToDeliver.add(singleRow.getQtyToDeliver());
-					}
+					sumQtyToDeliver = sumQtyToDeliver.add(singleRow.getQtyToDeliver());
 				}
 			}
 
@@ -302,25 +291,11 @@ public abstract class Packing extends MvcGenForm
 			return;
 		}
 
-		final boolean displayNonItems = Services.get(IPackagingBL.class).isDisplayNonItemsEnabled(ctx);
-
 		try
 		{
 			// prepare our "problem" description
-			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds, displayNonItems);
-
-			final List<I_M_ShipmentSchedule> nonItemScheds = new ArrayList<>();
-
-			for (final OlAndSched oldAndSched : olsAndScheds)
-			{
-				final I_M_ShipmentSchedule sched = oldAndSched.getSched();
-				if (!(sched.isDisplayed() || displayNonItems))
-				{
-					nonItemScheds.add(sched);
-				}
-			}
-
-			createPackingDetailsModel(ctx, rows, unallocatedLines, nonItemScheds);
+			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds);
+			createPackingDetailsModel(ctx, rows, unallocatedLines);
 		}
 		catch (final Throwable t)
 		{
@@ -332,55 +307,15 @@ public abstract class Packing extends MvcGenForm
 		// invokeProcess(detailsModel);
 	}
 
-	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, boolean displayNonItems)
+	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
-
-		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
-
-		for (final OlAndSched oldAndSched : olsAndScheds)
-		{
-			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
-			if (sched.isDisplayed() || displayNonItems)
-			{
-				final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
-
-				final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(
-						sched,
-						Quantity.of(
-								qtyToDeliver,
-								shipmentScheduleBL.getUomOfProduct(sched)));
-
-				// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
-				final PackingItemGroupingKey groupingKey = shipmentScheduleBL.mkKeyForGrouping(sched);
-
-				IPackingItem item = packingItems.get(groupingKey);
-				if (item == null)
-				{
-					item = new LegacyPackingItem(schedWithQty, null);
-					assert item.getGroupingKey().equals(groupingKey);
-
-					packingItems.put(groupingKey, item);
-					unallocatedLines.add(item);
-				}
-				else
-				{
-					item.addSchedules(schedWithQty);
-				}
-			}
-		}
-
-		return unallocatedLines;
+		throw new UnsupportedOperationException();
 	}
 
 	protected IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows,
-			final Collection<IPackingItem> unallocatedLines,
-			final List<I_M_ShipmentSchedule> nonItemScheds)
+			final Collection<IPackingItem> unallocatedLines)
 	{
 		throw new UnsupportedOperationException();
 	}

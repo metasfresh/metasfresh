@@ -38,7 +38,7 @@ import de.metas.util.Services;
 public class C_OrderLine
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void updateActivity(final I_C_OrderLine orderLine)
+	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 		if (productId == null)

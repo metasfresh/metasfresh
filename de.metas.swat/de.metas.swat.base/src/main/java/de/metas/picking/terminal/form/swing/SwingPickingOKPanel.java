@@ -39,7 +39,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
@@ -71,7 +70,6 @@ import de.metas.adempiere.form.terminal.swing.TerminalTable;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.MvcMdGenForm;
 import de.metas.picking.legacy.form.Packing;
@@ -321,17 +319,6 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	public final ITerminalContext getTerminalContext()
 	{
 		return getPickingTerminalPanel().getTerminalContext();
-	}
-
-	@Override
-	protected IPackingDetailsModel createPackingDetailsModel(
-			final Properties ctx,
-			final int[] rows,
-			final Collection<IPackingItem> unallocatedLines,
-			final List<I_M_ShipmentSchedule> nonItemScheds)
-	{
-		// shall be implemented by extending classes
-		throw new UnsupportedOperationException();
 	}
 
 	protected PackingMd createPackingModel(final ITerminalTable lines)

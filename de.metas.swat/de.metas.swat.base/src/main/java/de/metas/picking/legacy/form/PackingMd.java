@@ -43,7 +43,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 
@@ -51,7 +50,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 
-import de.metas.adempiere.service.IPackagingBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
@@ -874,8 +872,6 @@ public class PackingMd extends MvcMdGenForm
 			return null;
 		}
 
-		final boolean displayNonItems = Services.get(IPackagingBL.class).isDisplayNonItemsEnabled(Env.getCtx());
-
 		//
 		// Iterate source rows for current Key and compute
 		// * DeliveryDate
@@ -929,7 +925,6 @@ public class PackingMd extends MvcMdGenForm
 			}
 
 			// QtyToDeliver: sum of all QtyToDeliver
-			if (displayNonItems || row.isDisplayed())
 			{
 				final BigDecimal rowQtyToDeliver = row.getQtyToDeliver();
 

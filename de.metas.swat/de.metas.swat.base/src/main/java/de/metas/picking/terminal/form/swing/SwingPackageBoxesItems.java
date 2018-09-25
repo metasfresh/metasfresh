@@ -202,7 +202,7 @@ public class SwingPackageBoxesItems
 
 	protected PropertyChangeListener createQtyListener()
 	{
-		return new QtyListener(this);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

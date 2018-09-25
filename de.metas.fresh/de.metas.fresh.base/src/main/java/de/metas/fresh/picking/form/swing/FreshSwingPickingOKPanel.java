@@ -136,7 +136,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	}
 
 	@Override
-	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds, final boolean displayNonItems)
+	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
 	{
 		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
 		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
@@ -147,32 +147,24 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
-			if (sched.isDisplayed() || displayNonItems)
+			final BigDecimal qtyToDeliverTarget = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
+
+			// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
+			// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
+			// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
+			final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(
+					sched,
+					Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
+
+			final IPackingItem newItem = FreshPackingItemHelper.create(schedWithQty);
+			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
+			if (existingItem != null)
 			{
-				final BigDecimal qtyToDeliverTarget = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
-
-				// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
-				// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
-				// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-				final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(
-						sched,
-						Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
-
-				final PackingItemGroupingKey groupingKey = Services.get(IShipmentScheduleBL.class).mkKeyForGrouping(sched);
-
-				IPackingItem item = packingItems.get(groupingKey);
-				if (item == null)
-				{
-					item = FreshPackingItemHelper.create(schedWithQty);
-					assert item.getGroupingKey().equals(groupingKey);
-
-					packingItems.put(groupingKey, item);
-					unallocatedLines.add(item);
-				}
-				else
-				{
-					item.addSchedules(schedWithQty);
-				}
+				existingItem.addSchedules(newItem);
+			}
+			else
+			{
+				packingItems.put(newItem.getGroupingKey(), newItem);
 			}
 		}
 
@@ -193,15 +185,14 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	public IPackingDetailsModel createPackingDetailsModel(
 			final Properties ctx,
 			final int[] rows_NOTUSED,
-			final Collection<IPackingItem> unallocatedLines,
-			final List<I_M_ShipmentSchedule> nonItemScheds)
+			final Collection<IPackingItem> unallocatedLines)
 	{
 		if (unallocatedLines.isEmpty())
 		{
 			return null;
 		}
 
-		final IPackingDetailsModel detailsModel = new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines, nonItemScheds);
+		final IPackingDetailsModel detailsModel = new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
 
 		executePacking(detailsModel);
 		return detailsModel;

@@ -26,8 +26,6 @@ package de.metas.picking.legacy.form;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +36,14 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -58,7 +59,6 @@ import lombok.NonNull;
  */
 public abstract class AbstractPackingItem implements IPackingItem
 {
-	private final ArrayList<I_M_ShipmentSchedule> schedules;
 	private final ShipmentScheduleQtyPickedMap sched2qty;
 
 	private final PackingItemGroupingKey groupingKey;
@@ -87,9 +87,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		Check.assume(!sched2qtyParam.isEmpty(), "scheds2Qtys not empty");
 		this.sched2qty = sched2qtyParam.copy();
 
-		schedules = new ArrayList<>(sched2qty.getShipmentSchedules());
-
-		final I_M_ShipmentSchedule firstSchedule = schedules.get(0);
+		final I_M_ShipmentSchedule firstSchedule = sched2qty.getFirstShipmentSchedule();
 		if (groupingKey == null)
 		{
 			this.groupingKey = computeGroupingKey(firstSchedule);
@@ -112,7 +110,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		{
 			final AbstractPackingItem copyFromItem = (AbstractPackingItem)copyFrom;
 			sched2qty = copyFromItem.sched2qty.copy();
-			schedules = new ArrayList<>(copyFromItem.schedules);
 			groupingKey = copyFromItem.groupingKey;
 			product = copyFromItem.product;
 			uom = copyFromItem.uom;
@@ -120,7 +117,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		}
 		else
 		{
-			throw new IllegalArgumentException("Packing item " + copyFrom + " does not extend " + AbstractPackingItem.class);
+			throw new AdempiereException("Packing item " + copyFrom + " does not extend " + AbstractPackingItem.class);
 		}
 	}
 
@@ -133,9 +130,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 		final AbstractPackingItem itemCasted = (AbstractPackingItem)item;
 		sched2qty.setFrom(itemCasted.sched2qty);
-
-		schedules.clear();
-		schedules.addAll(itemCasted.schedules);
 
 		// this.groupingKey = itemCasted.groupingKey;
 		product = itemCasted.product;
@@ -192,16 +186,38 @@ public abstract class AbstractPackingItem implements IPackingItem
 	 * @param sched
 	 * @return
 	 */
-	protected PackingItemGroupingKey computeGroupingKey(final I_M_ShipmentSchedule sched)
+	private static PackingItemGroupingKey computeGroupingKey(final I_M_ShipmentSchedule sched)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		return shipmentScheduleBL.mkKeyForGrouping(sched);
+		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+
+		final TableRecordReference documentLineRef;
+		final de.metas.adempiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId, de.metas.adempiere.model.I_M_Product.class);
+		if (product.isDiverse())
+		{
+			// Diverse/misc products can't be merged into one pi because they could represent totally different products.
+			// So we are using (AD_Table_ID, Record_ID) (which are unique) to make the group unique.
+			documentLineRef = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
+		}
+		else
+		{
+			documentLineRef = null;
+		}
+
+		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
+
+		return PackingItemGroupingKey.builder()
+				.productId(productId)
+				.bpartnerLocationId(bpLocationId)
+				.documentLineRef(documentLineRef)
+				.build();
 	}
 
 	@Override
 	public final List<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
-		return new ArrayList<>(schedules);
+		return sched2qty.getShipmentSchedules();
 	}
 
 	@Override
@@ -296,7 +312,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	@Override
 	public final ShipmentScheduleQtyPickedMap getQtys()
 	{
-		return sched2qty.subset(schedules);
+		return sched2qty.copy();
 	}
 
 	@Override
@@ -345,7 +361,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 				// In case we excluded a shipment schedule, we cannot enforce to always have QtyToSubtract=0 at the end.
 				// NOTE: in future we could add a parameter or something to enforce this or not.
-				// Then pls check which is calling this method, because there is BL which relly on this logic
+				// Then please check which is calling this method, because there is BL which rely on this logic
 				// (e.g. Kommissioner Terminal, when we pack the qty which was not found in HUs, but we are doing this only for those shipment schedules which have Force delivery rule)
 				allowRemainingQtyToSubtract = true;
 
@@ -394,17 +410,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		if (!result.isEmpty())
 		{
 			sched2qty.setFrom(sched2qtyCopy);
-
-			// make sure that the ordering of the remaining schedules is not changed.
-			final Iterator<I_M_ShipmentSchedule> iterator = schedules.iterator();
-			while (iterator.hasNext())
-			{
-				final I_M_ShipmentSchedule currentSched = iterator.next();
-				if (!sched2qty.contains(currentSched))
-				{
-					iterator.remove();
-				}
-			}
 		}
 
 		//
@@ -439,7 +444,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		if (removeExistingOnes)
 		{
 			sched2qty.clear();
-			schedules.clear();
 		}
 
 		//
@@ -452,7 +456,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 			{
 				// don't invoke addSched because we might have been called by addSched ourselves
 				sched2qty.setQty(schedToAdd, qtyToAdd);
-				schedules.add(schedToAdd);
 			}
 			else
 			{

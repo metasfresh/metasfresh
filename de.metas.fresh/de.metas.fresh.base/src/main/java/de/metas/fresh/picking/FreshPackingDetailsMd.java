@@ -39,10 +39,8 @@ import org.adempiere.warehouse.WarehouseId;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.PackingTreeModel;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
@@ -60,13 +58,11 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 
 	private final Collection<IPackingItem> unallocatedLines;
 
-	private final List<I_M_ShipmentSchedule> nonItemScheds;
 	private final List<PickingSlotKey> availablePickingSlots;
 	private final List<PackingMaterialKey> availablePackingMaterialKeys;
 
 	public FreshPackingDetailsMd(final ITerminalContext terminalContext,
-			final Collection<IPackingItem> unallocatedLines,
-			final List<I_M_ShipmentSchedule> nonItemScheds)
+			final Collection<IPackingItem> unallocatedLines)
 	{
 		super();
 
@@ -77,9 +73,6 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 		Check.assumeNotNull(unallocatedLines, "unallocatedLines not null");
 		Check.assume(!unallocatedLines.isEmpty(), "unallocatedLines not empty");
 		this.unallocatedLines = Collections.unmodifiableCollection(new ArrayList<>(unallocatedLines));
-
-		Check.assumeNotNull(nonItemScheds, "nonItemScheds not null");
-		this.nonItemScheds = nonItemScheds;
 
 		final Date date = SystemTime.asDayTimestamp();
 		final PackingMaterialKeyBuilder packingMaterialKeysBuilder = new PackingMaterialKeyBuilder(terminalContext, date);
@@ -139,31 +132,6 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 	public void addPropertyChangeListener(final PropertyChangeListener l)
 	{
 		pcs.addPropertyChangeListener(l);
-	}
-
-	@Override
-	public List<I_M_ShipmentSchedule> getNonItems()
-	{
-		return nonItemScheds;
-	}
-
-	@Override
-	public int getValidState()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getSelectedShipper()
-	{
-		return 0;
-	}
-
-	@Override
-	public PackingTreeModel getPackingTreeModel()
-	{
-		return null;
 	}
 
 	@Override

@@ -13,15 +13,14 @@ package de.metas.picking.legacy.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -51,6 +50,8 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.compiere.apps.ConfirmPanel;
@@ -59,17 +60,21 @@ import org.compiere.grid.ed.VLocator;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.grid.ed.VString;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.Lookup;
+import org.compiere.model.MColumn;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MTable;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.service.IPackagingBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 
@@ -190,7 +195,7 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		model.addPropertyChangeListener(this);
 
 		final PackingTreeModel packingTreeModel = model.getPackingTreeModel();
-		
+
 		tree = new JTree(packingTreeModel);
 		tree.setRootVisible(false);
 		tree.setCellRenderer(new PackingTreeCelRenderer());
@@ -299,22 +304,44 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 
 	private void dynInit(final PackingDetailsMd model)
 	{
-
-		final IPackagingBL packagingBL = Services.get(IPackagingBL.class);
-
-		final Lookup shipperLookup = packagingBL.createShipperLookup();
-
-		fShipper =
-				new VLookup(I_M_Shipper.COLUMNNAME_M_Shipper_ID, true, false, true, shipperLookup);
-
+		final Lookup shipperLookup = createShipperLookup();
+		fShipper = new VLookup(I_M_Shipper.COLUMNNAME_M_Shipper_ID, true, false, true, shipperLookup);
 		fShipper.setPreferredSize(new Dimension(200, 25));
-
 		if (model.selectedShipperId > 0)
 		{
 			fShipper.setValue(model.selectedShipperId);
 		}
 		fShipper.setEnabled(model.useShipper);
 		fShipper.setReadWrite(model.useShipper);
+	}
+
+	private static Lookup createShipperLookup()
+	{
+		final MColumn c = MTable.get(Env.getCtx(), I_M_Shipper.Table_Name).getColumn(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
+
+		return createLookup(c);
+	}
+
+	private static Lookup createLookup(final I_AD_Column c)
+	{
+		try
+		{
+			final Lookup m_bundlesLookup = MLookupFactory.get(Env.getCtx(),
+					-1, // WindowNo
+					0, // Column_ID,
+					DisplayType.Table, // AD_Reference_ID,
+					Services.get(IADTableDAO.class).retrieveTableName(c.getAD_Table_ID()),
+					c.getColumnName(), // ColumnName
+					c.getAD_Reference_Value_ID(), // AD_Reference_Value_ID,
+					false, // IsParent,
+					IValidationRule.AD_Val_Rule_ID_Null // ValidationCode // 03271: no validation is required
+			);
+			return m_bundlesLookup;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException(e);
+		}
 	}
 
 	/**
@@ -373,12 +400,11 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		rightUpperPanel.setLayout(new GridBagLayout());
 		rightUpperPanel.setBorder(BorderFactory.createEtchedBorder());
 
-		final GridBagConstraints gbc =
-				new GridBagConstraints(0, 0, 1, 1, 0, 0,
-						GridBagConstraints.EAST,
-						GridBagConstraints.NONE,
-						new Insets(5, 0, 0, 5),
-						0, 0);
+		final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+				GridBagConstraints.EAST,
+				GridBagConstraints.NONE,
+				new Insets(5, 0, 0, 5),
+				0, 0);
 
 		final CLabel lShipper = new CLabel(Services.get(IMsgBL.class).translate(Env.getCtx(), MSG_SHIPPER));
 		lShipper.setLabelFor(fShipper);
@@ -419,12 +445,11 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		packItemPanel.setBorder(BorderFactory.createEtchedBorder());
 		packItemPanel.setLayout(new GridBagLayout());
 
-		final GridBagConstraints gbc =
-				new GridBagConstraints(0, 0, 1, 1, 0, 0,
-						GridBagConstraints.EAST,
-						GridBagConstraints.NONE,
-						new Insets(5, 0, 0, 5),
-						0, 0);
+		final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+				GridBagConstraints.EAST,
+				GridBagConstraints.NONE,
+				new Insets(5, 0, 0, 5),
+				0, 0);
 
 		final CLabel lProduct = new CLabel(Services.get(IMsgBL.class).translate(Env.getCtx(), MSG_PRODUKT));
 		lProduct.setLabelFor(fIProduct);
@@ -507,12 +532,11 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		usedBinPanel.setLayout(new GridBagLayout());
 		usedBinPanel.setBorder(BorderFactory.createEtchedBorder());
 
-		final GridBagConstraints gbc =
-				new GridBagConstraints(0, 0, 1, 1, 0, 0,
-						GridBagConstraints.EAST,
-						GridBagConstraints.NONE,
-						new Insets(5, 0, 0, 5),
-						0, 0);
+		final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+				GridBagConstraints.EAST,
+				GridBagConstraints.NONE,
+				new Insets(5, 0, 0, 5),
+				0, 0);
 
 		final CLabel lProduct = new CLabel(Services.get(IMsgBL.class).translate(Env.getCtx(), MSG_PACKAGE));
 		lProduct.setLabelFor(fPProduct);
@@ -584,19 +608,17 @@ public class PackingDetailsV extends CDialog implements ActionListener, Property
 		usedBinsSumPanel.setLayout(new GridBagLayout());
 		usedBinsSumPanel.setBorder(BorderFactory.createEtchedBorder());
 
-		final GridBagConstraints gbc =
-				new GridBagConstraints(0, 0, 1, 1, 0, 0,
-						GridBagConstraints.WEST,
-						GridBagConstraints.NONE,
-						new Insets(5, 0, 0, 5),
-						0, 0);
+		final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+				GridBagConstraints.WEST,
+				GridBagConstraints.NONE,
+				new Insets(5, 0, 0, 5),
+				0, 0);
 
 		final CLabel lUsedBinsSum = new CLabel(Services.get(IMsgBL.class).translate(Env.getCtx(), MSG_OVERVIEW));
 		lUsedBinsSum.setLabelFor(fUsedBinsSum);
 		usedBinsSumPanel.add(lUsedBinsSum, gbc);
 
-		final JScrollPane scrollPane =
-				new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		final JScrollPane scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		fUsedBinsSum.setEditable(false);
 		scrollPane.getViewport().add(fUsedBinsSum);

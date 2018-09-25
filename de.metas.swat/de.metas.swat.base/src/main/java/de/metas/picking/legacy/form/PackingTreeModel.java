@@ -29,11 +29,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -629,144 +627,12 @@ public class PackingTreeModel extends DefaultTreeModel
 	@SuppressWarnings("unchecked")
 	public void removeUsedBin(final Properties ctx, final DefaultMutableTreeNode usedBinToRemoveNode)
 	{
-		final Map<PackingItemGroupingKey, ShipmentScheduleQtyPickedMap> schedules = new HashMap<>();
-
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		final Enumeration<DefaultMutableTreeNode> enPackedItemsToRemove = usedBinToRemoveNode.children();
-
-		// iterate the packed items of the bin to be removed
-		// store the products, shipment schedules and qtys in 'prodId2Scheds' so they won't get lost
-		final Set<DefaultMutableTreeNode> nodesToRemove = new HashSet<>();
-		while (enPackedItemsToRemove.hasMoreElements())
-		{
-			final DefaultMutableTreeNode itemToRemoveNode = enPackedItemsToRemove.nextElement();
-			final LegacyPackingItem itemToRemove = (LegacyPackingItem)itemToRemoveNode.getUserObject();
-
-			final Collection<I_M_ShipmentSchedule> schedsToRemove = itemToRemove.getShipmentSchedules();
-
-			// store all different scheds (they might be distributed over more
-			// than one item) with their qty
-			for (final I_M_ShipmentSchedule schedToRemove : schedsToRemove)
-			{
-				// Group all scheds by their grouping key.
-				// Note: for normal products, there is only item node for each productId, but to div/misc products,
-				// there is one per orderLineId.
-
-				final PackingItemGroupingKey groupingKey = shipmentScheduleBL.mkKeyForGrouping(schedToRemove);
-				ShipmentScheduleQtyPickedMap scheds = schedules.get(groupingKey);
-
-				if (scheds == null)
-				{
-					scheds = ShipmentScheduleQtyPickedMap.newInstance();
-					schedules.put(groupingKey, scheds);
-				}
-
-				final Quantity existingRemovedQty = scheds.getQty(schedToRemove);
-				if (existingRemovedQty == null)
-				{
-					scheds.setQty(schedToRemove, itemToRemove.getQtyForSched(schedToRemove));
-				}
-				else
-				{
-					scheds.setQty(schedToRemove, existingRemovedQty.add(itemToRemove.getQtyForSched(schedToRemove)));
-				}
-			}
-			nodesToRemove.add(itemToRemoveNode);
-		}
-
-		// now remove the actual tree nodes
-		for (final DefaultMutableTreeNode nodeToRemove : nodesToRemove)
-		{
-			this.removeNodeFromParent(nodeToRemove);
-		}
-
-		// now iterate the existing unpacked items and check if one of the
-		// scheds from unpackedOl2Sched belongs to one of them. In that case
-		// there won't be the need to a new unpackedItem for that sched.
-		final Enumeration<DefaultMutableTreeNode> enUnpackedItems = getUnPackedItems().children();
-		while (enUnpackedItems.hasMoreElements())
-		{
-			final DefaultMutableTreeNode existingUnpackedItemNode = enUnpackedItems.nextElement();
-			final LegacyPackingItem existingUnpackedItem = (LegacyPackingItem)existingUnpackedItemNode.getUserObject();
-
-			final ShipmentScheduleQtyPickedMap newlyUnpackedScheds = schedules.remove(existingUnpackedItem.getGroupingKey());
-
-			if (newlyUnpackedScheds == null)
-			{
-				continue;
-			}
-
-			// add the shipment schedules of the newly unpacked product (if they haven't been added yet)
-			existingUnpackedItem.addSchedules(newlyUnpackedScheds);
-		}
-
-		final UsedBin usedBin = (UsedBin)usedBinToRemoveNode.getUserObject();
-
-		// create new unpacked items for the products that are still in prodId2Scheds
-		for (final PackingItemGroupingKey groupingKey : schedules.keySet())
-		{
-			final ShipmentScheduleQtyPickedMap sched2qty = schedules.get(groupingKey);
-
-			final LegacyPackingItem newUnpackedItem = new LegacyPackingItem(sched2qty, usedBin.getTrxName());
-
-			final DefaultMutableTreeNode newUnpackedItemNode = new DefaultMutableTreeNode(newUnpackedItem);
-			insertNodeInto(newUnpackedItemNode, getUnPackedItems(), getUnPackedItems().getChildCount());
-		}
-		removeNodeFromParent(usedBinToRemoveNode);
-
-		// add the bin we just removed to the available bins
-		boolean foundAvailBins = false;
-
-		final Enumeration<DefaultMutableTreeNode> enAvailBins = getAvailableBins().children();
-		while (enAvailBins.hasMoreElements())
-		{
-			final DefaultMutableTreeNode availBinsNode = enAvailBins.nextElement();
-
-			final AvailableBins availBins = (AvailableBins)availBinsNode.getUserObject();
-			if (availBins.getPc().getM_PackagingContainer_ID() == usedBin.getPackagingContainer().getM_PackagingContainer_ID())
-			{
-				availBins.setQtyAvail(availBins.getQtyAvail() + 1);
-				this.nodeChanged(availBinsNode);
-				foundAvailBins = true;
-				break;
-			}
-		}
-
-		if (!foundAvailBins)
-		{
-			final AvailableBins newAvailBins = new AvailableBins(ctx, usedBin.getPackagingContainer(), 1, usedBin.getTrxName());
-
-			final DefaultMutableTreeNode newAvailBinsNode = new DefaultMutableTreeNode(newAvailBins);
-
-			insertNodeInto(newAvailBinsNode, getAvailableBins(), getAvailableBins().getChildCount());
-		}
+		throw new UnsupportedOperationException();
 	}
 
 	public void addUsedBins(final Properties ctx, final DefaultMutableTreeNode availableBinsNode, final int qty)
 	{
-		final AvailableBins availableBins = (AvailableBins)availableBinsNode.getUserObject();
-
-		final int qtyToUse;
-		if (availableBins.getQtyAvail() > qty)
-		{
-			qtyToUse = qty;
-		}
-		else
-		{
-			qtyToUse = availableBins.getQtyAvail();
-		}
-
-		availableBins.setQtyAvail(availableBins.getQtyAvail() - qtyToUse);
-
-		for (int i = 0; i < qtyToUse; i++)
-		{
-			final UsedBin newUsedBin = new UsedBin(ctx, availableBins.getPc(), availableBins.getTrxName());
-			final DefaultMutableTreeNode newUsedBinNode = new DefaultMutableTreeNode(newUsedBin);
-
-			this.insertNodeInto(newUsedBinNode, getUsedBins(), getUsedBins().getChildCount());
-		}
-		this.nodeChanged(availableBinsNode);
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -783,33 +649,7 @@ public class PackingTreeModel extends DefaultTreeModel
 			final Quantity qty,
 			final boolean deletedUsedBin)
 	{
-		final LegacyPackingItem packingItem = (LegacyPackingItem)packingItemNode.getUserObject();
-
-		final ShipmentScheduleQtyPickedMap qtysToTransfer = subtractPackingItem(packingItemNode, qty);
-
-		final DefaultMutableTreeNode existingUnpackedItemNode = findUnpackedPackingItemNode(packingItem);
-
-		if (existingUnpackedItemNode == null)
-		{
-			// need to create a new node under 'nodeUnpackedItemsParent'
-			final LegacyPackingItem newUnpackedItem = new LegacyPackingItem(qtysToTransfer, packingItem.getTrxName());
-
-			final DefaultMutableTreeNode newUnpackedItemNode = new DefaultMutableTreeNode(newUnpackedItem);
-			this.insertNodeInto(newUnpackedItemNode, nodeUnpackedItemsParent, nodeUnpackedItemsParent.getChildCount());
-		}
-		else
-		{
-			// use an existing node under 'nodeUnpackedItemsParent'
-			final LegacyPackingItem existingUnpackedItem = (LegacyPackingItem)existingUnpackedItemNode.getUserObject();
-			existingUnpackedItem.addSchedules(qtysToTransfer);
-
-			this.nodeChanged(existingUnpackedItemNode);
-		}
-
-		if (oldUsedBin.isLeaf() && deletedUsedBin)
-		{
-			this.removeUsedBin(ctx, oldUsedBin);
-		}
+		throw new UnsupportedOperationException();
 	}
 
 	private ShipmentScheduleQtyPickedMap subtractPackingItem(

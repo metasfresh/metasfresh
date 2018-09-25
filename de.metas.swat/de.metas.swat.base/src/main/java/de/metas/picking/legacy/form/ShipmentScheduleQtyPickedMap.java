@@ -124,6 +124,11 @@ public class ShipmentScheduleQtyPickedMap
 		return ImmutableList.copyOf(shipmentSchedules.values());
 	}
 
+	public I_M_ShipmentSchedule getFirstShipmentSchedule()
+	{
+		return shipmentSchedules.values().iterator().next();
+	}
+
 	public void clear()
 	{
 		shipmentSchedules.clear();

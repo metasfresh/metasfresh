@@ -27,9 +27,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.List;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * 
@@ -112,21 +109,12 @@ public class PackingDetailsMd implements IPackingDetailsModel
 
 	public int selectedShipperId;
 	
-	@Override
-	public int getSelectedShipper()
-	{
-		return selectedShipperId;
-	}
-
 	private final PackingTreeModel treeModel;
 	
-	@Override
 	public PackingTreeModel getPackingTreeModel()
 	{
 		return treeModel;
 	}
-
-	private final List<I_M_ShipmentSchedule> nonItems;
 
 	public Collection<IPackingItem> unallocatedLines;
 	public Collection<AvailableBins> avalaiableContainers;
@@ -136,13 +124,10 @@ public class PackingDetailsMd implements IPackingDetailsModel
 	 */
 	final public boolean useShipper;
 
-	private int validState;
-
 	public PackingDetailsMd(
 			final Collection<IPackingItem> unallocatedLines,
 			final Collection<AvailableBins> avalaiableContainers,
 			final boolean useShipper,
-			final List<I_M_ShipmentSchedule> nonItems,
 			final int C_BPartner_ID, 
 			final int C_BPartnerLocation_ID,
 			final int M_Warehouse_Dest_ID,
@@ -157,7 +142,6 @@ public class PackingDetailsMd implements IPackingDetailsModel
 		{
 			selectedShipperId = 1000001; // TODO: HARDCODED
 		}
-		this.nonItems = nonItems;
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener l)
@@ -223,12 +207,6 @@ public class PackingDetailsMd implements IPackingDetailsModel
 	public BigDecimal getPiWeight()
 	{
 		return piWeight;
-	}
-
-	@Override
-	public int getValidState()
-	{
-		return validState;
 	}
 
 	public void setPackMaxVolume(BigDecimal packMaxVolume)
@@ -323,16 +301,5 @@ public class PackingDetailsMd implements IPackingDetailsModel
 	{
 		pcs.firePropertyChange(PI_WEIGHT, this.piWeight, piWeight);
 		this.piWeight = piWeight;
-	}
-
-	public void setValidState(int validState)
-	{
-		this.validState = validState;
-	}
-
-	@Override
-	public List<I_M_ShipmentSchedule> getNonItems()
-	{
-		return nonItems;
 	}
 }

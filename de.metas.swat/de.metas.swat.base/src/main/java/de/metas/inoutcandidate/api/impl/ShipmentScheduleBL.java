@@ -55,7 +55,6 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
@@ -74,7 +73,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -92,9 +90,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageEngine;
@@ -784,35 +780,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public void registerCandidateProcessor(final IShipmentSchedulesAfterFirstPassUpdater processor)
 	{
 		candidateProcessors.addCandidateProcessor(processor);
-	}
-
-	@Override
-	public PackingItemGroupingKey mkKeyForGrouping(final I_M_ShipmentSchedule sched)
-	{
-		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
-
-		final TableRecordReference documentLineRef;
-		final de.metas.adempiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId, de.metas.adempiere.model.I_M_Product.class);
-		if (product.isDiverse())
-		{
-			// Diverse/misc products can't be merged into one pi because they could represent totally different products.
-			// So we are using (AD_Table_ID, Record_ID) (which are unique) to make the group unique.
-			documentLineRef = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
-		}
-		else
-		{
-			documentLineRef = null;
-		}
-
-		// #100 FRESH-435: in FreshPackingItem we rely on all scheds having the same effective C_BPartner_Location_ID, so we need to include that in the key
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
-
-		return PackingItemGroupingKey.builder()
-				.productId(productId)
-				.bpartnerLocationId(bpLocationId)
-				.documentLineRef(documentLineRef)
-				.build();
 	}
 
 	/**

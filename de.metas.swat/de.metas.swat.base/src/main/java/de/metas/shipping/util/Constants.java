@@ -25,9 +25,6 @@ package de.metas.shipping.util;
 
 public final class Constants
 {
-
-	public static final String SYSCONFIG_SHIPMENT_PACKAGE_NON_ITEMS = "de.metas.shipment.PackageNonItems";
-
 	public static final String C_DocType_DocBaseType_ShipperTransportation = "MST";
 
 	private Constants()
