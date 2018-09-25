@@ -199,6 +199,14 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isDiverse(@NonNull final ProductId productId)
+	{
+		return Services.get(IProductDAO.class)
+				.getById(productId, de.metas.adempiere.model.I_M_Product.class)
+				.isDiverse();
+	}
+
+	@Override
 	public AttributeSetId getAttributeSetId(final I_M_Product product)
 	{
 		int attributeSetId = product.getM_AttributeSet_ID();

@@ -26,9 +26,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -47,12 +46,11 @@ public class C_OrderLine
 			return;
 		}
 
-		// Unrelated bug: isDiverse no longer set.
-		{
-			final I_M_Product product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
-			orderLine.setIsDiverse(product.isDiverse());
-		}
+		// IsDiverse flag
+		final IProductBL productBL = Services.get(IProductBL.class);
+		orderLine.setIsDiverse(productBL.isDiverse(productId));
 
+		// Activity
 		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
 		orderLine.setC_Activity_ID(ActivityId.toRepoId(productActivityId));
 	}

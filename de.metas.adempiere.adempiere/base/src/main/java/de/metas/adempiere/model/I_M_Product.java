@@ -13,29 +13,27 @@ package de.metas.adempiere.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 public interface I_M_Product extends org.compiere.model.I_M_Product
 {
 
-	public static final String COLUMNNAME_IS_DIVERSE = "IsDiverse";
-	
+	public static final String COLUMNNAME_IsDiverse = "IsDiverse";
+
 	public boolean isDiverse();
-	
+
 	public void setDiverse(boolean isDiverse);
-	
-	
+
 	public static final String COLUMNNAME_IsCategoryProduct = "IsCategoryProduct";
-	
+
 	public boolean getIsCategoryProduct();
-	
+
 	public void setIsCategoryProduct(boolean IsCategoryProduct);
 }

@@ -32,6 +32,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.picking.terminal.Utils;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 
 /**
  *
@@ -80,11 +82,12 @@ public class LegacyPackingItem extends AbstractPackingItem implements Comparable
 		sb.append(getQtySum());
 		sb.append(" x ");
 
-		final I_M_Product product = getM_Product();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(getProductId(), I_M_Product.class);
 		if (product != null)
 		{
 			sb.append(product.getValue());
 			sb.append(" (");
+
 			if (product.isDiverse())
 			{
 				final I_C_OrderLine ol = InterfaceWrapperHelper.create(getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);

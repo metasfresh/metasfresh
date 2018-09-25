@@ -45,6 +45,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -191,8 +192,8 @@ public abstract class AbstractPackingItem implements IPackingItem
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 
 		final TableRecordReference documentLineRef;
-		final de.metas.adempiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId, de.metas.adempiere.model.I_M_Product.class);
-		if (product.isDiverse())
+		final IProductBL productBL = Services.get(IProductBL.class);
+		if (productBL.isDiverse(productId))
 		{
 			// Diverse/misc products can't be merged into one pi because they could represent totally different products.
 			// So we are using (AD_Table_ID, Record_ID) (which are unique) to make the group unique.

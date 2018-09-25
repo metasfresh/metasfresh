@@ -8,9 +8,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.CalloutEngine;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class OrderLine extends CalloutEngine
@@ -18,10 +19,11 @@ public class OrderLine extends CalloutEngine
 	public String product(final ICalloutField calloutField)
 	{
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
-		if (orderLine.getM_Product_ID() > 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId != null)
 		{
-			I_M_Product product = InterfaceWrapperHelper.create(orderLine.getM_Product(), I_M_Product.class);
-			orderLine.setIsDiverse(product.isDiverse());
+			final IProductBL productBL = Services.get(IProductBL.class);
+			orderLine.setIsDiverse(productBL.isDiverse(productId));
 		}
 		else
 		{

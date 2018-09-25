@@ -48,9 +48,9 @@ public interface IProductBL extends ISingletonService
 	 * @return true if item
 	 */
 	boolean isItem(I_M_Product product);
-	
+
 	boolean isItem(ProductId productId);
-	
+
 	default boolean isItem(int productId)
 	{
 		return isItem(ProductId.ofRepoId(productId));
@@ -70,6 +70,8 @@ public interface IProductBL extends ISingletonService
 	boolean isStocked(I_M_Product product);
 
 	boolean isStocked(int productId);
+
+	boolean isDiverse(ProductId productId);
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
