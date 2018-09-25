@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -142,7 +141,6 @@ public class ProcessPickingCandidateCommand
 		final IFreshPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		final PackingContext packingContext = PackingContext.builder()
-				.ctx(Env.getCtx())
 				.packingItemsMapKey(PackingItemsMapKey.ofPickingSlotId(pickingSlotId))
 				.packingItemsMap(PackingItemsMap.ofUnpackedItem(itemToPack))
 				.build();

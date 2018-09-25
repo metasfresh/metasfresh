@@ -2,7 +2,6 @@ package de.metas.picking.service.impl;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
@@ -89,9 +88,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	@Override
 	protected IHUContext createHUContextInitial()
 	{
-		final PackingContext packingContext = getPackingContext();
-		final Properties ctx = packingContext.getCtx();
-		final PlainContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(ctx);
+		final PlainContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx();
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(contextProvider);
 		return huContext;
 	}

@@ -958,7 +958,6 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final PackingItemsMap packingItems = terminalPanel.getPackItems().copy();
 
 		return PackingContext.builder()
-				.ctx(getCtx())
 				.packingItemsMapKey(packingItemsMapKey)
 				.packingItemsMap(packingItems)
 				.build();

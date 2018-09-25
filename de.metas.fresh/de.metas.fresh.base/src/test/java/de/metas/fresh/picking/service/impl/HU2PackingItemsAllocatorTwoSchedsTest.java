@@ -132,7 +132,6 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		//
 		// Create Packing Context
 		this.packingContext = PackingContext.builder()
-				.ctx(helper.ctx)
 				.packingItemsMapKey(PackingItemsMapKey.ofInt(123))
 				.packingItemsMap(packingItems)
 				.build();
