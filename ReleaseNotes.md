@@ -18,6 +18,8 @@ Here come the actual release notes:
     * Eliminating the error in console log for missing plugins.js.
   * [#1972](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1972) Support active indication for filters without parameters
     * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
+  * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
+    * Updating bootstrap to new version because of security issue.
 
 # metasfresh 5.76
 ## Features
