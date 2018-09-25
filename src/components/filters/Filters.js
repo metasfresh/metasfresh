@@ -125,7 +125,7 @@ class Filters extends Component {
       const removeDefault = {};
 
       activeFilters.forEach((filter, filterId) => {
-        const captionsArray = ['', ''];
+        let captionsArray = ['', ''];
 
         if (filter.parameters && filter.parameters.length) {
           filter.parameters.forEach(filterParameter => {
@@ -185,7 +185,8 @@ class Filters extends Component {
             }
           });
         } else {
-          activeFilters = activeFilters.delete(filterId);
+          const originalFilter = filtersData.get(filterId);
+          captionsArray = [originalFilter.caption, originalFilter.caption];
         }
 
         if (captionsArray.join('').length) {
