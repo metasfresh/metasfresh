@@ -9,6 +9,11 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.77
+## Features
+* metasfresh-webui-frontend
+  * [#1952](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1952) Advanced tooltip support
+    * New Feature that allows to show advanced tooltips in WebUI frontend.
 
 # metasfresh 5.76
 ## Features
