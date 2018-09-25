@@ -36,7 +36,7 @@ import lombok.Value;
 
 /**
  * Unifies different descriptors.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @Value
@@ -69,6 +69,7 @@ class WebuiHUProcessDescriptor
 	{
 		return WebuiRelatedProcessDescriptor.builder()
 				.processId(processDescriptor.getProcessId())
+				.internalName(processDescriptor.getInternalName())
 				.processCaption(processDescriptor.getCaption())
 				.processDescription(processDescriptor.getDescription())
 				.quickAction(true)

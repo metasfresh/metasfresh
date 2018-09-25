@@ -144,6 +144,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.huProcessDescriptor(huProcessDescriptor)
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
+						.setInternalName(huProcessDescriptor.getInternalName())
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
