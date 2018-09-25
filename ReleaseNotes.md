@@ -14,6 +14,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1952](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1952) Advanced tooltip support
     * New Feature that allows to show advanced tooltips in WebUI frontend.
+  * [#1972](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1972) Support active indication for filters without parameters
+    * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
 
 # metasfresh 5.76
 ## Features
