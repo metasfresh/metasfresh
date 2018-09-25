@@ -413,31 +413,6 @@ public class HU2PackingItemsAllocator
 		return productStorage;
 	}
 
-	/**
-	 * Creates {@link I_M_ShipmentSchedule_QtyPicked} record to allocate given virtual HU.
-	 *
-	 * @param sched
-	 * @param qtyPicked
-	 * @param uom
-	 * @param vhu
-	 * @return created record
-	 */
-	// FIXME: rename this method
-	private final void onQtyAllocated(
-			@NonNull final I_M_ShipmentSchedule sched,
-			@NonNull final Quantity qtyPicked,
-			@NonNull final I_M_HU vhu)
-	{
-		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		huShipmentScheduleBL.addQtyPicked(sched, qtyPicked, vhu);
-
-		// Transfer the qtyPicked from vhu to our target HU (if any)
-		transferQtyFromVHUToTargetHU(sched, qtyPicked, vhu);
-
-		// Adjust remaining Qty to be packed
-		subtractFromQtyToPackRemaining(qtyPicked);
-	}
-
 	private void transferQtyFromVHUToTargetHU(final I_M_ShipmentSchedule sched, final Quantity qtyToTransfer, final I_M_HU fromVHU)
 	{
 		final I_M_HU targetHU = getTargetHU();
@@ -516,16 +491,22 @@ public class HU2PackingItemsAllocator
 				packedItem -> {
 					for (final I_M_ShipmentSchedule sched : packedItem.getShipmentSchedules())
 					{
-						final Quantity schedQty = packedItem.getQtyForSched(sched); // qty to pack, available on current shipment schedule
+						final Quantity qtyPicked = packedItem.getQtyForSched(sched); // qty to pack, available on current shipment schedule
 						if (!allowOverDelivery)
 						{
-							validateQtyPicked(sched, schedQty);
+							validateQtyPicked(sched, qtyPicked);
 						}
 
-						if (schedQty.signum() != 0)
+						if (qtyPicked.signum() != 0)
 						{
-							// gh #1712: only create M_ShipmentSchedule_QtyPicked etc etc for 'sched' if there is an actual quantity.
-							onQtyAllocated(sched, schedQty, vhu);
+							// "Back" allocate the qtyPicked from VHU to given shipment schedule
+							huShipmentScheduleBL.addQtyPicked(sched, qtyPicked, vhu);
+
+							// Transfer the qtyPicked from vhu to our target HU (if any)
+							transferQtyFromVHUToTargetHU(sched, qtyPicked, vhu);
+
+							// Adjust remaining Qty to be packed
+							subtractFromQtyToPackRemaining(qtyPicked);
 						}
 					}
 				});
