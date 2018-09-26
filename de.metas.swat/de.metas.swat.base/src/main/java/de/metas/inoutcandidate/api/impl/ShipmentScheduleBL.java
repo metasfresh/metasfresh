@@ -94,6 +94,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -1015,4 +1016,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 		return storageQuery;
 	}
+
+	@Override
+	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(sched);
+		final I_C_UOM uom = getUomOfProduct(sched);
+		return Quantity.of(qtyToDeliverBD, uom);
+	}
+
 }

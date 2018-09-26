@@ -58,7 +58,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	String getDeliveryRule(I_M_ShipmentSchedule sched);
 
-	BigDecimal getQtyToDeliver(I_M_ShipmentSchedule sched);
+	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
 

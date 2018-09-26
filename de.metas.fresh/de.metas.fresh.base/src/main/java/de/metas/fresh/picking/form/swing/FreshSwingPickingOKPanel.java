@@ -27,7 +27,6 @@ package de.metas.fresh.picking.form.swing;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -55,14 +54,13 @@ import de.metas.fresh.picking.form.FreshSwingPackageTerminal;
 import de.metas.fresh.picking.form.FreshSwingPickingMiniTableColorProvider;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemGroupingKey;
+import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
@@ -171,20 +169,17 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	{
 		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
 
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 		for (final OlAndSched oldAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
-			final BigDecimal qtyToDeliverTarget = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
+			final Quantity qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(sched);
 
 			// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
 			// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
 			// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-			final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(
-					sched,
-					Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
+			final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(sched, qtyToDeliverTarget);
 
 			final IPackingItem newItem = PackingItems.newPackingItem(schedWithQty);
 			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());

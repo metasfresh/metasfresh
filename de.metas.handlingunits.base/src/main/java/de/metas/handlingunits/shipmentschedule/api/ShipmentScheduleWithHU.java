@@ -78,6 +78,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -124,17 +125,19 @@ public class ShipmentScheduleWithHU
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final BigDecimal qtyPicked,
+			@NonNull final Quantity qtyPicked,
 			final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true, qtyTypeToUse);
+		final boolean createManualPackingMaterial = true;
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked.getAsBigDecimal(), createManualPackingMaterial, qtyTypeToUse);
 	}
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true, null);
+		final boolean createManualPackingMaterial = true;
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, createManualPackingMaterial, null);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);

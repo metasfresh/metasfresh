@@ -96,9 +96,8 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public BigDecimal getQtyToDeliver(final I_M_ShipmentSchedule sched)
+	public BigDecimal getQtyToDeliverBD(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "sched not null");
 		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override))
 		{
 			return sched.getQtyToDeliver_Override();

@@ -35,6 +35,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.util.ISingletonService;
 
@@ -116,7 +117,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @return
 	 */
 	I_C_UOM getUomOfProduct(I_M_ShipmentSchedule sched);
-	
+
 	UomId getUomIdOfProduct(I_M_ShipmentSchedule sched);
 
 	/**
@@ -169,4 +170,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param shipmentSchedule
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
+
+	Quantity getQtyToDeliver(I_M_ShipmentSchedule sched);
 }
