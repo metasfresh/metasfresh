@@ -77,6 +77,9 @@ public final class HUAttributeConstants
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
 
+	public static final String ATTR_Quarantine = "HU_Quarantine";
+	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
+
 	public static final String ATTR_TE = AttributeConstants.ATTR_TE;
 	public static final String ATTR_DateReceived = AttributeConstants.ATTR_DateReceived;
 

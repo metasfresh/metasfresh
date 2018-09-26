@@ -17,7 +17,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
 
 /*
@@ -53,7 +53,7 @@ public class DistributeAndMoveReceiptCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberLockRepository());
+		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
 	}
 
 	@Test

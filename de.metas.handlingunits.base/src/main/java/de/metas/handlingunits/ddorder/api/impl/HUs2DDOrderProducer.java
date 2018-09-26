@@ -58,7 +58,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
-import de.metas.product.LotNumberLock;
+import de.metas.product.LotNumberQuarantine;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -446,10 +446,10 @@ public class HUs2DDOrderProducer
 		// Description
 		final StringBuilder description = new StringBuilder();
 
-		final LotNumberLock lotNumberLock = ddOrderLineCandidate.getLotNumberLock();
-		final String lotNoLockDescription = getDescriptionForLotNoLock(lotNumberLock);
+		final LotNumberQuarantine lotNumberQuarantine = ddOrderLineCandidate.getLotNumberQuarantine();
+		final String lotNoQuarantineDescription = getDescriptionForLotNoQuarantine(lotNumberQuarantine);
 
-		description.append(lotNoLockDescription);
+		description.append(lotNoQuarantineDescription);
 		description.append(ddOrderLineCandidate.getDescription());
 
 		ddOrderline.setDescription(description.toString());
@@ -466,20 +466,20 @@ public class HUs2DDOrderProducer
 		huDDOrderDAO.addToHUsScheduledToMove(ddOrderline, ddOrderLineCandidate.getM_HUs());
 	}
 
-	private static String getDescriptionForLotNoLock(final LotNumberLock lotNumberLock)
+	private static String getDescriptionForLotNoQuarantine(final LotNumberQuarantine lotNumberQuarantine)
 	{
-		if (lotNumberLock == null)
+		if (lotNumberQuarantine == null)
 		{
 			return "";
 		}
 
-		final String lotNoLockDescription = lotNumberLock.getDescription();
-		if (Check.isEmpty(lotNoLockDescription))
+		final String lotNoQuarantineDescription = lotNumberQuarantine.getDescription();
+		if (Check.isEmpty(lotNoQuarantineDescription))
 		{
 			return "";
 		}
 
-		return lotNoLockDescription + "; ";
+		return lotNoQuarantineDescription + "; ";
 	}
 
 	/**
@@ -530,7 +530,7 @@ public class HUs2DDOrderProducer
 		private final I_M_HU_PI_Item_Product piItemProduct;
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
-		private final LotNumberLock lotNoLock;
+		private LotNumberQuarantine lotNoQuarantine;
 
 		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage, final HUToDistribute huToDistribute)
 		{
@@ -569,9 +569,9 @@ public class HUs2DDOrderProducer
 				aggregationKeyBuilder.append(attribute2value.getKey().getValue(), attribute2value.getValue());
 			}
 
-			lotNoLock = huToDistribute.getLockLotNo();
+			this.lotNoQuarantine = huToDistribute.getQuarantineLotNo();
 
-			aggregationKeyBuilder.append(lotNoLock == null ? -1 : lotNoLock.getId());
+			aggregationKeyBuilder.append(lotNoQuarantine == null ? -1 : lotNoQuarantine.getId());
 
 			aggregationKey = aggregationKeyBuilder.build();
 
@@ -664,9 +664,9 @@ public class HUs2DDOrderProducer
 			return description.toString();
 		}
 
-		public LotNumberLock getLotNumberLock()
+		public LotNumberQuarantine getLotNumberQuarantine()
 		{
-			return lotNoLock;
+			return lotNoQuarantine;
 		}
 
 		public Map<org.compiere.model.I_M_Attribute, Object> getAttributes()
@@ -684,19 +684,19 @@ public class HUs2DDOrderProducer
 		}
 
 		I_M_HU hu;
-		LotNumberLock lockLotNo;
+		LotNumberQuarantine quarantineLotNo;
 		int bpartnerId;
 		int bpartnerLocationId;
 
 		@Builder
 		private HUToDistribute(
 				@NonNull final I_M_HU hu,
-				final LotNumberLock lockLotNo,
-				final int bpartnerId,
-				final int bpartnerLocationId)
+				LotNumberQuarantine quarantineLotNo,
+				int bpartnerId,
+				int bpartnerLocationId)
 		{
 			this.hu = hu;
-			this.lockLotNo = lockLotNo;
+			this.quarantineLotNo = quarantineLotNo;
 			this.bpartnerId = bpartnerId;
 			this.bpartnerLocationId = bpartnerLocationId;
 		}
