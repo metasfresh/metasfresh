@@ -49,16 +49,23 @@ public class HUCapacityBL implements IHUCapacityBL
 	@Override
 	public Capacity getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final I_M_Product product, final I_C_UOM uom)
 	{
+		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
+		return getCapacity(itemDefProduct, productId, uom);
+	}
+
+	@Override
+	public Capacity getCapacity(final I_M_HU_PI_Item_Product itemDefProduct, final ProductId productId, final I_C_UOM uom)
+	{
 		final ProductId productToUseId;
 		if (itemDefProduct.isAllowAnyProduct())
 		{
-			Check.assumeNotNull(product, "product not null");
-			productToUseId = ProductId.ofRepoId(product.getM_Product_ID());
+			Check.assumeNotNull(productId, "productId not null");
+			productToUseId = productId;
 		}
 		else
 		{
 			final ProductId piipProductId = ProductId.ofRepoIdOrNull(itemDefProduct.getM_Product_ID());
-			if (product == null)
+			if (productId == null)
 			{
 				productToUseId = piipProductId;
 				if (productToUseId == null)
@@ -69,15 +76,17 @@ public class HUCapacityBL implements IHUCapacityBL
 			}
 			else
 			{
-				if (piipProductId != null && piipProductId.getRepoId() != product.getM_Product_ID())
+				if (piipProductId != null && ProductId.equals(piipProductId, productId))
 				{
-					final String piipProductName = Services.get(IProductBL.class).getProductValueAndName(piipProductId);
+					final IProductBL productBL = Services.get(IProductBL.class);
+					final String productName = productBL.getProductValueAndName(productId);
+					final String piipProductName = productBL.getProductValueAndName(piipProductId);
 					throw new HUException("CU-TU assignment "
 							+ "\n@M_HU_PI_Item_Product_ID@: " + itemDefProduct.getDescription() + " (" + I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "=" + itemDefProduct.getM_HU_PI_Item_Product_ID() + ") "
 							+ "\n@M_HU_PI_Item_Product_ID@ - @M_Product_ID@: " + piipProductName
-							+ "\nis not compatible with required product @M_Product_ID@: " + product.getValue() + "_" + product.getName() + "( " + I_M_Product.COLUMNNAME_M_Product_ID + "=" + product.getM_Product_ID() + ")");
+							+ "\nis not compatible with required product @M_Product_ID@: " + productName + "( " + I_M_Product.COLUMNNAME_M_Product_ID + "=" + productId + ")");
 				}
-				productToUseId = ProductId.ofRepoId(product.getM_Product_ID());
+				productToUseId = productId;
 			}
 		}
 
