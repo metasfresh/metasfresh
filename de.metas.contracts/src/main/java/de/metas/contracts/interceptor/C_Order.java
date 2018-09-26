@@ -67,7 +67,6 @@ public class C_Order
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
 		for (final I_C_OrderLine ol : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 		{
