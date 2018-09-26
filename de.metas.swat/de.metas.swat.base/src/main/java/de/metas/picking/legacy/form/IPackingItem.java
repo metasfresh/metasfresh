@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.compiere.model.I_C_UOM;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -37,9 +36,13 @@ public interface IPackingItem
 
 	IPackingItem copy();
 
+	PackingItemGroupingKey getGroupingKey();
+
+	ProductId getProductId();
+
 	I_C_UOM getC_UOM();
 
-	PackingItemGroupingKey getGroupingKey();
+	Quantity getQtySum();
 
 	/**
 	 * Clears current schedules and set them from given <code>packingItem</code>.
@@ -67,16 +70,6 @@ public interface IPackingItem
 	 * @return
 	 */
 	Quantity getQtyForSched(I_M_ShipmentSchedule sched);
-
-	void addSingleSched(I_M_ShipmentSchedule sched);
-
-	ProductId getProductId();
-
-	I_M_Product getM_Product();
-
-	void setQtyForSched(I_M_ShipmentSchedule sched, Quantity qty);
-
-	Quantity getQtySum();
 
 	List<I_M_ShipmentSchedule> getShipmentSchedules();
 }

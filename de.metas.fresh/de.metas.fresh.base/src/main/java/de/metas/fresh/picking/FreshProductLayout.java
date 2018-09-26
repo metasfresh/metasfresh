@@ -94,10 +94,10 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 			for (final IPackingItem apck : map.getBySlot(PackingSlot.UNPACKED))
 			{
 				final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
-				final FreshProductKey productKey = createProductKey(pck, PackingSlot.UNPACKED, selectedPickingSlot);
+				final FreshProductKey productKey = createProductKey(pck, selectedPickingSlot);
 				final IFreshPackingItem allocatedItem = FreshPackingItemHelper.copy(pck);
 				productKey.setUnAllocatedPackingItem(allocatedItem);
-				productKey.setPackingItem(null); // nothing packed yet in the key
+				productKey.resetPackingItem(); // nothing packed yet in the key
 				if (!productKey.isActive())
 				{
 					continue;
@@ -113,7 +113,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 			for (final IPackingItem apck : map.getBySlot(key))
 			{
 				final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
-				final FreshProductKey productKey = createProductKey(pck, key, selectedPickingSlot);
+				final FreshProductKey productKey = createProductKey(pck, selectedPickingSlot);
 				if (productKey == null || !productKey.isActive())
 				{
 					continue;
@@ -139,13 +139,13 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 					continue;
 				}
 
-				final FreshProductKey productKey = createProductKey(packingItem, key, selectedPickingSlot);
+				final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
 				if (productKey == null || !productKey.isActive())
 				{
 					continue;
 				}
 
-				productKey.setPackingItem(null);
+				productKey.resetPackingItem();
 				productKey.setUnAllocatedPackingItem(packingItem);
 				productKey.setStatus(getProductState(packingItem, PackingSlot.UNPACKED));
 				productKeys.add(productKey);
@@ -155,11 +155,11 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		return Collections.unmodifiableList(productKeys);
 	}
 
-	private FreshProductKey createProductKey(final IFreshPackingItem pck,
-			final PackingSlot key,
+	private FreshProductKey createProductKey(
+			final IFreshPackingItem pck,
 			final PickingSlotKey selectedPickingSlot)
 	{
-		final FreshProductKey productKey = new FreshProductKey(getTerminalContext(), pck, key);
+		final FreshProductKey productKey = new FreshProductKey(getTerminalContext(), pck);
 
 		// Make sure the created product key is compatible with given picking slot (if any)
 		if (selectedPickingSlot != null && !selectedPickingSlot.isCompatible(productKey))

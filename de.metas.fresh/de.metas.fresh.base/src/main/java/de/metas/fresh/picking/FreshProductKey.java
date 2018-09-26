@@ -42,7 +42,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.ProductKey;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -97,11 +96,10 @@ public class FreshProductKey extends ProductKey
 	 */
 	private IFreshPackingItem _unallocatedPackingItem;
 
-	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck, final PackingSlot key)
+	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck)
 	{
 		super(terminalContext,
 				pck,
-				key,
 				Services.get(IBPartnerDAO.class).getById(pck.getBPartnerId()), // BPartner
 				Services.get(IBPartnerDAO.class).getBPartnerLocationById(pck.getBPartnerLocationId()) // BPartner Location
 		);
@@ -164,11 +162,10 @@ public class FreshProductKey extends ProductKey
 	public String getDebugInfo()
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append("M_Product:").append(getM_Product());
+		sb.append("M_Product:").append(getProductId());
 		sb.append("\nC_BPartner: ").append(getC_BPartner());
 		sb.append("\nC_BPartner_Location: ").append(getC_BPartner_Location());
 		return sb.toString();
-
 	}
 
 	public BigDecimal getQtyUnallocated()

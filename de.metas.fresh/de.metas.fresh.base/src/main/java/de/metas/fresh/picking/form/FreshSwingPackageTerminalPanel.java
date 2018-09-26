@@ -288,7 +288,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		//
 		// Case: our picking slot has a finite capacity defined
 		// => use the capacity
-		final CapacityInterface pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getM_Product(), productKey.getQtyUnallocatedUOM());
+		final CapacityInterface pickingSlotCapacity = pickingSlotKey.getHUTotalCapacity(productKey.getProductId(), productKey.getQtyUnallocatedUOM());
 		if (pickingSlotCapacity != null
 				&& !pickingSlotCapacity.isInfiniteCapacity())
 		{

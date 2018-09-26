@@ -177,7 +177,7 @@ public class PackingMaterialKey extends TerminalKey
 		final IHUPIItemProductQuery query = itemProductDAO.createHUPIItemProductQuery();
 		query.setC_BPartner_ID(productKey.getC_BPartner_ID());
 		// query.setC_BPartner_Location_ID(productKey.getC_BPartner_Location_ID()); // maybe in future
-		query.setM_Product_ID(productKey.getM_Product_ID());
+		query.setProductId(productKey.getProductId());
 		query.setAllowAnyProduct(true);
 
 		//

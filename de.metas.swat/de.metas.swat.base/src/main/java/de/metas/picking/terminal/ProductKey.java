@@ -28,8 +28,6 @@ package de.metas.picking.terminal;
 import java.awt.Color;
 import java.math.BigDecimal;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -44,12 +42,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -61,32 +58,20 @@ public class ProductKey extends TerminalKey
 	private final I_C_POSKey key;
 	private final KeyNamePair value;
 	private final String tableName;
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final I_C_BPartner bpartner;
 	private final I_C_BPartner_Location bpLocation;
 
-	private PackingSlot boxNo;
-	private IPackingItem pck;
-	private DefaultMutableTreeNode usedBin;
-
-	public DefaultMutableTreeNode getUsedBin()
-	{
-		return usedBin;
-	}
-
-	/* package */void setUsedBin(final DefaultMutableTreeNode usedBin)
-	{
-		this.usedBin = usedBin;
-	}
+	private IPackingItem packingItem;
 
 	public IPackingItem getPackingItem()
 	{
-		return pck;
+		return packingItem;
 	}
 
-	public void setPackingItem(final IPackingItem pck)
+	public void resetPackingItem()
 	{
-		this.pck = pck;
+		this.packingItem = null;
 	}
 
 	/**
@@ -148,10 +133,12 @@ public class ProductKey extends TerminalKey
 		}
 	}
 
-	private static I_C_POSKey createPOSKey(final I_M_Product product, final I_C_BPartner partner, final I_C_BPartner_Location bpLoc)
+	private static I_C_POSKey createPOSKey(final ProductId productId, final I_C_BPartner partner, final I_C_BPartner_Location bpLoc)
 	{
-		final I_C_POSKey key = InterfaceWrapperHelper.newInstance(I_C_POSKey.class, product);
+		final I_C_POSKey key = InterfaceWrapperHelper.newInstance(I_C_POSKey.class);
 		InterfaceWrapperHelper.setSaveDeleteDisabled(key, true);
+		
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 
 		// Max text length
 		// NOTE: please think twice before changing this number because it was tuned for 1024x740 resolution
@@ -205,41 +192,21 @@ public class ProductKey extends TerminalKey
 
 	protected ProductKey(
 			final ITerminalContext terminalContext,
-			final IPackingItem pck,
-			final PackingSlot boxNo,
+			@NonNull final IPackingItem packingItem,
 			final I_C_BPartner bpartner,
 			final I_C_BPartner_Location bpLocation)
 	{
 		super(terminalContext);
 
-		Check.assumeNotNull(pck, "PackingItem");
-		this.pck = pck;
+		this.packingItem = packingItem;
 		this.tableName = I_M_Product.Table_Name;
-		this.product = pck.getM_Product();
+		this.productId = packingItem.getProductId();
 		this.bpartner = bpartner;
 		this.bpLocation = bpLocation;
-		this.key = createPOSKey(product, bpartner, bpLocation);
+		this.key = createPOSKey(productId, bpartner, bpLocation);
 
-		this.value = new KeyNamePair(product.getM_Product_ID(), key.getName());
+		this.value = KeyNamePair.of(ProductId.toRepoId(productId), key.getName());
 		this.status = new ProductStatus();
-		setBoxNo(boxNo);
-
-		this.id = buildId();
-	}
-
-	@Deprecated
-	ProductKey(final ITerminalContext terminalContext, final I_C_POSKey key, final String tableName, final ProductId productId)
-	{
-		super(terminalContext);
-
-		this.key = key;
-		this.tableName = tableName;
-		this.value = new KeyNamePair(productId.getRepoId(), key.getName());
-		this.status = new ProductStatus();
-
-		this.product = Services.get(IProductDAO.class).getById(productId);
-		this.bpartner = null;
-		this.bpLocation = null;
 
 		this.id = buildId();
 	}
@@ -249,27 +216,19 @@ public class ProductKey extends TerminalKey
 	 * 
 	 * @return key ID
 	 */
-	protected final String buildId()
+	private final String buildId()
 	{
 		return Util.mkKey(
-				value == null ? "" : value.getKey(), product == null ? -1 : product.getM_Product_ID()
+				value == null ? "" : value.getKey(),
+				ProductId.toRepoId(productId),
 				// , boxNo // i.e. the picking slot => not needed
-				, bpartner == null ? -1 : bpartner.getC_BPartner_ID(), bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID())
+				bpartner == null ? -1 : bpartner.getC_BPartner_ID(),
+				bpLocation == null ? -1 : bpLocation.getC_BPartner_Location_ID())
 				.toString();
 		// id = "" + key.getC_POSKey_ID()
 		// + (value != null ? "#" + value.getKey() : "")
 		// + "-" + UUID.randomUUID();
 
-	}
-
-	void setBoxNo(final PackingSlot no)
-	{
-		boxNo = no;
-	}
-
-	public PackingSlot getBoxNo()
-	{
-		return boxNo;
 	}
 
 	@Override
@@ -284,7 +243,7 @@ public class ProductKey extends TerminalKey
 		final StringBuilder sb = new StringBuilder();
 		sb
 				.append("<font size=\"7\">")
-				.append(pck.getQtySum()).append("  ")
+				.append(packingItem.getQtySum()).append("  ")
 				.append("</font><br>")
 				.append("<font size=\"5\">")
 				.append(value.getName())
@@ -361,17 +320,12 @@ public class ProductKey extends TerminalKey
 	@Override
 	public String toString()
 	{
-		return "ProductKey [id=" + id + ", key=" + key + ", value=" + value + ", tableName=" + tableName + ", boxNo=" + boxNo + "]";
+		return "ProductKey [id=" + id + ", key=" + key + ", value=" + value + ", tableName=" + tableName + "]";
 	}
 
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return value == null ? -1 : value.getKey();
-	}
-
-	public I_M_Product getM_Product()
-	{
-		return product;
+		return productId;
 	}
 
 	public int getC_BPartner_ID()
@@ -401,10 +355,10 @@ public class ProductKey extends TerminalKey
 	 */
 	public BigDecimal getQty()
 	{
-		if (pck == null)
+		if (packingItem == null)
 		{
 			return BigDecimal.ZERO;
 		}
-		return Utils.convertToItemUOM(pck, pck.getQtySum());
+		return Utils.convertToItemUOM(packingItem, packingItem.getQtySum());
 	}
 }

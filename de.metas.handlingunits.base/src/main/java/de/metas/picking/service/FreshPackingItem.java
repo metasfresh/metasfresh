@@ -155,8 +155,8 @@ public final class FreshPackingItem extends AbstractPackingItem implements IFres
 	public String toString()
 	{
 		return "FreshPackingItem ["
-				+ "getQtySum()=" + getQtySum()
-				+ ", getM_Product()=" + getM_Product()
-				+ ", getC_UOM()=" + getC_UOM() + "]";
+				+ "qtySum=" + getQtySum()
+				+ ", productId=" + getProductId()
+				+ ", uom=" + getC_UOM() + "]";
 	}
 }

@@ -15,13 +15,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -38,7 +36,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 	private final ShipmentScheduleQtyPickedMap sched2qty;
 
 	private final PackingItemGroupingKey groupingKey;
-	private I_M_Product product; // lazy
 	private final I_C_UOM uom;
 
 	/**
@@ -86,7 +83,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 			final AbstractPackingItem copyFromItem = (AbstractPackingItem)copyFrom;
 			sched2qty = copyFromItem.sched2qty.copy();
 			groupingKey = copyFromItem.groupingKey;
-			product = copyFromItem.product;
 			uom = copyFromItem.uom;
 		}
 		else
@@ -106,7 +102,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		sched2qty.setFrom(itemCasted.sched2qty);
 
 		// this.groupingKey = itemCasted.groupingKey;
-		product = itemCasted.product;
 		// this.uom = itemCasted.uom;
 	}
 
@@ -201,26 +196,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final void setQtyForSched(
-			@NonNull final I_M_ShipmentSchedule sched,
-			@NonNull final Quantity qty)
-	{
-		sched2qty.setQtyForSched(sched, qty);
-	}
-
-	@Override
-	public final I_M_Product getM_Product()
-	{
-		// FIXME: refactor this shit
-		if (product == null)
-		{
-			final ProductId productId = getProductId();
-			product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
-		}
-		return product;
-	}
-
-	@Override
 	public final ProductId getProductId()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
@@ -232,12 +207,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		// all scheds must have the same product
 		final I_M_ShipmentSchedule firstShipmentSchedule = shipmentSchedules.get(0);
 		return ProductId.ofRepoId(firstShipmentSchedule.getM_Product_ID());
-	}
-
-	@Override
-	public final void addSingleSched(final I_M_ShipmentSchedule sched)
-	{
-		addSchedules(ShipmentScheduleQtyPickedMap.singleton(sched, Quantity.zero(getC_UOM())));
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -139,27 +138,9 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public void addSingleSched(final I_M_ShipmentSchedule sched)
-	{
-		getDelegate().addSingleSched(sched);
-	}
-
-	@Override
 	public ProductId getProductId()
 	{
 		return getDelegate().getProductId();
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		return getDelegate().getM_Product();
-	}
-
-	@Override
-	public void setQtyForSched(final I_M_ShipmentSchedule sched, final Quantity qty)
-	{
-		getDelegate().setQtyForSched(sched, qty);
 	}
 
 	@Override

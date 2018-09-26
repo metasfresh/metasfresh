@@ -31,7 +31,6 @@ import java.util.Collection;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -54,6 +53,7 @@ import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -353,7 +353,7 @@ public class PickingSlotKey extends TerminalKey
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
 	 */
-	public CapacityInterface getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
+	public CapacityInterface getHUTotalCapacity(final ProductId productId, final I_C_UOM uom)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
 		if (piItemProduct == null)
@@ -366,15 +366,15 @@ public class PickingSlotKey extends TerminalKey
 		// * now user wants to load another product on that HU, so M_HU.M_HU_PI_Item_Product_ID.M_Product_ID will not match given "product"
 		//
 		// HOTFIX: just skip calculating the capacity and return null. In this case, it is assumed that the caller will skip enforcing the capacity.
-		if (product != null
+		if (productId != null
 				&& !piItemProduct.isAllowAnyProduct()
-				&& piItemProduct.getM_Product_ID() != product.getM_Product_ID())
+				&& piItemProduct.getM_Product_ID() != productId.getRepoId())
 		{
-			logger.info("Product {} is not matching {}. Returning null capacity.", product, piItemProduct);
+			logger.info("Product {} is not matching {}. Returning null capacity.", productId, piItemProduct);
 			return null;
 		}
 
-		return huCapacityBL.getCapacity(piItemProduct, product, uom);
+		return huCapacityBL.getCapacity(piItemProduct, productId, uom);
 	}
 
 	private String buildPickingSlotName()
