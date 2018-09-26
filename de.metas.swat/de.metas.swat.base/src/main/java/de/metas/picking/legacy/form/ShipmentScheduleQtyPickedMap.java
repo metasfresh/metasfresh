@@ -5,8 +5,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -185,5 +190,29 @@ public class ShipmentScheduleQtyPickedMap
 			final Quantity qty = qtys.get(shipmentScheduleId);
 			consumer.accept(shipmentSchedule, qty);
 		});
+	}
+
+	public <T> Optional<T> mapReduce(@NonNull final Function<I_M_ShipmentSchedule, T> mapper)
+	{
+		final ImmutableSet<T> result = shipmentSchedules
+				.values()
+				.stream()
+				.map(mapper)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (result.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (result.size() == 1)
+		{
+			final T singleResult = result.iterator().next();
+			return Optional.of(singleResult);
+		}
+		else
+		{
+			throw new AdempiereException("Got more than one result: " + result);
+		}
 	}
 }
