@@ -1,6 +1,7 @@
 package de.metas.product;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.base.Predicates;
@@ -66,6 +67,11 @@ public class ProductId implements RepoIdAware
 				.filter(Predicates.notNull())
 				.map(ProductId::toRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static boolean equals(final ProductId o1, final ProductId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 	private ProductId(final int repoId)
