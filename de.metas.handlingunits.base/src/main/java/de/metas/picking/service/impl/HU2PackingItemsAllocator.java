@@ -42,7 +42,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.product.ProductId;
@@ -54,7 +54,7 @@ import lombok.NonNull;
 import lombok.Singular;
 
 /**
- * Class responsible for allocating given HUs to underlying shipment schedules from {@link IFreshPackingItem}.
+ * Class responsible for allocating given HUs to underlying shipment schedules from {@link IPackingItem}.
  *
  * As a result of an allocation, you shall get:
  * <ul>
@@ -87,7 +87,7 @@ public class HU2PackingItemsAllocator
 
 	//
 	// Parameters
-	private final IFreshPackingItem itemToPack;
+	private final IPackingItem itemToPack;
 	private final PackingSlot packedItemsSlot;
 	private final PackingItemsMap packingItems;
 	//
@@ -110,7 +110,7 @@ public class HU2PackingItemsAllocator
 	 */
 	@Builder
 	private HU2PackingItemsAllocator(
-			@NonNull final IFreshPackingItem itemToPack,
+			@NonNull final IPackingItem itemToPack,
 			@Nullable final PackingItemsMap packingItems,
 			@Nullable final PackingSlot packedItemsSlot,
 			//
@@ -528,7 +528,7 @@ public class HU2PackingItemsAllocator
 	private void packItem(
 			@NonNull final Quantity qtyToPack,
 			@NonNull final Predicate<I_M_ShipmentSchedule> shipmentSchedulesFilter,
-			@NonNull final Consumer<IFreshPackingItem> packedItemConsumer)
+			@NonNull final Consumer<IPackingItem> packedItemConsumer)
 	{
 		//
 		// Remove the itemToPack from unpacked items
@@ -540,8 +540,8 @@ public class HU2PackingItemsAllocator
 		// => itemToPackRemaining will be added back to unpacked items
 		// => itemPacked will be added to packed items
 
-		final IFreshPackingItem itemToPackRemaining = itemToPack.copy();
-		final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, shipmentSchedulesFilter);
+		final IPackingItem itemToPackRemaining = itemToPack.copy();
+		final IPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, shipmentSchedulesFilter);
 
 		//
 		// Process our packed item
@@ -593,7 +593,7 @@ public class HU2PackingItemsAllocator
 		return X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule);
 	}
 
-	private void transferQtyToTargetHU(final IFreshPackingItem item)
+	private void transferQtyToTargetHU(final IPackingItem item)
 	{
 		item.getQtys().forEach(this::transferQtyToTargetHU);
 	}

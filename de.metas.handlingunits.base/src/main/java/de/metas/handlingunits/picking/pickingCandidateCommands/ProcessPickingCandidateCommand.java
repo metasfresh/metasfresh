@@ -30,9 +30,9 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.PackingItems;
+import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -135,7 +135,7 @@ public class ProcessPickingCandidateCommand
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
 	{
-		final IFreshPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
+		final IPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		final boolean allowOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
 
@@ -146,7 +146,7 @@ public class ProcessPickingCandidateCommand
 				.allocate();
 	}
 
-	private IFreshPackingItem createItemToPack(final HuId huId)
+	private IPackingItem createItemToPack(final HuId huId)
 	{
 		final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
 
@@ -159,7 +159,7 @@ public class ProcessPickingCandidateCommand
 			scheds2Qtys.setQty(shipmentSchedule, qty);
 		}
 
-		return FreshPackingItemHelper.create(scheds2Qtys);
+		return PackingItems.newPackingItem(scheds2Qtys);
 	}
 
 	private ImmutableList<PickingCandidate> getPickingCandidatesForHUId(final HuId huId)

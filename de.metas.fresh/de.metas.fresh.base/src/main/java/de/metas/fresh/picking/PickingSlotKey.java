@@ -51,7 +51,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingItem;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
@@ -605,7 +605,7 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if bpartner/location is accepted
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(productKey.getC_BPartner_ID());
+		final BPartnerId bpartnerId = productKey.getBPartnerId();
 		final BPartnerLocationId bpartnerLocationId = productKey.getBPartnerLocationId();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
@@ -632,7 +632,7 @@ public class PickingSlotKey extends TerminalKey
 		return true;
 	}
 
-	public boolean isCompatible(IFreshPackingItem packingItem)
+	public boolean isCompatible(IPackingItem packingItem)
 	{
 		if (packingItem == null)
 		{

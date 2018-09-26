@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.picking.service;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

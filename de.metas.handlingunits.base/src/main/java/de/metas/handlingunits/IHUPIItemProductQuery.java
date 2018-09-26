@@ -24,6 +24,7 @@ package de.metas.handlingunits;
 
 import java.util.Date;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
@@ -57,6 +58,11 @@ public interface IHUPIItemProductQuery
 	 * @param bpartnerId
 	 */
 	void setC_BPartner_ID(final int bpartnerId);
+
+	default void setBPartnerId(final BPartnerId bpartnerId)
+	{
+		setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+	}
 
 	void setDate(Date date);
 

@@ -39,14 +39,14 @@ import de.metas.util.Services;
  */
 
 /**
- * Transactional support helper for {@link TransactionalFreshPackingItem}.
+ * Transactional support helper for {@link TransactionalPackingItem}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class TransactionalFreshPackingItemSupport
+final class TransactionalPackingItemSupport
 {
-	private static final transient String TRXPROPERTYNAME = TransactionalFreshPackingItemSupport.class.getName();
+	private static final transient String TRXPROPERTYNAME = TransactionalPackingItemSupport.class.getName();
 
 	/**
 	 * Gets the transaction support for current transaction.
@@ -55,7 +55,7 @@ public class TransactionalFreshPackingItemSupport
 	 *
 	 * @return transaction support or <code>null</code> if running out of transaction
 	 */
-	public static final TransactionalFreshPackingItemSupport getCreate()
+	public static final TransactionalPackingItemSupport getCreate()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
@@ -67,22 +67,20 @@ public class TransactionalFreshPackingItemSupport
 
 		//
 		// Gets/Creates a new transaction support
-		return trx.getProperty(TRXPROPERTYNAME, new Supplier<TransactionalFreshPackingItemSupport>()
+		return trx.getProperty(TRXPROPERTYNAME, new Supplier<TransactionalPackingItemSupport>()
 		{
 			@Override
-			public TransactionalFreshPackingItemSupport get()
+			public TransactionalPackingItemSupport get()
 			{
-				return new TransactionalFreshPackingItemSupport(trx);
+				return new TransactionalPackingItemSupport(trx);
 			}
 		});
 	}
 
 	private final Map<Long, ItemState> items = new LinkedHashMap<>();
 
-	private TransactionalFreshPackingItemSupport(final ITrx trx)
+	private TransactionalPackingItemSupport(final ITrx trx)
 	{
-		super();
-
 		//
 		// Register the commit/rollback transaction listeners
 		trx.getTrxListenerManager()
@@ -117,7 +115,7 @@ public class TransactionalFreshPackingItemSupport
 	 * @param item
 	 * @return current stateș never returns null.
 	 */
-	public synchronized FreshPackingItem getState(final TransactionalFreshPackingItem item)
+	public synchronized PackingItem getState(final TransactionalPackingItem item)
 	{
 		final long id = item.getId();
 		ItemState itemState = items.get(id);
@@ -137,10 +135,10 @@ public class TransactionalFreshPackingItemSupport
 	 */
 	private static final class ItemState
 	{
-		private final Reference<TransactionalFreshPackingItem> transactionalItemRef;
-		private final FreshPackingItem state;
+		private final Reference<TransactionalPackingItem> transactionalItemRef;
+		private final PackingItem state;
 
-		public ItemState(final TransactionalFreshPackingItem transactionalItem)
+		public ItemState(final TransactionalPackingItem transactionalItem)
 		{
 			super();
 			// NOTE: we keep a weak reference to our transactional item
@@ -149,14 +147,14 @@ public class TransactionalFreshPackingItemSupport
 			state = transactionalItem.createNewState();
 		}
 
-		public FreshPackingItem getState()
+		public PackingItem getState()
 		{
 			return state;
 		}
 
 		public void commit()
 		{
-			final TransactionalFreshPackingItem transactionalItem = transactionalItemRef.get();
+			final TransactionalPackingItem transactionalItem = transactionalItemRef.get();
 			if (transactionalItem == null)
 			{
 				// reference already expired

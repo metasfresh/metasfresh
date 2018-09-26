@@ -14,10 +14,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingItem;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
@@ -29,7 +27,7 @@ import lombok.NonNull;
  */
 public class FreshPackingDetailsMd implements IPackingDetailsModel
 {
-	private final ImmutableList<IFreshPackingItem> unallocatedLines;
+	private final ImmutableList<IPackingItem> unallocatedLines;
 
 	private final ImmutableList<PickingSlotKey> availablePickingSlots;
 	private final ImmutableList<PackingMaterialKey> availablePackingMaterialKeys;
@@ -38,17 +36,14 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 			@NonNull final ITerminalContext terminalContext,
 			final Collection<IPackingItem> unallocatedLines)
 	{
-		Check.assumeNotNull(terminalContext, "terminalContext not null");
-
 		Check.assumeNotEmpty(unallocatedLines, "unallocatedLines not empty");
-		this.unallocatedLines = unallocatedLines.stream()
-				.map(FreshPackingItemHelper::cast)
-				.collect(ImmutableList.toImmutableList());
+
+		this.unallocatedLines = ImmutableList.copyOf(unallocatedLines);
 
 		final Date date = SystemTime.asDayTimestamp();
 		final PackingMaterialKeyBuilder packingMaterialKeysBuilder = new PackingMaterialKeyBuilder(terminalContext, date);
 		final PickingSlotKeyBuilder pickingSlotKeysBuilder = new PickingSlotKeyBuilder(terminalContext);
-		for (final IFreshPackingItem freshPackingItem : this.unallocatedLines)
+		for (final IPackingItem freshPackingItem : this.unallocatedLines)
 		{
 			final ProductId productId = freshPackingItem.getProductId();
 			final BPartnerId bpartnerId = freshPackingItem.getBPartnerId();
@@ -83,7 +78,7 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 	 * 
 	 * @return unallocated lines (read-only collection)
 	 */
-	public ImmutableList<IFreshPackingItem> getUnallocatedLines()
+	public ImmutableList<IPackingItem> getUnallocatedLines()
 	{
 		return unallocatedLines;
 	}

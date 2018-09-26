@@ -6,9 +6,6 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
-
 /*
  * #%L
  * de.metas.fresh.base
@@ -32,35 +29,33 @@ import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
  */
 
 /**
- * Wraps an {@link FreshPackingItem} and adds transaction support.<br>
- * Basically that means that this instance wraps another {@link IFreshPackingItem}.<br>
+ * Wraps an {@link PackingItem} and adds transaction support.<br>
+ * Basically that means that this instance wraps another {@link IPackingItem}.<br>
  * A copy of that wrapped item can be obtained via {@link #createNewState()}.<br>
- * Changes can be made to this this copy incrementally, and can then be "flushed" onto the original wrapped instance by calling {@link #commit(IFreshPackingItem)}.
+ * Changes can be made to this this copy incrementally, and can then be "flushed" onto the original wrapped instance by calling {@link #commit(IPackingItem)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @see TransactionalFreshPackingItemSupport
+ * @see TransactionalPackingItemSupport
  */
-public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
+final class TransactionalPackingItem extends ForwardingPackingItem
 {
 	private static final transient AtomicLong nextId = new AtomicLong(1);
 
 	private final long id;
 
-	private final FreshPackingItem root;
+	private final PackingItem root;
 
-	TransactionalFreshPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
+	TransactionalPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
 	{
-		super();
 		id = nextId.incrementAndGet();
-		root = new FreshPackingItem(scheds2Qtys);
+		root = new PackingItem(scheds2Qtys);
 	}
 
 	/** Copy constructor */
-	private TransactionalFreshPackingItem(final TransactionalFreshPackingItem item)
+	private TransactionalPackingItem(final TransactionalPackingItem item)
 	{
-		super();
 		id = nextId.incrementAndGet();
-		root = new FreshPackingItem(item.getDelegate());
+		root = new PackingItem(item.getDelegate());
 	}
 
 	@Override
@@ -79,17 +74,17 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	}
 
 	/**
-	 * Called by {@link TransactionalFreshPackingItemSupport} when the object is required in a new transaction
+	 * Called by {@link TransactionalPackingItemSupport} when the object is required in a new transaction
 	 */
-	FreshPackingItem createNewState()
+	PackingItem createNewState()
 	{
 		return root.copy();
 	}
 
 	@Override
-	protected final FreshPackingItem getDelegate()
+	protected final PackingItem getDelegate()
 	{
-		final FreshPackingItem state = getStateOrNull();
+		final PackingItem state = getStateOrNull();
 		if (state != null)
 		{
 			return state;
@@ -101,13 +96,13 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	/**
 	 * @return
 	 * 		<ul>
-	 *         <li>the {@link FreshPackingItem} as it is in current transaction
-	 *         </li>or the main {@link FreshPackingItem} (i.e. the root) if there is no transaction running
+	 *         <li>the {@link PackingItem} as it is in current transaction
+	 *         </li>or the main {@link PackingItem} (i.e. the root) if there is no transaction running
 	 *         </ul>
 	 */
-	private FreshPackingItem getStateOrNull()
+	private PackingItem getStateOrNull()
 	{
-		final TransactionalFreshPackingItemSupport transactionalSupport = TransactionalFreshPackingItemSupport.getCreate();
+		final TransactionalPackingItemSupport transactionalSupport = TransactionalPackingItemSupport.getCreate();
 		if (transactionalSupport == null)
 		{
 			// not running in transaction
@@ -122,7 +117,7 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	 *
 	 * @param state
 	 */
-	public void commit(final FreshPackingItem state)
+	public void commit(final PackingItem state)
 	{
 		root.updateFrom(state);
 	}
@@ -131,9 +126,9 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	 * Creates a new instance which wraps a copy of this instances {@link #getDelegate()} value.
 	 */
 	@Override
-	public IFreshPackingItem copy()
+	public IPackingItem copy()
 	{
-		return new TransactionalFreshPackingItem(this);
+		return new TransactionalPackingItem(this);
 	}
 
 	@Override

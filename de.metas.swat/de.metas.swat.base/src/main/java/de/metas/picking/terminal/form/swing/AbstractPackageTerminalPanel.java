@@ -53,7 +53,6 @@ import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.service.PackingItemsMap;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
@@ -92,8 +91,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	private final AbstractPackageDataPanel pickingData;
 	private final ITerminalKeyPanel packingMaterialsPanel;
 
-	private PackingItemsMap packItems;
-
 	private final IPackingDetailsModel model;
 
 	/**
@@ -103,8 +100,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	 */
 	public AbstractPackageTerminalPanel(final ITerminalContext terminalContext, final AbstractPackageTerminal parent)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 		this.tc = terminalContext;
 		final ITerminalFactory factory = tc.getTerminalFactory();
@@ -112,7 +107,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		this.parentPackageTerminal = parent;
 		this.model = parent.getPackingDetailsModel();
 
-		this.packItems = parent.getPackingItems();
 		this.panel = factory.createContainer();
 		this.panelCenter = factory.createContainer();
 
@@ -130,16 +124,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 				"[grow][shrink 10]"));
 
 		terminalContext.addToDisposableComponents(this);
-	}
-
-	public PackingItemsMap getPackItems()
-	{
-		return packItems;
-	}
-
-	public void setPackItems(final PackingItemsMap items)
-	{
-		packItems = items;
 	}
 
 	/**

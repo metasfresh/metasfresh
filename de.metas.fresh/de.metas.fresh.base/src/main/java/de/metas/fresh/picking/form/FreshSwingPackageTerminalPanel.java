@@ -16,21 +16,20 @@ package de.metas.fresh.picking.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import com.google.common.base.Supplier;
 
-import de.metas.adempiere.form.terminal.IKeyLayout;
+import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.TerminalException;
@@ -42,10 +41,9 @@ import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
+import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
-import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
-import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 
@@ -57,35 +55,66 @@ import de.metas.util.Check;
  */
 public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 {
+	public static FreshSwingPackageTerminalPanel cast(final ITerminalBasePanel panel)
+	{
+		return (FreshSwingPackageTerminalPanel)panel;
+	}
+
 	/**
 	 * Please select a picking slot first
 	 */
 	private static final String ERR_SELECT_PICKING_SLOT = "@SelectPickingSlot@";
-
 	// private static final String ERR_SELECT_PRODUCT = "@SelectProduct@";
 
-	public FreshSwingPackageTerminalPanel(final ITerminalContext terminalContext, final AbstractPackageTerminal parent)
+	public FreshSwingPackageTerminalPanel(final ITerminalContext terminalContext, final FreshSwingPackageTerminal parent)
 	{
 		super(terminalContext, parent);
 	}
 
 	@Override
-	protected AbstractPackageDataPanel createPackageDataPanel()
+	public FreshSwingPackageTerminal getParent()
+	{
+		return FreshSwingPackageTerminal.cast(super.getParent());
+	}
+
+	public PackingItemsMap getPackingItems()
+	{
+		return getParent().getPackingItems();
+	}
+
+	public void setPackingItems(final PackingItemsMap packingItems)
+	{
+		getParent().setPackingItems(packingItems);
+	}
+
+	@Override
+	public FreshPackingDetailsMd getModel()
+	{
+		return (FreshPackingDetailsMd)super.getModel();
+	}
+
+	@Override
+	protected FreshSwingPackageDataPanel createPackageDataPanel()
 	{
 		return new FreshSwingPackageDataPanel(this);
 	}
 
 	@Override
-	protected SwingPackageBoxesItems createProductKeysPanel()
+	protected FreshSwingPackageItems createProductKeysPanel()
 	{
 		return new FreshSwingPackageItems(this);
 	}
 
 	@Override
-	protected IKeyLayout createPackingMaterialsKeyLayout()
+	public FreshSwingPackageItems getProductKeysPanel()
 	{
-		final PackingMaterialLayout packingMaterialsLayout = new PackingMaterialLayout(getTerminalContext());
-		return packingMaterialsLayout;
+		return (FreshSwingPackageItems)super.getProductKeysPanel();
+	}
+
+	@Override
+	protected PackingMaterialLayout createPackingMaterialsKeyLayout()
+	{
+		return new PackingMaterialLayout(getTerminalContext());
 	}
 
 	@Override
@@ -299,17 +328,5 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		//
 		// Fallback: return the whole unallocated qty
 		return qtyUnallocated;
-	}
-
-	@Override
-	public FreshSwingPackageItems getProductKeysPanel()
-	{
-		return (FreshSwingPackageItems)super.getProductKeysPanel();
-	}
-
-	@Override
-	public FreshPackingDetailsMd getModel()
-	{
-		return (FreshPackingDetailsMd)super.getModel();
 	}
 }

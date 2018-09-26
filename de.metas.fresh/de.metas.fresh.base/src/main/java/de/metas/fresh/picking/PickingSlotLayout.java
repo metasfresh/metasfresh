@@ -30,12 +30,12 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
-import de.metas.util.Check;
 
 /**
  * @author cg
@@ -74,14 +74,14 @@ public class PickingSlotLayout extends KeyLayout
 	{
 		final FreshPackingDetailsMd model = getBasePanel().getModel();
 		
-		final List<ITerminalKey> result = new ArrayList<ITerminalKey>(model.getAvailablePickingSlots());
+		final List<ITerminalKey> result = new ArrayList<>(model.getAvailablePickingSlots());
 		return Collections.unmodifiableList(result);
 	}
 
 	public List<PickingSlotKey> getPickingSlotKeys()
 	{
 		final List<ITerminalKey> keys = getKeys();
-		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<PickingSlotKey>(keys.size());
+		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<>(keys.size());
 		for (final ITerminalKey key : keys)
 		{
 			final PickingSlotKey pks = (PickingSlotKey)key;
@@ -94,12 +94,12 @@ public class PickingSlotLayout extends KeyLayout
 	public List<PickingSlotKey> getPickingSlotKeys(final PickingSlotKeyGroup group)
 	{
 		final List<ITerminalKey> keys = getKeys();
-		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<PickingSlotKey>();
+		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<>();
 		for (final ITerminalKey key : keys)
 		{
 			final PickingSlotKey pickingSlotKey = (PickingSlotKey)key;
 			final PickingSlotKeyGroup pickingSlotKeyGroup = pickingSlotKey.getPickingSlotKeyGroup();
-			if (!Check.equals(pickingSlotKeyGroup, group))
+			if (!Objects.equals(pickingSlotKeyGroup, group))
 			{
 				continue;
 			}

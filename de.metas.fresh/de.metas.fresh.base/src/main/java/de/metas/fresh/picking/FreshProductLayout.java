@@ -3,6 +3,8 @@
  */
 package de.metas.fresh.picking;
 
+import java.awt.Color;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -33,26 +35,29 @@ import java.util.Objects;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
+import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
-import de.metas.picking.terminal.ProductLayout;
+import de.metas.picking.terminal.Utils.PackingStates;
 
 /**
  * @author cg
  * 
  */
-public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelectionModelAware
+public class FreshProductLayout extends KeyLayout implements IKeyLayoutSelectionModelAware
 {
+	private static final Color DEFAULT_Color = Color.GREEN;
 
-	public FreshProductLayout(ITerminalContext tc)
+	public FreshProductLayout(final ITerminalContext tc)
 	{
 		super(tc);
+		setColumns(3);
+		setDefaultColor(DEFAULT_Color);
 
 		//
 		// Configure the selection model:
@@ -63,14 +68,42 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		selectionModel.setToggleableSelection(false);
 	}
 
-	private FreshSwingPackageItems getPackageItems()
+	@Override
+	public String getId()
 	{
-		return (FreshSwingPackageItems)getPackageTerminalPanel().getProductKeysPanel();
+		return "ProductLayout#" + 100;
+	}
+
+	@Override
+	public boolean isNumeric()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isText()
+	{
+		return false;
+	}
+
+	private FreshSwingPackageTerminalPanel getPackageTerminalPanel()
+	{
+		return FreshSwingPackageTerminalPanel.cast(getBasePanel());
+	}
+
+	private PackingItemsMap getPackingItems()
+	{
+		return getPackageTerminalPanel().getPackingItems();
+	}
+
+	private FreshSwingPackageItems getFreshSwingPackageItems()
+	{
+		return getPackageTerminalPanel().getProductKeysPanel();
 	}
 
 	private PickingSlotKey getSelectedPickingSlotKey()
 	{
-		FreshSwingPackageItems packageItems = getPackageItems();
+		FreshSwingPackageItems packageItems = getFreshSwingPackageItems();
 		if (packageItems == null)
 		{
 			return null;
@@ -81,7 +114,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	@Override
 	public List<ITerminalKey> createKeys()
 	{
-		final PackingItemsMap map = getPackageTerminalPanel().getPackItems();
+		final PackingItemsMap packingItems = getPackingItems();
 
 		final List<ITerminalKey> productKeys = new ArrayList<>();
 
@@ -91,18 +124,17 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		if (selectedPickingSlot == null)
 		{
 			// add to layout unpacked items
-			for (final IPackingItem apck : map.getBySlot(PackingSlot.UNPACKED))
+			for (final IPackingItem packingItem : packingItems.getBySlot(PackingSlot.UNPACKED))
 			{
-				final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
-				final FreshProductKey productKey = createProductKey(pck, selectedPickingSlot);
-				final IFreshPackingItem allocatedItem = FreshPackingItemHelper.copy(pck);
+				final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
+				final IPackingItem allocatedItem = packingItem.copy();
 				productKey.setUnAllocatedPackingItem(allocatedItem);
 				productKey.resetPackingItem(); // nothing packed yet in the key
 				if (!productKey.isActive())
 				{
 					continue;
 				}
-				productKey.setStatus(getProductState(pck, PackingSlot.UNPACKED));
+				productKey.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
 				productKeys.add(productKey);
 			}
 		}
@@ -110,32 +142,29 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		{
 			// put to layout items from selected box
 			final PackingSlot key = PackingSlot.ofPickingSlotId(selectedPickingSlot.getPickingSlotId());
-			for (final IPackingItem apck : map.getBySlot(key))
+			for (final IPackingItem packingItem : packingItems.getBySlot(key))
 			{
-				final IFreshPackingItem pck = FreshPackingItemHelper.cast(apck);
-				final FreshProductKey productKey = createProductKey(pck, selectedPickingSlot);
+				final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
 				if (productKey == null || !productKey.isActive())
 				{
 					continue;
 				}
-				productKey.setStatus(getProductState(pck, key));
+				productKey.setStatus(computePackingState(packingItem, key));
 				productKeys.add(productKey);
 			}
 
 			// now show unpacked for that specific partner
-			final List<IPackingItem> unpacked = map.getBySlot(PackingSlot.UNPACKED);
-			final List<IPackingItem> items = getPackageItems().createUnpackedForBpAndBPLoc(unpacked, selectedPickingSlot);
-			for (final IPackingItem apck : items)
+			final List<IPackingItem> unpacked = packingItems.getBySlot(PackingSlot.UNPACKED);
+			final List<IPackingItem> items = getFreshSwingPackageItems().createUnpackedForBpAndBPLoc(unpacked, selectedPickingSlot);
+			for (final IPackingItem packingItem : items)
 			{
-				final IFreshPackingItem packingItem = FreshPackingItemHelper.cast(apck);
-
 				// if the item exist in the list, do not create the key again
 				final FreshProductKey productKeyExisting = getExistentProductKey(productKeys, packingItem);
 				if (productKeyExisting != null)
 				{
 					// first set unallocated
 					productKeyExisting.setUnAllocatedPackingItem(packingItem);
-					productKeyExisting.setStatus(getProductState(packingItem, PackingSlot.UNPACKED));
+					productKeyExisting.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
 					continue;
 				}
 
@@ -147,7 +176,7 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 
 				productKey.resetPackingItem();
 				productKey.setUnAllocatedPackingItem(packingItem);
-				productKey.setStatus(getProductState(packingItem, PackingSlot.UNPACKED));
+				productKey.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
 				productKeys.add(productKey);
 			}
 
@@ -156,10 +185,10 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 	}
 
 	private FreshProductKey createProductKey(
-			final IFreshPackingItem pck,
+			final IPackingItem packingItem,
 			final PickingSlotKey selectedPickingSlot)
 	{
-		final FreshProductKey productKey = new FreshProductKey(getTerminalContext(), pck);
+		final FreshProductKey productKey = new FreshProductKey(getTerminalContext(), packingItem);
 
 		// Make sure the created product key is compatible with given picking slot (if any)
 		if (selectedPickingSlot != null && !selectedPickingSlot.isCompatible(productKey))
@@ -184,19 +213,49 @@ public class FreshProductLayout extends ProductLayout implements IKeyLayoutSelec
 		return null;
 	}
 
-	@Override
-	public boolean isSameBPartner(final IPackingItem item1, final IPackingItem item2)
+	private PackingStates computePackingState(final IPackingItem packingItem, final PackingSlot packingSlot)
 	{
-		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
-		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
+		final PackingItemsMap packItems = getPackingItems();
+		boolean unpacked = packingSlot.isUnpacked();
+		boolean packed = packItems.streamPackedItems()
+				.anyMatch(item -> isMatching(item, packingItem));
+		//
+		PackingStates state = PackingStates.unpacked;
+		if (packed && unpacked)
+		{
+			state = PackingStates.partiallypacked;
+		}
+		else if (!packed && unpacked)
+		{
+			state = PackingStates.unpacked;
+		}
+		else if (packed && !unpacked)
+		{
+			state = PackingStates.packed;
+		}
+
+		return state;
+	}
+
+	private static final boolean isMatching(final IPackingItem item1, final IPackingItem item2)
+	{
+		return Objects.equals(item1.getProductId(), item2.getProductId())
+				&& isSameBPartner(item1, item2)
+				&& isSameBPLocation(item1, item2);
+
+	}
+
+	private static boolean isSameBPartner(final IPackingItem item1, final IPackingItem item2)
+	{
+		final IPackingItem freshItem1 = item1;
+		final IPackingItem freshItem2 = item2;
 		return Objects.equals(freshItem1.getBPartnerId(), freshItem2.getBPartnerId());
 	}
 
-	@Override
-	public boolean isSameBPLocation(final IPackingItem item1, final IPackingItem item2)
+	private static boolean isSameBPLocation(final IPackingItem item1, final IPackingItem item2)
 	{
-		final IFreshPackingItem freshItem1 = (IFreshPackingItem)item1;
-		final IFreshPackingItem freshItem2 = (IFreshPackingItem)item2;
+		final IPackingItem freshItem1 = item1;
+		final IPackingItem freshItem2 = item2;
 		return Objects.equals(freshItem1.getBPartnerLocationId(), freshItem2.getBPartnerLocationId());
 	}
 

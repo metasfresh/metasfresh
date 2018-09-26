@@ -47,9 +47,6 @@ import de.metas.adempiere.form.terminal.ITerminalNumericField;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.terminal.ProductKey;
-import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils;
 
 /**
@@ -63,7 +60,7 @@ import de.metas.picking.terminal.Utils;
  * @author cg
  *
  */
-public class SwingPackageBoxesItems
+public abstract class SwingPackageBoxesItems
 		extends TerminalSubPanel
 		implements PropertyChangeListener
 {
@@ -86,7 +83,7 @@ public class SwingPackageBoxesItems
 	private ITerminalKeyPanel pickingSlotsKeyLayoutPanel;
 
 	private IKeyLayout pickingSlotsKeyLayout;
-	private ProductLayout productsKeyLayout;
+	private IKeyLayout productsKeyLayout;
 
 	public SwingPackageBoxesItems(final AbstractPackageTerminalPanel basePanel)
 	{
@@ -108,21 +105,6 @@ public class SwingPackageBoxesItems
 	protected String getButtonSize()
 	{
 		return Utils.getButtonSize();
-	}
-
-	/**
-	 * @return currently selected ProductKey or null
-	 */
-	public ProductKey getSelectedProduct()
-	{
-		final ITerminalKeyPanel productsKeyLayoutPanel = getProductsKeyLayoutPanel();
-		if (productsKeyLayoutPanel == null)
-		{
-			return null;
-		}
-
-		final ProductKey selectedProductKey = (ProductKey)productsKeyLayoutPanel.getSelectedKey();
-		return selectedProductKey;
 	}
 
 	private class ProductsKeyListener extends TerminalKeyListenerAdapter
@@ -177,15 +159,12 @@ public class SwingPackageBoxesItems
 		return pickingSlotsKeyLayout;
 	}
 
-	public ProductLayout getProductsKeyLayout()
+	protected IKeyLayout getProductsKeyLayout()
 	{
 		return productsKeyLayout;
 	}
 
-	protected PropertyChangeListener createQtyListener()
-	{
-		throw new UnsupportedOperationException();
-	}
+	protected abstract PropertyChangeListener createQtyListener();
 
 	@Override
 	protected final void init()
@@ -242,7 +221,7 @@ public class SwingPackageBoxesItems
 			productsKeyLayout = createProductsKeyLayout();
 			productsKeyLayout.setBasePanel(p_basePanel);
 			productsKeyLayout.setRows(2);
-			
+
 			productsKeyLayoutPanel = factory.createTerminalKeyPanel(productsKeyLayout, new ProductsKeyListener());
 			// productsKeyLayoutPanel.setAllowKeySelection(true); // NOTE: not needed, it's supposed to be already configured on productsKeyLayout
 		}
@@ -279,15 +258,9 @@ public class SwingPackageBoxesItems
 		bRemoveAll.addListener(this);
 	}
 
-	protected ProductLayout createProductsKeyLayout()
-	{
-		return new ProductLayout(getTerminalContext());
-	}
+	protected abstract IKeyLayout createProductsKeyLayout();
 
-	protected IKeyLayout createPickingSlotsKeyLayout()
-	{
-		throw new UnsupportedOperationException();
-	}
+	protected abstract IKeyLayout createPickingSlotsKeyLayout();
 
 	public final void setEnableAddRemoveButtons(final boolean enabled)
 	{
@@ -317,10 +290,7 @@ public class SwingPackageBoxesItems
 	 * Method called when user presses {@link #bAdd}, {@link #bAddAll}, {@link #bRemove}, {@link #bRemoveAll} buttons.
 	 */
 	@Override
-	public void propertyChange(final PropertyChangeEvent evt)
-	{
-		throw new UnsupportedOperationException();
-	}
+	public abstract void propertyChange(final PropertyChangeEvent evt);
 
 	/**
 	 * Sets qty field from given qty string.
@@ -424,18 +394,6 @@ public class SwingPackageBoxesItems
 	private final ITerminalNumericField getQtyField()
 	{
 		return fQty;
-	}
-
-	private IPackingItem pck = null;
-
-	public final IPackingItem getPck()
-	{
-		return pck;
-	}
-
-	public final void setPck(final IPackingItem pck)
-	{
-		this.pck = pck;
 	}
 
 	/**

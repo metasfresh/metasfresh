@@ -27,11 +27,21 @@ package de.metas.fresh.picking;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.Util;
 
+import de.metas.adempiere.form.terminal.ITerminalKey;
+import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -39,24 +49,149 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.terminal.ProductKey;
+import de.metas.picking.service.IPackingItem;
+import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author cg
  *
  */
-public class FreshProductKey extends ProductKey
+public class FreshProductKey extends TerminalKey
 {
+	public static FreshProductKey cast(final ITerminalKey key)
+	{
+		return (FreshProductKey)key;
+	}
+
+	private final String id;
+	private final KeyNamePair value;
+	private final ProductId productId;
+	private final BPartnerId bpartnerId;
+	private final BPartnerLocationId bpartnerLocationId;
+
+	private IPackingItem packingItem;
+	/** this is the packing item which contains unallocated scheds and unallocated qty */
+	private IPackingItem _unallocatedPackingItem;
+
+	public FreshProductKey(@NonNull final ITerminalContext terminalContext, @NonNull final IPackingItem packingItem)
+	{
+		super(terminalContext);
+
+		this.packingItem = packingItem;
+		this.productId = packingItem.getProductId();
+		this.bpartnerId = packingItem.getBPartnerId();
+		this.bpartnerLocationId = packingItem.getBPartnerLocationId();
+
+		final String displayName = buildDisplayName(productId, bpartnerId, bpartnerLocationId);
+		this.value = KeyNamePair.of(productId, displayName);
+		this.status = FreshProductKeyStatus.packed();
+
+		this.id = buildId(productId, bpartnerId, bpartnerLocationId);
+	}
+
+	private static final String buildId(final ProductId productId, final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
+	{
+		return Util.mkKey(
+				ProductId.toRepoId(productId),
+				BPartnerId.toRepoId(bpartnerId),
+				BPartnerLocationId.toRepoId(bpartnerLocationId))
+				.toString();
+	}
+
+	private static String buildDisplayName(final ProductId productId, final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
+	{
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
+		final I_M_Product product = productsRepo.getById(productId);
+
+		// Max text length
+		// NOTE: please think twice before changing this number because it was tuned for 1024x740 resolution
+		// see http://dewiki908/mediawiki/index.php/05863_Fenster_Kommissionierung_-_bessere_Ausnutzung_Kn%C3%B6pfefelder_f%C3%BCr_Textausgabe_%28102244669218%29
+		final int maxLength = 25;
+
+		final String pValue = truncatedString(product.getValue(), maxLength);
+		final String pName = truncatedString(product.getName(), maxLength);
+		final String bpName = truncatedString(bpartnersRepo.getBPartnerNameById(bpartnerId), maxLength);
+		final String bplName = truncatedString(bpartnersRepo.getBPartnerLocationById(bpartnerLocationId).getName(), maxLength);
+		return pValue
+				+ "<br>"
+				+ pName
+				+ "<br>"
+				+ bpName
+				+ "<br>"
+				+ bplName;
+	}
+
+	private static String truncatedString(final String text, final int length)
+	{
+		final String[] bits = text.split("\\\\n");
+		final StringBuilder newtxt = new StringBuilder();
+		for (final String s : bits)
+		{
+			if (newtxt.length() > 0)
+			{
+				newtxt.append("<br>");
+			}
+
+			if (s.length() > length)
+			{
+				newtxt.append(s.substring(0, length - 3).concat("..."));
+			}
+			else
+			{
+				newtxt.append(s);
+			}
+		}
+
+		if (newtxt.length() == 0)
+		{
+			return text;
+		}
+		return newtxt.toString();
+	}
+
+	@Override
+	public String getId()
+	{
+		return id;
+	}
+
+	@Override
+	public KeyNamePair getValue()
+	{
+		return value;
+	}
+
+	@Override
+	public String getTableName()
+	{
+		return I_M_Product.Table_Name;
+	}
+
+	public ProductId getProductId()
+	{
+		return productId;
+	}
+
+	public BPartnerId getBPartnerId()
+	{
+		return bpartnerId;
+	}
+
+	public BPartnerLocationId getBPartnerLocationId()
+	{
+		return bpartnerLocationId;
+	}
+
 	/**
-	 * retrieve infos regarding packing material and capacity
-	 *
-	 * @return
+	 * @return infos regarding packing material and capacity
 	 */
 	private String retrievePackingMaterialInfos()
 	{
@@ -78,11 +213,11 @@ public class FreshProductKey extends ProductKey
 	 */
 	public HUPIItemProductId getHUPIItemProductId()
 	{
-		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
-		final IFreshPackingItem allocatedPackingItem = getPackingItem();
+		final IPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
+		final IPackingItem allocatedPackingItem = getPackingItem();
 		if (allocatedPackingItem != null || unallocatedPackingItem != null)
 		{
-			final IFreshPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
+			final IPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
 
 			final HUPIItemProductId pip = pck.getHUPIItemProductId();
 			return pip;
@@ -92,23 +227,9 @@ public class FreshProductKey extends ProductKey
 	}
 
 	/**
-	 * this is the packing item which contains unallocated scheds and unallocated qty
-	 */
-	private IFreshPackingItem _unallocatedPackingItem;
-
-	public FreshProductKey(final ITerminalContext terminalContext, final IFreshPackingItem pck)
-	{
-		super(terminalContext,
-				pck,
-				Services.get(IBPartnerDAO.class).getById(pck.getBPartnerId()), // BPartner
-				Services.get(IBPartnerDAO.class).getBPartnerLocationById(pck.getBPartnerLocationId()) // BPartner Location
-		);
-	}
-
-	/**
 	 * @return packing item for unallocated quantity; never returns <code>null</code>
 	 */
-	public IFreshPackingItem getUnAllocatedPackingItem()
+	public IPackingItem getUnAllocatedPackingItem()
 	{
 		if (_unallocatedPackingItem == null)
 		{
@@ -120,27 +241,61 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * @return packing item for unallocated quantity or <code>null</code>
 	 */
-	private final IFreshPackingItem getUnAllocatedPackingItemOrNull()
+	private final IPackingItem getUnAllocatedPackingItemOrNull()
 	{
 		return _unallocatedPackingItem;
 	}
 
-	public void setUnAllocatedPackingItem(IFreshPackingItem pck)
+	public void setUnAllocatedPackingItem(IPackingItem pck)
 	{
 		this._unallocatedPackingItem = pck;
 	}
 
-	@Override
-	public IFreshPackingItem getPackingItem()
+	public IPackingItem getPackingItem()
 	{
-		return FreshPackingItemHelper.cast(super.getPackingItem());
+		return packingItem;
+	}
+
+	public void resetPackingItem()
+	{
+		this.packingItem = null;
+	}
+
+	@Override
+	public FreshProductKeyStatus getStatus()
+	{
+		return FreshProductKeyStatus.cast(super.getStatus());
+	}
+
+	public void setStatus(final PackingStates packStatus)
+	{
+		if (packStatus == null)
+		{
+			return;
+		}
+
+		final FreshProductKeyStatus statusOld = getStatus();
+		final FreshProductKeyStatus statusNew = FreshProductKeyStatus.of(packStatus);
+		if (Objects.equals(statusOld, statusNew))
+		{
+			// nothing changed
+			return;
+		}
+
+		setStatus(statusNew);
 	}
 
 	@Override
 	public Object getName()
 	{
 		final BigDecimal unallocQty = getQtyUnallocated(2);
-		final BigDecimal allocQty = getQtyAllocated(2);
+
+		BigDecimal allocQty = getQty().getAsBigDecimal();
+		if (allocQty.scale() > 2)
+		{
+			allocQty = allocQty.setScale(2, BigDecimal.ROUND_HALF_UP);
+		}
+
 		final BigDecimal totalQty = allocQty.add(unallocQty);
 
 		final StringBuilder sb = new StringBuilder();
@@ -162,9 +317,9 @@ public class FreshProductKey extends ProductKey
 	public String getDebugInfo()
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append("M_Product:").append(getProductId());
-		sb.append("\nC_BPartner: ").append(getC_BPartner());
-		sb.append("\nC_BPartner_Location: ").append(getC_BPartner_Location());
+		sb.append("M_Product:").append(productId);
+		sb.append("\nC_BPartner: ").append(bpartnerId);
+		sb.append("\nC_BPartner_Location: ").append(bpartnerLocationId);
 		return sb.toString();
 	}
 
@@ -207,22 +362,14 @@ public class FreshProductKey extends ProductKey
 	}
 
 	/**
-	 * Gets Qty Allocated and adjust the scale if necessary
-	 *
-	 * @param maxScale
-	 * @return
-	 *
-	 * @see #getQty()
+	 * @return qty inside this Product key (i.e. sum of Qtys from underlying shipment schedules)
 	 */
-	public BigDecimal getQtyAllocated(final int maxScale)
+	public Quantity getQty()
 	{
-		BigDecimal qtyAllocated = getQty();
-		if (maxScale >= 0 && qtyAllocated.scale() > maxScale)
-		{
-			qtyAllocated = qtyAllocated.setScale(maxScale, BigDecimal.ROUND_HALF_UP);
-		}
-
-		return qtyAllocated;
+		// TODO: check if is really needed because it might be that the conversion is pointless!
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(packingItem.getProductId());
+		return uomConversionBL.convertQuantityTo(packingItem.getQtySum(), conversionCtx, packingItem.getC_UOM());
 	}
 
 	/**
@@ -233,7 +380,7 @@ public class FreshProductKey extends ProductKey
 	 */
 	public List<I_M_HU> findAvailableHUs(final boolean considerAttributes)
 	{
-		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
+		final IPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
 		final List<I_M_ShipmentSchedule> shipmentSchedules = unallocatedPackingItem.getShipmentSchedules();
 
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);

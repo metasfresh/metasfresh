@@ -28,10 +28,6 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
-import de.metas.picking.legacy.form.PackingItemSubtractException;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -45,18 +41,18 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class FreshPackingItem implements IFreshPackingItem
+final class PackingItem implements IPackingItem
 {
 	private final ShipmentScheduleQtyPickedMap sched2qty;
 	private final PackingItemGroupingKey groupingKey;
 	private final I_C_UOM uom;
 
-	FreshPackingItem(final ShipmentScheduleQtyPickedMap sched2qtyParam)
+	PackingItem(final ShipmentScheduleQtyPickedMap sched2qtyParam)
 	{
 		Check.assume(!sched2qtyParam.isEmpty(), "scheds2Qtys not empty");
 		this.sched2qty = sched2qtyParam.copy();
 
-		this.groupingKey = sched2qty.mapReduce(FreshPackingItem::computeGroupingKey).get();
+		this.groupingKey = sched2qty.mapReduce(PackingItem::computeGroupingKey).get();
 
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
@@ -64,7 +60,7 @@ public final class FreshPackingItem implements IFreshPackingItem
 		uom = uomsRepo.getById(uomId);
 	}
 
-	FreshPackingItem(@NonNull final FreshPackingItem copyFromItem)
+	PackingItem(@NonNull final PackingItem copyFromItem)
 	{
 		sched2qty = copyFromItem.sched2qty.copy();
 		groupingKey = copyFromItem.groupingKey;
@@ -99,7 +95,7 @@ public final class FreshPackingItem implements IFreshPackingItem
 				.build();
 	}
 
-	public void updateFrom(@NonNull final FreshPackingItem item)
+	public void updateFrom(@NonNull final PackingItem item)
 	{
 		sched2qty.setFrom(item.sched2qty);
 
@@ -399,18 +395,18 @@ public final class FreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public IFreshPackingItem subtractToPackingItem(
+	public IPackingItem subtractToPackingItem(
 			@NonNull final Quantity subtrahent,
 			@Nullable final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{
 		final ShipmentScheduleQtyPickedMap sched2qty = subtract(subtrahent, acceptShipmentSchedulePredicate);
-		return FreshPackingItemHelper.create(sched2qty);
+		return PackingItems.newPackingItem(sched2qty);
 	}
 
 	@Override
-	public FreshPackingItem copy()
+	public PackingItem copy()
 	{
-		return new FreshPackingItem(this);
+		return new PackingItem(this);
 	}
 
 	@Override

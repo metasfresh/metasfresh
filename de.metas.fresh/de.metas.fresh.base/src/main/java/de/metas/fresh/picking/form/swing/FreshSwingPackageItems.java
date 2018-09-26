@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -39,10 +38,13 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
@@ -60,20 +62,18 @@ import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.exceptions.HULoadException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import de.metas.picking.legacy.form.PackingMd;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.PackingItems;
+import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.IPackingService;
+import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
+import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.picking.terminal.DefaultPackingStateAggregator;
 import de.metas.picking.terminal.IPackingStateAggregator;
-import de.metas.picking.terminal.ProductLayout;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
 import de.metas.product.IProductBL;
@@ -174,9 +174,15 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	}
 
 	@Override
-	public ProductLayout createProductsKeyLayout()
+	public FreshProductLayout createProductsKeyLayout()
 	{
 		return new FreshProductLayout(getTerminalContext());
+	}
+
+	@Override
+	public FreshProductLayout getProductsKeyLayout()
+	{
+		return (FreshProductLayout)super.getProductsKeyLayout();
 	}
 
 	/**
@@ -291,7 +297,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				// e.g. de.metas.shipping.process.M_ShippingPackage_CreateFromPickingSlots
 				throw new AdempiereException(FreshSwingPackageItems.ERR_NO_OPEN_HU_FOUND);
 			}
-			final IFreshPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
+			final IPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
 			packItemToHU(unallocPackingItem, Quantity.of(newQty, unallocPackingItem.getC_UOM()), hu);
 
 			//
@@ -323,7 +329,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				return;
 			}
 
-			final BigDecimal allocQty = selectedProduct.getQty();
+			final Quantity allocQty = selectedProduct.getQty();
 			final BigDecimal qtyToRemove = getQty();
 
 			if (qtyToRemove.signum() == 0)
@@ -332,7 +338,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				return;
 			}
 
-			if (qtyToRemove.compareTo(allocQty) > 0)
+			if (qtyToRemove.compareTo(allocQty.getAsBigDecimal()) > 0)
 			{
 				warn(FreshSwingPackageItems.ERR_MAX_QTY);
 				setQty(BigDecimal.ZERO);
@@ -359,10 +365,15 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		getPackageTerminalPanel().keyPressed(selectedPickingSlotKey);
 	}
 
-	@Override
 	public final FreshProductKey getSelectedProduct()
 	{
-		return (FreshProductKey)super.getSelectedProduct();
+		final ITerminalKeyPanel productsKeyLayoutPanel = getProductsKeyLayoutPanel();
+		if (productsKeyLayoutPanel == null)
+		{
+			return null;
+		}
+
+		return FreshProductKey.cast(productsKeyLayoutPanel.getSelectedKey());
 	}
 
 	/**
@@ -377,14 +388,12 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		if (packingItems == null || packingItems.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		final List<IPackingItem> result = new ArrayList<>();
-		for (final IPackingItem apck : packingItems)
+		for (final IPackingItem packingItem : packingItems)
 		{
-			final IFreshPackingItem packingItem = FreshPackingItemHelper.cast(apck);
-
 			// Skip those which are not compatible with our picking slot
 			if (!pickingSlotKey.isCompatible(packingItem))
 			{
@@ -491,7 +500,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	}
 
 	private void packItemToHU(
-			final IFreshPackingItem itemToPack,
+			final IPackingItem itemToPack,
 			final Quantity qtyToPack,
 			@NonNull final I_M_HU targetHU)
 	{
@@ -557,7 +566,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			}
 			else
 			{
-				final IFreshPackingItem itemPackedNew = FreshPackingItemHelper.copy(itemPacked);
+				final IPackingItem itemPackedNew = itemPacked.copy();
 
 				//
 				// take out qtyToRemove from our packing item
@@ -578,7 +587,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				}
 				else
 				{
-					final IFreshPackingItem newPi = FreshPackingItemHelper.create(qtyToRemoveAlloc);
+					final IPackingItem newPi = PackingItems.newPackingItem(qtyToRemoveAlloc);
 					packItems.addUnpackedItem(newPi);
 				}
 			}
@@ -619,7 +628,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 */
 	public void refreshProducts()
 	{
-		final ProductLayout productlayout = getProductsKeyLayout();
+		final FreshProductLayout productlayout = getProductsKeyLayout();
 
 		// Clear product keys.
 		// They will be automatically recreated by the products key layout.
@@ -780,7 +789,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			@Override
 			protected void loadQtyToHU(final I_M_HU hu, final BigDecimal qty)
 			{
-				final IFreshPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
+				final IPackingItem itemToPack = productKey.getUnAllocatedPackingItem();
 				packItemToHU(itemToPack, Quantity.of(qty, itemToPack.getC_UOM()), hu);
 			}
 
@@ -882,7 +891,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		//
 		// Get the selected shipment schedules' C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
-		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
+		final IPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
 		final BPartnerId bpartnerId = unallocatedPackingItem.getBPartnerId();
 		final BPartnerLocationId bpartnerLocationId = unallocatedPackingItem.getBPartnerLocationId();
@@ -907,7 +916,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 * @param itemToPack
 	 * @param hus HUs on which the quantity will be allocated
 	 */
-	private void allocateItemToHUs(final IFreshPackingItem itemToPack, final Collection<I_M_HU> hus)
+	private void allocateItemToHUs(final IPackingItem itemToPack, final Collection<I_M_HU> hus)
 	{
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
 		final PackingItemsMap packingItems = getPackingItems().copy();
@@ -936,11 +945,11 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 	private PackingItemsMap getPackingItems()
 	{
-		return getPackageTerminalPanel().getPackItems();
+		return getPackageTerminalPanel().getPackingItems();
 	}
 
 	private void setPackingItems(final PackingItemsMap packingItems)
 	{
-		getPackageTerminalPanel().setPackItems(packingItems);
+		getPackageTerminalPanel().setPackingItems(packingItems);
 	}
 }

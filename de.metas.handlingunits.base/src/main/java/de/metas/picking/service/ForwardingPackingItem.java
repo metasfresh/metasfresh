@@ -11,9 +11,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
@@ -40,21 +37,21 @@ import de.metas.quantity.Quantity;
  */
 
 /**
- * Abstract {@link IFreshPackingItem} implementation which forwards all calls to {@link #getDelegate()}.
+ * Abstract {@link IPackingItem} implementation which forwards all calls to {@link #getDelegate()}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
+abstract class ForwardingPackingItem implements IPackingItem
 {
-	protected abstract IFreshPackingItem getDelegate();
+	protected abstract IPackingItem getDelegate();
 
 	// Following methods are quite critical and in most cases would be overwritten, so it's better to not implement them here.
 	//@formatter:off
 	@Override
 	public abstract boolean isSameAs(final IPackingItem item);
 	@Override
-	public abstract IFreshPackingItem copy();
+	public abstract IPackingItem copy();
 	//@formatter:on
 
 	@Override
@@ -112,7 +109,7 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public IFreshPackingItem subtractToPackingItem(
+	public IPackingItem subtractToPackingItem(
 			final Quantity subtrahent,
 			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
 	{

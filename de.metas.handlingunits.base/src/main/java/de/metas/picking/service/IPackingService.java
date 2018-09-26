@@ -3,7 +3,6 @@ package de.metas.picking.service;
 import java.util.Properties;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
 import de.metas.util.ISingletonService;
 
 public interface IPackingService extends ISingletonService

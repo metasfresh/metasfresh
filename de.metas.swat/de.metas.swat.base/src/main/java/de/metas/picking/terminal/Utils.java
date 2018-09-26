@@ -26,16 +26,8 @@ package de.metas.picking.terminal;
  */
 
 import java.awt.Color;
-import java.math.BigDecimal;
 
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
-
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import lombok.Getter;
-import lombok.NonNull;
 
 /**
  * @author cg
@@ -67,18 +59,5 @@ public class Utils
 	public static String getButtonSize()
 	{
 		return buttonSize;
-	}
-
-	public static final BigDecimal convertToItemUOM(
-			@NonNull final IPackingItem packingItem,
-			@NonNull final Quantity quantity)
-	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		return uomConversionBL.convertQty(
-				UOMConversionContext.of(packingItem.getProductId()),
-				quantity.getAsBigDecimal(),
-				quantity.getUOM(),
-				packingItem.getC_UOM());
 	}
 }

@@ -10,8 +10,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
 import lombok.NonNull;
 import lombok.ToString;
 

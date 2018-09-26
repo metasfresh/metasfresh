@@ -61,10 +61,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
-import de.metas.picking.service.FreshPackingItemHelper;
-import de.metas.picking.service.IFreshPackingItem;
+import de.metas.picking.service.PackingItems;
+import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemsMap;
+import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -86,7 +86,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	//
 	// Context
 	private I_M_ShipmentSchedule shipmentSchedule;
-	private IFreshPackingItem itemToPack;
+	private IPackingItem itemToPack;
 	// private PackingContext packingContext;
 
 	@Override
@@ -118,7 +118,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 			final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
 			this.shipmentSchedule = createAndAppendShipmentSchedule(scheds2Qtys, qtyToDeliver);
 
-			this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
+			this.itemToPack = PackingItems.newPackingItem(scheds2Qtys);
 
 			// Validate
 			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));

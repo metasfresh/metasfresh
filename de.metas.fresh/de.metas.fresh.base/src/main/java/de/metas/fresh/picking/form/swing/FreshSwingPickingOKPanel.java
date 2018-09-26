@@ -60,10 +60,10 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.legacy.form.PackingItemGroupingKey;
-import de.metas.picking.legacy.form.ShipmentScheduleQtyPickedMap;
-import de.metas.picking.service.FreshPackingItemHelper;
+import de.metas.picking.service.PackingItems;
+import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemGroupingKey;
+import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
@@ -140,7 +140,34 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	}
 
 	@Override
-	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
+	protected AbstractPackageTerminal createPackingTerminal(final IPackingDetailsModel detailsModel)
+	{
+		Check.assumeInstanceOf(detailsModel, FreshPackingDetailsMd.class, "detailsModel");
+		final FreshPackingDetailsMd packingDetailsModel = (FreshPackingDetailsMd)detailsModel;
+
+		final FreshSwingPackageTerminal packageTerminal = new FreshSwingPackageTerminal(this, packingDetailsModel);
+		return packageTerminal;
+	}
+
+	@Override
+	public IPackingDetailsModel createPackingDetailsModel(final List<OlAndSched> olsAndScheds)
+	{
+		if (olsAndScheds.isEmpty())
+		{
+			logger.warn("Nothing to pack (1)");
+		}
+
+		final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds);
+		if (unallocatedLines.isEmpty())
+		{
+			logger.warn("Nothing to pack (2)");
+			return null;
+		}
+
+		return new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
+	}
+
+	private Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
 	{
 		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
 
@@ -159,7 +186,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 					sched,
 					Quantity.of(qtyToDeliverTarget, shipmentScheduleBL.getUomOfProduct(sched)));
 
-			final IPackingItem newItem = FreshPackingItemHelper.create(schedWithQty);
+			final IPackingItem newItem = PackingItems.newPackingItem(schedWithQty);
 			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
 			if (existingItem != null)
 			{
@@ -172,28 +199,6 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 		}
 
 		return ImmutableList.copyOf(packingItems.values());
-	}
-
-	@Override
-	protected AbstractPackageTerminal createPackingTerminal(final IPackingDetailsModel detailsModel)
-	{
-		Check.assumeInstanceOf(detailsModel, FreshPackingDetailsMd.class, "detailsModel");
-		final FreshPackingDetailsMd packingDetailsModel = (FreshPackingDetailsMd)detailsModel;
-
-		final FreshSwingPackageTerminal packageTerminal = new FreshSwingPackageTerminal(this, packingDetailsModel);
-		return packageTerminal;
-	}
-
-	@Override
-	public IPackingDetailsModel createPackingDetailsModel(final Collection<IPackingItem> unallocatedLines)
-	{
-		if (unallocatedLines.isEmpty())
-		{
-			logger.warn("Nothing to pack");
-			return null;
-		}
-
-		return new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
 	}
 
 	@Override

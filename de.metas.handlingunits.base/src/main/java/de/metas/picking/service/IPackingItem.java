@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.picking.service;
 
 import java.util.List;
 import java.util.Set;
@@ -9,13 +9,14 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.fresh.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -35,6 +36,12 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
+/**
+ * You can obtain an instance via {@link PackingItems#newPackingItem(java.util.Map)}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IPackingItem
 {
 	boolean isSameAs(IPackingItem item);
@@ -54,6 +61,18 @@ public interface IPackingItem
 	I_C_UOM getC_UOM();
 
 	Quantity getQtySum();
+
+	/**
+	 * For this item, return the open quantity to be packed for the given {@code sched}.
+	 * 
+	 * @param sched
+	 * @return
+	 */
+	Quantity getQtyForSched(I_M_ShipmentSchedule sched);
+
+	List<I_M_ShipmentSchedule> getShipmentSchedules();
+
+	HUPIItemProductId getHUPIItemProductId();
 
 	/**
 	 * Clears current schedules and set them from given <code>packingItem</code>.
@@ -81,14 +100,4 @@ public interface IPackingItem
 	IPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 
 	ShipmentScheduleQtyPickedMap getQtys();
-
-	/**
-	 * For this item, return the open quantity to be packed for the given {@code sched}.
-	 * 
-	 * @param sched
-	 * @return
-	 */
-	Quantity getQtyForSched(I_M_ShipmentSchedule sched);
-
-	List<I_M_ShipmentSchedule> getShipmentSchedules();
 }

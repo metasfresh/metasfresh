@@ -67,9 +67,9 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.MvcMdGenForm;
 import de.metas.picking.legacy.form.PackingMd;
@@ -332,9 +332,9 @@ public abstract class SwingPickingOKPanel extends PackingPanel implements Pickin
 	private ITerminalContextReferences packageTerminalRefs;
 
 	@Override
-	protected final void executePacking(final Collection<IPackingItem> unallocatedLines)
+	protected void executePacking(final List<OlAndSched> olsAndScheds)
 	{
-		final IPackingDetailsModel detailsModel = createPackingDetailsModel(unallocatedLines);
+		final IPackingDetailsModel detailsModel = createPackingDetailsModel(olsAndScheds);
 
 		//
 		// Cleanup old Package Terminal (if any)
@@ -365,15 +365,9 @@ public abstract class SwingPickingOKPanel extends PackingPanel implements Pickin
 		setEnabled(false);
 	}
 
-	protected IPackingDetailsModel createPackingDetailsModel(Collection<IPackingItem> unallocatedLines)
-	{
-		throw new UnsupportedOperationException();
-	}
+	protected abstract IPackingDetailsModel createPackingDetailsModel(List<OlAndSched> olsAndScheds);
 
-	protected AbstractPackageTerminal createPackingTerminal(final IPackingDetailsModel detailsModel)
-	{
-		throw new UnsupportedOperationException();
-	}
+	protected abstract AbstractPackageTerminal createPackingTerminal(IPackingDetailsModel detailsModel);
 
 	/**
 	 * Called when Package Terminal was closed

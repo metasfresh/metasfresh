@@ -1,6 +1,5 @@
 package de.metas.picking.legacy.form;
 
-import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +21,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.Msg;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -34,8 +32,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.process.IADPInstanceDAO;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,8 +47,6 @@ public abstract class PackingPanel extends MvcGenForm
 
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-	private static final String PROP_INFO_TEXT = "infoText";
 
 	private final Properties ctx;
 
@@ -74,7 +68,7 @@ public abstract class PackingPanel extends MvcGenForm
 		return super.getModel();
 	}
 
-	protected abstract void executePacking(Collection<IPackingItem> unallocatedLines);
+	protected abstract void executePacking(List<OlAndSched> olsAndScheds);
 
 	public void dynInit() throws Exception
 	{
@@ -88,10 +82,7 @@ public abstract class PackingPanel extends MvcGenForm
 		{
 			getModel().setWarehouseId(loginWarehouse);
 
-			final IPackingView view = (IPackingView)getView();
-			view.setSelectedWarehouseId(loginWarehouse.getRepoId());
 			executeQuery();
-			view.focusOnNextOneButton();
 		}
 	}
 
@@ -204,13 +195,12 @@ public abstract class PackingPanel extends MvcGenForm
 
 		try
 		{
-			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds);
-			executePacking(unallocatedLines);
+			executePacking(olsAndScheds);
 		}
-		catch (final Throwable t)
+		catch (final Throwable ex)
 		{
 			unlockShipmentSchedules();
-			throw new AdempiereException(t.getLocalizedMessage(), t);
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 
 		// related to https://github.com/metasfresh/metasfresh/issues/456
@@ -255,11 +245,6 @@ public abstract class PackingPanel extends MvcGenForm
 		return olsAndScheds;
 	}
 
-	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	/**
 	 * Unlock all shipment schedules which were locked in {@link #createPackingDetails(Properties, int)}
 	 */
@@ -277,23 +262,6 @@ public abstract class PackingPanel extends MvcGenForm
 					updateOnlyLocked,
 					localTrxName);
 		});
-	}
-
-	@Override
-	public void unlockUI(final ProcessInfo pi)
-	{
-		super.unlockUI(pi);
-
-		final ProcessExecutionResult result = pi.getResult();
-		final StringBuilder iText = new StringBuilder();
-		iText.append("<b>") //
-				.append(result.getSummary()) //
-				.append("</b><br>(") //
-				.append(Msg.getMsg(ctx, "Belegerstellung")) //
-				.append(")<br>") //
-				.append(result.getLogInfo(true));
-
-		getView().modelPropertyChange(new PropertyChangeEvent(this, PROP_INFO_TEXT, null, iText.toString()));
 	}
 
 	protected abstract RowIndexes getSelectedRows();

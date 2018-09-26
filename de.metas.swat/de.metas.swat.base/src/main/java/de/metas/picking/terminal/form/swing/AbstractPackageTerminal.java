@@ -26,15 +26,12 @@ package de.metas.picking.terminal.form.swing;
  */
 
 import java.awt.Dimension;
-import java.math.BigDecimal;
 
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.PickingOKPanel;
 import lombok.NonNull;
 
@@ -63,8 +60,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	{
 		return panel;
 	}
-
-	private PackingItemsMap packItems;
 
 	public AbstractPackageTerminal(
 			@NonNull final SwingPickingOKPanel pickingOKPanel,
@@ -155,24 +150,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 
 		return (FormFrame)pickingOKPanel.getPickingFrame();
 	}
-
-	public final PackingItemsMap getPackingItems()
-	{
-		return packItems;
-	}
-
-	protected final void setPackingItems(PackingItemsMap packItems)
-	{
-		this.packItems = packItems;
-	}
-
-	/**
-	 * gets the number of unpacked item fot a certain product
-	 *
-	 * @param pck
-	 * @return
-	 */
-	abstract public BigDecimal getQtyUnpacked(IPackingItem pck);
 
 	abstract public AbstractPackageTerminalPanel createPackageTerminalPanel();
 }

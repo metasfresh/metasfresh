@@ -3,7 +3,6 @@ package de.metas.picking.service;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.picking.api.PickingSlotId;
-import de.metas.picking.legacy.form.IPackingItem;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

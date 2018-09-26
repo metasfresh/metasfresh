@@ -1,11 +1,7 @@
 package de.metas.picking.service;
 
-import java.util.function.Predicate;
-
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.IPackingItem;
-import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -30,18 +26,19 @@ import de.metas.quantity.Quantity;
  */
 
 /**
- * You can obtain an instance via {@link FreshPackingItemHelper#create(java.util.Map)}.
+ * Helper class used to manage {@link IPackingItem} instances.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface IFreshPackingItem extends IPackingItem
+@UtilityClass
+public final class PackingItems
 {
-	@Override
-	IFreshPackingItem copy();
-
-	HUPIItemProductId getHUPIItemProductId();
-
-	@Override
-	IFreshPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
+	/**
+	 * @return a new {@link TransactionalPackingItem} from the given map.
+	 */
+	public static IPackingItem newPackingItem(@NonNull final ShipmentScheduleQtyPickedMap scheds2Qtys)
+	{
+		return new TransactionalPackingItem(scheds2Qtys);
+	}
 }

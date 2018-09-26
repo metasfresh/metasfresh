@@ -13,31 +13,6 @@
  *****************************************************************************/
 package de.metas.picking.legacy.form;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.beans.PropertyChangeEvent;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.IMiniTable;
 import org.slf4j.Logger;
@@ -62,8 +37,6 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 	
 	private static final Logger logger = LogManager.getLogger(MvcGenForm.class);
 
-	private IFormView view;
-
 	private MvcMdGenForm model;
 
 	protected abstract void configureMiniTable(IMiniTable miniTable);
@@ -78,11 +51,6 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 
 	public void executeQuery() {
 
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends IFormView> T getView() {
-		return (T) view;
 	}
 
 	public void setModel(final MvcMdGenForm model)
@@ -112,8 +80,6 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 	public void lockUI(ProcessInfo pi) {
 
 		//c.ghita@metas.ro : need this for new picking/package
-		if (getView() != null)
-			getView().modelPropertyChange(new PropertyChangeEvent(this, PROP_UI_LOCKED, getModel().uiLocked, true));
 		getModel().uiLocked = true;
 	}
 
@@ -121,8 +87,6 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 	public void unlockUI(ProcessInfo pi) {
 
 		//c.ghita@metas.ro : need this for new picking/package
-		if (getView() != null)
-			getView().modelPropertyChange(new PropertyChangeEvent(this, PROP_UI_LOCKED, getModel().uiLocked, false));
 		getModel().uiLocked = false;
 	}
 
