@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.uom.UomId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
@@ -115,6 +116,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @return
 	 */
 	I_C_UOM getUomOfProduct(I_M_ShipmentSchedule sched);
+	
+	UomId getUomIdOfProduct(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Evaluates if the given shipment schedule's order and effective bPartner allow that different orders' schedules to go into one and the same shipment.

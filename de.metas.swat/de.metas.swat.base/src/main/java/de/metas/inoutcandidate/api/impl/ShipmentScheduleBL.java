@@ -50,6 +50,7 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.OrgId;
+import org.adempiere.uom.UomId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -864,6 +865,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		return productBL.getStockingUOM(sched.getM_Product_ID());
+	}
+
+	@Override
+	public UomId getUomIdOfProduct(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockingUOMId(sched.getM_Product_ID());
 	}
 
 	@Override
