@@ -41,10 +41,8 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.OrderId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -153,15 +151,4 @@ public class ContractsDAO implements IContractsDAO
 		return subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
 	}
 	
-	@Override
-	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addNotNull(I_C_OrderLine.COLUMN_C_Flatrate_Conditions_ID)
-				.create()
-				.match();
-	}
 }

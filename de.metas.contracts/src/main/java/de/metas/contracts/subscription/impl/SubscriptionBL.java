@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -86,6 +87,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
+import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.pricing.IPricingResult;
@@ -100,7 +102,6 @@ import lombok.NonNull;
 
 public class SubscriptionBL implements ISubscriptionBL
 {
-	private static final String ERR_NEW_CONDITIONS_PRICE_MISSING_1P = "de.metas.flatrate.NewConditions.Price_Missing";
 	private static final String SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS = "C_Flatrate_Term.Create_SubscriptionProgressInPastDays";
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
@@ -111,9 +112,6 @@ public class SubscriptionBL implements ISubscriptionBL
 			final boolean completeIt)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 
 		final I_C_Flatrate_Conditions cond = ol.getC_Flatrate_Conditions();
 
@@ -143,12 +141,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setDropShip_Location_ID(ol.getC_BPartner_Location_ID());
 		newTerm.setDropShip_User_ID(ol.getAD_User_ID());
 
-		final String wcData = I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID + "=?";
-		I_C_Flatrate_Data existingData = new Query(ctx, I_C_Flatrate_Data.Table_Name, wcData, trxName)
-				.setParameters(order.getBill_BPartner_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.firstOnly(I_C_Flatrate_Data.class);
+		I_C_Flatrate_Data existingData = fetchFlatrateData(ol, order);
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Data.class, ol);
@@ -181,7 +174,23 @@ public class SubscriptionBL implements ISubscriptionBL
 			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
 
+		final I_C_Flatrate_Term originalTerm = retrieveCorrespondingFlatrateTerm(newTerm);
+		originalTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
+		save(originalTerm);
+		
 		return newTerm;
+	}
+
+	private I_C_Flatrate_Data fetchFlatrateData(final I_C_OrderLine ol, final I_C_Order order)
+	{
+		I_C_Flatrate_Data existingData = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Data.class, ol)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, order.getBill_BPartner_ID())
+				.addOnlyContextClient()
+				.create()
+				.firstOnly(I_C_Flatrate_Data.class);
+		return existingData;
 	}
 
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -910,5 +919,25 @@ public class SubscriptionBL implements ISubscriptionBL
 		Services.get(IWFExecutionFactory.class).notifyActivityPerformed(olCand, newTerm); // 03745
 
 		return newTerm;
+	}
+
+	private I_C_Flatrate_Term retrieveCorrespondingFlatrateTerm(@NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final OrderId oringinalOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
+		
+		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
+		final OrderId orderId = subscriptionDAO.retrieveOriginalOrder(oringinalOrderId);
+		if (orderId == null)
+		{
+			return null;
+		}
+		
+		final List<I_C_Flatrate_Term> orderTerms = subscriptionDAO.retrieveFlatrateTerms(orderId);  
+		final Optional<I_C_Flatrate_Term> suitableTerm = orderTerms
+											.stream()
+											.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID())
+											.findFirst();
+		
+		return suitableTerm.orElse(null);
 	}
 }
