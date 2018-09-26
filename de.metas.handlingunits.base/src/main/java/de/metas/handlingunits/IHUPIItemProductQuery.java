@@ -26,6 +26,7 @@ import java.util.Date;
 
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 
 /**
  * Query VO to be used when filtering on {@link I_M_HU_PI_Item_Product}.
@@ -42,6 +43,11 @@ public interface IHUPIItemProductQuery
 	int getM_Product_ID();
 
 	void setM_Product_ID(final int productId);
+
+	default void setProductId(final ProductId productId)
+	{
+		setM_Product_ID(ProductId.toRepoId(productId));
+	}
 
 	int getC_BPartner_ID();
 
