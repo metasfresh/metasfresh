@@ -26,6 +26,7 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_Or
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -71,6 +72,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -276,6 +278,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public <T extends I_M_ShipmentSchedule> T getById(@NonNull final ShipmentScheduleId id, @NonNull final Class<T> modelClass)
 	{
 		return load(id, modelClass);
+	}
+
+	@Override
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		final List<I_M_ShipmentSchedule> shipmentSchedules = loadByRepoIdAwaresOutOfTrx(ids, I_M_ShipmentSchedule.class);
+		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
 	}
 
 	@Override
@@ -1334,15 +1343,15 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.delete();
 		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
 	}
-	
+
 	@Override
 	public Set<ProductId> getProductIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		if(shipmentScheduleIds.isEmpty())
+		if (shipmentScheduleIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)

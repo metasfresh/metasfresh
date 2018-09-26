@@ -25,6 +25,7 @@ package de.metas.picking.legacy.form;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -33,7 +34,7 @@ import lombok.NonNull;
 @Builder(toBuilder = true)
 public class TableRow
 {
-	private final int shipmentScheduleId;
+	private final ShipmentScheduleId shipmentScheduleId;
 
 	private final int bpartnerId;
 	private final String bpartnerValue;

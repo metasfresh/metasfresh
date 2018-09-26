@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.ListSelectionModel;
 
@@ -41,6 +40,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -58,6 +58,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.PackingItemGroupingKey;
@@ -78,6 +79,8 @@ import de.metas.util.Services;
  */
 public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 {
+	private static final Logger logger = LogManager.getLogger(FreshSwingPickingOKPanel.class);
+
 	/**
 	 * Existing AD_Message (created in 2003) with EntityType='D'. German message text is "Fehler".
 	 */
@@ -182,20 +185,15 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	}
 
 	@Override
-	public IPackingDetailsModel createPackingDetailsModel(
-			final Properties ctx,
-			final int[] rows_NOTUSED,
-			final Collection<IPackingItem> unallocatedLines)
+	public IPackingDetailsModel createPackingDetailsModel(final Collection<IPackingItem> unallocatedLines)
 	{
 		if (unallocatedLines.isEmpty())
 		{
+			logger.warn("Nothing to pack");
 			return null;
 		}
 
-		final IPackingDetailsModel detailsModel = new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
-
-		executePacking(detailsModel);
-		return detailsModel;
+		return new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
 	}
 
 	@Override

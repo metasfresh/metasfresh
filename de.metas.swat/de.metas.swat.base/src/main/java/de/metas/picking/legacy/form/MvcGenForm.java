@@ -68,8 +68,6 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 
 	public abstract void configureMiniTable(IMiniTable miniTable);
 
-	public abstract void saveSelection();
-
 	public void validate() {
 
 	}

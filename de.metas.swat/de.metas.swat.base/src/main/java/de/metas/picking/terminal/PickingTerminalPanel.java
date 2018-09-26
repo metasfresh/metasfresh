@@ -128,12 +128,9 @@ public abstract class PickingTerminalPanel implements ITerminalBasePanel
 		return false;
 	}
 
-	@Override
-	public void updateInfo()
+	public void createPackingDetails()
 	{
-		pickingOKPanel.setIsPos(true);
-		pickingOKPanel.setSelection(pickingOKPanel.getSelectedScheduleIds(pickingOKPanel.getMiniTable()));
-		pickingOKPanel.createPackingDetails(getCtx(), pickingOKPanel.getSelectedRows());
+		pickingOKPanel.createPackingDetails();
 	}
 
 	@Override

@@ -31,8 +31,6 @@ public interface ITerminalBasePanel extends ITerminalPanel
 
 	public boolean isProcessed();
 
-	public void updateInfo();
-
 	@Override
 	public Properties getCtx();
 

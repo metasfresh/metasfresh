@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -34,6 +35,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
 	<T extends I_M_ShipmentSchedule> T getById(ShipmentScheduleId id, Class<T> modelClass);
+
+	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
 	/**
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>

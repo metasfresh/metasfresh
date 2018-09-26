@@ -69,10 +69,12 @@ import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
+import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.MvcMdGenForm;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.PackingPanel;
+import de.metas.picking.legacy.form.RowIndexes;
 import de.metas.picking.legacy.form.TableRow;
 import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.picking.terminal.IPackingStateProvider;
@@ -123,10 +125,10 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 				final String action = String.valueOf(evt.getNewValue());
 				if (IConfirmPanel.ACTION_OK.equals(action))
 				{
-					final ITerminalBasePanel terminalBasePanel = getTerminalBasePanel();
+					final SwingPickingTerminalPanel terminalBasePanel = getPickingTerminalPanel();
 					if (terminalBasePanel != null)
 					{
-						terminalBasePanel.updateInfo();
+						terminalBasePanel.createPackingDetails();
 					}
 				}
 				else if (IConfirmPanel.ACTION_Cancel.equals(action))
@@ -232,8 +234,6 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 
 	public SwingPickingOKPanel(final SwingPickingTerminalPanel basePanel)
 	{
-		super();
-
 		this.pickingTerminalPanel = basePanel;
 		this.pickingPanel = new PickingSubPanel(basePanel);
 
@@ -332,8 +332,10 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 	private ITerminalContextReferences packageTerminalRefs;
 
 	@Override
-	protected final void executePacking(final IPackingDetailsModel detailsModel)
+	protected final void executePacking(final Collection<IPackingItem> unallocatedLines)
 	{
+		final IPackingDetailsModel detailsModel = createPackingDetailsModel(unallocatedLines);
+
 		//
 		// Cleanup old Package Terminal (if any)
 		final AbstractPackageTerminal packageTerminalOld = this.packageTerminal;
@@ -361,6 +363,11 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 		// Disable this window
 		// NOTE: it will be enabled again onPackageTerminalClosed()
 		setEnabled(false);
+	}
+
+	protected IPackingDetailsModel createPackingDetailsModel(Collection<IPackingItem> unallocatedLines)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	protected AbstractPackageTerminal createPackingTerminal(final IPackingDetailsModel detailsModel)
@@ -648,25 +655,6 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 	}
 
 	@Override
-	public void setIsPos(boolean isPos)
-	{
-		final PackingMd model = getModel();
-		model.setPOSMode(isPos);
-	}
-
-	@Override
-	public void setSelection(Set<Integer> selection)
-	{
-		getModel().setSelection(selection);
-	}
-
-	@Override
-	public Set<Integer> getSelectedScheduleIds(IMiniTable miniTable)
-	{
-		return getModel().getSelectedScheduleIds();
-	}
-
-	@Override
 	public Set<KeyNamePair> getSelectedBPartners()
 	{
 		return getModel().getSelectedBPartners();
@@ -690,8 +678,8 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 		final StringBuilder data = new StringBuilder();
 		data.append("<html><font align='left'>");
 		final List<IDColumn> ids = new ArrayList<>();
-		final int[] rows = getSelectedRows();
-		for (final int row : rows)
+		final RowIndexes rows = getSelectedRows();
+		for (final int row : rows.toIntSet())
 		{
 			final IDColumn id = (IDColumn)getMiniTable().getValueAt(row, 0);
 			ids.add(id);
@@ -748,10 +736,10 @@ public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 	}
 
 	@Override
-	public int[] getSelectedRows()
+	public RowIndexes getSelectedRows()
 	{
 		final IMiniTable miniTable = getModel().getMiniTable();
-		return miniTable.getSelectedRows();
+		return RowIndexes.ofArray(miniTable.getSelectedRows());
 	}
 
 	/**

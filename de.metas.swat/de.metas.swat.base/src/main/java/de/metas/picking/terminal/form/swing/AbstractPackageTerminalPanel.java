@@ -16,15 +16,14 @@ package de.metas.picking.terminal.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -55,7 +54,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
@@ -304,12 +302,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	}
 
 	@Override
-	public void updateInfo()
-	{
-		// nothing to do
-	}
-
-	@Override
 	public Object getComponent()
 	{
 		return frame;
@@ -368,15 +360,5 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 				((TerminalSplitPane)split).setDividerLocation(0.25);
 			}
 		}
-	}
-
-	public ProcessExecutor processPackingDetails()
-	{
-		// TODO: drop it - https://github.com/metasfresh/metasfresh/issues/456
-		// NOTE assume this is not called
-		throw new UnsupportedOperationException();
-//
-//		final SwingPickingOKPanel pickingOKPanel = (SwingPickingOKPanel)getParent().getPickingOKPanel();
-//		return pickingOKPanel.invokeProcess(this.model);
 	}
 }

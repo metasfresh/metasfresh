@@ -120,7 +120,7 @@ public class FreshPackingMd extends PackingMd
 			key = getCreateTableRowKey(keyBuilder);
 		}
 		final TableRow row = TableRow.builder()
-				.shipmentScheduleId(shipmentScheduleId.getRepoId())
+				.shipmentScheduleId(shipmentScheduleId)
 				.qtyToDeliver(qtyToDeliver)
 				.bpartnerId(bpartnerId.getRepoId())
 				.bpartnerValue(bpartnerValue)

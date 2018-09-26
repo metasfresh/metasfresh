@@ -35,13 +35,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
@@ -51,18 +50,26 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.Msg;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Packing View
@@ -95,8 +102,6 @@ public abstract class PackingPanel extends MvcGenForm
 
 	public PackingPanel()
 	{
-		super();
-
 		this.ctx = Env.getCtx();
 		this.adPInstanceId = Services.get(IADPInstanceDAO.class).createAD_PInstance_ID(ctx);
 	}
@@ -108,14 +113,7 @@ public abstract class PackingPanel extends MvcGenForm
 		return super.getModel();
 	}
 
-	protected abstract void executePacking(IPackingDetailsModel detailsModel);
-
-	@Override
-	public void saveSelection()
-	{
-		final PackingMd model = getModel();
-		model.setSelection(model.getSelectedScheduleIds());
-	}
+	protected abstract void executePacking(Collection<IPackingItem> unallocatedLines);
 
 	public void dynInit() throws Exception
 	{
@@ -253,55 +251,32 @@ public abstract class PackingPanel extends MvcGenForm
 		miniTable.autoSize();
 	}
 
-	public final void createPackingDetails(final Properties ctx, final int[] rows)
+	public final void createPackingDetails()
 	{
-		if (rows == null || rows.length == 0)
+		final RowIndexes rows = getSelectedRows();
+		if (rows.isEmpty())
 		{
 			logger.warn("createPackingDetails: No rows");
 			return;
 		}
 
 		final PackingMd model = getModel();
-		final Collection<Integer> shipmentScheduleIds = model.getScheduleIdsForRow(rows);
-
-		if (shipmentScheduleIds.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@");
-		}
 		if (model.getWarehouseId() == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@");
 		}
 
-		final List<OlAndSched> olsAndScheds = new ArrayList<>();
-		for (final int id : shipmentScheduleIds)
-		{
-			final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.create(ctx, id, I_M_ShipmentSchedule.class, ITrx.TRXNAME_None);
-			if (sched == null)
-			{
-				continue;
-			}
-
-			final BigDecimal qtyToDeliver = Services.get(IShipmentScheduleEffectiveBL.class).getQtyToDeliver(sched);
-			if (qtyToDeliver.signum() <= 0)
-			{
-				continue;
-			}
-			final OlAndSched olAndSched = new OlAndSched(sched.getC_OrderLine(), sched);
-			olsAndScheds.add(olAndSched);
-		}
-
+		final List<OlAndSched> olsAndScheds = getOlAndCands(rows);
 		if (olsAndScheds.isEmpty())
 		{
-			logger.warn("createPackingDetails: No lines to pick for shipmentScheduleIds={}", shipmentScheduleIds);
+			logger.warn("createPackingDetails: No lines to pick for rows={}", rows);
 			return;
 		}
 
 		try
 		{
-			// prepare our "problem" description
 			final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds);
-			createPackingDetailsModel(ctx, rows, unallocatedLines);
+			executePacking(unallocatedLines);
 		}
 		catch (final Throwable t)
 		{
@@ -313,15 +288,45 @@ public abstract class PackingPanel extends MvcGenForm
 		// invokeProcess(detailsModel);
 	}
 
-	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
+	private List<OlAndSched> getOlAndCands(@NonNull final RowIndexes rows)
 	{
-		throw new UnsupportedOperationException();
+		if (rows.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final PackingMd model = getModel();
+		final Set<ShipmentScheduleId> shipmentScheduleIds = model.getScheduleIdsForRow(rows);
+		if (shipmentScheduleIds.isEmpty())
+		{
+			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@");
+		}
+
+		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+
+		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds);
+		final List<OlAndSched> olsAndScheds = new ArrayList<>();
+		for (final I_M_ShipmentSchedule sched : shipmentSchedules.values())
+		{
+			final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
+			if (qtyToDeliver.signum() <= 0)
+			{
+				continue;
+			}
+
+			final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIdsOrNull(sched.getC_Order_ID(), sched.getC_OrderLine_ID());
+			final I_C_OrderLine salesOrderLine = salesOrderLineId != null ? ordersRepo.getOrderLineById(salesOrderLineId) : null;
+
+			final OlAndSched olAndSched = new OlAndSched(salesOrderLine, sched);
+			olsAndScheds.add(olAndSched);
+		}
+
+		return olsAndScheds;
 	}
 
-	protected IPackingDetailsModel createPackingDetailsModel(
-			final Properties ctx,
-			final int[] rows,
-			final Collection<IPackingItem> unallocatedLines)
+	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -329,7 +334,7 @@ public abstract class PackingPanel extends MvcGenForm
 	/**
 	 * Unlock all shipment schedules which were locked in {@link #createPackingDetails(Properties, int)}
 	 */
-	protected void unlockShipmentSchedules()
+	protected final void unlockShipmentSchedules()
 	{
 		final int adUserId = Env.getAD_User_ID(ctx);
 
@@ -361,6 +366,8 @@ public abstract class PackingPanel extends MvcGenForm
 
 		getView().modelPropertyChange(new PropertyChangeEvent(this, PROP_INFO_TEXT, null, iText.toString()));
 	}
+
+	protected abstract RowIndexes getSelectedRows();
 
 	@Override
 	public abstract void initModel(MvcMdGenForm model);

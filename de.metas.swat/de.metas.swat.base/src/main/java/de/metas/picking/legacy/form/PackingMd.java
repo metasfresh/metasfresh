@@ -46,7 +46,9 @@ import org.compiere.minigrid.IMiniTable;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -55,6 +57,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.TableRowKey.TableRowKeyBuilder;
 import de.metas.shipping.ShipperId;
@@ -71,13 +74,8 @@ public class PackingMd extends MvcMdGenForm
 
 	private final int packingUserId;
 
-	// metas: c.ghita@metas.ro: use this for separating pos
-	private boolean posMode = false;
-
 	private final Map<Integer, TableRowKey> uniqueId2Key = new HashMap<>();
-
 	private final ListMultimap<TableRowKey, TableRow> rowsByKey = MultimapBuilder.hashKeys().arrayListValues().build();
-
 	private Comparator<TableRowKey> tableRowKeysComparator = null;
 	private final List<TableRowKey> keys = new ArrayList<>();
 
@@ -109,16 +107,6 @@ public class PackingMd extends MvcMdGenForm
 	{
 		super(windowNo);
 		this.packingUserId = packingUserId;
-	}
-
-	public final boolean isPOSMode()
-	{
-		return posMode;
-	}
-
-	public final void setPOSMode(final boolean posMode)
-	{
-		this.posMode = posMode;
 	}
 
 	public int getPackingUserId()
@@ -334,27 +322,15 @@ public class PackingMd extends MvcMdGenForm
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 *
-	 * @param miniTable
-	 * @return
-	 */
-	public final Set<Integer> getSelectedScheduleIds()
+	public final Set<ShipmentScheduleId> getScheduleIdsForRow(final RowIndexes rows)
 	{
-		final int[] selectedIds = getSelectedRowIndices();
-		return getScheduleIdsForRow(selectedIds);
-	}
-
-	public final Set<Integer> getScheduleIdsForRow(final int[] rows)
-	{
-		if (rows == null || rows.length == 0)
+		if (rows.isEmpty())
 		{
-			return Collections.emptySet();
+			return ImmutableSet.of();
 		}
 
 		final Collection<TableRow> selectedRows = new ArrayList<>();
-
-		for (final int row : rows)
+		for (final int row : rows.toIntSet())
 		{
 			final Collection<TableRow> currentSelectedRows = getTableRowsForRow(row);
 			if (currentSelectedRows.isEmpty())
@@ -364,12 +340,10 @@ public class PackingMd extends MvcMdGenForm
 			selectedRows.addAll(currentSelectedRows);
 		}
 
-		final Set<Integer> selectedShipmentScheduleIds = new HashSet<>();
-		for (final TableRow currentRow : selectedRows)
-		{
-			selectedShipmentScheduleIds.add(currentRow.getShipmentScheduleId());
-		}
-		return selectedShipmentScheduleIds;
+		return selectedRows.stream()
+				.map(TableRow::getShipmentScheduleId)
+				.filter(Predicates.notNull()) // shall not be needed
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
@@ -543,10 +517,6 @@ public class PackingMd extends MvcMdGenForm
 		rowsByKey.clear();
 		uniqueId2Key.clear();
 		keys.clear();
-		if (getSelection() != null)
-		{
-			getSelection().clear();
-		}
 	}
 
 	public void addTableRow(final TableRow row)
@@ -628,7 +598,7 @@ public class PackingMd extends MvcMdGenForm
 		// final String deliveryViaName = item.getDeliveryViaName();
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final LocalDateTime deliveryDate = item.getDeliveryDate(); // 01676
-		final int shipmentScheduleId = item.getShipmentScheduleId().getRepoId();
+		final ShipmentScheduleId shipmentScheduleId = item.getShipmentScheduleId();
 		final String bpartnerValue = item.getCustomerBPValue();
 		final String bpartnerName = item.getCustomerName();
 		final String bPartnerLocationName = item.getCustomerBPLocationName();
