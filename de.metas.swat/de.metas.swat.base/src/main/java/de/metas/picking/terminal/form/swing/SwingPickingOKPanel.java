@@ -67,7 +67,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
@@ -332,9 +332,9 @@ public abstract class SwingPickingOKPanel extends PackingPanel implements Pickin
 	private ITerminalContextReferences packageTerminalRefs;
 
 	@Override
-	protected void executePacking(final List<OlAndSched> olsAndScheds)
+	protected void executePacking(final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final IPackingDetailsModel detailsModel = createPackingDetailsModel(olsAndScheds);
+		final IPackingDetailsModel detailsModel = createPackingDetailsModel(shipmentScheduleIds);
 
 		//
 		// Cleanup old Package Terminal (if any)
@@ -365,7 +365,7 @@ public abstract class SwingPickingOKPanel extends PackingPanel implements Pickin
 		setEnabled(false);
 	}
 
-	protected abstract IPackingDetailsModel createPackingDetailsModel(List<OlAndSched> olsAndScheds);
+	protected abstract IPackingDetailsModel createPackingDetailsModel(Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	protected abstract AbstractPackageTerminal createPackingTerminal(IPackingDetailsModel detailsModel);
 

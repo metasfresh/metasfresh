@@ -253,9 +253,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 
 	public WarehouseId getSelectedWarehouseId()
 	{
-		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
-		final PackingMd model = pickingOKPanel.getModel();
-		return model.getWarehouseId();
+		return getPickingOKPanel().getWarehouseId();
 	}
 
 	private Set<BPartnerId> getSelectedBPartnerIds()

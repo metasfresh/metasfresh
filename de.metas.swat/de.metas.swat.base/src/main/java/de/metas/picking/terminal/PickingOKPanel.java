@@ -6,6 +6,7 @@ package de.metas.picking.terminal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.util.KeyNamePair;
 
@@ -21,6 +22,8 @@ import de.metas.picking.legacy.form.RowIndexes;
 public interface PickingOKPanel extends IDisposable
 {
 	PackingMd getModel();
+	
+	WarehouseId getWarehouseId();
 
 	/**
 	 * Retrieve BPartner IDs from selected picking lines

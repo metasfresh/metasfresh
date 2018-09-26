@@ -28,9 +28,7 @@ package de.metas.fresh.picking.form.swing;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ListSelectionModel;
 
@@ -40,8 +38,6 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
@@ -53,19 +49,14 @@ import de.metas.fresh.picking.form.FreshPackingMdLinesComparator;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminal;
 import de.metas.fresh.picking.form.FreshSwingPickingMiniTableColorProvider;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.service.IPackingItem;
-import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItems;
-import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -148,52 +139,18 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	}
 
 	@Override
-	public IPackingDetailsModel createPackingDetailsModel(final List<OlAndSched> olsAndScheds)
+	public IPackingDetailsModel createPackingDetailsModel(final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		if (olsAndScheds.isEmpty())
-		{
-			logger.warn("Nothing to pack (1)");
-		}
+		Check.assumeNotEmpty(shipmentScheduleIds, "shipmentScheduleIds is not empty");
 
-		final Collection<IPackingItem> unallocatedLines = createUnallocatedLines(olsAndScheds);
+		final Collection<IPackingItem> unallocatedLines = PackingItems.createPackingItems(shipmentScheduleIds);
 		if (unallocatedLines.isEmpty())
 		{
-			logger.warn("Nothing to pack (2)");
+			logger.warn("Nothing to pack");
 			return null;
 		}
 
 		return new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
-	}
-
-	private Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
-	{
-		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
-
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		for (final OlAndSched oldAndSched : olsAndScheds)
-		{
-			final I_M_ShipmentSchedule sched = oldAndSched.getSched();
-			final Quantity qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(sched);
-
-			// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
-			// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
-			// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-			final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(sched, qtyToDeliverTarget);
-
-			final IPackingItem newItem = PackingItems.newPackingItem(schedWithQty);
-			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
-			if (existingItem != null)
-			{
-				existingItem.addSchedules(newItem);
-			}
-			else
-			{
-				packingItems.put(newItem.getGroupingKey(), newItem);
-			}
-		}
-
-		return ImmutableList.copyOf(packingItems.values());
 	}
 
 	@Override

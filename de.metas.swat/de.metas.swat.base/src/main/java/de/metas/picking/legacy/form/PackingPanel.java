@@ -1,10 +1,8 @@
 package de.metas.picking.legacy.form;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -18,21 +16,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.form.IClientUI;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderAndLineId;
 import de.metas.process.IADPInstanceDAO;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -69,7 +57,7 @@ public abstract class PackingPanel extends MvcGenForm
 		return super.getModel();
 	}
 
-	protected abstract void executePacking(List<OlAndSched> olsAndScheds);
+	protected abstract void executePacking(Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	public void dynInit() throws Exception
 	{
@@ -181,22 +169,20 @@ public abstract class PackingPanel extends MvcGenForm
 			return;
 		}
 
-		final PackingMd model = getModel();
-		if (model.getWarehouseId() == null)
+		if (getWarehouseId() == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@");
 		}
 
-		final List<OlAndSched> olsAndScheds = getOlAndCands(rows);
-		if (olsAndScheds.isEmpty())
+		final Set<ShipmentScheduleId> shipmentScheduleIds = getShipmentScheduleIds(rows);
+		if (shipmentScheduleIds.isEmpty())
 		{
-			logger.warn("createPackingDetails: No lines to pick for rows={}", rows);
-			return;
+			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@");
 		}
 
 		try
 		{
-			executePacking(olsAndScheds);
+			executePacking(shipmentScheduleIds);
 		}
 		catch (final Throwable ex)
 		{
@@ -208,42 +194,14 @@ public abstract class PackingPanel extends MvcGenForm
 		// invokeProcess(detailsModel);
 	}
 
-	private List<OlAndSched> getOlAndCands(@NonNull final RowIndexes rows)
+	public WarehouseId getWarehouseId()
 	{
-		if (rows.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+		return getModel().getWarehouseId();
+	}
 
-		final PackingMd model = getModel();
-		final Set<ShipmentScheduleId> shipmentScheduleIds = model.getScheduleIdsForRow(rows);
-		if (shipmentScheduleIds.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_ShipmentSchedule_ID@");
-		}
-
-		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-
-		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds);
-		final List<OlAndSched> olsAndScheds = new ArrayList<>();
-		for (final I_M_ShipmentSchedule sched : shipmentSchedules.values())
-		{
-			final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(sched);
-			if (qtyToDeliver.signum() <= 0)
-			{
-				continue;
-			}
-
-			final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIdsOrNull(sched.getC_Order_ID(), sched.getC_OrderLine_ID());
-			final I_C_OrderLine salesOrderLine = salesOrderLineId != null ? ordersRepo.getOrderLineById(salesOrderLineId) : null;
-
-			final OlAndSched olAndSched = new OlAndSched(salesOrderLine, sched);
-			olsAndScheds.add(olAndSched);
-		}
-
-		return olsAndScheds;
+	private Set<ShipmentScheduleId> getShipmentScheduleIds(@NonNull final RowIndexes rows)
+	{
+		return getModel().getScheduleIdsForRow(rows);
 	}
 
 	/**
