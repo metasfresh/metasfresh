@@ -489,7 +489,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return null;
 		}
 
-		final int uomSourceId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final int uomSourceId = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
 		final int uomDestId = uomDest.getC_UOM_ID();
 
 		//
@@ -542,7 +542,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		final int uomSourceId = uomSource.getC_UOM_ID();
-		final int uomDestId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final int uomDestId = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
 
 		//
 		// Iterate through rates and try finding the best match

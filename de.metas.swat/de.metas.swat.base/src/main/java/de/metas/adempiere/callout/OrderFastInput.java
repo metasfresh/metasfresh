@@ -34,6 +34,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.UomId;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
@@ -273,8 +274,8 @@ public class OrderFastInput extends CalloutEngine
 		if (ol.getC_UOM_ID() <= 0 && ol.getM_Product_ID() > 0)
 		{
 			// the builders did provide a product, but no UOM, so we take the product's stocking UOM
-			final int stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
-			ol.setC_UOM_ID(stockingUOMId);
+			final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
+			ol.setC_UOM_ID(stockingUOMId.getRepoId());
 		}
 
 		// start: cg: 01717

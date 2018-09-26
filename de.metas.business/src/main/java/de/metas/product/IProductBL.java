@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
@@ -130,14 +131,14 @@ public interface IProductBL extends ISingletonService
 		return getStockingUOM(productId.getRepoId());
 	}
 
-	default int getStockingUOMId(@NonNull final ProductId productId)
+	default UomId getStockingUOMId(@NonNull final ProductId productId)
 	{
 		return getStockingUOMId(productId.getRepoId());
 	}
 
-	default int getStockingUOMId(final int productId)
+	default UomId getStockingUOMId(final int productId)
 	{
-		return getStockingUOM(productId).getC_UOM_ID();
+		return UomId.ofRepoId(getStockingUOM(productId).getC_UOM_ID());
 	}
 
 	/**

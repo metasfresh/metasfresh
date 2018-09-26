@@ -27,12 +27,15 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.uom.UomId;
+
 import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Result of a pricing calculation
@@ -54,6 +57,11 @@ public interface IPricingResult
 	int getPrice_UOM_ID();
 
 	void setPrice_UOM_ID(int uomId);
+
+	default void setPriceUomId(@NonNull final UomId uomId)
+	{
+		setPrice_UOM_ID(uomId.getRepoId());
+	}
 
 	BigDecimal getPriceList();
 
