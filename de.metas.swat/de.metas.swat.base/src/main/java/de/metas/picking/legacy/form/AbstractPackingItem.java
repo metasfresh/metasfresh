@@ -3,29 +3,6 @@
  */
 package de.metas.picking.legacy.form;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +11,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
@@ -65,7 +40,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 	private final PackingItemGroupingKey groupingKey;
 	private I_M_Product product; // lazy
 	private final I_C_UOM uom;
-	private BigDecimal weightSingle;
 
 	/**
 	 * See {@link #AbstractPackingItem(Map, int)}.
@@ -114,7 +88,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 			groupingKey = copyFromItem.groupingKey;
 			product = copyFromItem.product;
 			uom = copyFromItem.uom;
-			weightSingle = copyFromItem.weightSingle;
 		}
 		else
 		{
@@ -135,7 +108,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		// this.groupingKey = itemCasted.groupingKey;
 		product = itemCasted.product;
 		// this.uom = itemCasted.uom;
-		weightSingle = itemCasted.weightSingle;
 	}
 
 	/**
@@ -234,42 +206,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 			@NonNull final Quantity qty)
 	{
 		sched2qty.setQtyForSched(sched, qty);
-	}
-
-	@Override
-	public final BigDecimal retrieveWeightSingle()
-	{
-		if (weightSingle == null)
-		{
-			final I_M_Product product = getM_Product();
-			weightSingle = product.getWeight();
-		}
-		return weightSingle;
-	}
-
-	@Override
-	public final BigDecimal computeWeightInProductUOM()
-	{
-		BigDecimal computedWeight = BigDecimal.ZERO;
-
-		final BigDecimal weightPerUnit = retrieveWeightSingle();
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		for (final I_M_ShipmentSchedule sched : getShipmentSchedules())
-		{
-			final Quantity qtyForSched = getQtyForSched(sched);
-			final BigDecimal qtyInProductUOM = uomConversionBL
-					.convertQtyToProductUOM(UOMConversionContext.of(getProductId()), qtyForSched.getAsBigDecimal(), qtyForSched.getUOM());
-			computedWeight = computedWeight.add(weightPerUnit.multiply(qtyInProductUOM));
-		}
-		return computedWeight;
-	}
-
-	@Override
-	public final Quantity retrieveVolumeSingle()
-	{
-		final I_M_Product product = getM_Product();
-		return Quantity.of(product.getVolume(), product.getC_UOM());
 	}
 
 	@Override
@@ -473,12 +409,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 		}
 
 		return PackingItemGroupingKey.equals(groupingKey, computeGroupingKey(schedToAdd));
-	}
-
-	@Override
-	public final void setWeightSingle(final BigDecimal piWeightSingle)
-	{
-		weightSingle = piWeightSingle;
 	}
 
 	@Override

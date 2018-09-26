@@ -1,6 +1,5 @@
 package de.metas.picking.legacy.form;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
@@ -42,8 +41,6 @@ public interface IPackingItem
 
 	PackingItemGroupingKey getGroupingKey();
 
-	void setWeightSingle(BigDecimal piWeightSingle);
-
 	/**
 	 * Clears current schedules and set them from given <code>packingItem</code>.
 	 */
@@ -76,12 +73,6 @@ public interface IPackingItem
 	ProductId getProductId();
 
 	I_M_Product getM_Product();
-
-	Quantity retrieveVolumeSingle();
-
-	BigDecimal computeWeightInProductUOM();
-
-	BigDecimal retrieveWeightSingle();
 
 	void setQtyForSched(I_M_ShipmentSchedule sched, Quantity qty);
 

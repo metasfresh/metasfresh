@@ -1,6 +1,5 @@
 package de.metas.picking.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -69,12 +68,6 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	public PackingItemGroupingKey getGroupingKey()
 	{
 		return getDelegate().getGroupingKey();
-	}
-
-	@Override
-	public void setWeightSingle(final BigDecimal piWeightSingle)
-	{
-		getDelegate().setWeightSingle(piWeightSingle);
 	}
 
 	@Override
@@ -161,24 +154,6 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	public I_M_Product getM_Product()
 	{
 		return getDelegate().getM_Product();
-	}
-
-	@Override
-	public Quantity retrieveVolumeSingle()
-	{
-		return getDelegate().retrieveVolumeSingle();
-	}
-
-	@Override
-	public BigDecimal computeWeightInProductUOM()
-	{
-		return getDelegate().computeWeightInProductUOM();
-	}
-
-	@Override
-	public BigDecimal retrieveWeightSingle()
-	{
-		return getDelegate().retrieveWeightSingle();
 	}
 
 	@Override
