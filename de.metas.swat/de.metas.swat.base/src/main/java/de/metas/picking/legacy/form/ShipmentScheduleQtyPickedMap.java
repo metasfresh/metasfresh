@@ -42,7 +42,7 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
+@ToString(of = "qtys")
 @EqualsAndHashCode
 public class ShipmentScheduleQtyPickedMap
 {
