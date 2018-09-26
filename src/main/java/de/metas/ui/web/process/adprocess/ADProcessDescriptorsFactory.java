@@ -83,7 +83,7 @@ import lombok.NonNull;
 
 /**
  * Creates {@link ProcessDescriptor}s from {@link I_AD_Process} based processes
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -134,6 +134,7 @@ import lombok.NonNull;
 
 		return WebuiRelatedProcessDescriptor.builder()
 				.processId(processDescriptor.getProcessId())
+				.internalName(processDescriptor.getInternalName())
 				.processCaption(processDescriptor.getCaption())
 				.processDescription(processDescriptor.getDescription())
 				.debugProcessClassname(processDescriptor.getProcessClassname())
@@ -196,6 +197,7 @@ import lombok.NonNull;
 		// Process descriptor
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
+				.setInternalName(adProcess.getValue())
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
 				.setParametersDescriptor(parametersDescriptor)
