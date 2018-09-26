@@ -66,7 +66,7 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 
 	private MvcMdGenForm model;
 
-	public abstract void configureMiniTable(IMiniTable miniTable);
+	protected abstract void configureMiniTable(IMiniTable miniTable);
 
 	public void validate() {
 
@@ -130,5 +130,5 @@ public abstract class MvcGenForm implements IProcessExecutionListener {
 		logger.info("Doing nothing");
 	}
 
-	public abstract void initModel(MvcMdGenForm model);
+	protected abstract void initModel(MvcMdGenForm model);
 }

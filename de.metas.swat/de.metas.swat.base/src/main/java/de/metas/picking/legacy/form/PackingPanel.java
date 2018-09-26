@@ -1,35 +1,5 @@
 package de.metas.picking.legacy.form;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_DeliveryViaRule;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_Name;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
-import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Shipper_ID;
-import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Warehouse_ID;
-
 import java.beans.PropertyChangeEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -44,7 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
@@ -54,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.Msg;
-import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -81,17 +49,10 @@ public abstract class PackingPanel extends MvcGenForm
 {
 	private static final Logger logger = LogManager.getLogger(PackingPanel.class);
 
-	protected final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
-
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	// private static final String MSG_DOING_PACKAGING = "Verarbeite Kommsionierung";
-	private static final String MSG_SHIP_TO_ADDRESS = "Lieferanschrift";
-
-	public static final String PROP_M_WAREHOUSE_ID = "M_Warehouse_ID";
-
-	public static final String PROP_INFO_TEXT = "infoText";
+	private static final String PROP_INFO_TEXT = "infoText";
 
 	private final Properties ctx;
 
@@ -216,38 +177,6 @@ public abstract class PackingPanel extends MvcGenForm
 		}
 		miniTable.setRowCount(rowIdx);
 		model.setSelectedTableRowKeys(selectedTableRowKeys);
-		miniTable.autoSize();
-	}
-
-	@Override
-	public void configureMiniTable(final IMiniTable miniTable)
-	{
-
-		// create Columns
-		miniTable.addColumn(COLUMNNAME_C_BPartner_Location_ID); // ID
-		miniTable.addColumn(COLUMNNAME_Value);
-		miniTable.addColumn(COLUMNNAME_Name);
-		miniTable.addColumn(COLUMNNAME_C_BPartner_Location_ID);
-		miniTable.addColumn(COLUMNNAME_DeliveryViaRule);
-		miniTable.addColumn(COLUMNNAME_M_Shipper_ID);
-		miniTable.addColumn(COLUMNNAME_M_Warehouse_ID);
-		miniTable.addColumn(COLUMNNAME_QtyToDeliver);
-		miniTable.addColumn(X_C_Order.COLUMNNAME_FreightCostRule); // 02891
-		miniTable.setMultiSelection(false);
-
-		// set details
-		miniTable.setColumnClass(0, IDColumn.class, false, " ");
-		miniTable.setColumnClass(1, String.class, true, Msg.translate(ctx, COLUMNNAME_Value));
-		miniTable.setColumnClass(2, String.class, true, COLUMNNAME_Name);
-		miniTable.setColumnClass(3, String.class, true, MSG_SHIP_TO_ADDRESS);
-		miniTable.setColumnClass(4, String.class, true, Msg.translate(ctx, COLUMNNAME_DeliveryViaRule));
-
-		miniTable.setColumnClass(5, String.class, true, Msg.translate(ctx, COLUMNNAME_M_Shipper_ID));
-		miniTable.setColumnClass(6, String.class, true, Msg.translate(ctx, COLUMNNAME_M_Warehouse_ID));
-		miniTable.setColumnClass(7, BigDecimal.class, true, Msg.translate(ctx, COLUMNNAME_QtyToDeliver));
-		miniTable.setColumnClass(8, String.class, true, Msg.translate(ctx, COLUMNNAME_DeliveryViaRule));
-
-		//
 		miniTable.autoSize();
 	}
 
