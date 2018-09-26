@@ -5,6 +5,9 @@ import SockJs from 'sockjs-client';
 import currentDevice from 'current-device';
 import Stomp from 'stompjs/lib/stomp.min.js';
 import Moment from 'moment';
+// import { DateTime } from 'luxon';
+// import { isLuxonObject } from '../utils';
+
 import { Set } from 'immutable';
 
 import {
@@ -1256,6 +1259,7 @@ export function parseToDisplay(fieldsByName) {
 // i.e 2018-01-27T17:00:00.000-06:00
 export function parseDateWithCurrenTimezone(value) {
   if (value) {
+
     if (value instanceof Date) {
       return value;
     } else if (Moment.isMoment(value)) {
@@ -1268,8 +1272,55 @@ export function parseDateWithCurrenTimezone(value) {
       );
       return new Date(newValue);
     }
+
+    // const luxonOffset = DateTime.fromISO(value);
+
+    // console.log('offset: ', luxonOffset.offset, luxonOffset.offsetNameLong, new Date().getTimezoneOffset())
+
+    // console.log('1: ', value)
+    // if (value instanceof Date) {
+    //   console.log('A')
+    //   return value;
+    // // } else if (Moment.isMoment(value)) {
+    // } else if (isLuxonObject(value)) {
+    //   console.log('B')
+    //   return new Date(value);
+    // } else {
+    //   console.log('C')
+    //   const TIMEZONE_STRING_LENGTH = 7;
+    //   const newValue = value.substring(
+    //     0,
+    //     value.length - TIMEZONE_STRING_LENGTH
+    //   );
+    //   console.log('D: ', newValue)
+    //   return new Date(newValue);
+    // }
+    const momentOffset = Moment(value).utcOffset();
+    // const momentOffset = 
+    // console.log('A: ', b, b.utcOffset());
+    const b = Moment(value);
+    b.utcOffset(120);
+
+    return b;
   }
+  // Tue Sep 18 2018 06:00:00 GMT+0300 (Eastern European Summer Time)
+  // "Tue Sep 18 2018 06:00:00 UTC+2 +02:00"
+  // return DateTime.fromISO(value).toFormat('ccc LLL d y TT ZZZZ ZZ');
+  // const a = Moment('Tue Sep 18 2018 06:00:00 GMT+0200');
+
   return '';
+  // return value;
+  // const val = DateTime.fromISO(value).toString();
+  // const v = DateTime.fromISO(value).toJSDate();
+  
+  // return DateTime.fromISO(value).toString();
+  // // return new Date(value);
+  // // return DateTime.fromISO(value).toJSDate();
+  // return v;
+  // const bla = new Date('Feb 28 2013 19:00:00 +02:00')
+  // console.log('PARSED: ', bla, value, parseISO8601String(value));
+
+  // return new Date(value);
 }
 
 function parseDateToReadable(fieldsByName) {
