@@ -117,7 +117,7 @@ public class TransactionalFreshPackingItemSupport
 	 * @param item
 	 * @return current stateș never returns null.
 	 */
-	public synchronized IFreshPackingItem getState(final TransactionalFreshPackingItem item)
+	public synchronized FreshPackingItem getState(final TransactionalFreshPackingItem item)
 	{
 		final long id = item.getId();
 		ItemState itemState = items.get(id);
@@ -138,7 +138,7 @@ public class TransactionalFreshPackingItemSupport
 	private static final class ItemState
 	{
 		private final Reference<TransactionalFreshPackingItem> transactionalItemRef;
-		private final IFreshPackingItem state;
+		private final FreshPackingItem state;
 
 		public ItemState(final TransactionalFreshPackingItem transactionalItem)
 		{
@@ -149,7 +149,7 @@ public class TransactionalFreshPackingItemSupport
 			state = transactionalItem.createNewState();
 		}
 
-		public IFreshPackingItem getState()
+		public FreshPackingItem getState()
 		{
 			return state;
 		}

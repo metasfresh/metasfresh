@@ -1,12 +1,7 @@
 package de.metas.picking.service;
 
-import java.util.Set;
 import java.util.function.Predicate;
 
-import org.adempiere.warehouse.WarehouseId;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.legacy.form.IPackingItem;
@@ -45,20 +40,8 @@ public interface IFreshPackingItem extends IPackingItem
 	@Override
 	IFreshPackingItem copy();
 
-	BPartnerId getBPartnerId();
-
-	BPartnerLocationId getBPartnerLocationId();
-
 	HUPIItemProductId getHUPIItemProductId();
 
-	Set<WarehouseId> getWarehouseIds();
-
-	/**
-	 * Subtract the given quantity from this packing item and create a new packing item with it. Don't alter this packing item.
-	 *
-	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate may be {@code null}.
-	 * @return
-	 */
+	@Override
 	IFreshPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 }

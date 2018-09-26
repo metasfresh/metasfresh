@@ -81,15 +81,15 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	/**
 	 * Called by {@link TransactionalFreshPackingItemSupport} when the object is required in a new transaction
 	 */
-	IFreshPackingItem createNewState()
+	FreshPackingItem createNewState()
 	{
 		return root.copy();
 	}
 
 	@Override
-	protected final IFreshPackingItem getDelegate()
+	protected final FreshPackingItem getDelegate()
 	{
-		final IFreshPackingItem state = getStateOrNull();
+		final FreshPackingItem state = getStateOrNull();
 		if (state != null)
 		{
 			return state;
@@ -105,7 +105,7 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	 *         </li>or the main {@link FreshPackingItem} (i.e. the root) if there is no transaction running
 	 *         </ul>
 	 */
-	private IFreshPackingItem getStateOrNull()
+	private FreshPackingItem getStateOrNull()
 	{
 		final TransactionalFreshPackingItemSupport transactionalSupport = TransactionalFreshPackingItemSupport.getCreate();
 		if (transactionalSupport == null)
@@ -122,7 +122,7 @@ public class TransactionalFreshPackingItem extends ForwardingFreshPackingItem
 	 *
 	 * @param state
 	 */
-	public void commit(final IFreshPackingItem state)
+	public void commit(final FreshPackingItem state)
 	{
 		root.updateFrom(state);
 	}

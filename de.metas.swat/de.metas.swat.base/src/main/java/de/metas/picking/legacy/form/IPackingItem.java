@@ -1,9 +1,14 @@
 package de.metas.picking.legacy.form;
 
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -38,6 +43,12 @@ public interface IPackingItem
 
 	PackingItemGroupingKey getGroupingKey();
 
+	BPartnerId getBPartnerId();
+
+	BPartnerLocationId getBPartnerLocationId();
+
+	Set<WarehouseId> getWarehouseIds();
+
 	ProductId getProductId();
 
 	I_C_UOM getC_UOM();
@@ -60,6 +71,14 @@ public interface IPackingItem
 	 * @throws PackingItemSubtractException if required qty could not be fully subtracted
 	 */
 	ShipmentScheduleQtyPickedMap subtract(Quantity subtrahent);
+
+	/**
+	 * Subtract the given quantity from this packing item and create a new packing item with it.
+	 *
+	 * @param subtrahent
+	 * @param acceptShipmentSchedulePredicate may be {@code null}.
+	 */
+	IPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 
 	ShipmentScheduleQtyPickedMap getQtys();
 
