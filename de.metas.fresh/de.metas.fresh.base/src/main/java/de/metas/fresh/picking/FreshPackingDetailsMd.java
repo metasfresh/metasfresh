@@ -1,40 +1,14 @@
 package de.metas.fresh.picking;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
@@ -47,6 +21,7 @@ import de.metas.picking.service.IFreshPackingItem;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * 
@@ -54,33 +29,27 @@ import de.metas.util.time.SystemTime;
  */
 public class FreshPackingDetailsMd implements IPackingDetailsModel
 {
-	private final transient WeakPropertyChangeSupport pcs;
+	private final ImmutableList<IFreshPackingItem> unallocatedLines;
 
-	private final Collection<IPackingItem> unallocatedLines;
+	private final ImmutableList<PickingSlotKey> availablePickingSlots;
+	private final ImmutableList<PackingMaterialKey> availablePackingMaterialKeys;
 
-	private final List<PickingSlotKey> availablePickingSlots;
-	private final List<PackingMaterialKey> availablePackingMaterialKeys;
-
-	public FreshPackingDetailsMd(final ITerminalContext terminalContext,
+	public FreshPackingDetailsMd(
+			@NonNull final ITerminalContext terminalContext,
 			final Collection<IPackingItem> unallocatedLines)
 	{
-		super();
-
 		Check.assumeNotNull(terminalContext, "terminalContext not null");
 
-		this.pcs = terminalContext.createPropertyChangeSupport(this);
-
-		Check.assumeNotNull(unallocatedLines, "unallocatedLines not null");
-		Check.assume(!unallocatedLines.isEmpty(), "unallocatedLines not empty");
-		this.unallocatedLines = Collections.unmodifiableCollection(new ArrayList<>(unallocatedLines));
+		Check.assumeNotEmpty(unallocatedLines, "unallocatedLines not empty");
+		this.unallocatedLines = unallocatedLines.stream()
+				.map(FreshPackingItemHelper::cast)
+				.collect(ImmutableList.toImmutableList());
 
 		final Date date = SystemTime.asDayTimestamp();
 		final PackingMaterialKeyBuilder packingMaterialKeysBuilder = new PackingMaterialKeyBuilder(terminalContext, date);
 		final PickingSlotKeyBuilder pickingSlotKeysBuilder = new PickingSlotKeyBuilder(terminalContext);
-		for (final IPackingItem pi : unallocatedLines)
+		for (final IFreshPackingItem freshPackingItem : this.unallocatedLines)
 		{
-			final IFreshPackingItem freshPackingItem = FreshPackingItemHelper.cast(pi);
-
 			final ProductId productId = freshPackingItem.getProductId();
 			final BPartnerId bpartnerId = freshPackingItem.getBPartnerId();
 			final BPartnerLocationId bpartnerLocationId = freshPackingItem.getBPartnerLocationId();
@@ -114,24 +83,19 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 	 * 
 	 * @return unallocated lines (read-only collection)
 	 */
-	public Collection<IPackingItem> getUnallocatedLines()
+	public ImmutableList<IFreshPackingItem> getUnallocatedLines()
 	{
 		return unallocatedLines;
 	}
 
-	public List<PackingMaterialKey> getAvailablePackingMaterialKeys()
+	public ImmutableList<PackingMaterialKey> getAvailablePackingMaterialKeys()
 	{
-		return Collections.unmodifiableList(availablePackingMaterialKeys);
+		return availablePackingMaterialKeys;
 	}
 
-	public List<PickingSlotKey> getAvailablePickingSlots()
+	public ImmutableList<PickingSlotKey> getAvailablePickingSlots()
 	{
-		return Collections.unmodifiableList(availablePickingSlots);
-	}
-
-	public void addPropertyChangeListener(final PropertyChangeListener l)
-	{
-		pcs.addPropertyChangeListener(l);
+		return availablePickingSlots;
 	}
 
 	@Override
@@ -139,6 +103,5 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 	{
 		return ObjectUtils.toString(this);
 	}
-	
-	
+
 }

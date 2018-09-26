@@ -38,6 +38,8 @@ import org.adempiere.util.comparator.ComparableComparator;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -148,16 +150,16 @@ public class PickingSlotKeyBuilder
 		pickingSlotsKeys.put(pickingSlotId, pickingSlotKey);
 	}
 
-	public List<PickingSlotKey> getPickingSlotKeys()
+	public ImmutableList<PickingSlotKey> getPickingSlotKeys()
 	{
 		if (pickingSlotsKeys.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		final List<PickingSlotKey> result = new ArrayList<>(pickingSlotsKeys.values());
 		Collections.sort(result, pickingSlotKeysComparator);
 
-		return result;
+		return ImmutableList.copyOf(result);
 	}
 }

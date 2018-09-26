@@ -26,7 +26,7 @@ import lombok.ToString;
 @ToString
 public final class PackingItemsMap
 {
-	public static PackingItemsMap ofUnpackedItems(final Collection<IPackingItem> unpackedItems)
+	public static PackingItemsMap ofUnpackedItems(final Collection<? extends IPackingItem> unpackedItems)
 	{
 		final PackingItemsMap map = new PackingItemsMap();
 		map.addUnpackedItems(unpackedItems);

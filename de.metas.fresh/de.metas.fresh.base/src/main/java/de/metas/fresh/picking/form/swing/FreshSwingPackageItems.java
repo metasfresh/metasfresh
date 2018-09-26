@@ -498,8 +498,8 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		//
 		// Find out which are the available HUs from which we can take
 		final FreshProductKey productKey = getSelectedProduct();
-		final List<I_M_HU> availableSourceHUs = productKey.findAvailableHUs(true); // considerAttributes = true
-		availableSourceHUs.remove(targetHU); // remove target from source, just to be sure
+		final List<I_M_HU> availableHUsToPickFrom = productKey.findAvailableHUs(true); // considerAttributes = true
+		availableHUsToPickFrom.remove(targetHU); // remove target from source, just to be sure
 
 		// the allocation shall be done even if there are no source HUs
 		// Check.assumeNotEmpty(availableSourceHUs, "availableHUsSource not empty"); // shall not happen
@@ -512,7 +512,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.packedItemsSlot(getSelectedPackingSlot())
-				.fromHUs(availableSourceHUs)
+				.fromHUs(availableHUsToPickFrom)
 				.targetHU(targetHU)
 				.qtyToPack(qtyToPack)
 				.allocate();

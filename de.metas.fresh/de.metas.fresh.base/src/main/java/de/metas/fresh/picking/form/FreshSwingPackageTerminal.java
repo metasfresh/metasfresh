@@ -31,6 +31,7 @@ import java.util.Collection;
 import de.metas.fresh.picking.FreshPackingDetailsMd;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingOKPanel;
 import de.metas.picking.legacy.form.IPackingItem;
+import de.metas.picking.service.IFreshPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
@@ -49,7 +50,7 @@ public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 		super(freshSwingPickingOKPanel, packingDetailsModel);
 
 		// get packing items
-		final Collection<IPackingItem> unallocatedLines = packingDetailsModel.getUnallocatedLines();
+		final Collection<IFreshPackingItem> unallocatedLines = packingDetailsModel.getUnallocatedLines();
 		setPackingItems(PackingItemsMap.ofUnpackedItems(unallocatedLines));
 	}
 

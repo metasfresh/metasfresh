@@ -49,6 +49,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.Msg;
@@ -57,6 +58,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -70,6 +72,8 @@ import de.metas.util.Services;
  */
 public abstract class PackingPanel extends MvcGenForm
 {
+	private static final Logger logger = LogManager.getLogger(PackingPanel.class);
+
 	protected final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
@@ -253,6 +257,7 @@ public abstract class PackingPanel extends MvcGenForm
 	{
 		if (rows == null || rows.length == 0)
 		{
+			logger.warn("createPackingDetails: No rows");
 			return;
 		}
 
@@ -288,6 +293,7 @@ public abstract class PackingPanel extends MvcGenForm
 
 		if (olsAndScheds.isEmpty())
 		{
+			logger.warn("createPackingDetails: No lines to pick for shipmentScheduleIds={}", shipmentScheduleIds);
 			return;
 		}
 

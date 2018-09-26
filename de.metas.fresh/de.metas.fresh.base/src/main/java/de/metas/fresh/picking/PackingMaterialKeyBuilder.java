@@ -13,15 +13,14 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -36,6 +35,8 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -198,16 +199,16 @@ public class PackingMaterialKeyBuilder
 		return String.valueOf(piItemProduct.getM_HU_PI_Item_Product_ID());
 	}
 
-	public List<PackingMaterialKey> getPackingMaterialKeys()
+	public ImmutableList<PackingMaterialKey> getPackingMaterialKeys()
 	{
 		if (packingMaterialKeys.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		final List<PackingMaterialKey> result = new ArrayList<>(packingMaterialKeys.values());
 		Collections.sort(result, TerminalKeyByNameComparator.instance);
 
-		return result;
+		return ImmutableList.copyOf(result);
 	}
 }

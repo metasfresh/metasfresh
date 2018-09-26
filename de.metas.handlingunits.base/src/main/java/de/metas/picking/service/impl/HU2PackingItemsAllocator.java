@@ -491,22 +491,22 @@ public class HU2PackingItemsAllocator
 				packedItem -> {
 					for (final I_M_ShipmentSchedule sched : packedItem.getShipmentSchedules())
 					{
-						final Quantity qtyPicked = packedItem.getQtyForSched(sched); // qty to pack, available on current shipment schedule
+						final Quantity qtyPacked = packedItem.getQtyForSched(sched); // qty to pack, available on current shipment schedule
 						if (!allowOverDelivery)
 						{
-							validateQtyPicked(sched, qtyPicked);
+							validateQtyPicked(sched, qtyPacked);
 						}
 
-						if (qtyPicked.signum() != 0)
+						if (qtyPacked.signum() != 0)
 						{
 							// "Back" allocate the qtyPicked from VHU to given shipment schedule
-							huShipmentScheduleBL.addQtyPicked(sched, qtyPicked, vhu);
+							huShipmentScheduleBL.addQtyPicked(sched, qtyPacked, vhu);
 
 							// Transfer the qtyPicked from vhu to our target HU (if any)
-							transferQtyFromVHUToTargetHU(sched, qtyPicked, vhu);
+							transferQtyFromVHUToTargetHU(sched, qtyPacked, vhu);
 
 							// Adjust remaining Qty to be packed
-							subtractFromQtyToPackRemaining(qtyPicked);
+							subtractFromQtyToPackRemaining(qtyPacked);
 						}
 					}
 				});

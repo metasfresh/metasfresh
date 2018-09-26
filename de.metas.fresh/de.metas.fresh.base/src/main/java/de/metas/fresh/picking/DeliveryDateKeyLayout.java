@@ -35,7 +35,6 @@ import java.util.TreeSet;
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.util.Check;
 
 public class DeliveryDateKeyLayout extends DefaultKeyLayout
 {
