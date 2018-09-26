@@ -3,14 +3,14 @@
  */
 package de.metas.picking.legacy.form;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.uom.UomId;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
@@ -38,41 +38,17 @@ public abstract class AbstractPackingItem implements IPackingItem
 	private final PackingItemGroupingKey groupingKey;
 	private final I_C_UOM uom;
 
-	/**
-	 * See {@link #AbstractPackingItem(Map, int)}.
-	 *
-	 * @param scheds2Qtys
-	 */
-	protected AbstractPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
-	{
-		this(scheds2Qtys, (PackingItemGroupingKey)null);
-	}
-
-	/**
-	 *
-	 * @param scheds2Qtys this instance's {@link #getShipmentSchedules()} will return the schedules in the order they were retunred by the given map's {@link Map#entrySet()} implementation.
-	 *            So, if you care for that order, then I suggest to call this constructor with an {@link LinkedHashMap} or similar.
-	 * @param groupingKey
-	 */
-	public AbstractPackingItem(@NonNull final ShipmentScheduleQtyPickedMap sched2qtyParam, final PackingItemGroupingKey groupingKey)
+	protected AbstractPackingItem(final ShipmentScheduleQtyPickedMap sched2qtyParam)
 	{
 		Check.assume(!sched2qtyParam.isEmpty(), "scheds2Qtys not empty");
 		this.sched2qty = sched2qtyParam.copy();
 
-		final I_M_ShipmentSchedule firstSchedule = sched2qty.getFirstShipmentSchedule();
-		if (groupingKey == null)
-		{
-			this.groupingKey = computeGroupingKey(firstSchedule);
-		}
-		else
-		{
-			this.groupingKey = groupingKey;
-		}
+		this.groupingKey = sched2qty.mapReduce(AbstractPackingItem::computeGroupingKey).get();
 
-		uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(firstSchedule);
-		Check.assumeNotNull(uom, "uom not null");
-
-		assertValid();
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+		final UomId uomId = sched2qty.mapReduce(shipmentScheduleBL::getUomIdOfProduct).get();
+		uom = uomsRepo.getById(uomId);
 	}
 
 	/** Copy constructor */
@@ -103,47 +79,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 		// this.groupingKey = itemCasted.groupingKey;
 		// this.uom = itemCasted.uom;
-	}
-
-	/**
-	 * Assets that this packing item is correct.
-	 *
-	 * More precisely, checks if schedules have same UOM, same grouping key.
-	 */
-	private final void assertValid()
-	{
-		if (sched2qty.isEmpty())
-		{
-			return;
-		}
-
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		I_C_UOM uom = null;
-		PackingItemGroupingKey groupingKey = null;
-		boolean firstSched = true;
-		for (final I_M_ShipmentSchedule sched : sched2qty.getShipmentSchedules())
-		{
-			final I_C_UOM currentUOM = shipmentScheduleBL.getUomOfProduct(sched);
-			final PackingItemGroupingKey currentGroupingKey = computeGroupingKey(sched);
-			if (firstSched)
-			{
-				groupingKey = currentGroupingKey;
-				uom = currentUOM;
-				firstSched = false;
-			}
-			else
-			{
-				if (uom.getC_UOM_ID() != currentUOM.getC_UOM_ID())
-				{
-					throw new AdempiereException("schedules does not have same UOM");
-				}
-				if (!PackingItemGroupingKey.equals(groupingKey, currentGroupingKey))
-				{
-					throw new AdempiereException("schedules does not have same grouping key");
-				}
-			}
-		}
 	}
 
 	/**
