@@ -924,20 +924,21 @@ public class SubscriptionBL implements ISubscriptionBL
 	private I_C_Flatrate_Term retrieveCorrespondingFlatrateTerm(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final OrderId oringinalOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
-		
+
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 		final OrderId orderId = subscriptionDAO.retrieveOriginalOrder(oringinalOrderId);
 		if (orderId == null)
 		{
 			return null;
 		}
-		
-		final List<I_C_Flatrate_Term> orderTerms = subscriptionDAO.retrieveFlatrateTerms(orderId);  
+
+		final List<I_C_Flatrate_Term> orderTerms = subscriptionDAO.retrieveFlatrateTerms(orderId);
 		final Optional<I_C_Flatrate_Term> suitableTerm = orderTerms
-											.stream()
-											.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID())
-											.findFirst();
-		
+				.stream()
+				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
+						&& oldTerm.getC_Flatrate_Conditions_ID() == newTerm.getC_Flatrate_Conditions_ID())
+				.findFirst();
+
 		return suitableTerm.orElse(null);
 	}
 }
