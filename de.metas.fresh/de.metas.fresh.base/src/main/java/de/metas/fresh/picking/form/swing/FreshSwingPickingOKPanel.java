@@ -28,7 +28,6 @@ package de.metas.fresh.picking.form.swing;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +41,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
@@ -138,7 +139,6 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	@Override
 	protected Collection<IPackingItem> createUnallocatedLines(final List<OlAndSched> olsAndScheds)
 	{
-		final Collection<IPackingItem> unallocatedLines = new ArrayList<>();
 		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -168,7 +168,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 			}
 		}
 
-		return unallocatedLines;
+		return ImmutableList.copyOf(packingItems.values());
 	}
 
 	@Override
