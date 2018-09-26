@@ -6,7 +6,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 
-import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -17,7 +17,7 @@ import de.metas.util.Services;
 
 public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 {
-	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
 
 	@Override
 	protected String doIt()
@@ -65,7 +65,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on C_Order table");
 		}
 		
-		if (!contractsDAO.isContractSalesOrder( OrderId.ofRepoId(getRecord_ID())))
+		if (!subscriptionDAO.isContractSalesOrder( OrderId.ofRepoId(getRecord_ID())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on contract order");
 		}
