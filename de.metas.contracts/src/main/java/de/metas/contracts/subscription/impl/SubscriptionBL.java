@@ -175,8 +175,11 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final I_C_Flatrate_Term originalTerm = retrieveCorrespondingFlatrateTerm(newTerm);
-		originalTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
-		save(originalTerm);
+		if (originalTerm != null)
+		{
+			originalTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
+			save(originalTerm);			
+		}
 		
 		return newTerm;
 	}
@@ -923,10 +926,10 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	private I_C_Flatrate_Term retrieveCorrespondingFlatrateTerm(@NonNull final I_C_Flatrate_Term newTerm)
 	{
-		final OrderId oringinalOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
+		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-		final OrderId orderId = subscriptionDAO.retrieveOriginalOrder(oringinalOrderId);
+		final OrderId orderId = subscriptionDAO.retrieveOriginalOrder(currentOrderId);
 		if (orderId == null)
 		{
 			return null;

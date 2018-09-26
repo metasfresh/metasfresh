@@ -22,7 +22,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 	@Override
 	protected String doIt()
 	{
-		final I_C_Order existentOrder = InterfaceWrapperHelper.getPO(getRecord(I_C_Order.class));
+		final I_C_Order existentOrder = getRecord(I_C_Order.class);
 		final I_C_Order newOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, existentOrder);
 		
 		final PO to = InterfaceWrapperHelper.getPO(newOrder);
@@ -65,7 +65,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on C_Order table");
 		}
 		
-		if (!subscriptionDAO.isContractSalesOrder( OrderId.ofRepoId(getRecord_ID())))
+		if (!subscriptionDAO.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on contract order");
 		}
