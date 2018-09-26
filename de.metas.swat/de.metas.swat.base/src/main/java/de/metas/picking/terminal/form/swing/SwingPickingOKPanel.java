@@ -93,7 +93,7 @@ import net.miginfocom.swing.MigLayout;
  * @author cg
  *
  */
-public class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
+public abstract class SwingPickingOKPanel extends PackingPanel implements PickingOKPanel
 {
 	protected final String ACTION_Switch = "Switch";
 	protected final String ACTION_Today = "Today";

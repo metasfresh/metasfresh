@@ -16,15 +16,14 @@ package de.metas.picking.terminal.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Dimension;
 import java.math.BigDecimal;
@@ -37,7 +36,7 @@ import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.IPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.PickingOKPanel;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Packing window (second window)
@@ -67,15 +66,12 @@ public abstract class AbstractPackageTerminal implements FormPanel
 
 	private PackingItemsMap packItems;
 
-	public AbstractPackageTerminal(final SwingPickingOKPanel pickingOKPanel, final IPackingDetailsModel packingDetailsModel)
+	public AbstractPackageTerminal(
+			@NonNull final SwingPickingOKPanel pickingOKPanel,
+			@NonNull final IPackingDetailsModel packingDetailsModel)
 	{
-		super();
-
-		Check.assumeNotNull(pickingOKPanel, "pickingOKPanel not null");
 		this.terminalContext = pickingOKPanel.getTerminalContext();
 		this.pickingOKPanel = pickingOKPanel;
-
-		Check.assumeNotNull(packingDetailsModel, "packingDetailsModel not null");
 		this.model = packingDetailsModel;
 	}
 

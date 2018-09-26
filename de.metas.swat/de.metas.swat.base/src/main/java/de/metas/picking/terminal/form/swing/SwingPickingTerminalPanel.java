@@ -16,15 +16,14 @@ package de.metas.picking.terminal.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -76,9 +75,9 @@ import de.metas.util.Services;
  * @author cg
  *
  */
-public class SwingPickingTerminalPanel extends PickingTerminalPanel
+public abstract class SwingPickingTerminalPanel extends PickingTerminalPanel
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(SwingPickingTerminalPanel.class);
 
 	public static final String CARDNAME_WAREHOUSE_PICKING = "WAREHOUSE_PICKING";
 	public static final String CARDNAME_RESULT = "RESULT";
@@ -134,7 +133,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 		}
 		catch (final Exception e)
 		{
-			log.warn("init", e);
+			logger.warn("init", e);
 			final ITerminalFactory factory = getTerminalFactory();
 			factory.showWarning(this, ITerminalFactory.TITLE_ERROR, new TerminalException(e));
 
@@ -159,13 +158,9 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 		super.dispose();
 	}
 
-	protected PickingOKPanel createPickingOKPanel()
-	{
-		final SwingPickingOKPanel pickingPanel = new SwingPickingOKPanel(this);
-		return pickingPanel;
-	}
+	protected abstract SwingPickingOKPanel createPickingOKPanel();
 
-	protected ITerminalKeyPanel getWarehouseKeyPanel()
+	protected final ITerminalKeyPanel getWarehouseKeyPanel()
 	{
 		return warehousePanel;
 	}
@@ -187,7 +182,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 			warehousePanel.setAllowKeySelection(true);
 
 			//
-			final PickingOKPanel pickingOKPanel = createPickingOKPanel();
+			final SwingPickingOKPanel pickingOKPanel = createPickingOKPanel();
 			setPickingOKPanel(pickingOKPanel);
 		}
 
@@ -207,10 +202,10 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 	 *
 	 * @return warehouse key layout
 	 */
-	protected IKeyLayout createWarehouseKeyLayout()
+	private final IKeyLayout createWarehouseKeyLayout()
 	{
 		final IKeyLayout warehouseKeyLayout = new POSKeyLayout(getTerminalContext(), 540003); // TODO hard coded "Warehouse Groups"
-		warehouseKeyLayout.setRows(2);
+		warehouseKeyLayout.setRows(1); // fresh_06250
 		return warehouseKeyLayout;
 	}
 
@@ -236,13 +231,7 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 	 *
 	 * @see #CARDNAME_WAREHOUSE_PICKING
 	 */
-	protected void initLayout_WarehousePicking()
-	{
-		final IContainer container = getTerminalFactory().createContainer("fill, ins 0 0");
-		createPanel(container, warehousePanel, "dock north, growx,hmin 30%");
-		createPanel(container, getPickingOKPanel().getComponent(), "dock south, growx");
-		add(container, CARDNAME_WAREHOUSE_PICKING, "dock north, growx");
-	}
+	protected abstract void initLayout_WarehousePicking();
 
 	/**
 	 * Layout for result panel (Card 2).
@@ -390,22 +379,13 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 	/**
 	 * Reset filters on warehouse change (which we consider it as a master refresh/reset)
 	 */
-	protected void resetFilters()
-	{
-		// nothing at this level
-	}
+	protected abstract void resetFilters();
 
-	protected void refreshLines()
-	{
-		final ResetFilters resetFilters = ResetFilters.No;
-		refreshLines(resetFilters);
-	}
+	protected abstract void refreshLines();
 
 	protected static enum ResetFilters
 	{
-		No,
-		Yes,
-		IfNoResult,
+		No, Yes, IfNoResult,
 	}
 
 	protected void refreshLines(final ResetFilters resetFilters)

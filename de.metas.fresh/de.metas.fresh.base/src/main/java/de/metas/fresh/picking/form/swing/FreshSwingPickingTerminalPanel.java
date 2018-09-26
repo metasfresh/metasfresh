@@ -44,7 +44,6 @@ import org.compiere.util.KeyNamePair;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.IContainer;
-import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -116,7 +115,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 	}
 
 	@Override
-	public final PickingOKPanel createPickingOKPanel()
+	public final FreshSwingPickingOKPanel createPickingOKPanel()
 	{
 		return new FreshSwingPickingOKPanel(this);
 	}
@@ -184,14 +183,6 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 				onSelectedLinesChanged();
 			}
 		});
-	}
-
-	@Override
-	protected IKeyLayout createWarehouseKeyLayout()
-	{
-		final IKeyLayout warehouseKeyLayout = super.createWarehouseKeyLayout();
-		warehouseKeyLayout.setRows(1); // fresh_06250
-		return warehouseKeyLayout;
 	}
 
 	@Override
@@ -340,7 +331,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		final LocalDate deliveryDate = getSelectedDeliveryDate();
 		model.setDeliveryDate(deliveryDate);
 
-		super.refreshLines();
+		refreshLines(ResetFilters.No);
 	}
 
 	private void setTableRowSearchSelectionMatcher(final ITableRowSearchSelectionMatcher matcherNew)

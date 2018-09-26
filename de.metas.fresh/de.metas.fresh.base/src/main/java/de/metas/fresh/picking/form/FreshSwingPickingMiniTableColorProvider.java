@@ -28,10 +28,10 @@ import java.awt.Color;
 import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.TableColorProviderAdapter;
 
+import de.metas.fresh.picking.form.swing.FreshSwingPickingOKPanel;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.TableRowKey;
-import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.util.Check;
 
 /**
@@ -41,9 +41,9 @@ import de.metas.util.Check;
  */
 public class FreshSwingPickingMiniTableColorProvider extends TableColorProviderAdapter
 {
-	private final SwingPickingOKPanel pickingPanel;
+	private final FreshSwingPickingOKPanel pickingPanel;
 
-	public FreshSwingPickingMiniTableColorProvider(final SwingPickingOKPanel pickingPanel)
+	public FreshSwingPickingMiniTableColorProvider(final FreshSwingPickingOKPanel pickingPanel)
 	{
 		super();
 
