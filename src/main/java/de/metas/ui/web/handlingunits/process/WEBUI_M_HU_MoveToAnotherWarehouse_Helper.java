@@ -3,10 +3,13 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.HUMovementResult;
@@ -27,7 +30,7 @@ import de.metas.util.Services;
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,24 +49,27 @@ import de.metas.util.Services;
  */
 
 /**
- * #2144
- * HU editor: Move selected HUs to another warehouse
+ * This is the common structure for a process that moves HUs from a warehouse to another.
+ * Is extended by specific processes, depending of their particular requirements
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
+
+public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+
+	private HUMovementResult movementResult = null;
 
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
 	private I_M_Warehouse warehouse;
 
-	private HUMovementResult movementResult = null;
-
 	@Override
+	@OverridingMethodsMustInvokeSuper
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (!isHUEditorView())
@@ -84,6 +90,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no physical (etc active) hus selected");
 		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -102,6 +109,8 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 	protected String doIt() throws Exception
 	{
 		final List<I_M_HU> hus = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+
+		assertHUsEligible();
 		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
 
 		return MSG_OK;
@@ -117,4 +126,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
 		}
 	}
+
+	public abstract void assertHUsEligible();
+
 }
