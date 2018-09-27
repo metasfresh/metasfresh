@@ -45,7 +45,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.util.Check;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
@@ -53,6 +52,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -424,6 +424,8 @@ public class LayoutFactory
 			{
 				layoutElementBuilder.setWidgetType(field.getWidgetType());
 			}
+
+			layoutElementBuilder.setWidgetSize(field.getWidgetSize());
 
 			layoutElementBuilder.setButtonActionDescriptor(field.getButtonActionDescriptor());
 

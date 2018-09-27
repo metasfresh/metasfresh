@@ -602,9 +602,9 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final ClassViewColumnOverrides... columns)
+		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ClassViewColumnOverrides... columns)
 		{
-			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, columns);
+			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, viewDataType, columns);
 			Check.assumeNotEmpty(elements, "elements is not empty"); // shall never happen
 
 			addElements(elements);
@@ -705,5 +705,6 @@ public class ViewLayout implements ETagAware
 			this.treeExpandedDepth = treeExpandedDepth;
 			return this;
 		}
+
 	}
 }

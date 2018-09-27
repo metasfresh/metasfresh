@@ -10,6 +10,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 
 /*
  * #%L
@@ -69,6 +70,9 @@ public @interface ViewColumn
 
 	MediaType[] restrictToMediaTypes() default {};
 
+	WidgetSize widgetSize() default WidgetSize.Small;
+
+
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface ViewColumnLayout
@@ -101,5 +105,7 @@ public @interface ViewColumn
 
 		/** Display sequence number */
 		int seqNo();
+
+
 	}
 }

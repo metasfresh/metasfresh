@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -63,7 +65,8 @@ public final class DocumentLayoutElementDescriptor
 		final Builder elementBuilder = new Builder()
 				.setCaption(firstField.getCaption())
 				// .setDescription(firstField.getDescription())
-				.setWidgetType(firstField.getWidgetType());
+				.setWidgetType(firstField.getWidgetType())
+				.setWidgetSize(firstField.getWidgetSize());
 
 		for (final DocumentFieldDescriptor field : fields)
 		{
@@ -277,7 +280,7 @@ public final class DocumentLayoutElementDescriptor
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
 		private LayoutType _layoutType;
-		private WidgetSize _widgetSize;
+		@Nullable private WidgetSize _widgetSize;
 		private Set<MediaType> restrictToMediaTypes = new HashSet<>();
 
 		private boolean _gridElement = false;

@@ -104,6 +104,8 @@ public final class DocumentFieldDescriptor
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
+	private final WidgetSize widgetSize;
+
 	private final Class<?> valueClass;
 
 	private final LookupDescriptorProvider lookupDescriptorProvider;
@@ -165,6 +167,8 @@ public final class DocumentFieldDescriptor
 		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
+
+		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		valueClass = builder.getValueClass();
@@ -251,6 +255,12 @@ public final class DocumentFieldDescriptor
 	{
 		return widgetType;
 	}
+
+	public WidgetSize getWidgetSize()
+	{
+		return widgetSize;
+	}
+
 
 	public boolean isAllowShowPassword()
 	{
@@ -742,6 +752,7 @@ public final class DocumentFieldDescriptor
 		private boolean calculated;
 
 		private DocumentFieldWidgetType _widgetType;
+		private WidgetSize _widgetSize = WidgetSize.Medium;
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 
@@ -967,6 +978,18 @@ public final class DocumentFieldDescriptor
 		{
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
+		}
+
+		public Builder setWidgetSize(final WidgetSize widgetSize)
+		{
+			assertNotBuilt();
+			_widgetSize = widgetSize;
+			return this;
+		}
+
+		public WidgetSize getWidgetSize()
+		{
+			return _widgetSize;
 		}
 
 		public Builder setAllowShowPassword(final boolean allowShowPassword)
