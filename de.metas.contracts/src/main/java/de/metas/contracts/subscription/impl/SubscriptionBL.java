@@ -174,7 +174,7 @@ public class SubscriptionBL implements ISubscriptionBL
 			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
 
-		final I_C_Flatrate_Term originalTerm = retrieveCorrespondingFlatrateTerm(newTerm);
+		final I_C_Flatrate_Term originalTerm = retrieveCorrespondingFlatrateTermFromDifferentOrder(newTerm);
 		if (originalTerm != null)
 		{
 			originalTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
@@ -924,7 +924,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		return newTerm;
 	}
 
-	private I_C_Flatrate_Term retrieveCorrespondingFlatrateTerm(@NonNull final I_C_Flatrate_Term newTerm)
+	private I_C_Flatrate_Term retrieveCorrespondingFlatrateTermFromDifferentOrder(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
@@ -943,5 +943,12 @@ public class SubscriptionBL implements ISubscriptionBL
 				.findFirst();
 
 		return suitableTerm.orElse(null);
+	}
+	
+	@Override
+	public void setOrderContractStatusAndSave(@NonNull final de.metas.contracts.subscription.model.I_C_Order order, @NonNull final String contractStatus)
+	{
+		order.setContractStatus(contractStatus);
+		InterfaceWrapperHelper.save(order);
 	}
 }

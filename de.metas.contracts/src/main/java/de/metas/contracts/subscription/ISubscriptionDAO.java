@@ -145,7 +145,7 @@ public interface ISubscriptionDAO extends ISingletonService
 	OrderId retrieveLinkedFollowUpContractOrder(OrderId orderId);
 
 	/**
-	 * retrieves recursively all orders related to a contract 
+	 * retrieves recursively all orders related to a contract, inclusive the one given as parameter
 	 * @param orderId
 	 * @return
 	 */

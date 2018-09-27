@@ -15,11 +15,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -290,7 +288,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 	 */
 	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull List<OrderId> contractOrderIds)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(Env.getCtx(), orderId.getRepoId(), I_C_Order.class, ITrx.TRXNAME_None);
+		final I_C_Order order = InterfaceWrapperHelper.load(orderId, I_C_Order.class);
 		final OrderId nextAncestorId = OrderId.ofRepoIdOrNull(order.getRef_FollowupOrder_ID());
 		if (nextAncestorId != null)
 		{
