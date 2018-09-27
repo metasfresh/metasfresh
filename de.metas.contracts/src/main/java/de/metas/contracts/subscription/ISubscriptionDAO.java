@@ -137,6 +137,18 @@ public interface ISubscriptionDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveFlatrateTerms(OrderId orderId);
 
-	OrderId retrieveOriginalOrder(OrderId orderId);
+	/**
+	 * retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
+	 * @param orderId
+	 * @return
+	 */
+	OrderId retrieveLinkedFollowUpContractOrder(OrderId orderId);
+
+	/**
+	 * retrieves recursively all orders related to a contract 
+	 * @param orderId
+	 * @return
+	 */
+	List<OrderId> retrieveAllContractOrderList(OrderId orderId);
 
 }

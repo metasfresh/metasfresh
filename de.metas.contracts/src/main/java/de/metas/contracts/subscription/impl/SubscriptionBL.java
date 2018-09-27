@@ -929,7 +929,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
 		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-		final OrderId orderId = subscriptionDAO.retrieveOriginalOrder(currentOrderId);
+		final OrderId orderId = subscriptionDAO.retrieveLinkedFollowUpContractOrder(currentOrderId);
 		if (orderId == null)
 		{
 			return null;

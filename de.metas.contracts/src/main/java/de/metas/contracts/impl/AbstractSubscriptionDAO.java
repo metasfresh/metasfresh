@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -14,8 +15,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -94,27 +98,27 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 		{
 			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.LESS, query.getSeqNoLessThan());
 		}
-		
+
 		if (query.getEventDateNotBefore() != null)
 		{
 			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.GREATER_OR_EQUAL, query.getEventDateNotBefore());
 		}
 
-		if(!query.getIncludedContractStatuses().isEmpty())
+		if (!query.getIncludedContractStatuses().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, query.getIncludedContractStatuses());
 		}
-		
-		if(!query.getExcludedStatuses().isEmpty())
+
+		if (!query.getExcludedStatuses().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, query.getExcludedStatuses());
 		}
 
-		if(!query.getIncludedStatuses().isEmpty())
+		if (!query.getIncludedStatuses().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, query.getIncludedStatuses());
 		}
-		
+
 		return queryBuilder
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo).endOrderBy()
 				.create();
@@ -179,7 +183,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.first();
 	}
-	
+
 	@Override
 	public final List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			@NonNull final Properties ctx,
@@ -199,7 +203,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.addColumn(I_C_SubscriptionProgress.COLUMN_SeqNo).endOrderBy()
 				.create().list();
 	}
-	
+
 	@Override
 	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
 	{
@@ -211,7 +215,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.match();
 	}
-	
+
 	@Override
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	public final List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
@@ -224,10 +228,10 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.list();
 	}
-	
+
 	@Override
 	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
-	public final OrderId retrieveOriginalOrder(@NonNull final OrderId orderId)
+	public final OrderId retrieveLinkedFollowUpContractOrder(@NonNull final OrderId orderId)
 	{
 		int oroginalOrderId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
@@ -235,8 +239,63 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID, orderId)
 				.create()
 				.firstId();
-		
+
 		return OrderId.ofRepoIdOrNull(oroginalOrderId);
-		
+	}
+
+	@Override
+	public List<OrderId> retrieveAllContractOrderList(@NonNull final OrderId orderId)
+	{
+		final List<OrderId> orderIds = new ArrayList<>();
+		final OrderId ancestorId = retrieveOriginalContractOrder(orderId);
+		if (ancestorId != null)
+		{
+			orderIds.add(ancestorId);
+			buildAllContractOrderList(ancestorId, orderIds);
+		}
+
+		return orderIds;
+	}
+
+	/**
+	 * retrieves original order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>,
+	 * going recursively until the original one
+	 * 
+	 * @param orderId
+	 * @return OrderId
+	 */
+	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
+	public OrderId retrieveOriginalContractOrder(@NonNull final OrderId orderId)
+	{
+		OrderId ancestor = retrieveLinkedFollowUpContractOrder(orderId);
+
+		if (ancestor != null)
+		{
+			final OrderId nextAncestor = retrieveOriginalContractOrder(ancestor);
+			if (nextAncestor != null)
+			{
+				ancestor = nextAncestor;
+			}
+		}
+
+		return ancestor;
+	}
+
+	/**
+	 * builds up a list of contract orders based on column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
+	 * 
+	 * @param orderId
+	 * @param contractOrderIds
+	 * @return
+	 */
+	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull List<OrderId> contractOrderIds)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.create(Env.getCtx(), orderId.getRepoId(), I_C_Order.class, ITrx.TRXNAME_None);
+		final OrderId nextAncestorId = OrderId.ofRepoIdOrNull(order.getRef_FollowupOrder_ID());
+		if (nextAncestorId != null)
+		{
+			contractOrderIds.add(nextAncestorId);
+			buildAllContractOrderList(nextAncestorId, contractOrderIds);
+		}
 	}
 }
