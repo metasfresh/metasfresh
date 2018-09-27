@@ -76,7 +76,7 @@ public class HUCapacityBL implements IHUCapacityBL
 			}
 			else
 			{
-				if (piipProductId != null && ProductId.equals(piipProductId, productId))
+				if (piipProductId != null && !ProductId.equals(piipProductId, productId))
 				{
 					final IProductBL productBL = Services.get(IProductBL.class);
 					final String productName = productBL.getProductValueAndName(productId);
@@ -86,6 +86,7 @@ public class HUCapacityBL implements IHUCapacityBL
 							+ "\n@M_HU_PI_Item_Product_ID@ - @M_Product_ID@: " + piipProductName
 							+ "\nis not compatible with required product @M_Product_ID@: " + productName + "( " + I_M_Product.COLUMNNAME_M_Product_ID + "=" + productId + ")");
 				}
+				
 				productToUseId = productId;
 			}
 		}

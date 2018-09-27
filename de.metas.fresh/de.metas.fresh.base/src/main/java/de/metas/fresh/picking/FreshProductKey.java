@@ -73,6 +73,7 @@ public class FreshProductKey extends TerminalKey
 	private final String id;
 	private final KeyNamePair value;
 	private final ProductId productId;
+	private final I_C_UOM uom;
 	private final BPartnerId bpartnerId;
 	private final BPartnerLocationId bpartnerLocationId;
 
@@ -86,6 +87,7 @@ public class FreshProductKey extends TerminalKey
 
 		this.packingItem = packingItem;
 		this.productId = packingItem.getProductId();
+		this.uom = packingItem.getC_UOM();
 		this.bpartnerId = packingItem.getBPartnerId();
 		this.bpartnerLocationId = packingItem.getBPartnerLocationId();
 
@@ -374,10 +376,15 @@ public class FreshProductKey extends TerminalKey
 	 */
 	public Quantity getQty()
 	{
+		if (packingItem == null)
+		{
+			return Quantity.zero(uom);
+		}
+
 		// TODO: check if is really needed because it might be that the conversion is pointless!
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(packingItem.getProductId());
-		return uomConversionBL.convertQuantityTo(packingItem.getQtySum(), conversionCtx, packingItem.getC_UOM());
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		return uomConversionBL.convertQuantityTo(packingItem.getQtySum(), conversionCtx, uom);
 	}
 
 	/**
