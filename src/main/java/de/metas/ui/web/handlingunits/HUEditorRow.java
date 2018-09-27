@@ -133,7 +133,10 @@ public final class HUEditorRow implements IViewRow
 	private final JSONLookupValue product;
 
 	public static final String FIELDNAME_HU_UnitType = "HU_UnitType";
-	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, widgetType = DocumentFieldWidgetType.Text, sorting = false, //
+	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, //
+			widgetType = DocumentFieldWidgetType.Text, //
+
+			sorting = false, //
 			restrictToMediaTypes = { MediaType.SCREEN }, //
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
@@ -152,11 +155,10 @@ public final class HUEditorRow implements IViewRow
 	public static final String FIELDNAME_QtyCU = "QtyCU";
 	@ViewColumn(fieldName = FIELDNAME_QtyCU, //
 			widgetType = DocumentFieldWidgetType.Quantity,//
-			widgetSize = WidgetSize.Small,
-			sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-	})
+			widgetSize = WidgetSize.Small, sorting = false, layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+			})
 	private final BigDecimal qtyCU;
 
 	public static final String FIELDNAME_UOM = I_M_Product.COLUMNNAME_C_UOM_ID;

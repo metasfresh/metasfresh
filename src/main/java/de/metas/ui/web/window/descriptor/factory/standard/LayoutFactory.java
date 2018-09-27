@@ -425,7 +425,11 @@ public class LayoutFactory
 				layoutElementBuilder.setWidgetType(field.getWidgetType());
 			}
 
-			layoutElementBuilder.setWidgetSize(field.getWidgetSize());
+			if (!layoutElementBuilder.isWidgetSizeSet())
+			{
+				final WidgetSize x = field.getWidgetSize(); // TODO delete
+				layoutElementBuilder.setWidgetSize(field.getWidgetSize());
+			}
 
 			layoutElementBuilder.setButtonActionDescriptor(field.getButtonActionDescriptor());
 

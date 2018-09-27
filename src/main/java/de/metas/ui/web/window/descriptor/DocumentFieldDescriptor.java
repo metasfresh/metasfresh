@@ -261,7 +261,6 @@ public final class DocumentFieldDescriptor
 		return widgetSize;
 	}
 
-
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -752,7 +751,7 @@ public final class DocumentFieldDescriptor
 		private boolean calculated;
 
 		private DocumentFieldWidgetType _widgetType;
-		private WidgetSize _widgetSize = WidgetSize.Medium;
+		private WidgetSize _widgetSize;
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 
@@ -978,13 +977,6 @@ public final class DocumentFieldDescriptor
 		{
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
-		}
-
-		public Builder setWidgetSize(final WidgetSize widgetSize)
-		{
-			assertNotBuilt();
-			_widgetSize = widgetSize;
-			return this;
 		}
 
 		public WidgetSize getWidgetSize()

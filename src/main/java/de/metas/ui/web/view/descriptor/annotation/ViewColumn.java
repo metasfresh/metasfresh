@@ -70,7 +70,7 @@ public @interface ViewColumn
 
 	MediaType[] restrictToMediaTypes() default {};
 
-	WidgetSize widgetSize() default WidgetSize.Small;
+	WidgetSize widgetSize() default WidgetSize.Default;
 
 
 	@Target({ ElementType.FIELD })

@@ -6,8 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -280,7 +278,7 @@ public final class DocumentLayoutElementDescriptor
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
 		private LayoutType _layoutType;
-		@Nullable private WidgetSize _widgetSize;
+		private WidgetSize _widgetSize;
 		private Set<MediaType> restrictToMediaTypes = new HashSet<>();
 
 		private boolean _gridElement = false;
@@ -430,6 +428,11 @@ public final class DocumentLayoutElementDescriptor
 		public boolean isWidgetTypeSet()
 		{
 			return _widgetType != null;
+		}
+
+		public boolean isWidgetSizeSet()
+		{
+			return _widgetSize != null;
 		}
 
 		public DocumentFieldWidgetType getWidgetType()
