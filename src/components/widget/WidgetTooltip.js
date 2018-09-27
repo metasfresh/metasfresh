@@ -62,6 +62,7 @@ WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,
   isToggled: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func,
 };
 
 export default onClickOutside(WidgetTooltip);
