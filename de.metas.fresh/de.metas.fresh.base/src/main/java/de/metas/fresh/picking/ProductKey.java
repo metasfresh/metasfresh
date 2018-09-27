@@ -63,11 +63,11 @@ import lombok.NonNull;
  * @author cg
  *
  */
-public class FreshProductKey extends TerminalKey
+public class ProductKey extends TerminalKey
 {
-	public static FreshProductKey cast(final ITerminalKey key)
+	public static ProductKey cast(final ITerminalKey key)
 	{
-		return (FreshProductKey)key;
+		return (ProductKey)key;
 	}
 
 	private final String id;
@@ -81,7 +81,7 @@ public class FreshProductKey extends TerminalKey
 	/** this is the packing item which contains unallocated scheds and unallocated qty */
 	private IPackingItem _unallocatedPackingItem;
 
-	public FreshProductKey(@NonNull final ITerminalContext terminalContext, @NonNull final IPackingItem packingItem)
+	public ProductKey(@NonNull final ITerminalContext terminalContext, @NonNull final IPackingItem packingItem)
 	{
 		super(terminalContext);
 

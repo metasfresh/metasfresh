@@ -2,6 +2,7 @@ package de.metas.picking.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -63,6 +64,14 @@ public final class PackingItemsMap
 	public final ImmutableList<IPackingItem> getUnpackedItems()
 	{
 		return getBySlot(PackingSlot.UNPACKED);
+	}
+
+	public final ImmutableList<IPackingItem> getUnpackedItemsMatching(@NonNull Predicate<IPackingItem> predicate)
+	{
+		return items.get(PackingSlot.UNPACKED)
+				.stream()
+				.filter(predicate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public final IPackingItem getUnpackedItemByGroupingKey(@NonNull final PackingItemGroupingKey groupingKey)
@@ -157,6 +166,11 @@ public final class PackingItemsMap
 	public boolean hasPackedItems()
 	{
 		return streamPackedItems().findAny().isPresent();
+	}
+
+	public boolean hasPackedItemsMatching(@NonNull final Predicate<IPackingItem> predicate)
+	{
+		return streamPackedItems().anyMatch(predicate);
 	}
 
 	public Stream<IPackingItem> streamPackedItems()

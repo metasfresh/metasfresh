@@ -168,29 +168,6 @@ public abstract class AbstractPackageDataPanel extends TerminalSubPanel implemen
 
 	abstract public void setupPackingItemPanel();
 
-	/**
-	 * set read only components
-	 * 
-	 * @param plus set ro state for plus button
-	 * @param minus set ro state for minus button
-	 * @param field set ro state for field
-	 */
-	public void setQtyFieldReadOnly(boolean plus, boolean minus, boolean field)
-	{
-		packageTerminalPanel.getProductKeysPanel().setQtyFieldReadOnly(plus, minus, field);
-	}
-
-	public void setReadOnly(final boolean ro)
-	{
-		packageTerminalPanel.getProductKeysPanel().setQtyFieldReadOnly(ro);
-	}
-	
-	public void setEditable(final boolean editable)
-	{
-		final boolean ro = !editable;
-		setReadOnly(ro);
-	}
-
 	@Override
 	abstract public void propertyChange(PropertyChangeEvent evt);
 

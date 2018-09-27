@@ -52,6 +52,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
@@ -140,6 +141,11 @@ public class PickingSlotKey extends TerminalKey
 	public PickingSlotId getPickingSlotId()
 	{
 		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
+	}
+
+	public PackingSlot getPackingSlot()
+	{
+		return PackingSlot.ofPickingSlotId(getPickingSlotId());
 	}
 
 	@Override
@@ -597,7 +603,7 @@ public class PickingSlotKey extends TerminalKey
 		return false;
 	}
 
-	public boolean isCompatible(final FreshProductKey productKey)
+	public boolean isCompatible(final ProductKey productKey)
 	{
 		Check.assumeNotNull(productKey, "productKey not null");
 

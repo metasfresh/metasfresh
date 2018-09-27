@@ -27,7 +27,6 @@ package de.metas.fresh.picking.form;
 
 import java.math.BigDecimal;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
@@ -36,14 +35,13 @@ import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
-import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
 import de.metas.fresh.picking.PickingSlotKey;
+import de.metas.fresh.picking.ProductKey;
 import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminalPanel;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
@@ -61,15 +59,15 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		return (FreshSwingPackageTerminalPanel)panel;
 	}
 
-	/**
-	 * Please select a picking slot first
-	 */
 	private static final String ERR_SELECT_PICKING_SLOT = "@SelectPickingSlot@";
 	// private static final String ERR_SELECT_PRODUCT = "@SelectProduct@";
+
+	private final FreshSwingPackageItems productKeysPanel;
 
 	public FreshSwingPackageTerminalPanel(final ITerminalContext terminalContext, final FreshSwingPackageTerminal parent)
 	{
 		super(terminalContext, parent);
+		this.productKeysPanel = new FreshSwingPackageItems(this);
 	}
 
 	@Override
@@ -109,16 +107,12 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		return new FreshSwingPackageDataPanel(this);
 	}
 
-	@Override
-	protected FreshSwingPackageItems createProductKeysPanel()
-	{
-		return new FreshSwingPackageItems(this);
-	}
-
-	@Override
+	/**
+	 * @return the panel which contains the boxes and the products
+	 */
 	public FreshSwingPackageItems getProductKeysPanel()
 	{
-		return (FreshSwingPackageItems)super.getProductKeysPanel();
+		return productKeysPanel;
 	}
 
 	@Override
@@ -154,7 +148,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 	@Override
 	public FreshSwingPackageDataPanel getPickingData()
 	{
-		return (FreshSwingPackageDataPanel)super.getPickingData();
+		return FreshSwingPackageDataPanel.cast(super.getPickingData());
 	}
 
 	/**
@@ -184,15 +178,15 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		}
 		//
 		// Key pressed: Product Key
-		else if (key instanceof FreshProductKey)
+		else if (key instanceof ProductKey)
 		{
-			final FreshProductKey productKey = (FreshProductKey)key;
+			final ProductKey productKey = (ProductKey)key;
 			onProductKeyPressed(productKey);
 		}
 		else
 		{
 			// TODO: figure out when this code is invoked because in my tests it seems it's never invoked.
-			final AbstractPackageDataPanel pickingData = getPickingData();
+			final FreshSwingPackageDataPanel pickingData = getPickingData();
 			pickingData.validateModel();
 			pickingData.setReadOnly(true);
 		}
@@ -239,7 +233,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		onProductKeyPressed(productsKeyPanel.getSelectedProduct());
 	}
 
-	private final void onProductKeyPressed(final FreshProductKey productKey)
+	private final void onProductKeyPressed(final ProductKey productKey)
 	{
 		// Get selected picking slot
 		final FreshSwingPackageItems productsKeyPanel = getProductKeysPanel();
@@ -277,15 +271,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 			//
 			// Suggest how much Qty to use initially.
 			// User will be able to change it.
-			productsKeyPanel.setQty(new Supplier<BigDecimal>()
-			{
-
-				@Override
-				public BigDecimal get()
-				{
-					return calculateQtyToSet(pickingSlotKey, productKey);
-				}
-			});
+			productsKeyPanel.setQty(() -> calculateQtyToSet(pickingSlotKey, productKey));
 		}
 
 		//
@@ -309,7 +295,7 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 	 * @param productKey
 	 * @return qty to be used to initialize the Qty Field
 	 */
-	private final BigDecimal calculateQtyToSet(final PickingSlotKey pickingSlotKey, final FreshProductKey productKey)
+	private final BigDecimal calculateQtyToSet(final PickingSlotKey pickingSlotKey, final ProductKey productKey)
 	{
 		if (productKey == null)
 		{

@@ -83,8 +83,8 @@ public class PackingMaterialLayout extends KeyLayout
 
 		//
 		// Get the products keys which needs to be checked for compatibility of a packing material key
-		final FreshProductKey productKey = getSelectedProductKey();
-		final List<FreshProductKey> productKeysToCheckForCompatibility;
+		final ProductKey productKey = getSelectedProductKey();
+		final List<ProductKey> productKeysToCheckForCompatibility;
 		if (productKey == null)
 		{
 			productKeysToCheckForCompatibility = getAllProductKeys();
@@ -131,13 +131,13 @@ public class PackingMaterialLayout extends KeyLayout
 		return productKeysPanel.getSelectedPickingSlotKey();
 	}
 
-	private FreshProductKey getSelectedProductKey()
+	private ProductKey getSelectedProductKey()
 	{
 		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
 		return productKeysPanel.getSelectedProduct();
 	}
 
-	private List<FreshProductKey> getAllProductKeys()
+	private List<ProductKey> getAllProductKeys()
 	{
 		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
 		return productKeysPanel.getAllProductKeys();
@@ -176,7 +176,7 @@ public class PackingMaterialLayout extends KeyLayout
 	/**
 	 * Gets default {@link PackingMaterialKey} background color. i.e.
 	 * <ul>
-	 * <li>{@link #COLOR_MatchedForProductKey}, if the current selected {@link FreshProductKey} has exactly the same default packing materials as this key has
+	 * <li>{@link #COLOR_MatchedForProductKey}, if the current selected {@link ProductKey} has exactly the same default packing materials as this key has
 	 * <li>else {@link #COLOR_Default}
 	 * </ul>
 	 */
@@ -189,7 +189,7 @@ public class PackingMaterialLayout extends KeyLayout
 		}
 		final PackingMaterialKey packingMaterialKey = (PackingMaterialKey)key;
 
-		final FreshProductKey selectedProduct = getSelectedProductKey();
+		final ProductKey selectedProduct = getSelectedProductKey();
 		if (!packingMaterialKey.hasSamePackingMaterials(selectedProduct))
 		{
 			return super.getDefaultColor(key);

@@ -29,8 +29,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 
-import de.metas.fresh.picking.FreshProductKey;
 import de.metas.fresh.picking.PickingSlotKey;
+import de.metas.fresh.picking.ProductKey;
 import de.metas.util.collections.IdentityHashSet;
 import lombok.NonNull;
 
@@ -40,7 +40,7 @@ import lombok.NonNull;
  * @author cg
  *
  */
-public class FreshQtyListener implements PropertyChangeListener
+class FreshQtyListener implements PropertyChangeListener
 {
 	private static final String ERR_Fresh_QTY_LISTENER_NEG_QTY = "@de.metas.fresh.picking.form.swing.FreshQtyListener.Neg_Qty@";
 
@@ -86,7 +86,7 @@ public class FreshQtyListener implements PropertyChangeListener
 			return;
 		}
 
-		final FreshProductKey selectedProduct = packageItems.getSelectedProduct();
+		final ProductKey selectedProduct = packageItems.getSelectedProduct();
 		if (selectedProduct == null)
 		{
 			return;

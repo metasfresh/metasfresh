@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.picking.form;
 
@@ -13,58 +13,49 @@ package de.metas.fresh.picking.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.beans.PropertyChangeEvent;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.apps.form.FormFrame;
 
 import de.metas.adempiere.form.terminal.ITerminalButton;
+import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
 import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.form.swing.AbstractPackageDataPanel;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Contains Toolbar.
  *
  * @author cg
- * 
+ *
  */
 public class FreshSwingPackageDataPanel extends AbstractPackageDataPanel
 {
+	public static FreshSwingPackageDataPanel cast(final AbstractPackageDataPanel panel)
+	{
+		return (FreshSwingPackageDataPanel)panel;
+	}
+
 	private static final String ERR_UNSUPPORTED_ACTION = "@UnsupportedAction@";
 
 	public FreshSwingPackageDataPanel(final FreshSwingPackageTerminalPanel basePanel)
 	{
 		super(basePanel);
 		setReadOnly(true); // qty field shall be readonly by default
-	}
-
-	@Override
-	public FreshSwingPackageTerminalPanel getTerminalBasePanel()
-	{
-		// basePanel is now overridden with this type, so this BL is protected from ClassCastException
-		final FreshSwingPackageTerminalPanel packageTerminalPanelImpl = (FreshSwingPackageTerminalPanel)super.getTerminalBasePanel();
-		if (packageTerminalPanelImpl == null)
-		{
-			throw new AdempiereException("FreshSwingPackageTerminalPanel not initialized!");
-		}
-
-		return packageTerminalPanelImpl;
 	}
 
 	@Override
@@ -82,7 +73,7 @@ public class FreshSwingPackageDataPanel extends AbstractPackageDataPanel
 		final StringBuilder closeHUConstraints = new StringBuilder()
 				.append(getButtonSize())
 				.append(" dock center"); // fresh_05749: this will ensure that the OK button is far, far away from Close_HU
-		add(getbCloseCurrentHU(), closeHUConstraints.toString());
+		add(getCloseCurrentHUButton(), closeHUConstraints.toString());
 
 		setupPackingItemPanel();
 	}
@@ -94,21 +85,26 @@ public class FreshSwingPackageDataPanel extends AbstractPackageDataPanel
 		getbPrint().setEnabled(false);
 	}
 
-	public void setQty(String qty)
+	public void setQty(final String qty)
 	{
 		if (qty != null)
 		{
-			packageTerminalPanel.getProductKeysPanel().setQtyData(qty);
+			getProductKeysPanel().setQtyNoFire(qty);
 		}
+	}
+
+	private FreshSwingPackageItems getProductKeysPanel()
+	{
+		return getBasePanel().getProductKeysPanel();
 	}
 
 	public FreshSwingPackageTerminalPanel getBasePanel()
 	{
-		return (FreshSwingPackageTerminalPanel)packageTerminalPanel;
+		return FreshSwingPackageTerminalPanel.cast(packageTerminalPanel);
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt)
+	public void propertyChange(final PropertyChangeEvent evt)
 	{
 		if (ACTION_Print.equals(evt.getNewValue()))
 		{
@@ -136,14 +132,24 @@ public class FreshSwingPackageDataPanel extends AbstractPackageDataPanel
 		// nothing to do
 	}
 
-	private ITerminalButton getbCloseCurrentHU()
+	private ITerminalButton getCloseCurrentHUButton()
 	{
-		final FreshSwingPackageTerminalPanel packageTerminalPanelImpl = getTerminalBasePanel();
-		final ITerminalButton bCloseCurrentHU = packageTerminalPanelImpl.getProductKeysPanel().getbCloseCurrentHU();
+		final ITerminalButton bCloseCurrentHU = getProductKeysPanel().getbCloseCurrentHU();
 		if (bCloseCurrentHU == null)
 		{
 			throw new AdempiereException("CloseHUButton not initialized!");
 		}
 		return bCloseCurrentHU;
+	}
+
+	public void setReadOnly(final boolean ro)
+	{
+		getProductKeysPanel().setQtyFieldReadOnly(ro);
+	}
+
+	public void setEditable(final boolean editable)
+	{
+		final boolean ro = !editable;
+		setReadOnly(ro);
 	}
 }

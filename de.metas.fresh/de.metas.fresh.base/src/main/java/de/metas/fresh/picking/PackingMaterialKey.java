@@ -168,7 +168,7 @@ public class PackingMaterialKey extends TerminalKey
 		return sb.toString();
 	}
 
-	public boolean isCompatible(final ITerminalContext terminalContext, final FreshProductKey productKey)
+	public boolean isCompatible(final ITerminalContext terminalContext, final ProductKey productKey)
 	{
 		Check.assumeNotNull(productKey, "productKey not null");
 
@@ -193,7 +193,7 @@ public class PackingMaterialKey extends TerminalKey
 	 * @param productKeys
 	 * @return true if compatible.
 	 */
-	public boolean isCompatibleWithAll(final ITerminalContext terminalContext, final Collection<FreshProductKey> productKeys)
+	public boolean isCompatibleWithAll(final ITerminalContext terminalContext, final Collection<ProductKey> productKeys)
 	{
 		Check.assumeNotNull(productKeys, "productKeys not null");
 		if (productKeys.isEmpty())
@@ -201,7 +201,7 @@ public class PackingMaterialKey extends TerminalKey
 			return false;
 		}
 
-		for (final FreshProductKey productKey : productKeys)
+		for (final ProductKey productKey : productKeys)
 		{
 			if (!isCompatible(terminalContext, productKey))
 			{
@@ -218,7 +218,7 @@ public class PackingMaterialKey extends TerminalKey
 	 * @param productKey product key or <code>null</code>
 	 * @return true if the given product key's default packing material is contained in this packing material key
 	 */
-	public boolean hasSamePackingMaterials(final FreshProductKey productKey)
+	public boolean hasSamePackingMaterials(final ProductKey productKey)
 	{
 		// guard agaist null
 		if (productKey == null)

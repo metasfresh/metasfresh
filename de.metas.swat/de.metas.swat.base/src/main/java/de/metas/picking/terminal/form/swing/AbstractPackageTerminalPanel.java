@@ -86,7 +86,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	protected ITerminalSplitPane split;
 
 	private FormFrame frame;
-	private final SwingPackageBoxesItems productKeysPanel;
 	private final AbstractPackageDataPanel pickingData;
 	private final ITerminalKeyPanel packingMaterialsPanel;
 
@@ -107,7 +106,7 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		this.panelCenter = factory.createContainer();
 
 		// NOTE: init order is important because of our fucked-up architecture. This order was tested on only.
-		this.productKeysPanel = createProductKeysPanel();
+		//this.productKeysPanel = createProductKeysPanel();
 		this.pickingData = createPackageDataPanel();
 		this.packingMaterialsPanel = createPackingMaterialsKeyLayoutPanel();
 
@@ -179,18 +178,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	 * @return
 	 */
 	protected abstract IKeyLayout createPackingMaterialsKeyLayout();
-
-	/**
-	 * retrieve the panel which contains the boxes and the products
-	 *
-	 * @return
-	 */
-	public SwingPackageBoxesItems getProductKeysPanel()
-	{
-		return productKeysPanel;
-	}
-
-	protected abstract SwingPackageBoxesItems createProductKeysPanel();
 
 	/**
 	 * @return Packing window (second window)

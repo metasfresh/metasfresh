@@ -3,6 +3,9 @@
  */
 package de.metas.fresh.picking.form.swing;
 
+import java.awt.Event;
+import java.awt.event.KeyEvent;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -34,27 +37,33 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.swing.KeyStroke;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
+import de.metas.adempiere.form.terminal.ITerminalNumericField;
 import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.fresh.picking.FreshProductKey;
-import de.metas.fresh.picking.FreshProductLayout;
+import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.PickingSlotKeyGroup;
 import de.metas.fresh.picking.PickingSlotLayout;
+import de.metas.fresh.picking.ProductKey;
+import de.metas.fresh.picking.ProductKeyLayout;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
@@ -74,8 +83,8 @@ import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.picking.terminal.DefaultPackingStateAggregator;
 import de.metas.picking.terminal.IPackingStateAggregator;
+import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
-import de.metas.picking.terminal.form.swing.SwingPackageBoxesItems;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -88,19 +97,31 @@ import lombok.NonNull;
  * @author cg
  *
  */
-public class FreshSwingPackageItems extends SwingPackageBoxesItems
+public class FreshSwingPackageItems
+		extends TerminalSubPanel
+		implements PropertyChangeListener
 {
 	// services
 	// private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IPackingService packingService = Services.get(IPackingService.class);
 
+	private static final String ERR_NO_PRODUCT_SELECTED = "@NoProductSelected@";
+	private static final String ERR_NO_BOX_SELECTED = "@NoBoxSelected@";
 	private static final String ERR_Fresh_SWING_PACKAGE_ITEMS_QTY_NULL = "@de.metas.fresh.picking.form.swing.FreshSwingPackageItems.Qty.Null@";
 	private static final String ERR_MAX_QTY = "@Max.Qty@";
 	private static final String ERR_NO_OPEN_HU_FOUND = "@NoOpenHUFound@";
-	/**
-	 * Cannot fully load qty to handling unit. Qty Not Loaded:
-	 */
+	/** Cannot fully load qty to handling unit. Qty Not Loaded */
 	private static final String ERR_CANNOT_FULLY_LOAD_QTY_TO_HANDLING_UNIT = "@CannotFullyLoadQtyToHandlingUnit@ {}";
+
+	private ITerminalNumericField fQty;
+	private IContainer buttonsPanel;
+	private ITerminalButton bAdd;
+	private ITerminalButton bRemove;
+	private ITerminalButton bAddAll;
+	private ITerminalButton bRemoveAll;
+
+	private static final String ACTION_Add = "Pack_Add";
+	private static final String ACTION_Remove = "Pack_Remove";
 
 	public static final String ACTION_CloseCurrentHU = "Close_HU";
 	private ITerminalButton bCloseCurrentHU;
@@ -111,6 +132,12 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	public static final String ACTION_HUEditor = "HUEditor";
 	private ITerminalButton bHUEditor;
 
+	private ITerminalKeyPanel productsKeyLayoutPanel;
+	private ITerminalKeyPanel pickingSlotsKeyLayoutPanel;
+
+	private PickingSlotLayout pickingSlotsKeyLayout;
+	private ProductKeyLayout productsKeyLayout;
+
 	private PickingSlotKey selectedPickingSlotKey;
 	private final PropertyChangeListener selectedPickingSlotKeyListener = evt -> onSelectedPickingSlotKeyChanged();
 
@@ -119,16 +146,139 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		super(basePanel);
 	}
 
-	@Override
+	/** @return Packing window main panel (second window) */
 	public FreshSwingPackageTerminalPanel getPackageTerminalPanel()
 	{
-		return (FreshSwingPackageTerminalPanel)super.getPackageTerminalPanel();
+		return FreshSwingPackageTerminalPanel.cast(super.getTerminalBasePanel());
+	}
+
+	/** @return button size constraints; never return null */
+	protected String getButtonSize()
+	{
+		return Utils.getButtonSize();
+	}
+
+	private class ProductsKeyListener extends TerminalKeyListenerAdapter
+	{
+
+		@SuppressWarnings("deprecation")
+		@Override
+		public void keyReturned(final ITerminalKey key)
+		{
+			getTerminalBasePanel().keyPressed(key);
+		}
+	}
+
+	private class PickingSlotsKeyListener extends TerminalKeyListenerAdapter
+	{
+		@SuppressWarnings("deprecation")
+		@Override
+		public void keyReturned(final ITerminalKey key)
+		{
+			getTerminalBasePanel().keyPressed(key);
+		}
+
+	}
+
+	/**
+	 * @return buttons panel which contains actions like Pack(Hinzuf.) etc.
+	 */
+	public final IContainer getButtonsPanel()
+	{
+		return buttonsPanel;
+	}
+
+	protected final ITerminalButton getButtonAdd()
+	{
+		return bAdd;
+	}
+
+	public final ITerminalKeyPanel getProductsKeyLayoutPanel()
+	{
+		return productsKeyLayoutPanel;
+	}
+
+	public final ITerminalKeyPanel getPickingSlotsKeyLayoutPanel()
+	{
+		return pickingSlotsKeyLayoutPanel;
+	}
+
+	public PickingSlotLayout getPickingSlotsKeyLayout()
+	{
+		return pickingSlotsKeyLayout;
+	}
+
+	protected ProductKeyLayout getProductsKeyLayout()
+	{
+		return productsKeyLayout;
 	}
 
 	@Override
-	protected final void initComponents()
+	protected final void init()
 	{
-		super.initComponents();
+		initComponents();
+		initLayout();
+	}
+
+	private final void initComponents()
+	{
+		final ITerminalFactory factory = getTerminalFactory();
+
+		//
+		// Buttons from buttons panel
+		{
+			// Qty
+			fQty = factory.createTerminalNumericField("", DisplayType.Quantity, 14f, true, false, getButtonSize());
+			fQty.setEditable(true);
+			fQty.addListener(new FreshQtyListener(this));
+
+			// Add
+			bAdd = createButtonAction(ACTION_Add, KeyStroke.getKeyStroke(KeyEvent.VK_F11, Event.F11), 17f);
+			bAdd.setEnabled(false);
+			bAdd.addListener(this);
+
+			// Remove
+			bRemove = createButtonAction(ACTION_Remove, KeyStroke.getKeyStroke(KeyEvent.VK_F13, Event.F3), 17f);
+			bRemove.setEnabled(false);
+			bRemove.addListener(this);
+		}
+		//
+		// Buttons Panel (Add, Add All, Remove, Remove All)
+		{
+			buttonsPanel = getTerminalFactory().createContainer();
+			if (bAddAll != null)
+			{
+				buttonsPanel.add(bAddAll, getButtonSize());
+			}
+			buttonsPanel.add(bAdd, getButtonSize());
+			buttonsPanel.add(fQty, "");
+			buttonsPanel.add(bRemove, getButtonSize());
+			if (bRemoveAll != null)
+			{
+				buttonsPanel.add(bRemoveAll, getButtonSize() + ", wrap");
+			}
+		}
+
+		//
+		// Products Key Layout
+		{
+			productsKeyLayout = new ProductKeyLayout(getTerminalContext());
+			productsKeyLayout.setBasePanel(p_basePanel);
+			productsKeyLayout.setRows(2);
+
+			productsKeyLayoutPanel = factory.createTerminalKeyPanel(productsKeyLayout, new ProductsKeyListener());
+			// productsKeyLayoutPanel.setAllowKeySelection(true); // NOTE: not needed, it's supposed to be already configured on productsKeyLayout
+		}
+
+		//
+		// Picking Slot Key Layout
+		{
+			pickingSlotsKeyLayout = new PickingSlotLayout(getTerminalContext());
+			pickingSlotsKeyLayout.setRows(2);
+			pickingSlotsKeyLayout.setBasePanel(getTerminalBasePanel());
+			pickingSlotsKeyLayoutPanel = factory.createTerminalKeyPanel(pickingSlotsKeyLayout, new PickingSlotsKeyListener());
+			pickingSlotsKeyLayoutPanel.setAllowKeySelection(true);
+		}
 
 		//
 		// Button: Distribute Qty to new TUs (fresh_08754)
@@ -161,8 +311,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 	}
 
-	@Override
-	protected void initLayout()
+	private void initLayout()
 	{
 		add(getPickingSlotsKeyLayoutPanel(), "dock center, hmin 45%, hmax 100%");
 
@@ -173,52 +322,33 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// panelButtons.add(bCloseCurrentHU, getButtonSize()); // fresh_05833: moved to de.metas.customer.picking.form.FreshSwingPackageDataPanel
 	}
 
-	@Override
-	public FreshProductLayout createProductsKeyLayout()
+	public final void setEnableAddRemoveButtons(final boolean enabled)
 	{
-		return new FreshProductLayout(getTerminalContext());
+		setEnableAddButton(enabled);
+		setEnableRemoveButton(enabled);
 	}
 
-	@Override
-	public FreshProductLayout getProductsKeyLayout()
+	private final void setEnableAddButton(final boolean enabled)
 	{
-		return (FreshProductLayout)super.getProductsKeyLayout();
+		bAdd.setEnabled(enabled);
+		if (bAddAll != null)
+		{
+			bAddAll.setEnabled(enabled);
+		}
+	}
+
+	private final void setEnableRemoveButton(final boolean enabled)
+	{
+		bRemove.setEnabled(enabled);
+		if (bRemoveAll != null)
+		{
+			bRemoveAll.setEnabled(enabled);
+		}
 	}
 
 	/**
-	 * Create Picking Slots buttons
+	 * Method called when user presses {@link #bAdd}, {@link #bAddAll}, {@link #bRemove}, {@link #bRemoveAll} buttons.
 	 */
-	@Override
-	protected PickingSlotLayout createPickingSlotsKeyLayout()
-	{
-		final PickingSlotLayout pickingSlotLayout = new PickingSlotLayout(getTerminalContext());
-		pickingSlotLayout.setRows(2);
-		pickingSlotLayout.setBasePanel(getTerminalBasePanel());
-		return pickingSlotLayout;
-	}
-
-	/**
-	 * Gets {@link PickingSlotLayout}.
-	 */
-	@Override
-	public final PickingSlotLayout getPickingSlotsKeyLayout()
-	{
-		return (PickingSlotLayout)super.getPickingSlotsKeyLayout();
-	}
-
-	@Override
-	protected FreshQtyListener createQtyListener()
-	{
-		return new FreshQtyListener(this);
-	}
-
-	@Override
-	public final void createAddRemoveAll()
-	{
-		// nothing to do
-		// we do not want the ALL buttons
-	}
-
 	@Override
 	public final void propertyChange(final PropertyChangeEvent evt)
 	{
@@ -258,24 +388,24 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		if (selectedPickingSlotKey == null)
 		{
-			warn(SwingPackageBoxesItems.ERR_NO_BOX_SELECTED);
+			warn(ERR_NO_BOX_SELECTED);
 			return;
 		}
 
-		final FreshProductKey selectedProduct = getSelectedProduct();
+		final ProductKey selectedProduct = getSelectedProduct();
 		final Object action = evt.getNewValue();
-		if (SwingPackageBoxesItems.ACTION_Add.equals(action))
+		if (ACTION_Add.equals(action))
 		{
 			if (selectedProduct == null)
 			{
-				warn(SwingPackageBoxesItems.ERR_NO_PRODUCT_SELECTED);
+				warn(ERR_NO_PRODUCT_SELECTED);
 				return;
 			}
 
 			final BigDecimal newQty = getQty();
 			if (newQty == null || newQty.signum() == 0)
 			{
-				warn(FreshSwingPackageItems.ERR_Fresh_SWING_PACKAGE_ITEMS_QTY_NULL);
+				warn(ERR_Fresh_SWING_PACKAGE_ITEMS_QTY_NULL);
 				return;
 			}
 
@@ -283,7 +413,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 			if (newQty.compareTo(unallocQty) > 0)
 			{
-				warn(FreshSwingPackageItems.ERR_MAX_QTY);
+				warn(ERR_MAX_QTY);
 				setQty(BigDecimal.ZERO);
 				return;
 			}
@@ -321,11 +451,11 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		{
 			onHUEditor();
 		}
-		else if (SwingPackageBoxesItems.ACTION_Remove.equals(action))
+		else if (ACTION_Remove.equals(action))
 		{
 			if (selectedProduct == null)
 			{
-				warn(SwingPackageBoxesItems.ERR_NO_PRODUCT_SELECTED);
+				warn(ERR_NO_PRODUCT_SELECTED);
 				return;
 			}
 
@@ -365,7 +495,92 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		getPackageTerminalPanel().keyPressed(selectedPickingSlotKey);
 	}
 
-	public final FreshProductKey getSelectedProduct()
+	void warn(final String message)
+	{
+		getTerminalFactory().showWarning(this, ITerminalFactory.TITLE_WARN, new TerminalException(message));
+	}
+
+	/**
+	 * @return the quantity field; never returns null
+	 */
+	private final ITerminalNumericField getQtyField()
+	{
+		return fQty;
+	}
+
+	/**
+	 * @return current quantity from quantity field
+	 */
+	public final BigDecimal getQty()
+	{
+		return getQtyField().getValue();
+	}
+
+	/**
+	 * Sets given quantity to quantity field.
+	 *
+	 * NOTE: it will also fire the change event.
+	 *
+	 * @param qty
+	 */
+	public final void setQty(final BigDecimal qty)
+	{
+		getQtyField().setValue(qty);
+	}
+
+	/**
+	 * Sets qty field using the value provided by given supplier.
+	 *
+	 * In case supplier fails, ZERO will be set and the exception will be propagated.
+	 *
+	 * @param qtySupplier
+	 */
+	public final void setQty(@NonNull final Supplier<BigDecimal> qtySupplier)
+	{
+		boolean qtySet = false;
+		try
+		{
+			final BigDecimal qty = qtySupplier.get();
+			setQty(qty);
+			qtySet = true;
+		}
+		finally
+		{
+			if (!qtySet)
+			{
+				setQty(BigDecimal.ZERO);
+			}
+		}
+	}
+
+	/**
+	 * Sets qty field from given qty string.
+	 *
+	 * NOTE: this method will not fire change events
+	 */
+	public final void setQtyNoFire(@NonNull final String qty)
+	{
+		BigDecimal bQty = new BigDecimal(qty);
+		if (bQty.scale() != 0)
+		{
+			bQty = bQty.setScale(2, BigDecimal.ROUND_HALF_UP);
+		}
+		final ITerminalNumericField qtyField = getQtyField();
+		qtyField.setValue(bQty, false);
+	}
+
+	/**
+	 * Sets the entire qty field (actual number field, plus button, minus button) to be read-only or editable.
+	 *
+	 * @param readOnly
+	 * @see #setQtyFieldReadOnly(boolean, boolean, boolean)
+	 */
+	public final void setQtyFieldReadOnly(final boolean readOnly)
+	{
+		getQtyField().setEditable(!readOnly);
+	}
+
+	public final ProductKey getSelectedProduct()
 	{
 		final ITerminalKeyPanel productsKeyLayoutPanel = getProductsKeyLayoutPanel();
 		if (productsKeyLayoutPanel == null)
@@ -373,51 +588,26 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 			return null;
 		}
 
-		return FreshProductKey.cast(productsKeyLayoutPanel.getSelectedKey());
+		return ProductKey.cast(productsKeyLayoutPanel.getSelectedKey());
 	}
 
 	/**
 	 * @return all product keys which are currently available
 	 */
-	public List<FreshProductKey> getAllProductKeys()
+	public List<ProductKey> getAllProductKeys()
 	{
-		return getProductsKeyLayout().getKeys(FreshProductKey.class);
-	}
-
-	public List<IPackingItem> createUnpackedForBpAndBPLoc(final List<IPackingItem> packingItems, final PickingSlotKey pickingSlotKey)
-	{
-		if (packingItems == null || packingItems.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<IPackingItem> result = new ArrayList<>();
-		for (final IPackingItem packingItem : packingItems)
-		{
-			// Skip those which are not compatible with our picking slot
-			if (!pickingSlotKey.isCompatible(packingItem))
-			{
-				continue;
-			}
-
-			result.add(packingItem);
-		}
-
-		return result;
+		return getProductsKeyLayout().getKeys(ProductKey.class);
 	}
 
 	/**
 	 * get the packing state by items form the slot
-	 *
-	 * @param pickingSlotKey
-	 * @return
 	 */
 	private PackingStates getPackingState(final PickingSlotKey pickingSlotKey)
 	{
 		final PackingItemsMap packingItems = getPackingItems();
-		final PackingSlot packedItemsSlot = PackingSlot.ofPickingSlotId(pickingSlotKey.getPickingSlotId());
+		final PackingSlot packedItemsSlot = pickingSlotKey.getPackingSlot();
 		final List<IPackingItem> packedItems = packingItems.getBySlot(packedItemsSlot);
-		final List<IPackingItem> unpackedItems = createUnpackedForBpAndBPLoc(packingItems.getUnpackedItems(), pickingSlotKey);
+		final List<IPackingItem> unpackedItems = packingItems.getUnpackedItemsMatching(pickingSlotKey::isCompatible);
 
 		if (unpackedItems == null || unpackedItems.isEmpty())
 		{
@@ -506,7 +696,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		//
 		// Find out which are the available HUs from which we can take
-		final FreshProductKey productKey = getSelectedProduct();
+		final ProductKey productKey = getSelectedProduct();
 		final List<I_M_HU> availableHUsToPickFrom = productKey.findAvailableHUs(true); // considerAttributes = true
 		availableHUsToPickFrom.remove(targetHU); // remove target from source, just to be sure
 
@@ -546,7 +736,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 		final IPackingItem itemUnpacked = packingItems.getUnpackedItemByGroupingKey(packingItem.getGroupingKey());
 
-		final PackingSlot slot = PackingSlot.ofPickingSlotId(selectedPickingSlotKey.getPickingSlotId());
+		final PackingSlot slot = getSelectedPackingSlot();
 
 		// we need to remove the recently unpacked item from packed
 		final List<IPackingItem> itemsPackedRemaining = new ArrayList<>();
@@ -620,7 +810,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 */
 	public void refreshProducts()
 	{
-		final FreshProductLayout productlayout = getProductsKeyLayout();
+		final ProductKeyLayout productlayout = getProductsKeyLayout();
 
 		// Clear product keys.
 		// They will be automatically recreated by the products key layout.
@@ -711,7 +901,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// return false;
 		// }
 
-		final FreshProductKey productKey = getSelectedProduct();
+		final ProductKey productKey = getSelectedProduct();
 		if (productKey == null)
 		{
 			return false;
@@ -736,7 +926,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final PickingSlotKey pickingSlotKey = getSelectedPickingSlotKey();
 		Check.assumeNotNull(pickingSlotKey, "pickingSlotKey not null");
 
-		final FreshProductKey productKey = getSelectedProduct();
+		final ProductKey productKey = getSelectedProduct();
 		Check.assumeNotNull(productKey, "productKey not null");
 
 		//
@@ -810,7 +1000,39 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	 */
 	private void onHUEditor()
 	{
-		final FreshProductKey productKey = getSelectedProduct();
+		final Set<I_M_HU> husSelected = openHUEditorAndGetSelectedHUs();
+		if (husSelected.isEmpty())
+		{
+			// nothing selected, nothing to do
+			return;
+		}
+
+		//
+		// Get the selected shipment schedules' C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
+		final ProductKey productKey = getSelectedProduct();
+		final IPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
+		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
+
+		//
+		// Make sure the picking slot (this is necessary if it's a dynamic one) is allocated to them (fresh_06974)
+		final PickingSlotKey pickingSlotKey = getSelectedPickingSlotKey();
+		pickingSlotKey.allocateDynamicPickingSlotIfPossible(
+				unallocatedPackingItem.getBPartnerId(),
+				unallocatedPackingItem.getBPartnerLocationId());
+
+		// 07161: this also associates the HUs to the shipment schedule we are currently picking for,
+		// causing the hu's C_BPartner_ID and C_BPartner_Location_ID to be updated from the schedule.
+		// TODO it might be required to split the selected HU's VHU if one HU is assigned to two or more shipment scheds
+		allocateItemToHUs(unallocatedPackingItem, husSelected);
+
+		// Move selected HUs directly to Picking slot queue
+		// this also calls IHUPickingSlotBL.addToPickingSlotQueue()
+		pickingSlotKey.addHUsToQueue(husSelected);
+	}
+
+	private Set<I_M_HU> openHUEditorAndGetSelectedHUs()
+	{
+		final ProductKey productKey = getSelectedProduct();
 		Check.assumeNotNull(productKey, "productKey not null");
 
 		final PickingSlotKey pickingSlotKey = getSelectedPickingSlotKey();
@@ -843,9 +1065,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		final IHUKeyFactory huKeyFactory = terminalContext.getService(IHUKeyFactory.class);
 		huKeyFactory.clearCache();
 
-		// the selected HUs are set from the HU-Editor within the following try-with-resources block
-		final Set<I_M_HU> husSelected;
-
+		//
 		try (final ITerminalContextReferences refs = terminalContext.newReferences())
 		{
 			//
@@ -869,37 +1089,11 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 
 			if (editorDialog.isCanceled())
 			{
-				return; // nothing to do
+				return ImmutableSet.of(); // nothing to do
 			}
 
-			husSelected = huEditorModel.getSelectedHUs();
+			return huEditorModel.getSelectedHUs();
 		}
-
-		if (husSelected.isEmpty())
-		{
-			// nothing selected, nothing to do
-			return;
-		}
-
-		//
-		// Get the selected shipment schedules' C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
-		final IPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
-		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
-		final BPartnerId bpartnerId = unallocatedPackingItem.getBPartnerId();
-		final BPartnerLocationId bpartnerLocationId = unallocatedPackingItem.getBPartnerLocationId();
-
-		//
-		// Make sure the picking slot (this is necessary if it's a dynamic one) is allocated to them (fresh_06974)
-		pickingSlotKey.allocateDynamicPickingSlotIfPossible(bpartnerId, bpartnerLocationId);
-
-		// 07161: this also associates the HUs to the shipment schedule we are currently picking for,
-		// causing the hu's C_BPartner_ID and C_BPartner_Location_ID to be updated from the schedule.
-		// TODO it might be required to split the selected HU's VHU if one HU is assigned to two or more shipment scheds
-		allocateItemToHUs(productKey.getUnAllocatedPackingItem(), husSelected);
-
-		// Move selected HUs directly to Picking slot queue
-		// this also calls IHUPickingSlotBL.addToPickingSlotQueue()
-		pickingSlotKey.addHUsToQueue(husSelected);
 	}
 
 	/**
@@ -931,8 +1125,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	{
 		final PickingSlotKey selectedPickingSlotKey = getSelectedPickingSlotKey();
 		Check.assumeNotNull(selectedPickingSlotKey, "selectedPickingSlotKey not null");
-		final PackingSlot packedItemsSlot = PackingSlot.ofPickingSlotId(selectedPickingSlotKey.getPickingSlotId());
-		return packedItemsSlot;
+		return selectedPickingSlotKey.getPackingSlot();
 	}
 
 	private PackingItemsMap getPackingItems()
