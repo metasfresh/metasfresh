@@ -13,22 +13,21 @@ package de.metas.fresh.picking.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 
 import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.TableColorProviderAdapter;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * 
@@ -37,28 +36,23 @@ import de.metas.util.Check;
  */
 final class SwingPickingOKPanel_TableColorProvider extends TableColorProviderAdapter
 {
-	private final SwingPickingOKPanel pickingPanel;
+	private final FreshPackingMd model;
 
-	public SwingPickingOKPanel_TableColorProvider(final SwingPickingOKPanel pickingPanel)
+	public SwingPickingOKPanel_TableColorProvider(@NonNull final FreshPackingMd model)
 	{
-		super();
-
-		Check.assumeNotNull(pickingPanel, "pickingPanel not null");
-		this.pickingPanel = pickingPanel;
+		this.model = model;
 	}
 
 	@Override
 	public Color getBackgroundColor(final ITable table, final int rowIndexModel)
 	{
-		final FreshPackingMd pickingModel = pickingPanel.getModel();
-
-		final ITableRowSearchSelectionMatcher tableRowSearchSelectionMatcher = pickingModel.getTableRowSearchSelectionMatcher();
+		final ITableRowSearchSelectionMatcher tableRowSearchSelectionMatcher = model.getTableRowSearchSelectionMatcher();
 		if (tableRowSearchSelectionMatcher.isNull())
 		{
 			return COLOR_NONE;
 		}
 
-		final TableRowKey tableRowKey = pickingModel.getTableRowKeyForRow(rowIndexModel);
+		final TableRowKey tableRowKey = model.getTableRowKeyForRow(rowIndexModel);
 		if (tableRowKey == null)
 		{
 			// shall not happen

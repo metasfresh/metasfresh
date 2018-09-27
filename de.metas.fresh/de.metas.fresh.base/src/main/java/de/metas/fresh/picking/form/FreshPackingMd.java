@@ -64,6 +64,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class FreshPackingMd
 {
@@ -114,9 +115,10 @@ public class FreshPackingMd
 		return lines;
 	}
 
-	public void setLines(final SpecialTerminalTable lines)
+	public void setLines(@NonNull final SpecialTerminalTable lines)
 	{
 		this.lines = lines;
+		lines.setColorProvider(new SwingPickingOKPanel_TableColorProvider(this));
 	}
 
 	public boolean isGroupByWarehouseDest()

@@ -174,7 +174,6 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 	private SpecialTerminalTable createTerminalTable()
 	{
 		final SpecialTerminalTable lines = new SpecialTerminalTable(getTerminalContext());
-		lines.setColorProvider(new SwingPickingOKPanel_TableColorProvider(this));
 		return lines;
 	}
 
