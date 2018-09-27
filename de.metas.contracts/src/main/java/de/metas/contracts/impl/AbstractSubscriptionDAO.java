@@ -216,7 +216,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 	@Override
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
-	public final List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
+	public List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
@@ -229,7 +229,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 
 	@Override
 	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
-	public final OrderId retrieveLinkedFollowUpContractOrder(@NonNull final OrderId orderId)
+	public OrderId retrieveLinkedFollowUpContractOrder(@NonNull final OrderId orderId)
 	{
 		int oroginalOrderId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
