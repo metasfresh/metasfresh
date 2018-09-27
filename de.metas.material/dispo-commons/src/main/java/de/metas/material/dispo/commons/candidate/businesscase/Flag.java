@@ -31,7 +31,7 @@ public enum Flag
 	FALSE,
 
 	/**
-	 * Don't update existing records, but initialize new ones to with {@code false}.
+	 * Don't update existing records, but initialize new ones to {@code false}.
 	 * <p>
 	 * Only used when storing an instance with the {@link CandidateRepositoryWriteService}.<br>
 	 * If you load an instance from DB, it shall never have flags with this value.

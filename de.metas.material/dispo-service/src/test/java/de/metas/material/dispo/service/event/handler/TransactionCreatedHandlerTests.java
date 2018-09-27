@@ -3,6 +3,8 @@ package de.metas.material.dispo.service.event.handler;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -23,6 +25,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -87,7 +90,7 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCommonCandidateBuilder_negative_qantity()
 	{
-		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate()).build();
+		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN.negate()).build();
 
 		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
 				event,
@@ -100,7 +103,7 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCommonCandidateBuilder_positive_qantity()
 	{
-		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN).build();
 
 		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
 				event,
@@ -114,7 +117,7 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCandidate_unrelated_transaction_no_existing_candiate()
 	{
-		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
 
 		// @formatter:off
 		new Expectations()
@@ -147,7 +150,7 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCandidate_unrelated_transaction_already_existing_candiate_with_different_transaction()
 	{
-		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
+		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
 
 		final Candidate exisitingCandidate = Candidate.builder()
 				.type(CandidateType.UNRELATED_INCREASE)
@@ -155,10 +158,10 @@ public class TransactionCreatedHandlerTests
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
-						.quantity(BigDecimal.ONE)
+						.quantity(ONE)
 						.date(SystemTime.asTimestamp())
 						.build())
-				.transactionDetail(TransactionDetail.forCandidateOrQuery(BigDecimal.ONE, TRANSACTION_ID + 1))
+				.transactionDetail(TransactionDetail.forCandidateOrQuery(ONE, AttributesKey.ALL, 0, TRANSACTION_ID + 1))
 				.build();
 
 		// @formatter:off
@@ -204,8 +207,8 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
-		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
-				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, BigDecimal.TEN.negate()).build();
+		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate())
+				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, TEN.negate()).build();
 
 		// @formatter:off
 		new Expectations()
@@ -264,8 +267,8 @@ public class TransactionCreatedHandlerTests
 				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1;	result = exisitingCandidate;
 		}}; // @formatter:on
 
-		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate())
-				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, BigDecimal.TEN.negate())
+		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate())
+				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, TEN.negate())
 				.transactionId(TRANSACTION_ID)
 				.build();
 

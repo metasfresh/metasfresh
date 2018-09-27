@@ -91,7 +91,7 @@ public class OrderResponsePackageItemPart
 				.put("NichtLieferbar", NICHT_LIEFERBAR)
 				.build();
 
-		public static Type ofStringValueOrNull(@NonNull final String value)
+		public static Type ofStringValueOrNull(@Nullable final String value)
 		{
 			if (value == null)
 			{
