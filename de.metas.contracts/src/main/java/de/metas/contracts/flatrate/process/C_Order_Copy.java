@@ -1,12 +1,7 @@
 package de.metas.contracts.flatrate.process;
 
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PO;
-import org.compiere.model.X_C_Order;
-
 import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -23,31 +18,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 	protected String doIt()
 	{
 		final I_C_Order existentOrder = getRecord(I_C_Order.class);
-		final I_C_Order newOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, existentOrder);
-		
-		final PO to = InterfaceWrapperHelper.getPO(newOrder);
-		final PO from = InterfaceWrapperHelper.getPO(existentOrder);
-				
-		PO.copyValues(from, to, true);
-
-		InterfaceWrapperHelper.save(newOrder);
-		
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name);
-		childCRS.setParentPO(to);
-		childCRS.setBase(true);
-		childCRS.copyRecord(from, get_TrxName());
-
-		newOrder.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
-		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
-		
-		InterfaceWrapperHelper.save(newOrder);
-
-		// link the existent order to the new one
-		existentOrder.setRef_FollowupOrder_ID(newOrder.getC_Order_ID());
-		InterfaceWrapperHelper.save(existentOrder);
-
-		return newOrder.getDocumentNo();
-		
+		return ExtendContractOrder.extend(existentOrder);
 	}
 
 

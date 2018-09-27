@@ -315,7 +315,7 @@ public abstract class AbstractFlatrateTermTest
 
 	protected I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product, @NonNull final Timestamp startDate)
 	{
-		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions);
+		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, product);
 		
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
@@ -347,7 +347,7 @@ public abstract class AbstractFlatrateTermTest
 		return contract;
 	}
 
-	private I_C_OrderLine createOrderAndOrderLine(final I_C_Flatrate_Conditions conditions)
+	private I_C_OrderLine createOrderAndOrderLine(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product)
 	{
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
 		orderRecord.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
@@ -356,6 +356,7 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
 		orderLineRecord.setC_Order(orderRecord);
 		orderLineRecord.setC_Flatrate_Conditions(conditions);
+		orderLineRecord.setM_Product(product);
 		saveRecord(orderLineRecord);
 		
 		return orderLineRecord;
