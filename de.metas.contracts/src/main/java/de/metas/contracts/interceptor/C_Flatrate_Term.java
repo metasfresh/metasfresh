@@ -42,6 +42,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.POInfo;
@@ -51,6 +52,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -64,11 +66,14 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -574,6 +579,66 @@ public class C_Flatrate_Term
 			{
 				term.setMasterDocumentNo(ancestor.getMasterDocumentNo());
 			}
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_ContractStatus,I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID
+	})
+	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
+	{
+		final I_C_OrderLine ol = term.getC_OrderLine_Term();
+		if (ol == null)
+		{
+			return;
+		}
+		
+		final I_C_Order contractOrder = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
+		
+		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+		
+		if (InterfaceWrapperHelper.isNew(term))
+		{
+			subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+			return;
+		}
+		
+		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
+		final List<OrderId> orderIds = Services.get(ISubscriptionDAO.class).retrieveAllContractOrderList(orderId);
+		
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) 
+				&& term.getC_FlatrateTerm_Next_ID() > 0)
+		{
+			// update order contract status to extended
+			orderIds.forEach(id -> {
+				final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
+				subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
+			});
+		}
+		
+		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
+				)
+		{
+			// update order contract status to cancelled
+			orderIds.forEach( id -> {
+				final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
+				subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
+			});
+		}
+		
+		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
+		{
+			// if the list is bigger then 1, means that we have multiple sales order and the contract is still active 
+			// same, if has predecessor, means that is still active; at least for now
+			if (orderIds.size() > 1 || Services.get(IContractsDAO.class).termHasAPredecessor(term))
+			{
+				return;
+			}
+			
+			subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
 		}
 	}
 }
