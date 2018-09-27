@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,21 +52,27 @@ public final class JSONDocumentAction implements Serializable
 
 	@JsonProperty("processId")
 	private final String processId;
+
 	@JsonProperty("caption")
 	private final String caption;
+
 	@JsonProperty("description")
 	private final String description;
+
 	@JsonProperty("quickAction")
 	private final boolean quickAction;
+
 	@JsonProperty("defaultQuickAction")
 	private final boolean defaultQuickAction;
 
 	@JsonProperty("disabled")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean disabled;
+
 	@JsonProperty("disabledReason")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String disabledReason;
+
 	@JsonProperty("disabledWithInternalReason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean disabledWithInternalReason; // exposed only for tracing/debugging
@@ -74,12 +81,16 @@ public final class JSONDocumentAction implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String evaluateDurationStr;
 
+	@JsonProperty("internalName")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String internalName;
+
 	private final Map<String, Object> debugProperties;
 
-	JSONDocumentAction(final WebuiRelatedProcessDescriptor relatedProcessDescriptor, final JSONOptions jsonOpts)
+	JSONDocumentAction(
+			@NonNull final WebuiRelatedProcessDescriptor relatedProcessDescriptor,
+			@NonNull final JSONOptions jsonOpts)
 	{
-		super();
-
 		final String adLanguage = jsonOpts.getAD_Language();
 
 		processId = relatedProcessDescriptor.getProcessId().toJson();
@@ -95,6 +106,8 @@ public final class JSONDocumentAction implements Serializable
 
 		final Duration preconditionsResolutionCalcDuration = relatedProcessDescriptor.getPreconditionsResolutionCalcDuration();
 		evaluateDurationStr = preconditionsResolutionCalcDuration != null ? TimeUtil.formatElapsed(preconditionsResolutionCalcDuration) : null;
+
+		internalName = relatedProcessDescriptor.getInternalName();
 
 		//
 		// Debug properties

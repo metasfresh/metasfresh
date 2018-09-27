@@ -89,7 +89,6 @@ public final class JSONOptions
 
 	private JSONOptions(final Builder builder)
 	{
-		super();
 		adLanguage = builder.getAD_Language();
 		showAdvancedFields = builder.isShowAdvancedFields();
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);

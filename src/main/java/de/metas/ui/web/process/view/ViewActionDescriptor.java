@@ -112,6 +112,7 @@ public final class ViewActionDescriptor
 
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
+				.setInternalName(actionId)
 				.setType(ProcessDescriptorType.Process)
 				//
 				.setLayout(processLayout)

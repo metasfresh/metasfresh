@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -98,10 +100,11 @@ import lombok.NonNull;
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntryBuilder;
 
-	public GridTabVOBasedDocumentEntityDescriptorFactory(final GridTabVO gridTabVO,
-			final GridTabVO parentTabVO,
+	public GridTabVOBasedDocumentEntityDescriptorFactory(
+			@NonNull final GridTabVO gridTabVO,
+			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
-			final List<I_AD_UI_Element> labelsUIElements)
+			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
 		final boolean rootEntity = parentTabVO == null;
 
@@ -169,10 +172,11 @@ import lombok.NonNull;
 		return _documentEntryBuilder;
 	}
 
-	private DocumentEntityDescriptor.Builder createDocumentEntityBuilder(final GridTabVO gridTabVO,
-			final GridTabVO parentTabVO,
+	private DocumentEntityDescriptor.Builder createDocumentEntityBuilder(
+			@NonNull final GridTabVO gridTabVO,
+			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
-			final List<I_AD_UI_Element> labelsUIElements)
+			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
 		final String tableName = gridTabVO.getTableName();
 
