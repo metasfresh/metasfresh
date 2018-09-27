@@ -244,7 +244,11 @@ class Lookup extends Component {
   // TODO: Rewrite per widget
   handleClear = () => {
     const { onChange, properties, onSelectBarcode } = this.props;
-    const onChangeResp = onChange && onChange(properties, null, false);
+    const propsWithoutTooltips = properties.filter(
+      prop => prop.type !== 'Tooltip'
+    );
+    const onChangeResp =
+      onChange && onChange(propsWithoutTooltips, null, false);
 
     if (onChangeResp && onChangeResp.then) {
       onChangeResp.then(resp => {
