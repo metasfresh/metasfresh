@@ -45,7 +45,6 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.POInfo;
-import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
@@ -107,9 +106,13 @@ public class C_Flatrate_Term
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final List<I_AD_Org> orgs = new Query(Env.getCtx(), I_AD_Org.Table_Name, I_AD_Org.COLUMNNAME_AD_Org_ID + "!=0", null)
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
+		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class) 
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, 0) 
+				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
+				.create()
 				.list(I_AD_Org.class);
 
 		for (final I_AD_Org org : orgs)
@@ -266,12 +269,14 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void unsetNextIdReference(final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
-		final List<I_C_Flatrate_Term> predecessorTerms = new Query(ctx, I_C_Flatrate_Term.Table_Name, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID + "=?", trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+		final List<I_C_Flatrate_Term> predecessorTerms = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, term.getC_Flatrate_Term_ID())
+				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.create()
 				.list(I_C_Flatrate_Term.class);
 
 		Check.assume(predecessorTerms.size() <= 1, term + " has max 1 predecessor");
@@ -290,13 +295,15 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateOLCandReference(final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
-		final List<I_C_Contract_Term_Alloc> ctas = new Query(ctx, I_C_Contract_Term_Alloc.Table_Name, I_C_Contract_Term_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=?", trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setOrderBy(I_C_Contract_Term_Alloc.COLUMNNAME_C_Contract_Term_Alloc_ID)
+		final List<I_C_Contract_Term_Alloc> ctas = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Contract_Term_Alloc.class, term) 
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Contract_Term_Alloc.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.orderBy(I_C_Contract_Term_Alloc.COLUMNNAME_C_Contract_Term_Alloc_ID)
+				.create()
 				.list(I_C_Contract_Term_Alloc.class);
+		
 		for (final I_C_Contract_Term_Alloc cta : ctas)
 		{
 			final I_C_OLCand olCand = InterfaceWrapperHelper.create(cta.getC_OLCand(), I_C_OLCand.class);
