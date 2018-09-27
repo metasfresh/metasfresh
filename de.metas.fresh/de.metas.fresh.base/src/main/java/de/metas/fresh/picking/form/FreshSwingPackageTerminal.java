@@ -3,9 +3,9 @@
  */
 package de.metas.fresh.picking.form;
 
-import java.util.Collection;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.fresh.picking.FreshPackingDetailsMd;
+import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.fresh.picking.form.swing.FreshSwingPickingOKPanel;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemsMap;
@@ -22,14 +22,17 @@ import lombok.NonNull;
  */
 public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 {
+	private final PackingDetailsModel packingDetailsModel;
 	private PackingItemsMap packingItems;
 
-	public FreshSwingPackageTerminal(final FreshSwingPickingOKPanel freshSwingPickingOKPanel, final FreshPackingDetailsMd packingDetailsModel)
+	public FreshSwingPackageTerminal(final FreshSwingPickingOKPanel freshSwingPickingOKPanel, final PackingDetailsModel packingDetailsModel)
 	{
-		super(freshSwingPickingOKPanel, packingDetailsModel);
+		super(freshSwingPickingOKPanel);
+		
+		this.packingDetailsModel = packingDetailsModel;
 
 		// get packing items
-		final Collection<IPackingItem> unallocatedLines = packingDetailsModel.getUnallocatedLines();
+		final ImmutableList<IPackingItem> unallocatedLines = packingDetailsModel.getUnallocatedLines();
 		packingItems = PackingItemsMap.ofUnpackedItems(unallocatedLines);
 	}
 
@@ -57,5 +60,10 @@ public class FreshSwingPackageTerminal extends AbstractPackageTerminal
 	public static FreshSwingPackageTerminal cast(final AbstractPackageTerminal packageTerminal)
 	{
 		return (FreshSwingPackageTerminal)packageTerminal;
+	}
+
+	public PackingDetailsModel getPackingDetailsModel()
+	{
+		return packingDetailsModel;
 	}
 }

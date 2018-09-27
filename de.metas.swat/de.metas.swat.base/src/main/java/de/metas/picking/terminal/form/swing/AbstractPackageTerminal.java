@@ -31,7 +31,6 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.terminal.PickingOKPanel;
 import lombok.NonNull;
 
@@ -49,7 +48,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	 * i.e. picking first window
 	 */
 	private final PickingOKPanel pickingOKPanel;
-	private final IPackingDetailsModel model;
 
 	/**
 	 * Window content panel
@@ -61,13 +59,10 @@ public abstract class AbstractPackageTerminal implements FormPanel
 		return panel;
 	}
 
-	public AbstractPackageTerminal(
-			@NonNull final SwingPickingOKPanel pickingOKPanel,
-			@NonNull final IPackingDetailsModel packingDetailsModel)
+	public AbstractPackageTerminal(@NonNull final SwingPickingOKPanel pickingOKPanel)
 	{
 		this.terminalContext = pickingOKPanel.getTerminalContext();
 		this.pickingOKPanel = pickingOKPanel;
-		this.model = packingDetailsModel;
 	}
 
 	public ITerminalContext getTerminalContext()
@@ -78,11 +73,6 @@ public abstract class AbstractPackageTerminal implements FormPanel
 	public PickingOKPanel getPickingOKPanel()
 	{
 		return pickingOKPanel;
-	}
-
-	protected IPackingDetailsModel getPackingDetailsModel()
-	{
-		return model;
 	}
 
 	@Override

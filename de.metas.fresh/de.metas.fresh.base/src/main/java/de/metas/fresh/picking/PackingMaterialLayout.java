@@ -16,21 +16,22 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -70,14 +71,14 @@ public class PackingMaterialLayout extends KeyLayout
 	}
 
 	@Override
-	protected List<ITerminalKey> createKeys()
+	protected ImmutableList<ITerminalKey> createKeys()
 	{
 		//
 		// If there is no picking slot selected => display nothing to user
 		final PickingSlotKey pickingSlotKey = getSelectedPickingSlotKey();
 		if (pickingSlotKey == null)
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		//
@@ -94,13 +95,13 @@ public class PackingMaterialLayout extends KeyLayout
 		}
 		if (productKeysToCheckForCompatibility.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		//
 		// Start with all available Packing Material Keys,
 		// and then take out those which are not compatible.
-		final List<ITerminalKey> packingMaterialKeys = new ArrayList<ITerminalKey>(getAvailablePackingMaterialKeys());
+		final ArrayList<ITerminalKey> packingMaterialKeys = new ArrayList<>(getAvailablePackingMaterialKeys());
 		final ITerminalContext terminalContext = getTerminalContext();
 		for (final Iterator<ITerminalKey> it = packingMaterialKeys.iterator(); it.hasNext();)
 		{
@@ -121,7 +122,7 @@ public class PackingMaterialLayout extends KeyLayout
 			}
 		}
 
-		return Collections.unmodifiableList(packingMaterialKeys);
+		return ImmutableList.copyOf(packingMaterialKeys);
 	}
 
 	private PickingSlotKey getSelectedPickingSlotKey()
@@ -142,10 +143,9 @@ public class PackingMaterialLayout extends KeyLayout
 		return productKeysPanel.getAllProductKeys();
 	}
 
-	private List<PackingMaterialKey> getAvailablePackingMaterialKeys()
+	private ImmutableList<PackingMaterialKey> getAvailablePackingMaterialKeys()
 	{
-		final FreshPackingDetailsMd model = getBasePanel().getModel();
-		return model.getAvailablePackingMaterialKeys();
+		return getBasePanel().getAvailablePackingMaterialKeys();
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public class PackingMaterialLayout extends KeyLayout
 	/**
 	 * Gets default {@link PackingMaterialKey} background color. i.e.
 	 * <ul>
-	 * <li> {@link #COLOR_MatchedForProductKey}, if the current selected {@link FreshProductKey} has exactly the same default packing materials as this key has
+	 * <li>{@link #COLOR_MatchedForProductKey}, if the current selected {@link FreshProductKey} has exactly the same default packing materials as this key has
 	 * <li>else {@link #COLOR_Default}
 	 * </ul>
 	 */

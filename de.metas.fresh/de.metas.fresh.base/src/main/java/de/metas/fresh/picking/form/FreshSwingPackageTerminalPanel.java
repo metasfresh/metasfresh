@@ -28,6 +28,7 @@ package de.metas.fresh.picking.form;
 import java.math.BigDecimal;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -35,8 +36,8 @@ import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
-import de.metas.fresh.picking.FreshPackingDetailsMd;
 import de.metas.fresh.picking.FreshProductKey;
+import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
 import de.metas.fresh.picking.PickingSlotKey;
@@ -87,10 +88,19 @@ public class FreshSwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		getParent().setPackingItems(packingItems);
 	}
 
-	@Override
-	public FreshPackingDetailsMd getModel()
+	private PackingDetailsModel getPackingDetailsModel()
 	{
-		return (FreshPackingDetailsMd)super.getModel();
+		return getParent().getPackingDetailsModel();
+	}
+
+	public ImmutableList<PickingSlotKey> getAvailablePickingSlots()
+	{
+		return getPackingDetailsModel().getAvailablePickingSlots();
+	}
+
+	public ImmutableList<PackingMaterialKey> getAvailablePackingMaterialKeys()
+	{
+		return getPackingDetailsModel().getAvailablePackingMaterialKeys();
 	}
 
 	@Override

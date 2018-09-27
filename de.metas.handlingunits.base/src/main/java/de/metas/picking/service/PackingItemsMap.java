@@ -65,6 +65,27 @@ public final class PackingItemsMap
 		return getBySlot(PackingSlot.UNPACKED);
 	}
 
+	public final IPackingItem getUnpackedItemByGroupingKey(@NonNull final PackingItemGroupingKey groupingKey)
+	{
+		final ImmutableList<IPackingItem> items = getUnpackedItems()
+				.stream()
+				.filter(item -> PackingItemGroupingKey.equals(item.getGroupingKey(), groupingKey))
+				.collect(ImmutableList.toImmutableList());
+
+		if (items.isEmpty())
+		{
+			return null;
+		}
+		else if (items.size() == 1)
+		{
+			return items.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("More than one item found for " + groupingKey + " in " + this);
+		}
+	}
+
 	public void addUnpackedItem(@NonNull final IPackingItem item)
 	{
 		addItem(PackingSlot.UNPACKED, item);

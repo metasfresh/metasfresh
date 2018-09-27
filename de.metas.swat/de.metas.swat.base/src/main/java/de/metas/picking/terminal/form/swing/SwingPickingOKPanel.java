@@ -69,7 +69,6 @@ import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.MvcMdGenForm;
 import de.metas.picking.legacy.form.PackingMd;
@@ -334,30 +333,32 @@ public abstract class SwingPickingOKPanel extends PackingPanel implements Pickin
 	@Override
 	protected void executePacking(final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final IPackingDetailsModel detailsModel = createPackingDetailsModel(shipmentScheduleIds);
-
 		//
 		// Cleanup old Package Terminal (if any)
-		final AbstractPackageTerminal packageTerminalOld = this.packageTerminal;
-		if (packageTerminalOld != null && packageTerminalOld.getFrame() != null)
 		{
-			packageTerminalOld.getFrame().removeWindowListener(packageTerminalWindowListener);
-			getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
-		}
-		packageTerminal = null;
+			final AbstractPackageTerminal packageTerminalOld = this.packageTerminal;
+			if (packageTerminalOld != null && packageTerminalOld.getFrame() != null)
+			{
+				packageTerminalOld.getFrame().removeWindowListener(packageTerminalWindowListener);
+				getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
+			}
+			packageTerminal = null;
 
-		packageTerminalRefs = getTerminalContext().newReferences(); // gh #1911
+			packageTerminalRefs = getTerminalContext().newReferences(); // gh #1911
+		}
 
 		//
 		// Create and setup new Package Terminal
-		final AbstractPackageTerminal packageTerminalNew = createPackingTerminal(detailsModel);
-		final ITerminalContext terminalContext = getTerminalContext();
-		final FormFrame packageTerminalNewFrame = new FormFrame();
-		packageTerminalNew.init(terminalContext.getWindowNo(), packageTerminalNewFrame);
-		packageTerminalNewFrame.addWindowListener(packageTerminalWindowListener);
-		packageTerminal = packageTerminalNew;
+		{
+			final AbstractPackageTerminal packageTerminalNew = createPackingTerminal(shipmentScheduleIds);
+			final ITerminalContext terminalContext = getTerminalContext();
+			final FormFrame packageTerminalNewFrame = new FormFrame();
+			packageTerminalNew.init(terminalContext.getWindowNo(), packageTerminalNewFrame);
+			packageTerminalNewFrame.addWindowListener(packageTerminalWindowListener);
+			packageTerminal = packageTerminalNew;
 
-		AEnv.showMaximized(packageTerminalNewFrame);
+			AEnv.showMaximized(packageTerminalNewFrame);
+		}
 
 		//
 		// Disable this window
@@ -365,9 +366,7 @@ public abstract class SwingPickingOKPanel extends PackingPanel implements Pickin
 		setEnabled(false);
 	}
 
-	protected abstract IPackingDetailsModel createPackingDetailsModel(Set<ShipmentScheduleId> shipmentScheduleIds);
-
-	protected abstract AbstractPackageTerminal createPackingTerminal(IPackingDetailsModel detailsModel);
+	protected abstract AbstractPackageTerminal createPackingTerminal(Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	/**
 	 * Called when Package Terminal was closed

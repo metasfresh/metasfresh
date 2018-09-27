@@ -16,21 +16,21 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
@@ -72,10 +72,8 @@ public class PickingSlotLayout extends KeyLayout
 	@Override
 	protected List<ITerminalKey> createKeys()
 	{
-		final FreshPackingDetailsMd model = getBasePanel().getModel();
-		
-		final List<ITerminalKey> result = new ArrayList<>(model.getAvailablePickingSlots());
-		return Collections.unmodifiableList(result);
+		final ImmutableList<PickingSlotKey> keys = getBasePanel().getAvailablePickingSlots();
+		return ImmutableList.copyOf(keys);
 	}
 
 	public List<PickingSlotKey> getPickingSlotKeys()
@@ -90,7 +88,7 @@ public class PickingSlotLayout extends KeyLayout
 
 		return pickingSlotKeys;
 	}
-	
+
 	public List<PickingSlotKey> getPickingSlotKeys(final PickingSlotKeyGroup group)
 	{
 		final List<ITerminalKey> keys = getKeys();
@@ -103,7 +101,7 @@ public class PickingSlotLayout extends KeyLayout
 			{
 				continue;
 			}
-			
+
 			pickingSlotKeys.add(pickingSlotKey);
 		}
 

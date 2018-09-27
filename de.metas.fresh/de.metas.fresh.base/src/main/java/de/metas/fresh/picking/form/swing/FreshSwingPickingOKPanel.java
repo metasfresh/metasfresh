@@ -27,7 +27,6 @@ package de.metas.fresh.picking.form.swing;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import java.util.Set;
 
 import javax.swing.ListSelectionModel;
@@ -43,7 +42,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.FreshPackingDetailsMd;
+import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.fresh.picking.form.FreshPackingMd;
 import de.metas.fresh.picking.form.FreshPackingMdLinesComparator;
 import de.metas.fresh.picking.form.FreshSwingPackageTerminal;
@@ -51,13 +50,9 @@ import de.metas.fresh.picking.form.FreshSwingPickingMiniTableColorProvider;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
-import de.metas.picking.legacy.form.IPackingDetailsModel;
-import de.metas.picking.service.IPackingItem;
-import de.metas.picking.service.PackingItems;
 import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -129,28 +124,11 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	}
 
 	@Override
-	protected AbstractPackageTerminal createPackingTerminal(final IPackingDetailsModel detailsModel)
+	protected AbstractPackageTerminal createPackingTerminal(final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		Check.assumeInstanceOf(detailsModel, FreshPackingDetailsMd.class, "detailsModel");
-		final FreshPackingDetailsMd packingDetailsModel = (FreshPackingDetailsMd)detailsModel;
-
+		final PackingDetailsModel packingDetailsModel = new PackingDetailsModel(getTerminalContext(), shipmentScheduleIds);
 		final FreshSwingPackageTerminal packageTerminal = new FreshSwingPackageTerminal(this, packingDetailsModel);
 		return packageTerminal;
-	}
-
-	@Override
-	public IPackingDetailsModel createPackingDetailsModel(final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		Check.assumeNotEmpty(shipmentScheduleIds, "shipmentScheduleIds is not empty");
-
-		final Collection<IPackingItem> unallocatedLines = PackingItems.createPackingItems(shipmentScheduleIds);
-		if (unallocatedLines.isEmpty())
-		{
-			logger.warn("Nothing to pack");
-			return null;
-		}
-
-		return new FreshPackingDetailsMd(getTerminalContext(), unallocatedLines);
 	}
 
 	@Override

@@ -28,9 +28,10 @@ import java.awt.Color;
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
@@ -44,6 +45,7 @@ import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.picking.terminal.Utils.PackingStates;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -116,7 +118,7 @@ public class FreshProductLayout extends KeyLayout implements IKeyLayoutSelection
 	{
 		final PackingItemsMap packingItems = getPackingItems();
 
-		final List<ITerminalKey> productKeys = new ArrayList<>();
+		final List<FreshProductKey> productKeys = new ArrayList<>();
 
 		final PickingSlotKey selectedPickingSlot = getSelectedPickingSlotKey();
 
@@ -127,13 +129,14 @@ public class FreshProductLayout extends KeyLayout implements IKeyLayoutSelection
 			for (final IPackingItem packingItem : packingItems.getBySlot(PackingSlot.UNPACKED))
 			{
 				final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
-				final IPackingItem allocatedItem = packingItem.copy();
-				productKey.setUnAllocatedPackingItem(allocatedItem);
-				productKey.resetPackingItem(); // nothing packed yet in the key
-				if (!productKey.isActive())
+				if (productKey == null)
 				{
 					continue;
 				}
+
+				final IPackingItem allocatedItem = packingItem.copy();
+				productKey.setUnAllocatedPackingItem(allocatedItem);
+				productKey.resetPackingItem(); // nothing packed yet in the key
 				productKey.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
 				productKeys.add(productKey);
 			}
@@ -141,15 +144,16 @@ public class FreshProductLayout extends KeyLayout implements IKeyLayoutSelection
 		else
 		{
 			// put to layout items from selected box
-			final PackingSlot key = PackingSlot.ofPickingSlotId(selectedPickingSlot.getPickingSlotId());
-			for (final IPackingItem packingItem : packingItems.getBySlot(key))
+			final PackingSlot packingSlot = PackingSlot.ofPickingSlotId(selectedPickingSlot.getPickingSlotId());
+			for (final IPackingItem packingItem : packingItems.getBySlot(packingSlot))
 			{
 				final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
-				if (productKey == null || !productKey.isActive())
+				if (productKey == null)
 				{
 					continue;
 				}
-				productKey.setStatus(computePackingState(packingItem, key));
+
+				productKey.setStatus(computePackingState(packingItem, packingSlot));
 				productKeys.add(productKey);
 			}
 
@@ -159,29 +163,29 @@ public class FreshProductLayout extends KeyLayout implements IKeyLayoutSelection
 			for (final IPackingItem packingItem : items)
 			{
 				// if the item exist in the list, do not create the key again
-				final FreshProductKey productKeyExisting = getExistentProductKey(productKeys, packingItem);
+				final FreshProductKey productKeyExisting = findByGroupingKey(productKeys, packingItem.getGroupingKey());
 				if (productKeyExisting != null)
 				{
 					// first set unallocated
 					productKeyExisting.setUnAllocatedPackingItem(packingItem);
 					productKeyExisting.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
-					continue;
 				}
-
-				final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
-				if (productKey == null || !productKey.isActive())
+				else
 				{
-					continue;
+					final FreshProductKey productKey = createProductKey(packingItem, selectedPickingSlot);
+					if (productKey == null)
+					{
+						continue;
+					}
+
+					productKey.resetPackingItem();
+					productKey.setUnAllocatedPackingItem(packingItem);
+					productKey.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
+					productKeys.add(productKey);
 				}
-
-				productKey.resetPackingItem();
-				productKey.setUnAllocatedPackingItem(packingItem);
-				productKey.setStatus(computePackingState(packingItem, PackingSlot.UNPACKED));
-				productKeys.add(productKey);
 			}
-
 		}
-		return Collections.unmodifiableList(productKeys);
+		return ImmutableList.copyOf(productKeys);
 	}
 
 	private FreshProductKey createProductKey(
@@ -199,25 +203,19 @@ public class FreshProductLayout extends KeyLayout implements IKeyLayoutSelection
 		return productKey;
 	}
 
-	private static FreshProductKey getExistentProductKey(final List<ITerminalKey> productKeys, final IPackingItem apck)
+	private static FreshProductKey findByGroupingKey(final List<FreshProductKey> productKeys, @NonNull final PackingItemGroupingKey groupingKey)
 	{
-		for (final ITerminalKey keyItem : productKeys)
-		{
-			final FreshProductKey productKey = (FreshProductKey)keyItem;
-			if (productKey.getPackingItem() != null
-					&& PackingItemGroupingKey.equals(productKey.getPackingItem().getGroupingKey(), apck.getGroupingKey()))
-			{
-				return productKey;
-			}
-		}
-		return null;
+		return productKeys.stream()
+				.filter(productKey -> PackingItemGroupingKey.equals(productKey.getGroupingKey(), groupingKey))
+				.findFirst()
+				.orElse(null);
 	}
 
 	private PackingStates computePackingState(final IPackingItem packingItem, final PackingSlot packingSlot)
 	{
 		final PackingItemsMap packItems = getPackingItems();
-		boolean unpacked = packingSlot.isUnpacked();
-		boolean packed = packItems.streamPackedItems()
+		final boolean unpacked = packingSlot.isUnpacked();
+		final boolean packed = packItems.streamPackedItems()
 				.anyMatch(item -> isMatching(item, packingItem));
 		//
 		PackingStates state = PackingStates.unpacked;

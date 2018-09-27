@@ -52,7 +52,6 @@ import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.picking.legacy.form.IPackingDetailsModel;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;
@@ -91,8 +90,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	private final AbstractPackageDataPanel pickingData;
 	private final ITerminalKeyPanel packingMaterialsPanel;
 
-	private final IPackingDetailsModel model;
-
 	/**
 	 * create Package Terminal with link to the parent - Package terminal
 	 *
@@ -105,7 +102,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 		final ITerminalFactory factory = tc.getTerminalFactory();
 
 		this.parentPackageTerminal = parent;
-		this.model = parent.getPackingDetailsModel();
 
 		this.panel = factory.createContainer();
 		this.panelCenter = factory.createContainer();
@@ -202,11 +198,6 @@ public abstract class AbstractPackageTerminalPanel implements ITerminalBasePanel
 	public AbstractPackageTerminal getParent()
 	{
 		return parentPackageTerminal;
-	}
-
-	public IPackingDetailsModel getModel()
-	{
-		return model;
 	}
 
 	public void init(final int windowNo, final FormFrame frame)

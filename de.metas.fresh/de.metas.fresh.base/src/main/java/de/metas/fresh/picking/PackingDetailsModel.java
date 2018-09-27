@@ -1,6 +1,5 @@
 package de.metas.fresh.picking;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -13,9 +12,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.picking.legacy.form.IPackingDetailsModel;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItems;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
@@ -25,20 +25,25 @@ import lombok.NonNull;
  * 
  * @author cg
  */
-public class FreshPackingDetailsMd implements IPackingDetailsModel
+public class PackingDetailsModel
 {
 	private final ImmutableList<IPackingItem> unallocatedLines;
-
 	private final ImmutableList<PickingSlotKey> availablePickingSlots;
 	private final ImmutableList<PackingMaterialKey> availablePackingMaterialKeys;
 
-	public FreshPackingDetailsMd(
+	public PackingDetailsModel(
 			@NonNull final ITerminalContext terminalContext,
-			final Collection<IPackingItem> unallocatedLines)
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		Check.assumeNotEmpty(unallocatedLines, "unallocatedLines not empty");
+		Check.assumeNotEmpty(shipmentScheduleIds, "shipmentScheduleIds is not empty");
 
-		this.unallocatedLines = ImmutableList.copyOf(unallocatedLines);
+		this.unallocatedLines = PackingItems.createPackingItems(shipmentScheduleIds);
+		if (unallocatedLines.isEmpty())
+		{
+			throw new AdempiereException("Nothing to pack")
+					.setParameter("shipmentScheduleIds", shipmentScheduleIds)
+					.appendParametersToMessage();
+		}
 
 		final Date date = SystemTime.asDayTimestamp();
 		final PackingMaterialKeyBuilder packingMaterialKeysBuilder = new PackingMaterialKeyBuilder(terminalContext, date);
@@ -76,7 +81,7 @@ public class FreshPackingDetailsMd implements IPackingDetailsModel
 
 	/**
 	 * 
-	 * @return unallocated lines (read-only collection)
+	 * @return unallocated lines
 	 */
 	public ImmutableList<IPackingItem> getUnallocatedLines()
 	{

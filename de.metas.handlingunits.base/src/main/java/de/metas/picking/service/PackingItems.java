@@ -81,7 +81,7 @@ public final class PackingItems
 			// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
 			final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(sched, qtyToDeliverTarget);
 
-			final IPackingItem newItem = PackingItems.newPackingItem(schedWithQty);
+			final IPackingItem newItem = newPackingItem(schedWithQty);
 			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
 			if (existingItem != null)
 			{

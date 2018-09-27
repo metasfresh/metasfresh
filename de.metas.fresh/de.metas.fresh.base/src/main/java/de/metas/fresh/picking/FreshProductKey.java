@@ -50,6 +50,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -213,14 +214,16 @@ public class FreshProductKey extends TerminalKey
 	 */
 	public HUPIItemProductId getHUPIItemProductId()
 	{
-		final IPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
 		final IPackingItem allocatedPackingItem = getPackingItem();
-		if (allocatedPackingItem != null || unallocatedPackingItem != null)
+		if (allocatedPackingItem != null)
 		{
-			final IPackingItem pck = allocatedPackingItem != null ? allocatedPackingItem : unallocatedPackingItem;
+			return allocatedPackingItem.getHUPIItemProductId();
+		}
 
-			final HUPIItemProductId pip = pck.getHUPIItemProductId();
-			return pip;
+		final IPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
+		if (unallocatedPackingItem != null)
+		{
+			return unallocatedPackingItem.getHUPIItemProductId();
 		}
 
 		return null;
@@ -249,6 +252,11 @@ public class FreshProductKey extends TerminalKey
 	public void setUnAllocatedPackingItem(IPackingItem pck)
 	{
 		this._unallocatedPackingItem = pck;
+	}
+
+	public PackingItemGroupingKey getGroupingKey()
+	{
+		return getPackingItem().getGroupingKey();
 	}
 
 	public IPackingItem getPackingItem()

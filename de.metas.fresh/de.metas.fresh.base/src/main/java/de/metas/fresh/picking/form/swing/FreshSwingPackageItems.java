@@ -64,10 +64,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
-import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemGroupingKey;
+import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
@@ -536,31 +536,23 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 	}
 
 	private void removeProductQty(
-			final IPackingItem pckItem,
+			final IPackingItem packingItem,
 			final I_M_HU hu,
 			final Quantity qtyToRemove)
 	{
 		// Packing items
 		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
-		final PackingItemsMap packItems = getPackingItems().copy();
+		final PackingItemsMap packingItems = getPackingItems().copy();
 
-		IPackingItem itemUnpacked = null;
-		for (final IPackingItem item : packItems.getUnpackedItems())
-		{
-			if (PackingItemGroupingKey.equals(item.getGroupingKey(), pckItem.getGroupingKey()))
-			{
-				Check.assumeNull(itemUnpacked, "Item with grouping key {} shall exist only once in the list", item.getGroupingKey());
-				itemUnpacked = item;
-			}
-		}
+		final IPackingItem itemUnpacked = packingItems.getUnpackedItemByGroupingKey(packingItem.getGroupingKey());
 
 		final PackingSlot slot = PackingSlot.ofPickingSlotId(selectedPickingSlotKey.getPickingSlotId());
 
 		// we need to remove the recently unpacked item from packed
 		final List<IPackingItem> itemsPackedRemaining = new ArrayList<>();
-		for (final IPackingItem itemPacked : packItems.removeBySlot(slot))
+		for (final IPackingItem itemPacked : packingItems.removeBySlot(slot))
 		{
-			if (!pckItem.isSameAs(itemPacked))
+			if (!packingItem.isSameAs(itemPacked))
 			{
 				itemsPackedRemaining.add(itemPacked);
 			}
@@ -575,7 +567,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				packingService.removeProductQtyFromHU(ctx, hu, qtyToRemoveAlloc);
 
 				// if all qty is packed, no need to store the current item
-				if (pckItem.getQtySum().compareTo(qtyToRemove) != 0)
+				if (packingItem.getQtySum().compareTo(qtyToRemove) != 0)
 				{
 					itemsPackedRemaining.add(itemPackedNew);
 				}
@@ -588,14 +580,14 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 				else
 				{
 					final IPackingItem newPi = PackingItems.newPackingItem(qtyToRemoveAlloc);
-					packItems.addUnpackedItem(newPi);
+					packingItems.addUnpackedItem(newPi);
 				}
 			}
 		}
 
-		packItems.addItems(slot, itemsPackedRemaining);
+		packingItems.addItems(slot, itemsPackedRemaining);
 
-		setPackingItems(packItems);
+		setPackingItems(packingItems);
 	}
 
 	/**
