@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
 /*
  * #%L

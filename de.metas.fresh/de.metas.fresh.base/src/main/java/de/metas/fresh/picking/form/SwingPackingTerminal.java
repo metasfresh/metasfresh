@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.PackingDetailsModel;
-import de.metas.fresh.picking.form.swing.SwingPickingOKPanel;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.terminal.form.swing.IPackingTerminalPanel;

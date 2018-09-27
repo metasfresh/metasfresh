@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
 /*
  * #%L
@@ -36,10 +36,10 @@ import org.compiere.util.KeyNamePair;
  * @author tsa
  * 
  */
-public class TableRowBPartnersCollector implements Predicate<TableRow>
+class TableRowBPartnersCollector implements Predicate<TableRow>
 {
-	private final Set<Integer> seenIds = new HashSet<Integer>();
-	private final Set<KeyNamePair> bpartners = new TreeSet<KeyNamePair>();
+	private final Set<Integer> seenIds = new HashSet<>();
+	private final Set<KeyNamePair> bpartners = new TreeSet<>();
 
 	@Override
 	public boolean test(final TableRow currentRow)

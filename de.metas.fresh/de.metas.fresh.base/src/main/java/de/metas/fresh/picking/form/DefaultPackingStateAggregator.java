@@ -1,6 +1,5 @@
-package de.metas.picking.terminal;
+package de.metas.fresh.picking.form;
 
-import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.util.Check;
 
 /**

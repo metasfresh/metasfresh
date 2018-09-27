@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.adempiere.form.terminal;
 
 /*
  * #%L
@@ -23,41 +23,31 @@ package de.metas.picking.legacy.form;
  */
 
 
+import org.compiere.apps.AppsAction;
+
 /**
- * Null implementation of {@link ITableRowSearchSelectionMatcher} which actually does nothing.
+ * Task 04966: implementations can be used to attach additional ways of data input (camera, scales) to generic UI components.
+ * <p>
+ * Currently it's used to add additional buttons properties/attribute editors
  * 
- * @author tsa
+ * @author ts
  * 
+ * @param <T> type of the {@link #invoke()} method's return value.
+ * @see IPropertiesPanelModel#getAdditionalInputMethods(int)
  */
-public final class NullTableRowSearchSelectionMatcher extends AbstractTableRowSearchSelectionMatcher
+public interface IInputMethod<T>
 {
-	public static final NullTableRowSearchSelectionMatcher instance = new NullTableRowSearchSelectionMatcher();
+	/**
+	 * Returns the action that shall be added to the UI.
+	 * 
+	 * @return
+	 */
+	AppsAction getAppsAction();
 
-	private NullTableRowSearchSelectionMatcher()
-	{
-		super();
-		
-		// initialize right away
-		init();
-	}
-
-	@Override
-	public boolean isAllowMultipleResults()
-	{
-		return false;
-	}
-
-	@Override
-	public String getName()
-	{
-		return "";
-	}
-
-	@Override
-	protected boolean load()
-	{
-		// return load ok => valid matcher
-		return true;
-	}
-
+	/**
+	 * Does whatever is required to get the data. This can be a simple API call, but can also open an additional UI (e.g. to display a camera's video stream).
+	 * 
+	 * @return
+	 */
+	T invoke();
 }

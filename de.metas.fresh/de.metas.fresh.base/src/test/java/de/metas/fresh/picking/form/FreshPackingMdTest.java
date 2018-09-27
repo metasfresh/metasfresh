@@ -52,8 +52,6 @@ import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
-import de.metas.picking.legacy.form.TableRow;
-import de.metas.picking.legacy.form.TableRowKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -166,7 +164,7 @@ public class FreshPackingMdTest
 		final ITerminalContext terminalContext = TerminalContextFactory.get().createContextAndRefs().getLeft();
 		terminalContext.setWindowNo(Env.WINDOW_None);
 
-		final FreshPackingMd model = new FreshPackingMd(terminalContext);
+		final FreshPackingMd model = new FreshPackingMd();
 		model.setWarehouseId(WAREHOUSE_ID);
 		return model;
 	}

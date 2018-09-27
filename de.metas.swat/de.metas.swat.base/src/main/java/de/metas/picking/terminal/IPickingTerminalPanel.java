@@ -33,6 +33,4 @@ public interface IPickingTerminalPanel extends ITerminalBasePanel
 	void refreshLines(ResetFilters resetFilters);
 
 	void setResultHtml(String resultHtml);
-
-	void createPackingDetails();
 }

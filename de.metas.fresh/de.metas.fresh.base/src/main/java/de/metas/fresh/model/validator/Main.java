@@ -51,7 +51,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.picking.form.swing.SwingPickingTerminalPanel;
+import de.metas.fresh.picking.form.SwingPickingTerminalPanel;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;

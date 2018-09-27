@@ -1,5 +1,6 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -22,7 +23,7 @@ public final class TableRowKey
 	private final String bpartnerAddress;
 	private final int warehouseId;
 	private final int warehouseDestId;
-	private final int productId;
+	private final ProductId productId;
 	private final int shipperId;
 	private final String deliveryVia;
 	// private final int singleShipmentOrderId; // not used anymore

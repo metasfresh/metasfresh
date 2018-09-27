@@ -61,7 +61,6 @@ import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.ProductKey;
-import de.metas.fresh.picking.form.swing.SwingPickingSlotsPanel;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.service.PackingItemsMap;
@@ -195,12 +194,17 @@ public class SwingPackingTerminalPanel
 	public PickingSlotKey getSelectedPickingSlotKey()
 	{
 		final SwingPickingSlotsPanel pickingSlotsPanel = getPickingSlotsPanel();
+		if (pickingSlotsPanel == null) // might be null during initialization
+		{
+			return null;
+		}
 		return pickingSlotsPanel.getSelectedPickingSlotKey();
 	}
 
 	private ITerminalKeyPanel getProductsKeyLayoutPanel()
 	{
-		return getPickingSlotsPanel().getProductsKeyLayoutPanel();
+		final SwingPickingSlotsPanel pickingSlotsPanel = getPickingSlotsPanel();
+		return pickingSlotsPanel.getProductsKeyLayoutPanel();
 	}
 
 	public ProductKey getSelectedProductKey()

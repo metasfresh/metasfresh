@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.fresh.picking.form.swing;
+package de.metas.fresh.picking.form;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -45,7 +45,6 @@ import javax.swing.SwingUtilities;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.form.FormFrame;
-import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -58,6 +57,7 @@ import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
+import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalKeyListener;
@@ -79,14 +79,8 @@ import de.metas.fresh.picking.BPartnerKey;
 import de.metas.fresh.picking.BPartnerKeyLayout;
 import de.metas.fresh.picking.DeliveryDateKey;
 import de.metas.fresh.picking.DeliveryDateKeyLayout;
-import de.metas.fresh.picking.form.BarcodeHUTableRowSearchSelectionMatcher;
-import de.metas.fresh.picking.form.ProductTableRowSearchSelectionMatcher;
-import de.metas.fresh.picking.form.SSCC18HUTableRowSearchSelectionMatcher;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
-import de.metas.picking.legacy.form.NullTableRowSearchSelectionMatcher;
-import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.terminal.IPickingTerminalPanel;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -104,7 +98,7 @@ import de.metas.util.Services;
  */
 public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 {
-	public static SwingPickingTerminalPanel cast(final IPickingTerminalPanel panel)
+	public static SwingPickingTerminalPanel cast(final ITerminalBasePanel panel)
 	{
 		return (SwingPickingTerminalPanel)panel;
 	}
@@ -461,14 +455,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 
 		//
 		// Selection changed listener
-		getPickingOKPanel().getMiniTable().addPropertyChangeListener(IMiniTable.PROPERTY_SelectionChanged, new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(final PropertyChangeEvent evt)
-			{
-				onSelectedLinesChanged();
-			}
-		});
+		getPickingOKPanel().addLinesSelectionChangedListener(this::onSelectedLinesChanged);
 	}
 
 	/**
@@ -521,7 +508,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		createPanel(container, getWarehouseKeyPanel(), "dock north, growx, hmin 100px");
 		createPanel(container, bpartnerPanel, "dock north, growx, hmin 200px, hmax 33%");
 		createPanel(container, deliveryDateKeyPanel, "dock north, growx, hmin 60px");
-		createPanel(container, getPickingOKPanel().getComponent(), "dock west, growx, wmin 620px, hmin 33%"); // i.e. shipment schedule lines
+		createPanel(container, getPickingOKPanel(), "dock west, growx, wmin 620px, hmin 33%"); // i.e. shipment schedule lines
 		createPanel(container, searchFieldsPanel, "dock east, growx, width 50%");
 
 		add(container, CARDNAME_WAREHOUSE_PICKING, "dock north, growx");
@@ -673,7 +660,6 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		// NOTE: "Warehouse button" shall be considered something like a master filters reset
 
 		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
-		final PackingMd packingMd = pickingOKPanel.getModel();
 
 		//
 		// Reset selected BPartner key
@@ -689,19 +675,19 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 
 		//
 		// Reset table rows matcher (fresh_06821)
+		final FreshPackingMd packingMd = pickingOKPanel.getModel();
 		packingMd.setTableRowSearchSelectionMatcher(NullTableRowSearchSelectionMatcher.instance);
 	}
 
 	private final void refreshLines()
 	{
 		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
-		final PackingMd model = pickingOKPanel.getModel();
 
 		final Set<BPartnerId> bpartnerIds = getSelectedBPartnerIds();
-		model.setBPartnerIds(bpartnerIds);
+		pickingOKPanel.setBPartnerIds(bpartnerIds);
 
 		final LocalDate deliveryDate = getSelectedDeliveryDate();
-		model.setDeliveryDate(deliveryDate);
+		pickingOKPanel.setDeliveryDate(deliveryDate);
 
 		refreshLines(ResetFilters.No);
 	}
@@ -711,7 +697,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		Check.assumeNotNull(matcherNew, "matcherNew not null");
 
 		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
-		final PackingMd model = pickingOKPanel.getModel();
+		final FreshPackingMd model = pickingOKPanel.getModel();
 
 		final ITableRowSearchSelectionMatcher matcherOld = model.getTableRowSearchSelectionMatcher();
 
@@ -825,12 +811,12 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		}
 
 		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
-		pickingOKPanel.refresh();
+		pickingOKPanel.refreshLines();
 
 		if (resetFilters == ResetFilters.IfNoResult)
 		{
 			// If there is no result call this method again with resetFilters=Yes
-			final PackingMd packingModel = pickingOKPanel.getModel();
+			final FreshPackingMd packingModel = pickingOKPanel.getModel();
 			if (packingModel.getRowsCount() <= 0)
 			{
 				refreshLines(ResetFilters.Yes);
@@ -840,7 +826,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		// Reset selection if filters were reset
 		if (resetFilters == ResetFilters.Yes)
 		{
-			final PackingMd model = pickingOKPanel.getModel();
+			final FreshPackingMd model = pickingOKPanel.getModel();
 			model.setSelectedTableRowKeys(null); // force fire event
 		}
 	}
@@ -855,12 +841,6 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		{
 			barcodeSearchField.requestFocus();
 		}
-	}
-
-	@Override
-	public void createPackingDetails()
-	{
-		pickingOKPanel.createPackingDetails();
 	}
 
 	@Override

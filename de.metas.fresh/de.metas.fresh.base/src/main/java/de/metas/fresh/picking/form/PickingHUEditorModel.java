@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.form.swing;
+package de.metas.fresh.picking.form;
 
 import java.util.ArrayList;
 import java.util.List;

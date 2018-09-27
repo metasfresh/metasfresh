@@ -1,10 +1,14 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
+
+import java.awt.Color;
+
+import lombok.Getter;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.fresh.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,23 +27,21 @@ package de.metas.picking.legacy.form;
  */
 
 
-import java.awt.event.ActionListener;
-import java.beans.VetoableChangeListener;
-
-public interface IPackingView
+public enum PackingStates
 {
+	packed(Color.GREEN), //
+	partiallypacked(Color.YELLOW), //
+	unpacked(Color.RED), //
+	overlapped(new Color(255, 165, 79)), //
+	ready(new Color(34, 139, 34)), //
+	open(new Color(255, 102, 0)), //
+	closed(new Color(0, 153, 51)); // dark green
 
-	void addWarehouseListener(VetoableChangeListener l);
+	@Getter
+	private final Color color;
 
-	void addRefreshListener(ActionListener l);
-
-	void addOpenNextOneListener(ActionListener l);
-
-	void setSelectedWarehouseId(int warehouseId);
-
-	void focusOnNextOneButton();
-
-	void addDisplayNonDeliverableItemsListener(VetoableChangeListener l);
-
-	void setDisplayNonDeliverableItems(boolean display);
+	PackingStates(Color color)
+	{
+		this.color = color;
+	}
 }

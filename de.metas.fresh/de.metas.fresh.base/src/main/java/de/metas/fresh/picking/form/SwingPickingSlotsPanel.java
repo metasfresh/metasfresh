@@ -1,7 +1,7 @@
 /**
  *
  */
-package de.metas.fresh.picking.form.swing;
+package de.metas.fresh.picking.form;
 
 import java.awt.Event;
 import java.awt.event.KeyEvent;
@@ -64,15 +64,12 @@ import de.metas.fresh.picking.PickingSlotKeyGroup;
 import de.metas.fresh.picking.PickingSlotLayout;
 import de.metas.fresh.picking.ProductKey;
 import de.metas.fresh.picking.ProductKeyLayout;
-import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.exceptions.HULoadException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
-import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemGroupingKey;
@@ -81,14 +78,11 @@ import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.picking.terminal.DefaultPackingStateAggregator;
-import de.metas.picking.terminal.IPackingStateAggregator;
-import de.metas.picking.terminal.Utils;
-import de.metas.picking.terminal.Utils.PackingStates;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.IdentityHashSet;
 import lombok.NonNull;
 
 /**
@@ -155,7 +149,7 @@ public class SwingPickingSlotsPanel
 	/** @return button size constraints; never return null */
 	private static String getButtonSize()
 	{
-		return Utils.getButtonSize();
+		return SwingPickingTerminalConstants.getButtonSize();
 	}
 
 	private class ProductsKeyListener extends TerminalKeyListenerAdapter
@@ -228,7 +222,7 @@ public class SwingPickingSlotsPanel
 			// Qty
 			fQty = factory.createTerminalNumericField("", DisplayType.Quantity, 14f, true, false, getButtonSize());
 			fQty.setEditable(true);
-			fQty.addListener(new FreshQtyListener(this));
+			fQty.addListener(new QtyListener());
 
 			// Add
 			bAdd = createButtonAction(ACTION_Add, KeyStroke.getKeyStroke(KeyEvent.VK_F11, Event.F11), 17f);
@@ -261,7 +255,7 @@ public class SwingPickingSlotsPanel
 		// Products Key Layout
 		{
 			productsKeyLayout = new ProductKeyLayout(getTerminalContext());
-			productsKeyLayout.setBasePanel(p_basePanel);
+			productsKeyLayout.setBasePanel(getTerminalBasePanel());
 			productsKeyLayout.setRows(2);
 
 			productsKeyLayoutPanel = factory.createTerminalKeyPanel(productsKeyLayout, new ProductsKeyListener());
@@ -1022,7 +1016,7 @@ public class SwingPickingSlotsPanel
 
 		// TODO: this is a workaround just to deliver a working increment.
 		// We shall not have such a tight coupling but instead the selectedHU should be provided in some packing model
-		final PackingMd pickingOKPanelModel = getPackingTerminalPanel() // Packing window main panel (second window)
+		final FreshPackingMd pickingOKPanelModel = getPackingTerminalPanel() // Packing window main panel (second window)
 				.getParent() // Packing window (second window)
 				.getPickingOKPanel() // Picking OK Panel (that one that contains table rows)
 				.getModel(); // PackingMd
@@ -1119,4 +1113,79 @@ public class SwingPickingSlotsPanel
 	{
 		getPackingTerminalPanel().setPackingItems(packingItems);
 	}
+
+	/**
+	 * This listener only prevents the user from selecting a qty which is bigger than the actually available Qty from the current product's packing item.
+	 */
+	private class QtyListener implements PropertyChangeListener
+	{
+		private static final String ERR_Fresh_QTY_LISTENER_NEG_QTY = "@de.metas.fresh.picking.form.swing.FreshQtyListener.Neg_Qty@";
+
+		private final IdentityHashSet<Object> activeComponents = new IdentityHashSet<>();
+
+		@Override
+		public void propertyChange(final PropertyChangeEvent evt)
+		{
+			final Object source = evt.getSource();
+			if (!activeComponents.add(source))
+			{
+				// avoid recursive calls, do nothing
+				return;
+			}
+
+			try
+			{
+				propertyChange0(evt);
+			}
+			finally
+			{
+				activeComponents.remove(source);
+			}
+		}
+
+		public void propertyChange0(final PropertyChangeEvent evt)
+		{
+			// If new value is null or value not changed, we do nothing
+			if (evt.getNewValue() == null || evt.getNewValue().equals(evt.getOldValue()))
+			{
+				return;
+			}
+
+			final PickingSlotKey selectedSlot = getSelectedPickingSlotKey();
+			if (selectedSlot == null)
+			{
+				return;
+			}
+
+			final ProductKey selectedProduct = getSelectedProduct();
+			if (selectedProduct == null)
+			{
+				return;
+			}
+
+			final BigDecimal oldQty;
+			final BigDecimal newQty;
+			if (evt.getNewValue() instanceof Long)
+			{
+				newQty = new BigDecimal((Long)evt.getNewValue());
+				oldQty = new BigDecimal((Long)evt.getOldValue());
+			}
+			else
+			{
+				newQty = (BigDecimal)evt.getNewValue();
+				oldQty = (BigDecimal)evt.getOldValue();
+			}
+
+			//
+			// In case the new quantity is not valid (i.e. it's negative)
+			// put back the old quantity and warn the user.
+			if (newQty.signum() < 0)
+			{
+				warn(ERR_Fresh_QTY_LISTENER_NEG_QTY);
+				setQty(oldQty);
+				return;
+			}
+		}
+	}
+
 }

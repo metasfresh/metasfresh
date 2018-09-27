@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
 /*
  * #%L
@@ -23,11 +23,41 @@ package de.metas.picking.legacy.form;
  */
 
 
-import java.beans.PropertyChangeEvent;
+/**
+ * Null implementation of {@link ITableRowSearchSelectionMatcher} which actually does nothing.
+ * 
+ * @author tsa
+ * 
+ */
+public final class NullTableRowSearchSelectionMatcher extends AbstractTableRowSearchSelectionMatcher
+{
+	public static final NullTableRowSearchSelectionMatcher instance = new NullTableRowSearchSelectionMatcher();
 
-public interface IFormView {
+	private NullTableRowSearchSelectionMatcher()
+	{
+		super();
+		
+		// initialize right away
+		init();
+	}
 
-	void modelPropertyChange(PropertyChangeEvent evt);
-	
-	void dispose();
+	@Override
+	public boolean isAllowMultipleResults()
+	{
+		return false;
+	}
+
+	@Override
+	public String getName()
+	{
+		return "";
+	}
+
+	@Override
+	protected boolean load()
+	{
+		// return load ok => valid matcher
+		return true;
+	}
+
 }

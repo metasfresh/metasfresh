@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableSet;
  * @author tsa
  *
  */
-/* package */class TableRowDeliveryDatesCollector implements Predicate<TableRow>
+class TableRowDeliveryDatesCollector implements Predicate<TableRow>
 {
 	private Set<LocalDate> deliveryDates = new TreeSet<>();
 

@@ -10,47 +10,40 @@ package de.metas.fresh.picking.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 
-import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
-import de.metas.picking.legacy.form.TableRowKey;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
- * 
+ *
  * Comparator for TableRowKey keys. Compares by
  * <ul>
  * <li>First: Put selected rows first</li>
  * <li>Second: Put matched records first</li>
  * <li>Third: preserve the order (<code>SeqNo</code>) as we retrieved from database</li>
  * </ul>
- * 
+ *
  */
-public class FreshPackingMdLinesComparator implements Comparator<TableRowKey>
+class PackingMdLinesComparator implements Comparator<TableRowKey>
 {
-
 	private final FreshPackingMd model;
 
-	public FreshPackingMdLinesComparator(FreshPackingMd model)
+	public PackingMdLinesComparator(@NonNull final FreshPackingMd model)
 	{
-		super();
-
-		Check.assumeNotNull(model, "model not null");
 		this.model = model;
 	}
 
@@ -65,7 +58,7 @@ public class FreshPackingMdLinesComparator implements Comparator<TableRowKey>
 		//
 		// First: Put selected rows first
 		{
-			final Set<TableRowKey> selectedTableRowKeys = model.getSelectedTableRowKeys();
+			final Set<TableRowKey> selectedTableRowKeys = getSelectedTableRowKeys();
 			final int selectedSeqNo1 = selectedTableRowKeys.contains(o1) ? 0 : 1;
 			final int selectedSeqNo2 = selectedTableRowKeys.contains(o2) ? 0 : 1;
 			if (selectedSeqNo1 != selectedSeqNo2)
@@ -76,7 +69,7 @@ public class FreshPackingMdLinesComparator implements Comparator<TableRowKey>
 
 		//
 		// Second: Put matched records first
-		final ITableRowSearchSelectionMatcher tableRowSearchSelectionMatcher = model.getTableRowSearchSelectionMatcher();
+		final ITableRowSearchSelectionMatcher tableRowSearchSelectionMatcher = getTableRowSearchSelectionMatcher();
 		if (!tableRowSearchSelectionMatcher.isNull())
 		{
 			final int matcherSeqNo1 = tableRowSearchSelectionMatcher.match(o1) ? 0 : 1;
@@ -92,4 +85,13 @@ public class FreshPackingMdLinesComparator implements Comparator<TableRowKey>
 		return o1.getSeqNo() - o2.getSeqNo();
 	}
 
+	private Set<TableRowKey> getSelectedTableRowKeys()
+	{
+		return model.getSelectedTableRowKeys();
+	}
+
+	private ITableRowSearchSelectionMatcher getTableRowSearchSelectionMatcher()
+	{
+		return model.getTableRowSearchSelectionMatcher();
+	}
 }

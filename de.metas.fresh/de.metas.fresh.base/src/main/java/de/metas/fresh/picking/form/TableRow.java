@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
 /*
  * #%L
@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -58,7 +59,7 @@ public class TableRow
 
 	private final String freightCostRule;
 
-	private final int productId;
+	private final ProductId productId;
 	private final String productName;
 	
 	private @NonNull BigDecimal qtyToDeliver;

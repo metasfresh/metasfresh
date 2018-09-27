@@ -1,4 +1,4 @@
-package de.metas.picking.legacy.form;
+package de.metas.fresh.picking.form;
 
 /*
  * #%L
@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 
 /**
@@ -50,8 +51,8 @@ public abstract class AbstractTableRowSearchSelectionMatcher implements ITableRo
 	/**
 	 * Sorted set of M_Product_IDs
 	 */
-	private final Set<Integer> productIds = new TreeSet<Integer>();
-	private final Set<Integer> productIdsRO = Collections.unmodifiableSet(productIds);
+	private final Set<ProductId> productIds = new TreeSet<>();
+	private final Set<ProductId> productIdsRO = Collections.unmodifiableSet(productIds);
 
 	/**
 	 * Is this matcher valid?
@@ -137,13 +138,13 @@ public abstract class AbstractTableRowSearchSelectionMatcher implements ITableRo
 		this.bpartnerId = bpartnerId <= 0 ? -1 : bpartnerId;
 	}
 
-	protected void setProductIds(final Set<Integer> productIds)
+	protected void setProductIds(final Set<ProductId> productIds)
 	{
 		Check.assume(!initialized, "not already initialized");
 		this.productIds.clear();
-		for (final Integer productId : productIds)
+		for (final ProductId productId : productIds)
 		{
-			if (productId == null || productId <= 0)
+			if (productId == null)
 			{
 				continue;
 			}
@@ -151,7 +152,7 @@ public abstract class AbstractTableRowSearchSelectionMatcher implements ITableRo
 		}
 	}
 
-	protected final Set<Integer> getProductIds()
+	protected final Set<ProductId> getProductIds()
 	{
 		init();
 		return productIdsRO;
@@ -183,7 +184,7 @@ public abstract class AbstractTableRowSearchSelectionMatcher implements ITableRo
 
 		//
 		// If there are no products, we consider it null
-		final Set<Integer> productIds = getProductIds();
+		final Set<ProductId> productIds = getProductIds();
 		if (productIds.isEmpty())
 		{
 			return true;
@@ -206,9 +207,9 @@ public abstract class AbstractTableRowSearchSelectionMatcher implements ITableRo
 			return false;
 		}
 
-		final Set<Integer> productIds = getProductIds();
+		final Set<ProductId> productIds = getProductIds();
 
-		final int rowProductId = key.getProductId();
+		final ProductId rowProductId = key.getProductId();
 		if (!productIds.contains(rowProductId))
 		{
 			return false;

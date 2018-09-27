@@ -3,7 +3,7 @@ package de.metas.fresh.picking;
 import java.awt.Color;
 
 import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
-import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.fresh.picking.form.PackingStates;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

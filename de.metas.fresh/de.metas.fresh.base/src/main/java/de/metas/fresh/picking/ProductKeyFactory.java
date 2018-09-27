@@ -9,11 +9,11 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.fresh.picking.form.PackingStates;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
-import de.metas.picking.terminal.Utils.PackingStates;
 import lombok.Builder;
 import lombok.NonNull;
 

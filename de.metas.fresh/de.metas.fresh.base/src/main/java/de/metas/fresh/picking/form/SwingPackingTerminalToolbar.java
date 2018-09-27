@@ -38,7 +38,6 @@ import org.compiere.apps.form.FormFrame;
 
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
-import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.form.swing.IPackingTerminal;
 import net.miginfocom.swing.MigLayout;
 
@@ -52,9 +51,6 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 {
 	private static final String ERR_UNSUPPORTED_ACTION = "@UnsupportedAction@";
 
-	private final SwingPackingTerminalPanel packingTerminalPanel;
-
-	private String buttonSize = Utils.getButtonSize();
 	private ITerminalButton bSave;
 	private ITerminalButton bLogout;
 	private ITerminalButton bUndo;
@@ -70,7 +66,6 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 	public SwingPackingTerminalToolbar(final SwingPackingTerminalPanel packingTerminalPanel)
 	{
 		super(packingTerminalPanel);
-		this.packingTerminalPanel = packingTerminalPanel;
 		setReadOnly(true); // qty field shall be readonly by default
 	}
 
@@ -100,13 +95,15 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 
 	private void initLayout()
 	{
+		final String buttonSize = SwingPickingTerminalConstants.getButtonSize();
+
 		getUI().setLayout(new MigLayout("ins 5 5 5 10", "[fill|fill|fill]", "[nogrid]unrel[||]"));
 
-		add(bPrint, getButtonSize());
-		add(bOk, getButtonSize());
+		add(bPrint, buttonSize);
+		add(bOk, buttonSize);
 
 		final StringBuilder closeHUConstraints = new StringBuilder()
-				.append(getButtonSize())
+				.append(buttonSize)
 				.append(" dock center"); // fresh_05749: this will ensure that the OK button is far, far away from Close_HU
 		add(getCloseCurrentHUButton(), closeHUConstraints.toString());
 
@@ -114,14 +111,9 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 		bPrint.setEnabled(false);
 	}
 
-	public String getButtonSize()
-	{
-		return buttonSize;
-	}
-
 	public SwingPackingTerminalPanel getPackingTerminalPanel()
 	{
-		return SwingPackingTerminalPanel.cast(packingTerminalPanel);
+		return SwingPackingTerminalPanel.cast(super.getTerminalBasePanel());
 	}
 
 	@Override
