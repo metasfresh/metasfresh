@@ -39,7 +39,7 @@ class WidgetTooltip extends PureComponent {
             )}
           </Reference>
           {isToggled && (
-            <Popper placement="right">
+            <Popper placement="right-start">
               {({ ref, style, placement }) => (
                 <div
                   ref={ref}
