@@ -56,6 +56,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
+import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IAggregationDAO;
@@ -159,6 +160,9 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
+		
+		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
 		createInvoiceCandidates(extendedContract);
 
@@ -175,7 +179,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.build();
 
 		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
-
+		
 		// update invalids
 		Services.get(IInvoiceCandBL.class).updateInvalid()
 				.setContext(helper.getCtx(), helper.getTrxName())
@@ -185,6 +189,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertVoidedFlatrateTerm(extendedContract);
 		assertInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 	}
 
 	private void config_InvoiceCand_HeaderAggregation()
@@ -250,8 +255,11 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertThat(flatrateTerm.getAD_PInstance_EndOfTerm()).isNull();
 
 		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
-
 		assertThat(ancestor).isNull();
+		
+		final I_C_Order order = InterfaceWrapperHelper.create(flatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		InterfaceWrapperHelper.refresh(order);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
 	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)

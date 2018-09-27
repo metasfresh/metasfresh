@@ -45,6 +45,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -79,6 +80,8 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
 		assertFlatrateTerm(contract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 1);
+		final I_C_Order order = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
 
 	@Test
@@ -98,9 +101,14 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
+		
+		final I_C_Order order = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
-
+		
+		InterfaceWrapperHelper.refresh(order);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 		assertFlatrateTerm(contract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 1);
 		assertThat(contract.getMasterEndDate()).isEqualTo(cancelDate);
@@ -126,6 +134,9 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
 
+		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
+		
 		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
 				.changeDate(cancellingDate)
@@ -138,6 +149,9 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 
 		InterfaceWrapperHelper.refresh(contract);
 		InterfaceWrapperHelper.refresh(extendedContract);
+		InterfaceWrapperHelper.refresh(order);
+		
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 
 		assertFlatrateTerm(contract, cancellingDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 		assertSubscriptionProgress(contract, 12);

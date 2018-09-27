@@ -5,6 +5,7 @@ package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -40,6 +41,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.subscription.model.I_C_Order;
+import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
@@ -312,6 +315,8 @@ public abstract class AbstractFlatrateTermTest
 
 	protected I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product, @NonNull final Timestamp startDate)
 	{
+		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions);
+		
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
 				helper.getContextProvider(),
@@ -335,10 +340,25 @@ public abstract class AbstractFlatrateTermTest
 		contract.setMasterStartDate(startDate);
 		contract.setM_Product(product);
 		contract.setIsTaxIncluded(true);
+		contract.setC_OrderLine_Term(orderLine);
 		save(contract);
 		flatrateBL.complete(contract);
 
 		return contract;
+	}
+
+	private I_C_OrderLine createOrderAndOrderLine(final I_C_Flatrate_Conditions conditions)
+	{
+		final I_C_Order orderRecord = newInstance(I_C_Order.class);
+		orderRecord.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
+		saveRecord(orderRecord);
+
+		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
+		orderLineRecord.setC_Order(orderRecord);
+		orderLineRecord.setC_Flatrate_Conditions(conditions);
+		saveRecord(orderLineRecord);
+		
+		return orderLineRecord;
 	}
 
 	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)

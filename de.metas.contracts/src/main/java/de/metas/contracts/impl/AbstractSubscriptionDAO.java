@@ -251,6 +251,11 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 			orderIds.add(ancestorId);
 			buildAllContractOrderList(ancestorId, orderIds);
 		}
+		else
+		{	// add itself
+			orderIds.add(orderId);
+		}
+			
 
 		return orderIds;
 	}

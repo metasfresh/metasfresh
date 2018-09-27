@@ -583,7 +583,7 @@ public class C_Flatrate_Term
 	}
 
 	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
+			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_ContractStatus,I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID
 	})
@@ -594,12 +594,12 @@ public class C_Flatrate_Term
 		{
 			return;
 		}
+		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 		
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 		
-		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-		
-		if (InterfaceWrapperHelper.isNew(term))
+		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
 		{
 			subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
@@ -633,11 +633,17 @@ public class C_Flatrate_Term
 		{
 			// if the list is bigger then 1, means that we have multiple sales order and the contract is still active 
 			// same, if has predecessor, means that is still active; at least for now
-			if (orderIds.size() > 1 || Services.get(IContractsDAO.class).termHasAPredecessor(term))
+			if (orderIds.size() > 1 || contractsDAO.termHasAPredecessor(term))
 			{
+				// make sure the contract wasn't already cancelled trough othe flat rate term 
+				if (!I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus()))
+				{	
+					subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+				}
+				
 				return;
 			}
-			
+		
 			subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
 		}
 	}

@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +25,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -229,6 +231,9 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 			assertThat(nextflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 		}
+		
+		final I_C_Order order = InterfaceWrapperHelper.create(currentflatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 	}
 
 	private void assertPartnerData(@NonNull final I_C_Flatrate_Term currentflatrateTerm)
