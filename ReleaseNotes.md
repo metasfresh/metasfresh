@@ -25,11 +25,15 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#4582](https://github.com/metasfresh/metasfresh/issues/4582) Excel Export and SQL for Product Specifications
+    * New Excel Export for a Product Specifications sheet.
   * [#4601](https://github.com/metasfresh/metasfresh/issues/4601) Allow activating spring profiles via AD_SysConfig
+    * New Feature that allows to activate Spring Profiles via System Configuration.
   * [#4605](https://github.com/metasfresh/metasfresh/issues/4605) Webui: Org window: hide the AD_Org_ID field
     * Hiding the Organisation Field in Organisation Window.
   * [#4610](https://github.com/metasfresh/metasfresh/issues/4610) Billto Location and contact override in invoicecandidates
+    * New Possibility to overwrite Billto Location and Contact via Invoice Candidates.
   * [#4619](https://github.com/metasfresh/metasfresh/issues/4619) de.metas.util - Rename packages to de.metas.util
+    * Internal housekeeping improvement.
 
 * metasfresh-webui-api
   * [#1049](https://github.com/metasfresh/metasfresh-webui-api/issues/1049) Pipes/Cabling quick input shall not display the BOM products
