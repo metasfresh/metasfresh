@@ -37,6 +37,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#1049](https://github.com/metasfresh/metasfresh-webui-api/issues/1049) Pipes/Cabling quick input shall not display the BOM products
+    * Improvement of the cable batch entry mode, now not showing the Bill of Materials anymore.
 
 * metasfresh-webui-frontend
   * [#1926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1926) Make window tabs cypress friendly
@@ -48,9 +49,11 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4599](https://github.com/metasfresh/metasfresh/issues/4599) Error when posting a zero-sum invoice
+    * Bugfix for the posting of zero-sum invoices.
 
 * metasfresh-webui-api
   * [#1051](https://github.com/metasfresh/metasfresh-webui-api/issues/1051) New Org cannot be created anymore
+    * Fixes the Org creation in WebUI.
 
 * metasfresh-webui-frontend
   *[#1949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1949) Shortcuts not working properly in Tabs after changing sth in grid view + [Tab]
