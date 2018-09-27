@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
+import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
 
 /**
  * @author cg
@@ -109,9 +109,9 @@ public class PickingSlotLayout extends KeyLayout
 	}
 
 	@Override
-	public FreshSwingPackageTerminalPanel getBasePanel()
+	public SwingPackingTerminalPanel getBasePanel()
 	{
-		return (FreshSwingPackageTerminalPanel)super.getBasePanel();
+		return SwingPackingTerminalPanel.cast(super.getBasePanel());
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package de.metas.fresh.picking.form;
+package de.metas.fresh.picking.form.swing;
 
 /*
  * #%L
@@ -28,7 +28,6 @@ import java.awt.Color;
 import org.adempiere.ad.ui.ITable;
 import org.adempiere.ad.ui.TableColorProviderAdapter;
 
-import de.metas.fresh.picking.form.swing.FreshSwingPickingOKPanel;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
 import de.metas.picking.legacy.form.TableRowKey;
@@ -39,11 +38,11 @@ import de.metas.util.Check;
  * This color provider Highlights those mini table rows that are matched by the picking model's {@link ITableRowSearchSelectionMatcher}.
  * 
  */
-public class FreshSwingPickingMiniTableColorProvider extends TableColorProviderAdapter
+final class SwingPickingOKPanel_TableColorProvider extends TableColorProviderAdapter
 {
-	private final FreshSwingPickingOKPanel pickingPanel;
+	private final SwingPickingOKPanel pickingPanel;
 
-	public FreshSwingPickingMiniTableColorProvider(final FreshSwingPickingOKPanel pickingPanel)
+	public SwingPickingOKPanel_TableColorProvider(final SwingPickingOKPanel pickingPanel)
 	{
 		super();
 

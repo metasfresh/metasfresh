@@ -13,8 +13,7 @@ import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModelAware;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
-import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
+import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
 import de.metas.picking.service.PackingItemsMap;
 
 /**
@@ -58,29 +57,19 @@ public class ProductKeyLayout extends KeyLayout implements IKeyLayoutSelectionMo
 		return false;
 	}
 
-	private FreshSwingPackageTerminalPanel getPackageTerminalPanel()
+	private SwingPackingTerminalPanel getPackingTerminalPanel()
 	{
-		return FreshSwingPackageTerminalPanel.cast(getBasePanel());
+		return SwingPackingTerminalPanel.cast(getBasePanel());
 	}
 
 	private PackingItemsMap getPackingItems()
 	{
-		return getPackageTerminalPanel().getPackingItems();
-	}
-
-	private FreshSwingPackageItems getFreshSwingPackageItems()
-	{
-		return getPackageTerminalPanel().getProductKeysPanel();
+		return getPackingTerminalPanel().getPackingItems();
 	}
 
 	private PickingSlotKey getSelectedPickingSlotKey()
 	{
-		FreshSwingPackageItems packageItems = getFreshSwingPackageItems();
-		if (packageItems == null)
-		{
-			return null;
-		}
-		return packageItems.getSelectedPickingSlotKey();
+		return getPackingTerminalPanel().getSelectedPickingSlotKey();
 	}
 
 	@Override

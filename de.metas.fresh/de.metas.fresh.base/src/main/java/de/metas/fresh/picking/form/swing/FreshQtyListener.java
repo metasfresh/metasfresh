@@ -44,10 +44,10 @@ class FreshQtyListener implements PropertyChangeListener
 {
 	private static final String ERR_Fresh_QTY_LISTENER_NEG_QTY = "@de.metas.fresh.picking.form.swing.FreshQtyListener.Neg_Qty@";
 
-	private final FreshSwingPackageItems packageItems;
+	private final SwingPickingSlotsPanel packageItems;
 	private final IdentityHashSet<Object> activeComponents = new IdentityHashSet<>();
 
-	FreshQtyListener(@NonNull final FreshSwingPackageItems packageItems)
+	FreshQtyListener(@NonNull final SwingPickingSlotsPanel packageItems)
 	{
 		this.packageItems = packageItems;
 	}

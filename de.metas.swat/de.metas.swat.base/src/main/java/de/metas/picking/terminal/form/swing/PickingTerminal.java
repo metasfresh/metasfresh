@@ -36,22 +36,21 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.picking.terminal.PickingTerminalPanel;
+import de.metas.picking.terminal.IPickingTerminalPanel;
 import lombok.NonNull;
 
 /**
- * @author cg
- *
+ * Picking Terminal (first window)
  */
 public class PickingTerminal implements FormPanel
 {
 	private static final transient Logger logger = LogManager.getLogger(PickingTerminal.class);
 
-	private PickingTerminalPanel panel = null;
+	private IPickingTerminalPanel panel = null;
 
-	private static ClassReference<? extends PickingTerminalPanel> pickingTerminalPanelClass = null;
+	private static ClassReference<? extends IPickingTerminalPanel> pickingTerminalPanelClass = null;
 
-	public static void setPickingTerminalPanelClass(@NonNull final Class<? extends PickingTerminalPanel> pickingTerminalPanelClass)
+	public static void setPickingTerminalPanelClass(@NonNull final Class<? extends IPickingTerminalPanel> pickingTerminalPanelClass)
 	{
 		PickingTerminal.pickingTerminalPanelClass = ClassReference.of(pickingTerminalPanelClass);
 		logger.info("Set pickingTerminalPanelClass={}", pickingTerminalPanelClass);
@@ -67,15 +66,7 @@ public class PickingTerminal implements FormPanel
 
 		Env.setContext(Env.getCtx(), windowNo, "AD_Form_ID", frame.getAD_Form_ID());
 
-		final PickingTerminalPanel panel;
-		try
-		{
-			panel = pickingTerminalPanelClass.getReferencedClass().newInstance();
-		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		this.panel = newPickingTerminalPanel();
 
 		// cg: maximum size should be 1024x768 : see task 03520
 		final Dimension frameSize = new Dimension(1024, 740);
@@ -88,8 +79,21 @@ public class PickingTerminal implements FormPanel
 		// see http://stackoverflow.com/questions/10157954/java-swing-setmaximumsize-not-working
 		frame.setPreferredSize(frameSize);
 
-		this.panel = panel;
 		panel.init(windowNo, frame);
+	}
+
+	private IPickingTerminalPanel newPickingTerminalPanel()
+	{
+		final IPickingTerminalPanel panel;
+		try
+		{
+			panel = pickingTerminalPanelClass.getReferencedClass().newInstance();
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		return panel;
 	}
 
 	@Override

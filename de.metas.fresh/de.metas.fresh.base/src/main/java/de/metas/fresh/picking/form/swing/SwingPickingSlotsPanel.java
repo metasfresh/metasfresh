@@ -64,7 +64,7 @@ import de.metas.fresh.picking.PickingSlotKeyGroup;
 import de.metas.fresh.picking.PickingSlotLayout;
 import de.metas.fresh.picking.ProductKey;
 import de.metas.fresh.picking.ProductKeyLayout;
-import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
+import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
@@ -92,17 +92,17 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
- * Contains: Picking Slots and products Products are not shown in this panel, but in the main panel
- *
- * @author cg
- *
+ * Contains:
+ * <ul>
+ * <li>Picking Slots
+ * <li>Products, but they are not shown in this panel, but in the main panel
+ * </ul>
  */
-public class FreshSwingPackageItems
+public class SwingPickingSlotsPanel
 		extends TerminalSubPanel
 		implements PropertyChangeListener
 {
 	// services
-	// private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IPackingService packingService = Services.get(IPackingService.class);
 
 	private static final String ERR_NO_PRODUCT_SELECTED = "@NoProductSelected@";
@@ -141,19 +141,19 @@ public class FreshSwingPackageItems
 	private PickingSlotKey selectedPickingSlotKey;
 	private final PropertyChangeListener selectedPickingSlotKeyListener = evt -> onSelectedPickingSlotKeyChanged();
 
-	public FreshSwingPackageItems(final FreshSwingPackageTerminalPanel basePanel)
+	public SwingPickingSlotsPanel(final SwingPackingTerminalPanel packingTerminalPanel)
 	{
-		super(basePanel);
+		super(packingTerminalPanel);
 	}
 
 	/** @return Packing window main panel (second window) */
-	public FreshSwingPackageTerminalPanel getPackageTerminalPanel()
+	private SwingPackingTerminalPanel getPackingTerminalPanel()
 	{
-		return FreshSwingPackageTerminalPanel.cast(super.getTerminalBasePanel());
+		return SwingPackingTerminalPanel.cast(super.getTerminalBasePanel());
 	}
 
 	/** @return button size constraints; never return null */
-	protected String getButtonSize()
+	private static String getButtonSize()
 	{
 		return Utils.getButtonSize();
 	}
@@ -161,21 +161,19 @@ public class FreshSwingPackageItems
 	private class ProductsKeyListener extends TerminalKeyListenerAdapter
 	{
 
-		@SuppressWarnings("deprecation")
 		@Override
 		public void keyReturned(final ITerminalKey key)
 		{
-			getTerminalBasePanel().keyPressed(key);
+			getPackingTerminalPanel().keyPressed(key);
 		}
 	}
 
 	private class PickingSlotsKeyListener extends TerminalKeyListenerAdapter
 	{
-		@SuppressWarnings("deprecation")
 		@Override
 		public void keyReturned(final ITerminalKey key)
 		{
-			getTerminalBasePanel().keyPressed(key);
+			getPackingTerminalPanel().keyPressed(key);
 		}
 
 	}
@@ -283,7 +281,7 @@ public class FreshSwingPackageItems
 		//
 		// Button: Distribute Qty to new TUs (fresh_08754)
 		{
-			bDistributeQtyToNewHUs = createButtonAction(FreshSwingPackageItems.ACTION_DistributeQtyToNewHUs, null, 17f);
+			bDistributeQtyToNewHUs = createButtonAction(SwingPickingSlotsPanel.ACTION_DistributeQtyToNewHUs, null, 17f);
 			bDistributeQtyToNewHUs.setEnabled(false);
 			bDistributeQtyToNewHUs.addListener(this);
 
@@ -294,7 +292,7 @@ public class FreshSwingPackageItems
 		//
 		// Button: HU Editor
 		{
-			bHUEditor = createButtonAction(FreshSwingPackageItems.ACTION_HUEditor, null, 17f);
+			bHUEditor = createButtonAction(SwingPickingSlotsPanel.ACTION_HUEditor, null, 17f);
 			bHUEditor.setEnabled(false);
 			bHUEditor.addListener(this);
 
@@ -305,7 +303,7 @@ public class FreshSwingPackageItems
 		//
 		// Button: Close Current HU
 		{
-			bCloseCurrentHU = createButtonAction(FreshSwingPackageItems.ACTION_CloseCurrentHU, null, 17f);
+			bCloseCurrentHU = createButtonAction(SwingPickingSlotsPanel.ACTION_CloseCurrentHU, null, 17f);
 			bCloseCurrentHU.setEnabled(false);
 			bCloseCurrentHU.addListener(evt -> onCloseCurrentHU());
 		}
@@ -374,7 +372,7 @@ public class FreshSwingPackageItems
 		{
 			final HULoadException loadEx = (HULoadException)e;
 			final BigDecimal qtyToLoad = loadEx.getAllocationResult().getQtyToAllocate();
-			final String errmsg = MessageFormat.format(FreshSwingPackageItems.ERR_CANNOT_FULLY_LOAD_QTY_TO_HANDLING_UNIT, qtyToLoad);
+			final String errmsg = MessageFormat.format(SwingPickingSlotsPanel.ERR_CANNOT_FULLY_LOAD_QTY_TO_HANDLING_UNIT, qtyToLoad);
 			terminalFactory.showWarning(this, ITerminalFactory.TITLE_ERROR, new TerminalException(errmsg, loadEx));
 		}
 		else
@@ -425,7 +423,7 @@ public class FreshSwingPackageItems
 			{
 				// CASE: an external process cleared the current HU
 				// e.g. de.metas.shipping.process.M_ShippingPackage_CreateFromPickingSlots
-				throw new AdempiereException(FreshSwingPackageItems.ERR_NO_OPEN_HU_FOUND);
+				throw new AdempiereException(SwingPickingSlotsPanel.ERR_NO_OPEN_HU_FOUND);
 			}
 			final IPackingItem unallocPackingItem = selectedProduct.getUnAllocatedPackingItem();
 			packItemToHU(unallocPackingItem, Quantity.of(newQty, unallocPackingItem.getC_UOM()), hu);
@@ -434,7 +432,7 @@ public class FreshSwingPackageItems
 			// reset the qty field
 			setQty(BigDecimal.ZERO);
 		}
-		else if (FreshSwingPackageItems.ACTION_DistributeQtyToNewHUs.equals(action))
+		else if (SwingPickingSlotsPanel.ACTION_DistributeQtyToNewHUs.equals(action))
 		{
 			try
 			{
@@ -447,7 +445,7 @@ public class FreshSwingPackageItems
 				showWarning(e);
 			}
 		}
-		else if (FreshSwingPackageItems.ACTION_HUEditor.equals(action))
+		else if (SwingPickingSlotsPanel.ACTION_HUEditor.equals(action))
 		{
 			onHUEditor();
 		}
@@ -464,13 +462,13 @@ public class FreshSwingPackageItems
 
 			if (qtyToRemove.signum() == 0)
 			{
-				warn(FreshSwingPackageItems.ERR_Fresh_SWING_PACKAGE_ITEMS_QTY_NULL);
+				warn(SwingPickingSlotsPanel.ERR_Fresh_SWING_PACKAGE_ITEMS_QTY_NULL);
 				return;
 			}
 
 			if (qtyToRemove.compareTo(allocQty.getAsBigDecimal()) > 0)
 			{
-				warn(FreshSwingPackageItems.ERR_MAX_QTY);
+				warn(SwingPickingSlotsPanel.ERR_MAX_QTY);
 				setQty(BigDecimal.ZERO);
 				return;
 			}
@@ -492,7 +490,7 @@ public class FreshSwingPackageItems
 		updatePackingState(selectedPickingSlotKey);
 
 		// Forward the event
-		getPackageTerminalPanel().keyPressed(selectedPickingSlotKey);
+		getPackingTerminalPanel().keyPressed(selectedPickingSlotKey);
 	}
 
 	void warn(final String message)
@@ -551,22 +549,6 @@ public class FreshSwingPackageItems
 				setQty(BigDecimal.ZERO);
 			}
 		}
-	}
-
-	/**
-	 * Sets qty field from given qty string.
-	 *
-	 * NOTE: this method will not fire change events
-	 */
-	public final void setQtyNoFire(@NonNull final String qty)
-	{
-		BigDecimal bQty = new BigDecimal(qty);
-		if (bQty.scale() != 0)
-		{
-			bQty = bQty.setScale(2, BigDecimal.ROUND_HALF_UP);
-		}
-		final ITerminalNumericField qtyField = getQtyField();
-		qtyField.setValue(bQty, false);
 	}
 
 	/**
@@ -832,7 +814,7 @@ public class FreshSwingPackageItems
 		updatePackingState(selectedPickingSlotKey);
 
 		// Forward the event
-		getPackageTerminalPanel().keyPressed(selectedPickingSlotKey);
+		getPackingTerminalPanel().keyPressed(selectedPickingSlotKey);
 
 		refreshProducts();
 	}
@@ -951,7 +933,7 @@ public class FreshSwingPackageItems
 			{
 				return DistributeQtyToNewHUsReadPanel.builder()
 						.setTerminalContext(getTerminalContext())
-						.setParentComponent(FreshSwingPackageItems.this)
+						.setParentComponent(SwingPickingSlotsPanel.this)
 						.setTitle(bDistributeQtyToNewHUs.getText())
 						.setRequestCloseCurrentHUConfirmation(pickingSlotKey.hasOpenNotEmptyHU())
 						.setRequest(request)
@@ -1040,7 +1022,7 @@ public class FreshSwingPackageItems
 
 		// TODO: this is a workaround just to deliver a working increment.
 		// We shall not have such a tight coupling but instead the selectedHU should be provided in some packing model
-		final PackingMd pickingOKPanelModel = getPackageTerminalPanel() // Packing window main panel (second window)
+		final PackingMd pickingOKPanelModel = getPackingTerminalPanel() // Packing window main panel (second window)
 				.getParent() // Packing window (second window)
 				.getPickingOKPanel() // Picking OK Panel (that one that contains table rows)
 				.getModel(); // PackingMd
@@ -1130,11 +1112,11 @@ public class FreshSwingPackageItems
 
 	private PackingItemsMap getPackingItems()
 	{
-		return getPackageTerminalPanel().getPackingItems();
+		return getPackingTerminalPanel().getPackingItems();
 	}
 
 	private void setPackingItems(final PackingItemsMap packingItems)
 	{
-		getPackageTerminalPanel().setPackingItems(packingItems);
+		getPackingTerminalPanel().setPackingItems(packingItems);
 	}
 }

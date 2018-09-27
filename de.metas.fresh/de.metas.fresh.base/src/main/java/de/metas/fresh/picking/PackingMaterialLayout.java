@@ -13,12 +13,12 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,12 +33,12 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalBasePanel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
-import de.metas.fresh.picking.form.swing.FreshSwingPackageItems;
+import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
 import de.metas.util.Check;
 
 /**
@@ -47,6 +47,10 @@ import de.metas.util.Check;
  */
 public class PackingMaterialLayout extends KeyLayout
 {
+	public static PackingMaterialLayout cast(final IKeyLayout keyLayout)
+	{
+		return (PackingMaterialLayout)keyLayout;
+	}
 
 	private static final Color COLOR_Default = Color.GRAY;
 	private static final Color COLOR_MatchedForProductKey = Color.GREEN;
@@ -127,37 +131,33 @@ public class PackingMaterialLayout extends KeyLayout
 
 	private PickingSlotKey getSelectedPickingSlotKey()
 	{
-		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
-		return productKeysPanel.getSelectedPickingSlotKey();
+		return getPackingTerminalPanel().getSelectedPickingSlotKey();
 	}
 
 	private ProductKey getSelectedProductKey()
 	{
-		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
-		return productKeysPanel.getSelectedProduct();
+		return getPackingTerminalPanel().getSelectedProductKey();
 	}
 
 	private List<ProductKey> getAllProductKeys()
 	{
-		final FreshSwingPackageItems productKeysPanel = getBasePanel().getProductKeysPanel();
-		return productKeysPanel.getAllProductKeys();
+		return getPackingTerminalPanel().getAllProductKeys();
 	}
 
 	private ImmutableList<PackingMaterialKey> getAvailablePackingMaterialKeys()
 	{
-		return getBasePanel().getAvailablePackingMaterialKeys();
+		return getPackingTerminalPanel().getAvailablePackingMaterialKeys();
 	}
 
-	@Override
-	public FreshSwingPackageTerminalPanel getBasePanel()
+	private SwingPackingTerminalPanel getPackingTerminalPanel()
 	{
-		return (FreshSwingPackageTerminalPanel)super.getBasePanel();
+		return SwingPackingTerminalPanel.cast(super.getBasePanel());
 	}
 
 	@Override
 	public void setBasePanel(final ITerminalBasePanel basePanel)
 	{
-		Check.assumeInstanceOfOrNull(basePanel, FreshSwingPackageTerminalPanel.class, "basePanel");
+		Check.assumeInstanceOfOrNull(basePanel, SwingPackingTerminalPanel.class, "basePanel");
 		super.setBasePanel(basePanel);
 	}
 

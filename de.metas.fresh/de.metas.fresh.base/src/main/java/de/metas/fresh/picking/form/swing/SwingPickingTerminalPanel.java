@@ -3,6 +3,9 @@
  */
 package de.metas.fresh.picking.form.swing;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -26,6 +29,8 @@ package de.metas.fresh.picking.form.swing;
  */
 
 import java.awt.Color;
+import java.awt.Container;
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
@@ -37,22 +42,38 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
+import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.adempiere.form.terminal.IComponent;
+import de.metas.adempiere.form.terminal.IConfirmPanel;
 import de.metas.adempiere.form.terminal.IContainer;
+import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalKeyListener;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalLabel;
+import de.metas.adempiere.form.terminal.ITerminalLoginDialog;
+import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.ITerminalTextField;
+import de.metas.adempiere.form.terminal.ITerminalTextPane;
+import de.metas.adempiere.form.terminal.POSKeyLayout;
+import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
+import de.metas.adempiere.form.terminal.context.TerminalContextFactory;
+import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.bpartner.BPartnerId;
 import de.metas.fresh.picking.BPartnerKey;
 import de.metas.fresh.picking.BPartnerKeyLayout;
@@ -61,21 +82,52 @@ import de.metas.fresh.picking.DeliveryDateKeyLayout;
 import de.metas.fresh.picking.form.BarcodeHUTableRowSearchSelectionMatcher;
 import de.metas.fresh.picking.form.ProductTableRowSearchSelectionMatcher;
 import de.metas.fresh.picking.form.SSCC18HUTableRowSearchSelectionMatcher;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.picking.legacy.form.ITableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.NullTableRowSearchSelectionMatcher;
 import de.metas.picking.legacy.form.PackingMd;
-import de.metas.picking.terminal.PickingOKPanel;
-import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
+import de.metas.picking.terminal.IPickingTerminalPanel;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Picking First Window Panel.
  *
- * @author cg
- *
+ * Contains:
+ * <ul>
+ * <li>Warehouse Keys
+ * <li>maybe other filtering keys (that will be added from extending classes)
+ * <li>actual picking panel ( {@link SwingPickingOKPanel} )
+ * <li>confirm panel (bottom)
+ * </ul>
  */
-public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
+public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 {
+	public static SwingPickingTerminalPanel cast(final IPickingTerminalPanel panel)
+	{
+		return (SwingPickingTerminalPanel)panel;
+	}
+
+	private static final Logger logger = LogManager.getLogger(SwingPickingTerminalPanel.class);
+
+	private static final String CARDNAME_WAREHOUSE_PICKING = "WAREHOUSE_PICKING";
+	private static final String CARDNAME_RESULT = "RESULT";
+
+	private final IPair<ITerminalContext, ITerminalContextReferences> terminalContextAndRefs;
+	private SwingPickingOKPanel pickingOKPanel;
+
+	private boolean _disposed = false;
+
+	private final IContainer panel;
+	private final CardLayout cardLayout;
+
+	private FormFrame frame;
+	private ITerminalKeyPanel warehousePanel;
+	private ITerminalTextPane resultTextPane;
+	private IConfirmPanel confirmPanel;
+	private final String ACTION_Exit = "Logout";
+
 	private BPartnerKeyLayout bpartnerKeyLayout;
 	private ITerminalKeyPanel bpartnerPanel;
 	private DeliveryDateKeyLayout deliveryDateKeyLayout;
@@ -96,7 +148,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 	{
 
 		@Override
-		public void propertyChange(PropertyChangeEvent evt)
+		public void propertyChange(final PropertyChangeEvent evt)
 		{
 			final String eventName = evt.getPropertyName();
 			if (ITerminalTextField.PROPERTY_ActionPerformed.equals(eventName)
@@ -109,21 +161,255 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		}
 	};
 
-	public FreshSwingPickingTerminalPanel()
+	public SwingPickingTerminalPanel()
 	{
-		super();
+		terminalContextAndRefs = TerminalContextFactory.get().createContextAndRefs();
+		getTerminalContext().addToDisposableComponents(this);
+
+		final IContainer panel = getTerminalFactory().createContainer();
+
+		final Container panelSwing = SwingTerminalFactory.getUI(panel);
+		cardLayout = new CardLayout();
+		panelSwing.setLayout(cardLayout);
+
+		this.panel = panel;
 	}
 
 	@Override
-	public final FreshSwingPickingOKPanel createPickingOKPanel()
+	public void add(final IComponent component, final Object constraints)
 	{
-		return new FreshSwingPickingOKPanel(this);
+		panel.add(component, constraints);
 	}
 
 	@Override
-	protected final void initComponents() throws Exception
+	public void addAfter(final IComponent component, final IComponent componentBefore, final Object constraints)
 	{
-		super.initComponents();
+		panel.addAfter(component, componentBefore, constraints);
+	}
+
+	@Override
+	public void remove(final IComponent component)
+	{
+		panel.remove(component);
+	}
+
+	@Override
+	public void removeAll()
+	{
+		panel.removeAll();
+	}
+
+	@Override
+	public final ITerminalContext getTerminalContext()
+	{
+		return terminalContextAndRefs.getLeft();
+	}
+
+	@Override
+	public ITerminalFactory getTerminalFactory()
+	{
+		return getTerminalContext().getTerminalFactory();
+	}
+
+	@Override
+	public boolean isProcessed()
+	{
+		return false;
+	}
+
+	@Override
+	public Properties getCtx()
+	{
+		return getTerminalContext().getCtx();
+	}
+
+	@Override
+	public final void keyPressed(final ITerminalKey key)
+	{
+		// nothing to do
+	}
+
+	@Override
+	public void logout()
+	{
+		doLogin();
+	}
+
+	private void doLogin()
+	{
+		while (true)
+		{
+			setFrameVisible(false);
+			final ITerminalLoginDialog login = getTerminalFactory().createTerminalLoginDialog(this);
+
+			if (getAD_User_ID() >= 0)
+			{
+				login.setAD_User_ID(getAD_User_ID());
+			}
+
+			login.activate();
+			if (login.isExit())
+			{
+				dispose();
+				return;
+			}
+			else if (login.isLogged())
+			{
+				setAD_User_ID(login.getAD_User_ID());
+				setFrameVisible(true);
+				return;
+			}
+		}
+	}
+
+	private void setAD_User_ID(final int AD_User_ID)
+	{
+		getTerminalContext().setAD_User_ID(AD_User_ID);
+	}
+
+	private int getAD_User_ID()
+	{
+		return getTerminalContext().getAD_User_ID();
+	}
+
+	@Override
+	public final FormFrame getComponent()
+	{
+		return frame;
+	}
+
+	private final void setFrame(final Object frame)
+	{
+		this.frame = (FormFrame)frame;
+		this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+		this.frame.setResizable(false);
+		this.frame.setJMenuBar(null);
+	}
+
+	private final void setFrameVisible(final boolean visible)
+	{
+		if (frame != null)
+		{
+			frame.setVisible(visible);
+		}
+		else
+		{
+			return;
+		}
+
+		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
+		if (pickingOKPanel != null)
+		{
+			if (pickingOKPanel.getPackageFrame() != null)
+			{
+				pickingOKPanel.getPackageFrame().setVisible(visible);
+			}
+		}
+	}
+
+	@Override
+	public void init(final int windowNo, final FormFrame frame)
+	{
+		final ITerminalContext tc = getTerminalContext();
+		tc.setWindowNo(windowNo);
+
+		frame.setJMenuBar(null);
+		setFrame(frame);
+		try
+		{
+			doLogin();
+
+			// If user choose to quit from Login panel, then we need to stop right away
+			if (isDisposed())
+			{
+				return;
+			}
+
+			initComponents();
+			initLayout();
+
+			this.frame.getContentPane().add(SwingTerminalFactory.getUI(panel), BorderLayout.CENTER);
+
+			//
+			// Init default values, set default focus etc
+			// NOTE: running this method after adding the panel to frame because else the focus requests won't be set
+			initDefaults();
+		}
+		catch (final Exception e)
+		{
+			logger.warn("init", e);
+			final ITerminalFactory factory = getTerminalFactory();
+			factory.showWarning(this, ITerminalFactory.TITLE_ERROR, new TerminalException(e));
+
+			dispose();
+			if (this.frame != null)
+			{
+				this.frame.dispose();
+			}
+			return;
+		}
+	}
+
+	@Override
+	public final boolean isDisposed()
+	{
+		return _disposed;
+	}
+
+	@Override
+	public void dispose()
+	{
+		if (frame != null)
+		{
+			frame.dispose();
+			frame = null;
+		}
+
+		if (isDisposed())
+		{
+			// This method might be called by both the swing framework and ITerminalContext.
+			// Therefore we need to make sure not to try and call deleteReferences() twice because the second time there will be an error.
+			return;
+		}
+
+		// it's important to do this before calling deleteReferences(), because this instance itself was also added as a removable component.
+		// so, deleteReferences() will also call this dispose() method, and we want to avoid a stack overflow error.
+		// note: alternatively, we could also add a _disposing variable, like we do e.g. in AbstractHUSelectFrame.
+		_disposed = true;
+
+		getTerminalContext().deleteReferences(terminalContextAndRefs.getRight());
+
+		final TerminalContextFactory terminalContextFactory = TerminalContextFactory.get();
+		terminalContextFactory.destroy(getTerminalContext());
+	}
+
+	private final void initComponents() throws Exception
+	{
+		final String frameTitle = Services.get(IMsgBL.class).getMsg(Env.getCtx(), TITLE_PACKAGE_TERMINAL);
+		frame.setTitle(frameTitle);
+
+		//
+		// Card 1: Warehouse Picking
+		{
+			//
+			final IKeyLayout warehouseKeyLayout = new POSKeyLayout(getTerminalContext(), 540003); // TODO hard coded "Warehouse Groups"
+			warehouseKeyLayout.setRows(1); // fresh_06250
+			warehousePanel = getTerminalFactory().createTerminalKeyPanel(warehouseKeyLayout, new WarehouseKeyListener());
+			warehousePanel.setAllowKeySelection(true);
+
+			//
+			pickingOKPanel = new SwingPickingOKPanel(this);
+		}
+
+		//
+		// card 2
+		{
+			resultTextPane = getTerminalFactory().createTextPane("");
+			//
+			confirmPanel = getTerminalFactory().createConfirmPanel(true, "");
+			confirmPanel.addButton(ACTION_Exit);
+			confirmPanel.addListener(new ConfirmPanelListener());
+		}
 
 		final ITerminalContext terminalContext = getTerminalContext();
 		final ITerminalFactory terminalFactory = getTerminalFactory();
@@ -185,8 +471,29 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		});
 	}
 
-	@Override
-	protected void initLayout_WarehousePicking()
+	/**
+	 * Setup UI layout (i.e. add components to panels)
+	 */
+	private void initLayout()
+	{
+		//
+		// Card 1: Warehouse Picking
+		initLayout_WarehousePicking();
+
+		//
+		// card 2
+		initLayout_Result();
+
+		// show card
+		showCard(CARDNAME_WAREHOUSE_PICKING);
+	}
+
+	/**
+	 * Layout for warehouse picking panel (Card 1).
+	 *
+	 * @see #CARDNAME_WAREHOUSE_PICKING
+	 */
+	private void initLayout_WarehousePicking()
 	{
 		final ITerminalFactory terminalFactory = getTerminalFactory();
 
@@ -217,13 +524,37 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		createPanel(container, getPickingOKPanel().getComponent(), "dock west, growx, wmin 620px, hmin 33%"); // i.e. shipment schedule lines
 		createPanel(container, searchFieldsPanel, "dock east, growx, width 50%");
 
-		add(container, SwingPickingTerminalPanel.CARDNAME_WAREHOUSE_PICKING, "dock north, growx");
+		add(container, CARDNAME_WAREHOUSE_PICKING, "dock north, growx");
 	}
 
-	@Override
-	protected final void initDefaults()
+	/**
+	 * Layout for result panel (Card 2).
+	 *
+	 * @see #CARDNAME_RESULT
+	 */
+	private void initLayout_Result()
 	{
-		super.initDefaults();
+		final ITerminalScrollPane textPaneScroll = getTerminalFactory().createScrollPane(resultTextPane);
+		final IContainer container = getTerminalFactory().createListContainer();
+		createPanel(container, textPaneScroll, "dock north, hmin 70%");
+		createPanel(container, confirmPanel, "dock south, hmax 30%");
+		//
+		add(container, CARDNAME_RESULT, "dock north, , growx, growy");
+	}
+
+	/**
+	 * Setup default component values (i.e. select default warehouse etc)
+	 */
+	private final void initDefaults()
+	{
+		//
+		// Select by default first warehouse
+		final List<ITerminalKey> warehouseKeys = warehousePanel.getKeyLayout().getKeys();
+		if (!warehouseKeys.isEmpty())
+		{
+			final ITerminalKey warehouseKey = warehouseKeys.get(0);
+			warehousePanel.fireKeyPressed(warehouseKey.getId());
+		}
 
 		// Set default focus to Product Search Field
 		// NOTE: this method is called after window is build, so that's why is safe to call here request focus
@@ -232,9 +563,43 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		resetProductSearchField();
 	}
 
+	private final IComponent createPanel(final IContainer content, final IComponent component, final Object constraints)
+	{
+		content.add(component, constraints);
+
+		final ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(content);
+		scroll.setUnitIncrementVSB(16);
+		final IContainer card = getTerminalFactory().createContainer();
+		card.add(scroll, "growx, growy");
+		return card;
+	}
+
+	private final void add(final IComponent component, final String name, final Object constraints)
+	{
+		SwingTerminalFactory.addChild(panel, component, name, constraints);
+	}
+
+	/**
+	 * Displays given panel card.
+	 *
+	 * @param cardName card name (see CARDNAME_* constants)
+	 */
+	private final void showCard(final String cardName)
+	{
+		final Container panelComp = SwingTerminalFactory.getUI(panel);
+		cardLayout.show(panelComp, cardName);
+	}
+
+	@Override
+	public void next()
+	{
+		final Container panelComp = SwingTerminalFactory.getUI(panel);
+		cardLayout.next(panelComp);
+	}
+
 	private void onSelectedLinesChanged()
 	{
-		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
+		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
 
 		//
 		// Update BPartner Keys
@@ -249,6 +614,16 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 			final Set<LocalDate> deliveryDates = pickingOKPanel.getSelectedDeliveryDates();
 			deliveryDateKeyLayout.createAndSetKeysFromDates(deliveryDates);
 		}
+	}
+
+	private final ITerminalKeyPanel getWarehouseKeyPanel()
+	{
+		return warehousePanel;
+	}
+
+	public final SwingPickingOKPanel getPickingOKPanel()
+	{
+		return pickingOKPanel;
 	}
 
 	public WarehouseId getSelectedWarehouseId()
@@ -291,36 +666,35 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		return deliveryDateKey.getDate();
 	}
 
-	@Override
-	protected final void resetFilters()
+	/** Reset filters on warehouse change (which we consider it as a master refresh/reset) */
+	private final void resetFilters()
 	{
 		// When user presses the "Warehouse button" we shall reset all other filters
 		// NOTE: "Warehouse button" shall be considered something like a master filters reset
 
-		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
+		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
 		final PackingMd packingMd = pickingOKPanel.getModel();
 
 		//
 		// Reset selected BPartner key
 		bpartnerKeyLayout.getKeyLayoutSelectionModel().onKeySelected(null);
 		// FIXME: for some reason BPartnerIds is not set in model
-		packingMd.setBPartnerIds(null);
+		pickingOKPanel.setBPartnerIds(null);
 
 		//
 		// Reset selected DeliveryDate key
 		deliveryDateKeyLayout.getKeyLayoutSelectionModel().onKeySelected(null);
 		// FIXME: for some reason DeliveryDate is not set in model
-		packingMd.setDeliveryDate(null);
+		pickingOKPanel.setDeliveryDate(null);
 
 		//
 		// Reset table rows matcher (fresh_06821)
 		packingMd.setTableRowSearchSelectionMatcher(NullTableRowSearchSelectionMatcher.instance);
 	}
 
-	@Override
-	protected final void refreshLines()
+	private final void refreshLines()
 	{
-		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
+		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
 		final PackingMd model = pickingOKPanel.getModel();
 
 		final Set<BPartnerId> bpartnerIds = getSelectedBPartnerIds();
@@ -336,7 +710,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 	{
 		Check.assumeNotNull(matcherNew, "matcherNew not null");
 
-		final PickingOKPanel pickingOKPanel = getPickingOKPanel();
+		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
 		final PackingMd model = pickingOKPanel.getModel();
 
 		final ITableRowSearchSelectionMatcher matcherOld = model.getTableRowSearchSelectionMatcher();
@@ -361,7 +735,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 
 	private boolean onBarcodeSearchRunning = false;
 
-	protected final void onBarcodeSearch(final String barcode)
+	private final void onBarcodeSearch(final String barcode)
 	{
 		if (onBarcodeSearchRunning)
 		{
@@ -392,7 +766,7 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 		}
 	}
 
-	protected final void onBarcodeSearch0(final String barcode)
+	private final void onBarcodeSearch0(final String barcode)
 	{
 		if (Check.isEmpty(barcode, true))
 		{
@@ -443,19 +817,37 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 	}
 
 	@Override
-	protected void refreshLines(final ResetFilters resetFilters)
+	public void refreshLines(final ResetFilters resetFilters)
 	{
-		super.refreshLines(resetFilters);
+		if (resetFilters == ResetFilters.Yes)
+		{
+			resetFilters();
+		}
+
+		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
+		pickingOKPanel.refresh();
+
+		if (resetFilters == ResetFilters.IfNoResult)
+		{
+			// If there is no result call this method again with resetFilters=Yes
+			final PackingMd packingModel = pickingOKPanel.getModel();
+			if (packingModel.getRowsCount() <= 0)
+			{
+				refreshLines(ResetFilters.Yes);
+			}
+		}
 
 		// Reset selection if filters were reset
 		if (resetFilters == ResetFilters.Yes)
 		{
-			final PickingOKPanel pickingOKPanel = getPickingOKPanel();
 			final PackingMd model = pickingOKPanel.getModel();
 			model.setSelectedTableRowKeys(null); // force fire event
 		}
 	}
 
+	/**
+	 * Method called when we activate the panel window's and we want to give focus to proper component
+	 */
 	@Override
 	public void requestFocus()
 	{
@@ -464,4 +856,60 @@ public class FreshSwingPickingTerminalPanel extends SwingPickingTerminalPanel
 			barcodeSearchField.requestFocus();
 		}
 	}
+
+	@Override
+	public void createPackingDetails()
+	{
+		pickingOKPanel.createPackingDetails();
+	}
+
+	@Override
+	public void setResultHtml(final String resultHtml)
+	{
+		resultTextPane.setText(resultHtml);
+	}
+
+	// panel listener for result
+	private class ConfirmPanelListener implements PropertyChangeListener
+	{
+		@Override
+		public void propertyChange(final PropertyChangeEvent evt)
+		{
+			if (!IConfirmPanel.PROP_Action.equals(evt.getPropertyName()))
+			{
+				return;
+			}
+			final String action = String.valueOf(evt.getNewValue());
+			if (IConfirmPanel.ACTION_OK.equals(action))
+			{
+				refreshLines();
+				next();
+			}
+			else if (IConfirmPanel.ACTION_Cancel.equals(action))
+			{
+				frame.dispose();
+			}
+			else if (ACTION_Exit.equals(action))
+			{
+				// TODO
+			}
+		}
+	}
+
+	private class WarehouseKeyListener extends TerminalKeyListenerAdapter
+	{
+
+		@Override
+		public void keyReturned(final ITerminalKey key)
+		{
+			if (I_M_Warehouse.Table_Name.equals(key.getTableName()))
+			{
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(key.getValue().getKey());
+				final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
+				pickingOKPanel.setWarehouseId(warehouseId);
+				refreshLines(ResetFilters.Yes);
+			}
+		}
+	}
+
 }
