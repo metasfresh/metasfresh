@@ -304,7 +304,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		final BigDecimal grandTotal = new BigDecimal(123.56);
+		final BigDecimal grandTotal = new BigDecimal("123.56");
 
 		final I_AD_Org org2 = newInstance(I_AD_Org.class);
 		org2.setValue("org2");

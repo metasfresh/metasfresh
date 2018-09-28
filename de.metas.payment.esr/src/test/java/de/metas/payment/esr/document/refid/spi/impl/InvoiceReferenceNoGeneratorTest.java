@@ -16,8 +16,10 @@ import de.metas.attachments.AttachmentEntryFactory;
 import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_Bank;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -55,6 +57,8 @@ public class InvoiceReferenceNoGeneratorTest
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
 		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
 		esrImportBL = new ESRImportBL(attachmentEntryService);
+
+		Services.registerService(IESRImportBL.class, esrImportBL);
 	}
 
 	@Test
