@@ -7,6 +7,7 @@ import { localLoginRequest, logoutRequest, getResetPasswordInfo } from './api';
 import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
+import Translation from './components/Translation';
 import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
 import DocList from './containers/DocList.js';
@@ -51,32 +52,16 @@ export const getRoutes = (store, auth, plugins) => {
 
   const onResetEnter = (nextState, replace, callback) => {
     const token = nextState.location.query.token;
-    // if (!localStorage.isLogged) {
-    //   localLoginRequest().then(resp => {
-    //     if (resp.data) {
-    //       store.dispatch(loginSuccess(auth));
-    //       callback(null, nextState.location.pathname);
-    //     } else {
-    //       //redirect tells that there should be
-    //       //step back in history after login
-    //       store.dispatch(push('/login?redirect=true'));
-    //     }
-    //   });
-    // } else {
-    //   if (hasTutorial) {
-    //     store.dispatch(enableTutorial());
-    //   }
-    console.log('TOKEN !!')
 
-    //   store.dispatch(clearNotifications());
-    //   store.dispatch(loginSuccess(auth));
-
-    //   callback();
-    // }
-    return getResetPasswordInfo(token).then(({ data }) => {
+    if (!token) {
       callback(null, nextState.location.pathname);
+    }
+
+    return getResetPasswordInfo(token).then(() => {
+      return Translation.getMessages().then(() => {
+        callback(null, nextState.location.pathname);
+      });
     });
-    // });
   };
 
   const logout = () => {
@@ -198,20 +183,14 @@ export const getRoutes = (store, auth, plugins) => {
       />
       <Route
         path="/resetPassword"
-        component={({ location }) => {
-          const onEnter = location.search.includes('token') ? onResetEnter : undefined;
-
-          console.log('ONENTER: ', !!onEnter, location)
-
-          return (
-            <Login
-              splat={location.pathname.replace('/', '')}
-              token={location.query.token}
-              onEnter={onEnter}
-              {...{ auth }}
-            />
-          );
-        }}
+        onEnter={onResetEnter}
+        component={({ location }) => (
+          <Login
+            splat={location.pathname.replace('/', '')}
+            token={location.query.token}
+            {...{ auth }}
+          />
+        )}
       />
       <Route path="*" component={NoMatch} />
     </Route>
