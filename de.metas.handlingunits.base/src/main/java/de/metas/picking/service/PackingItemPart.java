@@ -55,7 +55,7 @@ public final class PackingItemPart
 	private final HUPIItemProductId packingMaterialId;
 	@NonNull
 	private final WarehouseId warehouseId;
-	@Nullable
+	@NonNull
 	private final DeliveryRule deliveryRule;
 	@NonNull
 	private final TableRecordReference sourceDocumentLineRef;

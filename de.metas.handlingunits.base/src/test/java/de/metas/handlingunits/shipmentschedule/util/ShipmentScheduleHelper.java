@@ -53,6 +53,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 
 /**
@@ -141,6 +142,8 @@ public class ShipmentScheduleHelper
 		shipmentSchedule.setC_OrderLine(orderLine);
 		shipmentSchedule.setAD_Table_ID(getModelTableId(orderLine));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+		
+		shipmentSchedule.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 
 		saveRecord(shipmentSchedule);
 
