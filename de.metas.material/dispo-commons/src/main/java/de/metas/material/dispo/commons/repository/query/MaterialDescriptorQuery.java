@@ -103,8 +103,7 @@ public class MaterialDescriptorQuery
 	Date date;
 
 	/**
-	 *
-	 * @param customerId less than 1 means "none", null means "any"
+	 * @param customerId zero means "none", null or -1 means "any"; -2 means "none". Also see {@link AvailableToPromiseQuery}.
 	 */
 	@Builder
 	private MaterialDescriptorQuery(
@@ -129,7 +128,7 @@ public class MaterialDescriptorQuery
 		{
 			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
 		}
-		else if (customerId <= 0)
+		else if (customerId == 0)
 		{
 			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
 		}
