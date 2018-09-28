@@ -55,7 +55,7 @@ import de.metas.util.time.SystemTime;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
 		ContractOrderRepository.class })
-public class ContractOrderRepositoryTest extends AbstractFlatrateTermTest
+public class ContractOrderTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
