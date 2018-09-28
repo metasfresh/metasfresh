@@ -213,7 +213,8 @@ public class TransactionCreatedHandlerTests
 		// @formatter:off
 		new Expectations()
 		{{
-				candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 1; result = null;
+			// expect 2 invocations: one for a record with the transaction's specific attributesKey, and one less specific
+			candidateRepository.retrieveLatestMatchOrNull((CandidatesQuery)any); times = 2; result = null;
 		}}; // @formatter:on
 
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(relatedEvent);
@@ -303,9 +304,9 @@ public class TransactionCreatedHandlerTests
 	{
 		assertThat(query).isNotNull();
 		assertThat(query.getDemandDetailsQuery().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-		assertThat(query.getMaterialDescriptorQuery())
-				.as("If we have a demand detail, then only query via that demand detail")
-				.isNull();
+
+		// note: If we have a demand detail, then only query via that demand detail *and maybe* the transaction's attributes-key
+
 		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
 	}
 
