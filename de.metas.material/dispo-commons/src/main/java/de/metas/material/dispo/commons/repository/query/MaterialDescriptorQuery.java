@@ -97,12 +97,14 @@ public class MaterialDescriptorQuery
 	int productId;
 	AttributesKey storageAttributesKey;
 
-	/** zero means "none", null means "any" */
 	int customerId;
 	CustomerIdOperator customerIdOperator;
 
 	Date date;
 
+	/**
+	 * @param customerId zero means "none", null or -1 means "any"; -2 means "none". Also see {@link AvailableToPromiseQuery}.
+	 */
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
