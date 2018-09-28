@@ -1,5 +1,8 @@
 package de.metas.contracts.flatrate.process;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Ini;
+
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder;
 import de.metas.contracts.subscription.model.I_C_Order;
@@ -8,6 +11,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.util.Services;
 
 public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
@@ -18,7 +22,21 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 	protected String doIt()
 	{
 		final I_C_Order existentOrder = getRecord(I_C_Order.class);
-		return ExtendContractOrder.extend(existentOrder);
+		final I_C_Order newOrder = ExtendContractOrder.extend(existentOrder);
+		
+		final int adWindowId = getProcessInfo().getAD_Window_ID();
+		final TableRecordReference ref = TableRecordReference.of(newOrder);
+		
+		if (adWindowId > 0 && !Ini.isClient())
+		{
+			getResult().setRecordToOpen(ref, adWindowId, OpenTarget.SingleDocument);
+		}
+		else
+		{
+			getResult().setRecordToSelectAfterExecution(ref);
+		}
+		
+		return MSG_OK;
 	}
 
 
