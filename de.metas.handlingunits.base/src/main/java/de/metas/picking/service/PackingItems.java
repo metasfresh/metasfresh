@@ -1,15 +1,22 @@
 package de.metas.picking.service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
+import de.metas.picking.service.PackingItemPart.PackingItemPartBuilder;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,9 +56,14 @@ public final class PackingItems
 	/**
 	 * @return a new {@link TransactionalPackingItem} from the given map.
 	 */
-	public static IPackingItem newPackingItem(@NonNull final ShipmentScheduleQtyPickedMap scheds2Qtys)
+	public static IPackingItem newPackingItem(@NonNull final PackingItemParts parts)
 	{
-		return new TransactionalPackingItem(scheds2Qtys);
+		return new TransactionalPackingItem(parts);
+	}
+
+	public static IPackingItem newPackingItem(@NonNull final PackingItemPart part)
+	{
+		return new TransactionalPackingItem(PackingItemParts.of(part));
 	}
 
 	public static ImmutableList<IPackingItem> createPackingItems(final Set<ShipmentScheduleId> shipmentScheduleIds)
@@ -64,9 +76,9 @@ public final class PackingItems
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds);
+		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds, I_M_ShipmentSchedule.class);
 
-		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new HashMap<>();
+		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new LinkedHashMap<>();
 
 		for (final I_M_ShipmentSchedule sched : shipmentSchedules.values())
 		{
@@ -75,17 +87,19 @@ public final class PackingItems
 			{
 				continue;
 			}
-
 			// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
 			// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
 			// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-			final ShipmentScheduleQtyPickedMap schedWithQty = ShipmentScheduleQtyPickedMap.singleton(sched, qtyToDeliverTarget);
 
-			final IPackingItem newItem = newPackingItem(schedWithQty);
+			final PackingItemPart part = newPackingItemPart(sched)
+					.qty(qtyToDeliverTarget)
+					.build();
+
+			final IPackingItem newItem = newPackingItem(part);
 			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
 			if (existingItem != null)
 			{
-				existingItem.addSchedules(newItem);
+				existingItem.addParts(newItem);
 			}
 			else
 			{
@@ -94,5 +108,21 @@ public final class PackingItems
 		}
 
 		return ImmutableList.copyOf(packingItems.values());
+	}
+
+	public static PackingItemPartBuilder newPackingItemPart(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+
+		return PackingItemPart.builder()
+				.productId(ProductId.ofRepoId(sched.getM_Product_ID()))
+				.bpartnerId(shipmentScheduleEffectiveBL.getBPartnerId(sched))
+				.bpartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched))
+				.packingMaterialId(huShipmentScheduleBL.getPackingMaterialId(sched))
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
+				.deliveryRule(DeliveryRule.ofNullableCode(shipmentScheduleEffectiveBL.getDeliveryRule(sched)))
+				.sourceDocumentLineRef(TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()));
 	}
 }

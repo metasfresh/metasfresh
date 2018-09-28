@@ -61,10 +61,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemParts;
+import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -115,10 +115,10 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		//
 		// Create Item to Pack
 		{
-			final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
-			this.shipmentSchedule = createAndAppendShipmentSchedule(scheds2Qtys, qtyToDeliver);
+			final PackingItemParts parts = PackingItemParts.newInstance();
+			this.shipmentSchedule = createAndAppendShipmentSchedule(parts, qtyToDeliver);
 
-			this.itemToPack = PackingItems.newPackingItem(scheds2Qtys);
+			this.itemToPack = PackingItems.newPackingItem(parts);
 
 			// Validate
 			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliver)));
@@ -316,14 +316,17 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		assertValidShipmentScheduleTUAssignments(luHU, aggregateVhu, aggregateVhu);
 	}
 
-	public I_M_ShipmentSchedule createAndAppendShipmentSchedule(
-			final ShipmentScheduleQtyPickedMap scheds2Qtys,
-			final int qtyToDeliver)
+	private I_M_ShipmentSchedule createAndAppendShipmentSchedule(
+			final PackingItemParts parts,
+			final int qtyToDeliverInt)
 	{
-		final BigDecimal qtyToDeliverBD = BigDecimal.valueOf(qtyToDeliver);
-		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
+		final Quantity qtyToDeliver = Quantity.of(qtyToDeliverInt, uomEach);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.getAsBigDecimal(), BigDecimal.ZERO);
 
-		scheds2Qtys.setQty(schedule, Quantity.of(qtyToDeliverBD, uomEach));
+		parts.updatePart(PackingItems.newPackingItemPart(schedule)
+				.qty(qtyToDeliver)
+				.build());
+
 		return schedule;
 	}
 

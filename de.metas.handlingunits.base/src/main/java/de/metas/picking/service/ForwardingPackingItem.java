@@ -1,6 +1,5 @@
 package de.metas.picking.service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -10,7 +9,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
@@ -79,27 +78,27 @@ abstract class ForwardingPackingItem implements IPackingItem
 	}
 
 	@Override
-	public void setSchedules(final IPackingItem packingItem)
+	public void setPartsFrom(final IPackingItem packingItem)
 	{
-		getDelegate().setSchedules(packingItem);
+		getDelegate().setPartsFrom(packingItem);
 	}
 
 	@Override
-	public HUPIItemProductId getHUPIItemProductId()
+	public HUPIItemProductId getPackingMaterialId()
 	{
-		return getDelegate().getHUPIItemProductId();
+		return getDelegate().getPackingMaterialId();
 	}
 
 	@Override
-	public void addSchedules(final IPackingItem packingItem)
+	public void addParts(final IPackingItem packingItem)
 	{
-		getDelegate().addSchedules(packingItem);
+		getDelegate().addParts(packingItem);
 	}
 
 	@Override
-	public void addSchedules(final ShipmentScheduleQtyPickedMap toAdd)
+	public void addParts(final PackingItemParts toAdd)
 	{
-		getDelegate().addSchedules(toAdd);
+		getDelegate().addParts(toAdd);
 	}
 
 	@Override
@@ -109,29 +108,29 @@ abstract class ForwardingPackingItem implements IPackingItem
 	}
 
 	@Override
-	public IPackingItem subtractToPackingItem(
-			final Quantity subtrahent,
-			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate)
+	public Set<ShipmentScheduleId> getShipmentScheduleIds()
 	{
-		return getDelegate().subtractToPackingItem(subtrahent, acceptShipmentSchedulePredicate);
+		return getDelegate().getShipmentScheduleIds();
 	}
 
 	@Override
-	public ShipmentScheduleQtyPickedMap subtract(final Quantity subtrahent)
+	public IPackingItem subtractToPackingItem(
+			final Quantity subtrahent,
+			final Predicate<PackingItemPart> acceptPartPredicate)
+	{
+		return getDelegate().subtractToPackingItem(subtrahent, acceptPartPredicate);
+	}
+
+	@Override
+	public PackingItemParts subtract(final Quantity subtrahent)
 	{
 		return getDelegate().subtract(subtrahent);
 	}
 
 	@Override
-	public ShipmentScheduleQtyPickedMap getQtys()
+	public PackingItemParts getParts()
 	{
-		return getDelegate().getQtys();
-	}
-
-	@Override
-	public Quantity getQtyForSched(final I_M_ShipmentSchedule sched)
-	{
-		return getDelegate().getQtyForSched(sched);
+		return getDelegate().getParts();
 	}
 
 	@Override
@@ -144,11 +143,5 @@ abstract class ForwardingPackingItem implements IPackingItem
 	public Quantity getQtySum()
 	{
 		return getDelegate().getQtySum();
-	}
-
-	@Override
-	public List<I_M_ShipmentSchedule> getShipmentSchedules()
-	{
-		return getDelegate().getShipmentSchedules();
 	}
 }

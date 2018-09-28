@@ -43,7 +43,7 @@ public class PackingItemSubtractException extends AdempiereException
 
 	public static final String MSG = "de.metas.adempiere.form.PackingItemSubtractException";
 
-	public PackingItemSubtractException(
+	PackingItemSubtractException(
 			final IPackingItem packingItem,
 			final Quantity qtyToSubtract,
 			final Quantity qtyToSubtractRemaining)

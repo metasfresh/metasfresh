@@ -73,10 +73,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemGroupingKey;
+import de.metas.picking.service.PackingItemParts;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
-import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -729,8 +729,8 @@ public class SwingPickingSlotsPanel
 				//
 				// take out qtyToRemove from our packing item
 				final Properties ctx = getTerminalContext().getCtx();
-				final ShipmentScheduleQtyPickedMap qtyToRemoveAlloc = itemPackedNew.subtract(qtyToRemove);
-				packingService.removeProductQtyFromHU(ctx, hu, qtyToRemoveAlloc);
+				final PackingItemParts partsUnpacked = itemPackedNew.subtract(qtyToRemove);
+				packingService.removeProductQtyFromHU(ctx, hu, partsUnpacked);
 
 				// if all qty is packed, no need to store the current item
 				if (packingItem.getQtySum().compareTo(qtyToRemove) != 0)
@@ -741,11 +741,11 @@ public class SwingPickingSlotsPanel
 				// if we already have an item, add the extracted scheds to the existent one
 				if (itemUnpacked != null)
 				{
-					itemUnpacked.addSchedules(qtyToRemoveAlloc);
+					itemUnpacked.addParts(partsUnpacked);
 				}
 				else
 				{
-					final IPackingItem newPi = PackingItems.newPackingItem(qtyToRemoveAlloc);
+					final IPackingItem newPi = PackingItems.newPackingItem(partsUnpacked);
 					packingItems.addUnpackedItem(newPi);
 				}
 			}

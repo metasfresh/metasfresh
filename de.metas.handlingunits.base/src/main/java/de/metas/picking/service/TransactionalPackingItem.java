@@ -45,10 +45,10 @@ final class TransactionalPackingItem extends ForwardingPackingItem
 
 	private final PackingItem root;
 
-	TransactionalPackingItem(final ShipmentScheduleQtyPickedMap scheds2Qtys)
+	TransactionalPackingItem(final PackingItemParts parts)
 	{
 		id = nextId.incrementAndGet();
-		root = new PackingItem(scheds2Qtys);
+		root = new PackingItem(parts);
 	}
 
 	/** Copy constructor */

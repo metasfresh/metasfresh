@@ -27,7 +27,9 @@ package de.metas.fresh.picking;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -49,6 +51,8 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemGroupingKey;
@@ -219,13 +223,13 @@ public class ProductKey extends TerminalKey
 		final IPackingItem allocatedPackingItem = getPackingItem();
 		if (allocatedPackingItem != null)
 		{
-			return allocatedPackingItem.getHUPIItemProductId();
+			return allocatedPackingItem.getPackingMaterialId();
 		}
 
 		final IPackingItem unallocatedPackingItem = getUnAllocatedPackingItemOrNull();
 		if (unallocatedPackingItem != null)
 		{
-			return unallocatedPackingItem.getHUPIItemProductId();
+			return unallocatedPackingItem.getPackingMaterialId();
 		}
 
 		return null;
@@ -396,11 +400,14 @@ public class ProductKey extends TerminalKey
 	public List<I_M_HU> findAvailableHUs(final boolean considerAttributes)
 	{
 		final IPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
-		final List<I_M_ShipmentSchedule> shipmentSchedules = unallocatedPackingItem.getShipmentSchedules();
+		final Set<ShipmentScheduleId> shipmentScheduleIds = unallocatedPackingItem.getShipmentScheduleIds();
+
+		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds);
 
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		return huPickingSlotBL.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
-				.shipmentSchedules(shipmentSchedules)
+				.shipmentSchedules(shipmentSchedules.values())
 				.onlyIfAttributesMatchWithShipmentSchedules(considerAttributes)
 				.onlyTopLevelHUs(true)
 				.build());

@@ -13,10 +13,14 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -27,11 +31,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemParts;
+import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -70,6 +75,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 	private ShipmentScheduleHelper shipmentScheduleHelper;
 	private IHandlingUnitsDAO handlingUnitsDAO;
+	private IHandlingUnitsBL handlingUnitsBL;
 
 	private I_M_HU_PI_Item huDefPalet;
 	private I_M_HU_PI_Item_Product huDefIFCOWithTen;
@@ -83,6 +89,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		// Services & Helpers
 		shipmentScheduleHelper = new ShipmentScheduleHelper(helper);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		//
 		// Handling Units Definition
@@ -99,19 +106,22 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 	private void setupContext(final int... qtysToDeliver)
 	{
-		final ShipmentScheduleQtyPickedMap scheds2Qtys = ShipmentScheduleQtyPickedMap.newInstance();
+		final PackingItemParts parts = PackingItemParts.newInstance();
 		//
 		// Create Items to Pack
 		int qtyToDeliverSum = 0;
-		for (final int qtyToDeliver : qtysToDeliver)
+		for (final int qtyToDeliverInt : qtysToDeliver)
 		{
-			final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
-			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
+			final Quantity qtyToDeliver = Quantity.of(qtyToDeliverInt, uomEach);
+			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.getAsBigDecimal(), BigDecimal.ZERO);
 
-			scheds2Qtys.setQty(schedule, Quantity.of(qtyToDeliverBD, uomEach));
-			qtyToDeliverSum += qtyToDeliver;
+			parts.updatePart(PackingItems.newPackingItemPart(schedule)
+					.qty(qtyToDeliver)
+					.build());
+
+			qtyToDeliverSum += qtyToDeliverInt;
 		}
-		this.itemToPack = PackingItems.newPackingItem(scheds2Qtys);
+		this.itemToPack = PackingItems.newPackingItem(parts);
 
 		// Validate
 		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
@@ -120,13 +130,30 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		// Validate initial context state
 		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 
-		for (final I_M_ShipmentSchedule shipmentSchedule : itemToPack.getShipmentSchedules())
+		for (final I_M_ShipmentSchedule shipmentSchedule : getShipmentSchedules(itemToPack))
 		{
 			new ShipmentScheduleQtyPickedExpectations()
 					.shipmentSchedule(shipmentSchedule)
 					.qtyPicked("0")
 					.assertExpected_ShipmentSchedule("shipment schedule");
 		}
+	}
+
+	private List<I_M_ShipmentSchedule> getShipmentSchedules(final IPackingItem packingItem)
+	{
+		final Set<ShipmentScheduleId> shipmentScheduleIds = packingItem.getShipmentScheduleIds();
+
+		final FixedOrderByKeyComparator<I_M_ShipmentSchedule, ShipmentScheduleId> //
+		shipmentScheduleIdsOrder = FixedOrderByKeyComparator.notMatchedAtTheEnd(
+				ImmutableList.copyOf(shipmentScheduleIds),
+				record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()));
+
+		return shipmentScheduleHelper.shipmentSchedulesRepo
+				.getByIdsOutOfTrx(shipmentScheduleIds)
+				.values()
+				.stream()
+				.sorted(shipmentScheduleIdsOrder)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -146,15 +173,15 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	@Ignore // this test constantly fails on jenkins :-( and i already tried too long to fix it.
 	public void testTwoHUsTwoShipmentSchedules_TopLevelTUs()
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		// the two defs need to have different qty, otherwise the test is not significant
+		assertThat(huDefIFCOWithEleven.getQty(), not(comparesEqualTo(huDefIFCOWithTen.getQty())));
 
-		assertThat(huDefIFCOWithEleven.getQty(), not(comparesEqualTo(huDefIFCOWithTen.getQty()))); // the two defs need to have different qty, otherwise the test is not significant
 		setupContext(
 				huDefIFCOWithEleven.getQty().intValue(),
 				huDefIFCOWithTen.getQty().intValue());
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
-		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules(itemToPack);
 
 		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.get(0);
 		assertThat(shipmentScheduleWithEleven.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithEleven.getQty()));
@@ -163,8 +190,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat(shipmentScheduleWithTen.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithTen.getQty()));
 
 		// packing item guards
-		final ShipmentScheduleQtyPickedMap qtys = itemToPack.getQtys();
-		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
+		final PackingItemParts parts = itemToPack.getParts();
+		assertThat("Unexpected qtys.size(); qtys=" + parts, parts.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
 
 		final List<I_M_HU> tuHUsWithTen = createTUs(helper, huDefIFCOWithTen, 10);
@@ -222,18 +249,15 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	@Test
 	public void testTwoHUsTwoShipmentSchedules_AggregateTU()
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		setupContext(10, 10);
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
-		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules(itemToPack);
 
 		// packing item guards
-		final ShipmentScheduleQtyPickedMap qtys = itemToPack.getQtys();
-		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
+		final PackingItemParts parts = itemToPack.getParts();
+		assertThat("Unexpected qtys.size(); qtys=" + parts, parts.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
-		itemToPack.getShipmentSchedules();
 
 		final List<I_M_HU> luHUs = createLUs(helper, huDefPalet, huDefIFCOWithTen, 20);
 		// HU guards

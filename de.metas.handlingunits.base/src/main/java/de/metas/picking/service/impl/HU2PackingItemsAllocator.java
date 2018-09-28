@@ -38,11 +38,13 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.product.ProductId;
@@ -71,14 +73,14 @@ public class HU2PackingItemsAllocator
 
 	//
 	// Services
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * Cannot fully load:
@@ -102,7 +104,7 @@ public class HU2PackingItemsAllocator
 	private Quantity _qtyToPackRemaining = null;
 
 	/**
-	 * 
+	 *
 	 * @param packingContext
 	 * @param itemToPack
 	 * @param allowOverDelivery
@@ -115,7 +117,7 @@ public class HU2PackingItemsAllocator
 			@Nullable final PackingSlot packedItemsSlot,
 			//
 			final boolean allowOverDelivery,
-			@NonNull @Singular("fromHU") ImmutableList<I_M_HU> fromHUs,
+			@NonNull @Singular("fromHU") final ImmutableList<I_M_HU> fromHUs,
 			@Nullable final I_M_HU targetHU,
 			@Nullable final Quantity qtyToPack)
 	{
@@ -124,8 +126,8 @@ public class HU2PackingItemsAllocator
 		this.packedItemsSlot = packedItemsSlot != null ? packedItemsSlot : PackingSlot.DEFAULT_PACKED;
 
 		this.allowOverDelivery = allowOverDelivery;
-		this._fromHUs = fromHUs;
-		this._targetHU = targetHU;
+		_fromHUs = fromHUs;
+		_targetHU = targetHU;
 
 		if (qtyToPack != null)
 		{
@@ -413,7 +415,7 @@ public class HU2PackingItemsAllocator
 		return productStorage;
 	}
 
-	private void transferQtyFromVHUToTargetHU(final I_M_ShipmentSchedule sched, final Quantity qtyToTransfer, final I_M_HU fromVHU)
+	private void transferQtyFromVHUToTargetHU(final PackingItemPart part, final I_M_HU fromVHU)
 	{
 		final I_M_HU targetHU = getTargetHU();
 		if (targetHU == null)
@@ -423,7 +425,7 @@ public class HU2PackingItemsAllocator
 
 		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(fromVHU);
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(targetHU);
-		final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyToTransfer);
+		final IAllocationRequest request = createShipmentScheduleAllocationRequest(part);
 
 		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
@@ -431,21 +433,18 @@ public class HU2PackingItemsAllocator
 				.load(request);
 	}
 
-	private final IAllocationRequest createShipmentScheduleAllocationRequest(
-			final I_M_ShipmentSchedule sched,
-			final Quantity qty)
+	private final IAllocationRequest createShipmentScheduleAllocationRequest(final PackingItemPart part)
 	{
 		// Force Qty Allocation: we need to allocate even if the HU is full
 		// see http://dewiki908/mediawiki/index.php/05706_Meldung_im_Aktuellen_UAT%3F_Sollte_schon_weg_sein%2C_oder%3F_%28105871951705%29
 		final boolean forceQtyAllocation = true;
 
 		final IHUContext huContext = getHUContext();
-		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
-				productId,
-				qty,
+				part.getProductId(),
+				part.getQty(),
 				huContext.getDate(), // date
-				sched, // referenceModel,
+				part.toRecordRef(), // referenceModel,
 				forceQtyAllocation);
 
 		return request;
@@ -488,38 +487,48 @@ public class HU2PackingItemsAllocator
 		packItem(
 				qtyToPack,
 				Predicates.alwaysTrue(),
-				packedItem -> {
-					for (final I_M_ShipmentSchedule sched : packedItem.getShipmentSchedules())
-					{
-						final Quantity qtyPacked = packedItem.getQtyForSched(sched); // qty to pack, available on current shipment schedule
-						if (!allowOverDelivery)
-						{
-							validateQtyPicked(sched, qtyPacked);
-						}
-
-						if (qtyPacked.signum() != 0)
-						{
-							// "Back" allocate the qtyPicked from VHU to given shipment schedule
-							huShipmentScheduleBL.addQtyPicked(sched, qtyPacked, vhu);
-
-							// Transfer the qtyPicked from vhu to our target HU (if any)
-							transferQtyFromVHUToTargetHU(sched, qtyPacked, vhu);
-
-							// Adjust remaining Qty to be packed
-							subtractFromQtyToPackRemaining(qtyPacked);
-						}
-					}
-				});
+				packedItem -> allocateVHU(vhu, packedItem));
 	}
 
-	private void validateQtyPicked(final I_M_ShipmentSchedule schedule, final Quantity qtyPickCandidate)
+	private void allocateVHU(@NonNull final I_M_HU vhu, @NonNull final IPackingItem packedItem)
 	{
-		final BigDecimal currentQtyToDeliver = schedule.getQtyToDeliver();
-
-		if (currentQtyToDeliver.compareTo(qtyPickCandidate.getAsBigDecimal()) < 0)
+		for (final PackingItemPart packedPart : packedItem.getParts())
 		{
-			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
+			allocateVHU(vhu, packedItem, packedPart);
 		}
+	}
+
+	private void allocateVHU(@NonNull final I_M_HU vhu, @NonNull final IPackingItem packedItem, @NonNull final PackingItemPart packedPart)
+	{
+		final Quantity qtyPacked = packedPart.getQty();
+		if (qtyPacked.isZero())
+		{
+			return;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
+		if (!allowOverDelivery)
+		{
+			final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
+			if (currentQtyToDeliver.compareTo(qtyPacked.getAsBigDecimal()) < 0)
+			{
+				throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
+			}
+		}
+
+		// "Back" allocate the qtyPicked from VHU to given shipment schedule
+		huShipmentScheduleBL.addQtyPicked(shipmentSchedule, qtyPacked, vhu);
+
+		// Transfer the qtyPicked from vhu to our target HU (if any)
+		transferQtyFromVHUToTargetHU(packedPart, vhu);
+
+		// Adjust remaining Qty to be packed
+		subtractFromQtyToPackRemaining(qtyPacked);
+	}
+
+	private I_M_ShipmentSchedule getShipmentScheduleById(final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentSchedulesRepo.getById(shipmentScheduleId);
 	}
 
 	/**
@@ -527,7 +536,7 @@ public class HU2PackingItemsAllocator
 	 */
 	private void packItem(
 			@NonNull final Quantity qtyToPack,
-			@NonNull final Predicate<I_M_ShipmentSchedule> shipmentSchedulesFilter,
+			@NonNull final Predicate<PackingItemPart> partFilter,
 			@NonNull final Consumer<IPackingItem> packedItemConsumer)
 	{
 		//
@@ -541,7 +550,7 @@ public class HU2PackingItemsAllocator
 		// => itemPacked will be added to packed items
 
 		final IPackingItem itemToPackRemaining = itemToPack.copy();
-		final IPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, shipmentSchedulesFilter);
+		final IPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, partFilter);
 
 		//
 		// Process our packed item
@@ -556,7 +565,7 @@ public class HU2PackingItemsAllocator
 		//
 		// Update back "itemToPack" to have a up2date version
 		// NOTE: so far we worked on a copy (to avoid inconsistencies in case an exception is thrown in the middle)
-		itemToPack.setSchedules(itemToPackRemaining);
+		itemToPack.setPartsFrom(itemToPackRemaining);
 
 		//
 		// If there was a remaining qty in "itemToPack" then add it back to unpacked items
@@ -582,27 +591,24 @@ public class HU2PackingItemsAllocator
 
 		packItem(
 				qtyToPack,
-				this::isForceDelivery,
+				part -> DeliveryRule.FORCE.equals(part.getDeliveryRule()), // We are accepting only those shipment schedules which have Force Delivery
 				this::transferQtyToTargetHU);
-	}
-
-	private boolean isForceDelivery(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		// We are accepting only those shipment schedules which have Force Delivery
-		final String deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(shipmentSchedule);
-		return X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule);
 	}
 
 	private void transferQtyToTargetHU(final IPackingItem item)
 	{
-		item.getQtys().forEach(this::transferQtyToTargetHU);
+		item.getParts()
+				.toList()
+				.forEach(this::transferQtyToTargetHU);
 	}
 
-	private void transferQtyToTargetHU(final I_M_ShipmentSchedule schedule, final Quantity qty)
+	private void transferQtyToTargetHU(final PackingItemPart part)
 	{
+		final I_M_ShipmentSchedule schedule = getShipmentScheduleById(part.getShipmentScheduleId());
+
 		//
 		// Allocation Request
-		final IAllocationRequest request = createShipmentScheduleAllocationRequest(schedule, qty);
+		final IAllocationRequest request = createShipmentScheduleAllocationRequest(part);
 
 		//
 		// Allocation Source

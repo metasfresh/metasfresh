@@ -22,10 +22,12 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingService;
-import de.metas.picking.service.ShipmentScheduleQtyPickedMap;
-import de.metas.quantity.Quantity;
+import de.metas.picking.service.PackingItemPart;
+import de.metas.picking.service.PackingItemParts;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -40,18 +42,17 @@ public class PackingService implements IPackingService
 	public void removeProductQtyFromHU(
 			final Properties ctx,
 			final I_M_HU hu,
-			final ShipmentScheduleQtyPickedMap schedules2qty)
+			PackingItemParts parts)
 	{
-		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> {
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run((TrxRunnable)localTrxName -> {
 
 			final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
-			for (final I_M_ShipmentSchedule schedule : schedules2qty.getShipmentSchedules())
+			for (final PackingItemPart part : parts.toList())
 			{
-				final Quantity qtyToRemove = schedules2qty.getQty(schedule);
-
-				removeProductQtyFromHU(huContext, hu, schedule, qtyToRemove);
+				removeProductQtyFromHU(huContext, hu, part);
 			}
 		});
 	}
@@ -59,18 +60,20 @@ public class PackingService implements IPackingService
 	private void removeProductQtyFromHU(
 			final IHUContext huContext,
 			final I_M_HU hu,
-			final I_M_ShipmentSchedule schedule,
-			final Quantity qtyToRemove)
+			final PackingItemPart part)
 	{
+		final ShipmentScheduleId shipmentScheduleId = part.getShipmentScheduleId();
+		final I_M_ShipmentSchedule schedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
+
 		//
 		// Allocation Request
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				schedule.getM_Product(),
-				qtyToRemove.getAsBigDecimal(),
-				qtyToRemove.getUOM(),
+				part.getProductId(),
+				part.getQty(),
 				SystemTime.asDate(),
-				schedule // reference model
+				schedule, // reference model
+				false // forceQtyAllocation
 		);
 
 		//

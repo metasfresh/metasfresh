@@ -1,5 +1,10 @@
 package de.metas.handlingunits.shipmentschedule.util;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +15,12 @@ package de.metas.handlingunits.shipmentschedule.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,10 +31,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -45,6 +51,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 
@@ -58,14 +65,20 @@ public class ShipmentScheduleHelper
 {
 	private final HUTestHelper helper;
 	public final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	public final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	public final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
+	private final WarehouseId defaultWarehouseId;
 	private final BPartnerId defaultCustomerId;
 	private final BPartnerLocationId defaultCustomerLocationId;
 
 	public ShipmentScheduleHelper(final HUTestHelper helper)
 	{
 		this.helper = helper;
+
+		final I_M_Warehouse warehouse = newInstanceOutOfTrx(I_M_Warehouse.class);
+		saveRecord(warehouse);
+		defaultWarehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
 		final I_C_BPartner defaultCustomer = BusinessTestHelper.createBPartner("test customer");
 		defaultCustomerId = BPartnerId.ofRepoId(defaultCustomer.getC_BPartner_ID());
@@ -82,7 +95,7 @@ public class ShipmentScheduleHelper
 		new HUTransactionExpectation<>()
 				.product(schedule.getM_Product())
 				.qty(trxQtyExpected)
-				.uom(schedule.getC_UOM())
+				.uom(shipmentScheduleBL.getUomOfProduct(schedule))
 				.referencedModel(schedule)
 				.assertExpected(trx);
 
@@ -93,7 +106,7 @@ public class ShipmentScheduleHelper
 	}
 
 	/**
-	 * 
+	 *
 	 * @param product
 	 * @param uom
 	 * @param qtyToDeliver
@@ -109,22 +122,27 @@ public class ShipmentScheduleHelper
 		//
 		// Create Order Line
 		// NOTE: they only reason why we are creating the order line is because at the moment, C_UOM_ID is fetched from there
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, helper.getContextProvider());
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
 		orderLine.setC_UOM(uom);
-		InterfaceWrapperHelper.save(orderLine);
+		saveRecord(orderLine);
 
 		//
 		// Create shipment schedule
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
+		shipmentSchedule.setM_Warehouse_ID(defaultWarehouseId.getRepoId());
 		shipmentSchedule.setM_Product(product);
-		shipmentSchedule.setC_OrderLine(orderLine);
 		shipmentSchedule.setC_BPartner_ID(defaultCustomerId.getRepoId());
 		shipmentSchedule.setC_BPartner_Location_ID(defaultCustomerLocationId.getRepoId());
 
 		// task 09005: set QtyOrdered_calculated because it's the initial value for the newly created shipment schedule
 		shipmentSchedule.setQtyOrdered_Calculated(qtyToDeliver);
 		shipmentSchedule.setQtyToDeliver(qtyToDeliver);
-		InterfaceWrapperHelper.save(shipmentSchedule);
+
+		shipmentSchedule.setC_OrderLine(orderLine);
+		shipmentSchedule.setAD_Table_ID(getModelTableId(orderLine));
+		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+
+		saveRecord(shipmentSchedule);
 
 		//
 		// Set inital QtyPicked and validate

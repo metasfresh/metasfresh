@@ -7,5 +7,5 @@ import de.metas.util.ISingletonService;
 
 public interface IPackingService extends ISingletonService
 {
-	void removeProductQtyFromHU(Properties ctx, I_M_HU hu, ShipmentScheduleQtyPickedMap schedules2qty);
+	void removeProductQtyFromHU(Properties ctx, I_M_HU hu, PackingItemParts parts);
 }

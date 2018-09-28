@@ -148,7 +148,7 @@ public final class PackingItemsMap
 			// NOTE: should be only one item with same grouping key
 			if (PackingItemGroupingKey.equals(item.getGroupingKey(), packedItem.getGroupingKey()))
 			{
-				item.addSchedules(packedItem);
+				item.addParts(packedItem);
 				return;
 			}
 		}

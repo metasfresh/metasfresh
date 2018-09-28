@@ -1,6 +1,5 @@
 package de.metas.picking.service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -10,7 +9,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
@@ -62,42 +61,32 @@ public interface IPackingItem
 
 	Quantity getQtySum();
 
-	/**
-	 * For this item, return the open quantity to be packed for the given {@code sched}.
-	 * 
-	 * @param sched
-	 * @return
-	 */
-	Quantity getQtyForSched(I_M_ShipmentSchedule sched);
+	HUPIItemProductId getPackingMaterialId();
 
-	List<I_M_ShipmentSchedule> getShipmentSchedules();
+	Set<ShipmentScheduleId> getShipmentScheduleIds();
 
-	HUPIItemProductId getHUPIItemProductId();
+	PackingItemParts getParts();
 
 	/**
 	 * Clears current schedules and set them from given <code>packingItem</code>.
 	 */
-	void setSchedules(IPackingItem packingItem);
+	void setPartsFrom(IPackingItem packingItem);
 
-	void addSchedules(IPackingItem packingItem);
+	void addParts(IPackingItem packingItem);
 
-	void addSchedules(ShipmentScheduleQtyPickedMap toAdd);
+	void addParts(PackingItemParts toAdd);
 
 	/**
-	 *
-	 * @param subtrahent
-	 * @return subtracted schedule/qty pairs
+	 * @return subtracted parts
 	 * @throws PackingItemSubtractException if required qty could not be fully subtracted
 	 */
-	ShipmentScheduleQtyPickedMap subtract(Quantity subtrahent);
+	PackingItemParts subtract(Quantity subtrahent);
 
 	/**
 	 * Subtract the given quantity from this packing item and create a new packing item with it.
 	 *
 	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate may be {@code null}.
+	 * @param partsFilter may be {@code null}.
 	 */
-	IPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
-
-	ShipmentScheduleQtyPickedMap getQtys();
+	IPackingItem subtractToPackingItem(Quantity subtrahent, Predicate<PackingItemPart> partsFilter);
 }
