@@ -654,37 +654,39 @@ public class C_Flatrate_Term
 		
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
-			// if the list is bigger then 1, means that we have multiple sales order and the contract is still active
-			// same, if has predecessor, means that is still active; at least for now
+
+			// set status for the current order
+			final List<I_C_Flatrate_Term> terms = Services.get(ISubscriptionDAO.class).retrieveFlatrateTerms(orderId);
+			final boolean anyActivePreviousTerms = terms
+					.stream()
+					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
+							&& term.getC_OrderLine_Term_ID() == currentTerm.getC_OrderLine_Term_ID()
+							&& subscriptionBL.isActiveTerm(currentTerm));
+
+			if (anyActivePreviousTerms)
+			{
+				subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+			}
+			else
+			{
+				subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
+			}
+
+			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
 			if (orderIds.size() > 1)
 			{
+				// means that we have multiple order and need to preserve the status
 				orderIds.forEach(id -> {
 					final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
-					if (id.getRepoId() != contractOrder.getC_Order_ID() && !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()))
+					if (id.getRepoId() != contractOrder.getC_Order_ID()  // different order from the current one
+							&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()) // wasn't Previously cancelled, although shall not be possible this 
+							&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order wasn't cancelled
 					{
 
 						subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
 					}
 				});
-				subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
-			}
-			else
-			{
-				final List<I_C_Flatrate_Term> terms = Services.get(ISubscriptionDAO.class).retrieveFlatrateTerms(orderId);
-				final boolean anyActivePreviousTerms = terms
-						.stream()
-						.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
-								&& term.getC_OrderLine_Term_ID() == currentTerm.getC_OrderLine_Term_ID()
-								&& subscriptionBL.isActiveTerm(currentTerm));
-				
-				if (anyActivePreviousTerms)
-				{
-					subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
-				}
-				else
-				{
-					subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
-				}
+
 			}
 		}
 	}
