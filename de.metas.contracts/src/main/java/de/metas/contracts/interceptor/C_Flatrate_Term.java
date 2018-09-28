@@ -663,7 +663,7 @@ public class C_Flatrate_Term
 					if (id.getRepoId() != contractOrder.getC_Order_ID() && !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()))
 					{
 
-						subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+						subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
 					}
 				});
 				subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
