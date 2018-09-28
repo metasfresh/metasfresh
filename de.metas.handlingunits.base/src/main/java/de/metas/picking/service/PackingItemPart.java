@@ -11,7 +11,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -46,6 +45,9 @@ import lombok.Value;
 public final class PackingItemPart
 {
 	@NonNull
+	private final PackingItemPartId id;
+
+	@NonNull
 	private final ProductId productId;
 	@NonNull
 	private final BPartnerId bpartnerId;
@@ -59,15 +61,13 @@ public final class PackingItemPart
 	private final DeliveryRule deliveryRule;
 	@NonNull
 	private final TableRecordReference sourceDocumentLineRef;
-	@NonNull
-	private final ShipmentScheduleId shipmentScheduleId;
 
 	@NonNull
 	private final Quantity qty;
 
-	public TableRecordReference toRecordRef()
+	public ShipmentScheduleId getShipmentScheduleId()
 	{
-		return TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId);
+		return id.getShipmentScheduleId();
 	}
 
 	public PackingItemPart withQty(@NonNull final Quantity qty)

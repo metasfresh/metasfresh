@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -22,11 +21,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -35,10 +32,10 @@ import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemPart;
+import de.metas.picking.service.PackingItemPartId;
 import de.metas.picking.service.PackingItemParts;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -83,8 +80,6 @@ public class ProcessPickingCandidateCommand
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
@@ -164,18 +159,12 @@ public class ProcessPickingCandidateCommand
 
 	private PackingItemPart createPackingItemPart(final PickingCandidate pc)
 	{
+		final ShipmentScheduleId shipmentScheduleId = pc.getShipmentScheduleId();
 		final I_M_ShipmentSchedule sched = shipmentSchedulesRepo.getById(shipmentScheduleId);
 
-		return PackingItemPart.builder()
-				.productId(ProductId.ofRepoId(sched.getM_Product_ID()))
-				.bpartnerId(shipmentScheduleEffectiveBL.getBPartnerId(sched))
-				.bpartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched))
-				.packingMaterialId(huShipmentScheduleBL.getPackingMaterialId(sched))
-				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
+		return PackingItems.newPackingItemPart(sched)
+				.id(PackingItemPartId.of(shipmentScheduleId)) // TODO: include some picking candidate ID in partId
 				.qty(pc.getQtyPicked())
-				.sourceDocumentLineRef(TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID()))
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()))
-				// .shipmentSchedule(sched)
 				.build();
 	}
 

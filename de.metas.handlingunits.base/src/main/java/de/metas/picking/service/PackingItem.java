@@ -226,7 +226,7 @@ final class PackingItem implements IPackingItem
 			parts.clear();
 		}
 
-		parts.addQtysByShipmentScheduleId(partsToAdd);
+		parts.addQtys(partsToAdd);
 	}
 
 	@Override

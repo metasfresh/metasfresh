@@ -14,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.Predicates;
@@ -444,7 +445,7 @@ public class HU2PackingItemsAllocator
 				part.getProductId(),
 				part.getQty(),
 				huContext.getDate(), // date
-				part.toRecordRef(), // referenceModel,
+				TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, part.getShipmentScheduleId()), // referenceModel,
 				forceQtyAllocation);
 
 		return request;

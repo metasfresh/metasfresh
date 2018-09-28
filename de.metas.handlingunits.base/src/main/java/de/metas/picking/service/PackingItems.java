@@ -114,14 +114,16 @@ public final class PackingItems
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID());
+
 		return PackingItemPart.builder()
+				.id(PackingItemPartId.of(shipmentScheduleId))
 				.productId(ProductId.ofRepoId(sched.getM_Product_ID()))
 				.bpartnerId(shipmentScheduleEffectiveBL.getBPartnerId(sched))
 				.bpartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched))
 				.packingMaterialId(huShipmentScheduleBL.getPackingMaterialId(sched))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
 				.deliveryRule(shipmentScheduleEffectiveBL.getDeliveryRule(sched))
-				.sourceDocumentLineRef(TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID()))
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()));
+				.sourceDocumentLineRef(TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID()));
 	}
 }

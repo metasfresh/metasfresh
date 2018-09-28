@@ -14,7 +14,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
@@ -60,7 +59,7 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 		return GuavaCollectors.collectUsingListAccumulator(PackingItemParts::new);
 	}
 
-	private final LinkedHashMap<ShipmentScheduleId, PackingItemPart> partsMap;
+	private final LinkedHashMap<PackingItemPartId, PackingItemPart> partsMap;
 
 	private PackingItemParts()
 	{
@@ -75,7 +74,7 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 	private PackingItemParts(@NonNull final List<PackingItemPart> partsList)
 	{
 		this.partsMap = partsList.stream()
-				.map(part -> GuavaCollectors.entry(part.getShipmentScheduleId(), part))
+				.map(part -> GuavaCollectors.entry(part.getId(), part))
 				.collect(GuavaCollectors.toMap(LinkedHashMap::new));
 	}
 
@@ -151,25 +150,25 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 		partsMap.clear();
 	}
 
-	public void addQtysByShipmentScheduleId(final PackingItemParts partsToAdd)
+	public void addQtys(final PackingItemParts partsToAdd)
 	{
 		partsToAdd.toList()
-				.forEach(this::addQtyByShipmentScheduleId);
+				.forEach(this::addQty);
 	}
 
-	private void addQtyByShipmentScheduleId(final PackingItemPart part)
+	private void addQty(final PackingItemPart part)
 	{
-		partsMap.compute(part.getShipmentScheduleId(),
-				(shipmentScheduleId, existingPart) -> existingPart != null ? existingPart.addQty(part.getQty()) : part);
+		partsMap.compute(part.getId(),
+				(id, existingPart) -> existingPart != null ? existingPart.addQty(part.getQty()) : part);
 	}
 
 	public void removePart(final PackingItemPart part)
 	{
-		partsMap.remove(part.getShipmentScheduleId(), part);
+		partsMap.remove(part.getId(), part);
 	}
 
 	public void updatePart(@NonNull final PackingItemPart part)
 	{
-		partsMap.put(part.getShipmentScheduleId(), part);
+		partsMap.put(part.getId(), part);
 	}
 }
