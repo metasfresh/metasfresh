@@ -569,6 +569,10 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
 	{
+		if (qtyToSubtract.isZero())
+		{
+			return this;
+		}
 		final Quantity qtyToAdd = qtyToSubtract.negate();
 		return add(qtyToAdd);
 	}
