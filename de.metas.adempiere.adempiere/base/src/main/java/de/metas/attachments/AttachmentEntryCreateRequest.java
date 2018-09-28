@@ -45,13 +45,13 @@ import lombok.Value;
 public class AttachmentEntryCreateRequest
 {
 	public static AttachmentEntryCreateRequest fromURI(
-			@NonNull final String name,
+			@NonNull final String fileName,
 			@NonNull final URI uri)
 	{
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntry.Type.URL)
-				.filename(name)
-				.contentType(MimeType.getMimeType(name))
+				.filename(fileName)
+				.contentType(MimeType.getMimeType(fileName))
 				.url(uri)
 				.build();
 		return request;
@@ -59,13 +59,13 @@ public class AttachmentEntryCreateRequest
 	}
 
 	public static AttachmentEntryCreateRequest fromByteArray(
-			@NonNull final String name,
+			@NonNull final String fileName,
 			@NonNull final byte[] data)
 	{
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntry.Type.Data)
-				.filename(name)
-				.contentType(MimeType.getMimeType(name))
+				.filename(fileName)
+				.contentType(MimeType.getMimeType(fileName))
 				.data(data)
 				.build();
 		return request;

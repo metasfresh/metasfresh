@@ -27,8 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 
 public class ESRCheckDigitBuilderTest
@@ -39,9 +37,7 @@ public class ESRCheckDigitBuilderTest
 	@Before
 	public void init()
 	{
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentEntryService attachmentEntryService= new AttachmentEntryService(attachmentEntryRepository , attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
 	}
 

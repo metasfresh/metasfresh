@@ -7,8 +7,6 @@ import java.time.LocalTime;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
@@ -52,9 +50,7 @@ public class DerKurierClientFactoryManualTest
 		final Converters converters = new Converters();
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,

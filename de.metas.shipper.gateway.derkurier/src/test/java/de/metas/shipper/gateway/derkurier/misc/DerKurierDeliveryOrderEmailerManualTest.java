@@ -13,8 +13,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
@@ -64,9 +62,7 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		msgConfig.setValue("DerKurier_DeliveryOrder_EmailMessage");
 		save(msgConfig);
 
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 	}
 
 	@Test
@@ -86,8 +82,6 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(new AttachmentEntryRepository(attachmentEntryFactory), attachmentEntryFactory);
 		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository, attachmentEntryService);
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(mailbox, "orderProcessing@derKurier.test", firstEntry);

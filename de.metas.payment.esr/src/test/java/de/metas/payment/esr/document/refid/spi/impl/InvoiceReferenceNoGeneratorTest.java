@@ -12,8 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_Bank;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -53,9 +51,7 @@ public class InvoiceReferenceNoGeneratorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
 
 		Services.registerService(IESRImportBL.class, esrImportBL);

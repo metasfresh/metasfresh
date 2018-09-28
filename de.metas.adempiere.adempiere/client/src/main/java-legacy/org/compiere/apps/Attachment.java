@@ -251,7 +251,7 @@ public final class Attachment extends CDialog implements ActionListener
 		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
 		// Set attachment entries combo
-		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getEntries(getRecord());
+		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getByReferencedRecord(getRecord());
 		for (AttachmentEntry entry : attachmentEntries)
 		{
 			cbAttachmentEntries.addItem(AttachmentEntryItem.of(entry));
@@ -469,7 +469,7 @@ public final class Attachment extends CDialog implements ActionListener
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDelete?"))
 		{
 			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-			final List<AttachmentEntry> entries = attachmentEntryService.getEntries(getRecord());
+			final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(getRecord());
 			for (final AttachmentEntry entry : entries)
 			{
 				attachmentEntryService.unattach(getRecord(), entry);

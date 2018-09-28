@@ -67,8 +67,6 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
@@ -220,11 +218,9 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		// Services
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
 	}
 
 	protected void config_InvoiceCand_HeaderAggregation()

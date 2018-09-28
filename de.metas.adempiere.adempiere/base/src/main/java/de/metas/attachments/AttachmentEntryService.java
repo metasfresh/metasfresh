@@ -15,8 +15,10 @@ import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
@@ -47,31 +49,30 @@ public class AttachmentEntryService
 {
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
+	private final AttachmentMigrationService attachmentMigrationService;
+
+	@VisibleForTesting
+	public static AttachmentEntryService createInstanceForUnitTesting()
+	{
+		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
+		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
+
+		return  new AttachmentEntryService(
+				attachmentEntryRepository,
+				attachmentEntryFactory,
+				attachmentMigrationService);
+	}
 
 	public AttachmentEntryService(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
-			@NonNull final AttachmentEntryFactory attachmentEntryFactory)
+			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
+			@NonNull final AttachmentMigrationService attachmentMigrationService)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
+		this.attachmentMigrationService = attachmentMigrationService;
 	}
-
-//	public List<AttachmentEntry> createNewAttachments(
-//			@NonNull final Object referencedRecord,
-//			@NonNull final Collection<File> files)
-//	{
-//		if (files.isEmpty())
-//		{
-//			return ImmutableList.of();
-//		}
-//
-//		final List<AttachmentEntry> entries = files
-//				.stream()
-//				.map(file -> createNewAttachment(referencedRecord, file))
-//				.collect(ImmutableList.toImmutableList());
-//
-//		return entries;
-//	}
 
 	public AttachmentEntry createNewAttachment(
 			@NonNull final Object referencedRecord,
@@ -164,10 +165,21 @@ public class AttachmentEntryService
 		return withRemovedLinkedRecordAndId;
 	}
 
-	public List<AttachmentEntry> getEntries(@NonNull final Object referencedRecord)
+	public List<AttachmentEntry> getByReferencedRecord(@NonNull final Object referencedRecord)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
-		return attachmentEntryRepository.getByRecordReferences(tableRecordReference);
+		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
+
+		result.addAll(attachmentEntryRepository.getByReferencedRecord(tableRecordReference));
+
+		if (attachmentMigrationService.isExistRecordsToMigrate())
+		{
+			final List<AttachmentEntry> migratedEntries = attachmentMigrationService.migrateAndGetByReferencedRecord(referencedRecord);
+			final Collection<AttachmentEntry> migratedAndLinkedEntries = linkAttachmentsToModels(migratedEntries, ImmutableList.of(tableRecordReference));
+			result.addAll(migratedAndLinkedEntries);
+		}
+
+		return result.build();
 	}
 
 	public AttachmentEntry getById(@NonNull final AttachmentEntryId id)
@@ -188,7 +200,7 @@ public class AttachmentEntryService
 		final TableRecordReference recordReference = TableRecordReference.of(referencedRecord);
 
 		return attachmentEntryRepository
-				.getByRecordReferences(recordReference)
+				.getByReferencedRecord(recordReference)
 				.stream()
 				.filter(entry -> fileName.equals(entry.getFilename()))
 				.findFirst()

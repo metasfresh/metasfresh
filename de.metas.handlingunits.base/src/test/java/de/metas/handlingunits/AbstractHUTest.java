@@ -37,8 +37,6 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -156,9 +154,8 @@ public abstract class AbstractHUTest
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
 
 		initialize();

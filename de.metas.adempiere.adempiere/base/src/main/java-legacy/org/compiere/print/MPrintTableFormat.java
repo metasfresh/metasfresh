@@ -689,7 +689,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 		if (isImageIsAttached())
 		{
 			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-			final List<AttachmentEntry> entries = attachmentEntryService.getEntries(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
+			final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
 			if (entries.isEmpty())
 			{
 				log.warn("No Attachment entry - ID=" + get_ID());

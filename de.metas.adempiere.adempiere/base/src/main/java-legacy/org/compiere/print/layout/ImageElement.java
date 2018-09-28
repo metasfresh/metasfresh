@@ -263,7 +263,7 @@ public class ImageElement extends PrintElement
 	private void loadAttachment(final int AD_PrintFormatItem_ID)
 	{
 		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-		final List<AttachmentEntry> entries = attachmentEntryService.getEntries(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
+		final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
 		if(entries.isEmpty())
 		{
 			log.warn("No Attachment entry - AD_PrintFormatItem_ID={}", AD_PrintFormatItem_ID);

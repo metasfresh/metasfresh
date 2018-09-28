@@ -57,9 +57,7 @@ public class AttachmentEntryServiceTest
 		productRecord = newInstance(I_M_Product.class);
 		saveRecord(productRecord);
 
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
 		bpartnerAttachmentEntry1 = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment1", "bPartnerAttachment1.data".getBytes());
 		bpartnerAttachmentEntry2 = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment2", "bPartnerAttachment2.data".getBytes());
@@ -72,12 +70,12 @@ public class AttachmentEntryServiceTest
 		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
 		// assert that bpartnerRecord's attachments are unchanged
-		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getEntries(bpartnerRecord);
+		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
 		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry1);
 		assertThat(bpartnerRecordEntries.get(1)).isEqualTo(bpartnerAttachmentEntry2);
 
-		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getEntries(productRecord);
+		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 		assertThat(productRecordEntries).hasSize(1);
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
 		assertThat(productRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
@@ -91,7 +89,7 @@ public class AttachmentEntryServiceTest
 		attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment3", "bPartnerAttachment3.data".getBytes());
 
 		// invoke the method under test
-		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getEntries(productRecord);
+		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 
 		// the entries to productRecord shall not be changed by the addition uf an entry for bpartnerRecord
 		assertThat(productRecordEntries).hasSize(1);
@@ -112,9 +110,9 @@ public class AttachmentEntryServiceTest
 		// invoke the method under test
 		attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
 
-		assertThat(attachmentEntryService.getEntries(productRecord)).isEmpty();
+		assertThat(attachmentEntryService.getByReferencedRecord(productRecord)).isEmpty();
 
-		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getEntries(productRecord2);
+		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getByReferencedRecord(productRecord2);
 		assertThat(entriesOfProductRecord2).hasSize(1);
 		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entry);
 	}

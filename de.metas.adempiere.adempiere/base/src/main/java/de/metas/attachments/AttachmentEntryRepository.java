@@ -71,15 +71,15 @@ public class AttachmentEntryRepository
 	 * Gets the attachment that references exactly the given recordReferences (not more, not less).
 	 * If there is no such attachment, the method returns {@code null}.
 	 */
-	public List<AttachmentEntry> getByRecordReferences(@NonNull final ITableRecordReference recordReference)
+	public List<AttachmentEntry> getByReferencedRecord(@NonNull final ITableRecordReference referencedRecord)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final List<I_AD_Attachment_MultiRef> multiRefRecords = queryBL
 				.createQueryBuilder(I_AD_Attachment_MultiRef.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_Record_ID, recordReference.getRecord_ID())
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_Table_ID, recordReference.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_Record_ID, referencedRecord.getRecord_ID())
+				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID())
 				.create()
 				.list();
 

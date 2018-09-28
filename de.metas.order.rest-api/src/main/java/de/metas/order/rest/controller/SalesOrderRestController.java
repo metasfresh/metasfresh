@@ -149,7 +149,7 @@ public class SalesOrderRestController
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
-		return attachmentEntryService.getEntries(salesOrderRef)
+		return attachmentEntryService.getByReferencedRecord(salesOrderRef)
 				.stream()
 				.map(entry -> toSalesOrderAttachment(salesOrderId, entry))
 				.collect(ImmutableList.toImmutableList());
