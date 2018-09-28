@@ -427,7 +427,6 @@ public class LayoutFactory
 
 			if (!layoutElementBuilder.isWidgetSizeSet())
 			{
-				final WidgetSize x = field.getWidgetSize(); // TODO delete
 				layoutElementBuilder.setWidgetSize(field.getWidgetSize());
 			}
 

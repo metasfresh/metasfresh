@@ -121,7 +121,7 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_Locator, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
 			})
 	private final JSONLookupValue locator;
 

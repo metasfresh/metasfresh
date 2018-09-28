@@ -264,16 +264,12 @@ public final class ViewColumnHelper
 		{
 			return false;
 		}
-		else if (viewColumnLayout.displayed() == Displayed.TRUE)
-		{
-			return true;
-		}
 		else if (viewColumnLayout.displayed() == Displayed.SYSCONFIG)
 		{
 			final String displayedSysConfigPrefix = viewColumnLayout.displayedSysConfigPrefix();
 			if (Check.isEmpty(displayedSysConfigPrefix, true))
 			{
-				return false;
+				return viewColumnLayout.defaultDisplaySysConfig();
 			}
 			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
 
@@ -284,7 +280,10 @@ public final class ViewColumnHelper
 							Env.getAD_Client_ID(),
 							Env.getAD_Org_ID(Env.getCtx()));
 		}
-
+		else if (viewColumnLayout.displayed() == Displayed.TRUE)
+		{
+			return true;
+		}
 		Check.fail("ViewColumnLayout.displayed value={}; viewColumnLayout={}", viewColumnLayout.displayed(), viewColumnLayout);
 		return false;
 	}

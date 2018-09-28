@@ -100,11 +100,15 @@ public @interface ViewColumn
 
 		Displayed displayed() default Displayed.TRUE;
 
+		boolean defaultDisplaySysConfig() default false;
+
 		/** See {@link Displayed#SYSCONFIG}. Null or empty strings mean {@link Displayed#FALSE}. */
 		String displayedSysConfigPrefix() default "";
 
 		/** Display sequence number */
 		int seqNo();
+
+
 
 
 	}
