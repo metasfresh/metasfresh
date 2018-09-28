@@ -951,21 +951,17 @@ public class SubscriptionBL implements ISubscriptionBL
 	public void setOrderContractStatusAndSave(@NonNull final de.metas.contracts.subscription.model.I_C_Order order, @NonNull final String contractStatus)
 	{
 		order.setContractStatus(contractStatus);
-		InterfaceWrapperHelper.save(order);
+		save(order);
 	}
-	
+
 	@Override
 	public boolean isActiveTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		final String status = term.getContractStatus();
-		
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(status)
+		final boolean isCancelledOrVoided = X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(status)
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(status)
-				|| X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(status))
-		{
-			return false;
-		}
-				
-		return true;
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(status);
+
+		return !isCancelledOrVoided;
 	}
 }
