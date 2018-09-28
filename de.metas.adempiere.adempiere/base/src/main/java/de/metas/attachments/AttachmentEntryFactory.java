@@ -1,6 +1,7 @@
 package de.metas.attachments;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -8,6 +9,7 @@ import java.net.URISyntaxException;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -37,6 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class AttachmentEntryFactory
 {
 	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type> builder()
@@ -44,7 +47,7 @@ public class AttachmentEntryFactory
 			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntry.Type.URL)
 			.build();
 
-	public AttachmentEntry createEntry(@NonNull final AttachmentEntryCreateRequest request)
+	public AttachmentEntry createAndSaveEntry(@NonNull final AttachmentEntryCreateRequest request)
 	{
 		final AttachmentEntry.Type type = request.getType();
 		final String filename = request.getFilename();
@@ -76,6 +79,10 @@ public class AttachmentEntryFactory
 		{
 			throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
 		}
+
+		// we need to save for type=Data in order not to loose the byte[] if any.
+		// we also save for type==URL so be more "predictable"
+		saveRecord(entryRecord);
 
 		final AttachmentEntry entry = toAttachmentEntry(entryRecord);
 		return entry;

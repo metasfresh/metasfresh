@@ -16,7 +16,6 @@ import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -78,10 +77,10 @@ public class AttachmentEntryService
 			@NonNull final Object referencedRecord,
 			@NonNull final File file)
 	{
-		final ImmutableSet<TableRecordReference> modelReferences = ImmutableSet.of(TableRecordReference.of(referencedRecord));
+		final TableRecordReference modelReference = TableRecordReference.of(referencedRecord);
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromFile(file);
 
-		return createNewAttachment(modelReferences, request);
+		return createNewAttachment(modelReference, request);
 	}
 
 	/** Convenience method */
@@ -101,10 +100,10 @@ public class AttachmentEntryService
 			@NonNull final String name,
 			@NonNull final URI uri)
 	{
-		final ImmutableSet<TableRecordReference> modelReferences = ImmutableSet.of(TableRecordReference.of(referencedRecord));
+		final TableRecordReference modelReference = TableRecordReference.of(referencedRecord);
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromURI(name, uri);
 
-		return createNewAttachment(modelReferences, request);
+		return createNewAttachment(modelReference, request);
 	}
 
 	public List<AttachmentEntry> createNewAttachments(
@@ -123,7 +122,7 @@ public class AttachmentEntryService
 			@NonNull final Object referencedRecord,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		final AttachmentEntry newEntry = attachmentEntryFactory.createEntry(attachmentEntryCreateRequest);
+		final AttachmentEntry newEntry = attachmentEntryFactory.createAndSaveEntry(attachmentEntryCreateRequest);
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
 
 		final Collection<AttachmentEntry> attachedEntries = linkAttachmentsToModels(ImmutableList.of(newEntry), ImmutableList.of(tableRecordReference));

@@ -11,6 +11,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,6 +56,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class NotificationRepository implements INotificationRepository
 {
 	private static final Logger logger = LogManager.getLogger(NotificationRepository.class);
