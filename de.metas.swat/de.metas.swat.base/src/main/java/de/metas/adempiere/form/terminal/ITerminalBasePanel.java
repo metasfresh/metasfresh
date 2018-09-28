@@ -27,7 +27,8 @@ import java.util.Properties;
 
 public interface ITerminalBasePanel extends ITerminalPanel
 {
-	String TITLE_PACKAGE_TERMINAL = "PackageTerminal";
+	@Override
+	void dispose();
 
 	public boolean isProcessed();
 

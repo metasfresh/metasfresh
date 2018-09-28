@@ -6,8 +6,6 @@ package de.metas.fresh.picking.form;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /*
  * #%L
@@ -50,12 +48,11 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalKeyListener;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalLabel;
-import de.metas.adempiere.form.terminal.ITerminalSplitPane;
+import de.metas.adempiere.form.terminal.ITerminalPanel;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
-import de.metas.adempiere.form.terminal.swing.TerminalSplitPane;
 import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
@@ -64,7 +61,6 @@ import de.metas.fresh.picking.ProductKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.terminal.form.swing.IPackingTerminalPanel;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -73,12 +69,8 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * Packing window main panel (second window)
- *
- * @author cg
- *
  */
-public class SwingPackingTerminalPanel
-		implements ITerminalBasePanel, PropertyChangeListener, IPackingTerminalPanel
+public class SwingPackingTerminalPanel implements ITerminalPanel, ITerminalBasePanel
 {
 	public static SwingPackingTerminalPanel cast(final ITerminalBasePanel panel)
 	{
@@ -107,7 +99,6 @@ public class SwingPackingTerminalPanel
 
 	private final IContainer panel;
 	private final IContainer panelCenter;
-	private ITerminalSplitPane split;
 
 	private FormFrame frame;
 	private final ITerminalKeyPanel packingMaterialsPanel;
@@ -242,7 +233,6 @@ public class SwingPackingTerminalPanel
 		return PackingMaterialLayout.cast(getPackingMaterialsPanel().getKeyLayout());
 	}
 
-	@Override
 	public void init(final int windowNo, final FormFrame frame)
 	{
 		this.frame = frame;
@@ -520,22 +510,6 @@ public class SwingPackingTerminalPanel
 	public ITerminalContext getTerminalContext()
 	{
 		return tc;
-	}
-
-	@Override
-	public void propertyChange(final PropertyChangeEvent evt)
-	{
-		if (evt.getPropertyName().equals("dividerLocation") && !evt.getNewValue().equals(new Integer(1)))
-		{
-			if (evt.getNewValue().equals(new Integer(0)))
-			{
-				((TerminalSplitPane)split).setDividerLocation(0);
-			}
-			else
-			{
-				((TerminalSplitPane)split).setDividerLocation(0.25);
-			}
-		}
 	}
 
 	@Override

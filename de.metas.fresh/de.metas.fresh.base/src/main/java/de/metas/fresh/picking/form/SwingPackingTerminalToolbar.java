@@ -38,7 +38,6 @@ import org.compiere.apps.form.FormFrame;
 
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
-import de.metas.picking.terminal.form.swing.IPackingTerminal;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -125,7 +124,7 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 		}
 		else if (ACTION_OK.equals(evt.getNewValue()))
 		{
-			final IPackingTerminal packingTerminalWindow = getPackingTerminalPanel().getParent();
+			final SwingPackingTerminal packingTerminalWindow = getPackingTerminalPanel().getParent();
 			final FormFrame pickingFrame = packingTerminalWindow.getPickingFrame();
 			if (pickingFrame != null)
 			{

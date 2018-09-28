@@ -81,7 +81,7 @@ import de.metas.fresh.picking.DeliveryDateKey;
 import de.metas.fresh.picking.DeliveryDateKeyLayout;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.picking.terminal.IPickingTerminalPanel;
+import de.metas.picking.terminal.form.swing.IPickingTerminalPanel;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -96,7 +96,7 @@ import de.metas.util.Services;
  * <li>confirm panel (bottom)
  * </ul>
  */
-public class SwingPickingTerminalPanel implements IPickingTerminalPanel
+public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTerminalPanel
 {
 	public static SwingPickingTerminalPanel cast(final ITerminalBasePanel panel)
 	{
@@ -104,6 +104,8 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 	}
 
 	private static final Logger logger = LogManager.getLogger(SwingPickingTerminalPanel.class);
+
+	private static final String TITLE_PACKAGE_TERMINAL = "PackageTerminal";
 
 	private static final String CARDNAME_WAREHOUSE_PICKING = "WAREHOUSE_PICKING";
 	private static final String CARDNAME_RESULT = "RESULT";
@@ -194,7 +196,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 	}
 
 	@Override
-	public final ITerminalContext getTerminalContext()
+	public ITerminalContext getTerminalContext()
 	{
 		return terminalContextAndRefs.getLeft();
 	}
@@ -577,7 +579,6 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		cardLayout.show(panelComp, cardName);
 	}
 
-	@Override
 	public void next()
 	{
 		final Container panelComp = SwingTerminalFactory.getUI(panel);
@@ -675,8 +676,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 
 		//
 		// Reset table rows matcher (fresh_06821)
-		final FreshPackingMd packingMd = pickingOKPanel.getModel();
-		packingMd.setTableRowSearchSelectionMatcher(NullTableRowSearchSelectionMatcher.instance);
+		pickingOKPanel.setTableRowSearchSelectionMatcher(NullTableRowSearchSelectionMatcher.instance);
 	}
 
 	private final void refreshLines()
@@ -697,11 +697,10 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		Check.assumeNotNull(matcherNew, "matcherNew not null");
 
 		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
-		final FreshPackingMd model = pickingOKPanel.getModel();
 
-		final ITableRowSearchSelectionMatcher matcherOld = model.getTableRowSearchSelectionMatcher();
+		final ITableRowSearchSelectionMatcher matcherOld = pickingOKPanel.getTableRowSearchSelectionMatcher();
 
-		model.setTableRowSearchSelectionMatcher(matcherNew);
+		pickingOKPanel.setTableRowSearchSelectionMatcher(matcherNew);
 
 		//
 		// Check if new matcher and old matcher are functionally the same
@@ -802,7 +801,11 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		}
 	}
 
-	@Override
+	static enum ResetFilters
+	{
+		No, Yes, IfNoResult,
+	}
+
 	public void refreshLines(final ResetFilters resetFilters)
 	{
 		if (resetFilters == ResetFilters.Yes)
@@ -816,8 +819,7 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		if (resetFilters == ResetFilters.IfNoResult)
 		{
 			// If there is no result call this method again with resetFilters=Yes
-			final FreshPackingMd packingModel = pickingOKPanel.getModel();
-			if (packingModel.getRowsCount() <= 0)
+			if (pickingOKPanel.getRowsCount() <= 0)
 			{
 				refreshLines(ResetFilters.Yes);
 			}
@@ -826,15 +828,13 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		// Reset selection if filters were reset
 		if (resetFilters == ResetFilters.Yes)
 		{
-			final FreshPackingMd model = pickingOKPanel.getModel();
-			model.setSelectedTableRowKeys(null); // force fire event
+			pickingOKPanel.setSelectedTableRowKeys(null); // force fire event
 		}
 	}
 
 	/**
 	 * Method called when we activate the panel window's and we want to give focus to proper component
 	 */
-	@Override
 	public void requestFocus()
 	{
 		if (barcodeSearchField != null)
@@ -843,7 +843,6 @@ public class SwingPickingTerminalPanel implements IPickingTerminalPanel
 		}
 	}
 
-	@Override
 	public void setResultHtml(final String resultHtml)
 	{
 		resultTextPane.setText(resultHtml);

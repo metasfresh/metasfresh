@@ -14,20 +14,18 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.PackingDetailsModel;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemsMap;
-import de.metas.picking.terminal.form.swing.IPackingTerminalPanel;
-import de.metas.picking.terminal.form.swing.IPackingTerminal;
 import lombok.NonNull;
 
 /**
  * Packing window (second window)
  */
-public class SwingPackingTerminal implements FormPanel, IPackingTerminal
+public class SwingPackingTerminal implements FormPanel
 {
 	private final ITerminalContext terminalContext;
 	/** picking first window */
 	private final SwingPickingOKPanel pickingOKPanel;
 	/** Window content panel */
-	private IPackingTerminalPanel panel = null;
+	private SwingPackingTerminalPanel panel = null;
 	private FormFrame frame;
 
 	private final PackingDetailsModel packingDetailsModel;
@@ -93,13 +91,11 @@ public class SwingPackingTerminal implements FormPanel, IPackingTerminal
 		return terminalContext;
 	}
 
-	@Override
 	public FormFrame getFrame()
 	{
 		return frame;
 	}
 
-	@Override
 	public FormFrame getPickingFrame()
 	{
 		if (pickingOKPanel == null)

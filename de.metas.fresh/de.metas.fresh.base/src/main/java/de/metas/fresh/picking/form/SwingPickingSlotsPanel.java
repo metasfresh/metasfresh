@@ -1016,16 +1016,15 @@ public class SwingPickingSlotsPanel
 
 		// TODO: this is a workaround just to deliver a working increment.
 		// We shall not have such a tight coupling but instead the selectedHU should be provided in some packing model
-		final FreshPackingMd pickingOKPanelModel = getPackingTerminalPanel() // Packing window main panel (second window)
+		final SwingPickingOKPanel pickingOKPanel = getPackingTerminalPanel() // Packing window main panel (second window)
 				.getParent() // Packing window (second window)
-				.getPickingOKPanel() // Picking OK Panel (that one that contains table rows)
-				.getModel(); // PackingMd
+				.getPickingOKPanel();
 
 		//
 		// Get selected HU from first panel.
 		// (i.e. when user was scanning by SSCC18 or internal HU barcode)
 		I_M_HU selectedHU = null;
-		final ITableRowSearchSelectionMatcher tableRowsMatcher = pickingOKPanelModel.getTableRowSearchSelectionMatcher();
+		final ITableRowSearchSelectionMatcher tableRowsMatcher = pickingOKPanel.getTableRowSearchSelectionMatcher();
 		if (tableRowsMatcher instanceof IHUAware)
 		{
 			final IHUAware huAware = (IHUAware)tableRowsMatcher;

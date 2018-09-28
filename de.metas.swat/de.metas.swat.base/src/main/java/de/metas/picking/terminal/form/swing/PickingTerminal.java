@@ -36,7 +36,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.picking.terminal.IPickingTerminalPanel;
 import lombok.NonNull;
 
 /**

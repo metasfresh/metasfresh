@@ -64,13 +64,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.bpartner.BPartnerId;
 import de.metas.fresh.picking.PackingDetailsModel;
+import de.metas.fresh.picking.form.SwingPickingTerminalPanel.ResetFilters;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
-import de.metas.picking.terminal.IPickingTerminalPanel;
-import de.metas.picking.terminal.IPickingTerminalPanel.ResetFilters;
-import de.metas.picking.terminal.form.swing.IPackingTerminal;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -123,7 +121,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 
 	private ITerminalScrollPane linesContainer;
 	private IConfirmPanel confirmPanel;
-	private IPackingTerminal packageTerminal = null;
+	private SwingPackingTerminal packageTerminal = null;
 	private final WindowListener packageTerminalWindowListener = new WindowAdapter()
 	{
 		@Override
@@ -207,7 +205,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		return null;
 	}
 
-	public FreshPackingMd getModel()
+	private FreshPackingMd getModel()
 	{
 		return model;
 	}
@@ -376,7 +374,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 			final FreshPackingMd model = getModel();
 			model.setRequeryNeeded();
 
-			final IPickingTerminalPanel parent = getPickingTerminalPanel();
+			final SwingPickingTerminalPanel parent = getPickingTerminalPanel();
 			parent.refreshLines(ResetFilters.IfNoResult);
 		}
 
@@ -435,7 +433,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 			pickingFrame.toFront();
 
 			// Ask parent to give focus to right editing component
-			final IPickingTerminalPanel parent = getPickingTerminalPanel();
+			final SwingPickingTerminalPanel parent = getPickingTerminalPanel();
 			parent.requestFocus();
 		}
 		else
@@ -469,7 +467,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		return getModel().getSelectedDeliveryDates();
 	}
 
-	public void setDeliveryDate(LocalDate deliveryDate)
+	public void setDeliveryDate(final LocalDate deliveryDate)
 	{
 		getModel().setDeliveryDate(deliveryDate);
 	}
@@ -536,8 +534,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 
 	public void logout()
 	{
-		final IPickingTerminalPanel pickingTerminalPanel = getPickingTerminalPanel();
-		pickingTerminalPanel.logout();
+		getPickingTerminalPanel().logout();
 	}
 
 	void refreshLines()
@@ -560,7 +557,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		//
 		// Cleanup old Package Terminal (if any)
 		{
-			final IPackingTerminal packageTerminalOld = packageTerminal;
+			final SwingPackingTerminal packageTerminalOld = packageTerminal;
 			if (packageTerminalOld != null && packageTerminalOld.getFrame() != null)
 			{
 				packageTerminalOld.getFrame().removeWindowListener(packageTerminalWindowListener);
@@ -668,5 +665,25 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 			final int windowNo = getPickingTerminalPanel().getTerminalContext().getWindowNo();
 			Services.get(IClientUI.class).error(windowNo, MSG_ERRORS);
 		}
+	}
+
+	public int getRowsCount()
+	{
+		return getModel().getRowsCount();
+	}
+
+	public ITableRowSearchSelectionMatcher getTableRowSearchSelectionMatcher()
+	{
+		return getModel().getTableRowSearchSelectionMatcher();
+	}
+
+	public void setTableRowSearchSelectionMatcher(final ITableRowSearchSelectionMatcher matcher)
+	{
+		getModel().setTableRowSearchSelectionMatcher(matcher);
+	}
+
+	public void setSelectedTableRowKeys(final Collection<TableRowKey> tableRowKeys)
+	{
+		getModel().setSelectedTableRowKeys(tableRowKeys);
 	}
 }
