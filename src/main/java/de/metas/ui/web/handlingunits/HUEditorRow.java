@@ -164,7 +164,6 @@ public final class HUEditorRow implements IViewRow
 	public static final String FIELDNAME_UOM = I_M_Product.COLUMNNAME_C_UOM_ID;
 	@ViewColumn(fieldName = FIELDNAME_UOM, //
 			captionKey = FIELDNAME_UOM, //
-			widgetSize = WidgetSize.Small,//
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
