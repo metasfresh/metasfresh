@@ -72,6 +72,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.api.impl.PlainESRImportDAO;
@@ -147,6 +148,7 @@ public class ESRTestBase
 		contextProvider = PlainContextAware.newOutOfTrx(getCtx());
 
 		// Make sure esr validator interceptor is registered
+		Services.registerService(IESRImportBL.class, esrImportBL);
 		final ESR_Main_Validator esrValidator = new ESR_Main_Validator();
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(esrValidator, client);
 
