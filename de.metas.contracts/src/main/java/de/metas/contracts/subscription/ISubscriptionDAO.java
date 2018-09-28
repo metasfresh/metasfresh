@@ -31,7 +31,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
-import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -132,25 +131,4 @@ public interface ISubscriptionDAO extends ISingletonService
 	I_C_SubscriptionProgress insertNewDelivery(I_C_SubscriptionProgress predecessor);
 
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_Flatrate_Term term, Class<T> clazz);
-
-	boolean isContractSalesOrder(OrderId orderId);
-
-	List<I_C_Flatrate_Term> retrieveFlatrateTerms(OrderId orderId);
-
-	/**
-	 * retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
-	 * @param orderId
-	 * @return
-	 */
-	OrderId retrieveLinkedFollowUpContractOrder(OrderId orderId);
-
-	/**
-	 * retrieves recursively all orders related to a contract, inclusive the one given as parameter
-	 * @param orderId
-	 * @return
-	 */
-	List<OrderId> retrieveAllContractOrderList(OrderId orderId);
-
-	I_C_Flatrate_Term retrieveTopExtendedTerm(I_C_Flatrate_Term term);
-
 }

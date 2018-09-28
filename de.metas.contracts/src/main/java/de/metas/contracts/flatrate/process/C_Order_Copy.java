@@ -1,23 +1,21 @@
 package de.metas.contracts.flatrate.process;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.subscription.ISubscriptionDAO;
+import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
-import de.metas.util.Services;
+import de.metas.process.ProcessPreconditionsResolution;
 
 public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 {
-	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-
 	@Override
 	protected String doIt()
 	{
@@ -54,7 +52,8 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on C_Order table");
 		}
 		
-		if (!subscriptionDAO.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
+		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		if (!contractOrderRepository.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on contract order");
 		}

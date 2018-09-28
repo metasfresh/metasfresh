@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +41,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
@@ -73,6 +73,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
@@ -928,14 +929,14 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
-		final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-		final OrderId orderId = subscriptionDAO.retrieveLinkedFollowUpContractOrder(currentOrderId);
+		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final OrderId orderId = contractOrderRepository.retrieveLinkedFollowUpContractOrder(currentOrderId);
 		if (orderId == null)
 		{
 			return null;
 		}
 
-		final List<I_C_Flatrate_Term> orderTerms = subscriptionDAO.retrieveFlatrateTerms(orderId);
+		final List<I_C_Flatrate_Term> orderTerms = contractOrderRepository.retrieveFlatrateTerms(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
@@ -949,17 +950,11 @@ public class SubscriptionBL implements ISubscriptionBL
 			return null;
 		}
 
-		final I_C_Flatrate_Term topTerm = subscriptionDAO.retrieveTopExtendedTerm(suitableTerm);
+		final I_C_Flatrate_Term topTerm = contractOrderRepository.retrieveTopExtendedTerm(suitableTerm);
 		
 		return topTerm == null ? suitableTerm : topTerm;
 	}
 	
-	@Override
-	public void setOrderContractStatusAndSave(@NonNull final de.metas.contracts.subscription.model.I_C_Order order, @NonNull final String contractStatus)
-	{
-		order.setContractStatus(contractStatus);
-		save(order);
-	}
 
 	@Override
 	public boolean isActiveTerm(@NonNull final I_C_Flatrate_Term term)

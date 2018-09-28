@@ -40,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_OrderLine;
@@ -65,8 +66,8 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -595,75 +596,82 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
 
-		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
+		if (InterfaceWrapperHelper.isNew(term) && !Services.get(IContractsDAO.class).termHasAPredecessor(term))
 		{
-			subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
-		final List<OrderId> orderIds = Services.get(ISubscriptionDAO.class).retrieveAllContractOrderList(orderId);
+		
+		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final List<OrderId> orderIds = contractOrderRepository.retrieveAllContractOrderList(orderId);
 
 		updateStatusIfNeededWhenExtendind(term, orderIds);
 
 		updateStatusIfNeededWhenCancelling(term, orderIds);
 
-		updateStausIfNeededWhenVoiding(term, orderIds);
+		updateStausIfNeededWhenVoiding(term);
 	}
 
 	private void updateStatusIfNeededWhenExtendind(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
 	{
-		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
-				&& term.getC_FlatrateTerm_Next_ID() > 0)
+				&& term.getC_FlatrateTerm_Next_ID() > 0
+				&& orderIds.size() > 1) // we set the Extended status only when an order was extended
 		{
+			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 			// update order contract status to extended
+			final I_C_Order contractOrder = InterfaceWrapperHelper.create(term.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 			orderIds.forEach(id -> {
-				final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
-				subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
+				if (id.getRepoId() != contractOrder.getC_Order_ID())  // different order from the current one
+				{
+					final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
+					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
+				}
 			});
 		}
 	}
 
 	private void updateStatusIfNeededWhenCancelling(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
 	{
-		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
+			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			
 			// update order contract status to cancelled
 			orderIds.forEach(id -> {
 				final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
-				subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
+				contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
 			});
 		}
 	}
 
-	private void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
+	private void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term)
 	{
-		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(term.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
 
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
+			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
 			// set status for the current order
-			final List<I_C_Flatrate_Term> terms = Services.get(ISubscriptionDAO.class).retrieveFlatrateTerms(orderId);
+			final List<I_C_Flatrate_Term> terms = contractOrderRepository.retrieveFlatrateTerms(orderId);
 			final boolean anyActiveTerms = terms
 					.stream()
 					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
 							&& subscriptionBL.isActiveTerm(currentTerm));
 
-			subscriptionBL.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
+			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
 
 			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
-			final OrderId parentOrderId = Services.get(ISubscriptionDAO.class).retrieveLinkedFollowUpContractOrder(orderId);
+			final OrderId parentOrderId = contractOrderRepository.retrieveLinkedFollowUpContractOrder(orderId);
 			if (parentOrderId != null)
 			{
 				final I_C_Order order = InterfaceWrapperHelper.load(parentOrderId, I_C_Order.class);
@@ -672,7 +680,7 @@ public class C_Flatrate_Term
 						&& I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order was cancelled
 				{
 
-					subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
+					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
 				}
 
 			}
