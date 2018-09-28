@@ -151,4 +151,6 @@ public interface ISubscriptionDAO extends ISingletonService
 	 */
 	List<OrderId> retrieveAllContractOrderList(OrderId orderId);
 
+	I_C_Flatrate_Term retrieveTopExtendedTerm(I_C_Flatrate_Term term);
+
 }

@@ -301,4 +301,17 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 			buildAllContractOrderList(nextAncestorId, contractOrderIds);
 		}
 	}
+	
+	@Override
+	public I_C_Flatrate_Term retrieveTopExtendedTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		I_C_Flatrate_Term nextTerm = term.getC_FlatrateTerm_Next();
+
+		if (nextTerm != null)
+		{
+			nextTerm = retrieveTopExtendedTerm(nextTerm);
+		}
+
+		return nextTerm;
+	}
 }
