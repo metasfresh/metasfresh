@@ -353,7 +353,7 @@ public abstract class AbstractFlatrateTermTest
 		return contract;
 	}
 
-	private I_C_OrderLine createOrderAndOrderLine(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product)
+	protected I_C_OrderLine createOrderAndOrderLine(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product)
 	{
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
 		orderRecord.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
