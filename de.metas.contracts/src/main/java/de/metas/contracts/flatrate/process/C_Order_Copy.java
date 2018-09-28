@@ -4,7 +4,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.order.ContractOrderRepository;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.order.OrderId;
@@ -52,7 +52,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on C_Order table");
 		}
 		
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 		if (!contractOrderRepository.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on contract order");

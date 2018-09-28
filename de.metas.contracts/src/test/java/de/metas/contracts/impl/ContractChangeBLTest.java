@@ -38,6 +38,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -50,7 +51,6 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -58,7 +58,7 @@ import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractOrderRepository.class })
+		ContractLibraryConfiguration.class })
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);

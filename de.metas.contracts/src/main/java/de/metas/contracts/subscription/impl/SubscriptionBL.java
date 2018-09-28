@@ -73,7 +73,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.order.ContractOrderRepository;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
@@ -929,7 +929,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 		final OrderId orderId = contractOrderRepository.retrieveLinkedFollowUpContractOrder(currentOrderId);
 		if (orderId == null)
 		{

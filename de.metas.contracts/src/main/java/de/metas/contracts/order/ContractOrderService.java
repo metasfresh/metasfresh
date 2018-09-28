@@ -47,7 +47,7 @@ import lombok.NonNull;
  *
  */
 @Component
-public class ContractOrderRepository
+public class ContractOrderService
 {
 	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
 	{

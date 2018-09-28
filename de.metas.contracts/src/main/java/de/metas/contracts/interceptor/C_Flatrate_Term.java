@@ -66,7 +66,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.order.ContractOrderRepository;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.document.DocTypeQuery;
@@ -600,14 +600,14 @@ public class C_Flatrate_Term
 
 		if (InterfaceWrapperHelper.isNew(term) && !Services.get(IContractsDAO.class).termHasAPredecessor(term))
 		{
-			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
 		
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 		final List<OrderId> orderIds = contractOrderRepository.retrieveAllContractOrderList(orderId);
 
 		updateStatusIfNeededWhenExtendind(term, orderIds);
@@ -623,7 +623,7 @@ public class C_Flatrate_Term
 				&& term.getC_FlatrateTerm_Next_ID() > 0
 				&& orderIds.size() > 1) // we set the Extended status only when an order was extended
 		{
-			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 			// update order contract status to extended
 			final I_C_Order contractOrder = InterfaceWrapperHelper.create(term.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 			orderIds.forEach(id -> {
@@ -641,7 +641,7 @@ public class C_Flatrate_Term
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
-			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 			
 			// update order contract status to cancelled
 			orderIds.forEach(id -> {
@@ -658,7 +658,7 @@ public class C_Flatrate_Term
 
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
-			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
 			// set status for the current order
