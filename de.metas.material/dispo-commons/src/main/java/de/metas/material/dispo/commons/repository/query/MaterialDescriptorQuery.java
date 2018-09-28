@@ -97,12 +97,15 @@ public class MaterialDescriptorQuery
 	int productId;
 	AttributesKey storageAttributesKey;
 
-	/** zero means "none", null means "any" */
 	int customerId;
 	CustomerIdOperator customerIdOperator;
 
 	Date date;
 
+	/**
+	 *
+	 * @param customerId less than 1 means "none", null means "any"
+	 */
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
@@ -126,7 +129,7 @@ public class MaterialDescriptorQuery
 		{
 			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_ANY;
 		}
-		else if (customerId == 0)
+		else if (customerId <= 0)
 		{
 			this.customerId = AvailableToPromiseQuery.BPARTNER_ID_NONE;
 		}
