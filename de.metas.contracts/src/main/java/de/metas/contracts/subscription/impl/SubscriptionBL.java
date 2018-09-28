@@ -951,4 +951,19 @@ public class SubscriptionBL implements ISubscriptionBL
 		order.setContractStatus(contractStatus);
 		InterfaceWrapperHelper.save(order);
 	}
+	
+	@Override
+	public boolean isActiveTerm(@NonNull final I_C_Flatrate_Term term)
+	{
+		final String status = term.getContractStatus();
+		
+		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(status)
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(status)
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(status))
+		{
+			return false;
+		}
+				
+		return true;
+	}
 }

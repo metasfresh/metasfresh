@@ -136,4 +136,6 @@ public interface ISubscriptionBL extends ISingletonService
 	I_C_Flatrate_Term createTermForOLCand(Properties ctx, I_C_OLCand olCand, int AD_PInstance_ID, boolean completeIt, String trxName);
 
 	void setOrderContractStatusAndSave(I_C_Order order, String contractStatus);
+
+	boolean isActiveTerm(I_C_Flatrate_Term term);
 }

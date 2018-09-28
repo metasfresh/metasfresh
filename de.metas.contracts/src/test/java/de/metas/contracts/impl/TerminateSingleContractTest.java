@@ -189,7 +189,9 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertVoidedFlatrateTerm(extendedContract);
 		assertInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
-		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
+		
+		InterfaceWrapperHelper.refresh(order);
+		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
 
 	private void config_InvoiceCand_HeaderAggregation()
