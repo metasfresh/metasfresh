@@ -312,6 +312,6 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 			nextTerm = retrieveTopExtendedTerm(nextTerm);
 		}
 
-		return nextTerm;
+		return nextTerm == null ? term : nextTerm;
 	}
 }

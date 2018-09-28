@@ -174,11 +174,11 @@ public class SubscriptionBL implements ISubscriptionBL
 			Services.get(IDocumentBL.class).processEx(newTerm, X_C_Flatrate_Term.DOCACTION_Complete, X_C_Flatrate_Term.DOCSTATUS_Completed);
 		}
 
-		final I_C_Flatrate_Term originalTerm = retrieveCorrespondingFlatrateTermFromDifferentOrder(newTerm);
-		if (originalTerm != null)
+		final I_C_Flatrate_Term correspondingTerm = retrieveCorrespondingFlatrateTermFromDifferentOrder(newTerm);
+		if (correspondingTerm != null)
 		{
-			originalTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
-			save(originalTerm);			
+			correspondingTerm.setC_FlatrateTerm_Next_ID(newTerm.getC_Flatrate_Term_ID());
+			save(correspondingTerm);			
 		}
 		
 		return newTerm;
