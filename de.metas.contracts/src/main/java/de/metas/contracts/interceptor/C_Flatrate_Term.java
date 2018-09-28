@@ -112,10 +112,10 @@ public class C_Flatrate_Term
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Org.class) 
+				.createQueryBuilder(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, 0) 
+				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, 0)
 				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
 				.create()
 				.list(I_AD_Org.class);
@@ -301,14 +301,14 @@ public class C_Flatrate_Term
 	public void updateOLCandReference(final I_C_Flatrate_Term term)
 	{
 		final List<I_C_Contract_Term_Alloc> ctas = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Contract_Term_Alloc.class, term) 
+				.createQueryBuilder(I_C_Contract_Term_Alloc.class, term)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Contract_Term_Alloc.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
 				.orderBy(I_C_Contract_Term_Alloc.COLUMNNAME_C_Contract_Term_Alloc_ID)
 				.create()
 				.list(I_C_Contract_Term_Alloc.class);
-		
+
 		for (final I_C_Contract_Term_Alloc cta : ctas)
 		{
 			final I_C_OLCand olCand = InterfaceWrapperHelper.create(cta.getC_OLCand(), I_C_OLCand.class);
@@ -517,7 +517,7 @@ public class C_Flatrate_Term
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final boolean overlappingIsOK = flatrateBL.canOverlapWithOtherTerms(term);
-		if(overlappingIsOK)
+		if (overlappingIsOK)
 		{
 			return; // nothing to do
 		}
@@ -585,7 +585,7 @@ public class C_Flatrate_Term
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE
 	}, ifColumnsChanged = {
-			I_C_Flatrate_Term.COLUMNNAME_ContractStatus,I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID
+			I_C_Flatrate_Term.COLUMNNAME_ContractStatus, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID
 	})
 	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
 	{
@@ -594,33 +594,32 @@ public class C_Flatrate_Term
 		{
 			return;
 		}
-		
+
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-		
+
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
-		
+
 		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
 		{
 			subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
 		}
-		
+
 		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
 		final List<OrderId> orderIds = Services.get(ISubscriptionDAO.class).retrieveAllContractOrderList(orderId);
-		
+
 		updateStatusIfNeededWhenExtendind(term, orderIds);
-		
+
 		updateStatusIfNeededWhenCancelling(term, orderIds);
-		
+
 		updateStausIfNeededWhenVoiding(term, orderIds);
 	}
-
 
 	private void updateStatusIfNeededWhenExtendind(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID) 
+		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
 				&& term.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// update order contract status to extended
@@ -630,28 +629,27 @@ public class C_Flatrate_Term
 			});
 		}
 	}
-	
+
 	private void updateStatusIfNeededWhenCancelling(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
-				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus())
-				)
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
 			// update order contract status to cancelled
-			orderIds.forEach( id -> {
+			orderIds.forEach(id -> {
 				final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
 				subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
 			});
 		}
 	}
-	
+
 	private void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(term.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
-		
+
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
 
@@ -663,21 +661,19 @@ public class C_Flatrate_Term
 							&& subscriptionBL.isActiveTerm(currentTerm));
 
 			subscriptionBL.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
-			
-			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
-			if (orderIds.size() > 1)
-			{
-				// means that we have multiple order and need to preserve the status
-				orderIds.forEach(id -> {
-					final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
-					if (id.getRepoId() != contractOrder.getC_Order_ID()  // different order from the current one
-							&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()) // wasn't Previously cancelled, although shall not be possible this 
-							&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order wasn't cancelled
-					{
 
-						subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
-					}
-				});
+			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
+			final OrderId parentOrderId = Services.get(ISubscriptionDAO.class).retrieveLinkedFollowUpContractOrder(orderId);
+			if (parentOrderId != null)
+			{
+				final I_C_Order order = InterfaceWrapperHelper.load(parentOrderId, I_C_Order.class);
+				if (parentOrderId.getRepoId() != contractOrder.getC_Order_ID()  // different order from the current one
+						&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()) // current order wasn't previously cancelled, although shall not be possible this
+						&& I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order was cancelled
+				{
+
+					subscriptionBL.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
+				}
 
 			}
 		}
