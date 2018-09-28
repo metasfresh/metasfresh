@@ -67,6 +67,9 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
+import de.metas.attachments.AttachmentEntryFactory;
+import de.metas.attachments.AttachmentEntryRepository;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.document.engine.IDocument;
@@ -92,6 +95,8 @@ import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.testsupport.AbstractTestSupport;
 import de.metas.util.Services;
@@ -214,6 +219,12 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		//
 		// Services
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
+		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+
 	}
 
 	protected void config_InvoiceCand_HeaderAggregation()

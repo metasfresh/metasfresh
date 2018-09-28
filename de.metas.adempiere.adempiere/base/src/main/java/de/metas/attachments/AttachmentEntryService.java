@@ -90,10 +90,10 @@ public class AttachmentEntryService
 			@NonNull final String name,
 			@NonNull final byte[] bytes)
 	{
-		final ImmutableSet<TableRecordReference> modelReferences = ImmutableSet.of(TableRecordReference.of(referencedRecord));
+		final TableRecordReference modelReference = TableRecordReference.of(referencedRecord);
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromByteArray(name, bytes);
 
-		return createNewAttachment(modelReferences, request);
+		return createNewAttachment(modelReference, request);
 	}
 
 	public AttachmentEntry createNewAttachment(

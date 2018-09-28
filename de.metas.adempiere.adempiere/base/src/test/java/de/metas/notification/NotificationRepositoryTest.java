@@ -13,11 +13,13 @@ import org.compiere.model.I_AD_Message;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.attachments.AttachmentEntryFactory;
+import de.metas.attachments.AttachmentEntryRepository;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 
 /*
@@ -51,7 +53,10 @@ public class NotificationRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		notificationRepo = (NotificationRepository)Services.get(INotificationRepository.class);
+		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
+		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		notificationRepo = new NotificationRepository(attachmentEntryService);
 	}
 
 	@Test
