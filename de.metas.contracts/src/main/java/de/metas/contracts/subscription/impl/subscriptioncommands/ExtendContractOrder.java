@@ -33,7 +33,7 @@ import lombok.NonNull;
 
 public class ExtendContractOrder
 {
-	public static String extend(@NonNull final I_C_Order existentOrder )
+	public static I_C_Order extend(@NonNull final I_C_Order existentOrder )
 	{
 		final I_C_Order newOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, existentOrder);
 		
@@ -58,7 +58,7 @@ public class ExtendContractOrder
 		existentOrder.setRef_FollowupOrder_ID(newOrder.getC_Order_ID());
 		InterfaceWrapperHelper.save(existentOrder);
 		
-		return newOrder.getDocumentNo();
+		return newOrder;
 	}
 
 }
