@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.attachments.AttachmentEntryType;
+import de.metas.attachments.AttachmentEntry;
 import lombok.Builder;
 import lombok.Value;
 
@@ -43,7 +43,7 @@ public class JsonSalesOrderAttachment
 	private final int id;
 
 	@JsonProperty("type")
-	private final AttachmentEntryType type;
+	private final AttachmentEntry.Type type;
 
 	@JsonProperty("filename")
 	private final String filename;
@@ -60,7 +60,7 @@ public class JsonSalesOrderAttachment
 	private JsonSalesOrderAttachment(
 			@JsonProperty("salesOrderId") final String salesOrderId,
 			@JsonProperty("id") final int id,
-			@JsonProperty("type") final AttachmentEntryType type,
+			@JsonProperty("type") final AttachmentEntry.Type type,
 			@JsonProperty("filename") final String filename,
 			@JsonProperty("contentType") final String contentType,
 			@JsonProperty("url") final String url)

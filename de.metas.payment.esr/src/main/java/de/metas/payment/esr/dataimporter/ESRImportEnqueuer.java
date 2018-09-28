@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IAsyncBatchBL;
@@ -16,7 +17,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -114,7 +115,8 @@ public class ESRImportEnqueuer
 			final AttachmentEntryId fromAttachmentEntryId;
 			if (fromDataSource.getAttachmentEntryId() == null)
 			{
-				final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).addEntry(esrImport, fromDataSource.getFilename(), fromDataSource.getContent());
+				final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+				final AttachmentEntry attachmentEntry =attachmentEntryService.createNewAttachment(esrImport, fromDataSource.getFilename(), fromDataSource.getContent());
 				fromAttachmentEntryId = attachmentEntry.getId();
 			}
 			else

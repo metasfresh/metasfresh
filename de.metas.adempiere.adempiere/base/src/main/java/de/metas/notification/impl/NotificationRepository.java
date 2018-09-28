@@ -17,7 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationRepository;
@@ -27,9 +28,9 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
+import de.metas.notification.UserNotificationTargetType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.notification.UserNotificationTargetType;
 import lombok.NonNull;
 
 /*
@@ -63,10 +64,13 @@ public class NotificationRepository implements INotificationRepository
 
 	private final ObjectMapper jsonMapper;
 
-	public NotificationRepository()
+	private final AttachmentEntryService attachmentEntryService;
+
+	public NotificationRepository(@NonNull AttachmentEntryService attachmentEntryService)
 	{
-		jsonMapper = new ObjectMapper();
-		jsonMapper.findAndRegisterModules();
+		this.jsonMapper = new ObjectMapper();
+		this.jsonMapper.findAndRegisterModules();
+		this.attachmentEntryService = attachmentEntryService;
 	}
 
 	@Override
@@ -143,8 +147,7 @@ public class NotificationRepository implements INotificationRepository
 		final List<Resource> attachments = request.getAttachments();
 		if (!attachments.isEmpty())
 		{
-			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-			attachmentBL.addEntriesFromResources(notificationPO, attachments);
+			attachmentEntryService.createNewAttachments(notificationPO, AttachmentEntryCreateRequest.fromResources(attachments));
 		}
 
 		return toUserNotification(notificationPO);

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeQuery;
@@ -55,12 +55,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -73,6 +73,13 @@ import lombok.NonNull;
 public class SalesOrderRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order";
+
+	private final AttachmentEntryService attachmentEntryService;
+
+	public SalesOrderRestController(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
 
 	@PostMapping
 	public JsonSalesOrder createOrder(@RequestBody final JsonSalesOrderCreateRequest request)
@@ -139,12 +146,10 @@ public class SalesOrderRestController
 	@GetMapping("/{salesOrderId}/attachments")
 	public List<JsonSalesOrderAttachment> getAttachments(@PathVariable("salesOrderId") final String salesOrderIdStr)
 	{
-		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
-
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
-		return attachmentsBL.getEntries(salesOrderRef)
+		return attachmentEntryService.getEntries(salesOrderRef)
 				.stream()
 				.map(entry -> toSalesOrderAttachment(salesOrderId, entry))
 				.collect(ImmutableList.toImmutableList());
@@ -156,15 +161,13 @@ public class SalesOrderRestController
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{
-		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
-
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		final AttachmentEntry entry = attachmentsBL.addEntry(salesOrderRef, name, data);
+		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(salesOrderRef, name, data);
 		return toSalesOrderAttachment(salesOrderId, entry);
 	}
 

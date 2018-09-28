@@ -1,0 +1,789 @@
+package de.metas.attachments.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.isInstanceOf;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.activation.DataSource;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_AD_Attachment_MultiRef;
+import org.compiere.model.X_AD_AttachmentEntry;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryType;
+import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.IAttachmentDAO;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+public class AttachmentBL implements IAttachmentBL
+{
+
+	private static final Logger logger = LogManager.getLogger(AttachmentBL.class);
+
+	/**
+	 * Gets attachment of given model.
+	 *
+	 * @param model that is referenced by an {@link I_AD_Attachment} via {@code AD_Table_ID} and {@code Record_ID}, or the attachment instance itself.
+	 * @return attachment; never return null
+	 */
+	List<I_AD_Attachment> getAttachments(@NonNull final Object model)
+	{
+		if (isInstanceOf(model, I_AD_Attachment.class))
+		{
+			return ImmutableList.of(InterfaceWrapperHelper.create(model, I_AD_Attachment.class));
+		}
+
+		final ITableRecordReference tableRecordReference = createTableRecordReferenceFor(model);
+
+		final IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+		final List<I_AD_Attachment> attachments = attachmentDAO.retrieveAttachments(tableRecordReference);
+		if (attachments.isEmpty())
+		{
+			final I_AD_Attachment attachmentRecord = createAttachmentRecord(tableRecordReference);
+			return ImmutableList.of(attachmentRecord);
+		}
+
+		return attachments;
+	}
+
+	private I_AD_Attachment createAttachmentRecord(final ITableRecordReference tableRecordReference)
+	{
+		final I_AD_Attachment attachment = newInstance(I_AD_Attachment.class);
+		attachment.setTitle("."); // fill with something because it's mandatory
+		attachment.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
+		attachment.setRecord_ID(tableRecordReference.getRecord_ID());
+
+		// Not saving here, we will save the attachment just when it's needed
+		// attachment.saveEx();
+		return attachment;
+	}
+
+	I_AD_Attachment getDirectReferenceAttachment(@NonNull final Object model)
+	{
+		if (isInstanceOf(model, I_AD_Attachment.class))
+		{
+			return create(model, I_AD_Attachment.class);
+		}
+
+		final ITableRecordReference tableRecordReference = createTableRecordReferenceFor(model);
+
+		final IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+		final I_AD_Attachment existingAttachmentRecord = attachmentDAO.retrieveDirectReferenceAttachment(tableRecordReference);
+		if (existingAttachmentRecord == null)
+		{
+			final I_AD_Attachment newAttachmentRecord = createAttachmentRecord(tableRecordReference);
+			return newAttachmentRecord;
+		}
+		return existingAttachmentRecord;
+	}
+
+	private ITableRecordReference createTableRecordReferenceFor(@NonNull final Object model)
+	{
+		final ITableRecordReference tableRecordReference;
+		if (model instanceof ITableRecordReference)
+		{
+			tableRecordReference = (ITableRecordReference)model;
+		}
+		else
+		{
+			tableRecordReference = TableRecordReference.ofReferenced(model);
+		}
+		return tableRecordReference;
+	}
+
+	private List<Integer> getAttachmentIds(@NonNull final Object model)
+	{
+		return getAttachments(model)
+				.stream()
+				.map(I_AD_Attachment::getAD_Attachment_ID)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public void deleteEntryForModel(final Object model, final AttachmentEntryId attachmentEntryId)
+	{
+		// final List<I_AD_Attachment> attachmentRecords = getAttachments(model);
+		// if (attachmentRecords.isEmpty())
+		// {
+		// return;
+		// }
+
+		final ITableRecordReference tableRecordReference = createTableRecordReferenceFor(model);
+
+		final I_AD_AttachmentEntry attachmentEntryRecord = loadOutOfTrx(attachmentEntryId, I_AD_AttachmentEntry.class);
+
+		final IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+		final List<I_AD_Attachment_MultiRef> attachmentMultiRefs = attachmentDAO.retrieveAttachmentMultiRefs(attachmentEntryRecord);
+		if (attachmentMultiRefs.isEmpty())
+		{
+			// attachmentEntryRecord's AD_Attachment belongs to just one referenced record
+			delete(attachmentEntryRecord);
+
+			if (!attachmentDAO.hasAttachmentEntries(attachmentEntryRecord.getAD_Attachment_ID()))
+			{
+				final I_AD_Attachment attachmentRecord = attachmentEntryRecord.getAD_Attachment();
+				delete(attachmentRecord);
+			}
+		}
+
+		attachmentDAO.deleteAttachmentEntryById(attachmentRecords, attachmentEntryId);
+	}
+
+	@Override
+	public void deleteEntryById(final Object model, final AttachmentEntryId attachmentEntryId)
+	{
+		final List<Integer> attachmentIds = getAttachmentIds(model);
+		final IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+		attachmentDAO.deleteAttachmentEntryById(attachmentIds, attachmentEntryId);
+	}
+
+	@Override
+	public AttachmentEntry addEntry(@NonNull final Object model, @NonNull final File file)
+	{
+		return addEntry(model, AttachmentEntryCreateRequest.fromFile(file));
+	}
+
+	@Override
+	public AttachmentEntry addURLEntry(@NonNull final Object model, final String name, @NonNull final URI url)
+	{
+		return addEntry(model, AttachmentEntryCreateRequest.builder()
+				.type(AttachmentEntryType.URL)
+				.filename(name)
+				.url(url)
+				.build());
+	}
+
+	private AttachmentEntry addEntry(
+			@NonNull final Object model,
+			@NonNull final AttachmentEntryCreateRequest request)
+	{
+		final AttachmentEntryType type = request.getType();
+		final String filename = request.getFilename();
+		final String contentType = request.getContentType();
+		final byte[] data = request.getData();
+		final URI url = request.getUrl();
+
+		// Make sure the attachment is saved
+		final I_AD_Attachment attachmentRecord = saveIfNecessary(getDirectReferenceAttachment(model));
+
+		// Create entry
+		final I_AD_AttachmentEntry entryRecord = newInstance(I_AD_AttachmentEntry.class);
+		entryRecord.setAD_Attachment_ID(attachmentRecord.getAD_Attachment_ID());
+
+		final TableRecordReference tableRecordReference = TableRecordReference.of(model);
+		entryRecord.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
+		entryRecord.setRecord_ID(tableRecordReference.getRecord_ID());
+		//
+		entryRecord.setFileName(filename);
+
+		if (type == AttachmentEntryType.Data)
+		{
+			entryRecord.setType(X_AD_AttachmentEntry.TYPE_Data);
+			entryRecord.setBinaryData(data);
+			entryRecord.setContentType(contentType);
+		}
+		else if (type == AttachmentEntryType.URL)
+		{
+			entryRecord.setType(X_AD_AttachmentEntry.TYPE_URL);
+			Check.assumeNotNull(url, "Parameter url is not null");
+			entryRecord.setURL(url.toString());
+		}
+		else
+		{
+			throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
+		}
+
+		saveRecord(entryRecord);
+
+		//
+		final AttachmentEntry entry = toAttachmentEntry(entryRecord);
+		return entry;
+	}
+
+	private I_AD_Attachment saveIfNecessary(@NonNull final I_AD_Attachment attachmentRecord)
+	{
+		if (attachmentRecord.getAD_Attachment_ID() <= 0)
+		{
+			saveRecord(attachmentRecord);
+		}
+		return attachmentRecord;
+	}
+
+	@Override
+	public List<AttachmentEntry> addEntriesFromFiles(@NonNull final Object model, @NonNull final Collection<File> files)
+	{
+		if (files.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final I_AD_Attachment attachment = getDirectReferenceAttachment(model);
+
+		final List<AttachmentEntry> entries = files.stream()
+				.map(file -> addEntry(attachment, file))
+				.collect(ImmutableList.toImmutableList());
+
+		return entries;
+	}
+
+	@Override
+	public AttachmentEntry addEntry(
+			@NonNull final Object model,
+			@NonNull final String name,
+			@NonNull final byte[] data)
+	{
+		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
+				.type(AttachmentEntryType.Data)
+				.filename(name)
+				.contentType(MimeType.getMimeType(name))
+				.data(data)
+				.build();
+
+		return addEntry(model, request);
+	}
+
+	@Override
+	public List<AttachmentEntry> addEntriesFromDataSources(@NonNull final Object model, final Collection<DataSource> dataSources)
+	{
+		if (dataSources == null || dataSources.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final I_AD_Attachment attachment = saveIfNecessary(getDirectReferenceAttachment(model));
+
+		final List<AttachmentEntry> entries = dataSources.stream()
+				.map(dataSource -> AttachmentEntryCreateRequest.fromDataSource(dataSource))
+				.map(request -> addEntry(attachment, request))
+				.collect(ImmutableList.toImmutableList());
+
+		InterfaceWrapperHelper.save(attachment);
+
+		return entries;
+	}
+
+	@Override
+	public List<AttachmentEntry> addEntriesFromResources(@NonNull final Object model, final Collection<Resource> resources)
+	{
+		if (resources == null || resources.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final I_AD_Attachment attachment = saveIfNecessary(getDirectReferenceAttachment(model));
+
+		final List<AttachmentEntry> entries = resources.stream()
+				.map(AttachmentEntryCreateRequest::fromResource)
+				.map(request -> addEntry(attachment, request))
+				.collect(ImmutableList.toImmutableList());
+
+		InterfaceWrapperHelper.save(attachment);
+
+		return entries;
+	}
+
+	@Override
+	public void linkEntriesToModel(@NonNull final Collection<AttachmentEntry> entry, @NonNull final Object model)
+	{
+		// TODO get the entries' AD_Attachment;
+		// if it contains more entries,
+		// then
+		// * we create another AD_Attachment
+		// * remove the entry from their current attachment and add them to the new one
+		// * if the old attachmane was "directly" linked to the
+		// * create AD_Attachment_MultiRef records to lin
+		// else
+
+		getAttachments(model);
+
+	}
+
+	@Override
+	public byte[] getEntryByFilenameAsBytesOrNull(@NonNull final Object model, @NonNull final String filename)
+	{
+		final AttachmentEntry entry = getEntryByFilenameOrNull(model, filename);
+		if (entry == null)
+		{
+			return null;
+		}
+
+		return retrieveData(entry);
+	}
+
+	@Override
+	public byte[] getEntryByIdAsBytes(final Object model, final AttachmentEntryId id)
+	{
+		final AttachmentEntry entry = getEntryById(model, id);
+		if (entry == null)
+		{
+			return null;
+		}
+
+		return retrieveData(entry);
+	}
+
+	@Override
+	public byte[] retrieveData(@NonNull final AttachmentEntry entry)
+	{
+		final AttachmentEntryId entryId = entry.getId();
+		if (entryId == null)
+		{
+			return null;
+		}
+
+		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(entryId, I_AD_AttachmentEntry.class);
+		if (entryRecord == null)
+		{
+			return null;
+		}
+
+		return entryRecord.getBinaryData();
+	}
+
+	@Override
+	public byte[] retrieveFirstAttachmentEntryAsBytes(final int attachmentId)
+	{
+		final AttachmentEntry entry = retrieveFirstAttachmentEntry(attachmentId);
+		if (entry == null)
+		{
+			return null;
+		}
+		return retrieveData(entry);
+	}
+
+	@Override
+	public AttachmentEntry retrieveFirstAttachmentEntry(final int attachmentId)
+	{
+		final I_AD_AttachmentEntry entryRecord = Services.get(IQueryBL.class).createQueryBuilder(I_AD_AttachmentEntry.class)
+				.addEqualsFilter(I_AD_AttachmentEntry.COLUMNNAME_AD_Attachment_ID, attachmentId)
+				.orderBy().addColumn(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID).endOrderBy()
+				.create()
+				.first(I_AD_AttachmentEntry.class);
+
+		if (entryRecord == null)
+		{
+			return null;
+		}
+		else
+		{
+			return toAttachmentEntry(entryRecord);
+		}
+	}
+
+	@Override
+	public AttachmentEntry getEntryById(@NonNull final Object model, final AttachmentEntryId attachmentEntryId)
+	{
+		if (attachmentEntryId == null)
+		{
+			return null;
+		}
+
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return null;
+		}
+		return Services.get(IAttachmentDAO.class).retrieveAttachmentEntryById(attachmentId, attachmentEntryId);
+	}
+
+	@Override
+	public AttachmentEntry getEntryByFilenameOrNull(final Object model, final String filename)
+	{
+		final int attachmentId = getAttachmentId(model);
+		if (attachmentId <= 0)
+		{
+			return null;
+		}
+		return Services.get(IAttachmentDAO.class).retrieveAttachmentEntryByFilename(attachmentId, filename);
+	}
+
+	@Override
+	public byte[] getFirstEntryAsBytesOrNull(final Object model)
+	{
+		final int attachmentId = getAttachmentId(model);
+		if (attachmentId <= 0)
+		{
+			return null;
+		}
+		return Services.get(IAttachmentDAO.class).retrieveFirstAttachmentEntryAsBytes(attachmentId);
+	}
+
+	@Override
+	public AttachmentEntry getFirstEntry(final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return null;
+		}
+
+		return Services.get(IAttachmentDAO.class).retrieveFirstAttachmentEntry(attachmentId);
+	}
+
+	@Override
+	public List<AttachmentEntry> getEntries(@NonNull final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+		return attachmentDAO.retrieveAttachmentEntries(attachment);
+	}
+
+	@Override
+	public boolean hasEntries(@NonNull final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return false;
+		}
+
+		return Services.get(IAttachmentDAO.class).hasAttachmentEntries(attachmentId);
+	}
+
+	@Override
+	public void deleteAttachment(@NonNull final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return;
+		}
+
+		// TODO: delete entries first
+		InterfaceWrapperHelper.delete(attachment);
+	}
+
+	@Override
+	public void setAttachmentText(@NonNull final Object model, final String textMsg)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		attachment.setTextMsg(textMsg);
+		InterfaceWrapperHelper.save(attachment);
+	}
+
+	private AttachmentEntry toAttachmentEntryOrNullIfError(@NonNull final I_AD_AttachmentEntry entryRecord)
+	{
+		try
+		{
+			return toAttachmentEntry(entryRecord);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Cannot convert {} to attachment entry. Returning null", entryRecord, ex);
+			return null;
+		}
+	}
+
+	@Override
+	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
+	{
+		return AttachmentEntry.builder()
+				.id(AttachmentEntryId.ofRepoId(entryRecord.getAD_AttachmentEntry_ID()))
+				.name(entryRecord.getFileName())
+				.type(toAttachmentEntryTypeFromADRefListValue(entryRecord.getType()))
+				.filename(entryRecord.getFileName())
+				.contentType(entryRecord.getContentType())
+				.url(extractURI(entryRecord))
+				.build();
+	}
+
+	private static final URI extractURI(final I_AD_AttachmentEntry entryRecord)
+	{
+		final String url = entryRecord.getURL();
+		if (Check.isEmpty(url, true))
+		{
+			return null;
+		}
+
+		try
+		{
+			return new URI(url);
+		}
+		catch (URISyntaxException ex)
+		{
+			throw new AdempiereException("Invalid URL: " + url, ex)
+					.setParameter("entryRecord", entryRecord);
+		}
+	}
+
+	private List<AttachmentEntry> retrieveAttachmentEntries(@NonNull final I_AD_Attachment attachment)
+	{
+		// Convert legacy LOB data to entries and return it
+		if (attachment.getBinaryData() != null)
+		{
+			return convertAttachmentLOBToEntries(attachment);
+		}
+		// Standard case: retrieve entries from AD_AttachmentEntry table
+		else
+		{
+			final int attachmentId = attachment.getAD_Attachment_ID();
+			return Services.get(IQueryBL.class).createQueryBuilder(I_AD_AttachmentEntry.class)
+					.addEqualsFilter(I_AD_AttachmentEntry.COLUMNNAME_AD_Attachment_ID, attachmentId)
+					.orderBy().addColumn(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID).endOrderBy()
+					.create()
+					.stream(I_AD_AttachmentEntry.class)
+					.map(this::toAttachmentEntryOrNullIfError)
+					.filter(entry -> entry != null)
+					.collect(ImmutableList.toImmutableList());
+		}
+	}
+
+	private List<AttachmentEntry> convertAttachmentLOBToEntries(final I_AD_Attachment attachment)
+	{
+		final byte[] data = attachment.getBinaryData();
+		if (data == null)
+		{
+			// already converted
+			return new ArrayList<>();
+		}
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.call(() -> {
+			attachment.setBinaryData(null);
+			InterfaceWrapperHelper.save(attachment, ITrx.TRXNAME_ThreadInherited);
+
+			final List<AttachmentEntry> entries = new ArrayList<>();
+			if (data.length == 0)
+			{
+				return entries;
+			}
+
+			final String INDEX_Filename = ".index";
+			try
+			{
+				final ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(data));
+				ZipEntry zipEntry = zip.getNextEntry();
+				while (zipEntry != null)
+				{
+					final String name = zipEntry.getName();
+
+					final ByteArrayOutputStream out = new ByteArrayOutputStream();
+					final byte[] buffer = new byte[2048];
+					int length = zip.read(buffer);
+					while (length != -1)
+					{
+						out.write(buffer, 0, length);
+						length = zip.read(buffer);
+					}
+					final byte[] dataEntry = out.toByteArray();
+
+					if (INDEX_Filename.equals(name))
+					{
+						// nothing
+					}
+					else
+					{
+						final String filename = new File(name).getName();
+						final String contentType = MimeType.getMimeType(filename);
+
+						final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.newInstance(I_AD_AttachmentEntry.class);
+						entryRecord.setAD_Attachment_ID(attachment.getAD_Attachment_ID());
+						entryRecord.setAD_Table_ID(attachment.getAD_Table_ID());
+						entryRecord.setRecord_ID(attachment.getRecord_ID());
+
+						entryRecord.setFileName(filename);
+						entryRecord.setBinaryData(dataEntry);
+						entryRecord.setContentType(contentType);
+						InterfaceWrapperHelper.save(entryRecord);
+
+						final AttachmentEntry entry = toAttachmentEntry(entryRecord);
+						entries.add(entry);
+					}
+
+					//
+					zipEntry = zip.getNextEntry();
+				}
+
+				return entries;
+			}
+			catch (Exception ex)
+			{
+				throw new AdempiereException("Failed convering legacy LOB attachments to entries", ex);
+			}
+		});
+	}
+
+	private static final BiMap<String, AttachmentEntryType> adRefListValue2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntryType> builder()
+			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntryType.Data)
+			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntryType.URL)
+			.build();
+
+	private static final AttachmentEntryType toAttachmentEntryTypeFromADRefListValue(final String adRefListValue)
+	{
+		final AttachmentEntryType type = adRefListValue2attachmentEntryType.get(adRefListValue);
+		if (type == null)
+		{
+			throw new IllegalArgumentException("No " + AttachmentEntryType.class + " found for " + adRefListValue);
+		}
+		return type;
+	}
+
+	@Override
+	public AttachmentEntry retrieveAttachmentEntryById(final int attachmentId, final AttachmentEntryId attachmentEntryId)
+	{
+		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(attachmentEntryId, I_AD_AttachmentEntry.class);
+
+		// Make sure the attachmentId is matching
+		// NOTE: because some BLs are not aware of attachmentId but only about attachmentEntryId, we are validating only when provided
+		if (attachmentId > 0 && entryRecord.getAD_Attachment_ID() != attachmentId)
+		{
+			throw new AdempiereException("Attachment entry is not matching the attachmentId"); // shall not happen
+		}
+		return toAttachmentEntry(entryRecord);
+	}
+
+	@Override
+	public AttachmentEntry retrieveAttachmentEntryByFilename(final int attachmentId, final String filename)
+	{
+		final I_AD_AttachmentEntry entryRecord = Services.get(IQueryBL.class).createQueryBuilder(I_AD_AttachmentEntry.class)
+				.addEqualsFilter(I_AD_AttachmentEntry.COLUMNNAME_AD_Attachment_ID, attachmentId)
+				.addEqualsFilter(I_AD_AttachmentEntry.COLUMNNAME_FileName, filename)
+				.orderBy().addColumn(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID).endOrderBy()
+				.create()
+				.first(I_AD_AttachmentEntry.class);
+
+		if (entryRecord == null)
+		{
+			return null;
+		}
+		else
+		{
+			return toAttachmentEntry(entryRecord);
+		}
+	}
+
+	@Value
+	@Builder
+	private static final class AttachmentEntryCreateRequest
+	{
+		public static AttachmentEntryCreateRequest fromDataSource(final DataSource dataSource)
+		{
+			final String filename = dataSource.getName();
+			final String contentType = dataSource.getContentType();
+			final byte[] data;
+			try
+			{
+				data = Util.readBytes(dataSource.getInputStream());
+			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed reading data from " + dataSource);
+			}
+
+			return builder()
+					.type(AttachmentEntryType.Data)
+					.filename(filename)
+					.contentType(contentType)
+					.data(data)
+					.build();
+		}
+
+		public static AttachmentEntryCreateRequest fromResource(final Resource resource)
+		{
+			final String filename = resource.getFilename();
+			final String contentType = MimeType.getMimeType(filename);
+			final byte[] data;
+			try
+			{
+				data = Util.readBytes(resource.getInputStream());
+			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed reading data from " + resource);
+			}
+
+			return builder()
+					.type(AttachmentEntryType.Data)
+					.filename(filename)
+					.contentType(contentType)
+					.data(data)
+					.build();
+		}
+
+		public static AttachmentEntryCreateRequest fromFile(final File file)
+		{
+			final String filename = file.getName();
+			final String contentType = MimeType.getMimeType(filename);
+			final byte[] data = Util.readBytes(file);
+
+			return builder()
+					.type(AttachmentEntryType.Data)
+					.filename(filename)
+					.contentType(contentType)
+					.data(data)
+					.build();
+		}
+
+		@NonNull
+		private final AttachmentEntryType type;
+		private final String filename;
+		private final String contentType;
+		private final byte[] data;
+		private final URI url;
+	}
+}

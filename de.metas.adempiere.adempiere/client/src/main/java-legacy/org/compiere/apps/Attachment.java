@@ -43,7 +43,7 @@ import org.adempiere.pdf.Document;
 import org.adempiere.pdf.viewer.PDFViewerBean;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Attachment;
+import org.compiere.Adempiere;
 import org.compiere.model.MSysConfig;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -60,8 +60,7 @@ import de.metas.adempiere.Constants;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.IAttachmentBL;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
@@ -79,11 +78,9 @@ import lombok.Getter;
 public final class Attachment extends CDialog implements ActionListener
 {
 	private static final long serialVersionUID = -5525529223484103376L;
-	
+
 	// services
 	private static final Logger log = LogManager.getLogger(Attachment.class);
-	private final transient IAttachmentDAO attachmentsDAO = Services.get(IAttachmentDAO.class);
-	private final transient IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
 
 	private final int m_WindowNo;
 	private final TableRecordReference _recordRef;
@@ -113,7 +110,7 @@ public final class Attachment extends CDialog implements ActionListener
 	/**
 	 * Constructor.
 	 * loads Attachment, if ID <> 0
-	 * 
+	 *
 	 * @param frame frame
 	 * @param WindowNo window no
 	 * @param AD_Attachment_ID attachment
@@ -136,7 +133,7 @@ public final class Attachment extends CDialog implements ActionListener
 		staticInit();
 		loadAttachments();
 	}
-	
+
 	private TableRecordReference getRecord()
 	{
 		return _recordRef;
@@ -144,7 +141,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 	/**
 	 * Static setup.
-	 * 
+	 *
 	 * <pre>
 	 * -northPanel
 	 * 		- toolBar
@@ -249,16 +246,12 @@ public final class Attachment extends CDialog implements ActionListener
 	 */
 	private void loadAttachments()
 	{
-		// Set Text/Description
-		final I_AD_Attachment attachment = attachmentsBL.getAttachment(getRecord());
-		final String sText = attachment.getTextMsg();
-		if (sText == null)
-			text.setText("");
-		else
-			text.setText(sText.trim());
+		text.setText("");
+
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
 		// Set attachment entries combo
-		final List<AttachmentEntry> attachmentEntries = attachmentsBL.getEntries(attachment);
+		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getEntries(getRecord());
 		for (AttachmentEntry entry : attachmentEntries)
 		{
 			cbAttachmentEntries.addItem(AttachmentEntryItem.of(entry));
@@ -275,7 +268,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 	/**
 	 * Display gif or jpg in gifPanel
-	 * 
+	 *
 	 * @param entryItem
 	 */
 	private void displayData(@Nullable final AttachmentEntryItem entryItem)
@@ -288,10 +281,12 @@ public final class Attachment extends CDialog implements ActionListener
 		bOpen.setEnabled(false);
 		bSave.setEnabled(false);
 
-		final AttachmentEntry entry = entryItem != null ? attachmentsBL.getEntryById(getRecord(), entryItem.getAttachmentEntryId()) : null;
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+
+		final AttachmentEntry entry = entryItem != null ? attachmentEntryService.getById(entryItem.getAttachmentEntryId()) : null;
 
 		// no attachment
-		final byte[] data = entry == null ? null : attachmentsDAO.retrieveData(entry);
+		final byte[] data = entry == null ? null : attachmentEntryService.retrieveData(entry.getId());
 		if (data == null || data.length == 0)
 		{
 			info.setText("-");
@@ -371,7 +366,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 	/**
 	 * Action Listener
-	 * 
+	 *
 	 * @param event event
 	 */
 	@Override
@@ -389,20 +384,9 @@ public final class Attachment extends CDialog implements ActionListener
 
 	private void actionPerformed0(final ActionEvent event)
 	{
-		// Save and Close
+		// close (attachment entries are saved directly)
 		if (event.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
-
-			if (!attachmentsBL.hasEntries(getRecord()))
-			{
-				attachmentsBL.deleteAttachment(getRecord());
-			}
-			else
-			{
-				final String newText = Util.coalesce(text.getText(), "");
-				attachmentsBL.setAttachmentText(getRecord(), newText);
-			}
-
 			dispose();
 		}
 		// Cancel
@@ -447,22 +431,24 @@ public final class Attachment extends CDialog implements ActionListener
 		chooser.setMultiSelectionEnabled(true);
 		int returnVal = chooser.showOpenDialog(this);
 		if (returnVal != JFileChooser.APPROVE_OPTION)
+		{
 			return;
+		}
 
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 		//
 		final File[] files = chooser.getSelectedFiles();
 		for (final File file : files)
 		{
-			final I_AD_Attachment attachment = attachmentsBL.getAttachment(getRecord());
-			final AttachmentEntry existingEntry = attachmentsBL.getEntryByFilenameOrNull(attachment, file.getName());
+			final AttachmentEntry existingEntry = attachmentEntryService.getByFilenameOrNull(getRecord(), file.getName());
 			if (existingEntry != null)
 			{
 				final byte[] data = Util.readBytes(file);
-				attachmentsDAO.saveAttachmentEntryData(existingEntry, data);
+				attachmentEntryService.updateData(existingEntry.getId(), data);
 			}
 			else
 			{
-				final AttachmentEntry newEntry = attachmentsBL.addEntry(attachment, file);
+				final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(getRecord(), file);
 				// m_change = true; // not needed because it's already saved
 
 				final AttachmentEntryItem newEntryItem = AttachmentEntryItem.of(newEntry);
@@ -474,7 +460,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 	/**
 	 * Delete entire Attachment
-	 * 
+	 *
 	 * @return true if attachment was deleted (i.e. user confirmed)
 	 */
 	// metas: tsa: US1115: changed the return type from void to boolean; true if user confirmed the deletion
@@ -482,7 +468,13 @@ public final class Attachment extends CDialog implements ActionListener
 	{
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDelete?"))
 		{
-			attachmentsBL.deleteAttachment(getRecord());
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final List<AttachmentEntry> entries = attachmentEntryService.getEntries(getRecord());
+			for (final AttachmentEntry entry : entries)
+			{
+				attachmentEntryService.unattach(getRecord(), entry);
+			}
+
 			return true;
 		}
 		return false;
@@ -499,7 +491,10 @@ public final class Attachment extends CDialog implements ActionListener
 		//
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDeleteEntry?", entryItem.getDisplayName()))
 		{
-			attachmentsBL.deleteEntryById(getRecord(), entryItem.getAttachmentEntryId());
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final AttachmentEntry entry = attachmentEntryService.getById(entryItem.getAttachmentEntryId());
+			attachmentEntryService.unattach(getRecord(), entry);
+
 			cbAttachmentEntries.removeItem(entryItem);
 		}
 	}
@@ -528,9 +523,12 @@ public final class Attachment extends CDialog implements ActionListener
 
 		final File saveFile = chooser.getSelectedFile();
 		if (saveFile == null)
+		{
 			return;
+		}
 
-		final byte[] data = attachmentsBL.getEntryByIdAsBytes(getRecord(), entryItem.getAttachmentEntryId());
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final byte[] data = attachmentEntryService.retrieveData(entryItem.getAttachmentEntryId());
 		try
 		{
 			Files.write(data, saveFile);
@@ -543,15 +541,19 @@ public final class Attachment extends CDialog implements ActionListener
 
 	/**
 	 * Open the temporary file with the application associated with the extension in the file name
-	 * 
+	 *
 	 * @return true if file was opened with third party application
 	 */
 	private boolean openAttachment()
 	{
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+
 		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
-		final byte[] data = attachmentsBL.getEntryByIdAsBytes(getRecord(), entryItem.getAttachmentEntryId());
+		final byte[] data = attachmentEntryService.retrieveData(entryItem.getAttachmentEntryId());
 		if (data == null)
+		{
 			return false;
+		}
 
 		try
 		{
@@ -605,21 +607,21 @@ public final class Attachment extends CDialog implements ActionListener
 		{
 			return displayName;
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
 			return attachmentEntryId.hashCode();
 		}
-		
+
 		@Override
 		public boolean equals(final Object obj)
 		{
-			if(this == obj)
+			if (this == obj)
 			{
 				return true;
 			}
-			if(obj instanceof AttachmentEntryItem)
+			if (obj instanceof AttachmentEntryItem)
 			{
 				final AttachmentEntryItem other = (AttachmentEntryItem)obj;
 				return attachmentEntryId == other.attachmentEntryId;
@@ -637,7 +639,7 @@ public final class Attachment extends CDialog implements ActionListener
 	class GImage extends JPanel
 	{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 4991225210651641722L;
 
@@ -654,7 +656,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 		/**
 		 * Set Image
-		 * 
+		 *
 		 * @param image image
 		 */
 		public void setImage(final Image image)
@@ -678,7 +680,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 		/**
 		 * Paint
-		 * 
+		 *
 		 * @param g graphics
 		 */
 		@Override
@@ -691,7 +693,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 		/**
 		 * Update
-		 * 
+		 *
 		 * @param g graphics
 		 */
 		@Override

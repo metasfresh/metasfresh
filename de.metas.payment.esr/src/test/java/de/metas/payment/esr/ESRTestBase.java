@@ -60,6 +60,9 @@ import org.junit.rules.TestWatcher;
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
+import de.metas.attachments.AttachmentEntryFactory;
+import de.metas.attachments.AttachmentEntryRepository;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -112,7 +115,10 @@ public class ESRTestBase
 
 		dao = (PlainESRImportDAO)Services.get(IESRImportDAO.class);
 
-		esrImportBL = new ESRImportBL();
+		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
+		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentEntryService attachmentEntryService = new AttachmentEntryService(attachmentEntryRepository, attachmentEntryFactory);
+		esrImportBL = new ESRImportBL(attachmentEntryService);
 
 		// register processors
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
