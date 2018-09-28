@@ -60,6 +60,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
@@ -258,7 +259,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			setMovementDate(Env.getDate(ctx));	// use Login date (08306)
 			setDateAcct(getMovementDate());
 			// setMovementType (MOVEMENTTYPE_CustomerShipment);
-			setDeliveryRule(DELIVERYRULE_Availability);
+			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 			setDeliveryViaRule(DELIVERYVIARULE_Pickup);
 			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
 			setDocStatus(DOCSTATUS_Drafted);

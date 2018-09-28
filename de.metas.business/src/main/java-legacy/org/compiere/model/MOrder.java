@@ -55,6 +55,7 @@ import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -109,12 +110,12 @@ public class MOrder extends X_C_Order implements IDocument
 	{
 		super(ctx, C_Order_ID, trxName);
 		// New
-		if (C_Order_ID == 0)
+		if (is_new())
 		{
 			setDocStatus(DOCSTATUS_Drafted);
 			setDocAction(DOCACTION_Prepare);
 			//
-			setDeliveryRule(DELIVERYRULE_Availability);
+			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
 			// metas: we *never* use InvoiceRule 'Immediate', so don't use it as default.
 			setInvoiceRule(INVOICERULE_AfterDelivery);
@@ -1228,7 +1229,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		// Bug 1564431
-		if (getDeliveryRule() != null && getDeliveryRule().equals(MOrder.DELIVERYRULE_CompleteOrder))
+		if (getDeliveryRule() != null && DeliveryRule.COMPLETE_ORDER.getCode().equals(getDeliveryRule()))
 		{
 			for (final MOrderLine line : lines)
 			{
@@ -1796,9 +1797,9 @@ public class MOrder extends X_C_Order implements IDocument
 				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
 				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType))			// (W)alkIn(R)eceipt
 		{
-			if (!DELIVERYRULE_Force.equals(getDeliveryRule()))
+			if (!DeliveryRule.FORCE.getCode().equals(getDeliveryRule()))
 			{
-				setDeliveryRule(DELIVERYRULE_Force);
+				setDeliveryRule(DeliveryRule.FORCE.getCode());
 			}
 			//
 			shipment = createShipment(dt, realTimePOS ? null : getDateOrdered());

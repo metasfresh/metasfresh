@@ -34,6 +34,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.order.DeliveryRule;
 import de.metas.util.ISingletonService;
 
 /**
@@ -56,7 +57,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 */
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule sched);
 
-	String getDeliveryRule(I_M_ShipmentSchedule sched);
+	DeliveryRule getDeliveryRule(I_M_ShipmentSchedule sched);
 
 	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 

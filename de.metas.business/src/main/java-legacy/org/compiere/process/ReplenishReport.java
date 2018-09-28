@@ -52,6 +52,7 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
 import de.metas.i18n.Msg;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -650,7 +651,7 @@ public class ReplenishReport extends JavaProcess
 				order.setBPartner(bp);
 				order.setDateOrdered(new Timestamp(System.currentTimeMillis()));
 				// order.setDatePromised(DatePromised);
-				order.setDeliveryRule(MDDOrder.DELIVERYRULE_Availability);
+				order.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 				order.setDeliveryViaRule(MDDOrder.DELIVERYVIARULE_Delivery);
 				order.setPriorityRule(MDDOrder.PRIORITYRULE_Medium);
 				order.setIsInDispute(false);

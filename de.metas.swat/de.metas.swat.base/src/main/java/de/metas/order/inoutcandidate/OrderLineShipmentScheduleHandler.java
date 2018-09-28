@@ -2,30 +2,6 @@ package de.metas.order.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteOrder;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,6 +24,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -201,7 +178,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 
-		if (DELIVERYRULE_CompleteOrder.equals(order.getDeliveryRule()))
+		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(order.getDeliveryRule());
+		if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
 			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
 			{

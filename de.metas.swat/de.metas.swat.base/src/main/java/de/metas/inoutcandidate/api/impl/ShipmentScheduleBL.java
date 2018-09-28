@@ -25,12 +25,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Availability;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteLine;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_CompleteOrder;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Force;
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Manual;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -90,6 +84,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -268,7 +263,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				// 04870 : Delivery rule force assumes we deliver full quantity ordered if qtyToDeliver_Override is null.
 				// 06019 : check both DeliveryRule, as DeliveryRule_Override
-				final boolean deliveryRuleIsForced = X_C_Order.DELIVERYRULE_Force.equals(shipmentScheduleEffectiveBL.getDeliveryRule(sched));
+				final boolean deliveryRuleIsForced = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(sched));
 				if (deliveryRuleIsForced)
 				{
 					sched.setQtyToDeliver(BigDecimal.ZERO);
@@ -430,9 +425,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 
-			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
+			final DeliveryRule deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
 
-			final boolean ruleManual = DELIVERYRULE_Manual.equals(deliveryRule);
+			final boolean ruleManual = DeliveryRule.MANUAL.equals(deliveryRule);
 
 			final BigDecimal qtyRequired;
 			if (olAndSched.getQtyOverride() != null)
@@ -478,7 +473,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
 
-			final boolean ruleCompleteOrder = DELIVERYRULE_CompleteOrder.equals(deliveryRule);
+			final boolean ruleCompleteOrder = DeliveryRule.COMPLETE_ORDER.equals(deliveryRule);
 
 			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(sched);
@@ -503,9 +498,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = mkCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
-			final boolean ruleAvailable = DELIVERYRULE_Availability.equals(deliveryRule);
-			final boolean ruleCompleteLine = DELIVERYRULE_CompleteLine.equals(deliveryRule);
-			final boolean ruleForce = DELIVERYRULE_Force.equals(deliveryRule);
+			final boolean ruleAvailable = DeliveryRule.AVAILABILITY.equals(deliveryRule);
+			final boolean ruleCompleteLine = DeliveryRule.COMPLETE_LINE.equals(deliveryRule);
+			final boolean ruleForce = DeliveryRule.FORCE.equals(deliveryRule);
 
 			if (ruleForce)
 			{

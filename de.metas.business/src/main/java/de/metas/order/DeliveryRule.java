@@ -40,7 +40,8 @@ public enum DeliveryRule
 	COMPLETE_LINE(X_C_Order.DELIVERYRULE_CompleteLine), //
 	COMPLETE_ORDER(X_C_Order.DELIVERYRULE_CompleteOrder), //
 	FORCE(X_C_Order.DELIVERYRULE_Force), //
-	MANUAL(X_C_Order.DELIVERYRULE_Manual) //
+	MANUAL(X_C_Order.DELIVERYRULE_Manual), //
+	WITH_NEXT_SUBSCRIPTION_DELIVERY("S") // see de.metas.inoutcandidate.model.X_M_ShipmentSchedule.DELIVERYRULE_MitNaechsterAbolieferung
 	;
 
 	@Getter

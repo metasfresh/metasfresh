@@ -14,7 +14,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.order.DeliveryRule;
 import de.metas.picking.service.PackingItemPart.PackingItemPartBuilder;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -121,7 +120,7 @@ public final class PackingItems
 				.bpartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(sched))
 				.packingMaterialId(huShipmentScheduleBL.getPackingMaterialId(sched))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
-				.deliveryRule(DeliveryRule.ofNullableCode(shipmentScheduleEffectiveBL.getDeliveryRule(sched)))
+				.deliveryRule(shipmentScheduleEffectiveBL.getDeliveryRule(sched))
 				.sourceDocumentLineRef(TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()));
 	}

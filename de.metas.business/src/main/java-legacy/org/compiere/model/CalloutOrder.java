@@ -46,6 +46,7 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.Percent;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -110,7 +111,7 @@ public class CalloutOrder extends CalloutEngine
 		// Delivery Rule
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
-			order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
+			order.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		}
 		// NOTE: Don't override default configured DeliveryRule (see task 09250)
 		// else

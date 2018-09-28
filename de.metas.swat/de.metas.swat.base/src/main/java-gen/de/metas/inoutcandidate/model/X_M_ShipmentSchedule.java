@@ -683,25 +683,25 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DeliveryDate_Override);
 	}
 
-	/** 
-	 * DeliveryRule AD_Reference_ID=151
-	 * Reference name: C_Order DeliveryRule
-	 */
-	public static final int DELIVERYRULE_AD_Reference_ID=151;
-	/** AfterReceipt = R */
-	public static final String DELIVERYRULE_AfterReceipt = "R";
-	/** Availability = A */
-	public static final String DELIVERYRULE_Availability = "A";
-	/** CompleteLine = L */
-	public static final String DELIVERYRULE_CompleteLine = "L";
-	/** CompleteOrder = O */
-	public static final String DELIVERYRULE_CompleteOrder = "O";
-	/** Force = F */
-	public static final String DELIVERYRULE_Force = "F";
-	/** Manual = M */
-	public static final String DELIVERYRULE_Manual = "M";
-	/** MitNaechsterAbolieferung = S */
-	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
+//	/** 
+//	 * DeliveryRule AD_Reference_ID=151
+//	 * Reference name: C_Order DeliveryRule
+//	 */
+//	public static final int DELIVERYRULE_AD_Reference_ID=151;
+//	/** AfterReceipt = R */
+//	public static final String DELIVERYRULE_AfterReceipt = "R";
+//	/** Availability = A */
+//	public static final String DELIVERYRULE_Availability = "A";
+//	/** CompleteLine = L */
+//	public static final String DELIVERYRULE_CompleteLine = "L";
+//	/** CompleteOrder = O */
+//	public static final String DELIVERYRULE_CompleteOrder = "O";
+//	/** Force = F */
+//	public static final String DELIVERYRULE_Force = "F";
+//	/** Manual = M */
+//	public static final String DELIVERYRULE_Manual = "M";
+//	/** MitNaechsterAbolieferung = S */
+//	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
 		Definiert die zeitliche Steuerung von Lieferungen
@@ -722,23 +722,23 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryRule);
 	}
 
-	/** 
-	 * DeliveryRule_Override AD_Reference_ID=540009
-	 * Reference name: M_ShipmentSchedule DeliveryRule
-	 */
-	public static final int DELIVERYRULE_OVERRIDE_AD_Reference_ID=540009;
-	/** Verfügbarkeit = A */
-	public static final String DELIVERYRULE_OVERRIDE_Verfuegbarkeit = "A";
-	/** Erzwungen = F */
-	public static final String DELIVERYRULE_OVERRIDE_Erzwungen = "F";
-	/** Position komplett = L */
-	public static final String DELIVERYRULE_OVERRIDE_PositionKomplett = "L";
-	/** Manuell = M */
-	public static final String DELIVERYRULE_OVERRIDE_Manuell = "M";
-	/** After Receipt = R */
-	public static final String DELIVERYRULE_OVERRIDE_AfterReceipt = "R";
-	/** Mit nächster Abolieferung = S */
-	public static final String DELIVERYRULE_OVERRIDE_MitNaechsterAbolieferung = "S";
+//	/** 
+//	 * DeliveryRule_Override AD_Reference_ID=540009
+//	 * Reference name: M_ShipmentSchedule DeliveryRule
+//	 */
+//	public static final int DELIVERYRULE_OVERRIDE_AD_Reference_ID=540009;
+//	/** Verfügbarkeit = A */
+//	public static final String DELIVERYRULE_OVERRIDE_Verfuegbarkeit = "A";
+//	/** Erzwungen = F */
+//	public static final String DELIVERYRULE_OVERRIDE_Erzwungen = "F";
+//	/** Position komplett = L */
+//	public static final String DELIVERYRULE_OVERRIDE_PositionKomplett = "L";
+//	/** Manuell = M */
+//	public static final String DELIVERYRULE_OVERRIDE_Manuell = "M";
+//	/** After Receipt = R */
+//	public static final String DELIVERYRULE_OVERRIDE_AfterReceipt = "R";
+//	/** Mit nächster Abolieferung = S */
+//	public static final String DELIVERYRULE_OVERRIDE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart abw..
 		@param DeliveryRule_Override Lieferart abw.	  */
 	@Override

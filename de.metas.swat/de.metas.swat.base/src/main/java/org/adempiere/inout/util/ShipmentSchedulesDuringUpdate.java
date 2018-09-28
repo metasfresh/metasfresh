@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -42,6 +41,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
@@ -272,13 +272,13 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			return;
 		}
 
-		final String deliveryRule = deliveryLineCandidate.getDeliveryRule();
+		final DeliveryRule deliveryRule = deliveryLineCandidate.getDeliveryRule();
 
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
+		if (DeliveryRule.COMPLETE_LINE.equals(deliveryRule))
 		{
 			discardLineCandidateIfIncomplete(deliveryLineCandidate);
 		}
-		else if (X_C_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
+		else if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
 			discardAllLinesFromSameGroupIfIncomplete(deliveryLineCandidate);
 		}

@@ -47,6 +47,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
@@ -73,7 +74,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			setDocStatus(DOCSTATUS_Drafted);
 			setDocAction(DOCACTION_Prepare);
 			//
-			setDeliveryRule(DELIVERYRULE_Availability);
+			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
 			setPriorityRule(PRIORITYRULE_Medium);
 			setDeliveryViaRule(DELIVERYVIARULE_Pickup);
@@ -480,8 +481,8 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		// Bug 1564431
-		final String deliveryRule = getDeliveryRule();
-		if (X_DD_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
+		final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(getDeliveryRule());
+		if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
 			for (final I_DD_OrderLine line : lines)
 			{

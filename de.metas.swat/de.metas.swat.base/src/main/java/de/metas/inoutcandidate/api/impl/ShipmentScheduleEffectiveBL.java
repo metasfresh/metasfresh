@@ -42,6 +42,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -72,10 +73,10 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public String getDeliveryRule(@NonNull final I_M_ShipmentSchedule sched)
+	public DeliveryRule getDeliveryRule(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final String deliveryRule = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
-		return deliveryRule;
+		final String deliveryRuleCode = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
+		return DeliveryRule.ofCode(deliveryRuleCode);
 	}
 
 	@Override
