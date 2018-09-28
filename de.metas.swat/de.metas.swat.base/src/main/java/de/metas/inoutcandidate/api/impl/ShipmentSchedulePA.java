@@ -283,7 +283,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(@NonNull final Set<ShipmentScheduleId> ids)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = loadByRepoIdAwaresOutOfTrx(ids, I_M_ShipmentSchedule.class);
+		return getByIdsOutOfTrx(ids, I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids, final Class<T> modelClass)
+	{
+		final List<T> shipmentSchedules = loadByRepoIdAwaresOutOfTrx(ids, modelClass);
 		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
 	}
 

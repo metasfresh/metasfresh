@@ -38,6 +38,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
+	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelClass);
+
 	/**
 	 * @return the shipment schedule entry that refers to the given order line or <code>null</code>
 	 */
