@@ -3,6 +3,8 @@ package de.metas.shipper.gateway.commons;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 

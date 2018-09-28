@@ -11,14 +11,13 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.adempiere.util.Check;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.model.Invoice;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
 import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.util.Check;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.BalanceType;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.InvoiceType;

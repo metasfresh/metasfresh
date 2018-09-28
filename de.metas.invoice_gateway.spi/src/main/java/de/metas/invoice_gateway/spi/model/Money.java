@@ -2,8 +2,7 @@ package de.metas.invoice_gateway.spi.model;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 

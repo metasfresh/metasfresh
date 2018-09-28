@@ -6,14 +6,14 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
 /*

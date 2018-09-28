@@ -2,8 +2,7 @@ package de.metas.invoice_gateway.spi.model;
 
 
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Value;
 
 /*
