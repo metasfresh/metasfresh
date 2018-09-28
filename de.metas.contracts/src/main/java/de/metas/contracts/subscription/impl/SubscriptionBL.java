@@ -32,7 +32,6 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -937,14 +936,22 @@ public class SubscriptionBL implements ISubscriptionBL
 		}
 
 		final List<I_C_Flatrate_Term> orderTerms = subscriptionDAO.retrieveFlatrateTerms(orderId);
-		final Optional<I_C_Flatrate_Term> suitableTerm = orderTerms
+		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
 						&& oldTerm.getC_Flatrate_Conditions_ID() == newTerm.getC_Flatrate_Conditions_ID())
-				.sorted(Comparator.comparing(I_C_Flatrate_Term::getC_Flatrate_Term_ID).reversed())
-				.findFirst();
+				.findFirst()
+				.orElse(null);
+		
+		// check if there is an extended term
+		if (suitableTerm == null)
+		{
+			return null;
+		}
 
-		return suitableTerm.orElse(null);
+		final I_C_Flatrate_Term topTerm = subscriptionDAO.retrieveTopExtendedTerm(suitableTerm);
+		
+		return topTerm == null ? suitableTerm : topTerm;
 	}
 	
 	@Override
