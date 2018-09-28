@@ -34,6 +34,8 @@ Here come the actual release notes:
     * New Possibility to overwrite Billto Location and Contact via Invoice Candidates.
   * [#4619](https://github.com/metasfresh/metasfresh/issues/4619) de.metas.util - Rename packages to de.metas.util
     * Internal housekeeping improvement.
+  * [#4622](https://github.com/metasfresh/metasfresh/issues/4622) Requests can not be saved II
+  * [#4624](https://github.com/metasfresh/metasfresh/issues/4624) Invoice candidate not updated after shipment reactivate and complete
 
 * metasfresh-webui-api
   * [#1049](https://github.com/metasfresh/metasfresh-webui-api/issues/1049) Pipes/Cabling quick input shall not display the BOM products
@@ -56,8 +58,9 @@ Here come the actual release notes:
     * Fixes the Org creation in WebUI.
 
 * metasfresh-webui-frontend
-  *[#1949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1949) Shortcuts not working properly in Tabs after changing sth in grid view + [Tab]
+  * [#1949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1949) Shortcuts not working properly in Tabs after changing sth in grid view + [Tab]
     * Improvement of Shortcut Handling after Delete in Subtab.
+  * [#1972](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1972) Support active indication for filters without parameters
 
 # metasfresh 5.75
 ## Features
