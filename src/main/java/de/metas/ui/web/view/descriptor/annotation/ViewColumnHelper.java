@@ -206,7 +206,6 @@ public final class ViewColumnHelper
 				.fieldName(fieldName)
 				.caption(!Check.isEmpty(captionKey, true) ? msgBL.translatable(captionKey) : ImmutableTranslatableString.empty())
 				.widgetType(viewColumnAnn.widgetType())
-				.widgetSize(viewColumnAnn.widgetSize())
 				.editorRenderMode(viewColumnAnn.editor())
 				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
