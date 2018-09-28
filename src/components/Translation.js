@@ -7,12 +7,8 @@ import { connect } from 'react-redux';
 import { getMessages } from '../actions/AppActions';
 
 class Translation extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  _getMessages = () => {
-    getMessages().then(response => {
+  static getMessages = that => {
+    return getMessages().then(response => {
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);
       }
@@ -25,17 +21,21 @@ class Translation extends Component {
         return `{${key}}`;
       });
 
-      deepForceUpdate(this);
+      that && deepForceUpdate(that);
     });
   };
 
+  constructor(props) {
+    super(props);
+  }
+
   componentWillMount = () => {
-    this._getMessages();
+    Translation.getMessages(this);
   };
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.language !== this.props.language) {
-      this._getMessages();
+      Translation.getMessages(this);
     }
   }
 
