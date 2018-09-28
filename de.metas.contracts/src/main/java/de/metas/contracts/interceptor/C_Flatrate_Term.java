@@ -657,21 +657,13 @@ public class C_Flatrate_Term
 
 			// set status for the current order
 			final List<I_C_Flatrate_Term> terms = Services.get(ISubscriptionDAO.class).retrieveFlatrateTerms(orderId);
-			final boolean anyActivePreviousTerms = terms
+			final boolean anyActiveTerms = terms
 					.stream()
 					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
-							&& term.getC_OrderLine_Term_ID() == currentTerm.getC_OrderLine_Term_ID()
 							&& subscriptionBL.isActiveTerm(currentTerm));
 
-			if (anyActivePreviousTerms)
-			{
-				subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
-			}
-			else
-			{
-				subscriptionBL.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Cancelled);
-			}
-
+			subscriptionBL.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
+			
 			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
 			if (orderIds.size() > 1)
 			{
