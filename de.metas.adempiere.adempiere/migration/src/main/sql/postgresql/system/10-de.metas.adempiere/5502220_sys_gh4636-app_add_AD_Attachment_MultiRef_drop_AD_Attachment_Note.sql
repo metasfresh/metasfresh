@@ -260,7 +260,7 @@ INSERT INTO AD_Index_Table (CreatedBy,Processing,Created,AD_Client_ID,IsActive,I
 ;
 
 
-SELECT public.db_alter_table('AD_Attachment_MultiRef', 'ALTER TABLE AD_Attachment_MultiRef Drop COLUMN AD_Attachment_ID');
+SELECT public.db_alter_table('AD_Attachment_MultiRef', 'ALTER TABLE AD_Attachment_MultiRef Drop COLUMN IF EXISTS AD_Attachment_ID');
 
 CREATE INDEX ad_attachment_multiref_record_id
     ON public.ad_attachment_multiref USING btree
