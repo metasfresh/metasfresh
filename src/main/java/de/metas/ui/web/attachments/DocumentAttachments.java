@@ -106,7 +106,7 @@ final class DocumentAttachments
 
 	public List<JSONAttachment> toJson()
 	{
-		final Stream<IDocumentAttachmentEntry> attachments = attachmentEntryService.getEntries(recordRef)
+		final Stream<IDocumentAttachmentEntry> attachments = attachmentEntryService.getByReferencedRecord(recordRef)
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
