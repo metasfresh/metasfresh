@@ -20,6 +20,8 @@ import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,7 +59,12 @@ public final class ProcessDescriptor implements ETagAware
 		Form, Workflow, Process, Report
 	};
 
+	@Getter
 	private final ProcessId processId;
+
+	@Getter
+	private final String internalName;
+
 	private final ProcessDescriptorType type;
 	private final Class<? extends IProcessDefaultParametersProvider> defaultParametersProviderClass;
 	private final String processClassname;
@@ -69,9 +76,10 @@ public final class ProcessDescriptor implements ETagAware
 	private static final Supplier<ETag> nextETagSupplier = ETagAware.newETagGenerator();
 	private final ETag eTag = nextETagSupplier.get();
 
-	private ProcessDescriptor(final Builder builder)
+	private ProcessDescriptor(@NonNull final Builder builder)
 	{
 		processId = builder.getProcessId();
+		internalName = builder.getInternalName();
 		type = builder.getType();
 
 		processClassname = builder.getProcessClassname();
@@ -88,11 +96,6 @@ public final class ProcessDescriptor implements ETagAware
 		return MoreObjects.toStringHelper(this)
 				.add("processId", processId)
 				.toString();
-	}
-
-	public ProcessId getProcessId()
-	{
-		return processId;
 	}
 
 	@Override
@@ -185,6 +188,9 @@ public final class ProcessDescriptor implements ETagAware
 		private ProcessDescriptorType type;
 		private ProcessId processId;
 
+		@Getter
+		private String internalName;
+
 		private String processClassname;
 		private Optional<Class<?>> processClass = Optional.empty();
 
@@ -201,9 +207,9 @@ public final class ProcessDescriptor implements ETagAware
 			return new ProcessDescriptor(this);
 		}
 
-		public Builder setProcessId(final ProcessId processId)
+		public Builder setInternalName(final String internalName)
 		{
-			this.processId = processId;
+			this.internalName = internalName;
 			return this;
 		}
 
@@ -211,6 +217,12 @@ public final class ProcessDescriptor implements ETagAware
 		{
 			Check.assumeNotNull(processId, "Parameter processId is not null");
 			return processId;
+		}
+
+		public Builder setProcessId(final ProcessId processId)
+		{
+			this.processId = processId;
+			return this;
 		}
 
 		public Builder setType(final ProcessDescriptorType type)

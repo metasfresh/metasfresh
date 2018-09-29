@@ -515,7 +515,6 @@ public class DocumentEntityDescriptor
 
 		private Builder()
 		{
-			super();
 		}
 
 		@Override

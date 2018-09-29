@@ -19,11 +19,12 @@ import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribut
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.LotNumberLock;
-import de.metas.product.LotNumberLockRepository;
+import de.metas.product.LotNumberQuarantine;
+import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
@@ -39,12 +40,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,18 +55,21 @@ import de.metas.util.Services;
 /**
  * https://github.com/metasfresh/metasfresh/issues/3693 This process will search
  * for HUs containing products with LotNo attributes that fit the pairs in the
- * selected I_M_Product_LotNumber_Lock entries. If such HUs are found, they will
+ * selected I_M_Product_LotNumber_Quarantine entries. If such HUs are found, they will
  * all be put in a DD_Order and sent to the Quarantine warehouse.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
+public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTemplate
 		implements
 		IProcessPrecondition
 {
 	@Autowired
-	private LotNumberLockRepository lotNoLockRepo;
+	private LotNumberQuarantineRepository lotNoQuarantineRepo;
+
+	@Autowired
+	private HULotNumberQuarantineService huLotNoQuarantineService;
 
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
@@ -81,7 +85,7 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		getView().streamByIds(getSelectedRowIds())
 				.map(row -> row.getId().toInt())
 				.distinct()
-				.forEach(this::createQuarantineHUsByLotNoLockId);
+				.forEach(this::createQuarantineHUsByLotNoQuarantineId);
 
 		huDDOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
 
@@ -109,9 +113,9 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private void createQuarantineHUsByLotNoLockId(final int lotNoLockId)
+	private void createQuarantineHUsByLotNoQuarantineId(final int lotNoQuarantineId)
 	{
-		final LotNumberLock lotNoLock = lotNoLockRepo.getById(lotNoLockId);
+		final LotNumberQuarantine lotNoQuarantine = lotNoQuarantineRepo.getById(lotNoQuarantineId);
 
 		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute();
 
@@ -120,8 +124,8 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 			throw new AdempiereException("Not lotNo attribute found.");
 		}
 
-		final int productId = lotNoLock.getProductId();
-		final String lotNoValue = lotNoLock.getLotNo();
+		final int productId = lotNoQuarantine.getProductId();
+		final String lotNoValue = lotNoQuarantine.getLotNo();
 
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(
 				productId,
@@ -143,13 +147,15 @@ public class WEBUI_M_Product_LotNumber_Lock extends ViewBasedProcessTemplate
 				continue;
 			}
 
+			huLotNoQuarantineService.markHUAsQuarantine(hu);
+
 			final I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
 			final int bpartnerId = firstReceipt.getC_BPartner_ID();
 			final int bpLocationId = firstReceipt.getC_BPartner_Location_ID();
 
 			husToQuarantine.add(HUToDistribute.builder()
 					.hu(hu)
-					.lockLotNo(lotNoLock)
+					.quarantineLotNo(lotNoQuarantine)
 					.bpartnerId(bpartnerId)
 					.bpartnerLocationId(bpLocationId)
 					.build());
