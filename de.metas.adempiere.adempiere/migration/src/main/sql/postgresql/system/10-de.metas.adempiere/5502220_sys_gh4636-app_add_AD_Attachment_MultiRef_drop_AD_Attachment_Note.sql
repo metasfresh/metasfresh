@@ -354,7 +354,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('AD_Attachment','ALTER TABLE public.AD_Attachment ADD COLUMN IF NOT EXISTS MigrationDate TIMESTAMP WITH TIME ZONE')
 ;
 
-CREATE VIEW IF NOT EXISTS AD_AttachmentEntry_ReferencedRecord_v AS
+DROP VIEW IF EXISTS AD_AttachmentEntry_ReferencedRecord_v;
+CREATE VIEW AD_AttachmentEntry_ReferencedRecord_v AS
 SELECT r.AD_Table_ID, r.Record_ID 
 FROM AD_Attachment_MultiRef r
 	JOIN AD_AttachmentEntry e ON e.AD_AttachmentEntry_ID=r.AD_AttachmentEntry_ID
