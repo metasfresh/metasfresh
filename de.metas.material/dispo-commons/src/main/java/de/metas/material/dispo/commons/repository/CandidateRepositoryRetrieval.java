@@ -206,7 +206,7 @@ public class CandidateRepositoryRetrieval
 		return candidateBuilder;
 	}
 
-	private AttributesKey getEffectiveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
+	private static AttributesKey getEffectiveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final AttributesKey attributesKey;
 		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))
@@ -265,7 +265,12 @@ public class CandidateRepositoryRetrieval
 		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
 		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
 		{
-			result.add(TransactionDetail.forTransactionDetailRecord(transactionDetailRecord));
+			final TransactionDetail transactionDetail = TransactionDetail.forCandidateOrQuery(
+					transactionDetailRecord.getMovementQty(),
+					getEffectiveStorageAttributesKey(candidateRecord),
+					candidateRecord.getM_AttributeSetInstance_ID(),
+					transactionDetailRecord.getM_Transaction_ID());
+			result.add(transactionDetail);
 		}
 		return result.build();
 	}
