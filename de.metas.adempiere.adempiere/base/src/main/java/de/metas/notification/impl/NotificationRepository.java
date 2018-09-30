@@ -11,13 +11,15 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationRepository;
@@ -27,9 +29,9 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
+import de.metas.notification.UserNotificationTargetType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.notification.UserNotificationTargetType;
 import lombok.NonNull;
 
 /*
@@ -54,6 +56,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class NotificationRepository implements INotificationRepository
 {
 	private static final Logger logger = LogManager.getLogger(NotificationRepository.class);
@@ -63,10 +66,13 @@ public class NotificationRepository implements INotificationRepository
 
 	private final ObjectMapper jsonMapper;
 
-	public NotificationRepository()
+	private final AttachmentEntryService attachmentEntryService;
+
+	public NotificationRepository(@NonNull AttachmentEntryService attachmentEntryService)
 	{
-		jsonMapper = new ObjectMapper();
-		jsonMapper.findAndRegisterModules();
+		this.jsonMapper = new ObjectMapper();
+		this.jsonMapper.findAndRegisterModules();
+		this.attachmentEntryService = attachmentEntryService;
 	}
 
 	@Override
@@ -143,8 +149,7 @@ public class NotificationRepository implements INotificationRepository
 		final List<Resource> attachments = request.getAttachments();
 		if (!attachments.isEmpty())
 		{
-			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-			attachmentBL.addEntriesFromResources(notificationPO, attachments);
+			attachmentEntryService.createNewAttachments(notificationPO, AttachmentEntryCreateRequest.fromResources(attachments));
 		}
 
 		return toUserNotification(notificationPO);

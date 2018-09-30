@@ -12,9 +12,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_Bank;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -27,12 +30,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,10 +44,17 @@ import lombok.NonNull;
 
 public class InvoiceReferenceNoGeneratorTest
 {
+	private ESRImportBL esrImportBL;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		esrImportBL = new ESRImportBL(attachmentEntryService);
+
+		Services.registerService(IESRImportBL.class, esrImportBL);
 	}
 
 	@Test
@@ -64,7 +74,7 @@ public class InvoiceReferenceNoGeneratorTest
 
 		final InvoiceReferenceNoGenerator generatorInstance = new InvoiceReferenceNoGenerator();
 
-		final int checkdigit = new ESRImportBL().calculateESRCheckDigit("12345600010000123400001234");
+		final int checkdigit = esrImportBL.calculateESRCheckDigit("12345600010000123400001234");
 
 		final String expectedReferenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
@@ -77,8 +87,8 @@ public class InvoiceReferenceNoGeneratorTest
 		assertThat(expectedReferenceNo).isEqualTo(generatedReferenceNo);
 
 	}
-	
-	
+
+
 	@Test
 	public void invoiceReferenceNoGenerator_7DigitsAcctNoTest()
 	{
@@ -96,7 +106,7 @@ public class InvoiceReferenceNoGeneratorTest
 
 		final InvoiceReferenceNoGenerator generatorInstance = new InvoiceReferenceNoGenerator();
 
-		final int checkdigit = new ESRImportBL().calculateESRCheckDigit("12345670010000123400001234");
+		final int checkdigit = esrImportBL.calculateESRCheckDigit("12345670010000123400001234");
 
 		final String expectedReferenceNo = "1234567" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
@@ -164,13 +174,13 @@ public class InvoiceReferenceNoGeneratorTest
 
 	private I_C_BP_BankAccount createESRBankAccountForPartner(@NonNull final I_C_BPartner partner, @NonNull final String accountNo)
 	{
-		
+
 		final I_C_Bank bank  = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
 		InterfaceWrapperHelper.save(bank);
-		
+
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
-		
-		
+
+
 		bpBankAccount.setC_Bank(bank);
 		bpBankAccount.setAD_Org(partner.getAD_Org());
 		bpBankAccount.setIsEsrAccount(true);

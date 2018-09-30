@@ -64,7 +64,6 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.attachments.IAttachmentBL;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
@@ -85,7 +84,6 @@ import de.metas.payment.esr.actionhandler.impl.WriteoffESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
-import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -128,8 +126,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport);
+		esrImportBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -328,8 +325,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport);
+		esrImportBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -365,7 +361,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(inv1);
 
 		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 
 		// assign the new invoice to the esrline
 		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
@@ -374,7 +370,7 @@ public class ESRImportTest extends ESRTestBase
 		Services.get(IESRImportBL.class).setInvoice(esrImportLine, inv1);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete");
+		esrImportBL.complete(esrImport, "Complete");
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -432,8 +428,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport);
+		esrImportBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -449,11 +444,11 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete");
+		esrImportBL.complete(esrImport, "Complete");
 
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
@@ -513,8 +508,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport);
+		esrImportBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -530,11 +524,11 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, new WithNextInvoiceESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, new WithNextInvoiceESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete");
+		esrImportBL.complete(esrImport, "Complete");
 
 		// check the invoice
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
@@ -591,9 +585,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
-
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport);
+		esrImportBL.process(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -613,8 +605,8 @@ public class ESRImportTest extends ESRTestBase
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(0));
 
-		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, new MoneyTransferedBackESRActionHandler());
+		// Register payment action handlers.
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, new MoneyTransferedBackESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
 		InterfaceWrapperHelper.save(esrImportLine);
 
@@ -623,7 +615,7 @@ public class ESRImportTest extends ESRTestBase
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
 		InterfaceWrapperHelper.save(type);
 
-		esrBL.complete(esrImport, "Complete");
+		esrImportBL.complete(esrImport, "Complete");
 
 		// check the invoice
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
@@ -1039,7 +1031,6 @@ public class ESRImportTest extends ESRTestBase
 	public void testStandardCase_T01_diffThreads()
 	{
 		Services.get(IESRImportDAO.class);
-		Services.get(IAttachmentBL.class);
 		Services.get(IESRImportBL.class);
 		Services.get(IDocumentBL.class);
 		Services.get(ITrxManager.class);
@@ -1068,15 +1059,13 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final ESRImportBL esrBL = new ESRImportBL();
-
 		final Runnable runnable = new Runnable()
 		{
 
 			@Override
 			public void run()
 			{
-				esrBL.process(esrImport);
+				esrImportBL.process(esrImport);
 			}
 		};
 

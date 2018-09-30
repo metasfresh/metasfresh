@@ -752,10 +752,10 @@ public final class DisplayType
 	}
 
 	/**
-	 * Delegates to {@link StringUtils#toBooleanString(Boolean)}.
+	 * Delegates to {@link StringUtils#ofBoolean(Boolean)}.
 	 */
 	public static final String toBooleanString(final Boolean value)
 	{
-		return StringUtils.toBooleanString(value);
+		return StringUtils.ofBoolean(value);
 	}
 }	//	DisplayType
