@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.activation.DataSource;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,7 +17,6 @@ import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_C_Mail;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,9 +25,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.IAttachmentBL;
-import de.metas.logging.LogManager;
 import de.metas.request.RequestId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -59,8 +54,6 @@ import lombok.NonNull;
 @Repository
 public class InboundEMailRepository
 {
-	private static final Logger logger = LogManager.getLogger(InboundEMailRepository.class);
-
 	private final ObjectMapper jsonObjectMapper;
 
 	public InboundEMailRepository(@NonNull final ObjectMapper jsonObjectMapper)
@@ -106,7 +99,8 @@ public class InboundEMailRepository
 		mailRecord.setR_Request_ID(RequestId.toRepoId(email.getRequestId()));
 
 		final ClientId adClientId = ClientId.ofRepoId(mailRecord.getAD_Client_ID());
-		final UserId fromUserId = getUserIdByEMailOrNull(email.getFrom(), adClientId);
+		final IUserDAO usersRepo = Services.get(IUserDAO.class);
+		final UserId fromUserId = usersRepo.retrieveUserIdByEMail(email.getFrom(), adClientId);
 		if (fromUserId != null)
 		{
 			mailRecord.setFrom_User_ID(fromUserId.getRepoId());
@@ -125,35 +119,6 @@ public class InboundEMailRepository
 		{
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("map", map);
-		}
-	}
-
-	private UserId getUserIdByEMailOrNull(final String email, final ClientId adClientId)
-	{
-		if (Check.isEmpty(email, true))
-		{
-			return null;
-		}
-
-		final String emailNorm = extractEMailAddressOrNull(email);
-		if (Check.isEmpty(emailNorm, true))
-		{
-			return null;
-		}
-
-		return Services.get(IUserDAO.class).retrieveUserIdByEMail(emailNorm, adClientId);
-	}
-
-	private static final String extractEMailAddressOrNull(final String email)
-	{
-		try
-		{
-			return new InternetAddress(email).getAddress();
-		}
-		catch (AddressException e)
-		{
-			logger.warn("Invalid email address `{}`. Returning null.", email, e);
-			return null;
 		}
 	}
 

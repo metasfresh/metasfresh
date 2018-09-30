@@ -4,32 +4,31 @@ package de.metas.product.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for M_Product_LotNumber_Lock
+/** Generated Model for M_Product_LotNumber_Quarantine
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_M_Product_LotNumber_Lock extends org.compiere.model.PO implements I_M_Product_LotNumber_Lock, org.compiere.model.I_Persistent 
+public class X_M_Product_LotNumber_Quarantine extends org.compiere.model.PO implements I_M_Product_LotNumber_Quarantine, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2096417141L;
+	private static final long serialVersionUID = -347800843L;
 
     /** Standard Constructor */
-    public X_M_Product_LotNumber_Lock (Properties ctx, int M_Product_LotNumber_Lock_ID, String trxName)
+    public X_M_Product_LotNumber_Quarantine (Properties ctx, int M_Product_LotNumber_Quarantine_ID, String trxName)
     {
-      super (ctx, M_Product_LotNumber_Lock_ID, trxName);
-      /** if (M_Product_LotNumber_Lock_ID == 0)
+      super (ctx, M_Product_LotNumber_Quarantine_ID, trxName);
+      /** if (M_Product_LotNumber_Quarantine_ID == 0)
         {
 			setLot (null);
-			setM_Product_ID (0);
-			setM_Product_LotNumber_Lock_ID (0);
+			setM_Product_LotNumber_Quarantine_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_M_Product_LotNumber_Lock (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Product_LotNumber_Quarantine (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -115,23 +114,23 @@ public class X_M_Product_LotNumber_Lock extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
-	/** Set M_Product_LotNumber_Lock.
-		@param M_Product_LotNumber_Lock_ID M_Product_LotNumber_Lock	  */
+	/** Set M_Product_LotNumber_Quarantine.
+		@param M_Product_LotNumber_Quarantine_ID M_Product_LotNumber_Quarantine	  */
 	@Override
-	public void setM_Product_LotNumber_Lock_ID (int M_Product_LotNumber_Lock_ID)
+	public void setM_Product_LotNumber_Quarantine_ID (int M_Product_LotNumber_Quarantine_ID)
 	{
-		if (M_Product_LotNumber_Lock_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Product_LotNumber_Lock_ID, null);
+		if (M_Product_LotNumber_Quarantine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_LotNumber_Quarantine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_LotNumber_Lock_ID, Integer.valueOf(M_Product_LotNumber_Lock_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_LotNumber_Quarantine_ID, Integer.valueOf(M_Product_LotNumber_Quarantine_ID));
 	}
 
-	/** Get M_Product_LotNumber_Lock.
-		@return M_Product_LotNumber_Lock	  */
+	/** Get M_Product_LotNumber_Quarantine.
+		@return M_Product_LotNumber_Quarantine	  */
 	@Override
-	public int getM_Product_LotNumber_Lock_ID () 
+	public int getM_Product_LotNumber_Quarantine_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_LotNumber_Lock_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_LotNumber_Quarantine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -91,6 +91,9 @@ public class Candidate
 	@Singular
 	List<TransactionDetail> transactionDetails;
 
+	/**
+	 * @param addedQuantity may also be negative, in case of subtraction
+	 */
 	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
 	{
 		return withQuantity(getQuantity().add(addedQuantity));
