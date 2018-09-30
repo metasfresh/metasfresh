@@ -36,7 +36,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
@@ -131,7 +131,7 @@ public class MaterialEventHandlerRegistryTests
 						postMaterialEventService,
 						availableToPromiseRepository,
 						stockCandidateService),
-				new SupplyCandiateHandler(
+				new SupplyCandidateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						stockCandidateService)));
