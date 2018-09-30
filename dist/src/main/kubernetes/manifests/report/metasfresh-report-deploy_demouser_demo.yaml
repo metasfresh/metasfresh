@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: "metasfresh-report-demouser-demo"
   labels:
+    de.metas.deployment.name: "metasfresh-report-demouser-demo"
     de.metas.deployment.type: metasfresh-report
     de.metas.deployment.stage: "demo"
     de.metas.deployment.user: "demouser"
@@ -13,19 +14,18 @@ spec:
   template:
     metadata:
       labels:
+        de.metas.deployment.name: "metasfresh-report-demouser-demo"
         de.metas.deployment.type: metasfresh-report
-        de.metas.deployment.user: "demouser"
         de.metas.deployment.stage: "demo"
+        de.metas.deployment.user: "demouser"
     spec:
       containers:
       - env:
         - name: DB_HOST
-          # this is usually the IP of your local host as seen from within virtualbox
-          value: '10.0.2.2'
-#          value: "metasfresh-postgresql-demouser-demo"
+          # Note: in case your DB does not run in kubernetes: '10.0.2.2' is usually the IP of your local host as seen from within virtualbox
+          value: 'metasfresh-postgresql-demouser-demo'
         - name: DB_PORT
-          value: '5433'
-#          value: '5432'
+          value: '5432'
         - name: DEBUG_PRINT_BASH_CMDS
           value: 'y'
         - name: DB_WAIT_FOR_DBMS
@@ -38,7 +38,7 @@ spec:
           value: '8183'
         - name: DEBUG_PORT
           value: '8791'
-        name: print
+        name: report
         image: docker.metasfresh.com/metasfresh/metasfresh-dist-report:master_LATEST
         imagePullPolicy: Always
         ports:
