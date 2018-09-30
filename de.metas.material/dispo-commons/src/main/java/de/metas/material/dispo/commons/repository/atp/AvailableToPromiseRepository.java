@@ -78,12 +78,12 @@ public class AvailableToPromiseRepository
 			return result;
 		}
 
-		final Function<I_MD_Candidate_ATP_QueryResult, Boolean> recordHasBPartnerId = record -> record.getC_BPartner_Customer_ID() > 0;
+		final Function<I_MD_Candidate_ATP_QueryResult, Boolean> compareByWhetherRecordHasBPartnerId = record -> record.getC_BPartner_Customer_ID() > 0;
 
-		final List<I_MD_Candidate_ATP_QueryResult> atpRecords = dbQuery
+		final List<I_MD_Candidate_ATP_QueryResult> atpRecords = dbQuery.list()
 				.stream()
 				.sorted(Comparator
-						.comparing(recordHasBPartnerId) // note that true > false
+						.comparing(compareByWhetherRecordHasBPartnerId) // note that true > false
 						.thenComparing(I_MD_Candidate_ATP_QueryResult::getDateProjected)
 						.thenComparing(I_MD_Candidate_ATP_QueryResult::getSeqNo) // if dateProjected is equal, then SeqNo makes the difference
 						.reversed())
