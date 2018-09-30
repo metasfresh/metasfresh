@@ -75,12 +75,6 @@ public final class AttachmentEntry
 		}
 	}
 
-//	@Override
-//	public String toString()
-//	{
-//		return getName();
-//	}
-
 	public String toStringX()
 	{
 		final StringBuilder sb = new StringBuilder(getName());

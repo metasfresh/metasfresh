@@ -41,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.pdf.Document;
 import org.adempiere.pdf.viewer.PDFViewerBean;
-import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.MSysConfig;
@@ -87,7 +86,6 @@ public final class Attachment extends CDialog implements ActionListener
 
 	//
 	private CPanel mainPanel = new CPanel();
-	private CTextArea text = new CTextArea();
 	private CButton bOpen = new CButton();
 	private CButton bSave = new CButton();
 	private CButton bLoad = new CButton();
@@ -201,9 +199,7 @@ public final class Attachment extends CDialog implements ActionListener
 		// cbAttachmentEntries.setToolTipText(text);
 		cbAttachmentEntries.addActionListener(this);
 		cbAttachmentEntries.setLightWeightPopupEnabled(false);	// Acrobat Panel is heavy
-		//
-		text.setBackground(AdempierePLAF.getInfoBackground());
-		text.setPreferredSize(new Dimension(200, 200));
+
 		//
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.setActionListener(this);
@@ -218,7 +214,6 @@ public final class Attachment extends CDialog implements ActionListener
 		//
 		mainPanel.add(centerPane, BorderLayout.CENTER);
 		centerPane.add(graphPanel, JSplitPane.LEFT);
-		centerPane.add(text, JSplitPane.RIGHT);
 		centerPane.setResizeWeight(.75);	// more to graph
 	}	// jbInit
 
@@ -232,22 +227,11 @@ public final class Attachment extends CDialog implements ActionListener
 		super.dispose();
 	}	// dispose
 
-	@Override
-	public void requestFocus()
-	{
-		if (text != null)
-		{
-			text.requestFocus();
-		}
-	}
-
 	/**
 	 * Load Attachments
 	 */
 	private void loadAttachments()
 	{
-		text.setText("");
-
 		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
 		// Set attachment entries combo
@@ -384,7 +368,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 	private void actionPerformed0(final ActionEvent event)
 	{
-		// close (attachment entries are saved directly)
+		// close (attachment entries were already saved directly)
 		if (event.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
 			dispose();

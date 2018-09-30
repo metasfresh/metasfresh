@@ -54,21 +54,20 @@ public class AttachmentEntryService
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
 	{
+		return  new AttachmentEntryService();
+	}
+
+	/**
+	 * Note: I didn't have spring initialize and inject those components,
+	 * because I think only {@link AttachmentEntryService} should be used from outside, or obtained via spring context.
+	 * But feel free to change this when useful.
+	 */
+	public AttachmentEntryService()
+	{
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 
-		return  new AttachmentEntryService(
-				attachmentEntryRepository,
-				attachmentEntryFactory,
-				attachmentMigrationService);
-	}
-
-	public AttachmentEntryService(
-			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
-			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
-			@NonNull final AttachmentMigrationService attachmentMigrationService)
-	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;

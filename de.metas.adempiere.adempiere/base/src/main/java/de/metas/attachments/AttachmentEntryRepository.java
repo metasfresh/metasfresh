@@ -18,7 +18,6 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_MultiRef;
-import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -50,7 +49,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
 public class AttachmentEntryRepository
 {
 

@@ -9,7 +9,6 @@ import java.net.URISyntaxException;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
-import org.springframework.stereotype.Service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -39,7 +38,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
 public class AttachmentEntryFactory
 {
 	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type> builder()

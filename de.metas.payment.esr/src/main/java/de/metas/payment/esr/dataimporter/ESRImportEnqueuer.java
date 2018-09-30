@@ -116,7 +116,10 @@ public class ESRImportEnqueuer
 			if (fromDataSource.getAttachmentEntryId() == null)
 			{
 				final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-				final AttachmentEntry attachmentEntry =attachmentEntryService.createNewAttachment(esrImport, fromDataSource.getFilename(), fromDataSource.getContent());
+				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
+						esrImport,
+						fromDataSource.getFilename(),
+						fromDataSource.getContent());
 				fromAttachmentEntryId = attachmentEntry.getId();
 			}
 			else

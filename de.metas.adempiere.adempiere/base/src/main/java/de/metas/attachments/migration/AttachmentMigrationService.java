@@ -13,12 +13,10 @@ import java.util.zip.ZipInputStream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -53,7 +51,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
 public class AttachmentMigrationService
 {
 	private static final String SYSCONFIG_EXIST_RECORDS_TO_MIGRATE = "de.metas.attachments.migration.ExistRecordsToMigrate";
@@ -108,7 +105,7 @@ public class AttachmentMigrationService
 
 		attachment.setBinaryData(null);
 		attachment.setMigrationDate(SystemTime.asTimestamp());
-		InterfaceWrapperHelper.saveRecord(attachment);
+		saveRecord(attachment);
 
 		if (data == null || data.length == 0)
 		{

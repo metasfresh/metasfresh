@@ -23,7 +23,6 @@ package de.metas.payment.esr.api.impl;
  */
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,60 +43,60 @@ public class ESRCheckDigitBuilderTest
 	@Test
 	public void esrDigit01052601()
 	{
-		Assert.assertEquals(1, esrImportBL.calculateESRCheckDigit("01052601")); // 01-52601-1
+		assertEquals(1, esrImportBL.calculateESRCheckDigit("01052601")); // 01-52601-1
 	}
 
 	@Test
 	public void esrDigit01049165()
 	{
-		Assert.assertEquals(2, esrImportBL.calculateESRCheckDigit("01049165")); // 01-49165-2
+		assertEquals(2, esrImportBL.calculateESRCheckDigit("01049165")); // 01-49165-2
 	}
 
 	@Test
 	public void esrDigit01062967()
 	{
-		Assert.assertEquals(6, esrImportBL.calculateESRCheckDigit("01062967")); // 01-62967-6
+		assertEquals(6, esrImportBL.calculateESRCheckDigit("01062967")); // 01-62967-6
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit01001852()
 	{
-		Assert.assertEquals(7, esrImportBL.calculateESRCheckDigit("01001852")); // 01-1852-7
+		assertEquals(7, esrImportBL.calculateESRCheckDigit("01001852")); // 01-1852-7
 	}
 
 	@Test
 	public void esrDigit00018310019779911119()
 	{
-		Assert.assertEquals(6, esrImportBL.calculateESRCheckDigit("31001400018310019779911119"));
+		assertEquals(6, esrImportBL.calculateESRCheckDigit("31001400018310019779911119"));
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf "Belegartcode 01 (BESR)", seems to be wrong,
 	// because all other work, only this one doesn't
 	public void esrDigit0100000292001()
 	{
-		Assert.assertEquals(1, esrImportBL.calculateESRCheckDigit("010000029200"));
+		assertEquals(1, esrImportBL.calculateESRCheckDigit("010000029200"));
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit04()
 	{
-		Assert.assertEquals(2, esrImportBL.calculateESRCheckDigit("04"));
+		assertEquals(2, esrImportBL.calculateESRCheckDigit("04"));
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit0100003949753()
 	{
-		Assert.assertEquals(3, esrImportBL.calculateESRCheckDigit("010000394975"));
+		assertEquals(3, esrImportBL.calculateESRCheckDigit("010000394975"));
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit310739205008005400199307134()
 	{
-		Assert.assertEquals(4, esrImportBL.calculateESRCheckDigit("31073920500800540019930713"));
+		assertEquals(4, esrImportBL.calculateESRCheckDigit("31073920500800540019930713"));
 	}
 
 	/**
