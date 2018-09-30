@@ -63,7 +63,8 @@ public final class DocumentLayoutElementDescriptor
 		final Builder elementBuilder = new Builder()
 				.setCaption(firstField.getCaption())
 				// .setDescription(firstField.getDescription())
-				.setWidgetType(firstField.getWidgetType());
+				.setWidgetType(firstField.getWidgetType())
+				.setWidgetSize(firstField.getWidgetSize());
 
 		for (final DocumentFieldDescriptor field : fields)
 		{
@@ -427,6 +428,11 @@ public final class DocumentLayoutElementDescriptor
 		public boolean isWidgetTypeSet()
 		{
 			return _widgetType != null;
+		}
+
+		public boolean isWidgetSizeSet()
+		{
+			return _widgetSize != null;
 		}
 
 		public DocumentFieldWidgetType getWidgetType()
