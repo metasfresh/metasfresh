@@ -11,6 +11,11 @@ Additional notes:
 Here come the actual release notes:
 # metasfresh 5.77
 ## Features
+
+* metasfresh
+  * [#4567](https://github.com/metasfresh/metasfresh/issues/4567) Automatic Lot No. Handling into Quarantine Warehouse
+  * [#4628](https://github.com/metasfresh/metasfresh/issues/4628) Split material dispo for M_Transaction with different attributes
+
 * metasfresh-webui-frontend
   * [#1952](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1952) Advanced tooltip support
     * New Feature that allows to show advanced tooltips in WebUI frontend.
@@ -20,6 +25,15 @@ Here come the actual release notes:
     * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
     * Updating bootstrap to new version because of security issue.
+
+## Fixes
+
+* metasfresh
+  * [#4625](https://github.com/metasfresh/metasfresh/issues/4625) Open Items List Reference Date wrong parm
+  * [#4632](https://github.com/metasfresh/metasfresh/issues/4632) Swing Picking Terminal: cannot pick
+
+* metasfresh-webui-frontend
+  * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
 
 # metasfresh 5.76
 ## Features
