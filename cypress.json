@@ -4,5 +4,9 @@
   "baseUrl_comment3":  "See https://docs.cypress.io/guides/guides/environment-variables.html#We-can-move-this-into-an-environment-variable",
   "baseUrl": "http://localhost:3000",
 
-  "projectId": "5yp4q1"
+  "projectId": "5yp4q1",
+  
+  "viewport_comment1": "the default is 1000px by 660px",
+  "viewportWidth": 1500,
+  "viewportHeight": 1000
 }

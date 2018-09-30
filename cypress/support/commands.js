@@ -119,40 +119,37 @@ context('Reusable "login" custom command', function() {
 });
 
 // Should also work for date columns, e.g. '01/01/2018{enter}'
-describe('Enter value into string field', function() {
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue) => {
+  describe('Enter value into string field', function() {
     cy.get(`.form-field-${fieldName}`)
       .find('input')
       .type(stringValue);
   });
 });
 
-describe('Enter value into text field', function() {
-  Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
+Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue) => {
+  describe('Enter value into text field', function() {
       cy.get(`.form-field-${fieldName}`)
         .find('textarea')
         .type(stringValue);
     });
   });
 
-describe('Enter value into lookup list field', function() {
-  Cypress.Commands.add(
-    'writeIntoLookupListField',
-    (fieldName, partialValue, listValue) => {
+Cypress.Commands.add(
+  'writeIntoLookupListField',
+  (fieldName, partialValue, listValue) => {
+    describe('Enter value into lookup list field', function() {
       cy.get(`.form-field-${fieldName}`)
         .find('input')
         .type(partialValue);
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', listValue).click();
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    }
-  );
+    });
 });
 
-describe('Select value in list field', function() {
-  Cypress.Commands.add(
-    'selectInListField',
-    (fieldName, listValue) => {
+Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
+  describe('Select value in list field', function() {
       cy.get(`.form-field-${fieldName}`)
         .find('.input-dropdown')
         .click();
@@ -164,11 +161,19 @@ describe('Select value in list field', function() {
   );
 });
 
+Cypress.Commands.add('clickOnCheckBox', (fieldName) => {
+  describe('Click on a checkbox field', function() {
+    cy.get(`.form-field-${fieldName}`)
+      .find('.input-checkbox-tick')
+      .click();
+  });
+});
+
 /** !!not working!! */
-describe('Enter value into list field within a "fieldgroup" (field with additional fields, e.g sales order bPartner with lcoation and user)', function() {
-  Cypress.Commands.add(
-    'writeIntoMultiListField',
-    (fieldName, index, partialValue, listValue) => {
+Cypress.Commands.add(
+  'writeIntoMultiListField',
+  (fieldName, index, partialValue, listValue) => {
+    describe('Enter value into list field within a "fieldgroup" (field with additional fields, e.g sales order bPartner with lcoation and user)', function() {
       cy.get(`.form-field-${fieldName}`)
         .find('input')
         .find(`:nth.child(${index})`)
@@ -176,12 +181,11 @@ describe('Enter value into list field within a "fieldgroup" (field with addition
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', listValue).click();
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    }
-  );
+    });
 });
 
-describe('Execute a doc action', function() {
-  Cypress.Commands.add('processDocument', (action, expectedStatus) => {
+Cypress.Commands.add('processDocument', (action, expectedStatus) => {
+  describe('Execute a doc action', function() {
     cy.get('.form-field-DocAction')
       .find('.meta-dropdown-toggle')
       .click();
@@ -200,14 +204,14 @@ describe('Execute a doc action', function() {
   })
 });
 
-describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-  Cypress.Commands.add('openAdvancedEdit', () => {
+Cypress.Commands.add('openAdvancedEdit', () => {
+  describe('Open the advanced edit overlay via ALT+E shortcut', function() {
     cy.get('body').type('{alt}E')
   })
 });
 
-describe('Select and activate the tab with a certain name', function() {
-  Cypress.Commands.add('selectTab', (tabName) => {
+Cypress.Commands.add('selectTab', (tabName) => {
+  describe('Select and activate the tab with a certain name', function() {
     return cy.get(`#tab_${tabName}`).click()
   });
 });
