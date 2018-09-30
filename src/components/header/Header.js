@@ -452,7 +452,6 @@ class Header extends Component {
                     className="hidden-sm-down tooltip-parent"
                     onClick={() => this.toggleTooltip('')}
                     onMouseEnter={() => this.toggleTooltip(keymap.DOC_STATUS)}
-                    onMouseLeave={() => this.toggleTooltip('')}
                   >
                     <MasterWidget
                       entity="window"
