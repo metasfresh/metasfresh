@@ -1,4 +1,4 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.invoice_450.commons;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
 
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,6 +14,7 @@ import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.EAN;
 import de.metas.invoice_gateway.spi.model.Invoice;
 import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440.Invoice440ExportClient;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.RequestType;
 
 /*

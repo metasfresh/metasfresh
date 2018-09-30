@@ -1,4 +1,4 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.invoice_450.commons;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
 
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.invoice_450.commons;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
 
-import static de.metas.vertical.healthcare.forum_datenaustausch_ch.invoice_450.commons.Util.toDouble;
+import static de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440.Util.toDouble;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
