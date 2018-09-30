@@ -9,6 +9,12 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+
+# metasfresh 5.78
+## Features
+
+## Fixes
+
 # metasfresh 5.77
 ## Features
 
