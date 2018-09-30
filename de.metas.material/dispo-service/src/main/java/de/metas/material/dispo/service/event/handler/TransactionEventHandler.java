@@ -41,7 +41,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -503,7 +502,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	/**
 	 * @return a list with one or two candidates. The list's first item contains the given {@code changedTransactionDetail}.
 	 */
-	private List<Candidate> createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
+	@VisibleForTesting
+	List<Candidate> createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 			@NonNull final Candidate candidate,
 			@NonNull final TransactionDetail changedTransactionDetail)
 	{
@@ -536,20 +536,17 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			// * the transaction's ASI/storage-key
 			// * plannedQty == actualQty == transactionQty
 			// * the transactionDetail added to it
-			final ProductDescriptor newProductDescriptor = ProductDescriptor
-					.forProductAndAttributes(
-							candidate.getMaterialDescriptor().getProductId(),
-							changedTransactionDetail.getStorageAttributesKey(),
-							changedTransactionDetail.getAttributeSetInstanceId());
-
 			final MaterialDescriptor newMaterialDescriptor = candidate
 					.getMaterialDescriptor()
-					.withProductDescriptor(newProductDescriptor)
+					.withStorageAttributes(
+							changedTransactionDetail.getStorageAttributesKey(),
+							changedTransactionDetail.getAttributeSetInstanceId())
 					.withQuantity(changedTransactionDetail.getQuantity());
 
 			final Candidate newCandidate = candidate
 					.toBuilder()
 					.id(null)
+					.parentId(null) // important to make sure a supply new candidate gets a stock record
 					.materialDescriptor(newMaterialDescriptor)
 					.clearTransactionDetails()
 					.transactionDetail(changedTransactionDetail)

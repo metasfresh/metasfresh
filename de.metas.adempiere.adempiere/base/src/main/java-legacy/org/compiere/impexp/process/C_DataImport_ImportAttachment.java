@@ -11,6 +11,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.impexp.FileImportReader;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
@@ -19,8 +21,9 @@ import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.util.Env;
 
+import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -52,8 +55,8 @@ import de.metas.util.Services;
 
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
-	private final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
+	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	private static final Charset CHARSET = Charset.forName("UTF-8");
 
@@ -153,12 +156,13 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 	private byte[] getData()
 	{
-		return attachmentBL.getEntryByIdAsBytes(getDataImport(), getAttachmentEntryId());
+		return attachmentEntryService.retrieveData(getAttachmentEntryId());
 	}
 
 	private void deleteAttachmentEntry()
 	{
-		attachmentBL.deleteEntryById(getDataImport(), getAttachmentEntryId());
+		final AttachmentEntry attachmentEntry = attachmentEntryService.getById(getAttachmentEntryId());
+		attachmentEntryService.unattach(TableRecordReference.of(getDataImport()), attachmentEntry);
 	}
 
 	private AttachmentEntryId getAttachmentEntryId()

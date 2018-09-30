@@ -51,7 +51,7 @@ import de.metas.util.Services;
  */
 public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 {
-	final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)

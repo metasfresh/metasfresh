@@ -266,13 +266,25 @@ public final class StringUtils
 	 *         <li>"N" if value is false
 	 *         </ul>
 	 */
-	public static final String toBooleanString(final Boolean value)
+	public static final String ofBoolean(@Nullable final Boolean value)
 	{
 		if (value == null)
 		{
 			return null;
 		}
 		return value ? "Y" : "N";
+	}
+
+	public static String ofBoolean(
+			@Nullable final Boolean booleanOrNull,
+			@Nullable final String defaultValue)
+	{
+		if (booleanOrNull == null)
+		{
+			return defaultValue;
+		}
+
+		return booleanOrNull ? "Y" : "N";
 	}
 
 	/**
@@ -481,18 +493,6 @@ public final class StringUtils
 			sb.append(String.valueOf(item));
 		}
 		return sb;
-	}
-
-	public static String ofBoolean(
-			@Nullable final Boolean booleanOrNull,
-			@Nullable final String defaultValue)
-	{
-		if (booleanOrNull == null)
-		{
-			return defaultValue;
-		}
-
-		return booleanOrNull ? "Y" : "N";
 	}
 
 	/**

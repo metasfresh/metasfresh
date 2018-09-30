@@ -60,6 +60,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -69,6 +70,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.api.impl.PlainESRImportDAO;
@@ -112,7 +114,8 @@ public class ESRTestBase
 
 		dao = (PlainESRImportDAO)Services.get(IESRImportDAO.class);
 
-		esrImportBL = new ESRImportBL();
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		esrImportBL = new ESRImportBL(attachmentEntryService);
 
 		// register processors
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
@@ -141,6 +144,7 @@ public class ESRTestBase
 		contextProvider = PlainContextAware.newOutOfTrx(getCtx());
 
 		// Make sure esr validator interceptor is registered
+		Services.registerService(IESRImportBL.class, esrImportBL);
 		final ESR_Main_Validator esrValidator = new ESR_Main_Validator();
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(esrValidator, client);
 

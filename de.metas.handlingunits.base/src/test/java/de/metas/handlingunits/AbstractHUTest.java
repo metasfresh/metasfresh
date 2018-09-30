@@ -37,9 +37,12 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
 import de.metas.util.Services;
 
 public abstract class AbstractHUTest
@@ -150,6 +153,11 @@ public abstract class AbstractHUTest
 		setupMasterData();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+
 		initialize();
 	}
 

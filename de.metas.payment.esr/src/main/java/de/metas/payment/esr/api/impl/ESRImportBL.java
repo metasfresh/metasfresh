@@ -49,13 +49,14 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.calendar.IPeriodBL;
@@ -85,6 +86,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@Service
 public class ESRImportBL implements IESRImportBL
 {
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
@@ -96,8 +98,6 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
-
-
 	private static final String ESR_NO_HAS_WRONG_ORG_2P = "de.metas.payment.esr.EsrNoHasWrongOrg";
 
 	/**
@@ -108,7 +108,16 @@ public class ESRImportBL implements IESRImportBL
 	// 03928
 	private static final ArrayKey NO_INVOICE_KEY = Util.mkKey("NoInvoiceKey");
 
-	private final void lockAndProcess(final I_ESR_Import esrImport, final Runnable processor)
+	private final AttachmentEntryService attachmentEntryService;
+
+	public ESRImportBL(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
+
+	private final void lockAndProcess(
+			@NonNull final I_ESR_Import esrImport,
+			@NonNull final Runnable processor)
 	{
 		Check.assumeNotNull(esrImport, "esrImport not null");
 
@@ -143,17 +152,9 @@ public class ESRImportBL implements IESRImportBL
 	{
 		//
 		// Fetch data to be imported from attachment
-		final byte[] data;
 		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImport.getAD_AttachmentEntry_ID());
-		if (attachmentEntryId != null)
-		{
-			data = Services.get(IAttachmentBL.class).getEntryByIdAsBytes(esrImport, attachmentEntryId);
-		}
-		// Fallback: usually that shall not happen or it might happen for old/legacy data
-		else
-		{
-			data = Services.get(IAttachmentBL.class).getFirstEntryAsBytesOrNull(esrImport);
-		}
+
+		final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
 
 		// there is no actual data
 		if (data == null || data.length == 0)
@@ -352,8 +353,6 @@ public class ESRImportBL implements IESRImportBL
 		}
 		save(importLine);
 	}
-
-
 
 	/**
 	 * Groups the given lines so that we can create one payment for each line.
@@ -585,10 +584,10 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/**
-	 * 
+	 *
 	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
 	 * @param line the line in question
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
@@ -699,10 +698,10 @@ public class ESRImportBL implements IESRImportBL
 		{
 			final List<I_ESR_ImportLine> linesForKey = invoiceKey2Line.get(key);
 
-			final BigDecimal sum = BigDecimal.ZERO;
+			BigDecimal sum = BigDecimal.ZERO;
 			for (final I_ESR_ImportLine line : linesForKey)
 			{
-				sum.add(line.getAmount());
+				sum = sum.add(line.getAmount());
 			}
 			if (sum.compareTo(BigDecimal.ZERO) < 0)
 			{

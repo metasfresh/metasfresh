@@ -36,6 +36,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
@@ -60,7 +61,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -387,15 +388,16 @@ public class Scheduler extends AdempiereServer
 		final Integer[] userIDs = m_model.getRecipientAD_User_IDs();
 		for (int i = 0; i < userIDs.length; i++)
 		{
-			final MNote note = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), ITrx.TRXNAME_ThreadInherited);
-			note.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
-			note.setTextMsg(m_model.getName());
-			note.setDescription(m_model.getDescription());
-			note.setRecord(pi.getTable_ID(), pi.getRecord_ID());
-			note.save();
+			final MNote noteRecord = new MNote(ctx, AD_Message_ID, userIDs[i].intValue(), ITrx.TRXNAME_ThreadInherited);
+			noteRecord.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
+			noteRecord.setTextMsg(m_model.getName());
+			noteRecord.setDescription(m_model.getDescription());
+			noteRecord.setRecord(pi.getTable_ID(), pi.getRecord_ID());
+			noteRecord.save();
 
 			// Attachment
-			Services.get(IAttachmentBL.class).addEntriesFromFiles(note, ImmutableList.of(report));
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(noteRecord, report);
 		}
 		//
 		return result.getSummary();
