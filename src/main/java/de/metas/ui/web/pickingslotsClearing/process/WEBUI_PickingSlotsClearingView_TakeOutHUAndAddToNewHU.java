@@ -3,7 +3,7 @@ package de.metas.ui.web.pickingslotsClearing.process;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_M_Product;
+import org.compiere.model.I_C_UOM;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
@@ -23,6 +23,8 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -150,10 +152,11 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(fromHU);
-		final I_M_Product singleProduct = storage.getSingleProductOrNull();
+		final ProductId singleProductId = storage.getSingleProductIdOrNull();
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(singleProductId);
 
 		final LUTUProducerDestination lutuProducerDestination = createNewHUProducer(pickingRow, targetHUPI);
-		lutuProducerDestination.addCUPerTU(singleProduct, qtyCU, singleProduct.getC_UOM());
+		lutuProducerDestination.addCUPerTU(singleProductId, qtyCU, uom);
 
 		return lutuProducerDestination;
 	}

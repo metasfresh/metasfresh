@@ -278,8 +278,7 @@ class ProductsToPickRowsDataFactory
 				.getStorage(hu)
 				.getProductStorageOrNull(key.getProductId());
 
-		final Quantity qtyFreeToReserve = Quantity.of(huProductStorage.getQty(), huProductStorage.getC_UOM());
-
+		final Quantity qtyFreeToReserve = huProductStorage.getQty();
 		return new ReservableStorage(key, qtyFreeToReserve);
 	}
 

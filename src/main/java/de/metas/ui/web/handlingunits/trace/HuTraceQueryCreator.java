@@ -17,6 +17,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -157,9 +158,9 @@ public class HuTraceQueryCreator
 			@NonNull final DocumentFilterParam parameter)
 	{
 		errorfIfNotEqualsOperator(parameter);
-		errorIfQueryValueGreaterThanZero("ProductId", query.getProductId(), query);
+		errorIfQueryValueNotNull("ProductId", query.getProductId(), query);
 
-		return query.withProductId(extractInt(parameter));
+		return query.withProductId(ProductId.ofRepoId(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(

@@ -23,7 +23,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -277,7 +276,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			huEditorRow
 					.setProduct(createProductLookupValue(singleProductStorage.getProductId()))
 					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
-					.setQtyCU(singleProductStorage.getQty());
+					.setQtyCU(singleProductStorage.getQty().getAsBigDecimal());
 		}
 
 		//
@@ -359,13 +358,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final IHUStorage huStorage = Services.get(IHandlingUnitsBL.class).getStorageFactory()
 				.getStorage(hu);
 
-		final I_M_Product product = huStorage.getSingleProductOrNull();
-		if (product == null)
+		final ProductId productId = huStorage.getSingleProductIdOrNull();
+		if (productId == null)
 		{
 			return null;
 		}
 
-		final IHUProductStorage productStorage = huStorage.getProductStorage(product);
+		final IHUProductStorage productStorage = huStorage.getProductStorage(productId);
 		return productStorage;
 	}
 
@@ -400,7 +399,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				//
 				.setProduct(createProductLookupValue(productId))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
-				.setQtyCU(huStorage.getQty())
+				.setQtyCU(huStorage.getQty().getAsBigDecimal())
 				//
 				.build();
 

@@ -9,7 +9,6 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -27,6 +26,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -118,14 +118,14 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
 		final IHUStorage fromHUStorage = huContext.getHUStorageFactory()
 				.getStorage(hu);
-		final I_M_Product product = fromHUStorage.getSingleProductOrNull();
-		if (product == null)
+		final ProductId productId = fromHUStorage.getSingleProductIdOrNull();
+		if (productId == null)
 		{
 			return BigDecimal.ZERO;
 		}
 
-		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(product);
-		return productStorage.getQty();
+		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(productId);
+		return productStorage.getQty().getAsBigDecimal();
 
 	}
 
@@ -184,16 +184,16 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 
 		final IHUStorage fromHUStorage = huContext.getHUStorageFactory()
 				.getStorage(fromHU);
-		final I_M_Product product = fromHUStorage.getSingleProductOrNull();
-		if (product == null)
+		final ProductId productId = fromHUStorage.getSingleProductIdOrNull();
+		if (productId == null)
 		{
 			throw new AdempiereException("Cannot determine the product to transfer from " + fromHU);
 		}
-		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(product);
+		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(productId);
 
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
-				.setProduct(product)
+				.setProduct(productId)
 				.setQuantity(qtyCU, productStorage.getC_UOM())
 				.setDateAsToday()
 				.setFromReferencedModel(null)

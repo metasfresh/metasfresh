@@ -36,6 +36,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
@@ -186,8 +187,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final Properties ctx = getCtx();
 		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
-				shipmentSchedule.getM_Product(),
+				productId,
 				shipmentSchedule.getC_BPartner(),
 				true); // includeVirtualItem = true..similar case as with production
 	}
