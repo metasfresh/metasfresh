@@ -154,7 +154,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				.getModel(this, I_M_ReceiptSchedule.class);
 	}
 
-	protected Set<HuId> retrieveHUsToReceive()
+	private Set<HuId> retrieveHUsToReceive()
 	{
 		// https://github.com/metasfresh/metasfresh/issues/1863
 		// if the queryFilter is empty, then *do not* return everything to avoid an OOME
