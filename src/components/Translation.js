@@ -6,8 +6,11 @@ import { connect } from 'react-redux';
 
 import { getMessages } from '../actions/AppActions';
 
+// Fake singleton
+let INSTANCE = null;
+
 class Translation extends Component {
-  static getMessages = that => {
+  static getMessages = () => {
     return getMessages().then(response => {
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);
@@ -21,21 +24,23 @@ class Translation extends Component {
         return `{${key}}`;
       });
 
-      that && deepForceUpdate(that);
+      deepForceUpdate(INSTANCE);
     });
   };
 
   constructor(props) {
     super(props);
+
+    INSTANCE = this;
   }
 
   componentWillMount = () => {
-    Translation.getMessages(this);
+    Translation.getMessages();
   };
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.language !== this.props.language) {
-      Translation.getMessages(this);
+      Translation.getMessages();
     }
   }
 
