@@ -54,7 +54,14 @@ public class AttachmentEntryService
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
 	{
-		return  new AttachmentEntryService();
+		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
+		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
+
+		return new AttachmentEntryService(
+				attachmentEntryRepository,
+				attachmentEntryFactory,
+				attachmentMigrationService);
 	}
 
 	/**
@@ -62,12 +69,11 @@ public class AttachmentEntryService
 	 * because I think only {@link AttachmentEntryService} should be used from outside, or obtained via spring context.
 	 * But feel free to change this when useful.
 	 */
-	public AttachmentEntryService()
+	public AttachmentEntryService(
+			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
+			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
+			@NonNull final AttachmentMigrationService attachmentMigrationService)
 	{
-		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
-
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;

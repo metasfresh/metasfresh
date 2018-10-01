@@ -351,7 +351,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-09-28T16:50:41.385
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Attachment','ALTER TABLE public.AD_Attachment ADD COLUMN IF NOT EXISTS MigrationDate TIMESTAMP WITH TIME ZONE')
+/* DDL */ SELECT public.db_alter_table('AD_Attachment','ALTER TABLE public.AD_Attachment ADD COLUMN MigrationDate TIMESTAMP WITH TIME ZONE')
 ;
 
 DROP VIEW IF EXISTS AD_AttachmentEntry_ReferencedRecord_v;
