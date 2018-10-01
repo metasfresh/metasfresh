@@ -1,4 +1,5 @@
-FROM postgres:10.3
+FROM postgres:10.5
+#FROM postgres:9.5
 
 LABEL maintainer="dev@metasfresh-com"
 
@@ -17,7 +18,8 @@ RUN apt -y update \
 COPY provision_metasfresh_db.sh /docker-entrypoint-initdb.d/provision_metasfresh_db.sh
 
 
-COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/docker-entrypoint_init_only.sh
+#COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/docker-entrypoint_init_only.sh
+COPY docker-entrypoint_init_only-9.5.sh /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chown postgres:postgres /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chmod 700 /usr/local/bin/docker-entrypoint_init_only.sh
 
