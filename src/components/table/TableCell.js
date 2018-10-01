@@ -13,7 +13,6 @@ import {
   DATE_FIELD_TYPES,
   DATE_FIELD_FORMATS,
 } from '../../constants/Constants';
-import { getItemsByProperty } from '../../actions/WindowActions';
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 class TableCell extends PureComponent {
