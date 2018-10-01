@@ -50,7 +50,7 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -122,7 +122,7 @@ public class CandidateChangeHandlerTests
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
 						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, postMaterialEventService, stockRepository, stockCandidateService),
-						new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
+						new SupplyCandidateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 	}
 
 	@Test

@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_Attachment
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Attachment extends org.compiere.model.PO implements I_AD_Attachment, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 80107471L;
 
     /** Standard Constructor */
     public X_AD_Attachment (Properties ctx, int AD_Attachment_ID, String trxName)
@@ -51,32 +35,20 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Attachment[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Attachment.
+	/** Set Anlage.
 		@param AD_Attachment_ID 
 		Attachment for the document
 	  */
+	@Override
 	public void setAD_Attachment_ID (int AD_Attachment_ID)
 	{
 		if (AD_Attachment_ID < 1) 
@@ -85,9 +57,10 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Attachment_ID, Integer.valueOf(AD_Attachment_ID));
 	}
 
-	/** Get Attachment.
+	/** Get Anlage.
 		@return Attachment for the document
 	  */
+	@Override
 	public int getAD_Attachment_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Attachment_ID);
@@ -96,15 +69,23 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	/** Set Table.
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -113,9 +94,10 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -124,27 +106,46 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set BinaryData.
+	/** Set Binärwert.
 		@param BinaryData 
 		Binary Data
 	  */
+	@Override
 	public void setBinaryData (byte[] BinaryData)
 	{
 		set_ValueNoCheck (COLUMNNAME_BinaryData, BinaryData);
 	}
 
-	/** Get BinaryData.
+	/** Get Binärwert.
 		@return Binary Data
 	  */
+	@Override
 	public byte[] getBinaryData () 
 	{
 		return (byte[])get_Value(COLUMNNAME_BinaryData);
 	}
 
-	/** Set Record ID.
+	/** Set Migriert am.
+		@param MigrationDate Migriert am	  */
+	@Override
+	public void setMigrationDate (java.sql.Timestamp MigrationDate)
+	{
+		set_Value (COLUMNNAME_MigrationDate, MigrationDate);
+	}
+
+	/** Get Migriert am.
+		@return Migriert am	  */
+	@Override
+	public java.sql.Timestamp getMigrationDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MigrationDate);
+	}
+
+	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
 	  */
+	@Override
 	public void setRecord_ID (int Record_ID)
 	{
 		if (Record_ID < 0) 
@@ -153,9 +154,10 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
-	/** Get Record ID.
+	/** Get Datensatz-ID.
 		@return Direct internal record ID
 	  */
+	@Override
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
@@ -164,45 +166,41 @@ public class X_AD_Attachment extends PO implements I_AD_Attachment, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Text Message.
+	/** Set Mitteilung.
 		@param TextMsg 
 		Text Message
 	  */
-	public void setTextMsg (String TextMsg)
+	@Override
+	public void setTextMsg (java.lang.String TextMsg)
 	{
 		set_Value (COLUMNNAME_TextMsg, TextMsg);
 	}
 
-	/** Get Text Message.
+	/** Get Mitteilung.
 		@return Text Message
 	  */
-	public String getTextMsg () 
+	@Override
+	public java.lang.String getTextMsg () 
 	{
-		return (String)get_Value(COLUMNNAME_TextMsg);
+		return (java.lang.String)get_Value(COLUMNNAME_TextMsg);
 	}
 
-	/** Set Title.
+	/** Set Titel.
 		@param Title 
 		Name this entity is referred to as
 	  */
-	public void setTitle (String Title)
+	@Override
+	public void setTitle (java.lang.String Title)
 	{
 		set_Value (COLUMNNAME_Title, Title);
 	}
 
-	/** Get Title.
+	/** Get Titel.
 		@return Name this entity is referred to as
 	  */
-	public String getTitle () 
+	@Override
+	public java.lang.String getTitle () 
 	{
-		return (String)get_Value(COLUMNNAME_Title);
+		return (java.lang.String)get_Value(COLUMNNAME_Title);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getTitle());
-    }
 }

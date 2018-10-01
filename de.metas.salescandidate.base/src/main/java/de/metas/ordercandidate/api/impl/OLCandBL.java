@@ -37,7 +37,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
@@ -247,17 +247,20 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public AttachmentEntry addAttachment(@NonNull final String olCandExternalId, final String filename, final byte[] data)
+	public AttachmentEntry addAttachment(
+			@NonNull final String olCandExternalId,
+			final String filename,
+			@NonNull final byte[] data)
 	{
 		Check.assumeNotEmpty(filename, "filename is not empty");
 
-		final IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
 		final IOLCandDAO olCandsRepo = Services.get(IOLCandDAO.class);
 
 		final int olCandId = olCandsRepo.getOLCandIdByExternalId(olCandExternalId)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_OLCand_ID@: @ExternalId@=" + olCandExternalId));
 
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 		final TableRecordReference olCandRef = TableRecordReference.of(I_C_OLCand.Table_Name, olCandId);
-		return attachmentsBL.addEntry(olCandRef, filename, data);
+		return attachmentEntryService.createNewAttachment(olCandRef, filename, data);
 	}
 }

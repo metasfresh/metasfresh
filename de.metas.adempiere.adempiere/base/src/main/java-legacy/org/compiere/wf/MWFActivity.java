@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.api.IUserDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
@@ -60,9 +61,7 @@ import org.compiere.util.Trace;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -91,7 +90,7 @@ import de.metas.util.Services;
 public class MWFActivity extends X_AD_WF_Activity implements Runnable
 {
 	private static final long serialVersionUID = 2987002047442429221L;
-	
+
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("de.metas.document.UserNotifications", Type.REMOTE);
 	private static final String MSG_NotApproved = "NotApproved";
 
@@ -1058,7 +1057,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			note.setRecord(getAD_Table_ID(), getRecord_ID());
 			note.save();
 			// Attachment
-			Services.get(IAttachmentBL.class).addEntriesFromFiles(note, ImmutableList.of(report));
+
+			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(note, report);
 			return true;
 		}
 
@@ -1362,14 +1363,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				addTextMsg(e);
 				log.warn("", e);
 			}
-			
+
 			// Send Approval Notification
 			if (newState.equals(StateEngine.STATE_Aborted) && doc.getDoc_User_ID() > 0)
 			{
 				final String docInfo = (doc.getSummary() != null ? doc.getSummary() + "\n" : "")
 						+ (doc.getProcessMsg() != null ? doc.getProcessMsg() + "\n" : "")
 						+ (getTextMsg() != null ? getTextMsg() : "");
-				
+
 				final INotificationBL notificationBL = Services.get(INotificationBL.class);
 				notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
