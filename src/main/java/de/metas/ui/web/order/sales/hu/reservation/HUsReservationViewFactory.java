@@ -57,12 +57,14 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected void customizeViewLayout(
 			@NonNull final ViewLayout.Builder viewLayoutBuilder,
-			final JSONViewDataType IGNORED)
+			final JSONViewDataType viewDataType)
 	{
 		viewLayoutBuilder
 				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
+						viewDataType,
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
@@ -77,8 +79,7 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorViewRepository(@NonNull final SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)
 	{
 		huEditorViewRepositoryBuilder
-				.showBestBeforeDate(true)
-				.showLocator(true);
+				.showBestBeforeDate(true);
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
@@ -96,6 +97,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	@Autowired
 	private HUReservationService huReservationService;
+
+	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
@@ -254,7 +257,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				//
 				.addElementsFromViewRowClass(HUEditorRow.class, viewDataType);
 
-		customizeViewLayout(viewLayoutBuilder, viewDataType);
+		if (!alwaysUseSameLayout())
+		{
+			customizeViewLayout(viewLayoutBuilder, viewDataType);
+		}
 
 		return viewLayoutBuilder.build();
 	}
@@ -286,7 +292,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);
 
-			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
+			if (!alwaysUseSameLayout())
+			{
+				customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
+			}
 
 			huEditorViewRepository = huEditorViewRepositoryBuilder.build();
 		}
@@ -316,10 +325,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setHUEditorViewRepository(huEditorViewRepository)
 					.setParameters(request.getParameters());
 
-			//
-			// Call view customizers
-			getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
-			customizeHUEditorView(huViewBuilder);
+			if (!alwaysUseSameLayout())
+			{
+				//
+				// Call view customizers
+				getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
+				customizeHUEditorView(huViewBuilder);
+			}
 
 			return huViewBuilder.build();
 		}
@@ -449,6 +461,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
+	}
+
+	private boolean alwaysUseSameLayout()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
 	}
 
 }

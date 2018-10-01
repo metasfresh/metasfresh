@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.reflect.FieldReference;
@@ -36,6 +38,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -137,6 +140,7 @@ public final class ViewColumnHelper
 
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
 			@NonNull final Class<?> dataType,
+			@NonNull final JSONViewDataType viewDataType,
 			@NonNull final ClassViewColumnOverrides... columns)
 	{
 		Check.assumeNotEmpty(columns, "columnOverrides is not empty");
@@ -202,6 +206,7 @@ public final class ViewColumnHelper
 				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
 				.layoutsByViewType(layoutsByViewType)
+				.widgetSize(viewColumnAnn.widgetSize())
 				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
 				.build();
 	}
@@ -254,16 +259,12 @@ public final class ViewColumnHelper
 		{
 			return false;
 		}
-		else if (viewColumnLayout.displayed() == Displayed.TRUE)
-		{
-			return true;
-		}
 		else if (viewColumnLayout.displayed() == Displayed.SYSCONFIG)
 		{
 			final String displayedSysConfigPrefix = viewColumnLayout.displayedSysConfigPrefix();
 			if (Check.isEmpty(displayedSysConfigPrefix, true))
 			{
-				return false;
+				return viewColumnLayout.defaultDisplaySysConfig();
 			}
 			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
 
@@ -274,7 +275,10 @@ public final class ViewColumnHelper
 							Env.getAD_Client_ID(),
 							Env.getAD_Org_ID(Env.getCtx()));
 		}
-
+		else if (viewColumnLayout.displayed() == Displayed.TRUE)
+		{
+			return true;
+		}
 		Check.fail("ViewColumnLayout.displayed value={}; viewColumnLayout={}", viewColumnLayout.displayed(), viewColumnLayout);
 		return false;
 	}
@@ -285,6 +289,7 @@ public final class ViewColumnHelper
 				.setGridElement()
 				.setCaption(column.getCaption())
 				.setWidgetType(column.getWidgetType())
+				.setWidgetSize(column.getWidgetSize())
 				.setViewEditorRenderMode(column.getEditorRenderMode())
 				.setViewAllowSorting(column.isAllowSorting())
 				.restrictToMediaTypes(column.getRestrictToMediaTypes())
@@ -383,6 +388,9 @@ public final class ViewColumnHelper
 		private final ITranslatableString caption;
 		@NonNull
 		private final DocumentFieldWidgetType widgetType;
+
+		@Nullable
+		private final WidgetSize widgetSize;
 		@NonNull
 		private final ViewEditorRenderMode editorRenderMode;
 		private final boolean allowSorting;
