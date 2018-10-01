@@ -168,7 +168,7 @@ public class ContractOrderService
 		return nextTerm == null ? term : nextTerm;
 	}
 	
-	public void setOrderContractStatusAndSave(@NonNull final de.metas.contracts.subscription.model.I_C_Order order, @NonNull final String contractStatus)
+	public void setOrderContractStatusAndSave(@NonNull final I_C_Order order, @NonNull final String contractStatus)
 	{
 		order.setContractStatus(contractStatus);
 		save(order);
