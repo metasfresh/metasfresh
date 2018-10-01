@@ -138,8 +138,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorViewRepository(final SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)
 	{
 		huEditorViewRepositoryBuilder
-				.showBestBeforeDate(true)
-				.showLocator(true);
+				.showBestBeforeDate(true);
 	}
 
 	@Override

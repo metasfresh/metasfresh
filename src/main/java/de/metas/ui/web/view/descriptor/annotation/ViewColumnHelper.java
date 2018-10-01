@@ -147,10 +147,6 @@ public final class ViewColumnHelper
 
 		final ClassViewDescriptor descriptor = getDescriptor(dataType);
 		return Stream.of(columns)
-				.filter(columnOverride -> {
-					final ClassViewColumnDescriptor columnDescriptor = descriptor.getColumnByName(columnOverride.getFieldName());
-					return columnDescriptor.isDisplayed(viewDataType);
-				})
 				.map(columnOverride -> {
 					final ClassViewColumnDescriptor columnDescriptor = descriptor.getColumnByName(columnOverride.getFieldName());
 					return createClassViewColumnDescriptorEffective(columnDescriptor, columnOverride);

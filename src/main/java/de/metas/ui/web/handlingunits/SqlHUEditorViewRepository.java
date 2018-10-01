@@ -115,7 +115,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUReservationService huReservationService;
 
 	private final boolean showBestBeforeDate;
-	private final boolean showLocator;
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
@@ -128,15 +127,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
-			final boolean showBestBeforeDate,
-			final boolean showLocator)
+			final boolean showBestBeforeDate)
 	{
 		this.windowId = windowId;
 
 		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
 		this.showBestBeforeDate = showBestBeforeDate;
-		this.showLocator = showLocator;
 
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
@@ -263,10 +260,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		//
 		// Locator
-		if (showLocator)
-		{
-			huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
-		}
+
+		huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
 
 		//
 		// Product/UOM/Qty if there is only one product stored
