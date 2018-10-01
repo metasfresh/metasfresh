@@ -41,12 +41,9 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-<<<<<<< HEAD
-import de.metas.product.ProductId;
-=======
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
->>>>>>> master
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public abstract class AbstractHUTest
