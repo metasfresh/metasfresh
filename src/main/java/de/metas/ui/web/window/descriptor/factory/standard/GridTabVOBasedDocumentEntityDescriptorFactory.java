@@ -472,10 +472,12 @@ import lombok.NonNull;
 			@NonNull final GridFieldVO gridFieldVO,
 			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
 	{
-		if (!gridFieldVO.isParentLink())
-		{
-			return false;
-		}
+		// issue https://github.com/metasfresh/metasfresh/issues/4622 :
+		// Even if it's not flagged as parent-link in AD_Column, it can be configured that way in AD_Tab
+		// if (!gridFieldVO.isParentLink())
+		// {
+		// return false;
+		// }
 
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptorBuilder.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
 		final String parentLinkColumnName = entityBindings.getSqlParentLinkColumnName();

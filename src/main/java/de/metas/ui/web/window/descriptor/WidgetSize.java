@@ -36,7 +36,8 @@ public enum WidgetSize
 {
 	Small("S", X_AD_UI_Element.WIDGETSIZE_Small), //
 	Medium("M", X_AD_UI_Element.WIDGETSIZE_Medium), //
-	Large("L", X_AD_UI_Element.WIDGETSIZE_Large);
+	Large("L", X_AD_UI_Element.WIDGETSIZE_Large),
+	Default(null, null);
 
 	private final String json;
 	private final String adRefListValue;
@@ -74,5 +75,6 @@ public enum WidgetSize
 	}
 
 	private static final ImmutableMap<String, WidgetSize> adRefListValue2widgetType = Stream.of(values())
+			.filter(value -> !value.equals(Default))
 			.collect(GuavaCollectors.toImmutableMapByKey(WidgetSize::getAD_Ref_List_Value));
 }
