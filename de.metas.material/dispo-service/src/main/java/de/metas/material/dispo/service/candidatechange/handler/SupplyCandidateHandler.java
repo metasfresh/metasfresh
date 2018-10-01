@@ -37,7 +37,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class SupplyCandiateHandler implements CandidateHandler
+public class SupplyCandidateHandler implements CandidateHandler
 {
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
@@ -45,7 +45,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public SupplyCandiateHandler(
+	public SupplyCandidateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
 			@NonNull final CandidateRepositoryWriteService candidateRepository,
 			@NonNull final StockCandidateService stockCandidateService)

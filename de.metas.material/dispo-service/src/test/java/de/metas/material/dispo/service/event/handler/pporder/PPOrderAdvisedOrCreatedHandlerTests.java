@@ -37,7 +37,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -111,7 +111,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		stockRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryWriteService, stockCandidateService),
+				new SupplyCandidateHandler(candidateRepositoryRetrieval, candidateRepositoryWriteService, stockCandidateService),
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,

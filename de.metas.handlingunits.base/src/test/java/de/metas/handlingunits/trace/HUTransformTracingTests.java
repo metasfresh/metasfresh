@@ -85,7 +85,7 @@ public class HUTransformTracingTests
 		// this also invokes onAfterInit() which registers our IHUTrxListener
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
 		sysConfig.setName(HUTraceModuleInterceptor.SYSCONFIG_ENABLED);
-		sysConfig.setValue(StringUtils.toBooleanString(true));
+		sysConfig.setValue(StringUtils.ofBoolean(true));
 		save(sysConfig);
 		modelInterceptorRegistry.addModelInterceptor(HUTraceModuleInterceptor.INSTANCE);
 	}

@@ -1,11 +1,11 @@
 package de.metas.attachments.process;
 
-import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.Adempiere;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentDAO;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -31,14 +31,15 @@ import de.metas.util.Services;
 
 public class AD_AttachmentEntry_Download extends JavaProcess
 {
-	private final transient IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
-	
+	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+
 	@Override
 	protected String doIt()
 	{
-		final I_AD_AttachmentEntry entryRecord = getRecord(I_AD_AttachmentEntry.class);
-		final AttachmentEntry entry = attachmentDAO.toAttachmentEntry(entryRecord);
-		final byte[] data = attachmentDAO.retrieveData(entry);
+		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(getRecord_ID());
+
+		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
+		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
 
 		getResult().setReportData(data, entry.getFilename(), entry.getContentType());
 

@@ -28,7 +28,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandlerTests;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandler;
@@ -106,7 +106,7 @@ public class SupplyProposalEvaluatorTests
 		availableToPromiseRepository = new AvailableToPromiseRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),
+				new SupplyCandidateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,

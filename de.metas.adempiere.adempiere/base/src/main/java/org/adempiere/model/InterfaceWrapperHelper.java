@@ -729,6 +729,15 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	/**
+	 * Does the same as {@link #delete(Object)},
+	 * but this method can be static-imported into repository implementations which usually have their own method named "delete()".
+	 */
+	public static void deleteRecord(@NonNull final Object model)
+	{
+		delete(model);
+	}
+
 	public static void delete(@NonNull final Object model)
 	{
 		if (POWrapper.isHandled(model))

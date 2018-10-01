@@ -13,10 +13,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -46,6 +45,8 @@ import de.metas.util.Services;
 public class DerKurierDeliveryOrderEmailerManualTest
 {
 
+	private AttachmentEntryService attachmentEntryService;
+
 	@Before
 	public void init()
 	{
@@ -60,6 +61,8 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		msgConfig.setName(DerKurierDeliveryOrderEmailer.SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage);
 		msgConfig.setValue("DerKurier_DeliveryOrder_EmailMessage");
 		save(msgConfig);
+
+		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 	}
 
 	@Test
@@ -76,10 +79,11 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final I_DerKurier_DeliveryOrder deliveryOrder = newInstance(I_DerKurier_DeliveryOrder.class);
 		save(deliveryOrder);
 
-		Services.get(IAttachmentBL.class).addEntry(deliveryOrder, "deliveryOrder.csv", generateBytes());
-		final AttachmentEntry firstEntry = Services.get(IAttachmentBL.class).getFirstEntry(deliveryOrder);
+		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
-		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(new DerKurierShipperConfigRepository());
+		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
+		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository, attachmentEntryService);
+
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(mailbox, "orderProcessing@derKurier.test", firstEntry);
 
 		// now check in your mail server if the mail is OK..
