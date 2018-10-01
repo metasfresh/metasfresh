@@ -339,7 +339,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(qtyToLoad);
-		final List<I_M_HU> hus = helper.createHUs(huContext, huDefIFCO.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), pTomato, qtyToLoadBD, uomEach);
+		final List<I_M_HU> hus = helper.createHUs(huContext, huDefIFCO.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), pTomatoId, qtyToLoadBD, uomEach);
 
 		return hus;
 	}
@@ -409,8 +409,9 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		final BigDecimal huQty = helper.getHUContext()
 				.getHUStorageFactory()
 				.getStorage(vhu)
-				.getProductStorage(pTomato)
-				.getQty();
+				.getProductStorage(pTomatoId)
+				.getQty()
+				.getAsBigDecimal();
 		assertThat("HU Qty shall match QtyPicked", huQty, comparesEqualTo(qtyPicked));
 	}
 

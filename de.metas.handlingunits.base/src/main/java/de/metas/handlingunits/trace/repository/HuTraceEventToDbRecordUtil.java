@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -46,7 +47,7 @@ public class HuTraceEventToDbRecordUtil
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
 				.vhuId(HuId.ofRepoId(dbRecord.getVHU_ID()))
-				.productId(dbRecord.getM_Product_ID())
+				.productId(ProductId.ofRepoId(dbRecord.getM_Product_ID()))
 				.qty(dbRecord.getQty())
 				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
 				.vhuStatus(dbRecord.getVHUStatus())
@@ -88,7 +89,7 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
 		dbRecord.setVHU_ID(huTraceRecord.getVhuId().getRepoId());
-		dbRecord.setM_Product_ID(huTraceRecord.getProductId());
+		dbRecord.setM_Product_ID(huTraceRecord.getProductId().getRepoId());
 		dbRecord.setQty(huTraceRecord.getQty());
 		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());

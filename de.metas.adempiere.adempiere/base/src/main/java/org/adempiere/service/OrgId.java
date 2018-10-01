@@ -58,6 +58,22 @@ public class OrgId implements RepoIdAware
 		}
 	}
 
+	public static OrgId ofRepoIdOrAny(final int repoId)
+	{
+		if (repoId == ANY.repoId)
+		{
+			return ANY;
+		}
+		else if (repoId < 0)
+		{
+			return ANY;
+		}
+		else
+		{
+			return ofRepoId(repoId);
+		}
+	}
+
 	public static Optional<OrgId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));

@@ -26,26 +26,27 @@ public interface IHUCapacityBL extends ISingletonService
 	 *             Also, if <code>productId==null</code> and <code>itemDefProduct</code> does not reference any product either.
 	 */
 	Capacity getCapacity(I_M_HU_PI_Item_Product itemDefProduct, ProductId productId, I_C_UOM uom);
-	
+
 	@Deprecated
 	Capacity getCapacity(I_M_HU_PI_Item_Product itemDefProduct, I_M_Product product, I_C_UOM uom);
-
 
 	/**
 	 * Retrieve the and evaluate the {@link I_M_HU_PI_Item_Product} for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there is no such record, if returns a capacity definition with a
 	 * zero-capacity. If a record is found, return the result of {@link #getCapacity(I_M_HU_PI_Item_Product, I_M_Product, I_C_UOM)}.
 	 *
 	 * @param huItem
-	 * @param product
+	 * @param productId
 	 * @param uom
 	 * @param date
 	 * @return
 	 * @see IHUPIItemProductDAO#retrievePIMaterialItemProduct(I_M_HU_Item, I_M_Product, Date) to learn which I_M_HU_PI_Item_Product's capacitiy is returned if there is more than one.
 	 */
+	CapacityInterface getCapacity(I_M_HU_Item huItem, ProductId productId, I_C_UOM uom, Date date);
+
+	@Deprecated
 	CapacityInterface getCapacity(I_M_HU_Item huItem, I_M_Product product, I_C_UOM uom, final Date date);
 
 	boolean isInfiniteCapacity(I_M_HU_PI_Item_Product itemDefProduct);
 
 	boolean isValidItemProduct(final I_M_HU_PI_Item_Product itemDefProduct);
-
 }

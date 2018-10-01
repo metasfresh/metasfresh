@@ -87,7 +87,7 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		final List<I_M_HU> sourceTUsInLoadingUnit = Collections.singletonList(sourceTUInLoadingUnit);
 
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
-		helper.mergeTUs(huContext, sourceTUsInLoadingUnit, targetTUInLoadingUnit, getCUProduct(), BigDecimal.valueOf(2), getCUUOM());
+		helper.mergeTUs(huContext, sourceTUsInLoadingUnit, targetTUInLoadingUnit, getCUProductId(), BigDecimal.valueOf(2), getCUUOM());
 
 		//
 		// Assert data integrity on TARGET LU for both SOURCE TU and TARGET TU
@@ -151,7 +151,7 @@ public class MergeWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 		final I_M_HU targetTUInLoadingUnit = findTUInLUWithQty(loadingUnit, 5); // find a TU with 5 x CU
 
 		// we "offer" both TUs to the merge method, but expect it not to touch the second TU since only 2 CU shall be transferred
-		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProduct(),
+		helper.mergeTUs(huContext, splitTradingUnits, targetTUInLoadingUnit, getCUProductId(),
 				BigDecimal.valueOf(2),
 				getCUUOM());
 

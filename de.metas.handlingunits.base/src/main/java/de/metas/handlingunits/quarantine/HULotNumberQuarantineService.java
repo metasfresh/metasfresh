@@ -7,7 +7,6 @@ import java.util.List;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -19,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.LotNumberQuarantine;
 import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -71,10 +71,8 @@ public class HULotNumberQuarantineService
 
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final I_M_Product productRecord = productStorage.getM_Product();
-
-			final LotNumberQuarantine lotNumberQuarantine = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
-
+			final ProductId productId = productStorage.getProductId();
+			final LotNumberQuarantine lotNumberQuarantine = lotNumberQuarantineRepository.getByProductIdAndLot(productId, lotNumber);
 			if (lotNumberQuarantine != null)
 			{
 				return true;

@@ -466,9 +466,7 @@ public class HU2PackingItemsAllocator
 			return;
 		}
 
-		final Quantity qtyToPackSrc = Quantity.of(
-				vhuProductStorage.getQty(),
-				vhuProductStorage.getC_UOM());
+		final Quantity qtyToPackSrc = vhuProductStorage.getQty();
 
 		final I_C_UOM qtyToPackUOM = itemToPack.getC_UOM();
 		Quantity qtyToPack = uomConversionBL.convertQuantityTo(qtyToPackSrc, UOMConversionContext.of(productId), qtyToPackUOM);

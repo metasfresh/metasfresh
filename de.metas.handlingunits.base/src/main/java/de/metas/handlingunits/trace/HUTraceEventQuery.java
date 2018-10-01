@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.OptionalInt;
 
 import de.metas.handlingunits.HuId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -89,7 +90,7 @@ public class HUTraceEventQuery
 
 	HuId vhuId;
 
-	int productId;
+	ProductId productId;
 
 	BigDecimal qty;
 

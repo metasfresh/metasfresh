@@ -702,7 +702,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext1)
-					.setProduct(rs.getM_Product())
+					.setProductId(ProductId.ofRepoId(rs.getM_Product_ID()))
 					.setQty(receiptScheduleBL.getQtyMoved(rs))
 					.setUOM(rs.getC_UOM())
 					.setAttributeStorageFrom(huAttributeStorageFrom)

@@ -26,10 +26,10 @@ package de.metas.handlingunits.allocation.transfer;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.product.ProductId;
 
 /**
  * Split definition for Transport Unit / Loading Unit.
@@ -55,7 +55,7 @@ public interface IHUSplitDefinition
 	/**
 	 * @return Customer Unit Product
 	 */
-	I_M_Product getCuProduct();
+	ProductId getCuProductId();
 
 	/**
 	 * @return Customer Unit UOM

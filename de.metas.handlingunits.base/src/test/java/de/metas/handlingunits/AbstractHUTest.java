@@ -40,6 +40,7 @@ import org.junit.runner.Description;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public abstract class AbstractHUTest
@@ -75,7 +76,9 @@ public abstract class AbstractHUTest
 	 * Value: Tomato
 	 */
 	protected I_M_Product pTomato;
+	protected ProductId pTomatoId;
 	protected I_M_Product pSalad;
+	protected ProductId pSaladId;
 
 	protected I_M_Attribute attr_CountryMadeIn;
 	protected I_M_Attribute attr_Volume;
@@ -201,7 +204,9 @@ public abstract class AbstractHUTest
 		pmBag = helper.pmBag;
 
 		pTomato = helper.pTomato;
+		pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 		pSalad = helper.pSalad;
+		pSaladId = ProductId.ofRepoId(pSalad.getM_Product_ID());
 	}
 
 	/**

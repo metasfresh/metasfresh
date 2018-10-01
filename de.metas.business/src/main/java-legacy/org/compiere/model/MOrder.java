@@ -513,7 +513,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 *            <ul>
 	 *            <li>the new other line's <code>Ref_OrderLine_ID</code> is set to <code>fromLine</code>'s ID
 	 *            <li>if <code>fromLine</code> has a product with <code>AD_Org_ID!=0</code> and of fromLine's <code>AD_Org_ID</code> is different from this order's <code>AD_Org_ID</code>, then
-	 *            {@link IProductDAO#retrieveMappedProductOrNull(I_M_Product, I_AD_Org)} is called, to get the other org's pendant product.
+	 *            {@link IProductDAO#retrieveMappedProductIdOrNull(I_M_Product, I_AD_Org)} is called, to get the other org's pendant product.
 	 *            </ul>
 	 * @param copyASI
 	 * @param fromLine

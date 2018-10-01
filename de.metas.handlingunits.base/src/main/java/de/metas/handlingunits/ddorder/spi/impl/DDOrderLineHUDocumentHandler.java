@@ -25,7 +25,6 @@ package de.metas.handlingunits.ddorder.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -33,6 +32,7 @@ import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -49,14 +49,14 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 	 * <ul>
 	 * <li><code>null</code> is the line has no product</li>
 	 * <li>the line's current PIIP f the line is new and already has a PIIP</li>
-	 * <li>the result of {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(org.compiere.model.I_M_Product, org.compiere.model.I_C_BPartner, java.util.Date, String)} (with type="transport unit")
+	 * <li>the result of {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(ProductId, org.compiere.model.I_C_BPartner, java.util.Date, String)} (with type="transport unit")
 	 * otherwise</li>
 	 * </ul>
 	 */
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final I_M_Product product)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final ProductId productId)
 	{
-		if (product == null || product.getM_Product_ID() <= 0)
+		if (productId == null)
 		{
 			// No product selected. Nothing to do.
 			return null;
@@ -77,7 +77,7 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 			final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
 			final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(product, ddOrder.getC_BPartner(), ddOrder.getDateOrdered(), huUnitType,
+			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(productId, ddOrder.getC_BPartner(), ddOrder.getDateOrdered(), huUnitType,
 					false); // allowInfiniteCapacity = false
 		}
 
@@ -100,8 +100,8 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 			return;
 		}
 		
-		final I_M_Product product = ddOrderLine.getM_Product();
-		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(ddOrderLine, product);
+		final ProductId productId = ProductId.ofRepoIdOrNull(ddOrderLine.getM_Product_ID());
+		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(ddOrderLine, productId);
 		ddOrderLine.setM_HU_PI_Item_Product(piip);
 	}
 

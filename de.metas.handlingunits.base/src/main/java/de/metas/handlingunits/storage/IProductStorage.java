@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.product.IProductBL;
@@ -54,16 +53,10 @@ public interface IProductStorage
 			{
 				return "";
 			}
-			
+
 			return Services.get(IProductBL.class).getProductName(productStorage.getProductId());
 		}
 	};
-
-	/**
-	 * @return product; never <code>null</code>
-	 */
-	@Deprecated
-	I_M_Product getM_Product();
 
 	ProductId getProductId();
 
@@ -71,7 +64,12 @@ public interface IProductStorage
 
 	BigDecimal getQtyFree();
 
-	BigDecimal getQty();
+	Quantity getQty();
+
+	default BigDecimal getQtyAsBigDecimal()
+	{
+		return getQty().getAsBigDecimal();
+	}
 
 	/**
 	 * Gets storage Qty, converted to given UOM.
@@ -98,4 +96,5 @@ public interface IProductStorage
 	 * @return true if this storage allows negative storages
 	 */
 	boolean isAllowNegativeStorage();
+
 }

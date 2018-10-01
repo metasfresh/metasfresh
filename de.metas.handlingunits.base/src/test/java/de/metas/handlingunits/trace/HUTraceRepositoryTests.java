@@ -21,6 +21,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -65,7 +66,7 @@ public class HUTraceRepositoryTests
 				.orgId(10)
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
 				.qty(BigDecimal.valueOf(100))
-				.productId(23)
+				.productId(ProductId.ofRepoId(23))
 				.type(HUTraceType.TRANSFORM_LOAD);
 	}
 
@@ -95,7 +96,7 @@ public class HUTraceRepositoryTests
 				.orgId(13)
 				.eventTime(eventTime)
 				.topLevelHuId(HuId.ofRepoId(2))
-				.productId(23)
+				.productId(ProductId.ofRepoId(23))
 				.qty(BigDecimal.TEN)
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
 				.vhuId(HuId.ofRepoId(12))
@@ -118,7 +119,7 @@ public class HUTraceRepositoryTests
 				.orgId(13)
 				.eventTime(eventTime)
 				.topLevelHuId(HuId.ofRepoId(2))
-				.productId(23)
+				.productId(ProductId.ofRepoId(23))
 				.qty(BigDecimal.TEN)
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
 				.vhuId(HuId.ofRepoId(12))

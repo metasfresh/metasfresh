@@ -184,7 +184,7 @@ public class ShipmentScheduleHelper
 					trx.getReferencedModel(), // referenced object
 					dummyItem, // M_HU_Item
 					dummyItem, // VHU M_HU_Item
-					trx.getProduct(),
+					trx.getProductId(),
 					trx.getQuantity().negate(),
 					trx.getDate());
 

@@ -36,9 +36,9 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
-import de.metas.util.Services;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

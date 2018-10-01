@@ -305,7 +305,7 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuId());
 			queryIsEmpty = false;
 		}
-		if (query.getProductId() > 0)
+		if (query.getProductId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Product_ID, query.getProductId());
 			queryIsEmpty = false;

@@ -16,9 +16,9 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -259,13 +259,11 @@ public class CustomerReturnLineHUGenerator
 		IProductStorage productStorage = _inOutLine2productStorage.get(inOutLineId);
 		if (productStorage == null)
 		{
-			final I_M_Product product = inOutLine.getM_Product();
-			final I_C_UOM uom = inOutLine.getC_UOM();
+			final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
+			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(inOutLine.getC_UOM_ID());
 			final BigDecimal qty = inOutLine.getQtyEntered();
 
-			productStorage = new PlainProductStorage(product, uom, qty);
-
-			Check.assumeNotNull(productStorage, "productStorage not null");
+			productStorage = new PlainProductStorage(productId, uom, qty);
 			_inOutLine2productStorage.put(inOutLineId, productStorage);
 		}
 		return productStorage;

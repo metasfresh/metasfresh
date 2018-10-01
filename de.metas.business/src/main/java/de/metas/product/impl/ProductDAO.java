@@ -35,8 +35,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -117,9 +117,9 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public I_M_Product retrieveMappedProductOrNull(final I_M_Product product,
-			final I_AD_Org org)
+	public ProductId retrieveMappedProductIdOrNull(final ProductId productId, final OrgId orgId)
 	{
+		final I_M_Product product = getById(productId);
 		final IProductMappingAware productMappingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(product, IProductMappingAware.class);
 		if (productMappingAware.getM_Product_Mapping_ID() <= 0)
 		{
@@ -130,12 +130,12 @@ public class ProductDAO implements IProductDAO
 			return null;
 		}
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, product)
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
-				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, org.getAD_Org_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, orgId)
 				.create()
-				.firstOnly(I_M_Product.class);
+				.firstIdOnly(ProductId::ofRepoId);
 	}
 
 	@Override
@@ -222,7 +222,7 @@ public class ProductDAO implements IProductDAO
 	{
 		return loadOutOfTrx(id, modelClass);
 	}
-	
+
 	@Override
 	public String getProductCategoryNameById(@NonNull final ProductCategoryId id)
 	{

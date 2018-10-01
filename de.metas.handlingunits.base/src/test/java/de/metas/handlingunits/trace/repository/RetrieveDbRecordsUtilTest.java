@@ -21,9 +21,9 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.util.Services;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceRepositoryTests;
+import de.metas.util.Services;
 
 /*
  * #%L

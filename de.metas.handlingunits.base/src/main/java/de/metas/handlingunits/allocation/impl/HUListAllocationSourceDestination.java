@@ -34,7 +34,6 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -57,7 +56,6 @@ import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.product.IProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -246,7 +244,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			else
 			{
 				final IHUStorage storage = request.getHUContext().getHUStorageFactory().getStorage(hu);
-				final BigDecimal storageQty = storage == null ? BigDecimal.ZERO : storage.getQtyForProductStorages(request.getC_UOM()).getQty();
+				final BigDecimal storageQty = storage == null ? BigDecimal.ZERO : storage.getQtyForProductStorages(request.getC_UOM()).getAsBigDecimal();
 
 				// gh #1237: cuQty does *not* have to be a an "integer" number.
 				// If the overall HU's storage is not always integer and given that the aggregate's TU qty is always an integer, cuQty can't be an integer at any times either
@@ -336,13 +334,9 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			 */
 			private IAllocationRequest createAllocationRequest(final IProductStorage productStorage)
 			{
-				final I_M_Product product = Services.get(IProductDAO.class).getById(productStorage.getProductId());
-				final BigDecimal qty = productStorage.getQty();
-				final I_C_UOM uom = productStorage.getC_UOM();
 				final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
-						product,
-						qty,
-						uom,
+						productStorage.getProductId(),
+						productStorage.getQty(),
 						getHUIterator().getDate() // date
 				);
 				return request;

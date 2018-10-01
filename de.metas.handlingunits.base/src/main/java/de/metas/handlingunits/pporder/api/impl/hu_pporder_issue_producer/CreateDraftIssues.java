@@ -247,7 +247,7 @@ public class CreateDraftIssues
 		}
 		else
 		{
-			return Quantity.of(from.getQty(), from.getC_UOM());
+			return from.getQty();
 		}
 	}
 }

@@ -10,7 +10,6 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
 
 /**
  * Handling Unit Instance Storage
@@ -32,11 +31,11 @@ public interface IHUStorage extends IGenericHUStorage
 	/**
 	 * Gets product storage for given product.
 	 *
-	 * @param product
+	 * @param productId
 	 * @return product storage; never return null;
 	 * @throws AdempiereException in case product storage was not found
 	 */
-	IHUProductStorage getProductStorage(I_M_Product product);
+	IHUProductStorage getProductStorage(ProductId productId);
 
 	/**
 	 * Gets product storage for given product.
@@ -44,17 +43,7 @@ public interface IHUStorage extends IGenericHUStorage
 	 * @param productId
 	 * @return product storage; if no storage was found, null is returned
 	 */
-	IHUProductStorage getProductStorageOrNull(int productId);
-
-	default IHUProductStorage getProductStorageOrNull(@NonNull I_M_Product product)
-	{
-		return getProductStorageOrNull(product.getM_Product_ID());
-	}
-
-	default IHUProductStorage getProductStorageOrNull(@NonNull ProductId productId)
-	{
-		return getProductStorageOrNull(productId.getRepoId());
-	}
+	IHUProductStorage getProductStorageOrNull(ProductId productId);
 
 	/**
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}, in the given uom
@@ -88,7 +77,7 @@ public interface IHUStorage extends IGenericHUStorage
 	boolean isSingleProductStorage();
 
 	/**
-	 * Gets the {@link I_M_Product} stored in this HU Storage.
+	 * Gets the {@link ProductId} stored in this HU Storage.
 	 * 
 	 * @return
 	 *         <ul>
@@ -97,6 +86,9 @@ public interface IHUStorage extends IGenericHUStorage
 	 *         </ul>
 	 * @see #isSingleProductStorage()
 	 */
+	ProductId getSingleProductIdOrNull();
+
+	@Deprecated
 	I_M_Product getSingleProductOrNull();
 
 	/**

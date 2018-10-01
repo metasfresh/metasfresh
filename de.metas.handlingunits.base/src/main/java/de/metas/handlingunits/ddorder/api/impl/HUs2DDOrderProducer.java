@@ -604,7 +604,7 @@ public class HUs2DDOrderProducer
 			final I_M_HU hu = huProductStorage.getM_HU();
 			hus.add(hu);
 
-			final BigDecimal huQtyInSourceUOM = huProductStorage.getQty();
+			final BigDecimal huQtyInSourceUOM = huProductStorage.getQty().getAsBigDecimal();
 			qtyInSourceUOM = qtyInSourceUOM.add(huQtyInSourceUOM);
 
 			final BigDecimal huQtyInStockingUOM = huProductStorage.getQtyInStockingUOM();

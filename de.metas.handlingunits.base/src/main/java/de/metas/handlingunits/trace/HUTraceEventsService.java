@@ -1,6 +1,5 @@
 package de.metas.handlingunits.trace;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
-import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -37,6 +35,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -287,7 +287,7 @@ public class HUTraceEventsService
 					continue;
 				}
 
-				final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+				final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 				if (!productAndQty.isPresent())
 				{
 					logger.info("vhu of the current trxLine has no product and quantity; nothing to do with that trxLine; vhu={}; trxLine={}", vhu, trxLine);
@@ -300,8 +300,8 @@ public class HUTraceEventsService
 				traceEventBuilder
 						.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 						.topLevelHuId(HuId.ofRepoId(vhuTopLevelHuId))
-						.productId(productAndQty.get().getLeft().getM_Product_ID())
-						.qty(productAndQty.get().getRight())
+						.productId(productAndQty.get().getLeft())
+						.qty(productAndQty.get().getRight().getAsBigDecimal())
 						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
 
 				final I_M_HU_Trx_Line sourceTrxLine = trxLine.getParent_HU_Trx_Line();
@@ -339,7 +339,7 @@ public class HUTraceEventsService
 							.vhuId(HuId.ofRepoId(sourceVhu.getM_HU_ID()))
 							.topLevelHuId(HuId.ofRepoId(sourceVhuTopLevelHuId))
 							.vhuSourceId(null)
-							.qty(productAndQty.get().getRight().negate())
+							.qty(productAndQty.get().getRight().getAsBigDecimal().negate())
 							.build();
 
 					// add the source before the destination because I think it's nicer if it has the lower ID
@@ -429,7 +429,7 @@ public class HUTraceEventsService
 
 		for (final I_M_HU vhu : vhus)
 		{
-			final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 			if (!productAndQty.isPresent())
 			{
 				logger.info("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
@@ -438,13 +438,13 @@ public class HUTraceEventsService
 
 			builder.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 					.vhuStatus(vhu.getHUStatus())
-					.productId(productAndQty.get().getLeft().getM_Product_ID())
+					.productId(productAndQty.get().getLeft())
 					.topLevelHuId(oldTopLevelHuId)
-					.qty(productAndQty.get().getRight().negate());
+					.qty(productAndQty.get().getRight().getAsBigDecimal().negate());
 			huTraceRepository.addEvent(builder.build());
 
 			builder.topLevelHuId(newTopLevelHuId)
-					.qty(productAndQty.get().getRight());
+					.qty(productAndQty.get().getRight().getAsBigDecimal());
 			huTraceRepository.addEvent(builder.build());
 		}
 	}
@@ -514,12 +514,12 @@ public class HUTraceEventsService
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final I_M_HU vhu)
 	{
-		final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 		Check.errorUnless(productAndQty.isPresent(), "Missing product and quantity for vhu={}", vhu);
 
 		return builder
 				.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
-				.productId(productAndQty.get().getLeft().getM_Product_ID())
-				.qty(productAndQty.get().getRight());
+				.productId(productAndQty.get().getLeft())
+				.qty(productAndQty.get().getRight().getAsBigDecimal());
 	}
 }

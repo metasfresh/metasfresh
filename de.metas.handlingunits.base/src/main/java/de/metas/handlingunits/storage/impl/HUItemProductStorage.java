@@ -26,8 +26,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.storage.IHUItemStorage;
@@ -47,20 +47,18 @@ import lombok.NonNull;
 /* package */class HUItemProductStorage implements IProductStorage
 {
 	private final IHUItemStorage itemStorage;
-	private final I_M_Product product;
 	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final Date date;
 
 	public HUItemProductStorage(
 			@NonNull final IHUItemStorage itemStorage,
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			@NonNull final Date date)
 	{
 		this.itemStorage = itemStorage;
-		this.product = product;
-		productId = ProductId.ofRepoId(product.getM_Product_ID());
+		this.productId = productId;
 		this.uom = uom;
 		this.date = date;
 
@@ -70,7 +68,7 @@ import lombok.NonNull;
 	public String toString()
 	{
 		return getClass().getSimpleName() + "["
-				+ "\nProduct: " + product.getName()
+				+ "\nProduct: " + productId
 				+ "\nQty: " + getQty()
 				+ "\nCapacity: " + getTotalCapacity()
 				+ "\nItem storage: " + itemStorage
@@ -80,13 +78,7 @@ import lombok.NonNull;
 
 	public CapacityInterface getTotalCapacity()
 	{
-		return itemStorage.getCapacity(product, uom, date);
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		return product;
+		return itemStorage.getCapacity(productId, uom, date);
 	}
 
 	@Override
@@ -104,7 +96,7 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final CapacityInterface capacityAvailable = itemStorage.getAvailableCapacity(getM_Product(), getC_UOM(), date);
+		final CapacityInterface capacityAvailable = itemStorage.getAvailableCapacity(getProductId(), getC_UOM(), date);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -113,23 +105,20 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public BigDecimal getQty()
+	public Quantity getQty()
 	{
-		final BigDecimal qty = itemStorage.getQty(getM_Product(), getC_UOM());
-		return qty;
+		return itemStorage.getQuantity(getProductId(), getC_UOM());
 	}
 
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
 		final ProductId productId = getProductId();
-		final BigDecimal qty = getQty();
-		final I_C_UOM uomFrom = getC_UOM();
+		final Quantity qty = getQty();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(productId, qty, uomFrom, uom);
-
-		return Quantity.of(convertQty, uom);
+		final UOMConversionContext conversionCtx= UOMConversionContext.of(productId);
+		return uomConversionBL.convertQuantityTo(qty, conversionCtx, uom);
 	}
 
 	@Override
@@ -160,7 +149,7 @@ import lombok.NonNull;
 	@Override
 	public boolean isEmpty()
 	{
-		return itemStorage.isEmpty(getM_Product());
+		return itemStorage.isEmpty(getProductId());
 	}
 
 	@Override

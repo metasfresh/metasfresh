@@ -352,7 +352,7 @@ public class DDOrderLinesAllocator
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();
-		Quantity qtyToAllocateRemaining = new Quantity(huProductStorage.getQty(), huProductStorage.getC_UOM());
+		Quantity qtyToAllocateRemaining = huProductStorage.getQty();
 
 		DDOrderLineToAllocate lastDDOrderLineToAllocate = null;
 		for (final DDOrderLineToAllocate ddOrderLineToAllocate : ddOrderLinesToAllocate)

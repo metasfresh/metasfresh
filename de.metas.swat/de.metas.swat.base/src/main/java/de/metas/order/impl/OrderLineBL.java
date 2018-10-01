@@ -34,7 +34,9 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_AD_Org;
@@ -572,26 +574,30 @@ public class OrderLineBL implements IOrderLineBL
 		// link the line with the one from the counter document
 		line.setRef_OrderLine_ID(fromLine.getC_OrderLine_ID());
 
-		if (line.getM_Product_ID() > 0)      // task 09700
+		final ProductId lineProductId = ProductId.ofRepoIdOrNull(line.getM_Product_ID());
+		if (lineProductId != null)      // task 09700
 		{
-			final IProductDAO productDAO = Services.get(IProductDAO.class);
+			final IProductDAO productsRepo = Services.get(IProductDAO.class);
+			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-			final I_AD_Org org = line.getAD_Org();
-			final org.compiere.model.I_M_Product lineProduct = line.getM_Product();
+			final I_AD_Org lineOrg = orgsRepo.getById(line.getAD_Org_ID());
+			final I_M_Product lineProduct = productsRepo.getById(lineProductId, I_M_Product.class);
 
-			if (lineProduct.getAD_Org_ID() != 0)
+			final OrgId productOrgId = OrgId.ofRepoIdOrAny(lineProduct.getAD_Org_ID());
+			if (!productOrgId.isAny())
 			{
 				// task 09700 the product from the original order is org specific, so we need to substitute it with the product from the counter-org.
-				final org.compiere.model.I_M_Product counterProduct = productDAO.retrieveMappedProductOrNull(lineProduct, org);
-				if (counterProduct == null)
+				final ProductId counterProductId = productsRepo.retrieveMappedProductIdOrNull(lineProductId, productOrgId);
+				if (counterProductId == null)
 				{
+					final I_AD_Org productOrg = orgsRepo.getById(productOrgId);
 					final String msg = msgBL.getMsg(InterfaceWrapperHelper.getCtx(line),
 							MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
-							new Object[] { lineProduct.getValue(), lineProduct.getAD_Org().getName(), org.getName() });
+							new Object[] { lineProduct.getValue(), productOrg.getName(), lineOrg.getName() });
 					throw new AdempiereException(msg);
 				}
-				line.setM_Product(counterProduct);
+				line.setM_Product_ID(counterProductId.getRepoId());
 			}
 		}
 

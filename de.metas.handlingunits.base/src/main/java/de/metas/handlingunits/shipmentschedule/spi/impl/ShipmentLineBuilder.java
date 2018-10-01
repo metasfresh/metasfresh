@@ -46,7 +46,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
@@ -111,7 +110,6 @@ import lombok.NonNull;
 	private final transient IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	/**
@@ -462,9 +460,8 @@ import lombok.NonNull;
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final I_M_Product product = productsRepo.getById(productId);
 					final I_C_UOM productUOM = productBL.getStockingUOM(productId);
-					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, product, productUOM);
+					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
 					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty, productUOM);
 					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUFromCapacity));
 				}
@@ -543,10 +540,9 @@ import lombok.NonNull;
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-			final I_M_Product product = productsRepo.getById(productId);
 			final I_C_UOM productUOM = productBL.getStockingUOM(productId);
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-					.setProduct(product)
+					.setProductId(productId)
 					.setQty(shipmentLine.getMovementQty())
 					.setUOM(productUOM)
 					.setAttributeStorageFrom(huAttributeStorageFrom)

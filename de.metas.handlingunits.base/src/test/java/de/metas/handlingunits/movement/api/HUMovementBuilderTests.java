@@ -136,7 +136,7 @@ public class HUMovementBuilderTests
 		lutuProducer.setLUItemPI(testsupport.piLU_Item_IFCO);
 		lutuProducer.setTUPI(testsupport.piTU_IFCO);
 
-		testsupport.helper.load(lutuProducer, testsupport.helper.pTomato, loadCuQty, testsupport.helper.uomKg);
+		testsupport.helper.load(lutuProducer, testsupport.helper.pTomatoProductId, loadCuQty, testsupport.helper.uomKg);
 		final List<I_M_HU> hus = lutuProducer.getCreatedHUs();
 
 		assertThat(hus.size(), is(1));

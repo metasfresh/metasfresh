@@ -151,7 +151,7 @@ public class RemoveQtyFromHUCommand
 	 * Create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
 	 *
 	 * @param qtyCU
-	 * @param product
+	 * @param productId
 	 * @param candidate
 	 * @return
 	 */

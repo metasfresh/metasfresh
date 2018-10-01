@@ -135,7 +135,7 @@ public class PickHUCommand
 			return Quantity.zero(uom);
 		}
 
-		return Quantity.of(productStorage.getQty(), productStorage.getC_UOM());
+		return productStorage.getQty();
 	}
 
 	private I_M_ShipmentSchedule getShipmentSchedule()

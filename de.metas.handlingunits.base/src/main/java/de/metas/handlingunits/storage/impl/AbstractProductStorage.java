@@ -26,8 +26,8 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -110,22 +110,22 @@ public abstract class AbstractProductStorage implements IProductStorage
 	}
 
 	@Override
-	public final BigDecimal getQty()
+	public final Quantity getQty()
 	{
-		return getCapacity().getQty();
+		final BigDecimal qtyBD = getCapacity().getQty();
+		final I_C_UOM uom = getC_UOM();
+		return Quantity.of(qtyBD, uom);
 	}
 
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
 		final ProductId productId = getProductId();
-		final BigDecimal qty = getQty();
-		final I_C_UOM uomFrom = getC_UOM();
+		final Quantity qty = getQty();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(productId, qty, uomFrom, uom);
-
-		return Quantity.of(convertQty, uom);
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		return uomConversionBL.convertQuantityTo(qty, conversionCtx, uom);
 	}
 
 	@Override
@@ -134,12 +134,6 @@ public abstract class AbstractProductStorage implements IProductStorage
 		return getClass().getSimpleName() + " ["
 				+ "capacity=" + (_capacity == null ? "(not loaded yet)" : _capacity.toString())
 				+ "]";
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		return getTotalCapacity().getM_Product();
 	}
 
 	@Override
@@ -272,24 +266,13 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public boolean isEmpty()
 	{
-		final BigDecimal qty = getQty();
-		if (qty.signum() == 0)
-		{
-			return true;
-		}
-
-		return false;
+		return getQty().isZero();
 	}
 
 	public boolean isFull()
 	{
 		final BigDecimal qtyFree = getQtyFree();
-		if (qtyFree.signum() == 0)
-		{
-			return true;
-		}
-
-		return false;
+		return qtyFree.signum() == 0;
 	}
 
 	@Override

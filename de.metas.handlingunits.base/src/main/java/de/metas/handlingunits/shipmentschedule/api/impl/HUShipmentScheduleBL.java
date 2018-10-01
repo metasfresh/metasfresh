@@ -46,7 +46,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
@@ -88,6 +87,7 @@ import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBu
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
@@ -541,7 +541,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
 		final I_C_UOM cuUOM = shipmentScheduleBL.getUomOfProduct(schedule);
-		final I_M_Product cuProduct = schedule.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(schedule);
 		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(schedule);
@@ -552,7 +552,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
-				cuProduct,
+				cuProductId,
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);

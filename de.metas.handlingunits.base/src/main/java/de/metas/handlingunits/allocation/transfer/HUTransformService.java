@@ -19,6 +19,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -434,7 +435,7 @@ public class HUTransformService
 			final Quantity qtyToUse;
 			if (cuHU == null || qtyCU == null)
 			{
-				qtyToUse = Quantity.of(singleProductStorage.getQty().multiply(factor), singleProductStorage.getC_UOM());
+				qtyToUse = singleProductStorage.getQty().multiply(factor);
 			}
 			else
 			{
@@ -553,7 +554,9 @@ public class HUTransformService
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
-		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, tuPIItemProduct.getM_Product(), tuPIItemProduct.getC_UOM());
+		final ProductId productId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(tuPIItemProduct.getC_UOM_ID());
+		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, productId, uom);
 		destination.addCUPerTU(capacity);
 
 		destination.setNoLU();
@@ -921,7 +924,7 @@ public class HUTransformService
 		{
 			final IHUProductStorage firstProductStorage = productStorages.get(0);
 
-			final BigDecimal qtyOfStorage = Preconditions.checkNotNull(firstProductStorage.getQty(), "Qty of firstProductStorage may not be null; firstProductStorage=%s", firstProductStorage);
+			final BigDecimal qtyOfStorage = firstProductStorage.getQty().getAsBigDecimal();
 
 			final BigDecimal sourceQtyCUperTU; // will be used to get the overall cuQty to transfer, by multiplying with the given qtyTU
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
@@ -992,11 +995,8 @@ public class HUTransformService
 		{
 			final IHUProductStorage currentHuProductStorage = productStorages.get(i);
 
-			final Quantity qtyCU = Quantity.of(Preconditions.checkNotNull(currentHuProductStorage.getQty(), "Qty of currentHuProductStorage=%s may not be null", currentHuProductStorage),
-					Preconditions.checkNotNull(currentHuProductStorage.getC_UOM(), "UOM of currentHuProductStorage=%s may not be null", currentHuProductStorage));
-			createdTUs.forEach(createdTU -> {
-				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
-			});
+			final Quantity qtyCU = currentHuProductStorage.getQty();
+			createdTUs.forEach(createdTU -> cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU));
 		}
 
 		return createdTUs;
@@ -1166,7 +1166,7 @@ public class HUTransformService
 			final IHUProductStorage productStorageOrNull = handlingUnitsBL
 					.getStorageFactory()
 					.getStorage(cu)
-					.getProductStorageOrNull(singleSourceTuRequest.getProductId().getRepoId());
+					.getProductStorageOrNull(singleSourceTuRequest.getProductId());
 			if (productStorageOrNull == null)
 			{
 				continue; // cu doesn't have the product we are looking for

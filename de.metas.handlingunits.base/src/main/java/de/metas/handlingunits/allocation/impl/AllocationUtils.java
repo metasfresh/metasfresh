@@ -101,7 +101,7 @@ public final class AllocationUtils
 		final IAllocationRequestBuilder builder = createAllocationRequestBuilder();
 		builder.setBaseAllocationRequest(originalRequest);
 
-		builder.setProduct(unloadTrx.getProduct());
+		builder.setProduct(unloadTrx.getProductId());
 		builder.setQuantity(qty);
 		builder.setDate(unloadTrx.getDate());
 
@@ -131,7 +131,12 @@ public final class AllocationUtils
 		return builder;
 	}
 
-	public static IAllocationRequest createQtyRequest(final IHUContext huContext, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final Date date)
+	public static IAllocationRequest createQtyRequest(
+			final IHUContext huContext,
+			final I_M_Product product,
+			final BigDecimal qty,
+			final I_C_UOM uom,
+			final Date date)
 	{
 		final Object referenceModel = null;
 		return createQtyRequest(huContext, product, qty, uom, date, referenceModel);
@@ -188,6 +193,22 @@ public final class AllocationUtils
 				.setDate(date)
 				.setFromReferencedModel(referenceModel)
 				.setForceQtyAllocation(forceQtyAllocation)
+				.create();
+	}
+
+	public static IAllocationRequest createQtyRequest(
+			final IHUContext huContext,
+			final ProductId productId,
+			final Quantity qty,
+			final Date date)
+	{
+		return createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(productId)
+				.setQuantity(qty)
+				.setDate(date)
+				.setFromReferencedModel(null)
+				.setForceQtyAllocation(false)
 				.create();
 	}
 

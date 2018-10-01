@@ -35,7 +35,6 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
@@ -86,18 +85,17 @@ public class HUCapacityBL implements IHUCapacityBL
 							+ "\n@M_HU_PI_Item_Product_ID@ - @M_Product_ID@: " + piipProductName
 							+ "\nis not compatible with required product @M_Product_ID@: " + productName + "( " + I_M_Product.COLUMNNAME_M_Product_ID + "=" + productId + ")");
 				}
-				
+
 				productToUseId = productId;
 			}
 		}
 
 		Check.assumeNotNull(productToUseId, "productToUseId not null");
-		final I_M_Product productToUse = Services.get(IProductDAO.class).getById(productToUseId);
 
 		final boolean infiniteCapacity = isInfiniteCapacity(itemDefProduct);
 		if (infiniteCapacity)
 		{
-			return Capacity.createInfiniteCapacity(productToUse, uom);
+			return Capacity.createInfiniteCapacity(productToUseId, uom);
 		}
 
 		final BigDecimal qty = itemDefProduct.getQty();
@@ -106,7 +104,24 @@ public class HUCapacityBL implements IHUCapacityBL
 
 		final boolean allowNegativeCapacity = false;
 
-		return Capacity.createCapacity(qtyConv, productToUse, uom, allowNegativeCapacity);
+		return Capacity.createCapacity(qtyConv, productToUseId, uom, allowNegativeCapacity);
+	}
+
+	@Override
+	public CapacityInterface getCapacity(
+			@NonNull final I_M_HU_Item huItem,
+			final ProductId productId,
+			final I_C_UOM uom,
+			final Date date)
+	{
+		final I_M_HU_PI_Item_Product itemDefProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(huItem, productId, date);
+		if (itemDefProduct == null)
+		{
+			final boolean allowNegativeCapacity = false;
+			return Capacity.createZeroCapacity(productId, uom, allowNegativeCapacity);
+		}
+
+		return getCapacity(itemDefProduct, productId, uom);
 	}
 
 	@Override
@@ -116,14 +131,8 @@ public class HUCapacityBL implements IHUCapacityBL
 			final I_C_UOM uom,
 			final Date date)
 	{
-		final I_M_HU_PI_Item_Product itemDefProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(huItem, product, date);
-		if (itemDefProduct == null)
-		{
-			final boolean allowNegativeCapacity = false;
-			return Capacity.createZeroCapacity(product, uom, allowNegativeCapacity);
-		}
-
-		return getCapacity(itemDefProduct, product, uom);
+		final ProductId productId = ProductId.ofRepoIdOrNull(product != null ? product.getM_Product_ID() : -1);
+		return getCapacity(huItem, productId, uom, date);
 	}
 
 	@Override
