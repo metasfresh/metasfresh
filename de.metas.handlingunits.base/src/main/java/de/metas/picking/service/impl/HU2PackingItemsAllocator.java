@@ -14,7 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.Predicates;
@@ -445,7 +444,7 @@ public class HU2PackingItemsAllocator
 				part.getProductId(),
 				part.getQty(),
 				huContext.getDate(), // date
-				TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, part.getShipmentScheduleId()), // referenceModel,
+				part.getShipmentScheduleId().toTableRecordReference(), // referenceModel,
 				forceQtyAllocation);
 
 		return request;
@@ -525,7 +524,7 @@ public class HU2PackingItemsAllocator
 		subtractFromQtyToPackRemaining(qtyPacked);
 	}
 
-	private I_M_ShipmentSchedule getShipmentScheduleById(final ShipmentScheduleId shipmentScheduleId)
+	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return shipmentSchedulesRepo.getById(shipmentScheduleId);
 	}
