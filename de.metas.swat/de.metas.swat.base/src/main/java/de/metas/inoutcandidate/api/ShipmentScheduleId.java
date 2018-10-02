@@ -70,4 +70,9 @@ public class ShipmentScheduleId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(final ShipmentScheduleId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
 }
