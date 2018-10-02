@@ -73,7 +73,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	@ProcessParamLookupValuesProvider(parameterName = WAREHOUSE_PARAM_NAME, numericKey = true, lookupSource = LookupSource.lookup)
 	public LookupValuesList getAvailableWarehouses()
 	{
-		return Services.get(IWarehouseDAO.class).retrieveWarehousesForCtx(getCtx())
+		return Services.get(IWarehouseDAO.class).getAllWarehouses()
 				.stream()
 				.map(warehouse -> loadOutOfTrx(warehouse.getM_Warehouse_ID(), I_M_Warehouse.class))
 				.filter(warehouse -> {
