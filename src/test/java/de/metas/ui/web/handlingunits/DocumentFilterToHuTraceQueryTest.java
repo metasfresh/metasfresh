@@ -116,7 +116,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
 		assertThat(huTraceQuery.getOrgId()).isEqualTo(20);
-		assertThat(huTraceQuery.getDocTypeId().getAsInt()).isEqualTo(30);
+		assertThat(huTraceQuery.getDocTypeId().get().getRepoId()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
 		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
 		assertThat(huTraceQuery.getTopLevelHuId().getRepoId()).isEqualTo(60);

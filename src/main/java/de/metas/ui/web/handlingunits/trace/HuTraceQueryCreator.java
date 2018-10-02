@@ -8,15 +8,18 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -160,16 +163,16 @@ public class HuTraceQueryCreator
 		errorfIfNotEqualsOperator(parameter);
 		errorIfQueryValueNotNull("ProductId", query.getProductId(), query);
 
-		return query.withProductId(ProductId.ofRepoId(extractInt(parameter)));
+		return query.withProductId(ProductId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("ShipmentScheduleId", query.getShipmentScheduleId(), query);
+		errorIfQueryValueNotNull("ShipmentScheduleId", query.getShipmentScheduleId(), query);
 
-		return query.withShipmentScheduleId(extractInt(parameter));
+		return query.withShipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updatePpCostCollectorIdFromParameter(
@@ -275,10 +278,10 @@ public class HuTraceQueryCreator
 	{
 		if (query.getDocTypeId().isPresent())
 		{
-			errorIfQueryValueGreaterThanZero("DocTypeId", query.getDocTypeId().getAsInt(), query);
+			errorIfQueryValueNotNull("DocTypeId", query.getDocTypeId().orElse(null), query);
 		}
 
-		return query.withDocTypeId(OptionalInt.of(extractInt(parameter)));
+		return query.withDocTypeId(DocTypeId.optionalOfRepoId(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateHuTraceIdFromParameter(@NonNull final HUTraceEventQuery query,
@@ -296,9 +299,9 @@ public class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("OrgId", query.getOrgId(), query);
+		errorIfQueryValueNotNull("OrgId", query.getOrgId(), query);
 
-		return query.withOrgId(extractInt(parameter));
+		return query.withOrgId(OrgId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static void errorIfQueryValueGreaterThanZero(
