@@ -346,7 +346,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	@Override
 	public final Set<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
 	{
-		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false);
+		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false/*skipAlreadyScheduledItems*/);
 		return queueElements.stream()
 				.map(I_C_Queue_Element::getRecord_ID)
 				.collect(ImmutableSet.toImmutableSet());

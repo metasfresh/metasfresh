@@ -280,7 +280,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
