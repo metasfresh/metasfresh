@@ -2,10 +2,13 @@ package de.metas.inoutcandidate.api;
 
 import java.util.Collection;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -74,5 +77,10 @@ public class ShipmentScheduleId implements RepoIdAware
 	public static int toRepoId(final ShipmentScheduleId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, getRepoId());
 	}
 }
