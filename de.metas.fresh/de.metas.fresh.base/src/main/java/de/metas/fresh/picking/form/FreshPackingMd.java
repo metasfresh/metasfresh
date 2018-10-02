@@ -106,10 +106,6 @@ public class FreshPackingMd
 	 */
 	private boolean _requeryNeeded = false;
 
-	public FreshPackingMd()
-	{
-	}
-
 	public SpecialTerminalTable getLines()
 	{
 		return lines;
