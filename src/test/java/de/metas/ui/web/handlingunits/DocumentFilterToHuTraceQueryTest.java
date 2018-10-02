@@ -124,7 +124,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(90);
 		assertThat(huTraceQuery.getMovementId()).isEqualTo(100);
-		assertThat(huTraceQuery.getProductId()).isEqualTo(110);
+		assertThat(huTraceQuery.getProductId().getRepoId()).isEqualTo(110);
 		assertThat(huTraceQuery.getShipmentScheduleId()).isEqualTo(120);
 		assertThat(huTraceQuery.getPpCostCollectorId()).isEqualTo(130);
 		assertThat(huTraceQuery.getPpOrderId()).isEqualTo(140);
