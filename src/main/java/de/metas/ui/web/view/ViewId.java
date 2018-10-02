@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -44,7 +43,6 @@ import lombok.ToString;
  */
 
 @EqualsAndHashCode
-@ToString
 public final class ViewId
 {
 	public static final ViewId of(@Nullable final String windowIdStr, @NonNull final String viewIdStr)
@@ -170,6 +168,13 @@ public final class ViewId
 	public String getViewId()
 	{
 		return viewId;
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return toJson();
 	}
 
 	@JsonValue
