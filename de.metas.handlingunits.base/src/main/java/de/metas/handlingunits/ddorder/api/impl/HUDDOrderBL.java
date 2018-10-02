@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IWarehouseDAO;
+import de.metas.adempiere.service.impl.WarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -35,7 +36,6 @@ import lombok.Value;
 
 public class HUDDOrderBL implements IHUDDOrderBL
 {
-	private static final String MSG_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -102,7 +102,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		final I_M_Warehouse quarantineWarehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
 		if (quarantineWarehouse == null)
 		{
-			throw new AdempiereException("@" + MSG_M_Warehouse_NoQuarantineWarehouse + "@");
+			throw new AdempiereException("@" + WarehouseDAO.MSG_M_Warehouse_NoQuarantineWarehouse + "@");
 		}
 
 		final I_M_Locator defaultLocator = warehouseBL.getDefaultLocator(quarantineWarehouse);

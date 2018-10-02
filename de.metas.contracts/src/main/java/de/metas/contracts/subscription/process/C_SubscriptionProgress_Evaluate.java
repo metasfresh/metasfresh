@@ -60,9 +60,11 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final Timestamp startTime = SystemTime.asTimestamp();
+
+		addLog("Creating/updating C_Subscription_Progress records");
 		final int countProcessedTerms = createOrUpdateSubscriptionProgress();
 
-		addLog("Updating shipment schedules");
+		addLog("Creating/updating shipment schedules");
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.run(() -> {
 			subscriptionBL.evalDeliveries(getCtx(), ITrx.TRXNAME_ThreadInherited);

@@ -410,7 +410,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
 		final BigDecimal qtyDelivered = ic.getQtyOrdered();
-		ic.setQtyDelivered(qtyDelivered);
+		ic.setQtyDelivered(qtyDelivered); // when changing this, make sure to threat ProductType.Service specially
 
 	}
 }

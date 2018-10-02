@@ -119,6 +119,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				"The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + newSched.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
 
 		// only display item products
+		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
 		final boolean display = Services.get(IProductBL.class).isItem(term.getM_Product());
 		newSched.setIsDisplayed(display);
 
