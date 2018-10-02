@@ -115,7 +115,7 @@ public class DocumentFilterToHuTraceQueryTest
 
 		assertThat(huTraceQuery).isNotNull();
 		assertThat(huTraceQuery.getRecursionMode()).isEqualTo(RecursionMode.BOTH);
-		assertThat(huTraceQuery.getOrgId()).isEqualTo(20);
+		assertThat(huTraceQuery.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(huTraceQuery.getDocTypeId().get().getRepoId()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
 		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
@@ -125,7 +125,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getInOutId()).isEqualTo(90);
 		assertThat(huTraceQuery.getMovementId()).isEqualTo(100);
 		assertThat(huTraceQuery.getProductId().getRepoId()).isEqualTo(110);
-		assertThat(huTraceQuery.getShipmentScheduleId()).isEqualTo(120);
+		assertThat(huTraceQuery.getShipmentScheduleId().getRepoId()).isEqualTo(120);
 		assertThat(huTraceQuery.getPpCostCollectorId()).isEqualTo(130);
 		assertThat(huTraceQuery.getPpOrderId()).isEqualTo(140);
 		assertThat(huTraceQuery.getVhuId().getRepoId()).isEqualTo(160);
