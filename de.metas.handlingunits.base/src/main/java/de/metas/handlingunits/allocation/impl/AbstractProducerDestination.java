@@ -461,34 +461,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		}
 	}
 
-	// TODO: remove, it's probably not needed anymore.
-	private final void destroyCurrentHU(final ListCursor<I_M_HU> currentHUCursor)
-	{
-		final I_M_HU hu = currentHUCursor.current();
-		if (hu == null)
-		{
-			return; // shall not happen
-		}
-
-		currentHUCursor.setCurrentValue(null); // mark it as removed from our list (which is shared between all other cursors)
-		currentHUCursor.closeCurrent(); // close the current position of this cursor
-
-		// since _createdNonAggregateHUs is just a subset of _createdHUs, we don't know if 'hu' was in there to start with. All we care is that it's not in _createdNonAggregateHUs after this method.
-		_createdNonAggregateHUs.remove(hu);
-
-		final boolean removedFromCreatedHUs = _createdHUs.remove(hu);
-		Check.assume(removedFromCreatedHUs, "Cannot destroy {} because it wasn't created by us", hu);
-
-		afterHURemovedFromCreatedList(hu);
-
-		// Delete only those HUs which were internally created by THIS producer
-		if (DYNATTR_Producer.getValue(hu) == this)
-		{
-			// FIXME: deleting directly is not ok. We need to handle the attributes, handle the included HUs (if any)
-			handlingUnitsDAO.delete(hu);
-		}
-	}
-
 	/**
 	 * Method called after an HU was removed from HU created list.
 	 *

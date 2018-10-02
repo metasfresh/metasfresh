@@ -45,6 +45,13 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 				attributeSetInstanceId);
 	}
 
+	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
+			final ProductId productId,
+			final int attributeSetInstanceId)
+	{
+		return new PlainAttributeSetInstanceAware(productId, attributeSetInstanceId);
+	}
+
 	private PlainAttributeSetInstanceAware(final ProductId productId, final int attributeSetInstanceId)
 	{
 		this.productId = productId;

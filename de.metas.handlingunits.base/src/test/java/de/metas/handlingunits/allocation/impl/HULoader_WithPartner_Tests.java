@@ -102,7 +102,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		final IHUContext huContext = helper.getHUContext();
 		final BigDecimal qtyExpected = BigDecimal.valueOf(qtyExpectedInt);
-		StaticHUAssert.assertStorageLevel(huContext, hu, pTomato, qtyExpected);
+		StaticHUAssert.assertStorageLevel(huContext, hu, pTomatoId, qtyExpected);
 	}
 
 	@Test

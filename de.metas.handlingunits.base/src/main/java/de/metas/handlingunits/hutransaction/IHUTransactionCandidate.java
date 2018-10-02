@@ -26,7 +26,6 @@ package de.metas.handlingunits.hutransaction;
 import java.util.Date;
 
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;

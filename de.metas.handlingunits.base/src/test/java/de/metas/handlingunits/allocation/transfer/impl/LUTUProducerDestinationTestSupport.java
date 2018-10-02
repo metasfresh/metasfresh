@@ -125,8 +125,8 @@ public class LUTUProducerDestinationTestSupport
 			piTU_IFCO = helper.createHUDefinition("TU_IFCO", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_IFCO = helper.createHU_PI_Item_Material(piTU_IFCO);
-			piTU_Item_Product_IFCO_40KgTomatoes = helper.assignProduct(piTU_Item_IFCO, helper.pTomato, new BigDecimal("40"), helper.uomKg);
-			helper.assignProduct(piTU_Item_IFCO, helper.pSalad, new BigDecimal("7"), helper.uomEach);
+			piTU_Item_Product_IFCO_40KgTomatoes = helper.assignProduct(piTU_Item_IFCO, helper.pTomatoProductId, new BigDecimal("40"), helper.uomKg);
+			helper.assignProduct(piTU_Item_IFCO, helper.pSaladProductId, new BigDecimal("7"), helper.uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_IFCO, helper.pmIFCO);
 		}
@@ -136,8 +136,8 @@ public class LUTUProducerDestinationTestSupport
 			piTU_Bag = helper.createHUDefinition("TU_Bag", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTU_Item_Bag = helper.createHU_PI_Item_Material(piTU_Bag);
-			piTU_Item_Product_Bag_8KgTomatoes = helper.assignProduct(piTU_Item_Bag, helper.pTomato, new BigDecimal("8"), helper.uomKg);
-			helper.assignProduct(piTU_Item_Bag, helper.pSalad, new BigDecimal("5"), helper.uomEach);
+			piTU_Item_Product_Bag_8KgTomatoes = helper.assignProduct(piTU_Item_Bag, helper.pTomatoProductId, new BigDecimal("8"), helper.uomKg);
+			helper.assignProduct(piTU_Item_Bag, helper.pSaladProductId, new BigDecimal("5"), helper.uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(piTU_Bag, helper.pmBag);
 		}
@@ -154,7 +154,7 @@ public class LUTUProducerDestinationTestSupport
 			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
-			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomato, new BigDecimal("6"), helper.uomEach);
+			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomatoProductId, new BigDecimal("6"), helper.uomEach);
 			piItemProduct.setIsInfiniteCapacity(true);
 			save(piItemProduct);
 

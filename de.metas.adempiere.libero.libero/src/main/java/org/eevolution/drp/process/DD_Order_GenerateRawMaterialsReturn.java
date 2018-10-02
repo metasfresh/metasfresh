@@ -44,7 +44,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
@@ -62,6 +61,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -86,7 +86,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	//
 	// Parameters
 	private int p_M_Warehouse_ID = -1;
-	private I_M_Warehouse _warehouse;
 	private boolean p_IsTest = false;
 
 	@Override
@@ -134,7 +133,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 			{
 				final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceBL.createASIFromAttributeSet(storageRecord.getAttributes());
 				final PlainAttributeSetInstanceAware attributeSetIinstanceAware = PlainAttributeSetInstanceAware.forProductIdAndAttributeSetInstanceId(
-						storageRecord.getProduct().getM_Product_ID(),
+						storageRecord.getProductId(),
 						attributeSetInstance.getM_AttributeSetInstance_ID());
 
 				candidate = new RawMaterialsReturnDDOrderLineCandidate(
@@ -210,9 +209,9 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 	private final ArrayKey mkDDOrderLineCandidateKey(final IStorageRecord storageRecord)
 	{
-		final I_M_Product product = storageRecord.getProduct();
+		final ProductId productId = storageRecord.getProductId();
 		final I_M_Locator locator = storageRecord.getLocator();
-		return Util.mkKey(product.getM_Product_ID(), locator.getM_Locator_ID());
+		return Util.mkKey(productId.getRepoId(), locator.getM_Locator_ID());
 	}
 
 	private I_DD_Order createAndComplete(final RawMaterialsReturnDDOrderLineCandidate candidate)

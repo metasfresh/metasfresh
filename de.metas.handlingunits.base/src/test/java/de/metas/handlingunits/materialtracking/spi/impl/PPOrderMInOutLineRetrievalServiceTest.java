@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,6 +39,7 @@ import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -82,7 +82,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		helper = new HUDocumentSelectTestHelper();
 
 		// note that the helper's constructor also sets up the ctx
-		context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		context = PlainContextAware.newOutOfTrx();
 
 		// register this listener to make sure that when the HUs are assigned, then also the ATTR_ReceiptInOutLine_ID HU-Attribute is set
 		Services.get(IHUAssignmentBL.class).registerHUAssignmentListener(ReceiptInOutLineHUAssignmentListener.instance);
@@ -92,7 +92,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final Properties deriveCtx = Env.deriveCtx(context.getCtx());
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Client_ID, 0);
 		Env.setContext(deriveCtx, Env.CTXNAME_AD_Org_ID, 0);
-		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class, new PlainContextAware(deriveCtx, ITrx.TRXNAME_None));
+		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
 		sysConfig.setName(SaveDecoupledHUAttributesDAO.SYSCONFIG_AutoFlushEnabledInitial);
 		sysConfig.setValue("Y");
 		InterfaceWrapperHelper.save(sysConfig);
@@ -112,10 +112,10 @@ public class PPOrderMInOutLineRetrievalServiceTest
 			assertThat(reversedLines.get(0).getM_Product(), is(helper.pTomato));
 			assertThat(reversedLines.get(1).getM_Product(), is(helper.pSalad));
 
-			reversedLineTomatoHUs = createHUs(helper.pTomato, new BigDecimal("20"));
+			reversedLineTomatoHUs = createHUs(helper.pTomatoProductId, new BigDecimal("20"));
 			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHUs.get(0)), is(true));
 
-			reversedLineSaladHUs = createHUs(helper.pSalad, new BigDecimal("20"));
+			reversedLineSaladHUs = createHUs(helper.pSaladProductId, new BigDecimal("20"));
 
 			createAssignments(
 					reversedLines.get(0), // the one with tomato
@@ -131,13 +131,13 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final List<I_M_HU> completedLineSaladHUs;
 		{
 			completedLines = createReceiptInOutLines(IDocument.STATUS_Completed);
-			assertThat(completedLines.get(0).getM_Product(), is(helper.pTomato));
-			assertThat(completedLines.get(1).getM_Product(), is(helper.pSalad));
+			assertThat(completedLines.get(0).getM_Product_ID(), is(helper.pTomatoProductId.getRepoId()));
+			assertThat(completedLines.get(1).getM_Product(), is(helper.pSaladProductId.getRepoId()));
 
-			completedLineTomatoHUs = createHUs(helper.pTomato, new BigDecimal("30"));
+			completedLineTomatoHUs = createHUs(helper.pTomatoProductId, new BigDecimal("30"));
 			assertThat(handlingUnitsBL.isTopLevel(completedLineTomatoHUs.get(0)), is(true));
 
-			completedLineSaladHUs = createHUs(helper.pSalad, new BigDecimal("30"));
+			completedLineSaladHUs = createHUs(helper.pSaladProductId, new BigDecimal("30"));
 			assertThat(handlingUnitsBL.isTopLevel(completedLineSaladHUs.get(0)), is(true));
 
 			createAssignments(
@@ -196,7 +196,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		assertThat(handlingUnitsBL.isTopLevel(luHU), is(true));
 		assertThat(handlingUnitsBL.isLoadingUnit(luHU), is(true));
 
-		final List<HUTopLevel> toTopLevels = new ArrayList<HUTopLevel>();
+		final List<HUTopLevel> toTopLevels = new ArrayList<>();
 
 		final HUIterator huIterator = new HUIterator();
 		huIterator.setDate(SystemTime.asTimestamp());
@@ -231,9 +231,9 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		}
 	}
 
-	private List<I_M_HU> createHUs(final I_M_Product product, final BigDecimal qty)
+	private List<I_M_HU> createHUs(final ProductId productId, final BigDecimal qty)
 	{
-		return helper.createHUs(helper.getHUContext(), helper.huDefPalet2, product, qty, helper.uomKg);
+		return helper.createHUs(helper.getHUContext(), helper.huDefPalet2, productId, qty, helper.uomKg);
 	}
 
 	/**

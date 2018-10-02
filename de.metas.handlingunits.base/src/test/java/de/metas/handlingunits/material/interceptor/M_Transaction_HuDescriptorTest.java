@@ -69,7 +69,7 @@ public class M_Transaction_HuDescriptorTest
 		// HU PI: IFCO
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		helper.assignProduct(itemMA, helper.pTomato, FOURTY_TOMATOES_PER_IFCO, helper.uomEach);
+		helper.assignProduct(itemMA, helper.pTomatoProductId, FOURTY_TOMATOES_PER_IFCO, helper.uomEach);
 		helper.createHU_PI_Item_PackingMaterial(huDefIFCO, helper.pmIFCO);
 
 		// HU PI: Palet

@@ -53,6 +53,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
@@ -82,7 +83,7 @@ import lombok.NonNull;
 
 	private final IHUQueryBuilder huQueryBuilder;
 	private Set<Integer> _availableAttributeIds;
-	private final Set<Integer> _productIds = new HashSet<>();
+	private final Set<ProductId> _productIds = new HashSet<>();
 	private final transient List<I_M_Product> _products = new ArrayList<>(); // needed only for summary info
 	private final transient List<I_C_BPartner> _bpartners = new ArrayList<>(); // needed only for summary info
 
@@ -184,11 +185,10 @@ import lombok.NonNull;
 
 		//
 		// Check if Product matches
-		final Set<Integer> queryProductIds = getProductIds();
+		final Set<ProductId> queryProductIds = getProductIds();
 		if (!queryProductIds.isEmpty())
 		{
-			final I_M_Product recordProduct = storageRecord.getProduct();
-			final int recordProductId = recordProduct.getM_Product_ID();
+			final ProductId recordProductId = storageRecord.getProductId();
 			if (!queryProductIds.contains(recordProductId))
 			{
 				return false;
@@ -241,10 +241,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IStorageQuery addProduct(final I_M_Product product)
+	public IStorageQuery addProduct(@NonNull final I_M_Product product)
 	{
-		Check.assumeNotNull(product, "Product not null");
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		if (!_productIds.add(productId))
 		{
 			return this;
@@ -255,7 +254,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final Set<Integer> getProductIds()
+	private final Set<ProductId> getProductIds()
 	{
 		return _productIds;
 	}
