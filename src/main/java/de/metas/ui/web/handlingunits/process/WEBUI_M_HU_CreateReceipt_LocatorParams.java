@@ -75,7 +75,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	{
 		return Services.get(IWarehouseDAO.class).retrieveWarehousesForCtx(getCtx())
 				.stream()
-				.map(warehouse -> loadOutOfTrx(warehouse.getM_Warehouse_ID(), org.adempiere.warehouse.model.I_M_Warehouse.class))
+				.map(warehouse -> loadOutOfTrx(warehouse.getM_Warehouse_ID(), I_M_Warehouse.class))
 				.filter(warehouse -> {
 					if (existQuarantineHUs())
 					{
