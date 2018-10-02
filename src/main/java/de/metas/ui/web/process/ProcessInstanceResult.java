@@ -174,4 +174,12 @@ public final class ProcessInstanceResult
 		private @NonNull final ViewId viewId;
 		private @NonNull final DocumentIdsSelection rowIds;
 	}
+	
+	@lombok.Value
+	@lombok.Builder
+	public static final class DisplayQRCodeAction implements ResultAction
+	{
+		private @NonNull final String code;
+	}
+
 }

@@ -31,6 +31,7 @@ import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -368,6 +369,14 @@ public class ADProcessPostProcessService
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
 					.modal(true)
+					.build();
+		}
+		//
+		// Display QRCode to user
+		else if (processExecutionResult.getDisplayQRCode() != null)
+		{
+			return DisplayQRCodeAction.builder()
+					.code(processExecutionResult.getDisplayQRCode().getCode())
 					.build();
 		}
 		//
