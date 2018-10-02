@@ -796,6 +796,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 .lookup-tooltip {
     flex: 0.05;
     justify-content: flex-end;
+    pointer-events: initial;
 }
 
 /* Attributes */

@@ -39,7 +39,7 @@ class WidgetTooltip extends PureComponent {
             )}
           </Reference>
           {isToggled && (
-            <Popper placement="right">
+            <Popper placement="auto-start">
               {({ ref, style, placement }) => (
                 <div
                   ref={ref}
@@ -62,6 +62,7 @@ WidgetTooltip.propTypes = {
   widget: PropTypes.any.isRequired,
   data: PropTypes.any.isRequired,
   isToggled: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func,
 };
 
 export default onClickOutside(WidgetTooltip);

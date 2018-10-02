@@ -130,6 +130,15 @@
                 }
             }
         }
+
+        .with-widget {
+            display: flex;
+            align-items: end;
+
+            .widget-tooltip {
+                flex: 1 1 20px;
+            }
+        }
     }
 
     /* Table cols sizing */
