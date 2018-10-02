@@ -9,6 +9,7 @@ import java.util.OptionalInt;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
@@ -67,7 +68,7 @@ public class RetrieveDbRecordsUtilTest
 	@Test
 	public void configureQueryBuilder_orgId()
 	{
-		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(30).build();
+		final HUTraceEventQuery query = HUTraceEventQuery.builder().orgId(OrgId.ofRepoId(30)).build();
 
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
 		assertThat(queryBuilder).isNotNull();

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.product.ProductId;
 
 /*
@@ -63,7 +65,7 @@ public class HUTraceRepositoryTests
 	public static HUTraceEventBuilder createCommonEventBuilder()
 	{
 		return HUTraceEvent.builder()
-				.orgId(10)
+				.orgId(OrgId.ofRepoId(10))
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
 				.qty(BigDecimal.valueOf(100))
 				.productId(ProductId.ofRepoId(23))
@@ -93,7 +95,7 @@ public class HUTraceRepositoryTests
 		final Instant eventTime = Instant.now();
 
 		huTraceRepository.addEvent(HUTraceEvent.builder()
-				.orgId(13)
+				.orgId(OrgId.ofRepoId(13))
 				.eventTime(eventTime)
 				.topLevelHuId(HuId.ofRepoId(2))
 				.productId(ProductId.ofRepoId(23))
@@ -116,7 +118,7 @@ public class HUTraceRepositoryTests
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
-				.orgId(13)
+				.orgId(OrgId.ofRepoId(13))
 				.eventTime(eventTime)
 				.topLevelHuId(HuId.ofRepoId(2))
 				.productId(ProductId.ofRepoId(23))
@@ -356,7 +358,7 @@ public class HUTraceRepositoryTests
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(1)).inOutId(24).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(2)).movementId(34).build());
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(3)).ppCostCollectorId(44).build());
-		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(54).build());
+		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(ShipmentScheduleId.ofRepoId(54)).build());
 		// eventBefore is the first of three and therefore has no sourceHuId
 
 		final HUTraceEventBuilder eventMiddle = createCommonEventBuilder()
@@ -368,7 +370,7 @@ public class HUTraceRepositoryTests
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(6)).inOutId(25).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(7)).movementId(35).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(8)).ppCostCollectorId(45).build());
-		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(55).build());
+		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(ShipmentScheduleId.ofRepoId(55)).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(10)).vhuSourceId(HuId.ofRepoId(14)).build()); // this event is the middle one of three and has the M_HU_ID of 'eventBefore' as its source
 
 		final HUTraceEventBuilder eventAfter = createCommonEventBuilder()
@@ -380,7 +382,7 @@ public class HUTraceRepositoryTests
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(12)).inOutId(26).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(13)).movementId(36).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(14)).ppCostCollectorId(46).build());
-		result.add(eventAfter.eventTime(eventTime.plusSeconds(15)).shipmentScheduleId(56).build());
+		result.add(eventAfter.eventTime(eventTime.plusSeconds(15)).shipmentScheduleId(ShipmentScheduleId.ofRepoId(56)).build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(16)).vhuSourceId(HuId.ofRepoId(15)).build()); // this event is the last of three and has the M_HU_ID of 'eventMiddle' as its source
 
 		result.forEach(e -> huTraceRepository.addEvent(e));

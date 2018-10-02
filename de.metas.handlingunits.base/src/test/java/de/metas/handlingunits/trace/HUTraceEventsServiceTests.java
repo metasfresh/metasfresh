@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -193,7 +194,7 @@ public class HUTraceEventsServiceTests
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.orgId(10)
+				.orgId(OrgId.ofRepoId(10))
 				.inOutId(12).type(HUTraceType.MATERIAL_SHIPMENT); // note: inOutId and type don't really matter for this test
 
 		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(user1, user2));

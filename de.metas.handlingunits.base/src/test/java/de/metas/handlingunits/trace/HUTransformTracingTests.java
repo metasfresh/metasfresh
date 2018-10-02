@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
@@ -141,7 +142,7 @@ public class HUTransformTracingTests
 		assertThat(tuTraceEvents.size(), is(1));
 
 		final HUTraceEventBuilder common = HUTraceEvent.builder()
-				.orgId(cuToSplit.getAD_Org_ID())
+				.orgId(OrgId.ofRepoIdOrAny(cuToSplit.getAD_Org_ID()))
 				.vhuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 				.vhuStatus(cuToSplit.getHUStatus())
 				.eventTime(tuTraceEvents.get(0).getEventTime())

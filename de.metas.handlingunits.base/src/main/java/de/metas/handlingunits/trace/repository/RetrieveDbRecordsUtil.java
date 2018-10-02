@@ -295,7 +295,7 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
 			queryIsEmpty = false;
 		}
-		if (query.getOrgId() > 0)
+		if (query.getOrgId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_AD_Org_ID, query.getOrgId());
 			queryIsEmpty = false;
@@ -350,14 +350,14 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getPpOrderId());
 			queryIsEmpty = false;
 		}
-		if (query.getShipmentScheduleId() > 0)
+		if (query.getShipmentScheduleId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_ShipmentSchedule_ID, query.getShipmentScheduleId());
 			queryIsEmpty = false;
 		}
 		if (query.getDocTypeId().isPresent())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId().getAsInt());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId().get());
 			queryIsEmpty = false;
 		}
 		if (!Check.isEmpty(query.getDocStatus()))

@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -34,6 +35,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -107,7 +109,7 @@ public class HUTraceEventsService
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.ppCostCollectorId(costCollector.getPP_Cost_Collector_ID())
 				.ppOrderId(costCollector.getPP_Order_ID())
-				.docTypeId(OptionalInt.of(costCollector.getC_DocType_ID()))
+				.docTypeId(DocTypeId.optionalOfRepoId(costCollector.getC_DocType_ID()))
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
 
@@ -129,7 +131,7 @@ public class HUTraceEventsService
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.inOutId(inOut.getM_InOut_ID())
-				.docTypeId(OptionalInt.of(inOut.getC_DocType_ID()))
+				.docTypeId(DocTypeId.optionalOfRepoId(inOut.getC_DocType_ID()))
 				.docStatus(inOut.getDocStatus())
 				.eventTime(inOut.getMovementDate().toInstant());
 
@@ -152,7 +154,7 @@ public class HUTraceEventsService
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.movementId(movement.getM_Movement_ID())
-				.docTypeId(OptionalInt.of(movement.getC_DocType_ID()))
+				.docTypeId(DocTypeId.optionalOfRepoId(movement.getC_DocType_ID()))
 				.docStatus(movement.getDocStatus())
 				.type(HUTraceType.MATERIAL_MOVEMENT)
 				.eventTime(movement.getMovementDate().toInstant());
@@ -164,9 +166,9 @@ public class HUTraceEventsService
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.orgId(shipmentScheduleQtyPicked.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(shipmentScheduleQtyPicked.getAD_Org_ID()))
 				.eventTime(shipmentScheduleQtyPicked.getUpdated().toInstant())
-				.shipmentScheduleId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID())
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID()))
 				.type(HUTraceType.MATERIAL_PICKING);
 
 		// get the top-level HU's ID for our event
@@ -326,7 +328,7 @@ public class HUTraceEventsService
 
 					// create a trace record for the split's "destination"
 					final HUTraceEvent splitDestEvent = traceEventBuilder
-							.orgId(trxLine.getAD_Org_ID())
+							.orgId(OrgId.ofRepoIdOrNull(trxLine.getAD_Org_ID()))
 							.build();
 
 					final int sourceVhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(sourceVhu);
@@ -334,7 +336,7 @@ public class HUTraceEventsService
 
 					// create a trace record for the split's "source"
 					final HUTraceEvent splitSourceEvent = traceEventBuilder
-							.orgId(sourceTrxLine.getAD_Org_ID())
+							.orgId(OrgId.ofRepoIdOrNull(sourceTrxLine.getAD_Org_ID()))
 							.huTrxLineId(sourceTrxLine.getM_HU_Trx_Line_ID())
 							.vhuId(HuId.ofRepoId(sourceVhu.getM_HU_ID()))
 							.topLevelHuId(HuId.ofRepoId(sourceVhuTopLevelHuId))
@@ -407,7 +409,7 @@ public class HUTraceEventsService
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.orgId(hu.getAD_Org_ID())
+				.orgId(OrgId.ofRepoIdOrNull(hu.getAD_Org_ID()))
 				.type(HUTraceType.TRANSFORM_PARENT)
 				.eventTime(Instant.now());
 
@@ -477,7 +479,7 @@ public class HUTraceEventsService
 				final HuId topLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU()));
 				Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
 
-				builder.orgId(huAssignment.getAD_Org_ID())
+				builder.orgId(OrgId.ofRepoIdOrNull(huAssignment.getAD_Org_ID()))
 						.eventTime(huAssignment.getUpdated().toInstant())
 						.topLevelHuId(topLevelHuId);
 

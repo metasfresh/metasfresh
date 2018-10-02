@@ -2,9 +2,14 @@ package de.metas.handlingunits.trace;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.OptionalInt;
 
+import org.adempiere.service.OrgId;
+
+import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -84,7 +89,7 @@ public class HUTraceEventQuery
 	@Default
 	OptionalInt huTraceEventId = OptionalInt.empty();
 
-	int orgId;
+	OrgId orgId;
 
 	HUTraceType type;
 
@@ -102,7 +107,7 @@ public class HUTraceEventQuery
 
 	int inOutId;
 
-	int shipmentScheduleId;
+	ShipmentScheduleId shipmentScheduleId;
 
 	int movementId;
 
@@ -112,12 +117,9 @@ public class HUTraceEventQuery
 
 	String docStatus;
 
-	/**
-	 * Can't be zero if not set, because {@code C_DocType_ID=0} means "new".
-	 */
 	@NonNull
 	@Default
-	OptionalInt docTypeId = OptionalInt.empty();
+	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
 }
