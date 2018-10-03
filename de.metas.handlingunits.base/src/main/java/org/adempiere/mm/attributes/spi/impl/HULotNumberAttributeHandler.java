@@ -51,17 +51,16 @@ public class HULotNumberAttributeHandler
 	@Override
 	public void onValueChanged(IAttributeValueContext attributeValueContext, IAttributeSet attributeSet, I_M_Attribute attribute, Object valueOld, Object valueNew)
 	{
-		updateLotNumber(attributeSet, attribute, valueNew);
+		updateLotNumber(attributeSet, valueNew);
 	}
 
 	/**
 	 * Update the lotNumber based on the LotNumberDate
 	 * 
 	 * @param attributeSet
-	 * @param attribute
 	 * @param valueNew
 	 */
-	private void updateLotNumber(final IAttributeSet attributeSet, final I_M_Attribute attribute, final Object valueNew)
+	private void updateLotNumber(final IAttributeSet attributeSet, final Object valueNew)
 	{
 		final Date newDate = (Date)valueNew;
 

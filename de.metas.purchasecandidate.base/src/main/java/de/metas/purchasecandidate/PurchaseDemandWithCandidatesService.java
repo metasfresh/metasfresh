@@ -21,7 +21,6 @@ import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +76,6 @@ public class PurchaseDemandWithCandidatesService
 	private final VendorProductInfoService vendorProductInfoService;
 	private final PurchaseProfitInfoService purchaseProfitInfoService;
 	//
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 

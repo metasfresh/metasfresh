@@ -93,8 +93,6 @@ public abstract class ReceiptScheduleTestBase
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
 	@Mocked
 	protected IProductAcctDAO productAcctDAO; // 07629
-	private ActivityId activityId;
-	// private I_C_Activity activity; // 07629
 
 	protected Properties ctx;
 	/** Today (date+time) */
@@ -172,7 +170,7 @@ public abstract class ReceiptScheduleTestBase
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
-		activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
+		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		//@formatter:off
 		new Expectations()
 		{{

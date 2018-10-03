@@ -67,7 +67,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		// 10 CUs fit into one TU
 		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
-		piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, productId, BigDecimal.TEN, productUOM);
+		piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, productId, TEN, productUOM);
 
 		// 3 TUs fit onto 1 LU
 		final I_M_HU_PI piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

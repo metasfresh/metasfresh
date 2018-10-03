@@ -126,20 +126,20 @@ public abstract class AbstractDeliveryTest
 		Services.registerService(ITaxBL.class, taxBL);
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
+		//@formatter:off
 		new Expectations()
-		{
-			{
-				productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
-				minTimes = 0;
-				result = activityId;
+		{{
+			productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
+			minTimes = 0;
+			result = activityId;
 
-				taxBL.getTax(
-						ctx, order, -1 // taxCategoryId
-				, orderLine.getM_Product_ID(), order.getDatePromised(), order.getDatePromised(), OrgId.ofRepoId(order.getAD_Org_ID()), WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()), order.getC_BPartner_Location_ID(), order.isSOTrx());
-				minTimes = 0;
-				result = 3;
-			}
-		};
+			taxBL.getTax(
+					ctx, order, -1 // taxCategoryId
+			, orderLine.getM_Product_ID(), order.getDatePromised(), order.getDatePromised(), OrgId.ofRepoId(order.getAD_Org_ID()), WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()), order.getC_BPartner_Location_ID(), order.isSOTrx());
+			minTimes = 0;
+			result = 3;
+		}};
+		//@formatter:on
 	}
 
 	private void initC_BPartner()
