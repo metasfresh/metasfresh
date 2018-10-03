@@ -1,5 +1,5 @@
-FROM postgres:10.5
-#FROM postgres:9.5
+#FROM postgres:10.5
+FROM postgres:9.5
 
 LABEL maintainer="dev@metasfresh-com"
 
