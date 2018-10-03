@@ -492,11 +492,11 @@ public class HU2PackingItemsAllocator
 	{
 		for (final PackingItemPart packedPart : packedItem.getParts())
 		{
-			allocateVHU(vhu, packedItem, packedPart);
+			allocateVHU(vhu, packedPart);
 		}
 	}
 
-	private void allocateVHU(@NonNull final I_M_HU vhu, @NonNull final IPackingItem packedItem, @NonNull final PackingItemPart packedPart)
+	private void allocateVHU(@NonNull final I_M_HU vhu, @NonNull final PackingItemPart packedPart)
 	{
 		final Quantity qtyPacked = packedPart.getQty();
 		if (qtyPacked.isZero())
