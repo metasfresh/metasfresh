@@ -16,6 +16,8 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -84,6 +86,9 @@ public class WebRestApiApplication
 		{
 			System.setProperty("PropertyFile", "./metasfresh.properties");
 		}
+
+		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
+		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
