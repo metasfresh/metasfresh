@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -45,6 +46,7 @@ public class ShipmentScheduleTestBase
 		shipmentSchedule.setBill_BPartner_ID(0);
 		shipmentSchedule.setC_BPartner_Location_ID(0);
 		shipmentSchedule.setQtyReserved(qty);
+		shipmentSchedule.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 
 		save(shipmentSchedule);
 

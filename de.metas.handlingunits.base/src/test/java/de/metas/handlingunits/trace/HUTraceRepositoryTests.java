@@ -114,7 +114,7 @@ public class HUTraceRepositoryTests
 		assertThat(result.size(), is(1));
 		assertThat(result.get(0).getHuTraceEventId().isPresent(), is(true));
 		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
-		assertThat(result.get(0).getOrgId(), is(13));
+		assertThat(result.get(0).getOrgId().getRepoId(), is(13));
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
