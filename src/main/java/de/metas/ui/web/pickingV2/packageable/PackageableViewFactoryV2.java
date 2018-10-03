@@ -11,7 +11,6 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_OpenProductsToPick;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -65,7 +64,7 @@ public class PackageableViewFactoryV2 implements IViewFactory
 	}
 
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public PackageableView createView(final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(PickingConstantsV2.WINDOWID_PackageableView);
