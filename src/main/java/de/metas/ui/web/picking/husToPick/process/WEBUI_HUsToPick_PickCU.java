@@ -38,7 +38,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.packageable.PackageableRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -270,9 +269,8 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	private void autoProcessPicking(final I_M_HU splitCU)
 	{
 		final HuId splitCUId = HuId.ofRepoId(splitCU.getM_HU_ID());
-		final PickingSlotRow rowToProcess = getPickingSlotRow();
 		final ShipmentScheduleId shipmentScheduleId = null;
-		pickingCandidateService.processForHUIds(ImmutableSet.of(splitCUId), rowToProcess.getPickingSlotId(), shipmentScheduleId);
+		pickingCandidateService.processForHUIds(ImmutableSet.of(splitCUId), shipmentScheduleId);
 
 	}
 

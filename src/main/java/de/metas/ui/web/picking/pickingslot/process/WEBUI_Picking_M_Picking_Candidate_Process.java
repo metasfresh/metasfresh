@@ -92,7 +92,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 		final ShipmentScheduleId shipmentScheduleId = null;
-		pickingCandidateService.processForHUIds(ImmutableSet.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), shipmentScheduleId);
+		pickingCandidateService.processForHUIds(ImmutableSet.of(rowToProcess.getHuId()), shipmentScheduleId);
 
 		return MSG_OK;
 	}
