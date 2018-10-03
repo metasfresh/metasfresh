@@ -13,6 +13,8 @@ import de.metas.ui.web.globalaction.GlobalActionEvent;
 import de.metas.ui.web.globalaction.GlobalActionHandlerResult;
 import de.metas.ui.web.globalaction.GlobalActionsDispatcher;
 import de.metas.ui.web.globalaction.OpenViewGlobalActionHandlerResult;
+import de.metas.ui.web.process.adprocess.WebuiProcess;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
 /*
  * #%L
@@ -36,6 +38,7 @@ import de.metas.ui.web.globalaction.OpenViewGlobalActionHandlerResult;
  * #L%
  */
 
+@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
 public class GlobalActionReadProcess extends JavaProcess
 {
 	private final GlobalActionsDispatcher globalActionsDispatcher = Adempiere.getBean(GlobalActionsDispatcher.class);
