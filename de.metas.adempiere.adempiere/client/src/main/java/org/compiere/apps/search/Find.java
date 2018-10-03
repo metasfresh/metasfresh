@@ -32,13 +32,12 @@ import org.adempiere.plaf.FindPanelUI;
 import org.compiere.apps.AEnv;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CDialog;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-
-import org.compiere.util.Env;
 
 /**
  * Find/Search Records.
@@ -136,7 +135,6 @@ public final class Find extends CDialog
 	@Override
 	public void dispose()
 	{
-		log.info("");
 		findPanel.dispose();
 		removeAll();
 		super.dispose();
