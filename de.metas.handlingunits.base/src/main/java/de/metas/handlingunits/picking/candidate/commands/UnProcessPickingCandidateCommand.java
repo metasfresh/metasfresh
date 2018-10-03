@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.pickingCandidateCommands;
+package de.metas.handlingunits.picking.candidate.commands;
 
 import java.util.Collection;
 import java.util.List;

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.pickingCandidateCommands;
+package de.metas.handlingunits.picking.candidate.commands;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 

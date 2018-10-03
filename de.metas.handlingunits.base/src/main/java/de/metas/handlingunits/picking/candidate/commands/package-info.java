@@ -4,4 +4,4 @@
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-package de.metas.handlingunits.picking.pickingCandidateCommands;
+package de.metas.handlingunits.picking.candidate.commands;

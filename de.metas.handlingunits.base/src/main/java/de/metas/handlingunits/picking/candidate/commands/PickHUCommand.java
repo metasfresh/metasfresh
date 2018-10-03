@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.pickingCandidateCommands;
+package de.metas.handlingunits.picking.candidate.commands;
 
 import org.compiere.model.I_C_UOM;
 
