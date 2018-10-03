@@ -22,8 +22,6 @@ package de.metas.contracts.inoutcandidate;
  * #L%
  */
 
-import static de.metas.inoutcandidate.model.X_M_ShipmentSchedule.DELIVERYRULE_MitNaechsterAbolieferung;
-
 import java.util.Properties;
 
 import org.adempiere.inout.util.DeliveryGroupCandidate;
@@ -36,6 +34,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -81,9 +80,7 @@ public class ShipmentScheduleSubscriptionProcessor implements IShipmentSchedules
 			final DeliveryLineCandidate inOutLine,
 			final String trxName)
 	{
-		final String iolDeliveryRule = inOutLine.getDeliveryRule();
-
-		if (!DELIVERYRULE_MitNaechsterAbolieferung.equals(iolDeliveryRule))
+		if (!DeliveryRule.WITH_NEXT_SUBSCRIPTION_DELIVERY.equals(inOutLine.getDeliveryRule()))
 		{
 			// this line doesn't need to be delivered together with a
 			// subscription delivery

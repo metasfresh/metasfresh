@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
@@ -47,6 +48,11 @@ public interface IOrgDAO extends ISingletonService
 		return retrieveOrg(Env.getCtx(), orgId.getRepoId());
 	}
 
+	default I_AD_Org getById(int adOrgId)
+	{
+		return retrieveOrg(Env.getCtx(), adOrgId);
+	}
+
 	default I_AD_Org retrieveOrg(final int adOrgId)
 	{
 		return retrieveOrg(Env.getCtx(), adOrgId);
@@ -54,8 +60,13 @@ public interface IOrgDAO extends ISingletonService
 
 	default String retrieveOrgName(final int adOrgId)
 	{
-		final I_AD_Org org = retrieveOrg(adOrgId);
-		return org != null ? org.getName() : null;
+		return retrieveOrgName(OrgId.ofRepoId(adOrgId));
+	}
+
+	default String retrieveOrgName(@NonNull final OrgId adOrgId)
+	{
+		final I_AD_Org org = getById(adOrgId);
+		return org != null ? org.getName() : "<" + adOrgId.getRepoId() + ">";
 	}
 
 	I_AD_OrgInfo retrieveOrgInfo(Properties ctx, int adOrgId, String trxName);
@@ -64,6 +75,12 @@ public interface IOrgDAO extends ISingletonService
 	{
 		return retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
 	}
+
+	WarehouseId getOrgWarehouseId(OrgId orgId);
+
+	WarehouseId getOrgPOWarehouseId(OrgId orgId);
+
+	WarehouseId getOrgDropshipWarehouseId(OrgId orgId);
 
 	/**
 	 * Search for the organization when the value is known

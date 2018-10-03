@@ -54,6 +54,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -153,11 +155,11 @@ public class DDOrderLinesAllocator
 		return _ddOrderLinesToAllocate;
 	}
 
-	private ImmutableList<DDOrderLineToAllocate> getDDOrderLinesForProduct(final int productId)
+	private ImmutableList<DDOrderLineToAllocate> getDDOrderLinesForProduct(final ProductId productId)
 	{
 		return getDDOrderLines()
 				.stream()
-				.filter(ddOrderLineToAllocate -> ddOrderLineToAllocate.getProductId() == productId)
+				.filter(ddOrderLineToAllocate -> ddOrderLineToAllocate.getProductId() == productId.getRepoId())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -253,7 +255,7 @@ public class DDOrderLinesAllocator
 		{
 			// Generate direct movement: source locator -> destination locator
 			final IDDOrderMovementBuilder movementBuilder = getMovementBuilder(ddOrderId2ReceiptMovementBuilder, ddOrder);
-			final I_M_MovementLine movementLine = movementBuilder.addMovementLineDirect(ddOrderLineOrAlt, movementQty.getQty(), movementQty.getUOM());
+			final I_M_MovementLine movementLine = movementBuilder.addMovementLineDirect(ddOrderLineOrAlt, movementQty.getAsBigDecimal(), movementQty.getUOM());
 			assignHUsToMovementLine(huIdsWithPackingMaterialsTransferedReceipt, hus, movementLine);
 		}
 		else
@@ -261,14 +263,14 @@ public class DDOrderLinesAllocator
 			// Generate movement (shipment): source locator -> in transit
 			{
 				final IDDOrderMovementBuilder movementBuilder = getMovementBuilder(ddOrderId2ShipmentMovementBuilder, ddOrder);
-				final I_M_MovementLine movementLine = movementBuilder.addMovementLineShipment(ddOrderLineOrAlt, movementQty.getQty(), movementQty.getUOM());
+				final I_M_MovementLine movementLine = movementBuilder.addMovementLineShipment(ddOrderLineOrAlt, movementQty.getAsBigDecimal(), movementQty.getUOM());
 				assignHUsToMovementLine(huIdsWithPackingMaterialsTransferedShipment, hus, movementLine);
 			}
 
 			// Generate movement (receipt): in transit -> destination locator
 			{
 				final IDDOrderMovementBuilder movementBuilder = getMovementBuilder(ddOrderId2ReceiptMovementBuilder, ddOrder);
-				final I_M_MovementLine movementLine = movementBuilder.addMovementLineReceipt(ddOrderLineOrAlt, movementQty.getQty(), movementQty.getUOM());
+				final I_M_MovementLine movementLine = movementBuilder.addMovementLineReceipt(ddOrderLineOrAlt, movementQty.getAsBigDecimal(), movementQty.getUOM());
 				assignHUsToMovementLine(huIdsWithPackingMaterialsTransferedReceipt, hus, movementLine);
 			}
 		}
@@ -335,7 +337,7 @@ public class DDOrderLinesAllocator
 
 	public DDOrderLinesAllocator allocateHUProductStorage(@NonNull final IHUProductStorage huProductStorage)
 	{
-		final int productId = huProductStorage.getM_Product_ID();
+		final ProductId productId = huProductStorage.getProductId();
 		final ImmutableList<DDOrderLineToAllocate> ddOrderLinesToAllocate = getDDOrderLinesForProduct(productId);
 
 		// No DD Order Lines were found for our Product
@@ -343,14 +345,14 @@ public class DDOrderLinesAllocator
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
 			new HUException("No DD Order Lines where found for our product"
-					+ "\n @M_Product_ID@: " + huProductStorage.getM_Product()
+					+ "\n @M_Product_ID@: " + Services.get(IProductBL.class).getProductValueAndName(huProductStorage.getProductId())
 					+ "\n HUProductStorage: " + huProductStorage)
 							.throwOrLogWarning(failIfCannotAllocate, logger);
 			return this;
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();
-		Quantity qtyToAllocateRemaining = new Quantity(huProductStorage.getQty(), huProductStorage.getC_UOM());
+		Quantity qtyToAllocateRemaining = huProductStorage.getQty();
 
 		DDOrderLineToAllocate lastDDOrderLineToAllocate = null;
 		for (final DDOrderLineToAllocate ddOrderLineToAllocate : ddOrderLinesToAllocate)

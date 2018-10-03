@@ -13,15 +13,14 @@ package de.metas.adempiere.form.terminal.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -34,7 +33,6 @@ import javax.swing.KeyStroke;
 
 import org.compiere.apps.AppsAction;
 import org.compiere.swing.CButton;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.IContainer;
@@ -57,18 +55,17 @@ public abstract class TerminalSubPanel
 {
 	public final IContainer panel;
 
-	public TerminalSubPanel(ITerminalBasePanel basePanel)
+	public TerminalSubPanel(final ITerminalBasePanel basePanel)
 	{
 		super();
-		p_basePanel = basePanel;
+		this.basePanel = basePanel;
 		panel = getTerminalFactory().createContainer();
 		init();
 
 		getTerminalContext().addToDisposableComponents(this);
 	}
 
-	protected ITerminalBasePanel p_basePanel;
-	protected Properties p_ctx = Env.getCtx();
+	private final ITerminalBasePanel basePanel;
 
 	private boolean disposed = false;
 
@@ -100,12 +97,12 @@ public abstract class TerminalSubPanel
 	@Override
 	public boolean isDisposed()
 	{
-		return disposed ;
+		return disposed;
 	}
 
 	public ITerminalBasePanel getTerminalBasePanel()
 	{
-		return p_basePanel;
+		return basePanel;
 	}
 
 	protected Container getUI()

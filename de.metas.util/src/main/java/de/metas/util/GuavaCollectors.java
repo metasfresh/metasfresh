@@ -276,7 +276,7 @@ public final class GuavaCollectors
 			map1.putAll(map2);
 			return map1;
 		};
-		final Function<M, M> finisher = (map) -> map;
+		final Function<M, M> finisher = Function.identity();
 		return Collector.of(mapSupplier, accumulator, combiner, finisher);
 	}
 
@@ -363,4 +363,15 @@ public final class GuavaCollectors
 		return entry -> entry(entry.getKey(), valueMapper.apply(entry.getValue()));
 	}
 
+	public static <T, R> Collector<T, ?, R> collectUsingListAccumulator(@NonNull final Function<List<T>, R> finisher)
+	{
+		final Supplier<List<T>> supplier = ArrayList::new;
+		final BiConsumer<List<T>, T> accumulator = List::add;
+		final BinaryOperator<List<T>> combiner = (acc1, acc2) -> {
+			acc1.addAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
 }

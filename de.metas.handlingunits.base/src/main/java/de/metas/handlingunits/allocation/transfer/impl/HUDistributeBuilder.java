@@ -49,6 +49,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.IProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -140,7 +141,7 @@ public class HUDistributeBuilder
 
 		//
 		// Allocate ONLY with the INPUT QTY
-		final I_M_Product cuProduct = vhuProductStorage.getM_Product();
+		final I_M_Product cuProduct = Services.get(IProductDAO.class).getById(vhuProductStorage.getProductId());
 		final I_C_UOM cuUOM = vhuProductStorage.getC_UOM();
 		final Object cuTrxReferencedModel = null;
 		final Timestamp date = SystemTime.asTimestamp();

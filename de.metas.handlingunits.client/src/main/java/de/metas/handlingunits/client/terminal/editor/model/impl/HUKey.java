@@ -56,6 +56,7 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -209,14 +210,20 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		return getHUStorage().getProductStorages();
 	}
 
-	public IHUProductStorage getProductStorage(final I_M_Product product)
+	public IHUProductStorage getProductStorage(final ProductId productId)
 	{
-		return getHUStorage().getProductStorage(product);
+		return getHUStorage().getProductStorage(productId);
 	}
 
 	public IHUProductStorage getProductStorageOrNull(final I_M_Product product)
 	{
-		return getHUStorage().getProductStorageOrNull(product);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		return getHUStorage().getProductStorageOrNull(productId);
+	}
+	
+	public IHUProductStorage getProductStorageOrNull(final ProductId productId)
+	{
+		return getHUStorage().getProductStorageOrNull(productId);
 	}
 
 	public final I_C_UOM getStorageUOMOrNull()

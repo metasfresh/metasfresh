@@ -296,7 +296,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO = createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO);
-			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
+			huDefIFCO_pip_Tomato = assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
@@ -315,8 +315,8 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO2 = createHUDefinition(HUTestHelper.NAME_IFCO_Product + "_2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO2);
-			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomato, BigDecimal.TEN,uomEach);
-			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSalad, BigDecimal.TEN, uomEach);
+			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN,uomEach);
+			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSaladProductId, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
 

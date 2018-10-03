@@ -27,14 +27,14 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleAllocBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
@@ -65,9 +65,9 @@ public class HUReceiptScheduleAllocBuilder extends ReceiptScheduleAllocBuilder
 			// Convert Qty from given UOM to receipt schedule's UOM
 			final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
 			final I_C_UOM uomTo = receiptSchedule.getC_UOM();
-			final I_M_Product product = receiptSchedule.getM_Product();
-			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
-			huQtyAllocated = uomConversionBL.convertQuantityTo(huQtyAllocatedSrc, uomConversionCtx, uomTo).getQty();
+			final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
+			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
+			huQtyAllocated = uomConversionBL.convertQuantityTo(huQtyAllocatedSrc, uomConversionCtx, uomTo).getAsBigDecimal();
 		}
 		else
 		{

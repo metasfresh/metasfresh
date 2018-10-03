@@ -34,6 +34,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -51,7 +52,9 @@ import de.metas.util.ISingletonService;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
-	int VIRTUAL_HU_PI_Item_Product_ID = 101;
+	HUPIItemProductId VIRTUAL_HU_PI_Item_Product_ID = HUPIItemProductId.ofRepoId(101);
+
+	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
 
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 
@@ -66,24 +69,22 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * Note that the {@code C_BPArtner_ID} is taken from the given {@code huItem}'s {@link I_M_HU}.
 	 *
 	 * @param huItem
-	 * @param product
+	 * @param productId
 	 * @param date
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_Item huItem, I_M_Product product, Date date);
+	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_Item huItem, ProductId productId, Date date);
 
 	/**
 	 * Retrieves a I_M_HU_PI_Item_Product for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there are multiple records for the given parameters, they are ordered using
 	 * this DAO's standard ordering (see class-javadoc) and the first one is returned. Attempt to match partner if available.
 	 *
 	 * @param huItem
-	 * @param product
+	 * @param productId
 	 * @param date
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, I_M_Product product, Date date);
-
-	I_M_HU_PI_Item_Product retrieveForId(Properties ctx, int M_HU_PI_Item_Product_ID);
+	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, ProductId productId, Date date);
 
 	I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(Properties ctx);
 
@@ -91,30 +92,31 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * Retrieve material item product based on product and partner. Also, specify if infinite capacity is allowed or not. Generally, infinite capacities are OK only in orders, but not in material
 	 * receipts etc.
 	 *
-	 * @param product
+	 * @param productId
 	 * @param bpartner
 	 * @param date date on which the item shall be valid
 	 * @param huUnitType (TU or LU)
 	 * @param allowInfiniteCapacity if false, then the retrieved product is guaranteed to have <code>IsInfiniteCapacity</code> being <code>false</code>.
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(I_M_Product product, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity);
+	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity);
 
 	/**
 	 * Similar to {@link #retrieveMaterialItemProduct(I_M_Product, I_C_BPartner, Date, String, boolean)}, but with the additional condition that the PIIP also has the given <code>packagingProduct</code>.<br>
 	 * Currently, this is useful if a counter order line and a counter packaging line was created, and now the counter order line's PIIP needs to be updated to the one that matches both the order line and packaging line.
 	 *
-	 * @param product
+	 * @param productId
 	 * @param bpartner
 	 * @param date
 	 * @param huUnitType
 	 * @param allowInfiniteCapacity
-	 * @param packagingProduct optional, may be <code>null</code>. If <code>null</code> then this method behaves like {@link #retrieveMaterialItemProduct(I_M_Product, I_C_BPartner, Date, String, boolean)}.
+	 * @param packagingProductId optional, may be <code>null</code>. <br>
+	 *            If <code>null</code> then this method behaves like {@link #retrieveMaterialItemProduct(ProductId, I_C_BPartner, Date, String, boolean)}.
 	 * @return
 	 *
 	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
-	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(I_M_Product product, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity, I_M_Product packagingProduct);
+	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity, ProductId packagingProductId);
 
 	List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(Properties ctx, IHUPIItemProductQuery queryVO, String trxName);
 
@@ -147,25 +149,14 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	/**
 	 * Invoke {@link #retrieveTUs(Properties, I_M_Product, I_C_BPartner, boolean)} with {@code allowInfiniteCapacity = false}.
-	 * 
-	 * @param ctx
-	 * @param cuProduct
-	 * @param bpartner
-	 * @return
 	 */
-	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner);
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, ProductId cuProductId, I_C_BPartner bpartner);
 
 	/**
 	 * Retrieve available {@link I_M_HU_PI_Item_Product}s for TUs which are matching our product and bpartner.
 	 *
 	 * NOTE: the default bpartner's TU, if any, will be returned first.
-	 *
-	 * @param ctx
-	 * @param cuProduct
-	 * @param bpartner
-	 * @param allowInfiniteCapacity
-	 * @return
 	 */
-	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, I_M_Product cuProduct, I_C_BPartner bpartner, boolean allowInfiniteCapacity);
+	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, ProductId cuProductId, I_C_BPartner bpartner, boolean allowInfiniteCapacity);
 
 }

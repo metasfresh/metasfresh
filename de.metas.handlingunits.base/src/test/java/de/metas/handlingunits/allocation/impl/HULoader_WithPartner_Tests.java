@@ -33,9 +33,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.MockedAllocationSourceDestination;
 import de.metas.handlingunits.model.I_M_HU;
@@ -102,7 +102,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		final IHUContext huContext = helper.getHUContext();
 		final BigDecimal qtyExpected = BigDecimal.valueOf(qtyExpectedInt);
-		StaticHUAssert.assertStorageLevel(huContext, hu, pTomato, qtyExpected);
+		StaticHUAssert.assertStorageLevel(huContext, hu, pTomatoId, qtyExpected);
 	}
 
 	@Test
@@ -110,8 +110,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		//
 		// Setup HU PI Item Products
-		helper.assignProduct(huDefIFCO_itemMA, pTomato, new BigDecimal("5"), uomEach);
-		helper.assignProduct(huDefIFCO_itemMA, pTomato, new BigDecimal("20"), uomEach, bpartner01);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("5"), uomEach);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("20"), uomEach, bpartner01);
 
 		//
 		// Create Referenced model (having BP set)
@@ -144,8 +144,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		//
 		// Setup HU PI Item Products
-		helper.assignProduct(huDefIFCO_itemMA, pTomato, new BigDecimal("5"), uomEach);
-		helper.assignProduct(huDefIFCO_itemMA, pTomato, new BigDecimal("20"), uomEach, bpartner01);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("5"), uomEach);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("20"), uomEach, bpartner01);
 
 		//
 		// Create Referenced model (using BPartner02, for which we don't have a particular PI Item Product)
@@ -181,8 +181,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		//
 		// Setup HU PI Item Products
-		helper.assignProduct(huDefIFCO_itemMA, pTomato, new BigDecimal("5"), uomEach);
-		helper.assignProduct(huDefIFCO_itemMA, pTomato, new BigDecimal("20"), uomEach, bpartner01);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("5"), uomEach);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("20"), uomEach, bpartner01);
 
 		//
 		// Create Referenced model (NO BPartner!)

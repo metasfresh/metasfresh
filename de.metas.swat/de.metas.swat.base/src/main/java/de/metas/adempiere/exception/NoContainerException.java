@@ -25,10 +25,12 @@ package de.metas.adempiere.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
-import org.compiere.model.MWarehouse;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 public class NoContainerException extends AdempiereException {
 
@@ -92,10 +94,8 @@ public class NoContainerException extends AdempiereException {
 		sb.append(Msg.translate(Env.getCtx(), MSG_NO_SUFFICIENT_CONTAINERS));
 
 		if (warehouseId > 0) {
-			final MWarehouse warehouse = new MWarehouse(Env.getCtx(),
-					warehouseId, null);
 			sb.append("\n@M_Warehouse_ID@ ");
-			sb.append(warehouse.getName());
+			sb.append(Services.get(IWarehouseDAO.class).getWarehouseName(WarehouseId.ofRepoId(warehouseId)));
 		}
 
 		if (maxVolumeExceeded || maxWeightExceeded) {

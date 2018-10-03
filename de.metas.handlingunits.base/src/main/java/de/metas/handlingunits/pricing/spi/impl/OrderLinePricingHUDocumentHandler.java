@@ -31,7 +31,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -41,6 +40,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -55,7 +55,7 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 	 * Does nothing and returns <code>null</code>.
 	 */
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final I_M_Product product)
+	public I_M_HU_PI_Item_Product getM_HU_PI_ItemProductFor(final Object document, final ProductId productId)
 	{
 		// Not needed.
 		return null;

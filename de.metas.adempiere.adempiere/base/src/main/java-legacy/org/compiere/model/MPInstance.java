@@ -20,11 +20,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.MoreObjects;
-
-import de.metas.util.Services;
 
 /**
  *  Process Instance Model

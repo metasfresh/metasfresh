@@ -194,7 +194,7 @@ public class M_DiscountSchemaBreak
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setProductId(productId);
-		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId));
+		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId).getRepoId());
 		pricingCtx.setSOTrx(SOTrx.ofBoolean(context.getIsSOTrx()));
 		pricingCtx.setQty(qty);
 

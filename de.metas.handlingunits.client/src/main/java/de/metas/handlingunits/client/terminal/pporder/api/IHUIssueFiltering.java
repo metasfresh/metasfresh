@@ -38,7 +38,7 @@ import de.metas.util.ISingletonService;
 
 public interface IHUIssueFiltering extends ISingletonService
 {
-	List<I_M_Warehouse> retrieveWarehouse(Properties ctx);
+	List<I_M_Warehouse> retrieveWarehouse();
 
 	/**
 	 * Gets manufacturing orders based on {@link I_M_Warehouse}s

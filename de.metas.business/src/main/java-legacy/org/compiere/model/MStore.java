@@ -24,12 +24,15 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Web Store
@@ -305,9 +308,9 @@ public class MStore extends X_W_Store
 			setWebContext("/" + getWebContext());
 
 		// Org to Warehouse
-		if (newRecord || is_ValueChanged("M_Warehouse_ID") || getAD_Org_ID() == 0)
+		if (newRecord || is_ValueChanged("M_Warehouse_ID") || getAD_Org_ID() <= 0)
 		{
-			MWarehouse wh = new MWarehouse(getCtx(), getM_Warehouse_ID(), get_TrxName());
+			final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(getM_Warehouse_ID()));
 			setAD_Org_ID(wh.getAD_Org_ID());
 		}
 

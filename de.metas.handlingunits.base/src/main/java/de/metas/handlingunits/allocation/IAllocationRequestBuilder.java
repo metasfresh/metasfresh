@@ -33,6 +33,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -65,6 +66,8 @@ public interface IAllocationRequestBuilder
 	IAllocationRequestBuilder setHUContext(IHUContext huContext);
 
 	IAllocationRequestBuilder setProduct(final I_M_Product product);
+
+	IAllocationRequestBuilder setProduct(final ProductId productId);
 
 	IAllocationRequestBuilder setQuantity(Quantity quantity);
 
@@ -100,6 +103,6 @@ public interface IAllocationRequestBuilder
 	 * @return this
 	 */
 	IAllocationRequestBuilder setFromReferencedTableRecord(ITableRecordReference fromReferencedTableRecord);
-	
+
 	IAllocationRequestBuilder addEmptyHUListener(EmptyHUListener emptyHUListener);
 }

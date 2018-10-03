@@ -51,6 +51,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.terminal.AbstractPropertiesPanelModel;
+import de.metas.adempiere.form.terminal.IInputMethod;
 import de.metas.adempiere.form.terminal.IPropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -69,7 +70,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.logging.LogManager;
-import de.metas.picking.legacy.form.IInputMethod;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;

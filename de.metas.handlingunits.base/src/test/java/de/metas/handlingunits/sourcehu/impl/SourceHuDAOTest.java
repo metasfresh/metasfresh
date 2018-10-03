@@ -10,6 +10,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,6 +25,7 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -93,8 +95,9 @@ public class SourceHuDAOTest
 	public void testCreateHuFiltersForScheds()
 	{
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(wh.getM_Warehouse_ID()).build();
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
+				.build();
 
 		final ICompositeQueryFilter<I_M_HU> huFilters = SourceHuDAO.createHuFilter(query);
 		assertThat(huFilters.accept(hus.get(0))).isTrue();
@@ -112,8 +115,9 @@ public class SourceHuDAOTest
 		save(sourceHu);
 
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
-				.productId(product.getM_Product_ID())
-				.warehouseId(wh.getM_Warehouse_ID()).build();
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()))
+				.build();
 		final Set<HuId> resultHUIds = new SourceHuDAO().retrieveActiveSourceHUIds(query);
 
 		assertThat(resultHUIds).hasSize(1);

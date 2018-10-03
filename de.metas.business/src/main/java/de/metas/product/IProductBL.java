@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
@@ -49,7 +50,12 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isItem(I_M_Product product);
 
-	boolean isItem(int productId);
+	boolean isItem(ProductId productId);
+
+	default boolean isItem(int productId)
+	{
+		return isItem(ProductId.ofRepoId(productId));
+	}
 
 	/**
 	 * @param product
@@ -65,6 +71,8 @@ public interface IProductBL extends ISingletonService
 	boolean isStocked(I_M_Product product);
 
 	boolean isStocked(int productId);
+
+	boolean isDiverse(ProductId productId);
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
@@ -123,14 +131,14 @@ public interface IProductBL extends ISingletonService
 		return getStockingUOM(productId.getRepoId());
 	}
 
-	default int getStockingUOMId(@NonNull final ProductId productId)
+	default UomId getStockingUOMId(@NonNull final ProductId productId)
 	{
 		return getStockingUOMId(productId.getRepoId());
 	}
 
-	default int getStockingUOMId(final int productId)
+	default UomId getStockingUOMId(final int productId)
 	{
-		return getStockingUOM(productId).getC_UOM_ID();
+		return UomId.ofRepoId(getStockingUOM(productId).getC_UOM_ID());
 	}
 
 	/**

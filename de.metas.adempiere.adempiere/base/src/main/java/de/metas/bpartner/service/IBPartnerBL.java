@@ -49,6 +49,8 @@ import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
+	public String getBPartnerValue(final BPartnerId bpartnerId);
+
 	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
 	/**
@@ -168,6 +170,8 @@ public interface IBPartnerBL extends ISingletonService
 	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link RetrieveBillContactRequest}.
 	 */
 	User retrieveBillContactOrNull(RetrieveBillContactRequest request);
+
+	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
 	@Value
 	@Builder

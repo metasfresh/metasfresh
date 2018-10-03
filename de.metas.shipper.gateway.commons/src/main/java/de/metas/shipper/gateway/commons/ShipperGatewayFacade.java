@@ -1,7 +1,5 @@
 package de.metas.shipper.gateway.commons;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -24,6 +22,8 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliver
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -124,7 +124,8 @@ public class ShipperGatewayFacade
 			final DeliveryOrderKey deliveryOrderKey,
 			final Collection<I_M_Package> mpackages)
 	{
-		final String shipperGatewayId = retrieveShipperGatewayId(deliveryOrderKey.getShipperId());
+		final ShipperId shipperId = ShipperId.ofRepoId(deliveryOrderKey.getShipperId());
+		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
 		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
@@ -144,9 +145,9 @@ public class ShipperGatewayFacade
 		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getRepoId(), shipperGatewayId);
 	}
 
-	private String retrieveShipperGatewayId(final int shipperId)
+	private String retrieveShipperGatewayId(final ShipperId shipperId)
 	{
-		final I_M_Shipper shipper = loadOutOfTrx(shipperId, I_M_Shipper.class);
+		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		return Check.assumeNotEmpty(
 				shipper.getShipperGateway(),
 				"The given shipper with M_Shipper_ID={} has an empty ShipperGateway value; shipper={}", shipperId, shipper);

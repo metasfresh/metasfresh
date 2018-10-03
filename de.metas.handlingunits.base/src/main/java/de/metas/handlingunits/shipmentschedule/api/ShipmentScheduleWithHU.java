@@ -45,7 +45,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -78,6 +77,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -124,17 +125,19 @@ public class ShipmentScheduleWithHU
 	 */
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final BigDecimal qtyPicked,
+			@NonNull final Quantity qtyPicked,
 			final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true, qtyTypeToUse);
+		final boolean createManualPackingMaterial = true;
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked.getAsBigDecimal(), createManualPackingMaterial, qtyTypeToUse);
 	}
 
 	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final BigDecimal qtyPicked)
 	{
-		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, true, null);
+		final boolean createManualPackingMaterial = true;
+		return new ShipmentScheduleWithHU(null, shipmentSchedule, qtyPicked, createManualPackingMaterial, null);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
@@ -243,14 +246,9 @@ public class ShipmentScheduleWithHU
 		return huContext;
 	}
 
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return shipmentSchedule.getM_Product_ID();
-	}
-
-	public I_M_Product getM_Product()
-	{
-		return shipmentSchedule.getM_Product();
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 	}
 
 	public int getM_AttributeSetInstance_ID()
@@ -517,7 +515,7 @@ public class ShipmentScheduleWithHU
 		final I_M_HU_PI_Item_Product matchingPiip = hupiItemProductDAO.retrievePIMaterialItemProduct(
 				huPIItem,
 				bPartner,
-				getM_Product(),
+				getProductId(),
 				preparationDate);
 		if (matchingPiip != null)
 		{

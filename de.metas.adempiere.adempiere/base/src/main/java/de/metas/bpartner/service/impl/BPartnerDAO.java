@@ -43,13 +43,13 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -73,6 +73,8 @@ import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -449,33 +451,18 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public I_M_Shipper retrieveShipper(final int bPartnerId, final String trxName)
+	public ShipperId getShipperId(final BPartnerId bpartnerId)
 	{
-		if (bPartnerId <= 0)
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(bpartner.getM_Shipper_ID());
+		if (shipperId != null)
 		{
-			return null;
-		}
-
-		final Properties ctx = Env.getCtx();
-		final de.metas.interfaces.I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, de.metas.interfaces.I_C_BPartner.class, trxName);
-
-		if (bPartner.getM_Shipper_ID() > 0)
-		{
-			return bPartner.getM_Shipper();
+			return shipperId;
 		}
 		else
 		{
-			return retrieveDefaultShipper();
+			return Services.get(IShipperDAO.class).getDefault(ClientId.ofRepoId(bpartner.getAD_Client_ID()));
 		}
-	}
-
-	private I_M_Shipper retrieveDefaultShipper()
-	{
-		final Properties ctx = Env.getCtx();
-		return new Query(ctx, I_M_Shipper.Table_Name, I_M_Shipper.COLUMNNAME_IsDefault + "=?", null)
-				.setParameters(true)
-				.setClient_ID()
-				.firstOnly(de.metas.interfaces.I_M_Shipper.class);
 	}
 
 	@Override

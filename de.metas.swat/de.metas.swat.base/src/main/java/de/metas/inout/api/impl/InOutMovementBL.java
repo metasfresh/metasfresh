@@ -44,7 +44,6 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -254,9 +253,7 @@ public class InOutMovementBL implements IInOutMovementBL
 		movementLine.setM_Movement_ID(movement.getM_Movement_ID());
 		movementLine.setM_InOutLine(inoutLineFrom);
 
-		final I_M_Product product = inoutLineFrom.getM_Product();
-		movementLine.setM_Product(product);
-
+		movementLine.setM_Product_ID(inoutLineFrom.getM_Product_ID());
 		movementLine.setM_AttributeSetInstance_ID(inoutLineFrom.getM_AttributeSetInstance_ID());
 
 		movementLine.setMovementQty(inoutLineFrom.getMovementQty());

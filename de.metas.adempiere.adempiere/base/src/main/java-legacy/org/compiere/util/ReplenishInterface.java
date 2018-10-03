@@ -18,7 +18,7 @@ package org.compiere.util;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.MWarehouse;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_T_Replenish;
 
 /**
@@ -36,6 +36,6 @@ public interface ReplenishInterface
 	 *	@param replenish temporary replenishment
 	 *	@return qty to order
 	 */
-	public BigDecimal getQtyToOrder (MWarehouse wh, X_T_Replenish replenish);
+	public BigDecimal getQtyToOrder (I_M_Warehouse wh, X_T_Replenish replenish);
 	
 }	//	ReplenishmentInterface

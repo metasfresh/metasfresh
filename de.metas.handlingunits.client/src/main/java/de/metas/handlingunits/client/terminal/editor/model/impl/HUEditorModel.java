@@ -367,6 +367,11 @@ public class HUEditorModel implements IDisposable
 	{
 		return getTerminalContext().getCtx();
 	}
+	
+	protected final String getAD_Language()
+	{
+		return Env.getAD_Language(getCtx());
+	}
 
 	protected final IHUKeyFactory getHUKeyFactory()
 	{

@@ -15,7 +15,6 @@
  * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -27,6 +26,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeQuery;
@@ -91,10 +91,10 @@ public class MInventory extends X_M_Inventory implements IDocument
 	 * @param wh
 	 * @param trxName
 	 */
-	public MInventory(final MWarehouse wh, final String trxName)
+	public MInventory(final I_M_Warehouse wh)
 	{
-		this(wh.getCtx(), 0, trxName);
-		setClientOrg(wh);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		setClientOrgFromModel(wh);
 		setM_Warehouse_ID(wh.getM_Warehouse_ID());
 	}
 

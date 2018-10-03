@@ -203,7 +203,7 @@ public abstract class KeyLayout implements IKeyLayout
 	public final <KT extends ITerminalKey> List<KT> getKeys(final Class<KT> keyType)
 	{
 		final List<ITerminalKey> keys = getKeys();
-		final List<KT> keysToReturn = new ArrayList<KT>(keys.size());
+		final List<KT> keysToReturn = new ArrayList<>(keys.size());
 		for (final ITerminalKey key : keys)
 		{
 			@SuppressWarnings("unchecked")
@@ -407,7 +407,7 @@ public abstract class KeyLayout implements IKeyLayout
 		}
 		else
 		{
-			keys = new ArrayList<ITerminalKey>(keysNew);
+			keys = new ArrayList<>(keysNew);
 
 			// Check a common mistake: more then one key has the same ID
 			final Set<String> keyIds = new HashSet<>();

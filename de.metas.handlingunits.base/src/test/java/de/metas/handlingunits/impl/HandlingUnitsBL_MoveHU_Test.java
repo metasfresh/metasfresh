@@ -110,7 +110,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 			final List<I_M_HU> vhus = helper.createHUs(
 					huContext,
 					helper.huDefVirtual,
-					helper.pTomato,
+					helper.pTomatoProductId,
 					BigDecimal.ONE, // qtyToLoad,
 					uomKg);
 			vhu = CollectionUtils.singleElement(vhus);

@@ -29,8 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -57,6 +55,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -153,10 +153,9 @@ public final class HUSplitModel extends AbstractLTCUModel
 
 		for (final IProductStorage productStorage : productStorages)
 		{
-			final I_M_Product product = productStorage.getM_Product();
-			final BigDecimal qty = productStorage.getQty(); // qty is the full qty available in the source. how much we will really split is also restricted by the destination
-			final I_C_UOM uom = productStorage.getC_UOM();
-			final CUSplitKey key = new CUSplitKey(getTerminalContext(), product, qty, uom);
+			final ProductId productId = productStorage.getProductId();
+			final Quantity qty = productStorage.getQty(); // qty is the full qty available in the source. how much we will really split is also restricted by the destination
+			final CUSplitKey key = new CUSplitKey(getTerminalContext(), productId, qty.getAsBigDecimal(), qty.getUOM());
 			keys.add(key);
 		}
 
@@ -181,13 +180,13 @@ public final class HUSplitModel extends AbstractLTCUModel
 	private List<ITerminalKey> createTUKeys(final CUSplitKey cuKey)
 	{
 		final Properties ctx = getTerminalContext().getCtx();
-		final I_M_Product cuProduct = cuKey.getM_Product();
+		final ProductId cuProductId = cuKey.getProductId();
 
 		final I_M_HU huToSplit = huToSplitKey.getM_HU();
 		final int originalPartnerId = huToSplit.getC_BPartner_ID();
 		final I_C_BPartner originalPartner = originalPartnerId <= 0 ? null : InterfaceWrapperHelper.create(ctx, originalPartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
 
-		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProduct, originalPartner);
+		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, originalPartner);
 
 		//
 		// Create TU Keys
@@ -204,7 +203,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 
 			//
 			// Note that the key already has checks for infinite capacity
-			final TUSplitKey key = new TUSplitKey(getTerminalContext(), tuPIItemProduct, tuPI, cuProduct, capacity, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			final TUSplitKey key = new TUSplitKey(getTerminalContext(), tuPIItemProduct, tuPI, cuProductId, capacity, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 			keys.add(key);
 		}
 		//
@@ -215,7 +214,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 			final I_M_HU_PI_Item_Product virtualItemProduct = itemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 			final BigDecimal capacity = BigDecimal.valueOf(99999); // infinite
 
-			final TUSplitKey key = new TUSplitKey(getTerminalContext(), virtualItemProduct, virtualPI, cuProduct, capacity, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			final TUSplitKey key = new TUSplitKey(getTerminalContext(), virtualItemProduct, virtualPI, cuProductId, capacity, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 			keys.add(key);
 		}
 		return keys;
@@ -452,7 +451,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		splitBuilder.setDocumentLine(documentLine);
 		splitBuilder.setCUTrxReferencedModel(documentLine == null ? null : documentLine.getTrxReferencedModel());
 
-		splitBuilder.setCUProduct(cuKey.getM_Product());
+		splitBuilder.setCUProductId(cuKey.getProductId());
 		splitBuilder.setCUQty(cuKey.getQty());
 		splitBuilder.setCUUOM(cuKey.getC_UOM());
 

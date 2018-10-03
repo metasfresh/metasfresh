@@ -13,18 +13,17 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.text.DateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
@@ -35,11 +34,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 
 public class DeliveryDateKey extends TerminalKey
 {
-	private final Date date;
+	private final LocalDate date;
 	private String id;
 	private String name;
 
-	/* package */DeliveryDateKey(final ITerminalContext terminalContext, final Date date)
+	/* package */ DeliveryDateKey(final ITerminalContext terminalContext, final LocalDate date)
 	{
 		super(terminalContext);
 
@@ -50,10 +49,10 @@ public class DeliveryDateKey extends TerminalKey
 		}
 		else
 		{
-			this.date = TimeUtil.getDay(date);
+			this.date = date;
 
 			final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
-			this.name = dateFormat.format(this.date);
+			this.name = dateFormat.format(TimeUtil.asTimestamp(this.date));
 		}
 
 		this.id = name;
@@ -83,7 +82,7 @@ public class DeliveryDateKey extends TerminalKey
 		return null;
 	}
 
-	public Date getDate()
+	public LocalDate getDate()
 	{
 		return date;
 	}

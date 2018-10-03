@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
@@ -57,10 +59,10 @@ public class DeliveryGroupCandidate
 	private final String bPartnerAddress;
 
 	@NonNull
-	private final Integer warehouseId;
+	private final WarehouseId warehouseId;
 
 	@NonNull
-	private final Integer shipperId;
+	private final ShipperId shipperId;
 
 	@Default
 	private final List<DeliveryLineCandidate> lines = new ArrayList<>();

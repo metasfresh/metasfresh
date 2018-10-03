@@ -68,7 +68,7 @@ public class ProductStorageExpectation
 		if (qty != null)
 		{
 			Assert.assertThat(prefix + "Qty",
-					productStorage.getQty(),
+					productStorage.getQty().getAsBigDecimal(),
 					Matchers.comparesEqualTo(qty));
 		}
 
@@ -82,7 +82,7 @@ public class ProductStorageExpectation
 		{
 			Assert.assertThat(prefix + "QtyFree = QtyCapacity - Qty",
 					productStorage.getQtyFree(),
-					Matchers.comparesEqualTo(productStorage.getQtyCapacity().subtract(productStorage.getQty())));
+					Matchers.comparesEqualTo(productStorage.getQtyCapacity().subtract(productStorage.getQty().getAsBigDecimal())));
 		}
 
 		return this;

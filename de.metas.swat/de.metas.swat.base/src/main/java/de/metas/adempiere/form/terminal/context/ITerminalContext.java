@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.user.UserId;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.IContextAware;
 
@@ -138,6 +139,11 @@ public interface ITerminalContext extends IContextAware, IPropertiesContainer
 	 * @return terminal's AD_User_ID (i.e. the user which logged in terminal)
 	 */
 	public int getAD_User_ID();
+	
+	default public UserId getUserId()
+	{
+		return UserId.ofRepoIdOrNull(getAD_User_ID());
+	}
 
 	/**
 	 *

@@ -26,8 +26,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 
 /**

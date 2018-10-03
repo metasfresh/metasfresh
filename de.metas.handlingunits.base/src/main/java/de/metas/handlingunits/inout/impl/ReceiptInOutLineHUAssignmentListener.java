@@ -37,7 +37,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -115,7 +115,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 * <li>changing the HU's status to {@link X_M_HU#HUSTATUS_Active}.
 	 * <li>setting HU's locator to <code>receiptLocatorId</code>
 	 * <li>reseting the vendor: HU's BPartner is set to null, subproducer attribute is set to HU's BPartner if it was not set before (see {@link #resetVendor(IHUContext, I_M_HU)})
-	 * <li>setting the HU's {@link Constants#ATTR_PurchaseOrderLine_ID} and {@link Constants#ATTR_ReceiptInOutLine_ID} attributes.
+	 * <li>setting the HU's {@link HUAttributeConstants#ATTR_PurchaseOrderLine_ID} and {@link HUAttributeConstants#ATTR_ReceiptInOutLine_ID} attributes.
 	 * </ul>
 	 *
 	 * NOTE: we assume this method is executed in a {@link IHUContextProcessor}.
@@ -145,13 +145,13 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		{
 			final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
 
-			final org.compiere.model.I_M_Attribute attr_PurchaseOrderLine = huAttributeStorage.getAttributeByValueKeyOrNull(Constants.ATTR_PurchaseOrderLine_ID);
+			final org.compiere.model.I_M_Attribute attr_PurchaseOrderLine = huAttributeStorage.getAttributeByValueKeyOrNull(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
 			if (attr_PurchaseOrderLine != null)
 			{
 				huAttributeStorage.setValue(attr_PurchaseOrderLine, receiptLine.getC_OrderLine_ID());
 			}
 
-			final org.compiere.model.I_M_Attribute attr_ReceiptInOutLine = huAttributeStorage.getAttributeByValueKeyOrNull(Constants.ATTR_ReceiptInOutLine_ID);
+			final org.compiere.model.I_M_Attribute attr_ReceiptInOutLine = huAttributeStorage.getAttributeByValueKeyOrNull(HUAttributeConstants.ATTR_ReceiptInOutLine_ID);
 			if (attr_ReceiptInOutLine != null)
 			{
 				huAttributeStorage.setValue(attr_ReceiptInOutLine, receiptLine.getM_InOutLine_ID());
@@ -193,7 +193,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// If HU does not support the SubProducer attribute, we have nothing to do
 		final IAttributeStorage huAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-		final org.compiere.model.I_M_Attribute attribute_subProducer = huAttributeStorage.getAttributeByValueKeyOrNull(Constants.ATTR_SubProducerBPartner_Value);
+		final org.compiere.model.I_M_Attribute attribute_subProducer = huAttributeStorage.getAttributeByValueKeyOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 		if (attribute_subProducer == null)
 		{
 			return;

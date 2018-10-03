@@ -29,7 +29,6 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -41,6 +40,8 @@ import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -52,7 +53,7 @@ public class HUSplitBuilder implements IHUSplitBuilder
 	private I_M_HU _huToSplit;
 	private IHUDocumentLine documentLine;
 
-	private I_M_Product cuProduct;
+	private ProductId cuProductId;
 	private BigDecimal _cuQty;
 	private I_C_UOM cuUOM;
 	private Object cuTrxReferencedModel;
@@ -99,9 +100,9 @@ public class HUSplitBuilder implements IHUSplitBuilder
 	}
 
 	@Override
-	public HUSplitBuilder setCUProduct(final I_M_Product product)
+	public HUSplitBuilder setCUProductId(final ProductId cuProductId)
 	{
-		cuProduct = product;
+		this.cuProductId = cuProductId;
 		return this;
 	}
 
@@ -205,7 +206,7 @@ public class HUSplitBuilder implements IHUSplitBuilder
 	{
 		final ILUTUProducerAllocationDestination destination;
 		{
-			final IHUSplitDefinition splitDefinition = createSplitDefinition(luPIItem, tuPIItem, cuProduct, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate);
+			final IHUSplitDefinition splitDefinition = createSplitDefinition(luPIItem, tuPIItem, cuProductId, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate);
 
 			//
 			// Create and configure destination
@@ -229,13 +230,13 @@ public class HUSplitBuilder implements IHUSplitBuilder
 	private IHUSplitDefinition createSplitDefinition(
 			final I_M_HU_PI_Item luPIItem,
 			final I_M_HU_PI_Item tuPIItem,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final I_C_UOM cuUOM,
 			final BigDecimal cuPerTU,
 			final BigDecimal tuPerLU,
 			final BigDecimal maxLUToAllocate)
 	{
-		return new HUSplitDefinition(luPIItem, tuPIItem, cuProduct, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate);
+		return new HUSplitDefinition(luPIItem, tuPIItem, cuProductId, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate);
 	}
 
 	/**
@@ -250,11 +251,11 @@ public class HUSplitBuilder implements IHUSplitBuilder
 		final Timestamp date = SystemTime.asTimestamp();
 		return AllocationUtils.createQtyRequest(
 				huContext,
-				cuProduct, // Product
-				getCUQty(), // Qty
-				cuUOM, // UOM
+				cuProductId, // Product
+				Quantity.of(getCUQty(), cuUOM), // Qty
 				date, // Date
-				cuTrxReferencedModel // Referenced model, if any
+				cuTrxReferencedModel, // Referenced model, if any
+				false // force allocation
 		);
 	}
 }

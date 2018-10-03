@@ -1,6 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.peer.metasfresh.services;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehousePickingGroupId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Repository;
@@ -56,11 +57,11 @@ public class MSV3ServerConfigRepository
 				.firstOnly(I_MSV3_Server.class);
 		if (serverConfigRecord != null)
 		{
-			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise().intValueExact(); 
+			final int fixedQtyAvailableToPromise = serverConfigRecord.getFixedQtyAvailableToPromise().intValueExact();
 			serverConfigBuilder.fixedQtyAvailableToPromise(fixedQtyAvailableToPromise);
 
 			final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-			final int warehousePickingGroupId = serverConfigRecord.getM_Warehouse_PickingGroup_ID();
+			final WarehousePickingGroupId warehousePickingGroupId = WarehousePickingGroupId.ofRepoId(serverConfigRecord.getM_Warehouse_PickingGroup_ID());
 			serverConfigBuilder.warehousePickingGroupSupplier(() -> warehouseDAO.getWarehousePickingGroupById(warehousePickingGroupId));
 		}
 

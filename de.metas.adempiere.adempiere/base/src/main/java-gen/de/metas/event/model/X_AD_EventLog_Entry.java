@@ -4,11 +4,6 @@ package de.metas.event.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_Persistent;
-import org.compiere.model.PO;
-import org.compiere.model.POInfo;
-
 /** Generated Model for AD_EventLog_Entry
  *  @author Adempiere (generated) 
  */

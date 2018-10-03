@@ -15,6 +15,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
@@ -26,9 +27,6 @@ import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-
-
 
 /*
  * #%L
@@ -256,9 +254,11 @@ public class C_RfQ_CreatePO extends JavaProcess
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		ol.setQtyEntered(rfqLineQty.getQty());
+
+		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
 		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(
 				Quantity.of(rfqLineQty.getQty(), rfqLineQty.getC_UOM()),
-				ol.getM_Product_ID());
+				productId);
 		ol.setQtyOrdered(qtyOrdered.getAsBigDecimal());
 	}
 }

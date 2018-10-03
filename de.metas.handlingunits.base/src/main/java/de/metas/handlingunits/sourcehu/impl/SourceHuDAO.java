@@ -8,7 +8,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -22,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -152,8 +152,8 @@ public class SourceHuDAO implements ISourceHuDAO
 		final IQueryFilter<I_M_HU> huFilter = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
-				.addOnlyWithProductIds(query.getProductIds())
-				.addOnlyInWarehouseId(WarehouseId.ofRepoId(query.getWarehouseId()))
+				.addOnlyWithProductIds(ProductId.toRepoIds(query.getProductIds()))
+				.addOnlyInWarehouseId(query.getWarehouseId())
 				.createQueryFilter();
 		huFilters.addFilter(huFilter);
 

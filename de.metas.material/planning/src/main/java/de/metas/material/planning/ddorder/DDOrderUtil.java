@@ -1,16 +1,18 @@
 package de.metas.material.planning.ddorder;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
@@ -24,12 +26,16 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DDOrderUtil
 {
-	public int retrieveInTransitWarehouseId(@NonNull final Properties ctx, final int adOrgId)
+	public WarehouseId retrieveInTransitWarehouseId(@NonNull final OrgId adOrgId)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		return warehousesRepo.getInTransitWarehouseId(adOrgId);
+	}
 
-		final I_M_Warehouse warehouseInTransitForOrg = warehouseDAO.retrieveWarehouseInTransitForOrg(ctx, adOrgId);
-		return warehouseInTransitForOrg.getM_Warehouse_ID();
+	public Optional<WarehouseId> retrieveInTransitWarehouseIdIfExists(@NonNull final OrgId adOrgId)
+	{
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		return warehousesRepo.getInTransitWarehouseIdIfExists(adOrgId);
 	}
 
 	public int retrieveOrgBPartnerId(@NonNull final Properties ctx, final int orgId)
@@ -57,7 +63,7 @@ public class DDOrderUtil
 	 * @return
 	 */
 	public int calculateDurationDays(
-			@Nullable final I_PP_Product_Planning productPlanningData, 
+			@Nullable final I_PP_Product_Planning productPlanningData,
 			@Nullable final I_DD_NetworkDistributionLine networkLine)
 	{
 		//

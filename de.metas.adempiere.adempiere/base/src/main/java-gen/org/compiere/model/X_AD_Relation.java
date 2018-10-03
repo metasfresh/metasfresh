@@ -19,7 +19,6 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
 
 /** Generated Model for AD_Relation
  *  @author Adempiere (generated) 

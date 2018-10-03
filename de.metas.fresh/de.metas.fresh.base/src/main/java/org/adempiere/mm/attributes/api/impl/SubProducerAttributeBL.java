@@ -38,7 +38,7 @@ import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.model.I_C_BPartner;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
@@ -109,7 +109,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(Constants.ATTR_SubProducerBPartner_Value);
+		final AttributeId subProducerAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_SubProducerBPartner_Value);
 		if (subProducerAttributeId == null)
 		{
 			return null;
