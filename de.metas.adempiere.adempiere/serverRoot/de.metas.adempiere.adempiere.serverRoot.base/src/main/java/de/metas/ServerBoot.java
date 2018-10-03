@@ -36,6 +36,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.elasticsearch.ESLoggingInit;
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
 import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
@@ -95,6 +96,9 @@ public class ServerBoot implements InitializingBean
 
 	public static void main(final String[] args)
 	{
+		// Make sure slf4j is used (by default, log4j is used)
+		ESLoggingInit.init();
+		
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
 			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
