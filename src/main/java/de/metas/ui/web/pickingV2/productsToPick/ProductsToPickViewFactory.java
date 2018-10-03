@@ -8,6 +8,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -81,6 +82,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rowsData(rowsData)
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
 				.build();
 
 		viewsRepository.getViewsStorageFor(viewId).put(view);
