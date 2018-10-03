@@ -1,3 +1,5 @@
+
+DROP FUNCTION IF EXISTS public.migrationscript_ignoreNewProjectName(character varying, character varying);
 CREATE OR REPLACE FUNCTION public.migrationscript_ignoreNewProjectName(
 	oldProjectName character varying, 
 	newProjectName character varying)

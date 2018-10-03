@@ -1,8 +1,8 @@
 
-ALTER FUNCTION public.add_migrationscript(character varying)
-  RENAME TO migrationscript_ignore;
+DROP FUNCTION IF EXISTS public.add_migrationscript(character varying);
+DROP FUNCTION IF EXISTS public.migrationscript_ignore(character varying);
 
-CREATE OR REPLACE FUNCTION public.migrationscript_ignore(projectAndFileName character varying)
+CREATE FUNCTION public.migrationscript_ignore(projectAndFileName character varying)
   RETURNS void AS
 $BODY$
  INSERT INTO public.AD_MigrationScript (
@@ -23,8 +23,8 @@ select migrationscript_ignore(''configuration/changingpartnerwindow.sql'');
 Please keep in sync with http://docs.metasfresh.org/sql_collection/migrationscript_helper_functions.html
 ';
 
-
-CREATE OR REPLACE FUNCTION public.migrationscript_ignoreNewProjectName(
+DROP FUNCTION IF EXISTS public.migrationscript_ignoreNewProjectName(character varying, character varying);
+CREATE FUNCTION public.migrationscript_ignoreNewProjectName(
 	oldProjectName character varying, 
 	newProjectName character varying)
   RETURNS void AS

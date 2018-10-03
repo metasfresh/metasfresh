@@ -1,5 +1,6 @@
 
-CREATE OR REPLACE FUNCTION public.migrationscript_ignore(projectAndFileName character varying)
+DROP FUNCTION IF EXISTS public.migrationscript_ignore(character varying);
+CREATE FUNCTION public.migrationscript_ignore(projectAndFileName character varying)
   RETURNS void AS
 $BODY$
  INSERT INTO public.AD_MigrationScript (
