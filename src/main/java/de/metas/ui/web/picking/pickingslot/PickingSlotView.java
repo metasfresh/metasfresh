@@ -1,7 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -17,6 +15,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -33,7 +33,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -78,7 +78,7 @@ public class PickingSlotView implements IView
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 	private final ITranslatableString description;
-	private final int currentShipmentScheduleId;
+	private final ShipmentScheduleId currentShipmentScheduleId;
 	private final PickingSlotRowsCollection rows;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 	private final List<DocumentFilter> filters;
@@ -89,13 +89,11 @@ public class PickingSlotView implements IView
 			@Nullable final ViewId parentViewId,
 			@Nullable final DocumentId parentRowId,
 			@Nullable final ITranslatableString description,
-			@Nullable final int currentShipmentScheduleId,
+			@NonNull final ShipmentScheduleId currentShipmentScheduleId,
 			@NonNull final Supplier<List<PickingSlotRow>> rowsSupplier,
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
 			@Nullable final List<DocumentFilter> filters)
 	{
-		Check.assume(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
-
 		this.viewId = viewId;
 		this.parentViewId = parentViewId;
 		this.parentRowId = parentRowId;
@@ -249,7 +247,7 @@ public class PickingSlotView implements IView
 	 *
 	 * @return never returns a value {@code <= 0} (see constructor code).
 	 */
-	public int getCurrentShipmentScheduleId()
+	public ShipmentScheduleId getCurrentShipmentScheduleId()
 	{
 		return currentShipmentScheduleId;
 	}
@@ -261,7 +259,7 @@ public class PickingSlotView implements IView
 	 */
 	public I_M_ShipmentSchedule getCurrentShipmentSchedule()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = load(getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
 		return shipmentSchedule;
 	}
 

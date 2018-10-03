@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -89,12 +90,11 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		pickingCandidateService.removeQtyFromHU()
+		pickingCandidateService.removeQtyFromHU(RemoveQtyFromHURequest.builder()
 				.qtyCU(qtyCU)
 				.huId(pickingSlotRow.getHuId())
 				.productId(pickingSlotRow.getHuProductId())
-				.build()
-				.perform();
+				.build());
 
 		invalidateView();
 		invalidateParentView();
@@ -104,7 +104,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 
 	private boolean checkSourceHuPreconditionIncludingEmptyHUs()
 	{
-		final HuId huId = HuId.ofRepoId(getSingleSelectedRow().getHuId());
+		final HuId huId = getSingleSelectedRow().getHuId();
 		final Collection<HuId> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUIds(huId);
 		return !sourceHUs.isEmpty();
 	}

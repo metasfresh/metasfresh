@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
@@ -44,8 +45,9 @@ public class WEBUI_PP_Order_ProcessHelper
 		final I_PP_Order ppOrder = load(row.getPP_Order_ID(), I_PP_Order.class);
 
 		final MatchingSourceHusQuery query = MatchingSourceHusQuery.builder()
-				.productId(row.getM_Product_ID())
-				.warehouseId(ppOrder.getM_Warehouse_ID()).build();
+				.productId(row.getProductId())
+				.warehouseId(WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID()))
+				.build();
 		return SourceHUsService.get().retrieveMatchingSourceHuMarkers(query)
 				.stream()
 				.filter(huSource -> X_M_HU.HUSTATUS_Active.equals(huSource.getM_HU().getHUStatus()))

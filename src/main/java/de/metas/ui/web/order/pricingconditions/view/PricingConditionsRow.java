@@ -23,8 +23,6 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowType;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -373,12 +371,6 @@ public class PricingConditionsRow implements IViewRow
 	{
 		// TODO i think we shall make this method not mandatory in interface
 		return null;
-	}
-
-	@Override
-	public IViewRowType getType()
-	{
-		return DefaultRowType.Row;
 	}
 
 	@Override

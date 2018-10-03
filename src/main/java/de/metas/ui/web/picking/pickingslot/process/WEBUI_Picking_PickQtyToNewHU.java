@@ -10,12 +10,12 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -24,22 +24,26 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
-import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.util.Services;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -113,7 +117,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
@@ -141,16 +145,15 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (qtyCU.signum() > 0)
 		{
-			final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+			final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
 
-			pickingCandidateService.addQtyToHU()
+			pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
 					.qtyCU(qtyCU)
-					.targetHUId(hu.getM_HU_ID())
+					.targetHUId(HuId.ofRepoId(hu.getM_HU_ID()))
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
-					.isAllowOverdelivery(isAllowOverdelivery)
-					.build()
-					.performAndGetQtyPicked();
+					.allowOverDelivery(allowOverDelivery)
+					.build());
 		}
 	}
 
@@ -162,10 +165,14 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final I_M_HU hu = createTU(huPIItemProduct, pickingSlotLocator);
 
 		// Add the TU to picking slot (as candidate)
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
+		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
+		final ShipmentScheduleId shipmentScheduleId = getView().getCurrentShipmentScheduleId();
 
-		pickingCandidateService.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.pickHU(PickHURequest.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.pickingSlotId(pickingSlotId)
+				.build());
 
 		return hu;
 	}
@@ -180,32 +187,19 @@ public class WEBUI_Picking_PickQtyToNewHU
 		final Properties ctx = getCtx();
 		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
-				shipmentSchedule.getM_Product(),
+				productId,
 				shipmentSchedule.getC_BPartner(),
 				true); // includeVirtualItem = true..similar case as with production
 	}
 
-	/**
-	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
-	 */
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-
-			final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlannedOrNull(shipmentSchedule);
-			if (qtyPickedPlanned == null)
-			{
-				return BigDecimal.ZERO;
-			}
-
-			final BigDecimal qtyToPick = shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
-
-			return qtyToPick.signum() > 0 ? qtyToPick : BigDecimal.ZERO;
-
+			return retrieveQtyToPick();
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
 		{
@@ -218,19 +212,20 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 			return IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
 		}
-
-		return DEFAULT_VALUE_NOTAVAILABLE;
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
 	}
 
-	private static final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
+	private final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
 	{
-		final int pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
-		if (pickingSlotWarehouseId <= 0)
+		final WarehouseId pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
+		if (pickingSlotWarehouseId == null)
 		{
 			throw new AdempiereException("Picking slot with M_PickingSlot_ID=" + pickingSlotRow.getPickingSlotId() + " has no warehouse configured");
 		}
-		final I_M_Warehouse pickingSlotWarehouse = InterfaceWrapperHelper.loadOutOfTrx(pickingSlotWarehouseId, I_M_Warehouse.class);
-		final I_M_Locator pickingSlotLocator = Services.get(IWarehouseBL.class).getDefaultLocator(pickingSlotWarehouse);
+		final I_M_Locator pickingSlotLocator = Services.get(IWarehouseBL.class).getDefaultLocator(pickingSlotWarehouseId);
 		return pickingSlotLocator;
 	}
 

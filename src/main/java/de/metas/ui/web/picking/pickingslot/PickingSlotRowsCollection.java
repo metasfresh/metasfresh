@@ -95,8 +95,7 @@ public final class PickingSlotRowsCollection
 
 	public PickingSlotRow getById(@NonNull final PickingSlotRowId rowId) throws EntityNotFoundException
 	{
-
-		if (rowId.getPickingSlotId() <= 0)
+		if (rowId.getPickingSlotId() == null)
 		{
 			return assertRowNotNull(rowId, getRowsIndex().getRow(rowId));
 		}

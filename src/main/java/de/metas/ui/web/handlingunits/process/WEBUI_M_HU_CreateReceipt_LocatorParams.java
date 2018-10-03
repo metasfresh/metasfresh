@@ -75,7 +75,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	{
 		final boolean existQuarantineHUs = existQuarantineHUs();
 
-		return Services.get(IWarehouseDAO.class).retrieveWarehousesForCtx(getCtx())
+		return Services.get(IWarehouseDAO.class).getAllWarehouses()
 				.stream()
 				.map(warehouse -> create(warehouse, I_M_Warehouse.class))
 				.filter(warehouse -> !existQuarantineHUs || warehouse.isQuarantineWarehouse())
@@ -161,7 +161,7 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 		}
 
 		return warehouseDAO
-				.retrieveLocators(warehouseId())
+				.getLocators(warehouseId())
 				.stream()
 				.map(locator -> IntegerLookupValue.of(locator.getM_Locator_ID(), locator.getValue()))
 				.collect(LookupValuesList.collect());

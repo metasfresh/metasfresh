@@ -17,8 +17,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.stock.HUStockInfo;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowType;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -167,12 +165,6 @@ public class StockDetailsRow implements IViewRow
 	{
 		final ImmutableList<Object> keyParts = ImmutableList.of(huStockInfo.getHuStorageRepoId(), huStockInfo.getHuAttributeRepoId());
 		return DocumentId.ofComposedKeyParts(keyParts);
-	}
-
-	@Override
-	public IViewRowType getType()
-	{
-		return DefaultRowType.Row;
 	}
 
 	@Override

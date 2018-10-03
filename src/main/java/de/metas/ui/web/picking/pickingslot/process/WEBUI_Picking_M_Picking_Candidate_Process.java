@@ -4,14 +4,12 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPR
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
-import java.util.OptionalInt;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
@@ -39,7 +37,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
  */
 
 /**
- * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
+ * Processes the unprocessed picking candidate of the currently selected TU.<br>
  * Processing means that
  * <ul>
  * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
@@ -93,8 +91,8 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
-
-		pickingCandidateService.processForHUIds(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
+		final ShipmentScheduleId shipmentScheduleId = null;
+		pickingCandidateService.processForHUIds(ImmutableSet.of(rowToProcess.getHuId()), shipmentScheduleId);
 
 		return MSG_OK;
 	}

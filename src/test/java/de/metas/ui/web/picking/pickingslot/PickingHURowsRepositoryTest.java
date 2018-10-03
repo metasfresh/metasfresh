@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,6 +13,8 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -46,29 +49,42 @@ public class PickingHURowsRepositoryTest
 	@Test
 	public void testRetrieveActiveSourceHusQuery_fromShipmentSchedules()
 	{
-		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
-		save(wh);
+		final WarehouseId warehouseId = createWarehouse();
+		final ProductId productId = createProduct();
 
-		final I_M_Product product = newInstance(I_M_Product.class);
-		save(product);
-
-		final I_M_ShipmentSchedule shipmentSchedule1 = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule1.setM_Warehouse(wh);
-		shipmentSchedule1.setM_Product(product);
-		save(shipmentSchedule1);
-
-		final I_M_ShipmentSchedule shipmentSchedule2 = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule2.setM_Warehouse(wh);
-		shipmentSchedule2.setM_Product(product);
-		save(shipmentSchedule2);
+		final ShipmentScheduleId shipmentScheduleId1 = createShipmentSchedule(warehouseId, productId);
+		final ShipmentScheduleId shipmentScheduleId2 = createShipmentSchedule(warehouseId, productId);
 
 		final MatchingSourceHusQuery query = PickingHURowsRepository.createMatchingSourceHusQuery(PickingSlotRepoQuery.builder()
-				.currentShipmentScheduleId(shipmentSchedule1.getM_ShipmentSchedule_ID())
-				.shipmentScheduleId(shipmentSchedule1.getM_ShipmentSchedule_ID())
-				.shipmentScheduleId(shipmentSchedule2.getM_ShipmentSchedule_ID())
+				.currentShipmentScheduleId(shipmentScheduleId1)
+				.shipmentScheduleId(shipmentScheduleId1)
+				.shipmentScheduleId(shipmentScheduleId2)
 				.build());
 
-		assertThat(query.getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
-		assertThat(query.getProductIds()).containsExactly(product.getM_Product_ID());
+		assertThat(query.getWarehouseId()).isEqualTo(warehouseId);
+		assertThat(query.getProductIds()).containsExactly(productId);
+	}
+
+	private WarehouseId createWarehouse()
+	{
+		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
+		save(wh);
+		return WarehouseId.ofRepoId(wh.getM_Warehouse_ID());
+	}
+
+	private ShipmentScheduleId createShipmentSchedule(final WarehouseId warehouseId, final ProductId productId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule1 = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule1.setM_Warehouse_ID(warehouseId.getRepoId());
+		shipmentSchedule1.setM_Product_ID(productId.getRepoId());
+		save(shipmentSchedule1);
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule1.getM_ShipmentSchedule_ID());
+	}
+
+	private ProductId createProduct()
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		save(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 }

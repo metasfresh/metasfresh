@@ -1,22 +1,20 @@
 package de.metas.ui.web.picking.husToPick.process;
 
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.OptionalInt;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -26,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -35,9 +34,10 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.packageable.PackageableRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -134,7 +134,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
 			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
-			final BigDecimal qtyToDeliver = packageableRow.getQtyOrderedWithoutPicked();
+			final BigDecimal qtyToDeliver = packageableRow.getQtyOrderedWithoutPicked().getAsBigDecimal();
 
 			final HUEditorRow huRow = getSingleSelectedRow();
 			final BigDecimal huQty = huRow.getQtyCU();
@@ -207,8 +207,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		// NOTE: scannedProductId might be not set, in case we deactivate the process parameter.
 		if (scannedProductId > 0 && scannedProductId != productToPack.getM_Product_ID())
 		{
-			final I_M_Product scannedProduct = loadOutOfTrx(scannedProductId, I_M_Product.class);
-			final String scannedProductStr = scannedProduct != null ? scannedProduct.getName() : "?";
+			final String scannedProductStr = Services.get(IProductBL.class).getProductName(ProductId.ofRepoId(scannedProductId));
 			final String expectedProductStr = productToPack.getName();
 			throw new AdempiereException(MSG_InvalidProduct, new Object[] { scannedProductStr, expectedProductStr });
 		}
@@ -222,7 +221,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		{
 			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
 			final int productId = packageableRow.getProductId();
-			_productToPack = loadOutOfTrx(productId, I_M_Product.class);
+			_productToPack = Services.get(IProductDAO.class).getById(productId);
 		}
 		return _productToPack;
 	}
@@ -269,8 +268,9 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 	private void autoProcessPicking(final I_M_HU splitCU)
 	{
-		final PickingSlotRow rowToProcess = getPickingSlotRow();
-		pickingCandidateService.processForHUIds(ImmutableList.of(splitCU.getM_HU_ID()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
+		final HuId splitCUId = HuId.ofRepoId(splitCU.getM_HU_ID());
+		final ShipmentScheduleId shipmentScheduleId = null;
+		pickingCandidateService.processForHUIds(ImmutableSet.of(splitCUId), shipmentScheduleId);
 
 	}
 

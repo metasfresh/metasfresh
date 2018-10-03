@@ -10,9 +10,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -82,14 +82,6 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 	}
 
 	@Override
-	public ListMultimap<TableRecordReference, PackageableRow> getTableRecordReference2rows()
-	{
-		return getAllRows()
-				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(PackageableRow::getTableRecordReference));
-	}
-
-	@Override
 	public void invalidateAll()
 	{
 		topLevelRows.forget();
@@ -101,7 +93,7 @@ final class PackageableRowsData implements IRowsData<PackageableRow>
 		final String tableName = recordRef.getTableName();
 		if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
 		{
-			final int shipmentScheduleId = recordRef.getRecord_ID();
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(recordRef.getRecord_ID());
 			final TableRecordReference recordRefEffective = PackageableRow.createTableRecordReferenceFromShipmentScheduleId(shipmentScheduleId);
 			return initialDocumentIdsByRecordRef.get(recordRefEffective).stream();
 		}
