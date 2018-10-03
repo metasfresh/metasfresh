@@ -48,11 +48,11 @@ public class DeliveryGroupCandidateTest
 		final DeliveryGroupCandidate group = DeliveryGroupCandidate.builder()
 				.groupId(10)
 				.warehouseId(WarehouseId.ofRepoId(20))
-				.shipperId(ShipperId.ofRepoId(1))
+				.shipperId(ShipperId.optionalOfRepoId(1))
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 
-		final DeliveryLineCandidate line = group.addLine(newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
+		group.addLine(newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
 
 		assertThat(group.toString()).isNotEmpty();
 		group.hashCode(); // throws no exception

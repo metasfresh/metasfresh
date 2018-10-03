@@ -120,7 +120,7 @@ public class ShipmentScheduleQtysHelperTest
 		final DeliveryGroupCandidate deliveryGroupCandidate = DeliveryGroupCandidate.builder()
 				.bPartnerAddress("bPartnerAddress")
 				.groupId(10)
-				.shipperId(ShipperId.ofRepoId(20))
+				.shipperId(ShipperId.optionalOfRepoId(20))
 				.warehouseId(WarehouseId.ofRepoId(30))
 				.build();
 		final DeliveryLineCandidate deliveryLineCandidate = deliveryGroupCandidate.addLine(sched, CompleteStatus.OK);

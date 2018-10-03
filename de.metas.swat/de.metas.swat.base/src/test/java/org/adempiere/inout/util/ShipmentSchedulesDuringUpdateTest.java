@@ -53,7 +53,7 @@ public class ShipmentSchedulesDuringUpdateTest
 		AdempiereTestHelper.get().init();
 		group = DeliveryGroupCandidate.builder()
 				.groupId(20)
-				.shipperId(ShipperId.ofRepoId(30))
+				.shipperId(ShipperId.optionalOfRepoId(30))
 				.warehouseId(WarehouseId.ofRepoId(40))
 				.bPartnerAddress("bPartnerAddress")
 				.build();

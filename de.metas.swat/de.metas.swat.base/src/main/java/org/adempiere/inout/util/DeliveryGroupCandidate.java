@@ -2,6 +2,7 @@ package org.adempiere.inout.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.warehouse.WarehouseId;
@@ -62,7 +63,7 @@ public class DeliveryGroupCandidate
 	private final WarehouseId warehouseId;
 
 	@NonNull
-	private final ShipperId shipperId;
+	private final Optional<ShipperId> shipperId;
 
 	@Default
 	private final List<DeliveryLineCandidate> lines = new ArrayList<>();

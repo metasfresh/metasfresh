@@ -53,14 +53,14 @@ public class ShipmentScheduleBLTest
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
 				.groupId(10)
-				.shipperId(ShipperId.ofRepoId(20))
+				.shipperId(ShipperId.optionalOfRepoId(20))
 				.warehouseId(WarehouseId.ofRepoId(30)) // different from the sched's effective WH
 				.documentLineDescriptor(OrderLineDescriptor.builder().build()) // documentLineDescriptor is not relevant for this test
 				.build();
 
 		final DeliveryGroupCandidate result = new ShipmentScheduleBL().createGroup(scheduleSourceDoc, sched);
 		assertThat(result.getGroupId()).isEqualTo(10);
-		assertThat(result.getShipperId().getRepoId()).isEqualTo(20);
+		assertThat(result.getShipperId().get().getRepoId()).isEqualTo(20);
 		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(35);
 		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}

@@ -60,7 +60,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
 				.warehouseId(getWarehouseId(shipmentSchedule))
-				.shipperId(ShipperId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine().getM_Shipper_ID()))
+				.shipperId(ShipperId.optionalOfRepoId(shipmentSchedule.getC_OrderLine().getM_Shipper_ID()))
 				.documentLineDescriptor(getDocumentLineDescriptor(shipmentSchedule))
 				.build();
 	}

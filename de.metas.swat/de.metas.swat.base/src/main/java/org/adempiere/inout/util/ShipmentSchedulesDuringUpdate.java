@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.warehouse.WarehouseId;
@@ -187,7 +188,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	 */
 	@Override
 	public DeliveryGroupCandidate getInOutForShipper(
-			final ShipperId shipperId,
+			@NonNull final Optional<ShipperId> shipperId,
 			final WarehouseId warehouseId,
 			final String bPartnerAddress)
 	{
@@ -196,9 +197,9 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		return inOut;
 	}
 
-	private static ArrayKey createShipperKey(final ShipperId shipperId, final WarehouseId warehouseId, final String bPartnerAddress)
+	private static ArrayKey createShipperKey(final Optional<ShipperId> shipperId, final WarehouseId warehouseId, final String bPartnerAddress)
 	{
-		return Util.mkKey(bPartnerAddress, warehouseId, shipperId);
+		return Util.mkKey(bPartnerAddress, warehouseId, shipperId.orElse(null));
 	}
 
 	@Override

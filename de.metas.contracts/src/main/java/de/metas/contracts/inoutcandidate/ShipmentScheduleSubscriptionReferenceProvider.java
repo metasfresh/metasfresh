@@ -60,7 +60,7 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 
 		return ShipmentScheduleReferencedLine.builder()
 				.groupId(subscriptionLine.getC_Flatrate_Term_ID())
-				.shipperId(ShipperId.ofRepoId(1))
+				.shipperId(ShipperId.optionalOfRepoId(1))
 				.deliveryDate(subscriptionLine.getEventDate())
 				.preparationDate(subscriptionLine.getEventDate())
 				.warehouseId(getWarehouseId(subscriptionLine))

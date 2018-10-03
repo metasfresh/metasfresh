@@ -144,7 +144,7 @@ public class M_ShipmentScheduleTest
 		final ShipmentScheduleReferencedLine shipmentScheduleReferencedLine = //
 				ShipmentScheduleReferencedLine.builder()
 						.groupId(10)
-						.shipperId(ShipperId.ofRepoId(20))
+						.shipperId(ShipperId.optionalOfRepoId(20))
 						.warehouseId(WarehouseId.ofRepoId(30))
 						.documentLineDescriptor(orderLineDescriptor).build();
 		// @formatter:off

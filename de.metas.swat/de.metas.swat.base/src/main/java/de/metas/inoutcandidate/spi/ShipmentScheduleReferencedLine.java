@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.spi;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import org.adempiere.warehouse.WarehouseId;
 
@@ -51,11 +52,8 @@ public class ShipmentScheduleReferencedLine
 
 	Timestamp preparationDate;
 
-	/**
-	 * Might be zero.
-	 */
 	@NonNull
-	ShipperId shipperId;
+	Optional<ShipperId> shipperId;
 
 	@NonNull
 	WarehouseId warehouseId;
