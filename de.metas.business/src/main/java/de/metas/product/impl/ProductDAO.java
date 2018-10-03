@@ -135,7 +135,7 @@ public class ProductDAO implements IProductDAO
 				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
 				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, orgId)
 				.create()
-				.firstIdOnly(ProductId::ofRepoId);
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
 	}
 
 	@Override

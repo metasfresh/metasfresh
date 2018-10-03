@@ -71,7 +71,7 @@ public class ShipperDAO implements IShipperDAO
 				.addEqualsFilter(I_M_Shipper.COLUMN_IsDefault, true)
 				.orderBy(I_M_Shipper.COLUMN_AD_Client_ID)
 				.create()
-				.firstIdOnly(ShipperId::ofRepoId);
+				.firstIdOnly(ShipperId::ofRepoIdOrNull);
 	}
 
 	@Override
