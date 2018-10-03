@@ -564,7 +564,7 @@ public class HUs2DDOrderProducer
 			{
 				attributes = qualityInspectionSchedulable.getAttributesAsMap();
 			}
-			for (final Map.Entry<org.compiere.model.I_M_Attribute, Object> attribute2value : attributes.entrySet())
+			for (final Map.Entry<I_M_Attribute, Object> attribute2value : attributes.entrySet())
 			{
 				aggregationKeyBuilder.append(attribute2value.getKey().getValue(), attribute2value.getValue());
 			}

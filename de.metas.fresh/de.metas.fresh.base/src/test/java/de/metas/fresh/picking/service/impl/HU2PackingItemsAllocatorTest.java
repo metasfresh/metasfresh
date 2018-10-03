@@ -43,7 +43,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
@@ -242,7 +241,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 					.allocate();
 
 			// Validate
-			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), Matchers.comparesEqualTo(BigDecimal.valueOf(100 - 30)));
+			assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100 - 30)));
 			assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 			assertTrue("We shall have packed items", packingItems.hasPackedItems());
 			new ShipmentScheduleQtyPickedExpectations()
@@ -270,7 +269,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 				.allocate();
 
 		// Validate
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), Matchers.comparesEqualTo(BigDecimal.valueOf(100)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(100)));
 		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 		assertFalse("We shall NOT have packed items", packingItems.hasPackedItems());
 		new ShipmentScheduleQtyPickedExpectations()

@@ -517,20 +517,11 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public boolean isAvailableForProduct(final I_M_PickingSlot pickingSlot, final I_M_HU_PI_Item_Product itemProduct)
+	public boolean isAvailableForProduct(@NonNull final I_M_PickingSlot pickingSlot, @NonNull final I_M_HU_PI_Item_Product itemProduct)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(itemProduct.getC_BPartner_ID());
-
-		//
 		// NOTE: itemProduct does not have BP Location so we cannot validate for Location
-		if (!Services.get(IHUPickingSlotBL.class).isAvailableForBPartnerId(pickingSlot, bpartnerId))
-		{
-			return false;
-		}
-
-		return true;
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(itemProduct.getC_BPartner_ID());
+		return isAvailableForBPartnerId(pickingSlot, bpartnerId);
 	}
 
 	@Override

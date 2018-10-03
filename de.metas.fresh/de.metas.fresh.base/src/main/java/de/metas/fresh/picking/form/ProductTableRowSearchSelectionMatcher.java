@@ -220,15 +220,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 
 		//
 		// Fallback, see if the product was retrieved individually (i.e it's own UPC or Value)
-		if (productId != null)
-		{
-			if (ProductId.equals(productId, key.getProductId()))
-			{
-				return true;
-			}
-			return false;
-		}
-		return false;
+		return productId != null && ProductId.equals(productId, key.getProductId());
 	}
 
 	@Override
@@ -251,12 +243,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 		//
 		// If there are no products, we consider it null
 		final Collection<ProductId> productIds = bpartnerId2productId.values();
-		if (productIds.isEmpty() && productId == null)
-		{
-			return true;
-		}
-
-		return false;
+		return productIds.isEmpty() && productId == null;
 	}
 
 	@Override

@@ -50,15 +50,9 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 {
 	private static final String ERR_UNSUPPORTED_ACTION = "@UnsupportedAction@";
 
-	private ITerminalButton bSave;
-	private ITerminalButton bLogout;
-	private ITerminalButton bUndo;
 	private ITerminalButton bPrint;
 	private ITerminalButton bOk;
 
-	private static final String ACTION_Save = "Save";
-	private static final String ACTION_Logout = "Logout";
-	private static final String ACTION_Undo = "Undo";
 	private static final String ACTION_Print = "Print";
 	private static final String ACTION_OK = "Ok";
 
@@ -77,14 +71,6 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 
 	protected void initComponents()
 	{
-		bSave = createButtonAction(ACTION_Save, KeyStroke.getKeyStroke(KeyEvent.VK_F4, Event.F4), 17f);
-		bSave.setEnabled(false);
-		bSave.addListener(this);
-		bUndo = createButtonAction(ACTION_Undo, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, Event.ESCAPE), 17f);
-		bUndo.setEnabled(false);
-		bUndo.addListener(this);
-		bLogout = createButtonAction(ACTION_Logout, KeyStroke.getKeyStroke(KeyEvent.VK_F10, Event.F10), 17f);
-		bLogout.addListener(this);
 		bPrint = createButtonAction(ACTION_Print, KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, Event.PRINT_SCREEN), 17f);
 		bPrint.addListener(this);
 		bOk = createButtonAction(ACTION_OK, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Event.ENTER), 17f);
@@ -121,6 +107,7 @@ public class SwingPackingTerminalToolbar extends TerminalSubPanel implements Pro
 		if (ACTION_Print.equals(evt.getNewValue()))
 		{
 			// nothing to do now
+			throw new UnsupportedOperationException();
 		}
 		else if (ACTION_OK.equals(evt.getNewValue()))
 		{

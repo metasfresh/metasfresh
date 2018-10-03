@@ -26,7 +26,6 @@ import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
-import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
@@ -120,7 +119,6 @@ public class PickingCandidateService
 	 */
 	public void processForHUIds(
 			@NonNull final Set<HuId> huIds,
-			final PickingSlotId pickingSlotId,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
 		//
@@ -130,7 +128,6 @@ public class PickingCandidateService
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingConfigRepository(pickingConfigRepository)
 				.huIds(huIds)
-				.pickingSlotId(pickingSlotId)
 				.shipmentScheduleId(shipmentScheduleId)
 				.build();
 		processCmd.perform();

@@ -29,7 +29,6 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingConfigRepository;
-import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemPartId;
@@ -86,7 +85,6 @@ public class ProcessPickingCandidateCommand
 	private final PickingConfigRepository pickingConfigRepository;
 
 	private final Set<HuId> huIds;
-	private final PickingSlotId pickingSlotId;
 	private final ShipmentScheduleId shipmentScheduleId;
 
 	private ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByHUId = null; // lazy
@@ -98,7 +96,6 @@ public class ProcessPickingCandidateCommand
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull @Singular final List<HuId> huIds,
-			@NonNull final PickingSlotId pickingSlotId,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
 		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
@@ -109,7 +106,6 @@ public class ProcessPickingCandidateCommand
 		this.pickingConfigRepository = pickingConfigRepository;
 
 		this.huIds = ImmutableSet.copyOf(huIds);
-		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId; // might not be set
 	}
 

@@ -105,10 +105,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 					.build());
 		}
 
-		pickingCandidateService.processForHUIds(
-				huIds,
-				pickingSlotId,
-				shipmentScheduleId);
+		pickingCandidateService.processForHUIds(huIds, shipmentScheduleId);
 	}
 
 	private PickingSlotId allocatePickingSlot(@NonNull final ShipmentScheduleId shipmentScheduleId)

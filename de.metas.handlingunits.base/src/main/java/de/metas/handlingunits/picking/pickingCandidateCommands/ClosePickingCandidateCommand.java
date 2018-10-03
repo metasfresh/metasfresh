@@ -102,12 +102,7 @@ public class ClosePickingCandidateCommand
 			return false;
 		}
 
-		if (pickingSlotIsRackSystem != null && pickingSlotIsRackSystem != isPickingSlotRackSystem(pickingCandidate))
-		{
-			return false;
-		}
-
-		return true;
+		return pickingSlotIsRackSystem == null || pickingSlotIsRackSystem == isPickingSlotRackSystem(pickingCandidate);
 	}
 
 	private boolean isPickingSlotRackSystem(final PickingCandidate pickingCandidate)

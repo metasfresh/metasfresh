@@ -294,12 +294,9 @@ public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTe
 		}
 
 		final SwingPickingOKPanel pickingOKPanel = getPickingOKPanel();
-		if (pickingOKPanel != null)
+		if (pickingOKPanel != null && pickingOKPanel.getPackageFrame() != null)
 		{
-			if (pickingOKPanel.getPackageFrame() != null)
-			{
-				pickingOKPanel.getPackageFrame().setVisible(visible);
-			}
+			pickingOKPanel.getPackageFrame().setVisible(visible);
 		}
 	}
 

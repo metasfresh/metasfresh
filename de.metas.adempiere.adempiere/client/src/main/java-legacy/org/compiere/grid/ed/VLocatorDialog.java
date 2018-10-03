@@ -306,6 +306,7 @@ public class VLocatorDialog extends CDialog
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
+		// nothing
 	}
 
 	/**
