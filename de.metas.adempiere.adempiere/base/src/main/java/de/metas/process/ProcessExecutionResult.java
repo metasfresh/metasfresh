@@ -695,6 +695,11 @@ public class ProcessExecutionResult
 		displayQRCode = otherResult.displayQRCode;
 	}
 
+	public void setDisplayQRCodeFromString(final String qrCode)
+	{
+		setDisplayQRCode(DisplayQRCode.builder().code(qrCode).build());
+	}
+
 	//
 	//
 	//
