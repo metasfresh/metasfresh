@@ -53,17 +53,6 @@ public abstract class AbstractProductStorage implements IProductStorage
 	/** NOTE: this flag was introduced for backward compatibility (support those storages which does not support considering ForceQtyAllocation) */
 	private boolean _considerForceQtyAllocationFromRequest = true;
 
-	protected static enum RequestType
-	{
-		ADD, REMOVE,
-	}
-
-	public AbstractProductStorage()
-	{
-		super();
-
-	}
-
 	protected abstract Capacity retrieveTotalCapacity();
 
 	protected abstract BigDecimal retrieveQtyInitial();
@@ -174,7 +163,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final IAllocationRequest addQty(final IAllocationRequest request)
 	{
-		if (!isEligible(request, RequestType.ADD))
+		if (!isEligible(request))
 		{
 			return AllocationUtils.createZeroQtyRequest(request);
 		}
@@ -203,7 +192,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	@Override
 	public final IAllocationRequest removeQty(final IAllocationRequest request)
 	{
-		if (!isEligible(request, RequestType.REMOVE))
+		if (!isEligible(request))
 		{
 			return AllocationUtils.createZeroQtyRequest(request);
 		}
@@ -233,16 +222,12 @@ public abstract class AbstractProductStorage implements IProductStorage
 		}
 	}
 
-	protected boolean isEligible(final IAllocationRequest request, final RequestType type)
+	private boolean isEligible(final IAllocationRequest request)
 	{
-		if (!Objects.equals(request.getProductId(), getProductId()))
-		{
-			// NOTE: don't throw exception but just return false,
-			// because we have the case where are multiple storages in a pool and each of them are asked if they can fullfill a given request
-			return false;
-		}
+		// NOTE: don't throw exception but just return false,
+		// because we have the case where are multiple storages in a pool and each of them are asked if they can fullfill a given request
 
-		return true;
+		return Objects.equals(request.getProductId(), getProductId());
 	}
 
 	protected final BigDecimal convertToStorageUOM(final BigDecimal qty, final I_C_UOM uom)
