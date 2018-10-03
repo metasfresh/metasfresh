@@ -1,8 +1,10 @@
 package de.metas.ui.web.globalaction.process;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.Adempiere;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -38,20 +40,34 @@ public class GlobalActionReadProcess extends JavaProcess
 {
 	private final GlobalActionsDispatcher globalActionsDispatcher = Adempiere.getBean(GlobalActionsDispatcher.class);
 
-	@Param(parameterName = "Barcode", mandatory = true)
+	private static final String PARAM_Barcode = "Barcode";
+	@Param(parameterName = PARAM_Barcode, mandatory = true)
 	String barcode;
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
+		if (Check.isEmpty(barcode, true))
+		{
+			throw new FillMandatoryException(PARAM_Barcode);
+		}
+
 		final GlobalActionEvent event = GlobalActionEvent.parseQRCode(barcode);
 		final GlobalActionHandlerResult result = globalActionsDispatcher.dispatchEvent(event);
+		updateProcessResult(result);
 
+		return MSG_OK;
+	}
+
+	private void updateProcessResult(final GlobalActionHandlerResult result)
+	{
+		// Tolerate null result but do nothing
 		if (result == null)
 		{
-			// do nothing ?!
+			return;
 		}
-		else if (result instanceof OpenViewGlobalActionHandlerResult)
+
+		if (result instanceof OpenViewGlobalActionHandlerResult)
 		{
 			final OpenViewGlobalActionHandlerResult openViewResult = (OpenViewGlobalActionHandlerResult)result;
 			getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
@@ -63,8 +79,6 @@ public class GlobalActionReadProcess extends JavaProcess
 		{
 			throw new AdempiereException("Unknown result: " + result);
 		}
-
-		return MSG_OK;
 	}
 
 }
