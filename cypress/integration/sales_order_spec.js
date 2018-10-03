@@ -51,17 +51,9 @@ describe('New sales order test', function() {
     });
 
     it('Fill Business Partner', function() {
-      cy.get('.input-dropdown-container .raw-lookup-wrapper')
-        .first()
-        .find('input')
-        .clear()
-        .type('G0001');
-
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', 'Test Kunde 1').click();
-      cy
-        .get('.input-dropdown-list .input-dropdown-list-header')
-        .should('not.exist');
+      cy.writeIntoCompositeLookupField('C_BPartner_ID', 'G0001', 'Test Kunde 1');
+      cy.get('#lookup_C_BPartner_ID').click();
+      cy.writeIntoCompositeLookupField('C_BPartner_Location_ID', 'test', 'Testadresse 3');
 
       cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
     });

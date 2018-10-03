@@ -153,18 +153,13 @@ Cypress.Commands.add(
   (fieldName, partialValue, listValue) => {
     describe('Enter value into lookup list field', function() {
       cy.get(`#lookup_${fieldName}`)
-        .then((el) => {
-          if (el.find('.raw-lookup-wrapper input').length) {
-            return el.find('input')[0].type(partialValue);
+        .within(($el) => {
+          if ($el.find('.raw-lookup-wrapper input').length) {
+            return cy.get('input').type(partialValue);
           }
 
-            return cy.get('.lookup-dropdown').click();
-          
+          return cy.get('.lookup-dropdown').click();
         })
-        
-
-      // input-dropdown-container lookup-dropdown
-
 
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', listValue).click();
