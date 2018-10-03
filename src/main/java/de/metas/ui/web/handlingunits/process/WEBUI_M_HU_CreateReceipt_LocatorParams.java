@@ -1,6 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
 import de.metas.adempiere.service.impl.WarehouseDAO;
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
@@ -73,17 +73,12 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 	@ProcessParamLookupValuesProvider(parameterName = WAREHOUSE_PARAM_NAME, numericKey = true, lookupSource = LookupSource.lookup)
 	public LookupValuesList getAvailableWarehouses()
 	{
+		final boolean existQuarantineHUs = existQuarantineHUs();
+
 		return Services.get(IWarehouseDAO.class).getAllWarehouses()
 				.stream()
-				.map(warehouse -> loadOutOfTrx(warehouse.getM_Warehouse_ID(), I_M_Warehouse.class))
-				.filter(warehouse -> {
-					if (existQuarantineHUs())
-					{
-						return warehouse.isQuarantineWarehouse();
-					}
-					else
-						return true;
-				})
+				.map(warehouse -> create(warehouse, I_M_Warehouse.class))
+				.filter(warehouse -> !existQuarantineHUs || warehouse.isQuarantineWarehouse())
 				.map(warehouse -> IntegerLookupValue.of(warehouse.getM_Warehouse_ID(), warehouse.getName()))
 				.collect(LookupValuesList.collect());
 
@@ -133,12 +128,12 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 
 	private boolean existQuarantineHUs()
 	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 		return retrieveHUsToReceive()
 				.stream()
-				.map(huId -> loadOutOfTrx(huId, I_M_HU.class))
-				.filter(huRecord -> lotNumberQuarantineService.isQuarantineHU(huRecord))
-				.findAny()
-				.isPresent();
+				.map(handlingUnitsDAO::getById)
+				.anyMatch(lotNumberQuarantineService::isQuarantineHU);
 	}
 
 	@Override
