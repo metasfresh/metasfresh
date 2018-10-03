@@ -235,11 +235,17 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
-Cypress.Commands.add('executeQuickAction', (actionName) => {
+// This command runs a quick actions. If second parameter is truthy, the default action
+// will be executed.
+Cypress.Commands.add('executeQuickAction', (actionName, active) => {
   describe('Fire a quick action with a certain name', function() {
-    cy.get('.quick-actions-wrapper').click();
-    cy.get('.quick-actions-dropdown').should('exist');
+    if (!active) {
+      cy.get('.quick-actions-wrapper .btn-inline').click();
+      cy.get('.quick-actions-dropdown').should('exist');
 
-    return cy.get(`#quickAction_${actionName}`).click()
+      return cy.get(`#quickAction_${actionName}`).click();
+    }
+
+    return cy.get('.quick-actions-wrapper').click();
   });
 });
