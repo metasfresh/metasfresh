@@ -48,6 +48,6 @@ public class PackageableRowId
 				.skipNulls()
 				.join(orderId.getRepoId(),
 						warehouseTypeId != null ? warehouseTypeId.getRepoId() : null);
-		return DocumentId.ofString(documentIdStr);
+		return DocumentId.of(documentIdStr);
 	}
 }
