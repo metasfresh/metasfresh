@@ -210,7 +210,8 @@ class ProductsToPickRowsDataFactory
 		return row.withQty(qty);
 	}
 
-	private ProductsToPickRow createRow(final AllocablePackageable packageable,
+	private ProductsToPickRow createRow(
+			final AllocablePackageable packageable,
 			final Quantity qty,
 			final HuId huId,
 			final PickingCandidateId pickingCandidateId)
@@ -239,6 +240,7 @@ class ProductsToPickRowsDataFactory
 				//
 				.qty(qty)
 				//
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.pickingCandidateId(pickingCandidateId)
 				.build();
 	}
