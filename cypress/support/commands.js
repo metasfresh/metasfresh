@@ -235,8 +235,11 @@ Cypress.Commands.add('selectTab', (tabName) => {
   });
 });
 
-Cypress.Commands.add('', (tabName) => {
-  describe('Select and activate the tab with a certain name', function() {
-    return cy.get(`#tab_${tabName}`).click()
+Cypress.Commands.add('executeQuickAction', (actionName) => {
+  describe('Fire a quick action with a certain name', function() {
+    cy.get('.quick-actions-wrapper').click();
+    cy.get('.quick-actions-dropdown').should('exist');
+
+    return cy.get(`#quickAction_${actionName}`).click()
   });
 });
