@@ -6,13 +6,12 @@ import { connect } from 'react-redux';
 
 import { getMessages } from '../actions/AppActions';
 
-class Translation extends Component {
-  constructor(props) {
-    super(props);
-  }
+// Fake singleton
+let INSTANCE = null;
 
-  _getMessages = () => {
-    getMessages().then(response => {
+class Translation extends Component {
+  static getMessages = () => {
+    return getMessages().then(response => {
       if (window.Cypress) {
         window.Cypress.emit('emit:counterpartTranslations', response.data);
       }
@@ -25,17 +24,23 @@ class Translation extends Component {
         return `{${key}}`;
       });
 
-      deepForceUpdate(this);
+      deepForceUpdate(INSTANCE);
     });
   };
 
+  constructor(props) {
+    super(props);
+
+    INSTANCE = this;
+  }
+
   componentWillMount = () => {
-    this._getMessages();
+    Translation.getMessages();
   };
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.language !== this.props.language) {
-      this._getMessages();
+      Translation.getMessages();
     }
   }
 
