@@ -155,7 +155,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
