@@ -43,6 +43,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.StartupListener;
+import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.M_ShipmentSchedule;
@@ -56,7 +57,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyService.class })
+@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyService.class, ContractLibraryConfiguration.class })
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);

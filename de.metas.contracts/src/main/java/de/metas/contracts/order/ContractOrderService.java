@@ -156,6 +156,11 @@ public class ContractOrderService
 	
 	public OrderId getContractOrderId(@NonNull final I_C_Flatrate_Term term)
 	{
+		if (term.getC_OrderLine_Term_ID() <= 0)
+		{
+			return null;
+		}
+		
 		final IOrderDAO orderRepo = Services.get(IOrderDAO.class);
 		final de.metas.interfaces.I_C_OrderLine ol = orderRepo.getOrderLineById(term.getC_OrderLine_Term_ID());
 		if (ol == null)

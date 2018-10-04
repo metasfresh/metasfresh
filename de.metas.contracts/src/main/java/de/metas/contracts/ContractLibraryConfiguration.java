@@ -3,6 +3,7 @@ package de.metas.contracts;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.order.ContractOrderService;
 
 /*
@@ -29,7 +30,8 @@ import de.metas.contracts.order.ContractOrderService;
 
 @Configuration
 @ComponentScan(basePackageClasses = {
-		ContractOrderService.class
+		ContractOrderService.class,
+		ContractOrderRepository.class
 })
 public class ContractLibraryConfiguration
 {
