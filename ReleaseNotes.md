@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
     * Updating bootstrap to new version because of security issue.
+  * [#1983](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1983) Height of date fields is off
+    * Fixing the height of Date Fields.
   * [#1985](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1985) Make tooltip icons always visible
     * Showing the Lookup Fields Tooltips now also when the Field is readonly.
 
