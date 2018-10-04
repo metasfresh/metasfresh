@@ -75,11 +75,15 @@ public class Packageable
 	@NonNull
 	AttributeSetInstanceId asiId;
 
+	@Nullable
 	OrderId salesOrderId;
+	@Nullable
 	String salesOrderDocumentNo;
+	@Nullable
 	String salesOrderDocSubType;
 
 	@Nullable
 	OrderLineId salesOrderLineIdOrNull;
+	@Nullable
 	Money salesOrderLineNetAmt;
 }
