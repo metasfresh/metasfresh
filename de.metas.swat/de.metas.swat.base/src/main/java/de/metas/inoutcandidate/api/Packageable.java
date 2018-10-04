@@ -1,12 +1,19 @@
 package de.metas.inoutcandidate.api;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -86,4 +93,31 @@ public class Packageable
 	OrderLineId salesOrderLineIdOrNull;
 	@Nullable
 	Money salesOrderLineNetAmt;
+
+	public static <T> Optional<T> extractSingleValue(@NonNull final Collection<Packageable> packageables, @NonNull Function<Packageable, T> mapper)
+	{
+		if (packageables.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableList<T> values = packageables.stream()
+				.map(mapper)
+				.filter(Predicates.notNull())
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		if (values.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (values.size() == 1)
+		{
+			return Optional.of(values.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("More than one value ware extracted (" + values + ") from " + packageables);
+		}
+	}
 }
