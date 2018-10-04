@@ -7,20 +7,27 @@ import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
+import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.api.PackageableQuery;
+import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.order.OrderId;
+import de.metas.shipping.ShipperId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,6 +56,8 @@ import lombok.NonNull;
 
 final class PackageableRowsRepository
 {
+	private static final Logger logger = LogManager.getLogger(PackageableRowsRepository.class);
+
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IPackagingDAO packageablesRepo = Services.get(IPackagingDAO.class);
 	private final MoneyService moneyService;
@@ -106,11 +115,12 @@ final class PackageableRowsRepository
 
 	private PackageableRow createPackageableRow(final Collection<Packageable> packageables)
 	{
-		final Packageable firstPackageable = packageables.iterator().next();
+		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
-		final LookupValue customer = bpartnerLookup.get().findById(firstPackageable.getCustomerId());
+		final BPartnerId customerId = Packageable.extractSingleValue(packageables, Packageable::getCustomerId).get();
+		final LookupValue customer = bpartnerLookup.get().findById(customerId);
 
-		final WarehouseTypeId warehouseTypeId = firstPackageable.getWarehouseTypeId();
+		final WarehouseTypeId warehouseTypeId = Packageable.extractSingleValue(packageables, Packageable::getWarehouseTypeId).orElse(null);
 		final ITranslatableString warehouseTypeName;
 		if (warehouseTypeId != null)
 		{
@@ -121,11 +131,15 @@ final class PackageableRowsRepository
 			warehouseTypeName = null;
 		}
 
-		final LookupValue shipper = shipperLookup.get().findById(firstPackageable.getShipperId());
+		final ShipperId shipperId = Packageable.extractSingleValue(packageables, Packageable::getShipperId).orElse(null);
+		final LookupValue shipper = shipperLookup.get().findById(shipperId);
+
+		OrderId salesOrderId = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderId).get();
+		final String salesOrderDocumentNo = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderDocumentNo).get();
 
 		return PackageableRow.builder()
-				.orderId(firstPackageable.getSalesOrderId())
-				.orderDocumentNo(firstPackageable.getSalesOrderDocumentNo())
+				.orderId(salesOrderId)
+				.orderDocumentNo(salesOrderDocumentNo)
 				.customer(customer)
 				.warehouseTypeId(warehouseTypeId)
 				.warehouseTypeName(warehouseTypeName)
