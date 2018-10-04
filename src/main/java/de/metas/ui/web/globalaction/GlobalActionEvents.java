@@ -1,9 +1,8 @@
-package de.metas.ui.web.pickingV2.productsToPick.process;
+package de.metas.ui.web.globalaction;
 
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.globalaction.GlobalActionEvent;
-import de.metas.ui.web.globalaction.GlobalActionEvents;
 import de.metas.ui.web.view.ViewId;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -27,22 +26,15 @@ import de.metas.ui.web.view.ViewId;
  * #L%
  */
 
-public class ProductsToPick_Request4EyesReview extends ProductsToPickViewBasedProcess
+@UtilityClass
+public class GlobalActionEvents
 {
-	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	public static GlobalActionEvent openView(@NonNull final ViewId viewId)
 	{
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
-	protected String doIt()
-	{
-		final ViewId viewId = getView().getViewId();
-		final GlobalActionEvent openViewEvent = GlobalActionEvents.openView(viewId);
-
-		getResult().setDisplayQRCode(openViewEvent.toDisplayQRCodeProcessResult());
-		return MSG_OK;
+		return GlobalActionEvent.builder()
+				.type(GlobalActionType.OPEN_VIEW)
+				.payload(viewId.toJson())
+				.build();
 	}
 
 }

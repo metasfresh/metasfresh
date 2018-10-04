@@ -2,6 +2,7 @@ package de.metas.ui.web.globalaction;
 
 import com.google.common.base.Strings;
 
+import de.metas.process.ProcessExecutionResult;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -78,5 +79,12 @@ public class GlobalActionEvent
 		{
 			return type.getCode() + SEPARATOR + payload;
 		}
+	}
+
+	public ProcessExecutionResult.DisplayQRCode toDisplayQRCodeProcessResult()
+	{
+		return ProcessExecutionResult.DisplayQRCode.builder()
+				.code(toQRCodeString())
+				.build();
 	}
 }
