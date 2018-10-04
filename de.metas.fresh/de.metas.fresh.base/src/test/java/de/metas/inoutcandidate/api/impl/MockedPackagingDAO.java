@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Ignore;
 
@@ -14,15 +15,15 @@ public class MockedPackagingDAO extends PackagingDAO
 	private List<Packageable> packageables;
 
 	public void setPackableLines(final List<Packageable> packageables)
-	{	
+	{
 		this.packageables = packageables;
 
 	}
 
 	@Override
-	public List<Packageable> retrievePackableLines(final PackageableQuery query)
+	public Stream<Packageable> stream(final PackageableQuery query)
 	{
 		Check.assumeNotNull(packageables, "packageables were set before calling this method");
-		return packageables;
+		return packageables.stream();
 	}
 }
