@@ -3,16 +3,13 @@
  */
 package de.metas.contracts.order;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_Order;
@@ -48,7 +45,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Component
+@Service
 public class ContractOrderService
 {
 	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
@@ -61,19 +58,6 @@ public class ContractOrderService
 				.create()
 				.match();
 	}
-
-	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
-	public List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, I_C_Flatrate_Term.class)
-				.create()
-				.list();
-	}
-
 
 	/**
 	 * retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
@@ -168,12 +152,6 @@ public class ContractOrderService
 		}
 
 		return nextTerm == null ? term : nextTerm;
-	}
-	
-	public void setOrderContractStatusAndSave(@NonNull final I_C_Order order, @NonNull final String contractStatus)
-	{
-		order.setContractStatus(contractStatus);
-		save(order);
 	}
 	
 	public OrderId getContractOrderId(@NonNull final I_C_Flatrate_Term term)

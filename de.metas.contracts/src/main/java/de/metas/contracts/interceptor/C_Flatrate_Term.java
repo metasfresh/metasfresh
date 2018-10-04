@@ -67,6 +67,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_Order;
@@ -593,8 +594,10 @@ public class C_Flatrate_Term
 	})
 	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
 	{
-		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
-		final OrderId orderId = contractOrderRepository.getContractOrderId(term);
+		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+		
+		final OrderId orderId = contractOrderService.getContractOrderId(term);
 		if (orderId == null)
 		{
 			return;
@@ -607,7 +610,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final Set<OrderId> orderIds = contractOrderRepository.retrieveAllContractOrderList(orderId);
+		final Set<OrderId> orderIds = contractOrderService.retrieveAllContractOrderList(orderId);
 
 		updateStatusIfNeededWhenExtendind(term, orderIds);
 
@@ -622,10 +625,11 @@ public class C_Flatrate_Term
 				&& term.getC_FlatrateTerm_Next_ID() > 0
 				&& orderIds.size() > 1) // we set the Extended status only when an order was extended
 		{
-			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
+			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+			final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
 			
 			// update order contract status to extended
-			final OrderId currentContractOrderId = contractOrderRepository.getContractOrderId(term);
+			final OrderId currentContractOrderId = contractOrderService.getContractOrderId(term);
 			
 			orderIds.forEach(id -> {
 				if (id.getRepoId() != currentContractOrderId.getRepoId())  // different order from the current one
@@ -642,7 +646,7 @@ public class C_Flatrate_Term
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
-			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
+			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 			
 			// update order contract status to cancelled
 			orderIds.forEach(id -> {
@@ -654,8 +658,9 @@ public class C_Flatrate_Term
 
 	private void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term)
 	{
-		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
-		final OrderId orderId = contractOrderRepository.getContractOrderId(term);
+		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
+		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+		final OrderId orderId = contractOrderService.getContractOrderId(term);
 		if (orderId == null)
 		{
 			return;
@@ -676,7 +681,7 @@ public class C_Flatrate_Term
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
 
 			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
-			final OrderId parentOrderId = contractOrderRepository.retrieveLinkedFollowUpContractOrder(orderId);
+			final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
 			if (parentOrderId != null)
 			{
 				final I_C_Order order = InterfaceWrapperHelper.load(parentOrderId, I_C_Order.class);
