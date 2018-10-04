@@ -238,6 +238,11 @@ public abstract class LookupValue
 		return id.toString();
 	}
 
+	public <T extends RepoIdAware> T getIdAs(@NonNull final Function<Integer, T> idMapper)
+	{
+		return idMapper.apply(getIdAsInt());
+	}
+
 	public final <T> T transform(final Function<LookupValue, T> transformation)
 	{
 		return transformation.apply(this);
