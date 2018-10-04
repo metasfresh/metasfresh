@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
     * Updating bootstrap to new version because of security issue.
+  * [#1978](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1978) Make actions cypress friendly
+    * Improvement of Cypress Testing in metasfresh WebUI.
   * [#1981](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1981) Make composite widget fields cypress friendly
     * Improvement of Cypress Testing in metasfresh WebUI.
   * [#1983](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1983) Height of date fields is off
