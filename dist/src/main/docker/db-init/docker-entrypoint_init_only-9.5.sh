@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
+debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
+
+# start printing all bash commands from here onwards, if activated
+if [ "$debug_print_bash_cmds" != "n" ]; then
+	echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}, so from here we will output all bash commands; set to n (just the lowercase letter) to skip this."
+	set -x
+fi
+
 #
 # Only performs initalization, but does not actually start postgres at the end.
-# Instaed the container just exits when the init is done
+# Instead the container just exits when the init is done
 # see https://github.com/docker-library/postgres/issues/424
 #
 
@@ -32,6 +40,12 @@ file_env() {
 if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
 fi
+
+if [ -s "$PGDATA/PG_VERSION" ]; then
+	echo "$PGDATA/PG_VERSION = $(cat $PGDATA/PG_VERSION)"
+else
+	echo "$PGDATA/PG_VERSION doesn't exist yet"
+fi	
 
 # allow the container to be started with `--user`
 if [ "$1" = 'postgres' ] && [ "$(id -u)" = '0' ]; then
@@ -148,4 +162,11 @@ if [ "$1" = 'postgres' ]; then
 	fi
 fi
 
-exec "$@"
+#metasfresh_provision_script="/usr/local/bin/provision_metasfresh_db.sh"
+#echo "$0: running ${metasfresh_provision_script}"
+#. "${metasfresh_provision_script}"
+
+echo "=========================================="
+echo " Letting the container stop gracefully..."
+echo "=========================================="
+#exec "$@"

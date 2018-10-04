@@ -258,7 +258,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 
 		// postgres DB init container
 		final DockerConf dbInitDockerConf = appDockerConf
-						.withArtifactName('metasfresh-db-init-pg-10-3')
+						.withArtifactName('metasfresh-db-init-pg-9-5')
 						.withWorkDir('dist/target/docker/db-init')
 		dbInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
