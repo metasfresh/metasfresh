@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -72,6 +73,17 @@ public class CacheInvalidateMultiRequest
 	public static CacheInvalidateMultiRequest rootRecord(@NonNull final String rootTableName, final int rootRecordId)
 	{
 		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
+	}
+
+	public static CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
+	{
+		Check.assumeNotEmpty(ids, "ids is not empty");
+
+		final ImmutableSet<CacheInvalidateRequest> requests = ids.stream()
+				.map(id -> CacheInvalidateRequest.rootRecord(rootTableName, id))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return new CacheInvalidateMultiRequest(requests);
 	}
 
 	public static CacheInvalidateMultiRequest allChildRecords(@NonNull final String rootTableName, final int rootRecordId, @NonNull final String childTableName)
