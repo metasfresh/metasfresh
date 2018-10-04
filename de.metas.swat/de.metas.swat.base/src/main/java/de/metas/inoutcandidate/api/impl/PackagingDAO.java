@@ -42,15 +42,14 @@ public class PackagingDAO implements IPackagingDAO
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	@Override
-	public List<Packageable> retrievePackableLines(final PackageableQuery query)
+	public Stream<Packageable> stream(final PackageableQuery query)
 	{
 		return createQuery(query)
 				.stream(I_M_Packageable_V.class)
-				.map(this::toPackageable)
-				.collect(ImmutableList.toImmutableList());
+				.map(this::toPackageable);
 	}
 
-	private IQuery<I_M_Packageable_V> createQuery(final PackageableQuery query)
+	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)
 	{
 		final IQueryBuilder<I_M_Packageable_V> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Packageable_V.class)
@@ -62,7 +61,10 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Filter: M_Warehouse_ID
-		queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_ID, query.getWarehouseId());
+		if (query.getWarehouseId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_ID, query.getWarehouseId());
+		}
 
 		//
 		// Filter: DeliveryDate
@@ -74,6 +76,14 @@ public class PackagingDAO implements IPackagingDAO
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
 		}
 
+		//
+		// Filter: only those packageables which are created from sales order/lines
+		if (query.isOnlyFromSalesOrder())
+		{
+			queryBuilder.addNotNull(I_M_Packageable_V.COLUMN_C_OrderLineSO_ID);
+		}
+
+		//
 		return queryBuilder.create();
 	}
 
@@ -100,16 +110,6 @@ public class PackagingDAO implements IPackagingDAO
 				.stream()
 				.map(this::toPackageable)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public Stream<Packageable> streamAll()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Packageable_V.class)
-				.create()
-				.stream(I_M_Packageable_V.class)
-				.map(this::toPackageable);
 	}
 
 	private Packageable toPackageable(@NonNull final I_M_Packageable_V record)

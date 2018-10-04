@@ -649,7 +649,8 @@ public class FreshPackingMd
 			}
 			else
 			{
-				_packageableItemsAll = packagingDAO.retrievePackableLines(query);
+				_packageableItemsAll = packagingDAO.stream(query)
+						.collect(ImmutableList.toImmutableList());
 			}
 
 			_requeryNeeded = false;
@@ -658,7 +659,7 @@ public class FreshPackingMd
 		return _packageableItemsAll;
 	}
 
-	private List<Packageable> _packageableItemsAll = null;
+	private ImmutableList<Packageable> _packageableItemsAll = null;
 
 	/**
 	 *

@@ -17,14 +17,12 @@ import de.metas.util.ISingletonService;
  */
 public interface IPackagingDAO extends ISingletonService
 {
-	List<Packageable> retrievePackableLines(PackageableQuery query);
+	Stream<Packageable> stream(PackageableQuery query);
 
 	/**
 	 * @return The current QtyPickedPlanned (qty that was picked but not yet processed) for the given schedule if found, null otherwise
 	 */
 	BigDecimal retrieveQtyPickedPlannedOrNull(ShipmentScheduleId shipmentScheduleId);
-
-	Stream<Packageable> streamAll();
 
 	Packageable getByShipmentScheduleId(ShipmentScheduleId shipmentScheduleId);
 
