@@ -27,6 +27,8 @@ Here come the actual release notes:
     * New Feature that allows to show advanced tooltips in WebUI frontend.
   * [#1955](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1955) Get rid of GET plugins.js 404 Not Found console error
     * Eliminating the error in console log for missing plugins.js.
+  * [#1958](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1958) Use user language for messages and errors in Forgot Password feature (frontend)
+    * Improvement of User Messages translation in Forgot Password workflow.
   * [#1972](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1972) Support active indication for filters without parameters
     * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
