@@ -733,8 +733,7 @@ public final class DB
 	 * @param stmt statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
-	public static void setParameters(PreparedStatement stmt, Object[] params)
-			throws SQLException
+	public static void setParameters(final PreparedStatement stmt, final Object... params) throws SQLException
 	{
 		if (params == null || params.length == 0)
 		{
