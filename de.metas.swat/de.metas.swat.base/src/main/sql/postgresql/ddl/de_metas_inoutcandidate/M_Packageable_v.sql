@@ -82,6 +82,11 @@ SELECT
 	-- Shipper
 	sh.M_Shipper_ID,
 	sh.Name AS ShipperName,
+
+	--
+	-- Locking
+	-- NOTE: assume there is only one M_ShipmentSchedule_Lock record per each M_ShipmentSchedule_ID
+	(select l.LockedBy_User_ID from M_ShipmentSchedule_Lock l where l.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID) as LockedBy_User_ID,
 	
 	--
 	-- Standard columns

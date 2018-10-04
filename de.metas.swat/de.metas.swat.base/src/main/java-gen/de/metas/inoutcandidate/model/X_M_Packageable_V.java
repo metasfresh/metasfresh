@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -911011841L;
+	private static final long serialVersionUID = -788965256L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -557,6 +557,40 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getLockedBy_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_LockedBy_User_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setLockedBy_User(org.compiere.model.I_AD_User LockedBy_User)
+	{
+		set_ValueFromPO(COLUMNNAME_LockedBy_User_ID, org.compiere.model.I_AD_User.class, LockedBy_User);
+	}
+
+	/** Set Locked By.
+		@param LockedBy_User_ID Locked By	  */
+	@Override
+	public void setLockedBy_User_ID (int LockedBy_User_ID)
+	{
+		if (LockedBy_User_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, Integer.valueOf(LockedBy_User_ID));
+	}
+
+	/** Get Locked By.
+		@return Locked By	  */
+	@Override
+	public int getLockedBy_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LockedBy_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
