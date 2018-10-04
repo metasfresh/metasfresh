@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -173,5 +174,17 @@ public class ContractOrderService
 	{
 		order.setContractStatus(contractStatus);
 		save(order);
+	}
+	
+	public OrderId getContractOrderId(@NonNull final I_C_Flatrate_Term term)
+	{
+		final IOrderDAO orderRepo = Services.get(IOrderDAO.class);
+		final de.metas.interfaces.I_C_OrderLine ol = orderRepo.getOrderLineById(term.getC_OrderLine_Term_ID());
+		if (ol == null)
+		{
+			return null;
+		}
+
+		return OrderId.ofRepoId(ol.getC_Order_ID());
 	}
 }

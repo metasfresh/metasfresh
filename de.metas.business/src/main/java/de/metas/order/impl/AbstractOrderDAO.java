@@ -61,6 +61,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
 	}
+	
+	@Override
+	public <T extends org.compiere.model.I_C_Order> T getById(
+			@NonNull final OrderId orderId,
+			@NonNull final Class<T> clazz)
+	{
+		return InterfaceWrapperHelper.load(orderId.getRepoId(), clazz);
+	}
 
 	@Override
 	public I_C_OrderLine getOrderLineById(final int orderLineId)

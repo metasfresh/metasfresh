@@ -45,7 +45,6 @@ import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.POInfo;
@@ -76,6 +75,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
@@ -584,7 +584,8 @@ public class C_Flatrate_Term
 			}
 		}
 	}
-
+	
+	
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE
 	}, ifColumnsChanged = {
@@ -592,24 +593,20 @@ public class C_Flatrate_Term
 	})
 	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
 	{
-		final I_C_OrderLine ol = term.getC_OrderLine_Term();
-		if (ol == null)
+		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
+		final OrderId orderId = contractOrderRepository.getContractOrderId(term);
+		if (orderId == null)
 		{
 			return;
 		}
-
-		final I_C_Order contractOrder = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
-
+		
 		if (InterfaceWrapperHelper.isNew(term) && !Services.get(IContractsDAO.class).termHasAPredecessor(term))
 		{
-			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
+			final I_C_Order contractOrder = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
-		
-		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 		final Set<OrderId> orderIds = contractOrderRepository.retrieveAllContractOrderList(orderId);
 
 		updateStatusIfNeededWhenExtendind(term, orderIds);
@@ -626,12 +623,14 @@ public class C_Flatrate_Term
 				&& orderIds.size() > 1) // we set the Extended status only when an order was extended
 		{
 			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
+			
 			// update order contract status to extended
-			final I_C_Order contractOrder = InterfaceWrapperHelper.create(term.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+			final OrderId currentContractOrderId = contractOrderRepository.getContractOrderId(term);
+			
 			orderIds.forEach(id -> {
-				if (id.getRepoId() != contractOrder.getC_Order_ID())  // different order from the current one
+				if (id.getRepoId() != currentContractOrderId.getRepoId())  // different order from the current one
 				{
-					final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
+					final I_C_Order order = Services.get(IOrderDAO.class).getById(id, I_C_Order.class);
 					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
 				}
 			});
@@ -647,7 +646,7 @@ public class C_Flatrate_Term
 			
 			// update order contract status to cancelled
 			orderIds.forEach(id -> {
-				final I_C_Order order = InterfaceWrapperHelper.load(id, I_C_Order.class);
+				final I_C_Order order = Services.get(IOrderDAO.class).getById(id, I_C_Order.class);
 				contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
 			});
 		}
@@ -655,12 +654,15 @@ public class C_Flatrate_Term
 
 	private void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term)
 	{
-		final I_C_Order contractOrder = InterfaceWrapperHelper.create(term.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
+		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
+		final OrderId orderId = contractOrderRepository.getContractOrderId(term);
+		if (orderId == null)
+		{
+			return;
+		}
 
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
-			final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
 			// set status for the current order
@@ -670,6 +672,7 @@ public class C_Flatrate_Term
 					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
 							&& subscriptionBL.isActiveTerm(currentTerm));
 
+			final I_C_Order contractOrder = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
 
 			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
