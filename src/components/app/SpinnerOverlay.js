@@ -21,26 +21,39 @@ class SpinnerOverlay extends Component {
   }
 
   componentDidMount() {
-    const { showSpinner, spinnerDisplayed, delay } = this.props;
+    const { showSpinner, spinnerDisplayed, delay, parent } = this.props;
 
     if (!spinnerDisplayed) {
       setTimeout(() => {
         this.setState({
           show: true,
         });
+
         showSpinner(this.ID);
+
+        parent.forceUpdate();
       }, delay);
     }
   }
 
-  componentWillUnmount() {
-    const { hideSpinner, spinnerDisplayed } = this.props;
+  /*
+   * This whole wizardry here is to force showing the spinner, when timeout
+   * already finished but the parent component is not updating (because waiting
+   * for data or doing some other operations).
+   */
+  componentDidUpdate(prevProps) {
+    const prevCondition = prevProps.displayCondition;
+    const { displayCondition } = this.props;
 
-    if (spinnerDisplayed === this.ID) {
-      this.setState({
-        show: false,
-      });
-      hideSpinner();
+    if (prevCondition && !displayCondition) {
+      const { hideSpinner, spinnerDisplayed } = this.props;
+
+      if (spinnerDisplayed === this.ID) {
+        this.setState({
+          show: false,
+        });
+        hideSpinner();
+      }
     }
   }
 
@@ -74,6 +87,8 @@ SpinnerOverlay.defaultProps = {
 };
 
 SpinnerOverlay.propTypes = {
+  parent: PropTypes.any.isRequired,
+  displayCondition: PropTypes.bool.isRequired,
   iconSize: PropTypes.number,
   delay: PropTypes.number,
   spinnerDisplayed: PropTypes.string,

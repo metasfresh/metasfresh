@@ -833,46 +833,49 @@ class DocumentList extends Component {
                   )}
               </div>
 
-              {showQuickActions && (
-                <QuickActions
-                  processStatus={processStatus}
-                  ref={c => {
-                    this.quickActionsComponent = c && c.getWrappedInstance();
-                  }}
-                  selected={selected}
-                  viewId={viewId}
-                  windowType={windowType}
-                  fetchOnInit={fetchQuickActionsOnInit}
-                  disabled={hasIncluded && blurWhenOpen}
-                  shouldNotUpdate={inBackground && !hasIncluded}
-                  inBackground={disablePaginationShortcuts}
-                  inModal={inModal}
-                  stopShortcutPropagation={stopShortcutPropagation}
-                  childView={
-                    hasIncluded
-                      ? {
-                          viewId: includedView.viewId,
-                          viewSelectedIds: childSelected,
-                        }
-                      : NO_VIEW
-                  }
-                  parentView={
-                    isIncluded
-                      ? {
-                          viewId: parentDefaultViewId,
-                          viewSelectedIds: parentSelected,
-                        }
-                      : NO_VIEW
-                  }
-                />
-              )}
+              {data &&
+                showQuickActions && (
+                  <QuickActions
+                    processStatus={processStatus}
+                    ref={c => {
+                      this.quickActionsComponent = c && c.getWrappedInstance();
+                    }}
+                    selected={selected}
+                    viewId={viewId}
+                    windowType={windowType}
+                    fetchOnInit={fetchQuickActionsOnInit}
+                    disabled={hasIncluded && blurWhenOpen}
+                    shouldNotUpdate={inBackground && !hasIncluded}
+                    inBackground={disablePaginationShortcuts}
+                    inModal={inModal}
+                    stopShortcutPropagation={stopShortcutPropagation}
+                    childView={
+                      hasIncluded
+                        ? {
+                            viewId: includedView.viewId,
+                            viewSelectedIds: childSelected,
+                          }
+                        : NO_VIEW
+                    }
+                    parentView={
+                      isIncluded
+                        ? {
+                            viewId: parentDefaultViewId,
+                            viewSelectedIds: parentSelected,
+                          }
+                        : NO_VIEW
+                    }
+                  />
+                )}
             </div>
           )}
 
-        {layout &&
-          !data && (
-            <Spinner delay={200} iconSize={50} />
-          )}
+        <Spinner
+          parent={this}
+          delay={3000}
+          iconSize={50}
+          displayCondition={layout && !data}
+        />
 
         {layout &&
           data && (
