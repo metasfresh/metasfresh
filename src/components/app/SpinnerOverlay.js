@@ -23,11 +23,19 @@ class SpinnerOverlay extends Component {
   componentDidMount() {
     const { showSpinner, spinnerDisplayed, delay, parent } = this.props;
 
-    if (!spinnerDisplayed) {
-      setTimeout(() => {
+    console.log('componentDidMount: ', spinnerDisplayed, this.props.displayCondition)
+
+    if (this.props.displayCondition && !spinnerDisplayed && !this.timeout) {
+      console.log('GO1')
+      console.time()
+      // this.props.forceRender();
+      this.timeout = setTimeout(() => {
         this.setState({
           show: true,
         });
+
+        console.log('SHOW1: ', this.ID);
+        console.timeEnd();
 
         showSpinner(this.ID);
 
@@ -43,17 +51,38 @@ class SpinnerOverlay extends Component {
    */
   componentDidUpdate(prevProps) {
     const prevCondition = prevProps.displayCondition;
-    const { displayCondition } = this.props;
+    const { displayCondition, spinnerDisplayed, hideSpinner, showSpinner, delay, parent } = this.props;
 
-    if (prevCondition && !displayCondition) {
-      const { hideSpinner, spinnerDisplayed } = this.props;
+    console.log('componentDidUpdate: ', prevCondition, displayCondition, spinnerDisplayed)
 
-      if (spinnerDisplayed === this.ID) {
+    // if (prevCondition && !displayCondition) {
+    //   // const { hideSpinner, spinnerDisplayed } = this.props;
+
+    //   if (spinnerDisplayed === this.ID) {
+    //     this.setState({
+    //       show: false,
+    //     });
+    //     this.timeout = null;
+
+    //     console.log('HIDE')
+    //     hideSpinner();
+    //   }
+    // } else 
+
+    if (displayCondition && !spinnerDisplayed && !this.timeout) {
+      console.log('GO2')
+      // this.props.forceRender();
+      this.timeout = setTimeout(() => {
         this.setState({
-          show: false,
+          show: true,
         });
-        hideSpinner();
-      }
+
+        console.log('SHOW2: ', this.ID);
+
+        showSpinner(this.ID);
+
+        parent.forceUpdate();
+      }, delay);
     }
   }
 
@@ -84,11 +113,13 @@ class SpinnerOverlay extends Component {
 SpinnerOverlay.defaultProps = {
   delay: 1000,
   iconSize: 32,
+  // displayCondition: false,
 };
 
 SpinnerOverlay.propTypes = {
   parent: PropTypes.any.isRequired,
   displayCondition: PropTypes.bool.isRequired,
+  hideCondition: PropTypes.bool.isRequired,
   iconSize: PropTypes.number,
   delay: PropTypes.number,
   spinnerDisplayed: PropTypes.string,

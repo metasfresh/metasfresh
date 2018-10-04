@@ -81,6 +81,7 @@ class DocumentList extends Component {
       clickOutsideLock: false,
       isShowIncluded: false,
       hasShowIncluded: false,
+      triggerSpinner: true,
 
       // in some scenarios we don't want to reload table data
       // after edit, as it triggers request, collapses rows and looses selection
@@ -160,6 +161,7 @@ class DocumentList extends Component {
           initialValuesNulled: Map(),
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
+          triggerSpinner: true,
         },
         () => {
           if (included) {
@@ -318,6 +320,8 @@ class DocumentList extends Component {
     } = this.props;
     const { viewId } = this.state;
 
+    console.log('here: ');
+
     getViewLayout(windowType, type, viewProfileId)
       .then(response => {
         this.mounted &&
@@ -348,6 +352,7 @@ class DocumentList extends Component {
           {
             data: 'notfound',
             layout: 'notfound',
+            triggerSpinner: false,
           },
           () => {
             setNotFound && setNotFound(true);
@@ -397,6 +402,7 @@ class DocumentList extends Component {
           {
             data: response.data,
             viewId: response.data.viewId,
+            triggerSpinner: false,
           },
           () => {
             this.connectWebSocket(response.data.viewId);
@@ -426,6 +432,7 @@ class DocumentList extends Component {
           {
             data: response.data,
             viewId: viewId,
+            triggerSpinner: false,
           },
           () => {
             this.getData(viewId, page, sort);
@@ -501,7 +508,10 @@ class DocumentList extends Component {
             result,
           },
           pageColumnInfosByFieldName: pageColumnInfosByFieldName,
+          triggerSpinner: false,
         };
+
+        console.log('here2')
 
         if (response.data.filters) {
           newState.filtersActive = filtersToMap(response.data.filters);
@@ -548,6 +558,7 @@ class DocumentList extends Component {
     this.setState(
       {
         page: currentPage,
+        triggerSpinner: true,
       },
       () => {
         this.getData(viewId, currentPage, sort);
@@ -561,6 +572,7 @@ class DocumentList extends Component {
     this.setState(
       {
         sort: getSortingQuery(asc, field),
+        triggerSpinner: true,
       },
       () => {
         this.getData(viewId, startPage ? 1 : page, getSortingQuery(asc, field));
@@ -573,6 +585,7 @@ class DocumentList extends Component {
       {
         filtersActive: activeFilters,
         page: 1,
+        triggerSpinner: true,
       },
       () => {
         this.fetchLayoutAndData(true);
@@ -760,6 +773,8 @@ class DocumentList extends Component {
       );
     }
 
+    console.log('RENDER: ', !!layout, !!data, this.state.triggerSpinner, !!(layout && this.state.triggerSpinner));
+
     const showQuickActions = Boolean(
       !isModal || inBackground || selectionValid
     );
@@ -874,7 +889,8 @@ class DocumentList extends Component {
           parent={this}
           delay={3000}
           iconSize={50}
-          displayCondition={layout && !data}
+          displayCondition={!!(layout && this.state.triggerSpinner)}
+          hideCondition={!!(data && !this.state.triggerSpinner)}
         />
 
         {layout &&
