@@ -81,13 +81,27 @@ final class PackageableRowsRepository
 				.asMap()
 				.values()
 				.stream()
-				.map(this::createPackageableRow)
+				.map(this::createPackageableRowNoFail)
+				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static PackageableRowId extractPackageableRowId(final Packageable packageable)
 	{
 		return PackageableRowId.of(packageable.getSalesOrderId(), packageable.getWarehouseTypeId());
+	}
+
+	private PackageableRow createPackageableRowNoFail(final Collection<Packageable> packageables)
+	{
+		try
+		{
+			return createPackageableRow(packageables);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed creating row from {}. Skip.", packageables, ex);
+			return null;
+		}
 	}
 
 	private PackageableRow createPackageableRow(final Collection<Packageable> packageables)
