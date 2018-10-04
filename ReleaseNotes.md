@@ -20,7 +20,9 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4567](https://github.com/metasfresh/metasfresh/issues/4567) Automatic Lot No. Handling into Quarantine Warehouse
+    * New Quarantine Handling Feature in Material Receipt.
   * [#4628](https://github.com/metasfresh/metasfresh/issues/4628) Split material dispo for M_Transaction with different attributes
+    * Improvement of the ATP Calculation for Transactions that were not fulfilled same as planned.
 
 * metasfresh-webui-frontend
   * [#1952](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1952) Advanced tooltip support
