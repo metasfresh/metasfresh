@@ -73,7 +73,10 @@ final class PackageableRowsRepository
 
 	List<PackageableRow> retrieveRows()
 	{
-		return packageablesRepo.streamAll()
+		final PackageableQuery query = PackageableQuery.builder()
+				.onlyFromSalesOrder(true)
+				.build();
+		return packageablesRepo.stream(query)
 				.collect(GuavaCollectors.toImmutableListMultimap(packageable -> extractPackageableRowId(packageable)))
 				.asMap()
 				.values()
