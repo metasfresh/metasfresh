@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { v4 as uuid } from 'uuid';
 
-export default class SpinnerOverlay extends Component {
+import { showSpinner, hideSpinner } from '../../actions/WindowActions';
+
+class SpinnerOverlay extends Component {
   timeout = null;
 
   constructor(props) {
@@ -12,18 +16,33 @@ export default class SpinnerOverlay extends Component {
     };
   }
 
+  componentWillMount() {
+    this.ID = uuid();
+  }
+
   componentDidMount() {
-    setTimeout(() => {
-      this.setState({
-        show: true,
-      });
-    }, this.props.delay);
+    const { showSpinner, spinnerDisplayed } = this.props;
+
+    if (!spinnerDisplayed) {
+      setTimeout(() => {
+        this.setState({
+          show: true,
+        });
+
+        showSpinner(this.ID);
+      }, this.props.delay);
+    }
   }
 
   componentWillUnmount() {
-    this.setState({
-      show: false,
-    });
+    const { hideSpinner, spinnerDisplayed } = this.props;
+
+    if (spinnerDisplayed === this.ID) {
+      this.setState({
+        show: false,
+      });
+      hideSpinner();
+    }
   }
 
   render() {
@@ -41,13 +60,23 @@ export default class SpinnerOverlay extends Component {
   }
 }
 
-SpinnerOverlay.propTypes = {
-  // dispatch: PropTypes.func.isRequired,
-  // text: PropTypes.string.isRequired,
-  // onCancelClick: PropTypes.func,
-  // onSubmitClick: PropTypes.func,
-  iconSize: PropTypes.number,
-  delay: PropTypes.number,
+SpinnerOverlay.defaultProps = {
+  delay: 3000,
 };
 
-// export default connect()(Prompt);
+SpinnerOverlay.propTypes = {
+  iconSize: PropTypes.number,
+  delay: PropTypes.number,
+  spinnerDisplayed: PropTypes.string,
+  showSpinner: PropTypes.func.isRequired,
+  hideSpinner: PropTypes.func.isRequired,
+};
+
+const mapStateToProps = ({ windowHandler }) => ({
+  spinnerDisplayed: windowHandler.spinner,
+});
+
+export default connect(mapStateToProps, {
+  showSpinner,
+  hideSpinner,
+})(SpinnerOverlay);
