@@ -42,6 +42,8 @@ import {
   UPDATE_ROW_FIELD_PROPERTY,
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
+  SHOW_SPINNER,
+  HIDE_SPINNER,
 } from '../constants/ActionTypes';
 
 const initialState = {
@@ -107,6 +109,7 @@ const initialState = {
     success: true,
   },
   filter: {},
+  spinner: null,
 };
 
 export const NO_SELECTION = [];
@@ -629,6 +632,23 @@ export default function windowHandler(state = initialState, action) {
           },
           success: true,
         },
+      };
+
+    case SHOW_SPINNER: {
+      const newState = {
+        ...state,
+      };
+
+      if (!newState.spinner) {
+        newState.spinner = action.spinnerId;
+      }
+
+      return newState;
+    }
+    case HIDE_SPINNER:
+      return {
+        ...state,
+        spinner: null,
       };
     default:
       return state;
