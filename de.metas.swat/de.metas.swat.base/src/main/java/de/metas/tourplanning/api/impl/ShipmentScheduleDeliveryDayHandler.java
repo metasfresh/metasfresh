@@ -27,8 +27,10 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Quantity;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
@@ -67,6 +69,7 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 	{
 		// Services
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		//
@@ -81,15 +84,15 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 		deliveryDayAlloc.setM_Product_ID(sched.getM_Product_ID());
 
 		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-		final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(sched);
+		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(sched);
 
 		deliveryDayAlloc.setQtyOrdered(qtyOrdered);
 
 		final BigDecimal qtyDelivered = sched.getQtyDelivered();
 		deliveryDayAlloc.setQtyDelivered(qtyDelivered);
 
-		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveBL.getQtyToDeliver(sched);
-		deliveryDayAlloc.setQtyToDeliver(qtyToDeliver);
+		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(sched);
+		deliveryDayAlloc.setQtyToDeliver(qtyToDeliver.getAsBigDecimal());
 	}
 
 	/**

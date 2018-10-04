@@ -1,9 +1,11 @@
 package org.adempiere.mm.attributes.api;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -14,12 +16,14 @@ import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -68,23 +72,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 				.filter(filter)
 				.forEach(attribute -> {
 					final Object value = attributeSet.getValue(attribute);
-					final AttributeValueId attributeValueId = getAttributeValueIdOrNull(attributeSet, attribute);
+					final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attribute.getValue());
 					builder.attributeValue(attribute, value, attributeValueId);
 				});
 
 		return builder.build();
-	}
-
-	private static final AttributeValueId getAttributeValueIdOrNull(final IAttributeSet attributeSet, final I_M_Attribute attribute)
-	{
-		if (attributeSet instanceof ImmutableAttributeSet)
-		{
-			return ((ImmutableAttributeSet)attributeSet).getAttributeValueIdOrNull(attribute);
-		}
-		else
-		{
-			return null;
-		}
 	}
 
 	public static final ImmutableAttributeSet EMPTY = new ImmutableAttributeSet();
@@ -271,6 +263,23 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
+	public LocalDate getValueAsLocalDate(final String attributeKey)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+	}
+
+	public Optional<LocalDate> getValueAsLocalDateIfExists(final String attributeKey)
+	{
+		if (hasAttribute(attributeKey))
+		{
+			return Optional.ofNullable(getValueAsLocalDate(attributeKey));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
 	@Override
 	public String getValueAsString(final String attributeKey)
 	{
@@ -278,14 +287,22 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return valueObj != null ? valueObj.toString() : null;
 	}
 
+	public Optional<String> getValueAsStringIfExists(final String attributeKey)
+	{
+		if (hasAttribute(attributeKey))
+		{
+			return Optional.ofNullable(getValueAsString(attributeKey));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	@Override
 	public AttributeValueId getAttributeValueIdOrNull(final String attributeKey)
 	{
 		return valueIdsByAttributeKey.get(attributeKey);
-	}
-
-	public AttributeValueId getAttributeValueIdOrNull(@NonNull final I_M_Attribute attribute)
-	{
-		return getAttributeValueIdOrNull(attribute.getValue());
 	}
 
 	public boolean hasAttributeValueIds()
@@ -296,6 +313,23 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	public boolean hasAttributeValueId(final AttributeValueId attributeValueId)
 	{
 		return valueIdsByAttributeKey.containsValue(attributeValueId);
+	}
+
+	public Boolean getValueAsBoolean(final String attributeKey)
+	{
+		return StringUtils.toBoolean(getValueAsString(attributeKey), null);
+	}
+
+	public Optional<Boolean> getValueAsBooleanIfExists(final String attributeKey)
+	{
+		if (hasAttribute(attributeKey))
+		{
+			return Optional.ofNullable(getValueAsBoolean(attributeKey));
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@Override

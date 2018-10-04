@@ -13,7 +13,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_BestBefore_V;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,7 +50,7 @@ public class HUWithExpiryDatesRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_BestBefore_V.class)
 				.addCompareFilter(I_M_HU_BestBefore_V.COLUMN_HU_ExpiredWarnDate, Operator.LESS_OR_EQUAL, timestamp, DateTruncQueryFilterModifier.DAY)
-				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, Constants.ATTR_Expired_Value_Expired)
+				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired)
 				.orderBy(I_M_HU_BestBefore_V.COLUMN_M_HU_ID)
 				.create()
 				.iterateAndStream()
@@ -80,7 +80,7 @@ public class HUWithExpiryDatesRepository
 		I_M_HU_BestBefore_V recordOrdNull = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_BestBefore_V.class)
 				.addCompareFilter(I_M_HU_BestBefore_V.COLUMN_HU_ExpiredWarnDate, Operator.LESS_OR_EQUAL, timestamp, DateTruncQueryFilterModifier.DAY)
-				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, Constants.ATTR_Expired_Value_Expired)
+				.addNotEqualsFilter(I_M_HU_BestBefore_V.COLUMN_HU_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired)
 				.addEqualsFilter(I_M_HU_BestBefore_V.COLUMN_M_HU_ID, huId)
 				.create()
 				.firstOnly(I_M_HU_BestBefore_V.class);

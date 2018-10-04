@@ -27,13 +27,13 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_M_Inventory;
@@ -145,8 +145,8 @@ public class M_Inventory extends CalloutEngine
 	{
 		final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 
-		final I_M_Warehouse warehouse = inventory.getM_Warehouse();
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(inventory.getM_Warehouse_ID());
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseId);
 
 		final I_M_InventoryLine line = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class, inventory);
 		line.setAD_Org_ID(inventory.getAD_Org_ID());

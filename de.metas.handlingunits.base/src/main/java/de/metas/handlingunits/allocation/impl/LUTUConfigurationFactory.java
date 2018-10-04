@@ -32,10 +32,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -52,6 +51,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -126,11 +126,11 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final I_M_HU_PI tuPI = lutuConfiguration.getM_TU_HU_PI();
 		luProducerDestination.setTUPI(tuPI);
 		// TU Capacity
-		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
-		luProducerDestination.addCUPerTU(cuProduct, qtyCUPerTU, cuUOM);
+		luProducerDestination.addCUPerTU(cuProductId, qtyCUPerTU, cuUOM);
 
 		//
 		// Misc configuration
@@ -147,7 +147,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	@Override
 	public I_M_HU_LUTU_Configuration createLUTUConfiguration(
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
-			@NonNull final I_M_Product cuProduct,
+			@NonNull final ProductId cuProductId,
 			@NonNull final I_C_UOM cuUOM,
 			final org.compiere.model.I_C_BPartner bpartner,
 			final boolean noLUForVirtualTU)
@@ -180,11 +180,11 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// TU Configuration
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProduct, cuUOM);
+		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProductId, cuUOM);
 		//
 		lutuConfiguration.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfiguration.setM_TU_HU_PI(tuPI);
-		lutuConfiguration.setM_Product(cuProduct);
+		lutuConfiguration.setM_Product_ID(cuProductId.getRepoId());
 		lutuConfiguration.setC_UOM(cuUOM);
 		if (tuCapacity.isInfiniteCapacity())
 		{
@@ -201,7 +201,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem;
-		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
+		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId() == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
 		{
 			luPIItem = null; // we don't care if there is a matching PIItem, because with noLUForVirtualTU we don't want to put the virtual HU onto an LU
 		}
@@ -474,7 +474,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many LUs we need for given total QtyCU (converted to our capacity UOM)
-		final int qtyLUs = qtyCUsTotal_Converted.getQty().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
+		final int qtyLUs = qtyCUsTotal_Converted.getAsBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
 		return qtyLUs;
 	}
 
@@ -537,7 +537,8 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public Quantity convertQtyToLUTUConfigurationUOM(final BigDecimal qtyValue, final I_C_UOM qtyUOM, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(lutuConfiguration.getM_Product());
+		
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(lutuConfiguration.getM_Product_ID());
 
 		final Quantity qty = new Quantity(qtyValue, qtyUOM);
 		final I_C_UOM uomTo = lutuConfiguration.getC_UOM();

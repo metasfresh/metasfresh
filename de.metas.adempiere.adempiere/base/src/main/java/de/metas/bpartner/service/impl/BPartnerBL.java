@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +51,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ILocationBL;
 import de.metas.adempiere.service.impl.AddressBuilder;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -72,7 +74,18 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public String getBPartnerValue(final BPartnerId bpartnerId)
+	{
+		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue());
+	}
+
+	@Override
 	public String getBPartnerValueAndName(final BPartnerId bpartnerId)
+	{
+		return toBPartnerDisplayName(bpartnerId, bpartner -> bpartner.getValue() + "_" + bpartner.getName());
+	}
+
+	private String toBPartnerDisplayName(final BPartnerId bpartnerId, final Function<I_C_BPartner, String> toString)
 	{
 		if (bpartnerId == null)
 		{
@@ -86,7 +99,7 @@ public class BPartnerBL implements IBPartnerBL
 			return "<" + bpartnerId + ">";
 		}
 
-		return bpartner.getValue() + "_" + bpartner.getName();
+		return toString.apply(bpartner);
 	}
 
 	@Override
@@ -523,5 +536,17 @@ public class BPartnerBL implements IBPartnerBL
 		}
 
 		return -1;
+	}
+
+	@Override
+	public String getAddressStringByBPartnerLocationId(final BPartnerLocationId bpartnerLocationId)
+	{
+		if (bpartnerLocationId == null)
+		{
+			return "?";
+		}
+
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
+		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
 	}
 }

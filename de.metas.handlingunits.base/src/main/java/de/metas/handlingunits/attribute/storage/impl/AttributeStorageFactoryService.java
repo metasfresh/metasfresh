@@ -24,12 +24,14 @@ package de.metas.handlingunits.attribute.storage.impl;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AttributeStorageFactoryService implements IAttributeStorageFactoryService
@@ -44,6 +46,13 @@ public class AttributeStorageFactoryService implements IAttributeStorageFactoryS
 		addAttributeStorageFactory(HUAttributeStorageFactory.class);
 		addAttributeStorageFactory(ASIAttributeStorageFactory.class);
 		addAttributeStorageFactory(ASIAwareAttributeStorageFactory.class);
+	}
+
+	@Override
+	public IAttributeStorageFactory createHUAttributeStorageFactory()
+	{
+		final IHUStorageFactory huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+		return createHUAttributeStorageFactory(huStorageFactory, HUAttributesDAO.instance);
 	}
 
 	@Override

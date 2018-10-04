@@ -79,7 +79,7 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
@@ -540,21 +540,21 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// Set PriceActual in HUContext
 		Check.assumeNotNull(priceActual, "priceActual not null");
 		final IHUContext huContext = request.getHUContext();
-		Map<I_M_Attribute, Object> initialAttributeValueDefaults = huContext.getProperty(Constants.CTXATTR_DefaultAttributesValue);
+		Map<I_M_Attribute, Object> initialAttributeValueDefaults = huContext.getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 		if (initialAttributeValueDefaults == null)
 		{
 			initialAttributeValueDefaults = new HashMap<>();
-			huContext.setProperty(Constants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
+			huContext.setProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(Constants.ATTR_CostPrice);
+		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_CostPrice);
 		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
 
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(Constants.ATTR_PurchaseOrderLine_ID);
+			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
 			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 

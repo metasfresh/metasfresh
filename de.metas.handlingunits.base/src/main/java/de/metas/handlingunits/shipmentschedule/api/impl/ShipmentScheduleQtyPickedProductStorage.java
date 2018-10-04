@@ -26,13 +26,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
@@ -113,11 +113,11 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 
 		//
 		// Create the total capacity based on qtyTarget
-		final I_M_Product product = shipmentSchedule.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 		final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 		return Capacity.createCapacity(
 				qtyTarget, // qty
-				product, // product
+				productId, // product
 				uom, // uom
 				false // allowNegativeCapacity
 		);

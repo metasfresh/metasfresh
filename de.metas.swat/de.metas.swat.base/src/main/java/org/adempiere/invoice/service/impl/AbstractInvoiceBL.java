@@ -53,7 +53,6 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -94,6 +93,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
@@ -968,11 +968,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			fallback = true;
 		}
 
-		final I_M_Product product = invoiceLine.getM_Product();
-		if (product.getC_UOM_ID() < 0)
-		{
-			fallback = true;
-		}
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		// if (product.getC_UOM_ID() < 0)
+		// {
+		// fallback = true;
+		// }
+
 		if (fallback)
 		{
 			invoiceLine.setQtyEntered(qtyInvoiced);
@@ -986,11 +987,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, product, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getC_UOM(), qtyInvoiced);
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 

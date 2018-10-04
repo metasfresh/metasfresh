@@ -6,12 +6,16 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.WarehouseInvalidForOrgException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MOrg;
-import org.compiere.model.MWarehouse;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -44,7 +48,8 @@ public class M_ForecastLine
 	public void beforeSave(final I_M_ForecastLine forecastLine)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(forecastLine);
-		final MWarehouse wh = MWarehouse.get(ctx, forecastLine.getM_Warehouse_ID());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(forecastLine.getM_Warehouse_ID());
+		final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(warehouseId);
 		final int adOrgId = forecastLine.getAD_Org_ID();
 		if (wh.getAD_Org_ID() != adOrgId)
 		{

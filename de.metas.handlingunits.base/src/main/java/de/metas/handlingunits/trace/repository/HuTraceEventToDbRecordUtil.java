@@ -2,14 +2,20 @@ package de.metas.handlingunits.trace.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
+import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 
+import de.metas.document.DocTypeId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -39,21 +45,21 @@ public class HuTraceEventToDbRecordUtil
 	public static HUTraceEvent fromDbRecord(@NonNull final I_M_HU_Trace dbRecord)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.orgId(dbRecord.getAD_Org_ID())
+				.orgId(OrgId.ofRepoIdOrAny(dbRecord.getAD_Org_ID()))
 				.ppCostCollectorId(dbRecord.getPP_Cost_Collector_ID())
 				.ppOrderId(dbRecord.getPP_Order_ID())
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
-				.vhuId(dbRecord.getVHU_ID())
-				.productId(dbRecord.getM_Product_ID())
+				.vhuId(HuId.ofRepoId(dbRecord.getVHU_ID()))
+				.productId(ProductId.ofRepoId(dbRecord.getM_Product_ID()))
 				.qty(dbRecord.getQty())
 				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
 				.vhuStatus(dbRecord.getVHUStatus())
-				.topLevelHuId(dbRecord.getM_HU_ID())
-				.vhuSourceId(dbRecord.getVHU_Source_ID())
+				.topLevelHuId(HuId.ofRepoId(dbRecord.getM_HU_ID()))
+				.vhuSourceId(HuId.ofRepoIdOrNull(dbRecord.getVHU_Source_ID()))
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
-				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(dbRecord.getM_ShipmentSchedule_ID()))
 				.type(HUTraceType.valueOf(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
 
 		if (dbRecord.getM_HU_Trace_ID() > 0)
@@ -63,11 +69,11 @@ public class HuTraceEventToDbRecordUtil
 
 		if (isNull(dbRecord, I_M_HU_Trace.COLUMNNAME_C_DocType_ID))
 		{
-			builder.docTypeId(OptionalInt.empty());
+			builder.docTypeId(Optional.empty());
 		}
 		else
 		{
-			builder.docTypeId(OptionalInt.of(dbRecord.getC_DocType_ID())); // note that zero means "new", and not "nothing" or null
+			builder.docTypeId(DocTypeId.optionalOfRepoId(dbRecord.getC_DocType_ID()));
 		}
 
 		return builder.build();
@@ -79,23 +85,23 @@ public class HuTraceEventToDbRecordUtil
 	{
 		if (huTraceRecord.getDocTypeId().isPresent())
 		{
-			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId().getAsInt()); // note that zero means "new", and not "nothing" or null
+			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId().get().getRepoId()); // note that zero means "new", and not "nothing" or null
 		}
 		// HU_TraceEvent_ID is not copied to the dbRecord! because the dbREcord is where it always comes from
-		dbRecord.setAD_Org_ID(huTraceRecord.getOrgId());
+		dbRecord.setAD_Org_ID(OrgId.toRepoIdOrAny(huTraceRecord.getOrgId()));
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
-		dbRecord.setVHU_ID(huTraceRecord.getVhuId());
-		dbRecord.setM_Product_ID(huTraceRecord.getProductId());
+		dbRecord.setVHU_ID(huTraceRecord.getVhuId().getRepoId());
+		dbRecord.setM_Product_ID(huTraceRecord.getProductId().getRepoId());
 		dbRecord.setQty(huTraceRecord.getQty());
 		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
-		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId());
-		dbRecord.setVHU_Source_ID(huTraceRecord.getVhuSourceId());
+		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId().getRepoId());
+		dbRecord.setVHU_Source_ID(HuId.toRepoId(huTraceRecord.getVhuSourceId()));
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
-		dbRecord.setM_ShipmentSchedule_ID(huTraceRecord.getShipmentScheduleId());
+		dbRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(huTraceRecord.getShipmentScheduleId()));
 		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getPpCostCollectorId());
 		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
 	}

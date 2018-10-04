@@ -49,6 +49,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
+import de.metas.product.ProductId;
 import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.util.Services;
 
@@ -200,7 +201,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.setTU_M_HU_PI_Item(piTU_Item)
 				.setTUPerLU(new BigDecimal("1"))
 				// CU
-				.setCUProduct(product)
+				.setCUProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.setCUPerTU(new BigDecimal("15"))
 				.setCUUOM(productUOM)
 				//

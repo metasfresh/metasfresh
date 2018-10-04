@@ -102,7 +102,10 @@ public class PackageLabel extends JavaProcess
 				}
 			}
 			else
+			{
 				shipperName = pack.getM_Shipper().getName();
+			}
+			
 			if (!"DPD".equals(shipperName))
 			{
 				packageInfoService.discardLabel(ctx, inOut, pack, M_Shipper_ID, trxName);

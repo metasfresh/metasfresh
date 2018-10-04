@@ -56,6 +56,7 @@ import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -155,18 +156,18 @@ public class PP_Cost_Collector
 						for (final IHUProductStorage productStorage : huStorage.getProductStorages())
 						{
 							// Skip ZERO quantity storages => those are not relevant
-							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).getQty();
+							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).getAsBigDecimal();
 							if (qty.signum() == 0)
 							{
 								continue;
 							}
 
 							// Make sure we have HU stoarges only about our received product
-							if (productStorage.getM_Product().getM_Product_ID() != receiptProduct.getM_Product_ID())
+							if (productStorage.getProductId().getRepoId() != receiptProduct.getM_Product_ID())
 							{
 								throw new HUException("@NotMatched@ @M_M_Product_ID@"
 										+ "\n @Expected@: " + receiptProduct
-										+ "\n @Actual@: " + productStorage.getM_Product()
+										+ "\n @Actual@: " + Services.get(IProductBL.class).getProductValueAndName(productStorage.getProductId())
 										+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
 							}
 

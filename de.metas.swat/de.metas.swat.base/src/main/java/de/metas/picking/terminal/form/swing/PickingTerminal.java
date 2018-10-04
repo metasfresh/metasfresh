@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,76 +13,63 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Dimension;
 import java.awt.Frame;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.ClassReference;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
- * @author cg
- * 
+ * Picking Terminal (first window)
  */
 public class PickingTerminal implements FormPanel
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	
-	private SwingPickingTerminalPanel panel = null;
-	
-	static String className = null;
-	
-	static public String getClassName()
-	{
-		return className;
-	}
+	private static final transient Logger logger = LogManager.getLogger(PickingTerminal.class);
 
-	static public void setClassName(String name)
+	private IPickingTerminalPanel panel = null;
+
+	private static ClassReference<? extends IPickingTerminalPanel> pickingTerminalPanelClass = null;
+
+	public static void setPickingTerminalPanelClass(@NonNull final Class<? extends IPickingTerminalPanel> pickingTerminalPanelClass)
 	{
-		className = name;
+		PickingTerminal.pickingTerminalPanelClass = ClassReference.of(pickingTerminalPanelClass);
+		logger.info("Set pickingTerminalPanelClass={}", pickingTerminalPanelClass);
 	}
 
 	@Override
-	public void init(int WindowNo, FormFrame frame)
+	public void init(final int windowNo, final FormFrame frame)
 	{
-		Env.setContext(Env.getCtx(), WindowNo, "AD_Form_ID", frame.getAD_Form_ID());
-
-		SwingPickingTerminalPanel panel = null;
-		try
+		if (pickingTerminalPanelClass == null)
 		{
-			panel = Util.getInstance(SwingPickingTerminalPanel.class, className);
-		}
-		catch (Exception e)
-		{
-			logger.error(e.getLocalizedMessage(), e);
-			panel = null;
+			throw new AdempiereException("No picking terminal panel class was configured");
 		}
 
-		// Fallback
-		if (panel == null)
-		{
-			panel = new SwingPickingTerminalPanel();
-		}
+		Env.setContext(Env.getCtx(), windowNo, "AD_Form_ID", frame.getAD_Form_ID());
 
-		// cg:  maximum size should be 1024x768 : see task 03520
+		this.panel = newPickingTerminalPanel();
+
+		// cg: maximum size should be 1024x768 : see task 03520
 		final Dimension frameSize = new Dimension(1024, 740);
-		
+
 		frame.setResizable(true);
 		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		frame.setMinimumSize(frameSize);
@@ -90,11 +77,24 @@ public class PickingTerminal implements FormPanel
 		// NOTE: if you are not setting the preferredSize also, the maximum size won't be enforced
 		// see http://stackoverflow.com/questions/10157954/java-swing-setmaximumsize-not-working
 		frame.setPreferredSize(frameSize);
-		
-		this.panel = panel;
-		panel.init(WindowNo, frame);
+
+		panel.init(windowNo, frame);
 	}
-	
+
+	private IPickingTerminalPanel newPickingTerminalPanel()
+	{
+		final IPickingTerminalPanel panel;
+		try
+		{
+			panel = pickingTerminalPanelClass.getReferencedClass().newInstance();
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		return panel;
+	}
+
 	@Override
 	public void dispose()
 	{

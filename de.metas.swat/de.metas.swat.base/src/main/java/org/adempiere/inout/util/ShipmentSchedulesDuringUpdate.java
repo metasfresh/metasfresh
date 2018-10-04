@@ -29,9 +29,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
-import org.compiere.model.X_C_Order;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -41,6 +42,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 
 /**
@@ -85,17 +88,22 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 		orderedCandidates.add(deliveryGroupCandidate);
 
-		final ArrayKey shipperKey = Util.mkKey(
-				deliveryGroupCandidate.getBPartnerAddress(),
+		final ArrayKey shipperKey = createShipperKey(
+				deliveryGroupCandidate.getShipperId(),
 				deliveryGroupCandidate.getWarehouseId(),
-				deliveryGroupCandidate.getShipperId());
+				deliveryGroupCandidate.getBPartnerAddress());
 		shipperKey2Candidate.put(shipperKey, deliveryGroupCandidate);
 
-		final ArrayKey orderKey = Util.mkKey(
-				deliveryGroupCandidate.getBPartnerAddress(),
+		final ArrayKey orderKey = createOrderKey(
+				deliveryGroupCandidate.getGroupId(),
 				deliveryGroupCandidate.getWarehouseId(),
-				deliveryGroupCandidate.getGroupId());
+				deliveryGroupCandidate.getBPartnerAddress());
 		orderKey2Candidate.put(orderKey, deliveryGroupCandidate);
+	}
+
+	private static ArrayKey createOrderKey(final Integer groupId, final WarehouseId warehouseId, final String bpartnerAddress)
+	{
+		return Util.mkKey(bpartnerAddress, warehouseId, groupId);
 	}
 
 	@Override
@@ -180,24 +188,27 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	 */
 	@Override
 	public DeliveryGroupCandidate getInOutForShipper(
-			final int shipperId,
-			final int warehouseId,
+			@NonNull final Optional<ShipperId> shipperId,
+			final WarehouseId warehouseId,
 			final String bPartnerAddress)
 	{
-		final ArrayKey key = Util.mkKey(bPartnerAddress, warehouseId, shipperId);
-
+		final ArrayKey key = createShipperKey(shipperId, warehouseId, bPartnerAddress);
 		final DeliveryGroupCandidate inOut = shipperKey2Candidate.get(key);
 		return inOut;
+	}
+
+	private static ArrayKey createShipperKey(final Optional<ShipperId> shipperId, final WarehouseId warehouseId, final String bPartnerAddress)
+	{
+		return Util.mkKey(bPartnerAddress, warehouseId, shipperId.orElse(null));
 	}
 
 	@Override
 	public DeliveryGroupCandidate getInOutForOrderId(
 			final int groupId,
-			final int warehouseId,
-			final String bPartnerAddress)
+			final WarehouseId warehouseId,
+			final String bpartnerAddress)
 	{
-		final ArrayKey key = Util.mkKey(bPartnerAddress, warehouseId, groupId);
-
+		final ArrayKey key = createOrderKey(groupId, warehouseId, bpartnerAddress);
 		final DeliveryGroupCandidate inOut = orderKey2Candidate.get(key);
 		return inOut;
 	}
@@ -232,9 +243,10 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		{
 			if (!inOut.hasLines())
 			{
-				final ArrayKey key = Util.mkKey(inOut.getBPartnerAddress(),
+				final ArrayKey key = createShipperKey(
+						inOut.getShipperId(),
 						inOut.getWarehouseId(),
-						inOut.getShipperId());
+						inOut.getBPartnerAddress());
 				shipperKey2Candidate.remove(key);
 				orderedCandidates.remove(inOut);
 				rmInOuts++;
@@ -261,13 +273,13 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 			return;
 		}
 
-		final String deliveryRule = deliveryLineCandidate.getDeliveryRule();
+		final DeliveryRule deliveryRule = deliveryLineCandidate.getDeliveryRule();
 
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(deliveryRule))
+		if (DeliveryRule.COMPLETE_LINE.equals(deliveryRule))
 		{
 			discardLineCandidateIfIncomplete(deliveryLineCandidate);
 		}
-		else if (X_C_Order.DELIVERYRULE_CompleteOrder.equals(deliveryRule))
+		else if (DeliveryRule.COMPLETE_ORDER.equals(deliveryRule))
 		{
 			discardAllLinesFromSameGroupIfIncomplete(deliveryLineCandidate);
 		}

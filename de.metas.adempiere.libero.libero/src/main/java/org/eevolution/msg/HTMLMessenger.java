@@ -42,6 +42,12 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MAttribute;
 import org.compiere.model.MAttributeInstance;
 import org.compiere.model.MAttributeSet;
@@ -51,7 +57,6 @@ import org.compiere.model.MLocator;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MStorage;
-import org.compiere.model.MWarehouse;
 import org.compiere.util.Env;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.reasoner.StorageReasoner;
@@ -59,6 +64,7 @@ import org.eevolution.model.wrapper.BOMLineWrapper;
 import org.eevolution.model.wrapper.BOMWrapper;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -369,14 +375,14 @@ public class HTMLMessenger {
 		return sb.toString();
 	}
 
-	public String getStorageInfo(MProduct p, MAttributeSetInstance asi) {
+	public String getStorageInfo(final I_M_Product p, final I_M_AttributeSetInstance asi)
+	{
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		
 		StorageReasoner mr = new StorageReasoner();
 		int[] ids = mr.getPOIDs(MLocator.Table_Name, null, null);
 
-		MWarehouse warehouse = null;
 		MStorage storage = null;
-		MLocator locator = null;
 		StringBuffer sb = new StringBuffer(STORAGE_HEADER_INFO_PATTERN);
 		Object[] obj = null;
 		
@@ -387,15 +393,16 @@ public class HTMLMessenger {
 		int count = 0;
 		for(int i = 0; i < ids.length; i++) {
 			
-			storage = MStorage.get(Env.getCtx(), ids[i], p.get_ID(), asi.get_ID(), null);
+			storage = MStorage.get(Env.getCtx(), ids[i], p.getM_Product_ID(), asi.getM_AttributeSetInstance_ID(), null);
 			if(storage == null) {
 				
 				continue;
 			}
 			count++;
 			
-			warehouse = new MWarehouse(Env.getCtx(), storage.getM_Warehouse_ID(), null);
-			locator = new MLocator(Env.getCtx(), storage.getM_Locator_ID(), null);
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(storage.getM_Warehouse_ID());
+			final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, storage.getM_Locator_ID());
+			final I_M_Locator locator = warehousesRepo.getLocatorById(locatorId);
 		
 			sumQtyOnHand = sumQtyOnHand.add(storage.getQtyOnHand());
 			sumQtyReserved = sumQtyReserved.add(storage.getQtyReserved());
@@ -404,7 +411,7 @@ public class HTMLMessenger {
 			// the quantities of specific locator
 	    	obj = new Object[] {
 					locator.getX()+" - "+locator.getY()+" - "+locator.getZ(),
-					warehouse.getName(),
+					warehousesRepo.getWarehouseName(warehouseId),
 					storage.getQtyOnHand(),
 					storage.getQtyReserved(),
 					storage.getQtyOrdered(),

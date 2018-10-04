@@ -29,7 +29,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -38,6 +37,8 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.product.ProductId;
 
 /**
  * Test {@link PPOrderBOMBL#calculateQtyRequiredProjected(I_PP_Order_BOMLine)}.
@@ -56,8 +57,8 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 	// Master data
 	private I_C_UOM uomMm;
 	private I_C_UOM uomEa;
-	private I_M_Product pABAliceSalad;
-	private I_M_Product pFolie;
+	//private I_M_Product pABAliceSalad;
+	//private I_M_Product pFolie;
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
 
@@ -80,12 +81,12 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 	{
 		uomMm = helper.createUOM("mm", 2);
 		uomEa = helper.createUOM("each", 0);
-		pABAliceSalad = helper.createProduct("P000787_AB Alicesalat 250g", uomEa); // finished good
-		pFolie = helper.createProduct("P000529_Folie AB Alicesalat (1000 lm)", uomMm); // component
+		final ProductId pABAliceSalad = helper.createProduct("P000787_AB Alicesalat 250g", uomEa); // finished good
+		final ProductId pFolie = helper.createProduct("P000529_Folie AB Alicesalat (1000 lm)", uomMm); // component
 
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
-		ppOrder.setM_Product(pABAliceSalad);
+		ppOrder.setM_Product_ID(pABAliceSalad.getRepoId());
 		ppOrder.setC_UOM(uomEa);
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
@@ -94,7 +95,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		ppOrderBOMLine.setPP_Order(ppOrder);
 		ppOrderBOMLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
-		ppOrderBOMLine.setM_Product(pFolie);
+		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
 		ppOrderBOMLine.setC_UOM(uomMm);
 		ppOrderBOMLine.setQtyRequiered(null);
 
@@ -166,7 +167,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getAsBigDecimal(),
 				// Expected: ZERO because nothing was received yet
 				Matchers.comparesEqualTo(BigDecimal.ZERO));
 
@@ -191,7 +192,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getAsBigDecimal(),
 				// Expected: 50(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("8580")));
 
@@ -216,7 +217,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getAsBigDecimal(),
 				// Expected: 100(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
 
@@ -241,7 +242,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
 		Assert.assertThat("Invalid QtyRequired projected",
-				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getQty(),
+				ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getAsBigDecimal(),
 				// Expected: 130(finished goods received) x 260(mm/finished good) x (scrap=1 + 10/100)
 				Matchers.comparesEqualTo(new BigDecimal("37180")));
 

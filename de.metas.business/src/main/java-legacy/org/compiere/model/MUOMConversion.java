@@ -28,6 +28,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.util.Env;
 
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -136,11 +137,10 @@ public class MUOMConversion extends X_C_UOM_Conversion
 			final int C_UOM_Dest_ID,
 			final BigDecimal qtyToConvert)
 	{
-		final MProduct product = MProduct.get(ctx, M_Product_ID);
+		final ProductId productId = ProductId.ofRepoIdOrNull(M_Product_ID);
 		final I_C_UOM uomDest = MUOM.get(ctx, C_UOM_Dest_ID);
-		// return convertFromProductUOM(ctx, product, uomDest, qtyToConvert);
 
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertFromProductUOM(ctx, product, uomDest, qtyToConvert);
+		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertFromProductUOM(ctx, productId, uomDest, qtyToConvert);
 
 		return qtyConv;
 	}
@@ -152,7 +152,7 @@ public class MUOMConversion extends X_C_UOM_Conversion
 			final int C_UOM_Source_ID,
 			final BigDecimal qtyToConvert)
 	{
-		final I_M_Product product = MProduct.get(ctx, M_Product_ID);
+		final ProductId product = ProductId.ofRepoIdOrNull(M_Product_ID);
 		final I_C_UOM uomSource = MUOM.get(ctx, C_UOM_Source_ID);
 
 		final BigDecimal qtyConvToProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, product, uomSource, qtyToConvert);

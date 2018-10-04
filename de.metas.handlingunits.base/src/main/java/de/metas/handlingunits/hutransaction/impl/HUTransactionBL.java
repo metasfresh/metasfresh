@@ -3,8 +3,8 @@ package de.metas.handlingunits.hutransaction.impl;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -21,7 +21,7 @@ public class HUTransactionBL implements IHUTransactionBL
 		final HUTransactionCandidate luTrx = new HUTransactionCandidate(AllocationUtils.getReferencedModel(request), // receipt schedule
 				luItem, // huItem,
 				null, // vhuItem (note: at this level we're not talking about VHUs but actual LU-HUs)
-				request.getProduct(),
+				request.getProductId(),
 				request.getQuantity().toZero(),
 				request.getDate()
 				);

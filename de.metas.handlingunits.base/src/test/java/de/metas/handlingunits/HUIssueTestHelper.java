@@ -252,7 +252,7 @@ public class HUIssueTestHelper extends HUTestHelper
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO);
 			// huDefIFCO_pip_Tomato =
-			assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
+			assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
@@ -351,8 +351,8 @@ public class HUIssueTestHelper extends HUTestHelper
 
 	public void createHUs(final IHUContext huContext)
 	{
-		final List<I_M_HU> hus1 = new ArrayList<I_M_HU>();
-		hus1.addAll(createHUs(huContext, huDefPalet, pTomato, new BigDecimal("30"), uomEach));
+		final List<I_M_HU> hus1 = new ArrayList<>();
+		hus1.addAll(createHUs(huContext, huDefPalet, pTomatoProductId, new BigDecimal("30"), uomEach));
 		for (final I_M_HU hu : hus1)
 		{
 			hu.setM_Locator(locator1);
@@ -360,8 +360,8 @@ public class HUIssueTestHelper extends HUTestHelper
 		}
 
 		//
-		final List<I_M_HU> hus2 = new ArrayList<I_M_HU>();
-		hus2.addAll(createHUs(huContext, huDefPalet, pTomato, new BigDecimal("13"), uomEach));
+		final List<I_M_HU> hus2 = new ArrayList<>();
+		hus2.addAll(createHUs(huContext, huDefPalet, pTomatoProductId, new BigDecimal("13"), uomEach));
 		for (final I_M_HU hu : hus2)
 		{
 			hu.setM_Locator(locator2);
@@ -369,8 +369,8 @@ public class HUIssueTestHelper extends HUTestHelper
 		}
 
 		//
-		final List<I_M_HU> hus3 = new ArrayList<I_M_HU>();
-		hus3.addAll(createHUs(huContext, huDefPalet, pTomato, new BigDecimal("24"), uomEach));
+		final List<I_M_HU> hus3 = new ArrayList<>();
+		hus3.addAll(createHUs(huContext, huDefPalet, pTomatoProductId, new BigDecimal("24"), uomEach));
 		for (final I_M_HU hu : hus3)
 		{
 			hu.setM_Locator(locator3);

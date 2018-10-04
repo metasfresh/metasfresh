@@ -53,7 +53,7 @@ public class LotNumberQuarantineRepository
 				.build();
 	}
 
-	public LotNumberQuarantine getByProductIdAndLot(final int productId, final String lotNo)
+	public LotNumberQuarantine getByProductIdAndLot(final ProductId productId, final String lotNo)
 	{
 		final I_M_Product_LotNumber_Quarantine record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product_LotNumber_Quarantine.class)

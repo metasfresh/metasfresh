@@ -13,24 +13,25 @@ package de.metas.handlingunits.storage;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Comparator;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 
 public interface IProductStorage
 {
@@ -52,36 +53,23 @@ public interface IProductStorage
 			{
 				return "";
 			}
-			final I_M_Product product = productStorage.getM_Product();
-			if (product == null)
-			{
-				return "";
-			}
-			final String productName = product.getName();
-			if (productName == null)
-			{
-				return "";
-			}
-			return productName;
+
+			return Services.get(IProductBL.class).getProductName(productStorage.getProductId());
 		}
 	};
 
-	/**
-	 * @return product; never <code>null</code>
-	 */
-	I_M_Product getM_Product();
-
-	default int getM_Product_ID()
-	{
-		final I_M_Product product = getM_Product();
-		return product == null ? -1 : product.getM_Product_ID();
-	}
+	ProductId getProductId();
 
 	I_C_UOM getC_UOM();
 
 	BigDecimal getQtyFree();
 
-	BigDecimal getQty();
+	Quantity getQty();
+
+	default BigDecimal getQtyAsBigDecimal()
+	{
+		return getQty().getAsBigDecimal();
+	}
 
 	/**
 	 * Gets storage Qty, converted to given UOM.
@@ -108,4 +96,5 @@ public interface IProductStorage
 	 * @return true if this storage allows negative storages
 	 */
 	boolean isAllowNegativeStorage();
+
 }

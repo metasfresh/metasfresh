@@ -3,6 +3,7 @@ package de.metas.handlingunits;
 import java.util.Collection;
 import java.util.Set;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
@@ -59,10 +60,20 @@ public class HuId implements RepoIdAware
 		return huIds.stream().map(HuId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static Set<HuId> fromRepoIds(final Collection<Integer> huRepoIds)
+	{
+		if (huRepoIds == null || huRepoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return huRepoIds.stream().map(HuId::ofRepoIdOrNull).filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+	}
+
 	int repoId;
 
 	private HuId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_ID");
 	}
 }

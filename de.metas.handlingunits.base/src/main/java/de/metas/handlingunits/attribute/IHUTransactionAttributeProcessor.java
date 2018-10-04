@@ -37,7 +37,7 @@ public interface IHUTransactionAttributeProcessor
 	void setM_HU_Trx_Hdr(IReference<I_M_HU_Trx_Hdr> trxHdrRef);
 
 	/**
-	 * Creates actual HU Attribute transactions (see {@link #create(List)}) and then process them.
+	 * Creates actual HU Attribute transactions (see {@link #newPackingItem(List)}) and then process them.
 	 *
 	 * @param attributeTrxs
 	 * @return created HU attribute transactions.

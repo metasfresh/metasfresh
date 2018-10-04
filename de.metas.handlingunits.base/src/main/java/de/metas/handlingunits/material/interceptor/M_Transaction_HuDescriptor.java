@@ -36,9 +36,9 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.HUDescriptor.HUDescriptorBuilder;
-import de.metas.util.Services;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -135,7 +135,7 @@ public class M_Transaction_HuDescriptor
 		{
 			final ProductDescriptor productDescriptor = ProductDescriptor
 					.forProductAndAttributes(
-							productStorage.getM_Product_ID(),
+							productStorage.getProductId().getRepoId(),
 							attributesKeyAndAsiId.getLeft(),
 							attributesKeyAndAsiId.getRight());
 

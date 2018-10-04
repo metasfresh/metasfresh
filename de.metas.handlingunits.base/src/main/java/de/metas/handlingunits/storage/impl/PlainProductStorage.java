@@ -26,8 +26,8 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.util.Check;
 
@@ -36,24 +36,24 @@ public class PlainProductStorage extends AbstractProductStorage
 	private final Capacity capacityTotal;
 	private BigDecimal qtyInitial;
 
-	public PlainProductStorage(final I_M_Product product,
+	public PlainProductStorage(final ProductId productId,
 			final I_C_UOM uom,
 			final BigDecimal qtyTotal)
 	{
-		this(product,
+		this(productId,
 				uom,
 				qtyTotal,
 				BigDecimal.ZERO // qtyInitial=0 => empty by default
 		);
 	}
 
-	public PlainProductStorage(final I_M_Product product,
+	public PlainProductStorage(final ProductId productId,
 			final I_C_UOM uom,
 			final BigDecimal qtyTotal,
 			final BigDecimal qtyInitial)
 	{
 		capacityTotal = Capacity.createCapacity(qtyTotal,
-				product, uom,
+				productId, uom,
 				false // allowNegativeCapacity
 				);
 
@@ -85,7 +85,7 @@ public class PlainProductStorage extends AbstractProductStorage
 	protected void beforeMarkingStalled()
 	{
 		// we are just saving current qty as next qtyInitialO
-		qtyInitial = getQty();
+		qtyInitial = getQty().getAsBigDecimal();
 	}
 
 }

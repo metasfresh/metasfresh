@@ -59,7 +59,7 @@ public class HUReceiptProcess_StandardCase_IntegrationTest extends AbstractHURec
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, order);
 		orderLine.setC_Order(order);
-		orderLine.setM_Product(product);
+		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setC_UOM(productUOM);
 		orderLine.setQtyEntered(qty);
 		orderLine.setQtyOrdered(qty);

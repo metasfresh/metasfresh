@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -126,7 +127,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	I_C_DocType getDocTypeFor(I_C_Flatrate_Term term);
 
-	int getWarehouseId(I_C_Flatrate_Term term);
+	WarehouseId getWarehouseId(I_C_Flatrate_Term term);
 
 	/**
 	 * Copy relevant columns from {@link I_C_Flatrate_Conditions} to given <code>term</code>.

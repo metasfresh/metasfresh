@@ -46,7 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -78,7 +78,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		POJOWrapper.setDefaultStrictValues(false);
 
-		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 	}
 

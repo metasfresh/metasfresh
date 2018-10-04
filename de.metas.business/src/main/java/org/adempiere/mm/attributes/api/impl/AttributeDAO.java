@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -275,8 +276,7 @@ public class AttributeDAO implements IAttributeDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Override
-	public List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
+	private List<I_M_AttributeInstance> retrieveAttributeInstances(@NonNull final AttributeSetInstanceId asiId)
 	{
 		return retrieveAttributeInstances(Env.getCtx(), asiId, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -336,7 +336,7 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return true;
 		}
-		
+
 		return expectedSOTrx.equals(soTrx);
 	}
 
@@ -548,8 +548,14 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableAttributeSet.EMPTY;
 		}
 
+		final List<I_M_AttributeInstance> instances = retrieveAttributeInstances(asiId);
+		return createImmutableAttributeSet(instances);
+	}
+
+	private ImmutableAttributeSet createImmutableAttributeSet(final Collection<I_M_AttributeInstance> instances)
+	{
 		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
-		for (final I_M_AttributeInstance instance : retrieveAttributeInstances(asiId))
+		for (final I_M_AttributeInstance instance : instances)
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(instance.getM_Attribute_ID());
 			final Object value = extractAttributeInstanceValue(instance);
@@ -586,5 +592,30 @@ public class AttributeDAO implements IAttributeDAO
 					.setParameter("attribute", attribute)
 					.appendParametersToMessage();
 		}
+	}
+
+	@Override
+	public Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(
+			final Set<AttributeSetInstanceId> asiIds,
+			final Set<AttributeId> attributeIds)
+	{
+		Check.assumeNotEmpty(asiIds, "asiIds is not empty");
+		Check.assumeNotEmpty(attributeIds, "attributeIds is not empty");
+
+		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> //
+		instancesByAsiId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_AttributeInstance.class)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, asiIds)
+				.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_Attribute_ID, attributeIds)
+				.create()
+				.list()
+				.stream()
+				.collect(Collectors.groupingBy(ai -> AttributeSetInstanceId.ofRepoId(ai.getM_AttributeSetInstance_ID())));
+
+		final ImmutableMap.Builder<AttributeSetInstanceId, ImmutableAttributeSet> result = ImmutableMap.builder();
+		instancesByAsiId.forEach((asiId, instances) -> result.put(asiId, createImmutableAttributeSet(instances)));
+
+		return result.build();
+
 	}
 }

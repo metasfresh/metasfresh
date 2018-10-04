@@ -39,7 +39,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
@@ -72,6 +71,7 @@ import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -158,11 +158,11 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		{
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			piTU_Item_Product_Tomato = helper.assignProduct(piTU_Item,
-					mrpMasterData.pTomato,
+					mrpMasterData.pTomatoId,
 					new BigDecimal("10"),
 					mrpMasterData.pTomato.getC_UOM()); // 10 x Tomato Per TU
 			piTU_Item_Product_Onion = helper.assignProduct(piTU_Item,
-					mrpMasterData.pOnion,
+					mrpMasterData.pOnionId,
 					new BigDecimal("20"),
 					mrpMasterData.pOnion.getC_UOM()); // 20 x Onion Per TU
 
@@ -193,7 +193,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		posHelper.getTerminalContext().registerService(IPOSFiltering.class, ddOrderPOSService);
 
 		// Show all Warehouse Keys in our HU Select POSes
-		final List<I_M_Warehouse> warehousesAll = Services.get(IWarehouseDAO.class).retrieveWarehousesForCtx(helper.ctx);
+		final List<I_M_Warehouse> warehousesAll = Services.get(IWarehouseDAO.class).getAllWarehouses();
 		Check.assumeNotEmpty(warehousesAll, "warehousesAll not empty");
 		posHelper.getPOSAccessBL().setAvailableWarehouses(warehousesAll);
 	}
@@ -289,12 +289,12 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		final I_C_BPartner bpartner = null;
 		final int bpartnerLocationId = 1;
 
-		final I_M_Product cuProduct = tuPIItemProduct.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct,
-				cuProduct,
+				cuProductId,
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU

@@ -52,6 +52,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -466,7 +467,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final LUKey luKey = getSelectedLUKey();
 		final TUKey tuKey = getSelectedTUKey();
 
-		final I_M_Product cuProduct = tuKey.getCuProduct();
+		final ProductId cuProduct = tuKey.getCuProductId();
 
 		final int qtyTU = getQtyTU().intValueExact();
 		final BigDecimal qtyCU = getQtyCU();
@@ -502,7 +503,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		//
 		// CU
-		lutuConfiguration.setM_Product(cuProduct);
+		lutuConfiguration.setM_Product_ID(cuProduct.getRepoId());
 		lutuConfiguration.setC_UOM(tuKey.getCuUOM());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(qtyCU);
@@ -511,15 +512,15 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	private Collection<ILUTUCUKey> createTUKeysForCU(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final Properties ctx = getCtx();
-		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
 
-		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProduct, bpartner);
+		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, bpartner);
 
 		//
 		// Create TU Keys
-		final Map<String, ILUTUCUKey> tuKeys = new LinkedHashMap<String, ILUTUCUKey>();
+		final Map<String, ILUTUCUKey> tuKeys = new LinkedHashMap<>();
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : availableHUPIItemProducts)
 		{
 			final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
@@ -527,7 +528,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 			//
 			// Note that the key already has checks for infinite capacity
-			final ILUTUCUKey tuKey = createTUKey(tuPIItemProduct, tuPI, cuProduct, cuUOM, qtyCUsPerTU);
+			final ILUTUCUKey tuKey = createTUKey(tuPIItemProduct, tuPI, cuProductId, cuUOM, qtyCUsPerTU);
 			final String tuKeyId = tuKey.getId();
 			tuKeys.put(tuKeyId, tuKey);
 		}
@@ -571,7 +572,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	private TUKey createTUKey(
 			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final I_M_HU_PI tuPI,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final I_C_UOM cuUOM,
 			final BigDecimal qtyCUPerTU)
 	{
@@ -585,19 +586,19 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		final boolean qtyCUPerTUInfinite = tuPIItemProduct.isInfiniteCapacity();
 
-		final TUKey tuKey = createTUKey(tuPIItemProduct, tuPI, cuProduct, cuUOMToUse, qtyCUPerTUInfinite, qtyCUPerTU);
+		final TUKey tuKey = createTUKey(tuPIItemProduct, tuPI, cuProductId, cuUOMToUse, qtyCUPerTUInfinite, qtyCUPerTU);
 		return tuKey;
 	}
 
 	private TUKey createTUKey(
 			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final I_M_HU_PI tuPI,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final I_C_UOM cuUOM,
 			final boolean qtyCUPerTUInfinite,
 			final BigDecimal qtyCUPerTU)
 	{
-		final TUKey tuKey = new TUKey(getTerminalContext(), tuPIItemProduct, tuPI, cuProduct, cuUOM, qtyCUPerTUInfinite, qtyCUPerTU);
+		final TUKey tuKey = new TUKey(getTerminalContext(), tuPIItemProduct, tuPI, cuProductId, cuUOM, qtyCUPerTUInfinite, qtyCUPerTU);
 		return tuKey;
 	}
 
@@ -610,12 +611,12 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		}
 
 		final I_M_HU_PI_Item_Product huPIIP = lutuConfiguration.getM_HU_PI_Item_Product();
-		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 		final boolean qtyCUPerTUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = lutuConfiguration.getQtyCU();
 
-		final TUKey tuKey = createTUKey(huPIIP, tuPI, cuProduct, cuUOM, qtyCUPerTUInfinite, qtyCUPerTU);
+		final TUKey tuKey = createTUKey(huPIIP, tuPI, cuProductId, cuUOM, qtyCUPerTUInfinite, qtyCUPerTU);
 		return tuKey;
 	}
 
@@ -627,10 +628,10 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final I_M_HU_PI_Item_Product virtualItemProduct = itemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		final BigDecimal qtyCUsPerTU = Quantity.QTY_INFINITE;
 
-		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
 
-		final TUKey tuKey = createTUKey(virtualItemProduct, virtualPI, cuProduct, cuUOM, qtyCUsPerTU);
+		final TUKey tuKey = createTUKey(virtualItemProduct, virtualPI, cuProductId, cuUOM, qtyCUsPerTU);
 		return tuKey;
 	}
 
@@ -643,7 +644,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
 
-		final Map<String, ILUTUCUKey> luKeys = new LinkedHashMap<String, ILUTUCUKey>(luPIItems.size());
+		final Map<String, ILUTUCUKey> luKeys = new LinkedHashMap<>(luPIItems.size());
 		for (final I_M_HU_PI_Item luPIItem : luPIItems)
 		{
 			final I_M_HU_PI luPI = luPIItem.getM_HU_PI_Version().getM_HU_PI();
@@ -680,7 +681,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		//
 		// Sort
-		final List<ILUTUCUKey> luKeysToReturn = new ArrayList<ILUTUCUKey>(luKeys.values());
+		final List<ILUTUCUKey> luKeysToReturn = new ArrayList<>(luKeys.values());
 		Collections.sort(luKeysToReturn, TerminalKeyByNameComparator.instance);
 
 		//

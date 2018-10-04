@@ -44,7 +44,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.exceptions.HUException;
@@ -226,7 +226,7 @@ import lombok.NonNull;
 
 	private final Map<I_M_Attribute, Object> getInitialAttributeValueDefaults()
 	{
-		return getHUContext().getProperty(Constants.CTXATTR_DefaultAttributesValue);
+		return getHUContext().getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 	}
 
 	@Override

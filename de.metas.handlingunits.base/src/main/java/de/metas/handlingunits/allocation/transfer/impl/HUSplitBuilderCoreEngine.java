@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -29,6 +28,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -234,7 +234,7 @@ public class HUSplitBuilderCoreEngine
 
 			//
 			// Transfer PI Item Product from HU to split to all HUs that we created
-			setM_HU_PI_Item_Product(huToSplit, request.getProduct(), createdHUs);
+			setM_HU_PI_Item_Product(huToSplit, request.getProductId(), createdHUs);
 
 			//
 			// Assign createdHUs to documentLine
@@ -264,9 +264,9 @@ public class HUSplitBuilderCoreEngine
 	 * @param sourceHU
 	 * @param husToConfigure
 	 */
-	private void setM_HU_PI_Item_Product(final I_M_HU sourceHU, final I_M_Product product, final List<I_M_HU> husToConfigure)
+	private void setM_HU_PI_Item_Product(final I_M_HU sourceHU, final ProductId productId, final List<I_M_HU> husToConfigure)
 	{
-		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductToUse(sourceHU, product);
+		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductToUse(sourceHU, productId);
 		if (piip == null)
 		{
 			return;
@@ -276,12 +276,12 @@ public class HUSplitBuilderCoreEngine
 		{
 			if (handlingUnitsBL.isLoadingUnit(hu))
 			{
-				setM_HU_PI_Item_Product(sourceHU, product, handlingUnitsDAO.retrieveIncludedHUs(hu));
+				setM_HU_PI_Item_Product(sourceHU, productId, handlingUnitsDAO.retrieveIncludedHUs(hu));
 				continue;
 			}
 			else if (handlingUnitsBL.isTransportUnit(hu))
 			{
-				setM_HU_PI_Item_Product(sourceHU, product, handlingUnitsDAO.retrieveIncludedHUs(hu));
+				setM_HU_PI_Item_Product(sourceHU, productId, handlingUnitsDAO.retrieveIncludedHUs(hu));
 			}
 
 			if (hu.getM_HU_PI_Item_Product_ID() > 0)
@@ -294,13 +294,13 @@ public class HUSplitBuilderCoreEngine
 		}
 	}
 
-	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductToUse(final I_M_HU hu, final I_M_Product product)
+	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductToUse(final I_M_HU hu, final ProductId productId)
 	{
 		if (tuPIItem == null)
 		{
 			return null;
 		}
-		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(tuPIItem, hu.getC_BPartner(), product, SystemTime.asDate());
+		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(tuPIItem, hu.getC_BPartner(), productId, SystemTime.asDate());
 		return piip;
 	}
 }

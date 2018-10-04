@@ -86,8 +86,6 @@ import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.bpartner.interceptor.C_BPartner_Location;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.i18n.IADMessageDAO;
@@ -163,12 +161,6 @@ public class SwatValidator implements ModelValidator
 		setupTableCacheConfig();
 
 		configDatabase();
-
-		//
-		// Services
-
-		// task FRESH-152: BPartner Stats Updater
-		Services.registerService(IBPartnerStatisticsUpdater.class, new AsyncBPartnerStatisticsUpdater());
 
 		engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 		engine.addModelChange(I_M_InOutLine.Table_Name, this);

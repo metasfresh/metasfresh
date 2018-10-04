@@ -18,7 +18,6 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_Relation_Explicit_v1

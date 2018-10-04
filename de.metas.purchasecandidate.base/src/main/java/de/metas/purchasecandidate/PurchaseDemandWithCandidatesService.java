@@ -17,10 +17,10 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +76,7 @@ public class PurchaseDemandWithCandidatesService
 	private final VendorProductInfoService vendorProductInfoService;
 	private final PurchaseProfitInfoService purchaseProfitInfoService;
 	//
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	public PurchaseDemandWithCandidatesService(
@@ -399,7 +399,7 @@ public class PurchaseDemandWithCandidatesService
 
 	private WarehouseId getPurchaseWarehouseId(final PurchaseDemand purchaseDemand)
 	{
-		final WarehouseId orgWarehousePOId = warehouseDAO.retrieveOrgWarehousePOId(purchaseDemand.getOrgId());
+		final WarehouseId orgWarehousePOId = orgsRepo.getOrgPOWarehouseId(purchaseDemand.getOrgId());
 		if (orgWarehousePOId != null)
 		{
 			return orgWarehousePOId;

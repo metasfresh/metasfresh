@@ -107,10 +107,10 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		final IMutable<I_M_HU> vhu6 = new Mutable<>();
 
 		// split everything from tuHU1 and tuHU2 onto one respective LU each
-		final List<I_M_HU> splitSS1LUs = splitOnLU(tuHU1, pTomato, new BigDecimal("30"));
+		final List<I_M_HU> splitSS1LUs = splitOnLU(tuHU1, pTomatoId, new BigDecimal("30"));
 		assertThat(splitSS1LUs.size(), is(1));
 
-		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSalad, new BigDecimal("10"));
+		final List<I_M_HU> splitSS2LUs = splitOnLU(tuHU2, pSaladId, new BigDecimal("10"));
 		assertThat(splitSS2LUs.size(), is(1));
 
 		final I_M_HU splitSS2LU = splitSS2LUs.get(0); // we split full qty on a palette

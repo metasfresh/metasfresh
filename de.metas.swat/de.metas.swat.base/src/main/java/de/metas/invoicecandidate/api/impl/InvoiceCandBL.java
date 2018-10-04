@@ -66,7 +66,6 @@ import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
@@ -123,6 +122,7 @@ import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
@@ -693,20 +693,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final I_M_Product product = ic.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, product, ic.getPrice_UOM(), qty);
+		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, ic.getPrice_UOM(), qty);
 
-		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}",
-				new Object[] { qty, product.getValue(), qtyInPriceUOM, ic });
+		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}", qty, productId, qtyInPriceUOM, ic);
 
 		if (qtyInPriceUOM == null)
 		{
 			logger.warn("Can't convert qty={} into price-UOM of ic={}; ", qty, ic);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
 			amendSchedulerResult(ic,
-					msgBL.getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qty, ic.getPrice_UOM(), product.getValue() }));
+					msgBL.getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qty, ic.getPrice_UOM(), productName }));
 			ic.setIsError(true);
 		}
 		return qtyInPriceUOM;

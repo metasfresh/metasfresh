@@ -13,7 +13,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.junit.Before;
@@ -40,6 +39,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.impl.InventoryBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -137,7 +137,7 @@ public class HUInternalUseInventoryProducerTests
 			@NonNull final String totalQtyCUStr,
 			final int qtyCUsPerTU)
 	{
-		final I_M_Product cuProduct = data.helper.pTomato;
+		final ProductId cuProductId = data.helper.pTomatoProductId;
 		final I_C_UOM cuUOM = data.helper.uomKg;
 		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
 
@@ -150,12 +150,12 @@ public class HUInternalUseInventoryProducerTests
 		// Custom TU capacity (if specified)
 		if (qtyCUsPerTU > 0)
 		{
-			lutuProducer.addCUPerTU(cuProduct, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
+			lutuProducer.addCUPerTU(cuProductId, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
 		}
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
 				.producer(lutuProducer)
-				.cuProduct(cuProduct)
+				.cuProductId(cuProductId)
 				.loadCuQty(totalQtyCU)
 				.loadCuUOM(cuUOM)
 				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
@@ -199,7 +199,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
 				.producer(producer)
-				.cuProduct(data.helper.pTomato)
+				.cuProductId(data.helper.pTomatoProductId)
 				.loadCuQty(new BigDecimal(strCuQty))
 				.loadCuUOM(data.helper.uomKg)
 				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
@@ -224,7 +224,7 @@ public class HUInternalUseInventoryProducerTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 

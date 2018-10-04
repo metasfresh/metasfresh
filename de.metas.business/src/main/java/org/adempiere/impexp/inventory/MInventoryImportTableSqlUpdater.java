@@ -5,6 +5,8 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_M_Locator;
@@ -132,14 +134,16 @@ public class MInventoryImportTableSqlUpdater
 
 	private I_M_Locator getCreateNewMLocator(@NonNull final I_I_Inventory importRecord)
 	{
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		
 		//
 		//check if exists, because might be created meanwhile
-		final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), importRecord.getM_Warehouse_ID());
-
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(importRecord.getM_Warehouse_ID());
+		final LocatorId locatorId = warehousesRepo.retrieveLocatorIdByValueAndWarehouseId(importRecord.getLocatorValue(), warehouseId);
 		final I_M_Locator locator;
-		if (locatorId > 0)
+		if (locatorId != null)
 		{
-			locator = InterfaceWrapperHelper.load(locatorId, I_M_Locator.class);
+			locator = warehousesRepo.getLocatorById(locatorId);
 		}
 		else
 		{
@@ -147,7 +151,7 @@ public class MInventoryImportTableSqlUpdater
 		}
 
 		locator.setAD_Org_ID(importRecord.getAD_Org_ID());
-		locator.setM_Warehouse_ID(importRecord.getM_Warehouse_ID());
+		locator.setM_Warehouse_ID(warehouseId.getRepoId());
 		locator.setValue(importRecord.getLocatorValue());
 		locator.setX(importRecord.getX());
 		locator.setY(importRecord.getY());
@@ -155,6 +159,7 @@ public class MInventoryImportTableSqlUpdater
 		locator.setX1(importRecord.getX1());
 		locator.setDateLastInventory(importRecord.getDateLastInventory());
 		InterfaceWrapperHelper.save(locator);
+		
 		return locator;
 	}
 

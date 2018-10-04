@@ -31,7 +31,6 @@ import java.util.Map;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -39,8 +38,10 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * {@link IHUStorageDAO} implementation which acts like a save buffer:
@@ -98,11 +99,11 @@ public class SaveDecoupledHUStorageDAO extends AbstractHUStorageDAO
 	private final Object mkHUItemStorageKey(final I_M_HU_Item_Storage huItemStorage)
 	{
 		final int huItemId = huItemStorage.getM_HU_Item_ID();
-		final int productId = huItemStorage.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(huItemStorage.getM_Product_ID());
 		return mkHUItemStorageKey(huItemId, productId);
 	}
 
-	private final Object mkHUItemStorageKey(final int huItemId, final int productId)
+	private final Object mkHUItemStorageKey(final int huItemId, final ProductId productId)
 	{
 		return Util.mkKey(I_M_HU_Item_Storage.Table_Name, huItemId, productId);
 	}
@@ -125,12 +126,12 @@ public class SaveDecoupledHUStorageDAO extends AbstractHUStorageDAO
 	}
 
 	@Override
-	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, final int productId)
+	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, @NonNull final ProductId productId)
 	{
 		I_M_HU_Storage result = null;
 		for (final I_M_HU_Storage storage : retrieveStorages(hu))
 		{
-			if (storage.getM_Product_ID() == productId)
+			if (storage.getM_Product_ID() == productId.getRepoId())
 			{
 				Check.assumeNull(result, "There shall be only one storage for productId={}", productId);
 				result = storage;
@@ -145,7 +146,7 @@ public class SaveDecoupledHUStorageDAO extends AbstractHUStorageDAO
 	{
 		final boolean retrieveIfNotFound = true;
 		final Map<Object, I_M_HU_Storage> huStorages = getHUStorages(hu, retrieveIfNotFound);
-		return new ArrayList<I_M_HU_Storage>(huStorages.values());
+		return new ArrayList<>(huStorages.values());
 	}
 
 	private final Map<Object, I_M_HU_Storage> getHUStorages(final I_M_HU hu, final boolean retrieveIfNotFound)
@@ -244,9 +245,8 @@ public class SaveDecoupledHUStorageDAO extends AbstractHUStorageDAO
 	}
 
 	@Override
-	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item item, final I_M_Product product)
+	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item item, @NonNull final ProductId productId)
 	{
-		final int productId = product.getM_Product_ID();
 		final Object huItemStorageKey = mkHUItemStorageKey(item.getM_HU_Item_ID(), productId);
 		final Map<Object, I_M_HU_Item_Storage> huItemStorages = getHUItemStorages(item, true); // retrieveIfNotFound=true
 

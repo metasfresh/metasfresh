@@ -27,14 +27,15 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.uom.UomId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util.ArrayKey;
 
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.util.ISingletonService;
 
@@ -88,25 +89,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
 
 	/**
-	 * Create grouping key for given shipment schedule.
-	 *
-	 * NOTE: BPartner won't be included in grouping key.
-	 *
-	 * @param sched
-	 * @return key
-	 */
-	ArrayKey mkKeyForGrouping(I_M_ShipmentSchedule sched);
-
-	/**
-	 * Create grouping key for given shipment schedule
-	 *
-	 * @param sched
-	 * @param includeBPartner if <code>true</code>, the effective <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> shall be included in grouping key too.
-	 * @return key
-	 */
-	ArrayKey mkKeyForGrouping(I_M_ShipmentSchedule sched, boolean includeBPartner);
-
-	/**
 	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
 	 *
 	 * @param sched
@@ -135,6 +117,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @return
 	 */
 	I_C_UOM getUomOfProduct(I_M_ShipmentSchedule sched);
+
+	UomId getUomIdOfProduct(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Evaluates if the given shipment schedule's order and effective bPartner allow that different orders' schedules to go into one and the same shipment.
@@ -186,4 +170,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * @param shipmentSchedule
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
+
+	Quantity getQtyToDeliver(I_M_ShipmentSchedule sched);
 }

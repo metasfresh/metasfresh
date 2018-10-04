@@ -28,7 +28,8 @@ import java.math.BigDecimal;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
+
+import de.metas.product.ProductId;
 
 public interface IStorageRecord
 {
@@ -38,7 +39,7 @@ public interface IStorageRecord
 	/** @return summary, user friendly information about this storage line */
 	String getSummary();
 
-	I_M_Product getProduct();
+	ProductId getProductId();
 
 	I_M_Locator getLocator();
 

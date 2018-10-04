@@ -24,8 +24,10 @@ package de.metas.handlingunits;
 
 import java.util.Date;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.ProductId;
 
 /**
  * Query VO to be used when filtering on {@link I_M_HU_PI_Item_Product}.
@@ -43,6 +45,11 @@ public interface IHUPIItemProductQuery
 
 	void setM_Product_ID(final int productId);
 
+	default void setProductId(final ProductId productId)
+	{
+		setM_Product_ID(ProductId.toRepoId(productId));
+	}
+
 	int getC_BPartner_ID();
 
 	/**
@@ -51,6 +58,11 @@ public interface IHUPIItemProductQuery
 	 * @param bpartnerId
 	 */
 	void setC_BPartner_ID(final int bpartnerId);
+
+	default void setBPartnerId(final BPartnerId bpartnerId)
+	{
+		setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+	}
 
 	void setDate(Date date);
 

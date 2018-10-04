@@ -1,6 +1,11 @@
 package org.adempiere.inout.util;
 
 import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.shipping.ShipperId;
 
 public interface IShipmentSchedulesDuringUpdate
 {
@@ -31,7 +36,7 @@ public interface IShipmentSchedulesDuringUpdate
 	 * @param pPartnerAddress
 	 * @return
 	 */
-	public DeliveryGroupCandidate getInOutForOrderId(int orderId, int warehouseId, String bPartnerAddress);
+	public DeliveryGroupCandidate getInOutForOrderId(int orderId, WarehouseId warehouseId, String bPartnerAddress);
 
 	public void addGroup(DeliveryGroupCandidate deliveryGroupCandidate);
 
@@ -43,7 +48,7 @@ public interface IShipmentSchedulesDuringUpdate
 	 * @throws IllegalStateException if no inOut with the given bPartnerLocationId and shipperId has been added
 	 * 
 	 */
-	public DeliveryGroupCandidate getInOutForShipper(int shipperId, int warehouseId, String bPartnerAddress);
+	public DeliveryGroupCandidate getInOutForShipper(Optional<ShipperId> shipperId, WarehouseId warehouseId, String bPartnerAddress);
 
 	public void addLine(DeliveryLineCandidate deliveryLineCandidate);
 

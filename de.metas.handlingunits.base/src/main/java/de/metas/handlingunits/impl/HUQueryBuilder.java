@@ -62,6 +62,7 @@ import org.compiere.model.X_M_Attribute;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
@@ -689,6 +690,13 @@ import lombok.NonNull;
 	}
 
 	@Override
+	public Set<HuId> listIds()
+	{
+		final IQuery<I_M_HU> query = createQuery();
+		return query.listIds(HuId::ofRepoId);
+	}
+
+	@Override
 	public List<I_M_HU> list()
 	{
 		return list(IQuery.NO_LIMIT);
@@ -740,7 +748,6 @@ import lombok.NonNull;
 		return hu;
 	}
 
-	
 	@Override
 	public int count()
 	{
@@ -782,7 +789,7 @@ import lombok.NonNull;
 		Check.assumeNotNull(_contextProvider, "contextProvider not null");
 		return _contextProvider;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder onlyContextClient(final boolean onlyContextClient)
 	{
@@ -876,7 +883,7 @@ import lombok.NonNull;
 		_onlyInLocatorIds.add(locatorId);
 		return this;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<Integer> locatorIds)
 	{
@@ -886,7 +893,6 @@ import lombok.NonNull;
 		}
 		return this;
 	}
-
 
 	private Set<Integer> getOnlyInLocatorIds()
 	{
@@ -1101,7 +1107,7 @@ import lombok.NonNull;
 		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName, I_M_Attribute.class);
 		return addOnlyWithAttribute(attribute, value);
 	}
-	
+
 	@Override
 	public IHUQueryBuilder addOnlyWithAttribute(final AttributeId attributeId, final Object value)
 	{

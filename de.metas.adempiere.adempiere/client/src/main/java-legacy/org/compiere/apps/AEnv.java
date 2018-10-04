@@ -757,10 +757,6 @@ public final class AEnv
 				{
 					s_workflow = Boolean.TRUE;
 				}
-				else
-				{
-					log.info(s_workflow.toString());
-				}
 			}
 			// Get Window
 			if (s_workflow.booleanValue())
@@ -771,8 +767,6 @@ public final class AEnv
 				{
 					s_workflow_Window_ID = 297;	// fallback HARDCODED
 				}
-				// s_workflow = Boolean.FALSE;
-				log.info(s_workflow + ", Window=" + s_workflow_Window_ID);
 			}
 		}
 		return s_workflow.booleanValue();
@@ -846,7 +840,7 @@ public final class AEnv
 		try
 		{
 			s_serverTries++;
-			log.info("try #" + s_serverTries);
+			log.debug("try #{}", s_serverTries);
 			ok = CConnection.get().isAppsServerOK(true);
 			if (ok)
 			{
@@ -889,8 +883,6 @@ public final class AEnv
 	 */
 	public static GridWindowVO getMWindowVO(final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
 	{
-		log.info("Window=" + WindowNo + ", AD_Window_ID=" + AD_Window_ID);
-
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
@@ -900,7 +892,6 @@ public final class AEnv
 			if (mWindowVO != null)
 			{
 				mWindowVO = mWindowVO.clone(WindowNo);
-				log.info("Cached=" + mWindowVO);
 			}
 		}
 
@@ -908,7 +899,6 @@ public final class AEnv
 		// Create Window Model on Client
 		if (mWindowVO == null)
 		{
-			log.info("create local");
 			mWindowVO = GridWindowVO.builder()
 					.ctx(Env.getCtx())
 					.windowNo(WindowNo)
