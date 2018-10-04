@@ -148,6 +148,25 @@ Cypress.Commands.add(
     });
 });
 
+Cypress.Commands.add(
+  'writeIntoCompositeLookupField',
+  (fieldName, partialValue, listValue) => {
+    describe('Enter value into lookup list field', function() {
+      cy.get(`#lookup_${fieldName}`)
+        .within(($el) => {
+          if ($el.find('.raw-lookup-wrapper input').length) {
+            return cy.get('input').type(partialValue);
+          }
+
+          return cy.get('.lookup-dropdown').click();
+        })
+
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', listValue).click();
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+    });
+});
+
 Cypress.Commands.add('selectInListField', (fieldName, listValue) => {
   describe('Select value in list field', function() {
       cy.get(`.form-field-${fieldName}`)
@@ -213,5 +232,20 @@ Cypress.Commands.add('openAdvancedEdit', () => {
 Cypress.Commands.add('selectTab', (tabName) => {
   describe('Select and activate the tab with a certain name', function() {
     return cy.get(`#tab_${tabName}`).click()
+  });
+});
+
+// This command runs a quick actions. If second parameter is truthy, the default action
+// will be executed.
+Cypress.Commands.add('executeQuickAction', (actionName, active) => {
+  describe('Fire a quick action with a certain name', function() {
+    if (!active) {
+      cy.get('.quick-actions-wrapper .btn-inline').click();
+      cy.get('.quick-actions-dropdown').should('exist');
+
+      return cy.get(`#quickAction_${actionName}`).click();
+    }
+
+    return cy.get('.quick-actions-wrapper').click();
   });
 });

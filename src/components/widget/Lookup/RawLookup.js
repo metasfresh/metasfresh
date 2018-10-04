@@ -403,6 +403,7 @@ class RawLookup extends Component {
       disabled,
       tabIndex,
       isOpen,
+      idValue,
     } = this.props;
     const {
       isInputEmpty,
@@ -434,48 +435,52 @@ class RawLookup extends Component {
           },
         ]}
       >
-        <div
-          className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg', {
-            'raw-lookup-disabled': disabled,
-            'input-disabled': readonly,
-            focused: isFocused,
-          })}
-          ref={ref => (this.wrapper = ref)}
-        >
-          <div className={'input-dropdown input-block'}>
-            <div className={'input-editable' + (align ? ' text-' + align : '')}>
-              <input
-                ref={c => (this.inputSearch = c)}
-                type="text"
-                className="input-field js-input-field font-weight-semibold"
-                readOnly={readonly}
-                disabled={readonly && !disabled}
-                tabIndex={tabIndex}
-                placeholder={placeholder}
-                onChange={this.handleChange}
-                onFocus={this.handleFocus}
-              />
+        <div id={idValue || ''}>
+          <div
+            className={classnames('raw-lookup-wrapper raw-lookup-wrapper-bcg', {
+              'raw-lookup-disabled': disabled,
+              'input-disabled': readonly,
+              focused: isFocused,
+            })}
+            ref={ref => (this.wrapper = ref)}
+          >
+            <div className={'input-dropdown input-block'}>
+              <div
+                className={'input-editable' + (align ? ' text-' + align : '')}
+              >
+                <input
+                  ref={c => (this.inputSearch = c)}
+                  type="text"
+                  className="input-field js-input-field font-weight-semibold"
+                  readOnly={readonly}
+                  disabled={readonly && !disabled}
+                  tabIndex={tabIndex}
+                  placeholder={placeholder}
+                  onChange={this.handleChange}
+                  onFocus={this.handleFocus}
+                />
+              </div>
             </div>
           </div>
+          {isOpen &&
+            !isInputEmpty && (
+              <SelectionDropdown
+                loading={loading}
+                options={list}
+                empty="No results found"
+                forceEmpty={forceEmpty}
+                selected={selected}
+                width={
+                  this.props.forcedWidth
+                    ? this.props.forcedWidth
+                    : this.wrapper && this.wrapper.offsetWidth
+                }
+                onChange={this.handleTemporarySelection}
+                onSelect={this.handleSelect}
+                onCancel={this.handleBlur}
+              />
+            )}
         </div>
-        {isOpen &&
-          !isInputEmpty && (
-            <SelectionDropdown
-              loading={loading}
-              options={list}
-              empty="No results found"
-              forceEmpty={forceEmpty}
-              selected={selected}
-              width={
-                this.props.forcedWidth
-                  ? this.props.forcedWidth
-                  : this.wrapper && this.wrapper.offsetWidth
-              }
-              onChange={this.handleTemporarySelection}
-              onSelect={this.handleSelect}
-              onCancel={this.handleBlur}
-            />
-          )}
       </TetherComponent>
     );
   }
