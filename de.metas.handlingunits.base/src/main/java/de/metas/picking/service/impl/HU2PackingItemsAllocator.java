@@ -568,7 +568,7 @@ public class HU2PackingItemsAllocator
 		//
 		// If there was a remaining qty in "itemToPack" then add it back to unpacked items
 		// NOTE: we keep the old object instead of adding "itemToPackRemaining" because if we are not doing like this then subsequent calls to this method, using the same itemToPack will fail
-		if (itemToPack.getQtySum().signum() != 0)
+		if (!itemToPack.getQtySum().isZero())
 		{
 			packingItems.addUnpackedItem(itemToPack);
 		}
