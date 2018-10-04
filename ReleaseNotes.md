@@ -39,6 +39,8 @@ Here come the actual release notes:
     * Fixing the height of Date Fields.
   * [#1985](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1985) Make tooltip icons always visible
     * Showing the Lookup Fields Tooltips now also when the Field is readonly.
+  * [#1987](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1987) Adjustments to tooltip widget
+    * Layout Improvements for the new Tooltip widget.
 
 ## Fixes
 
