@@ -25,10 +25,9 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-
+import de.metas.util.Check;
 import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 
 public class InvoiceCandidateInOutLineToUpdate implements IInvoiceCandidateInOutLineToUpdate

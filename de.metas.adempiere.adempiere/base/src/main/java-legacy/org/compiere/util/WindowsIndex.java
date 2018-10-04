@@ -19,11 +19,11 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IWindowNoAware;
-import org.adempiere.util.Check;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

@@ -31,8 +31,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -55,6 +53,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO
 import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderQualityCalculator;
 import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderReportWriter;
 import de.metas.materialtracking.spi.impl.listeners.PPOrderMaterialTrackingListener;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 @Interceptor(I_PP_Order.class)
 public class PP_Order

@@ -26,9 +26,10 @@ package org.adempiere.mmovement.api;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
+
+import de.metas.util.ISingletonService;
 
 public interface IMovementDAO extends ISingletonService
 {

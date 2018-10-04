@@ -3,12 +3,14 @@ package org.adempiere.ad.dao.cache;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import de.metas.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -99,7 +101,7 @@ public final class CacheInvalidateRequest
 
 	@JsonProperty("id")
 	private final String id;
-	
+
 	@JsonProperty("rootTableName")
 	private final String rootTableName;
 	@JsonProperty("rootRecordId")
@@ -128,6 +130,22 @@ public final class CacheInvalidateRequest
 	public boolean isAll()
 	{
 		return this == ALL;
+	}
+
+	public boolean isAllRecords()
+	{
+		if (!Check.isEmpty(childTableName))
+		{
+			return childRecordId == CacheMgt.RECORD_ID_ALL;
+		}
+		else if (!Check.isEmpty(rootTableName))
+		{
+			return rootRecordId == CacheMgt.RECORD_ID_ALL;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public TableRecordReference getRootRecordOrNull()

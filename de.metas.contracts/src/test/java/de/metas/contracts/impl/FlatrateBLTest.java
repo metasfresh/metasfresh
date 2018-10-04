@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -71,6 +70,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 

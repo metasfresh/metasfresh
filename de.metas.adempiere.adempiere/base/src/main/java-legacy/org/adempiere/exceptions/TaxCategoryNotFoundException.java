@@ -1,6 +1,6 @@
 package org.adempiere.exceptions;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /*
  * #%L

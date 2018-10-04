@@ -10,12 +10,12 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,8 +31,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MTable;
@@ -46,7 +44,13 @@ import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.dunning.model.I_C_DunningDoc_Line;
+import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractDunningDAO implements IDunningDAO
 {
@@ -68,7 +72,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 	{
 		Check.assume(adOrgId >= 0, "adOrgId >= 0");
 
-		final List<I_C_Dunning> result = new ArrayList<I_C_Dunning>();
+		final List<I_C_Dunning> result = new ArrayList<>();
 		final List<I_C_Dunning> dunnings = retrieveDunnings(ctx);
 		for (final I_C_Dunning dunning : dunnings)
 		{
@@ -109,10 +113,10 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 		query.setAD_Table_ID(tableId);
 		query.setRecord_ID(recordId);
 		query.setC_DunningLevels(Collections.singletonList(dunningLevel));
-		
+
 		// 04766 this method is also called from the server side, so for now the check for AD_Client_ID must suffice
 		query.setApplyClientSecurity(true);
-		query.setApplyAccessFilter(ApplyAccessFilter.ACCESS_FILTER_NONE);   
+		query.setApplyAccessFilter(ApplyAccessFilter.ACCESS_FILTER_NONE);
 
 		return retrieveDunningCandidate(context, query);
 	}
@@ -165,11 +169,11 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 		query.setActive(true);
 		query.setAdditionalWhere(additionalWhere);
 		query.setApplyAccessFilter(ApplyAccessFilter.ACCESS_FILTER_RW);
-		
+
 		return retrieveDunningCandidatesIterator(dunningContext, query);
 	}
 
-	
+
 	@Override
 	public final Iterator<I_C_Dunning_Candidate> retrieveNotProcessedCandidatesIteratorByLevel(IDunningContext dunningContext, final I_C_DunningLevel dunningLevel)
 	{
@@ -193,6 +197,31 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 		return retrieveDunningLevels(ctx, dunningId, trxName);
 	}
 
+	@Override
+	public final List<I_C_DunningDoc_Line> retrieveDunningDocLines(@NonNull final I_C_DunningDoc dunningDoc)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_DunningDoc_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_ID, dunningDoc.getC_DunningDoc_ID())
+				.orderBy()
+				.addColumn(I_C_DunningDoc_Line.COLUMN_C_DunningDoc_Line_ID).endOrderBy()
+				.create()
+				.list();
+	}
+
+	@Override
+	public final List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(@NonNull final I_C_DunningDoc_Line line)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_DunningDoc_Line_Source.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_ID, line.getC_DunningDoc_Line_ID())
+				.orderBy()
+				.addColumn(I_C_DunningDoc_Line_Source.COLUMN_C_DunningDoc_Line_Source_ID).endOrderBy()
+				.create()
+				.list();
+	}
+
 	@Cached(cacheName = I_C_DunningLevel.Table_Name + "_for_C_Dunning_ID")
 	/* package */ List<I_C_DunningLevel> retrieveDunningLevels(@CacheCtx Properties ctx, int dunningId, @CacheTrx String trxName)
 	{
@@ -207,7 +236,7 @@ public abstract class AbstractDunningDAO implements IDunningDAO
 			.create()
 			.list();
 	}
-	
+
 	protected abstract List<I_C_Dunning_Candidate> retrieveDunningCandidates(IDunningContext context, IDunningCandidateQuery query);
 
 	protected abstract I_C_Dunning_Candidate retrieveDunningCandidate(IDunningContext context, IDunningCandidateQuery query);

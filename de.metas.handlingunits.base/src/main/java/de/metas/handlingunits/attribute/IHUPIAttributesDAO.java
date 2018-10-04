@@ -26,12 +26,11 @@ package de.metas.handlingunits.attribute;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.ISingletonService;
 
 public interface IHUPIAttributesDAO extends ISingletonService
 {

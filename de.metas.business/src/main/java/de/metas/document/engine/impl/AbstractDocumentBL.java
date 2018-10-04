@@ -1,28 +1,9 @@
 package de.metas.document.engine.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,24 +12,22 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -56,13 +35,18 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.DocumentTableFields;
+import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractDocumentBL implements IDocumentBL
@@ -82,9 +66,14 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
-		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getSpringApplicationContext()
-				.getBeansOfType(DocumentHandlerProvider.class)
-				.values()
+		if (Adempiere.getSpringApplicationContext() == null)
+		{
+			// here we support the case of a unit test that
+			// * doesn't care about DocumentHandlerProviders
+			// * and does not want to do the @SpringBootTest dance
+			return ImmutableMap.of();
+		}
+		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
 		logger.debug("Retrieved providers: {}", providersByTableName);
@@ -110,15 +99,14 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		final IDocument document = getDocument(documentObj);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final String trxName = document.get_TrxName();
+		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
 		final Boolean processed = trxManager.call(trxName, new TrxCallable<Boolean>()
 		{
-
 			@Override
 			public Boolean call() throws Exception
 			{
-				document.set_TrxName(ITrx.TRXNAME_ThreadInherited);
+				setTrxName(document.getDocumentModel(), ITrx.TRXNAME_ThreadInherited, true /* ignoreIfNotHandled */);
 				final boolean processed = processIt0(document, action);
 				if (!processed && throwExIfNotSuccess)
 				{
@@ -140,24 +128,23 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			public void doFinally()
 			{
 				// put back the transaction which document had initially
-				document.set_TrxName(trxName);
+				setTrxName(document.getDocumentModel(), trxName, true /* ignoreIfNotHandled */);
 			}
 		});
 
 		return processed != null && processed.booleanValue();
 	}
 
-	protected boolean processIt0(final IDocument doc, final String action) throws Exception
+	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception
 	{
-		Check.assumeNotNull(doc, "doc not null");
+		Check.assumeNotEmpty(action, "The given 'action' parameter needs to be not-empty");
 
-		//
 		// Guard: save the document if new, else the processing could be corrupted.
-		if (doc.get_ID() <= 0)
+		if (InterfaceWrapperHelper.isNew(doc.getDocumentModel()))
 		{
 			new AdempiereException("Please make sure the document is saved before processing it: " + doc)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
-			InterfaceWrapperHelper.save(doc);
+			InterfaceWrapperHelper.save(doc.getDocumentModel());
 		}
 
 		// Actual document processing
@@ -174,7 +161,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		// IMPORTANT: we need to save 'doc', not 'document', because in case 'document' is a grid tab, then the PO 'doc'
 		// is a different instance. If we save 'document' in that case, the changes to 'doc' will be lost.
-		InterfaceWrapperHelper.save(doc);
+		final Object documentModel = doc.getDocumentModel();
+		InterfaceWrapperHelper.save(documentModel);
 		InterfaceWrapperHelper.refresh(document);
 
 		if (expectedDocStatus != null && !expectedDocStatus.equals(doc.getDocStatus()))
@@ -238,7 +226,47 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return getDocument(document, throwEx);
 	}
 
-	protected abstract IDocument getDocument(final Object document, boolean throwEx);
+	private IDocument getDocument(
+			@Nullable final Object documentObj,
+			final boolean throwEx)
+	{
+		if (documentObj == null)
+		{
+			if (throwEx)
+			{
+				throw new AdempiereException("document is null");
+			}
+			return null;
+		}
+
+		//
+		if (documentObj instanceof IDocument)
+		{
+			return (IDocument)documentObj;
+		}
+
+		final String tableName = InterfaceWrapperHelper.getModelTableNameOrNull(documentObj);
+		final DocumentHandlerProvider handlerProvider = getDocActionHandlerProviderByTableNameOrNull(tableName);
+		if (handlerProvider != null)
+		{
+			final DocumentHandler handler = handlerProvider.provideForDocument(documentObj);
+			final Object documentObjToUse;
+			if (POJOWrapper.isHandled(documentObj))
+			{
+				documentObjToUse = documentObj;
+			}
+			else
+			{
+				// if possible, try to make sure that we work on the PO. Otherwise all changes might get lost when we try to save documentObjToUse after processing.
+				documentObjToUse = InterfaceWrapperHelper.getPO(documentObj);
+			}
+			return DocumentWrapper.wrapModelUsingHandler(documentObjToUse, handler);
+		}
+
+		return getLegacyDocumentOrNull(documentObj, throwEx);
+	}
+
+	protected abstract IDocument getLegacyDocumentOrNull(Object documentObj, boolean throwEx);
 
 	@Override
 	public boolean issDocumentDraftedOrInProgress(final Object document)
@@ -407,44 +435,31 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return false;
 	}
 
-	protected final Timestamp getDocumentDate(final Object model)
+	protected final LocalDate getDocumentDate(final Object model)
 	{
 		if (model == null)
 		{
 			return null;
 		}
 
-		// FIXME: hardcoded... we shall introduce it in IDocument
-
-		if (model instanceof I_C_Invoice)
-		{
-			return ((I_C_Invoice)model).getDateInvoiced();
-		}
-
-		if (model instanceof I_C_Order)
-		{
-			return ((I_C_Order)model).getDateOrdered();
-		}
-
 		if (model instanceof I_C_OrderLine)
 		{
-			return ((I_C_OrderLine)model).getDateOrdered();
+			return TimeUtil.asLocalDate(((I_C_OrderLine)model).getDateOrdered());
 		}
 
-		if (model instanceof I_M_InOut)
+		final IDocument doc = getDocumentOrNull(model);
+		if (doc != null)
 		{
-			return ((I_M_InOut)model).getMovementDate();
+			return doc.getDocumentDate();
 		}
 
-		// in case the log is not made for one of these table,s leave the dateDoc empty
+		// in case the log is not made for one of these tables leave the dateDoc empty
 		return null;
 	}
 
 	@Override
-	public final String getSummary(final Object model)
+	public final String getSummary(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		final IDocument doc = getDocumentOrNull(model);
 		if (doc != null)
 		{

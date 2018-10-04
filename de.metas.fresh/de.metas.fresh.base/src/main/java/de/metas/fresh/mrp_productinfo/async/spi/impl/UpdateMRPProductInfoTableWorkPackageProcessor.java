@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.api.IParams;
 
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -15,6 +14,7 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -46,25 +46,34 @@ public class UpdateMRPProductInfoTableWorkPackageProcessor extends WorkpackagePr
 		@Override
 		protected Properties extractCtxFromItem(final IMRPProductInfoSelector item)
 		{
-			return InterfaceWrapperHelper.getCtx(item.getModelOrNull());
+			return item.getCtx();
 		}
 
 		@Override
 		protected String extractTrxNameFromItem(final IMRPProductInfoSelector item)
 		{
-			return InterfaceWrapperHelper.getTrxName(item.getModelOrNull());
+			return item.getTrxName();
 		}
 
+		/** @return null
+		 */
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final IMRPProductInfoSelector item)
 		{
-			return item.getModelOrNull();
+			return null;
 		}
 
 		@Override
 		protected Map<String, Object> extractParametersFromItem(final IMRPProductInfoSelector item)
 		{
 			return item.asMap();
+		}
+
+		/** @return {@code true} because we don't enqueue elements, just parameters. */
+		@Override
+		protected boolean isEnqueueWorkpackageWhenNoModelsEnqueued()
+		{
+			return true;
 		}
 	};
 

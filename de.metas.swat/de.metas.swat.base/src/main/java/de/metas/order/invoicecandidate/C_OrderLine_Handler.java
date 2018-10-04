@@ -34,8 +34,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Activity;
@@ -65,6 +63,8 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
@@ -364,7 +364,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final GroupId groupId = groupsRepo.extractGroupId(ic);
 			final Group group = groupsRepo.retrieveGroup(groupId);
-			group.updateAllPercentageLines();
+			group.updateAllCompensationLines();
 
 			final GroupCompensationLine compensationLine = group.getCompensationLineById(groupsRepo.extractLineId(ic));
 			priceAndTax.priceEntered(compensationLine.getPrice());

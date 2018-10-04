@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +34,7 @@ import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
+import de.metas.util.Services;
 import lombok.Value;
 import mockit.Expectations;
 import mockit.Injectable;

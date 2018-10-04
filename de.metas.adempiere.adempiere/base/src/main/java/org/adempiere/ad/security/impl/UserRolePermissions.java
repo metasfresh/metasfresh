@@ -62,9 +62,8 @@ import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
@@ -81,11 +80,14 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 @Immutable
 class UserRolePermissions implements IUserRolePermissions
@@ -966,6 +968,14 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
+	public String checkCanCreateNewRecord(int AD_Client_ID, int AD_Org_ID, int AD_Table_ID)
+	{
+		final boolean accessReadWrite = true;
+		final int Record_ID = -1;
+		return checkCanAccessRecord(AD_Client_ID, AD_Org_ID, AD_Table_ID, Record_ID, accessReadWrite);
+	}
+
+	@Override
 	public String checkCanUpdate(final int AD_Client_ID, final int AD_Org_ID, final int AD_Table_ID, final int Record_ID)
 	{
 		final boolean accessReadWrite = true;
@@ -1093,7 +1103,7 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @param optionsCtx
 	 * @param adClientId
 	 */
-	private void retainDocActionsWithAccess(final IDocActionOptionsContext optionsCtx)
+	private void retainDocActionsWithAccess(final DocActionOptionsContext optionsCtx)
 	{
 		final Set<String> docActions = optionsCtx.getDocActions();
 
@@ -1103,26 +1113,26 @@ class UserRolePermissions implements IUserRolePermissions
 			return;
 		}
 
-		final int docTypeId = optionsCtx.getC_DocType_ID();
-		if (docTypeId <= 0)
+		final DocTypeId docTypeId = optionsCtx.getDocTypeId();
+		if (docTypeId == null)
 		{
 			return;
 		}
 
-		final int adClientId = optionsCtx.getAD_Client_ID();
+		final ClientId adClientId = optionsCtx.getAdClientId();
 		final Set<String> allDocActionsAllowed = getAllowedDocActions(adClientId, docTypeId);
 		final Set<String> docActionsAllowed = new LinkedHashSet<>(docActions);
 		docActionsAllowed.retainAll(allDocActionsAllowed);
-		optionsCtx.setDocActions(docActionsAllowed);
+		optionsCtx.setDocActions(ImmutableSet.copyOf(docActionsAllowed));
 	}
 
-	private final Set<String> getAllowedDocActions(final int adClientId, final int docTypeId)
+	private final Set<String> getAllowedDocActions(final ClientId adClientId, final DocTypeId docTypeId)
 	{
 		final ArrayKey key = Util.mkKey(adClientId, docTypeId);
 		return docActionsAllowed.computeIfAbsent(key, (k) -> retrieveAllowedDocActions(adClientId, docTypeId));
 	}
 
-	private final Set<String> retrieveAllowedDocActions(final int adClientId, final int docTypeId)
+	private final Set<String> retrieveAllowedDocActions(final ClientId adClientId, final DocTypeId docTypeId)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		sqlParams.add(adClientId);
@@ -1162,7 +1172,7 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public void applyActionAccess(final IDocActionOptionsContext optionsCtx)
+	public void applyActionAccess(final DocActionOptionsContext optionsCtx)
 	{
 		retainDocActionsWithAccess(optionsCtx);
 
@@ -1181,7 +1191,11 @@ class UserRolePermissions implements IUserRolePermissions
 			{
 				access = null; // legacy
 			}
-			Services.get(IRolePermLoggingBL.class).logDocActionAccess(getAD_Role_ID(), optionsCtx.getC_DocType_ID(), targetDocAction, access);
+			
+			if(optionsCtx.getDocTypeId() != null)
+			{
+				Services.get(IRolePermLoggingBL.class).logDocActionAccess(getAD_Role_ID(), optionsCtx.getDocTypeId(), targetDocAction, access);
+			}
 		}
 
 		optionsCtx.setDocActionToUse(targetDocAction);

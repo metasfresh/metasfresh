@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Payment;
@@ -28,6 +27,8 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 import org.compiere.util.Env;
+
+import de.metas.util.Services;
 
 /**
  * Post Payment Documents.

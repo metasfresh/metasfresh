@@ -37,8 +37,6 @@ import org.adempiere.ad.dao.impl.POJOInSelectionQueryFilter;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
@@ -58,6 +56,8 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.AbstractLockDatabase;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * In-memory locks database

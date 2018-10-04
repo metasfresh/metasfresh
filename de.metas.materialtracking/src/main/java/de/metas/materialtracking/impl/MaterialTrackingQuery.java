@@ -26,9 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.materialtracking.IMaterialTrackingQuery;
+import de.metas.util.Check;
 
 /* package */class MaterialTrackingQuery implements IMaterialTrackingQuery
 {

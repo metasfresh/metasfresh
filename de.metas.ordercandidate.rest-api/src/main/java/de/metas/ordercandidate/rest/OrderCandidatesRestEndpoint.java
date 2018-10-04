@@ -1,5 +1,11 @@
 package de.metas.ordercandidate.rest;
 
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import de.metas.util.web.MetasfreshRestAPIConstants;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -24,7 +30,7 @@ package de.metas.ordercandidate.rest;
 
 public interface OrderCandidatesRestEndpoint
 {
-	String ENDPOINT = "/api/sales/order/candidates";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order/candidates";
 
 	String PATH_BULK = "/bulk";
 
@@ -32,4 +38,5 @@ public interface OrderCandidatesRestEndpoint
 
 	JsonOLCandCreateBulkResponse createOrders(JsonOLCandCreateBulkRequest bulkRequest);
 
+	void attachFile(String olCandExternalId, MultipartFile file) throws IOException;
 }

@@ -2,14 +2,13 @@ package de.metas.payment.grossprofit;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.Services;
-
 import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -50,6 +49,9 @@ public class PaymentProfitPriceActualComponent implements ProfitPriceActualCompo
 		this.paymentTermId = paymentTermId;
 	}
 
+	/**
+	 * Subtracts the expectable payment discount ("Skonto") from the given input.
+	 */
 	@Override
 	public Money applyToInput(@NonNull final Money input)
 	{

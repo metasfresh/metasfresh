@@ -11,11 +11,8 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
-import org.adempiere.util.time.TimeSource;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +32,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import de.metas.util.time.TimeSource;
 import mockit.Expectations;
 import mockit.Injectable;
 

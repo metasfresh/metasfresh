@@ -47,7 +47,6 @@ import java.util.List;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_CostType;
@@ -69,6 +68,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * Roll-UP Bill of Material

@@ -20,10 +20,10 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
 
 /**
  *	Inventory Movement Callouts

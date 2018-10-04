@@ -25,11 +25,11 @@ package de.metas.handlingunits.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.util.Services;
 
 @Validator(I_M_HU_LUTU_Configuration.class)
 public class M_HU_LUTU_Configuration

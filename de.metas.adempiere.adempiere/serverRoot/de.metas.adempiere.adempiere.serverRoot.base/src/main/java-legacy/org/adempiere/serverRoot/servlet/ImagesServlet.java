@@ -21,8 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.adempiere.serverRoot.util.WebEnv;
 import org.adempiere.serverRoot.util.WebUtil;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
@@ -37,6 +35,8 @@ import org.springframework.context.annotation.Profile;
 import com.google.common.base.Optional;
 
 import de.metas.Profiles;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Servlet used to server images directly from our database

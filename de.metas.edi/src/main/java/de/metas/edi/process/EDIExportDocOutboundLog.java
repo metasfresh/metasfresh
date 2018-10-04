@@ -31,7 +31,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
 
@@ -43,21 +42,55 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /**
  * Send EDI documents for selected entries.
  *
  * @author al
  */
-public class EDIExportDocOutboundLog extends JavaProcess
+public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrecondition
 {
 	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
 
 	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	{
+		if (context.getSelectionSize() <= 0)
+		{
+			ProcessPreconditionsResolution.rejectWithInternalReason("nothing selected");
+		}
+		if (context.getSelectionSize() > 500)
+		{
+			// we assume that where are some invoice lines selected
+			ProcessPreconditionsResolution.accept();
+		}
+
+		final boolean anyEDIInvoiceSelected = context.getSelectedModels(I_C_Doc_Outbound_Log.class)
+				.stream()
+				.filter(record -> record.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+				.map(this::loadEDIDocument)
+				.filter(I_EDI_Document_Extension::isEdiEnabled)
+				.findAny()
+				.isPresent();
+		if (!anyEDIInvoiceSelected)
+		{
+			final ITranslatableString reason = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
+			ProcessPreconditionsResolution.reject(reason);
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected void prepare()
@@ -78,7 +111,8 @@ public class EDIExportDocOutboundLog extends JavaProcess
 
 		if (selectionCount == 0)
 		{
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(getCtx(), MSG_No_DocOutboundLog_Selection));
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
+			throw new AdempiereException(msg);
 		}
 	}
 
@@ -97,7 +131,7 @@ public class EDIExportDocOutboundLog extends JavaProcess
 		//
 		// Enqueue selected archives as workpackages
 		final int pInstanceId = getAD_PInstance_ID();
-		final List<I_EDI_Document_Extension> ediDocuments = retrieveValidSelectedDocuments(ctx, pInstanceId, trxName);
+		final List<I_EDI_Document_Extension> ediDocuments = retrieveValidSelectedDocuments(pInstanceId);
 		for (final I_EDI_Document_Extension ediDocument : ediDocuments)
 		{
 			final I_C_Queue_Block block = queue.enqueueBlock(ctx);
@@ -113,14 +147,16 @@ public class EDIExportDocOutboundLog extends JavaProcess
 			ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
 			InterfaceWrapperHelper.save(ediDocument);
 		}
-		return "OK";
+		return MSG_OK;
 	}
 
-	private final List<I_EDI_Document_Extension> retrieveValidSelectedDocuments(final Properties ctx, final int pInstanceId, final String trxName)
+	private final List<I_EDI_Document_Extension> retrieveValidSelectedDocuments(final int pInstanceId)
 	{
+		final Properties ctx = getCtx();
+		final String trxName = getTrxName();
+
 		//
 		// Services
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL
@@ -141,16 +177,13 @@ public class EDIExportDocOutboundLog extends JavaProcess
 		{
 			//
 			// Load EDI document
-			final int logTableId = log.getAD_Table_ID();
-			final int logRecordId = log.getRecord_ID();
-			final String logTableName = adTableDAO.retrieveTableName(logTableId);
-			final I_EDI_Document_Extension ediDocument = InterfaceWrapperHelper.create(ctx, logTableName, logRecordId, I_EDI_Document_Extension.class, trxName);
+			final I_EDI_Document_Extension ediDocument = loadEDIDocument(log);
 
 			//
 			// Only EDI-enabled documents
 			if (!ediDocument.isEdiEnabled())
 			{
-				logger.info("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
+				Loggables.get().addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
 				continue;
 			}
 
@@ -159,32 +192,25 @@ public class EDIExportDocOutboundLog extends JavaProcess
 			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
 			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
 			{
-				logger.info("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				Loggables.get().addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
 				continue;
 			}
 
-//			// @formatter:off
-			// task: 08456: currently, InOuts are aggregated into EDI_Desadv records and exported as such, from the desadv window
-//			if (I_M_InOut.Table_Name.equals(logTableName))
-//			{
-//				final de.metas.edi.model.I_M_InOut inOut = InterfaceWrapperHelper.create(ediDocument, de.metas.edi.model.I_M_InOut.class);
-//				if (Check.isEmpty(inOut.getPOReference()))
-//				{
-//					continue; // POReference is mandatory for EDI DESADV files (desadvBL will fail trx if null POReference enters it)
-//				}
-//				final I_EDI_Desadv desadv = desadvBL.createOrAddToDesadv(inOut);
-//
-//				desadv.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
-//				InterfaceWrapperHelper.save(desadv);
-//
-//				// if the inOut is invalid, then the M_InOut MI will now update the desadv accordingly
-//				InterfaceWrapperHelper.save(inOut);
-//			}
-//			// @formatter:on
-
-			logger.info("Adding ediDocument {}", ediDocument);
+			Loggables.get().addLog("Adding ediDocument {}", ediDocument);
 			filteredDocuments.add(ediDocument);
 		}
 		return filteredDocuments;
+	}
+
+	private I_EDI_Document_Extension loadEDIDocument(final I_C_Doc_Outbound_Log logRecord)
+	{
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
+		final int logTableId = logRecord.getAD_Table_ID();
+		final int logRecordId = logRecord.getRecord_ID();
+		final String logTableName = adTableDAO.retrieveTableName(logTableId);
+		final I_EDI_Document_Extension ediDocument = InterfaceWrapperHelper.create(getCtx(), logTableName, logRecordId, I_EDI_Document_Extension.class, getTrxName());
+
+		return ediDocument;
 	}
 }

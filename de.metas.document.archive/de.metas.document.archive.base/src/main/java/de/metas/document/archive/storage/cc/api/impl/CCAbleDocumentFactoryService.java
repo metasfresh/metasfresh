@@ -28,11 +28,11 @@ import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactory;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.util.Check;
 
 public class CCAbleDocumentFactoryService implements ICCAbleDocumentFactoryService
 {

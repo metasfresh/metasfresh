@@ -34,7 +34,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
@@ -103,6 +102,7 @@ import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public final class Main extends AbstractModuleInterceptor

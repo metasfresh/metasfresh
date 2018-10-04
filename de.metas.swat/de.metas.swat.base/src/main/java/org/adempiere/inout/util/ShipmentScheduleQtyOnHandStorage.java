@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -33,6 +32,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

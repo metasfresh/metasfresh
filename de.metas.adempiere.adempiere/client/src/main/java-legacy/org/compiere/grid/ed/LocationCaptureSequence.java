@@ -4,11 +4,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /*
  * #%L

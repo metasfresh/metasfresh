@@ -8,10 +8,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.NullLoggable;
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 import de.metas.async.api.IAsyncBatchBL;
@@ -19,13 +16,18 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.processor.impl.LoadESRImportFileWorkpackageProcessor;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.NullLoggable;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -110,10 +112,14 @@ public class ESRImportEnqueuer
 		// Create attachment (03928)
 		// attaching the file first, so that it's available for our support, if anything goes wrong
 		{
-			final int fromAttachmentEntryId;
-			if (fromDataSource.getAttachmentEntryId() <= 0)
+			final AttachmentEntryId fromAttachmentEntryId;
+			if (fromDataSource.getAttachmentEntryId() == null)
 			{
-				final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).addEntry(esrImport, fromDataSource.getFilename(), fromDataSource.getContent());
+				final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
+						esrImport,
+						fromDataSource.getFilename(),
+						fromDataSource.getContent());
 				fromAttachmentEntryId = attachmentEntry.getId();
 			}
 			else
@@ -121,7 +127,7 @@ public class ESRImportEnqueuer
 				fromAttachmentEntryId = fromDataSource.getAttachmentEntryId();
 			}
 
-			esrImport.setAD_AttachmentEntry_ID(fromAttachmentEntryId);
+			esrImport.setAD_AttachmentEntry_ID(fromAttachmentEntryId.getRepoId());
 			InterfaceWrapperHelper.save(esrImport);
 		}
 

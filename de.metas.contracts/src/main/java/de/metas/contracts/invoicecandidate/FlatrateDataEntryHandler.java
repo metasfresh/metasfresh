@@ -10,12 +10,12 @@ package de.metas.contracts.invoicecandidate;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -38,6 +36,8 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
@@ -46,13 +46,13 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	{
 		return false;
 	}
-	
+
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return false;
 	}
-	
+
 	/**
 	 * @return empty iterator
 	 */
@@ -138,14 +138,14 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 * <li>DeliveryDate := DateOrdered
 	 * <li>M_InOut_ID: untouched
 	 * </ul>
-	 * 
+	 *
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
 		// note: we can assume that #setQtyOrdered() was already called
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 

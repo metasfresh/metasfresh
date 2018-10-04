@@ -2,8 +2,7 @@ package de.metas.material.cockpit.stock;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
-
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 

@@ -2,7 +2,6 @@ package de.metas.vertical.pharma;
 
 import java.util.Collections;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
@@ -14,6 +13,7 @@ import de.metas.order.IOrderLineInputValidator;
 import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineInputValidatorResults.OrderLineInputValidatorResultsBuilder;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

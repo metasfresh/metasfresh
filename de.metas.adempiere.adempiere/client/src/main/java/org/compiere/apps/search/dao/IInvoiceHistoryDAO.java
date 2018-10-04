@@ -25,8 +25,9 @@ package org.compiere.apps.search.dao;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.apps.search.dao.impl.OrderLineHistoryVO;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Used in gathering invoicing information

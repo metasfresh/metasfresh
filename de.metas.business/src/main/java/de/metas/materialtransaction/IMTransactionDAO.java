@@ -25,8 +25,9 @@ package de.metas.materialtransaction;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Transaction;
+
+import de.metas.util.ISingletonService;
 
 public interface IMTransactionDAO extends ISingletonService
 {

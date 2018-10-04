@@ -26,8 +26,6 @@ package de.metas.edi.api.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.model.X_M_InOut;
@@ -42,6 +40,8 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.model.X_C_OLCand;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class EDIInvoiceCandBL implements IEDIInvoiceCandBL
 {

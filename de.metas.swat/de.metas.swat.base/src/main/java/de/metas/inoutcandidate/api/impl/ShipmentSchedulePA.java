@@ -44,15 +44,18 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
+import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
+import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.IDBService;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -82,6 +85,8 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipmentSchedulePA implements IShipmentSchedulePA
@@ -944,6 +949,23 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final int result = DB.executeUpdateEx(sql, trxName);
 		logger.debug("Deleted {} {} entries for AD_Pinstance_ID={}", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, adPInstanceId);
+
+		// invalidate the shipment schedule cache after commit
+		Services.get(ITrxManager.class)
+				.getTrxListenerManagerOrAutoCommit(trxName)
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> invalidateShipmentScheduleCache());
+	}
+
+	private void invalidateShipmentScheduleCache()
+	{
+		final CacheInvalidateMultiRequest //
+		multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+
+		final IModelCacheInvalidationService //
+		modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	@Override

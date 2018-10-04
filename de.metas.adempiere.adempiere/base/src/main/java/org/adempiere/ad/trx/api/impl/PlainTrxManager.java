@@ -27,8 +27,9 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * This implementation is intended for unit and module testing in scenarios where you want the trxManager to get out of the way.

@@ -52,8 +52,6 @@ import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
@@ -71,9 +69,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.report.IJasperServiceRegistry;
-import org.compiere.report.IJasperServiceRegistry.ServiceType;
-import org.compiere.report.impl.JasperService;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -90,7 +85,6 @@ import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
 import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
-import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.bpartner.interceptor.C_BPartner_Location;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
@@ -113,8 +107,12 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
+import de.metas.report.ReportStarter;
+import de.metas.report.jasper.client.JRClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Model Validator for SWAT general features
@@ -306,16 +304,9 @@ public class SwatValidator implements ModelValidator
 			}
 		}
 
-		// 08284: register our default old-school service for all service types.
-		// we expect the printing module to register the real MASS_PRINT_FRAMEWORK service and replace JasperService for that service type
+		if (Ini.isClient())
 		{
-			final IJasperServiceRegistry jasperServiceRegistry = Services.get(IJasperServiceRegistry.class);
-			jasperServiceRegistry.registerJasperService(ServiceType.DIRECT_PRINT_FRAMEWORK, new JasperService());
-			if (!jasperServiceRegistry.isRegisteredServiceFor(ServiceType.MASS_PRINT_FRAMEWORK))
-			{
-				// fallback
-				jasperServiceRegistry.registerJasperService(ServiceType.MASS_PRINT_FRAMEWORK, new JasperService());
-			}
+			ReportStarter.setSwingViewerProvider(new org.compiere.report.SwingJRViewerProvider());
 		}
 
 		// task 09232

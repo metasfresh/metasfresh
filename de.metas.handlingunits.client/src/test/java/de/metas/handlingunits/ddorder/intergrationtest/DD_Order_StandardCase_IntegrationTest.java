@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_OrderLine;
@@ -49,6 +48,7 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.expectations.PackingMaterialsExpectation;
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.util.collections.CollectionUtils;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = HandlingUnitsConfiguration.class)

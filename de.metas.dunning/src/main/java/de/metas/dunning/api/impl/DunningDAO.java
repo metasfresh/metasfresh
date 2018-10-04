@@ -10,18 +10,17 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -45,9 +43,9 @@ import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
 
 public class DunningDAO extends AbstractDunningDAO
 {
@@ -105,7 +103,7 @@ public class DunningDAO extends AbstractDunningDAO
 		final String trxName = context.getTrxName();
 
 		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		if (query.getAD_Table_ID() > 0 && query.getRecord_ID() >= 0)
 		{
@@ -175,7 +173,7 @@ public class DunningDAO extends AbstractDunningDAO
 			sqlQuery.setApplyAccessFilter(true);
 		}
 		// 04766: end
-		
+
 		sqlQuery.setOrderBy(I_C_Dunning_Candidate.COLUMNNAME_C_Dunning_Candidate_ID);
 
 		return sqlQuery;
@@ -197,40 +195,6 @@ public class DunningDAO extends AbstractDunningDAO
 	}
 
 	@Override
-	public List<I_C_DunningDoc_Line> retrieveDunningDocLines(IDunningContext context, I_C_DunningDoc dunningDoc)
-	{
-		final Properties ctx = context.getCtx();
-		final String trxName = context.getTrxName();
-
-		final String whereClause = I_C_DunningDoc_Line.COLUMNNAME_C_DunningDoc_ID + "=?";
-
-		final List<Object> params = new ArrayList<Object>();
-		params.add(dunningDoc.getC_DunningDoc_ID());
-
-		return new Query(ctx, I_C_DunningDoc_Line.Table_Name, whereClause, trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.list(I_C_DunningDoc_Line.class);
-	}
-
-	@Override
-	public List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(IDunningContext context, I_C_DunningDoc_Line line)
-	{
-		final Properties ctx = context.getCtx();
-		final String trxName = context.getTrxName();
-
-		final String whereClause = I_C_DunningDoc_Line_Source.COLUMNNAME_C_DunningDoc_Line_ID + "=?";
-
-		final List<Object> params = new ArrayList<Object>();
-		params.add(line.getC_DunningDoc_Line_ID());
-
-		return new Query(ctx, I_C_DunningDoc_Line_Source.Table_Name, whereClause, trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.list(I_C_DunningDoc_Line_Source.class);
-	}
-
-	@Override
 	public boolean isStaled(I_C_Dunning_Candidate candidate)
 	{
 		// NOTE: staled is a virtual column
@@ -240,7 +204,7 @@ public class DunningDAO extends AbstractDunningDAO
 	@Override
 	public Iterator<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSourcesToWriteOff(final IDunningContext dunningContext)
 	{
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
 
 		whereClause.append(I_C_DunningDoc_Line_Source.COLUMNNAME_Processed).append("=?");
@@ -262,7 +226,7 @@ public class DunningDAO extends AbstractDunningDAO
 
 	/**
 	 * Deletes all active, unprocessed candidates of the given level via DELETE sql statment.
-	 * 
+	 *
 	 * @param context
 	 * @param dunningLevel
 	 * @return the number of deleted candidates
@@ -270,13 +234,12 @@ public class DunningDAO extends AbstractDunningDAO
 	@Override
 	public int deleteNotProcessedCandidates(final IDunningContext context, final I_C_DunningLevel dunningLevel)
 	{
-		final String deleteSQL =
-				"DELETE FROM " + I_C_Dunning_Candidate.Table_Name +
-						" WHERE "
-						+ I_C_Dunning_Candidate.COLUMNNAME_IsActive + "='Y' AND "
-						+ I_C_Dunning_Candidate.COLUMNNAME_AD_Client_ID + "=? AND "
-						+ I_C_Dunning_Candidate.COLUMNNAME_Processed + "='N' AND "
-						+ I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID + "=?";
+		final String deleteSQL = "DELETE FROM " + I_C_Dunning_Candidate.Table_Name +
+				" WHERE "
+				+ I_C_Dunning_Candidate.COLUMNNAME_IsActive + "='Y' AND "
+				+ I_C_Dunning_Candidate.COLUMNNAME_AD_Client_ID + "=? AND "
+				+ I_C_Dunning_Candidate.COLUMNNAME_Processed + "='N' AND "
+				+ I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID + "=?";
 
 		final int[] result = { 0 };
 
@@ -290,7 +253,8 @@ public class DunningDAO extends AbstractDunningDAO
 		});
 		return result[0];
 	}
-	
+
+	@Override
 	public List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(final Properties ctx, final int tableId, final int recordId, final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder();

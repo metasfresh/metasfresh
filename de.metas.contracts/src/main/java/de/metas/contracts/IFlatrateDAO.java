@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
@@ -43,6 +42,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ISingletonService;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -191,6 +191,8 @@ public interface IFlatrateDAO extends ISingletonService
 	 */
 	List<I_C_Flatrate_Conditions> retrieveConditions(Properties ctx);
 
+	int getFlatrateConditionsIdByName(String name);
+
 	List<I_C_Flatrate_Transition> retrieveTransitionsForCalendar(I_C_Calendar calendar);
 
 	List<I_C_Flatrate_DataEntry> retrieveDataEntriesForProduct(org.compiere.model.I_M_Product product);
@@ -225,5 +227,4 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 
 	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(I_C_Flatrate_Term contract);
-
 }

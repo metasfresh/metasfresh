@@ -9,9 +9,10 @@ import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
-import org.adempiere.util.Check;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CButton;
+
+import de.metas.util.Check;
 
 /*
  * #%L

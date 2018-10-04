@@ -30,10 +30,11 @@ import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.model.I_AD_MigrationStep;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.db.CConnection;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+
+import de.metas.util.Check;
 
 public class SQLStatementMigrationStepExecutor extends AbstractMigrationStepExecutor
 {

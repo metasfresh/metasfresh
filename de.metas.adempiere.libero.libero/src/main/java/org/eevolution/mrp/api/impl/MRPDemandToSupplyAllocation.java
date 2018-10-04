@@ -25,9 +25,10 @@ package org.eevolution.mrp.api.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Check;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
+
+import de.metas.util.Check;
 
 /* package */class MRPDemandToSupplyAllocation implements IMRPDemandToSupplyAllocation
 {

@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
@@ -47,6 +46,7 @@ import de.metas.adempiere.util.CacheModel;
 import de.metas.adempiere.util.CacheModelId;
 import de.metas.adempiere.util.CacheReloadIfTrue;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.util.Check;
 
 /* package */final class CachedMethodDescriptor
 {

@@ -2,9 +2,8 @@ package de.metas.elasticsearch.scheduler;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

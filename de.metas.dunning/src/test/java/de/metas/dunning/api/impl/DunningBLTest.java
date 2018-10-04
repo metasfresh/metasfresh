@@ -10,24 +10,22 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,9 +33,9 @@ import org.junit.Test;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.exception.DunningException;
-import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.PlainDunningConfigurator;
+import de.metas.util.time.SystemTime;
 
 public class DunningBLTest extends DunningTestBase
 {
@@ -131,18 +129,6 @@ public class DunningBLTest extends DunningTestBase
 
 		candidate.setIsActive(false);
 		dunningBL.validate(candidate);
-	}
-
-	@Test(expected = DunningException.class)
-	public void test_processDunningDoc_alreadyProcessed()
-	{
-		final PlainDunningContext context = createPlainDunningContext();
-
-		final I_C_DunningDoc dunningDoc = dao.newInstance(context, I_C_DunningDoc.class);
-		dunningDoc.setProcessed(true);
-		InterfaceWrapperHelper.save(dunningDoc);
-
-		dunningBL.processDunningDoc(context, dunningDoc);
 	}
 
 	@Test

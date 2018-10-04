@@ -20,8 +20,9 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.time.SystemTime;
 
 /**
  * Price List Version Model

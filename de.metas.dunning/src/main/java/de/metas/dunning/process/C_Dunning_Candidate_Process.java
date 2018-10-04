@@ -13,20 +13,16 @@ package de.metas.dunning.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
-
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -41,6 +37,8 @@ import de.metas.dunning.api.impl.AbstractDunningCandidateSource;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates
@@ -120,7 +118,7 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 
 		dunningBL.processCandidates(context, source);
 
-		return "OK";
+		return MSG_OK;
 	}
 
 	/**
@@ -135,7 +133,6 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 
 		public SelectedDunningCandidatesSource(final String whereClause)
 		{
-			super();
 			this.whereClause = whereClause;
 		}
 

@@ -10,7 +10,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -22,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

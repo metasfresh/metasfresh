@@ -37,13 +37,14 @@ import javax.swing.table.TableCellRenderer;
 
 import org.adempiere.ui.IContextMenuActionContext;
 import org.adempiere.ui.IContextMenuProvider;
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.VCellRenderer;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTable;
 import org.compiere.util.DisplayType;
+
+import de.metas.util.Services;
 
 /**
  * VTable Mouse Listner

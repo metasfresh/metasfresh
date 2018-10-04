@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,7 +44,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

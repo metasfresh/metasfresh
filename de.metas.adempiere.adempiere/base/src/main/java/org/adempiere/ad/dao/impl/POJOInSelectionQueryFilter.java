@@ -25,7 +25,8 @@ package org.adempiere.ad.dao.impl;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+
+import de.metas.util.Check;
 
 /**
  * Accepts only the records which are in selection (see {@link POJOLookupMap#isInSelection(int, int)}.

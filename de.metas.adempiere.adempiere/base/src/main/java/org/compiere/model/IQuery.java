@@ -49,9 +49,12 @@ import org.adempiere.model.ModelColumn;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.lang.RepoIdAware;
 import lombok.Getter;
+import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -124,7 +127,7 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	<ET extends T> Map<Integer, ET> mapById(Class<ET> clazz) throws DBException;
-	
+
 	default Map<Integer, T> mapById() throws DBException
 	{
 		return mapById(getModelClass());
@@ -161,7 +164,7 @@ public interface IQuery<T>
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Return first model that match query criteria. If there are more records that match criteria an exception will be thrown.
+	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
 	 *
 	 * @return first PO or null.
 	 * @throws DBMoreThenOneRecordsFoundException
@@ -414,6 +417,11 @@ public interface IQuery<T>
 	 */
 	List<Integer> listIds();
 
+	default <ID extends RepoIdAware> ImmutableSet<ID> listIds(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return listIds().stream().map(idMapper).collect(ImmutableSet.toImmutableSet());
+	}
+	
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *

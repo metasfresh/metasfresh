@@ -28,12 +28,12 @@ package de.metas.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg
@@ -90,9 +90,12 @@ public interface ICountryDAO extends ISingletonService
 
 	I_C_Country retrieveCountryByCountryCode(String countryCode);
 
+	int getCountryIdByCountryCode(String countryCode);
+
 	String retrieveCountryCode2ByCountryId(int countryId);
 
 	String retrieveCountryCode3ByCountryId(int countryId);
 
 	ITranslatableString getCountryNameById(int countryId);
+
 }

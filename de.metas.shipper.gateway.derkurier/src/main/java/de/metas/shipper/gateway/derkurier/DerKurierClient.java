@@ -5,11 +5,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.report.IJasperService;
 import org.compiere.util.Env;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.print.IPrintService;
 import de.metas.process.ProcessInfo;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
@@ -38,6 +35,9 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -216,7 +216,7 @@ public class DerKurierClient implements ShipperGatewayClient
 					.setAD_Process_ID(adProcessId)
 					.setRecord(deliveryOrderTableRecordReference) // we want the jasper to be archived and attached to the delivery order
 					.addParameter(
-							IJasperService.PARAM_PrintCopies,
+							IPrintService.PARAM_PrintCopies,
 							1)
 					.addParameter(
 							I_DerKurier_DeliveryOrderLine.COLUMNNAME_DerKurier_DeliveryOrderLine_ID,

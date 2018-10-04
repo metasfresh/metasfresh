@@ -30,7 +30,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * {@link PropertyChangeSupport} like implementations which is capable to memorize events for a while, when activated by {@link #blockEvents()} and then release all together by

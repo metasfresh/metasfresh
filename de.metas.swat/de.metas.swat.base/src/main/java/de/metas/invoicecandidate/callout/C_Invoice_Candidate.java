@@ -31,7 +31,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -47,6 +46,7 @@ import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.Group;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.Services;
 
 @Callout(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -153,7 +153,7 @@ public class C_Invoice_Candidate
 		final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
 
 		final Group group = groupsRepo.createPartialGroupFromCompensationLine(ic);
-		group.updateAllPercentageLines();
+		group.updateAllCompensationLines();
 
 		final InvoiceCandidatesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(ic);
 		groupsRepo.saveGroup(group, orderLinesStorage);

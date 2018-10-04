@@ -26,8 +26,6 @@ package de.metas.invoicecandidate.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.NumberUtils;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
@@ -38,6 +36,8 @@ import org.compiere.model.I_M_AttributeInstance;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 
 @VisibleForTesting
 public final class InvoiceLineAttribute implements IInvoiceLineAttribute

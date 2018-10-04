@@ -1,8 +1,6 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 
@@ -12,6 +10,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.order.IOrderBL;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 {

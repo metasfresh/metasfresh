@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.IQuery;
@@ -16,6 +15,7 @@ import org.compiere.util.Env;
 import de.metas.dlm.Partition.WorkQueue;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
+import de.metas.util.Services;
 
 /*
  * #%L

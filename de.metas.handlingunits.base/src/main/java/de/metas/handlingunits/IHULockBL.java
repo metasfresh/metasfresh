@@ -3,10 +3,10 @@ package de.metas.handlingunits;
 import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

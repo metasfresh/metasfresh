@@ -27,13 +27,13 @@ package de.metas.adempiere.addon;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.adempiere.util.Services;
 import org.junit.Test;
 
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.adempiere.service.impl.PackagingBL;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.impl.PackagingDAO;
+import de.metas.util.Services;
 
 public class PackingAddonTest {
 

@@ -2,10 +2,10 @@ package de.metas.lock.api.impl;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.util.Services;
 
 /**
  * An {@link ILockAutoCloseable} implementation which when {@link #close()} is called it will

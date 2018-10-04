@@ -5,11 +5,8 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.report.IJasperService;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
@@ -17,7 +14,10 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.i18n.Language;
+import de.metas.print.IPrintService;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -139,7 +139,7 @@ public class HUReceiptScheduleReportExecutor
 				.setReportLanguage(bpartnerLaguage)
 				.addParameter(PARA_C_Orderline_ID, orderLineId)
 				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
-				.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
+				.addParameter(IPrintService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
 
 				//
 				// Execute report in a new AD_PInstance

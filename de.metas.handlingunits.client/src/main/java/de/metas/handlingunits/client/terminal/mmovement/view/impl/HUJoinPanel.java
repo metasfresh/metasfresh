@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
@@ -39,6 +37,7 @@ import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUMergeModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.MergeType;
+import de.metas.util.Check;
 
 public final class HUJoinPanel extends AbstractLTCUPanel<HUJoinModel>
 {

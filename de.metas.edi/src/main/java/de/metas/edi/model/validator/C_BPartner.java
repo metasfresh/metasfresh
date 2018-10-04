@@ -28,12 +28,12 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.IEDIInvoiceCandDAO;
 import de.metas.edi.model.I_C_BPartner;
+import de.metas.util.Services;
 
 @Validator(I_C_BPartner.class)
 public class C_BPartner

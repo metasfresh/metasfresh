@@ -1,6 +1,12 @@
 package de.metas.email;
 
-import org.adempiere.util.Check;
+import org.adempiere.service.ClientId;
+import org.adempiere.user.UserId;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import de.metas.util.Check;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,6 +44,7 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @ToString(exclude = "password")
 public final class Mailbox
@@ -62,9 +69,9 @@ public final class Mailbox
 	@JsonProperty("sendFromServer")
 	private final boolean sendFromServer;
 	@JsonProperty("adClientId")
-	private final int adClientId;
+	private final ClientId adClientId;
 	@JsonProperty("adUserId")
-	private final int adUserId;
+	private final UserId adUserId;
 	@JsonProperty("columnUserTo")
 	private final String columnUserTo;
 
@@ -79,8 +86,8 @@ public final class Mailbox
 			@JsonProperty("smtpAuthorization") final boolean smtpAuthorization,
 			@JsonProperty("startTLS") final boolean startTLS,
 			@JsonProperty("sendFromServer") final boolean sendFromServer,
-			@JsonProperty("adClientId") final int adClientId,
-			@JsonProperty("adUserId") final int adUserId,
+			@JsonProperty("adClientId") final ClientId adClientId,
+			@JsonProperty("adUserId") final UserId adUserId,
 			@JsonProperty("columnUserTo") final String columnUserTo)
 	{
 		Check.assumeNotEmpty(smtpHost, "smtpHost is not empty");
@@ -103,7 +110,7 @@ public final class Mailbox
 		}
 
 		this.startTLS = startTLS;
-		
+
 		this.sendFromServer = sendFromServer;
 		this.adClientId = adClientId;
 		this.adUserId = adUserId;

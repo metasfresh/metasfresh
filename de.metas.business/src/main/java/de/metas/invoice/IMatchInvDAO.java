@@ -27,11 +27,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
+
+import de.metas.util.ISingletonService;
 
 public interface IMatchInvDAO extends ISingletonService
 {

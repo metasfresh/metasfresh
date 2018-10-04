@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.adempiere.util.IService;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.junit.Assert;
@@ -36,6 +35,8 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+
+import de.metas.util.IService;
 
 /**
  * Helper class used to test and make sure ALL classes and methods from current classpath are correctly annotated with {@link Cached}.

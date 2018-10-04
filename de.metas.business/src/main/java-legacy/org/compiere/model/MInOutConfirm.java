@@ -20,27 +20,29 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *	Shipment Confirmation Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MInOutConfirm.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  * 			<li>BF [ 2800460 ] System generate Material Receipt with no lines
  * 				https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2800460&group_id=176962
@@ -48,7 +50,7 @@ import de.metas.logging.LogManager;
 public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5270365186462536874L;
 
@@ -64,9 +66,8 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		if (checkExisting)
 		{
 			MInOutConfirm[] confirmations = ship.getConfirmations(false);
-			for (int i = 0; i < confirmations.length; i++)
+			for (MInOutConfirm confirm : confirmations)
 			{
-				MInOutConfirm confirm = confirmations[i];
 				if (confirm.getConfirmType().equals(confirmType))
 				{
 					s_log.info("create - existing: " + confirm);
@@ -78,9 +79,8 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		MInOutConfirm confirm = new MInOutConfirm (ship, confirmType);
 		confirm.saveEx();
 		MInOutLine[] shipLines = ship.getLines();
-		for (int i = 0; i < shipLines.length; i++)
+		for (MInOutLine sLine : shipLines)
 		{
-			MInOutLine sLine = shipLines[i];
 			MInOutLineConfirm cLine = new MInOutLineConfirm (confirm);
 			cLine.setInOutLine(sLine);
 			cLine.saveEx();
@@ -88,10 +88,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		s_log.info("New: " + confirm);
 		return confirm;
 	}	//	MInOutConfirm
-	
+
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MInOutConfirm.class);
-	
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -136,7 +136,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		setM_InOut_ID (ship.getM_InOut_ID());
 		setConfirmType (confirmType);
 	}	//	MInOutConfirm
-	
+
 	/**	Confirm Lines					*/
 	private MInOutLineConfirm[]	m_lines = null;
 	/** Credit Memo to create			*/
@@ -163,7 +163,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		list.toArray (m_lines);
 		return m_lines;
 	}	//	getLines
-	
+
 	/**
 	 * 	Add to Description
 	 *	@param description text
@@ -176,7 +176,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		else
 			setDescription(desc + " | " + description);
 	}	//	addDescription
-	
+
 	/**
 	 * 	Get Name of ConfirmType
 	 *	@return confirm type
@@ -185,7 +185,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 	{
 		return MRefList.getListName (getCtx(), CONFIRMTYPE_AD_Reference_ID, getConfirmType());
 	}	//	getConfirmTypeName
-	
+
 	/**
 	 * 	String Representation
 	 *	@return info
@@ -198,7 +198,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
-	
+
 	/**
 	 * 	Get Document Info
 	 *	@return document info (untranslated)
@@ -252,7 +252,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		{
 			int AD_User_ID = Env.getAD_User_ID(getCtx());
 			I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), AD_User_ID);
-			String info = user.getName() 
+			String info = user.getName()
 				+ ": "
 				+ Msg.translate(getCtx(), "IsApproved")
 				+ " - " + new Timestamp(System.currentTimeMillis());
@@ -260,8 +260,8 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		}
 		super.setIsApproved (IsApproved);
 	}	//	setIsApproved
-	
-	
+
+
 	/**************************************************************************
 	 * 	Process document
 	 *	@param processAction document action
@@ -273,7 +273,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
-	
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -281,7 +281,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 
 	/**
 	 * 	Unlock Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean unlockIt()
@@ -290,10 +290,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
-	
+
 	/**
 	 * 	Invalidate Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean invalidateIt()
@@ -302,10 +302,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	//	invalidateIt
-	
+
 	/**
 	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid) 
+	 * 	@return new status (In Progress or Invalid)
 	 */
 	@Override
 	public String prepareIt()
@@ -325,7 +325,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			return DocAction.STATUS_Invalid;
 		}
 		**/
-		
+
 		MInOutLineConfirm[] lines = getLines(true);
 		if (lines.length == 0)
 		{
@@ -353,10 +353,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
-	
+
 	/**
 	 * 	Approve Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean  approveIt()
@@ -365,10 +365,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
-	
+
 	/**
 	 * 	Reject Approval
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean rejectIt()
@@ -377,7 +377,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
-	
+
 	/**
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
@@ -392,11 +392,11 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
-		
+
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
@@ -404,7 +404,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		//
 		MInOut inout = new MInOut (getCtx(), getM_InOut_ID(), get_TrxName());
 		MInOutLineConfirm[] lines = getLines(false);
-		
+
 		//	Check if we need to split Shipment
 		if (isInDispute())
 		{
@@ -420,11 +420,11 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 				m_lines = null;
 			}
 		}
-		
+
 		//	All lines
-		for (int i = 0; i < lines.length; i++)
+		for (MInOutLineConfirm line : lines)
 		{
-			MInOutLineConfirm confirmLine = lines[i];
+			MInOutLineConfirm confirmLine = line;
 			confirmLine.set_TrxName(get_TrxName());
 			if (!confirmLine.processLine (inout.isSOTrx(), getConfirmType()))
 			{
@@ -457,11 +457,11 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		if (m_inventory != null)
 			m_processMsg += " @M_Inventory_ID@=" + m_inventory.getDocumentNo();
 
-		
+
 		//	Try to complete Shipment
 	//	if (inout.processIt(DocAction.ACTION_Complete))
 	//		m_processMsg = "@M_InOut_ID@ " + inout.getDocumentNo() + ": @Completed@";
-		
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -484,10 +484,9 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 	private void splitInOut (MInOut original, int C_DocType_ID, MInOutLineConfirm[] confirmLines)
 	{
 		MInOut split = null;
-		//	Go through confirmations 
-		for (int i = 0; i < confirmLines.length; i++)
+		//	Go through confirmations
+		for (MInOutLineConfirm confirmLine : confirmLines)
 		{
-			MInOutLineConfirm confirmLine = confirmLines[i];
 			BigDecimal differenceQty = confirmLine.getDifferenceQty();
 			if (differenceQty.compareTo(Env.ZERO) == 0)
 				continue;
@@ -530,7 +529,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			confirmLine.setDifferenceQty(Env.ZERO);
 			confirmLine.saveEx();
 		}	//	for all confirmations
-		
+
 		// Nothing to split
 		if (split == null)
 		{
@@ -564,9 +563,8 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			m_processMsg += splitConfirms[index].getDocumentNo();
 			//	Set Lines to unconfirmed
 			MInOutLineConfirm[] splitConfirmLines = splitConfirms[index].getLines(false);
-			for (int i = 0; i < splitConfirmLines.length; i++)
+			for (MInOutLineConfirm splitConfirmLine : splitConfirmLines)
 			{
-				MInOutLineConfirm splitConfirmLine = splitConfirmLines[i];
 				splitConfirmLine.setScrappedQty(Env.ZERO);
 				splitConfirmLine.setConfirmedQty(Env.ZERO);
 				splitConfirmLine.saveEx();
@@ -574,10 +572,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		}
 		else
 			m_processMsg += "??";
-		
+
 	}	//	splitInOut
 
-	
+
 	/**
 	 * 	Create Difference Document
 	 * 	@param inout shipment/receipt
@@ -614,7 +612,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			line.saveEx();
 			confirm.setC_InvoiceLine_ID(line.getC_InvoiceLine_ID());
 		}
-		
+
 		//	Create Inventory Difference
 		if (confirm.getScrappedQty().signum() != 0)
 		{
@@ -628,7 +626,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 				setM_Inventory_ID(m_inventory.getM_Inventory_ID());
 			}
 			MInOutLine ioLine = confirm.getLine();
-			MInventoryLine line = new MInventoryLine (m_inventory, 
+			MInventoryLine line = new MInventoryLine (m_inventory,
 				ioLine.getM_Locator_ID(), ioLine.getM_Product_ID(), ioLine.getM_AttributeSetInstance_ID(),
 				confirm.getScrappedQty(), Env.ZERO);
 			if (!line.save(get_TrxName()))
@@ -638,7 +636,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			}
 			confirm.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
 		}
-		
+
 		//
 		if (!confirm.save(get_TrxName()))
 		{
@@ -650,7 +648,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 
 	/**
 	 * 	Void Document.
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean voidIt()
@@ -664,13 +662,13 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	voidIt
-	
+
 	/**
 	 * 	Close Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean closeIt()
@@ -689,10 +687,10 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 
 		return true;
 	}	//	closeIt
-	
+
 	/**
 	 * 	Reverse Correction
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reverseCorrectIt()
@@ -702,18 +700,18 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	reverseCorrectionIt
-	
+
 	/**
 	 * 	Reverse Accrual - none
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reverseAccrualIt()
@@ -723,18 +721,18 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	reverseAccrualIt
-	
-	/** 
+
+	/**
 	 * 	Re-activate
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reActivateIt()
@@ -743,17 +741,17 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
-			return false;	
-		
+			return false;
+
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	reActivateIt
-	
-	
+
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document
@@ -772,7 +770,13 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	//	getSummary
-	
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getCreated());
+	}
+
 	/**
 	 * 	Get Process Message
 	 *	@return clear text error message
@@ -782,7 +786,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 	{
 		return m_processMsg;
 	}	//	getProcessMsg
-	
+
 	/**
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
@@ -804,5 +808,5 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 	//	return pl.getC_Currency_ID();
 		return 0;
 	}	//	getC_Currency_ID
-	
+
 }	//	MInOutConfirm

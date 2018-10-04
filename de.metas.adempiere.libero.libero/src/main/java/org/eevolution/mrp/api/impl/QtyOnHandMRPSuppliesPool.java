@@ -30,8 +30,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -45,6 +43,8 @@ import org.eevolution.mrp.api.IMRPSuppliesPool;
 
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 {

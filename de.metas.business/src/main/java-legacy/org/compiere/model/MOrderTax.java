@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -34,6 +33,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  * Order Tax Model

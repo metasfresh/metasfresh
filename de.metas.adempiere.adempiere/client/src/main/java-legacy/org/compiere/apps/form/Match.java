@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 import java.util.Vector;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Services;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MInOutLine;
@@ -38,6 +37,7 @@ import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 
 public class Match
 {

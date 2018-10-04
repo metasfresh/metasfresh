@@ -26,12 +26,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 import java.util.Collection;
 import java.util.UUID;
 
-import org.adempiere.util.Check;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyNameBuilder;
+import de.metas.util.Check;
 
 /* package */class CompositeHUKey extends AbstractHUKey
 {

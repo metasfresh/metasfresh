@@ -3,12 +3,12 @@ package de.metas.marketing.base;
 import java.util.Set;
 
 import org.adempiere.user.User;
-import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
 
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

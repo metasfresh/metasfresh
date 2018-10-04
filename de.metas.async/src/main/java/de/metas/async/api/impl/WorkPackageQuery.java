@@ -26,9 +26,8 @@ package de.metas.async.api.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import de.metas.async.api.IWorkPackageQuery;
+import de.metas.util.Check;
 
 public class WorkPackageQuery implements IWorkPackageQuery
 {

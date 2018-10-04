@@ -30,6 +30,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -40,8 +41,6 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
@@ -53,6 +52,8 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocumentConstants;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ADTableDAO implements IADTableDAO
@@ -289,5 +290,18 @@ public class ADTableDAO implements IADTableDAO
 	public boolean isStandardColumn(final String columnName)
 	{
 		return STANDARD_COLUMN_NAMES.contains(columnName);
+	}
+
+	@Override
+	public Set<String> getTableNamesWithRemoteCacheInvalidation()
+	{
+		final List<String> tableNames = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Table.Table_Name)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Table.COLUMNNAME_IsEnableRemoteCacheInvalidation, true)
+				.orderBy(I_AD_Table.COLUMNNAME_TableName)
+				.create()
+				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
+		return ImmutableSet.copyOf(tableNames);
 	}
 }

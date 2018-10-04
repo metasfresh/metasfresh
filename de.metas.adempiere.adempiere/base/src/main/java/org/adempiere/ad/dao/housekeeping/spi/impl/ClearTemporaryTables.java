@@ -27,11 +27,11 @@ import org.adempiere.ad.dao.model.I_T_Query_Selection_ToDelete;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Loggables;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 
 /**
  * Clears several temporary tables.

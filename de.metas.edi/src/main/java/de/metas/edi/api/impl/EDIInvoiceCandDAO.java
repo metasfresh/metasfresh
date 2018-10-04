@@ -24,11 +24,11 @@ package de.metas.edi.api.impl;
 
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.edi.api.IEDIInvoiceCandDAO;
 import de.metas.edi.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 public class EDIInvoiceCandDAO implements IEDIInvoiceCandDAO
 {

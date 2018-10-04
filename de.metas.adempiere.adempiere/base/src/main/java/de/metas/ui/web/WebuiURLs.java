@@ -3,12 +3,12 @@ package de.metas.ui.web;
 import java.util.Map;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.text.MapFormat;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -67,7 +67,7 @@ public class WebuiURLs
 	 *
 	 * @return e.g. https://webui
 	 */
-	private String getFrontendURL()
+	public String getFrontendURL()
 	{
 		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
 		if (Check.isEmpty(url, true) || "-".equals(url))

@@ -2,10 +2,10 @@ package de.metas.request.api.impl;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Services;
 import org.compiere.model.I_R_RequestType;
 
 import de.metas.request.api.IRequestTypeDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

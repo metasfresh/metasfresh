@@ -26,7 +26,7 @@ package org.adempiere.util.concurrent;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * Thread factory that allows to decide if a thread is a daemon or user thread.

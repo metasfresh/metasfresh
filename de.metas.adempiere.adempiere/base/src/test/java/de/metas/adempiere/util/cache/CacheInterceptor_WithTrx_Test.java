@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +36,7 @@ import org.junit.Test;
 
 import de.metas.adempiere.util.cache.testservices.ITestServiceWithCachedMethod;
 import de.metas.adempiere.util.cache.testservices.impl.TestServiceWithCachedMethod;
+import de.metas.util.Services;
 
 /**
  * Tests {@link CacheInterceptor} when using database transactions.

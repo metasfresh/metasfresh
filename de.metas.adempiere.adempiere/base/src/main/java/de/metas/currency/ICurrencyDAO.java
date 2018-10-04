@@ -7,10 +7,11 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

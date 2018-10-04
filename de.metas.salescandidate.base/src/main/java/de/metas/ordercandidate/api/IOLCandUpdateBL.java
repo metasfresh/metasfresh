@@ -26,10 +26,10 @@ package de.metas.ordercandidate.api;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.api.IParams;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.ISingletonService;
 
 /**
  * Updates order line candidates.

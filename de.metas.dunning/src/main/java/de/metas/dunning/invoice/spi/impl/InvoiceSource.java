@@ -10,18 +10,17 @@ package de.metas.dunning.invoice.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -29,9 +28,6 @@ import java.util.Iterator;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.ConvertIteratorWrapper;
-import org.adempiere.util.collections.Converter;
 import org.compiere.model.I_C_InvoicePaySchedule;
 import org.compiere.util.TimeUtil;
 
@@ -42,6 +38,11 @@ import de.metas.dunning.api.impl.DunnableDoc;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.dunning.spi.impl.AbstractDunnableSource;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.Services;
+import de.metas.util.collections.ConvertIteratorWrapper;
+import de.metas.util.collections.Converter;
+import lombok.NonNull;
 
 public class InvoiceSource extends AbstractDunnableSource
 {
@@ -50,9 +51,8 @@ public class InvoiceSource extends AbstractDunnableSource
 	{
 		final Iterator<I_C_Dunning_Candidate_Invoice_v1> it = Services.get(IInvoiceSourceDAO.class).retrieveDunningCandidateInvoices(context);
 
-		return new ConvertIteratorWrapper<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>(it, new Converter<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>()
+		return new ConvertIteratorWrapper<>(it, new Converter<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>()
 		{
-
 			@Override
 			public IDunnableDoc convert(I_C_Dunning_Candidate_Invoice_v1 value)
 			{
@@ -61,7 +61,9 @@ public class InvoiceSource extends AbstractDunnableSource
 		});
 	}
 
-	private IDunnableDoc createDunnableDoc(final IDunningContext context, final I_C_Dunning_Candidate_Invoice_v1 candidate)
+	private IDunnableDoc createDunnableDoc(
+			@NonNull final IDunningContext context,
+			@NonNull final I_C_Dunning_Candidate_Invoice_v1 candidate)
 	{
 		final int invoiceId = candidate.getC_Invoice_ID();
 		final int invoicePayScheduleId = candidate.getC_InvoicePaySchedule_ID();
@@ -78,7 +80,7 @@ public class InvoiceSource extends AbstractDunnableSource
 		final Date dunningGrace = candidate.getDunningGrace();
 		final int paymentTermId = candidate.getC_PaymentTerm_ID();
 		final boolean isInDispute = candidate.isInDispute();
-		
+
 		final String documentNo; // FRESH-504
 
 		final String tableName;
@@ -87,7 +89,7 @@ public class InvoiceSource extends AbstractDunnableSource
 		{
 			tableName = I_C_InvoicePaySchedule.Table_Name;
 			recordId = invoicePayScheduleId;
-			
+
 			// The table C_InvoicePaySchedule does not have the column DocumentNo. In this case, the documentNo is null
 			documentNo = null;
 		}
@@ -96,14 +98,18 @@ public class InvoiceSource extends AbstractDunnableSource
 		{
 			tableName = I_C_Invoice.Table_Name;
 			recordId = invoiceId;
-			
-			final I_C_Invoice invoice  = InterfaceWrapperHelper.create(context.getCtx(), invoiceId, I_C_Invoice.class, ITrx.TRXNAME_ThreadInherited);
-			
-			if(invoice == null)
+
+			final I_C_Invoice invoice = InterfaceWrapperHelper.create(
+					context.getCtx(),
+					invoiceId,
+					I_C_Invoice.class,
+					ITrx.TRXNAME_ThreadInherited);
+
+			if (invoice == null)
 			{
 				// shall not happen
 				// in case of no referenced record the documentNo is null.
-				
+
 				documentNo = null;
 			}
 			else
@@ -119,18 +125,29 @@ public class InvoiceSource extends AbstractDunnableSource
 		}
 		else
 		{
-			daysDue = Services.get(IInvoiceSourceDAO.class).retrieveDueDays(paymentTermId, dateInvoiced, context.getDunningDate());
+			final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
+
+			daysDue = invoiceSourceDAO.retrieveDueDays(
+					PaymentTermId.ofRepoId(paymentTermId),
+					dateInvoiced,
+					context.getDunningDate());
 		}
 
-		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName, recordId
-				, documentNo // FRESH-504 DocumentNo is also needed
-				, adClientId, adOrgId
-				, bpartnerId, bpartnerLocationId, contactId
-				, currencyId
-				, grandTotal, openAmt
-				, dueDate, dunningGrace
-				, daysDue
-				, isInDispute);
+		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName,
+				recordId,
+				documentNo, // FRESH-504 DocumentNo is also needed
+				adClientId,
+				adOrgId,
+				bpartnerId,
+				bpartnerLocationId,
+				contactId,
+				currencyId,
+				grandTotal,
+				openAmt,
+				dueDate,
+				dunningGrace,
+				daysDue,
+				isInDispute);
 
 		return dunnableDoc;
 	}

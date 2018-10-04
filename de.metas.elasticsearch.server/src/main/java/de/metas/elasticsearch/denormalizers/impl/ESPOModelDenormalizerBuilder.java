@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
 
@@ -18,6 +17,7 @@ import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.elasticsearch.types.ESIndexType;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * A value which will be set in future.

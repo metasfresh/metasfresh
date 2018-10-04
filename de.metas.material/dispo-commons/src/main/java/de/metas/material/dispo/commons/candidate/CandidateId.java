@@ -1,9 +1,8 @@
 package de.metas.material.dispo.commons.candidate;
 
-import org.adempiere.util.Check;
-
 import de.metas.lang.RepoIdAware;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;

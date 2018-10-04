@@ -8,7 +8,6 @@ import java.net.URL;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Color;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_Color;
@@ -20,6 +19,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
 import de.metas.util.MFColorType;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

@@ -2,16 +2,20 @@ package de.metas.document.engine;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Properties;
 
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -61,7 +65,14 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 
 	private final void fireDocValidateEvent(final int timing)
 	{
-		ModelValidationEngine.get().fireDocValidate(model, timing);
+		if (POJOWrapper.isHandled(model))
+		{
+			POJOLookupMap.get().fireDocumentChange(model, DocTimingType.valueOf(timing));
+		}
+		else
+		{
+			ModelValidationEngine.get().fireDocValidate(model, timing);
+		}
 	}
 
 	@Override
@@ -160,7 +171,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_CLOSE);
 		return true;
 	}
-	
+
 	@Override
 	public void unCloseIt()
 	{
@@ -206,6 +217,12 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	public String getDocumentInfo()
 	{
 		return handler.getDocumentInfo(model);
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return handler.getDocumentDate(model);
 	}
 
 	@Override
@@ -316,7 +333,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	{
 		return getDocumentModel();
 	}
-	
+
 	@Override
 	public Object getDocumentModel()
 	{

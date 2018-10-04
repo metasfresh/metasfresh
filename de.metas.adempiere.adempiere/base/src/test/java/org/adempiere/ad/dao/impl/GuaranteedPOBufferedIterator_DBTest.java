@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
@@ -44,6 +42,9 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Database coupled test which makes sure the {@link GuaranteedPOBufferedIterator} works OK.

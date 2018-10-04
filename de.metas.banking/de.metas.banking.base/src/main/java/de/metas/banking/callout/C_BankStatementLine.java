@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
 
@@ -36,6 +35,7 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

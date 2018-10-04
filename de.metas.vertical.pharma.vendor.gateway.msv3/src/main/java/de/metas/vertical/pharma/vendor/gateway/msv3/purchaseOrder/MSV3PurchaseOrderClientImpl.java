@@ -7,7 +7,6 @@ import java.util.function.Function;
 import javax.xml.bind.JAXBElement;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.Check;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.util.Check;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.MSV3OrderResponsePackageItemPartRepoId;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
@@ -35,6 +35,7 @@ import de.metas.vertical.pharma.msv3.protocol.order.OrderResponse;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackage;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItem;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart;
+import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderType;
 import de.metas.vertical.pharma.msv3.protocol.order.SupportIDType;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
@@ -248,8 +249,8 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 	}
 
 	private static RemotePurchaseOrderCreated createRemotePurchaseOrderCreated(
-			final MSV3PurchaseOrderTransaction purchaseTransaction,
-			final Map<OrderCreateRequestPackageItemId, PurchaseOrderRequestItem> purchaseOrderRequestItems)
+			@NonNull final MSV3PurchaseOrderTransaction purchaseTransaction,
+			@NonNull final Map<OrderCreateRequestPackageItemId, PurchaseOrderRequestItem> purchaseOrderRequestItems)
 	{
 		final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransaction.store();
 
@@ -300,15 +301,15 @@ public class MSV3PurchaseOrderClientImpl implements MSV3PurchaseOrderClient
 
 				for (final OrderResponsePackageItemPart responseItemPart : responseItem.getParts())
 				{
-					if (responseItemPart.getDeliveryDate() == null)
+					final Type type = responseItemPart.getType();
+					if (type.isNoDeliveryPossible())
 					{
 						continue;
 					}
 
 					final MSV3OrderResponsePackageItemPartRepoId internalItemId = purchaseTransaction.getResponseItemPartRepoId(responseItemPart.getId());
-
 					builder
-							.confirmedDeliveryDate(responseItemPart.getDeliveryDate())
+							.confirmedDeliveryDateOrNull(responseItemPart.getDeliveryDate())
 							.confirmedOrderQuantity(responseItemPart.getQty().getValueAsBigDecimal())
 							.internalItemId(internalItemId);
 

@@ -22,14 +22,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -37,6 +38,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 /**
  * 	Time + Expense Model
@@ -44,14 +46,14 @@ import de.metas.pricing.service.IPriceListDAO;
  *	@author Jorg Janke
  *
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- * 			<li> FR [ 2520591 ] Support multiples calendar for Org 
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 
+ * 			<li> FR [ 2520591 ] Support multiples calendar for Org
+ *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *	@version $Id: MTimeExpense.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MTimeExpense extends X_S_TimeExpense implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1567303438502090279L;
 
@@ -95,7 +97,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	private MTimeExpenseLine[]	m_lines = null;
 	/** Cached User					*/
 	private int					m_AD_User_ID = 0;
-	
+
 
 	/**
 	 * 	Get Lines Convenience Wrapper
@@ -228,7 +230,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed
-	
+
 	/**
 	 * 	Get Document Info
 	 *	@return document info
@@ -270,7 +272,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			return null;
 	//	return re.getPDF(file);
 	}	//	createPDF
-	
+
 	/**************************************************************************
 	 * 	Process document
 	 *	@param processAction document action
@@ -282,7 +284,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}	//	processIt
-	
+
 	/**	Process Message 			*/
 	private String		m_processMsg = null;
 	/**	Just Prepared Flag			*/
@@ -290,7 +292,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 
 	/**
 	 * 	Unlock Document.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean unlockIt()
@@ -299,10 +301,10 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		setProcessing(false);
 		return true;
 	}	//	unlockIt
-	
+
 	/**
 	 * 	Invalidate Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean invalidateIt()
@@ -311,10 +313,10 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	//	invalidateIt
-	
+
 	/**
 	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid) 
+	 * 	@return new status (In Progress or Invalid)
 	 */
 	@Override
 	public String prepareIt()
@@ -330,7 +332,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
 		}
-		
+
 		MTimeExpenseLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
@@ -339,24 +341,22 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		}
 		//	Add up Amounts
 		BigDecimal amt = Env.ZERO;
-		for (int i = 0; i < lines.length; i++)
+		for (MTimeExpenseLine line : lines)
 		{
-			MTimeExpenseLine line = lines[i];
 			amt = amt.add(line.getApprovalAmt());
 		}
 		setApprovalAmt(amt);
 
 		//	Invoiced but no BP
-		for (int i = 0; i < lines.length; i++)
+		for (MTimeExpenseLine line : lines)
 		{
-			MTimeExpenseLine line = lines[i];
 			if (line.isInvoiced() && line.getC_BPartner_ID() == 0)
 			{
 				m_processMsg = "@Line@ " + line.getLine() + ": Invoiced, but no Business Partner";
 				return IDocument.STATUS_Invalid;
 			}
 		}
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
@@ -366,10 +366,10 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
 	}	//	prepareIt
-	
+
 	/**
 	 * 	Approve Document
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean  approveIt()
@@ -378,10 +378,10 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		setIsApproved(true);
 		return true;
 	}	//	approveIt
-	
+
 	/**
 	 * 	Reject Approval
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean rejectIt()
@@ -390,7 +390,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		setIsApproved(false);
 		return true;
 	}	//	rejectIt
-	
+
 	/**
 	 * 	Complete Document
 	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
@@ -405,11 +405,11 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			if (!IDocument.STATUS_InProgress.equals(status))
 				return status;
 		}
-		
+
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
-		
+
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
@@ -428,11 +428,11 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Void Document.
 	 * 	Same as Close.
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean voidIt()
@@ -443,22 +443,22 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
 			return false;
-		
+
 		if (!closeIt())
 			return false;
-		
+
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return true;
 	}	//	voidIt
-	
+
 	/**
 	 * 	Close Document.
 	 * 	Cancel not delivered Qunatities
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean closeIt()
@@ -477,10 +477,10 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	//	setDocAction(DOCACTION_None);
 		return true;
 	}	//	closeIt
-	
+
 	/**
 	 * 	Reverse Correction
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reverseCorrectIt()
@@ -490,18 +490,18 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
 			return false;
-		
+
 		return false;
 	}	//	reverseCorrectionIt
-	
+
 	/**
 	 * 	Reverse Accrual - none
-	 * 	@return false 
+	 * 	@return false
 	 */
 	@Override
 	public boolean reverseAccrualIt()
@@ -511,18 +511,18 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
 			return false;
-		
+
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
-			return false;		
-		
+			return false;
+
 		return false;
 	}	//	reverseAccrualIt
-	
-	/** 
+
+	/**
 	 * 	Re-activate
-	 * 	@return true if success 
+	 * 	@return true if success
 	 */
 	@Override
 	public boolean reActivateIt()
@@ -531,18 +531,18 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
-			return false;	
-		
+			return false;
+
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-		
+
 	//	setProcessed(false);
 		return false;
 	}	//	reActivateIt
-	
-	
+
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document
@@ -561,7 +561,13 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	//	getSummary
-	
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateReport());
+	}
+
 	/**
 	 * 	Get Process Message
 	 *	@return clear text error message
@@ -571,7 +577,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	{
 		return m_processMsg;
 	}	//	getProcessMsg
-	
+
 	/**
 	 * 	Get Document Owner (Responsible)
 	 *	@return AD_User_ID
@@ -593,7 +599,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 		return getCreatedBy();
 	}	//	getDoc_User_ID
 
-	
+
 	/**
 	 * 	Get Document Currency
 	 *	@return C_Currency_ID
@@ -612,9 +618,9 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 	public boolean isComplete()
 	{
 		String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds) 
+		return DOCSTATUS_Completed.equals(ds)
 			|| DOCSTATUS_Closed.equals(ds)
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
-	
+
 }	//	MTimeExpense

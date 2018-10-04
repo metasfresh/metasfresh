@@ -28,10 +28,10 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

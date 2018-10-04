@@ -37,11 +37,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -68,6 +64,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -115,8 +115,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private boolean processShipments = true;
 
 	private boolean createPackingLines = false;
-	private boolean manualPackingMaterial = false;
+
 	private boolean shipmentDateToday = false;
+
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -551,13 +552,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
+		final boolean isManualPackingMaterial = candidate.isCreateManualPackingMaterial();
+
 		//
 		// If we don't have an active shipment line builder
 		// then create one
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
+			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
+			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
 
 		}
@@ -588,13 +592,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public InOutProducerFromShipmentScheduleWithHU setManualPackingMaterial(final boolean manualPackingMaterial)
-	{
-		this.manualPackingMaterial = manualPackingMaterial;
-		return this;
-	}
-
-	@Override
 	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
 	{
 		this.shipmentDateToday = forceDateToday;
@@ -610,5 +607,4 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
-
 }

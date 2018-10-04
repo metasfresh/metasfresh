@@ -12,8 +12,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
 import org.adempiere.util.MiscUtils;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRecurrentPaymentHistory;
@@ -26,6 +24,8 @@ import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class BankingBL implements IBankingBL
 {

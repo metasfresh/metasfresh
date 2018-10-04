@@ -27,8 +27,6 @@ import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -44,6 +42,8 @@ import de.metas.banking.payment.paymentallocation.service.IPayableDocument;
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Invoice or Prepaid Order.

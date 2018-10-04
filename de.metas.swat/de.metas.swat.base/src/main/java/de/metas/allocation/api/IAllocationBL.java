@@ -1,12 +1,12 @@
 package de.metas.allocation.api;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.util.ISingletonService;
 
 public interface IAllocationBL extends ISingletonService
 {

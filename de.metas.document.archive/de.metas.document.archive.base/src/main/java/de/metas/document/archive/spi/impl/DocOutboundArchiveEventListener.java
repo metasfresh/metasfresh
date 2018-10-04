@@ -3,56 +3,33 @@ package de.metas.document.archive.spi.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-/*
- * #%L
- * de.metas.document.archive.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.archive.DocOutBoundRecipient;
 import de.metas.document.archive.DocOutboundLogMailRecipientRegistry;
-import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
@@ -222,7 +199,6 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docOutboundLogRecord.setC_DocType_ID(doctypeID);
 
-
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
 
@@ -231,8 +207,11 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 
 		docOutboundLogRecord.setDocumentNo(archive.getName());
 
-		final Timestamp documentDate = docActionBL.getDocumentDate(ctx, adTableId, recordId);
-		docOutboundLogRecord.setDateDoc(documentDate); // task 08905: Also set the the documentDate
+		final LocalDate documentDate = Util.coalesce(
+				docActionBL.getDocumentDate(ctx, adTableId, recordId),
+				TimeUtil.asLocalDate(docOutboundLogRecord.getCreated()));
+
+		docOutboundLogRecord.setDateDoc(TimeUtil.asTimestamp(documentDate)); // task 08905: Also set the the documentDate
 
 		setMailRecipient(docOutboundLogRecord);
 

@@ -15,8 +15,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Rule;
@@ -39,6 +37,8 @@ import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
 import de.metas.session.jaxrs.IServerService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -231,8 +231,8 @@ public final class ProcessExecutor
 				//
 				// Prepare report
 				final boolean isReport = pi.isReportingProcess();
-				final boolean isJasperReport = pi.getReportTemplate().isPresent();
-				if (isJasperReport)
+				final boolean hasProcessClass = !Check.isEmpty(pi.getClassName());
+				if (isReport && hasProcessClass)
 				{
 					// nothing do to, the Jasper process class implementation is responsible for triggering the report preview if any
 					return;
@@ -714,7 +714,7 @@ public final class ProcessExecutor
 			this.onErrorThrowException = true;
 			return this;
 		}
-		
+
 		public Builder onErrorThrowException(final boolean onErrorThrowException)
 		{
 			this.onErrorThrowException = onErrorThrowException;

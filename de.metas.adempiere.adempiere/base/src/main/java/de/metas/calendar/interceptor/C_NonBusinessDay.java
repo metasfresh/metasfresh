@@ -1,10 +1,10 @@
 package de.metas.calendar.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_NonBusinessDay;
 
 import de.metas.calendar.ICalendarDAO;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_InOutLine;
@@ -48,6 +46,8 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Default aggregator implementation. It is used if a given {@link I_C_Invoice_Candidate} record has no {@link I_C_Invoice_Candidate#COLUMNNAME_C_Invoice_Candidate_Agg_ID} or if it has one without an

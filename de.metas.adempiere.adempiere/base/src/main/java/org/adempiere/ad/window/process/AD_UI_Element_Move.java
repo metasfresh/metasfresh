@@ -3,11 +3,11 @@ package org.adempiere.ad.window.process;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementGroup;
 
 import de.metas.process.Param;
+import de.metas.util.Services;
 import de.metas.process.JavaProcess;
 
 /*

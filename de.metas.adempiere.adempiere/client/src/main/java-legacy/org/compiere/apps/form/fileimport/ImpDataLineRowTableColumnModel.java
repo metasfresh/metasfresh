@@ -1,7 +1,5 @@
 package org.compiere.apps.form.fileimport;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormatRow;
@@ -10,6 +8,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 class ImpDataLineRowTableColumnModel extends TableColumnModel
 {

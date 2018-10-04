@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
@@ -35,6 +34,7 @@ import org.compiere.model.I_M_Warehouse;
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
+import de.metas.util.Services;
 
 public class StorageSegmentBuilder implements IStorageSegmentBuilder
 {

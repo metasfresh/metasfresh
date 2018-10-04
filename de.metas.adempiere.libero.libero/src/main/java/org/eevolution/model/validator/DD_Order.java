@@ -32,12 +32,13 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+
+import de.metas.util.Services;
 
 @Validator(I_DD_Order.class)
 public class DD_Order

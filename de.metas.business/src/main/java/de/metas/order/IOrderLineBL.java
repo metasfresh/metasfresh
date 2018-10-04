@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -36,6 +35,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
 
 public interface IOrderLineBL extends ISingletonService
 {
@@ -115,7 +115,7 @@ public interface IOrderLineBL extends ISingletonService
 	 *
 	 * @param orderLine
 	 * @return C_TaxCategory_ID
-	 * @see org.adempiere.util.Check#assume(boolean, String, Object...)
+	 * @see de.metas.util.Check#assume(boolean, String, Object...)
 	 *
 	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 */
@@ -152,7 +152,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
 
-	void updateLineNetAmt(I_C_OrderLine orderLine);
+	void updateLineNetAmt(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
@@ -223,4 +223,6 @@ public interface IOrderLineBL extends ISingletonService
 	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
 
 	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);
+
+	void updateProductDescriptionFromProductBOMIfConfigured(org.compiere.model.I_C_OrderLine orderLine);
 }

@@ -25,8 +25,8 @@ package org.adempiere.util.comparator;
 
 import java.util.Comparator;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.TypedAccessor;
+import de.metas.util.Check;
+import de.metas.util.TypedAccessor;
 
 /**
  * Wraps a given comparator by transforming the values from outer type to inner type

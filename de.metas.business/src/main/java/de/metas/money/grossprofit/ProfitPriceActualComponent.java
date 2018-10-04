@@ -30,5 +30,8 @@ import de.metas.money.Money;
 @FunctionalInterface
 public interface ProfitPriceActualComponent
 {
+	/**
+	 * @param input money per unit (i.e. "priceActual").
+	 */
 	Money applyToInput(Money input);
 }

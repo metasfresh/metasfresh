@@ -34,9 +34,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -50,6 +47,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 
 /**
  * Query Descriptor. Maintains restrictions (WHERE clause)

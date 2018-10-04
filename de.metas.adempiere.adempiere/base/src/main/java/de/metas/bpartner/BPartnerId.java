@@ -1,11 +1,12 @@
 package de.metas.bpartner;
 
-import org.adempiere.util.Check;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*
@@ -44,6 +45,16 @@ public class BPartnerId implements RepoIdAware
 	public static BPartnerId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new BPartnerId(repoId) : null;
+	}
+
+	public static Optional<BPartnerId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(final BPartnerId bpartnerId)
+	{
+		return toRepoIdOr(bpartnerId, -1);
 	}
 
 	public static int toRepoIdOr(final BPartnerId bpartnerId, final int defaultValue)

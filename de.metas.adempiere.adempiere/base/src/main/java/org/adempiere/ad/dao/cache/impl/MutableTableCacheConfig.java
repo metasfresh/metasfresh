@@ -24,8 +24,9 @@ package org.adempiere.ad.dao.cache.impl;
 
 
 import org.adempiere.ad.dao.cache.IMutableTableCacheConfig;
-import org.adempiere.util.Check;
 import org.compiere.util.CCache.CacheMapType;
+
+import de.metas.util.Check;
 
 /* package */class MutableTableCacheConfig implements IMutableTableCacheConfig
 {

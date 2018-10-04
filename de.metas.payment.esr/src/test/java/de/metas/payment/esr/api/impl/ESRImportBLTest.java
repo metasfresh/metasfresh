@@ -15,12 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,6 @@ import java.util.Set;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
@@ -70,6 +69,7 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
+import de.metas.util.Services;
 
 public class ESRImportBLTest extends ESRTestBase
 {
@@ -89,7 +89,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 	/**
 	 * Verifies {@link ESRImportBLTest#testEvaluateTrxQty()}.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/2106
 	 */
 	@Test
@@ -304,7 +304,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		final BigDecimal grandTotal = new BigDecimal(123.56);
+		final BigDecimal grandTotal = new BigDecimal("123.56");
 
 		final I_AD_Org org2 = newInstance(I_AD_Org.class);
 		org2.setValue("org2");
@@ -372,7 +372,7 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			refresh(line, true);
 		}
-		new ESRImportBL().processLinesWithInvoice(lines);
+		esrImportBL.processLinesWithInvoice(lines);
 
 		// check the created payments
 		refresh(esrImportLine1, true);
@@ -413,9 +413,9 @@ public class ESRImportBLTest extends ESRTestBase
 			refresh(line, true);
 		}
 
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2));
+		esrImportBL.processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2));
 
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine3));
+		esrImportBL.processLinesWithInvoice(Arrays.asList(esrImportLine3));
 
 		// check the created payments
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
@@ -442,7 +442,7 @@ public class ESRImportBLTest extends ESRTestBase
 	}
 
 	/**
-	 * 
+	 *
 	 * Same lines as in {@link #testProcessLinesWithInvoice_3Lines_1Payment()}, but all line shoudl have different payments. Despite none of the two payments' PayAmounts matches the invoice's grant
 	 * total, the first two lines shall be processed, so that the user doen't need to deal with them.
 	 */
@@ -472,8 +472,8 @@ public class ESRImportBLTest extends ESRTestBase
 			refresh(line, true);
 		}
 
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1));
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine2, esrImportLine3));
+		esrImportBL.processLinesWithInvoice(Arrays.asList(esrImportLine1));
+		esrImportBL.processLinesWithInvoice(Arrays.asList(esrImportLine2, esrImportLine3));
 
 		// check the created payments
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
@@ -526,8 +526,8 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			refresh(line, true);
 		}
-		
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2, esrImportLine3));
+
+		esrImportBL.processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2, esrImportLine3));
 
 		refresh(esrImportLine1, true);
 		refresh(esrImportLine2, true);
@@ -558,7 +558,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 	/**
 	 * checks if all lines have different payments
-	 * 
+	 *
 	 * @param esrImportLine1
 	 * @param esrImportLine2
 	 * @param esrImportLine3
@@ -618,7 +618,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 	/**
 	 * Creates 3 ESR import lines that all reference the same invoice. The first two line's amounts sum up to the invoice GrandTotal. The third line's amount is equal to the invoice's GrandTotal.
-	 * 
+	 *
 	 * @param lineNo1 {@code LineNo} value for the 1st created line; use a value >0 to avoid creating the line
 	 * @param lineNo2 {@code LineNo} value for the 2nd created line; use a value >0 to avoid creating the line
 	 * @param lineNo3 {@code LineNo} value for the 3rd created line; use a value >0 to avoid creating the line
@@ -738,7 +738,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		lines.get(0).setC_Payment(payment);
 
-		new ESRImportBL().updateOpenAmtAndStatusDontSave(invoice, lines);
+		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
 		for (final I_ESR_ImportLine line : lines)
 		{
@@ -761,7 +761,7 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine line1 = lines.get(0);
 		line1.setC_Payment_ID(0); // if the line has no payment assigned, then we assume that ESR_LINE_1_AMOUNT has not yet been allocated against the invoice
 
-		new ESRImportBL().updateOpenAmtAndStatusDontSave(invoice, lines);
+		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
 		// assertThat(lines.get(0).getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat("the invoice is completely unpaid, and this line's amount was not yet allocated either => the line's open amount is the invoice's grand-total minus line's pay amount",
@@ -789,7 +789,7 @@ public class ESRImportBLTest extends ESRTestBase
 		// if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT was allocated against the invoice
 		line1.setC_Payment(payment);
 
-		new ESRImportBL().updateOpenAmtAndStatusDontSave(invoice, lines);
+		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
 		assertThat("the invoice's allocated sum is ZERO, but this line's amount is ALREADY a part of that sum, so it shall not count to reduce the overall open amount",
 				line1.getESR_Invoice_Openamt(), comparesEqualTo(INVOICE_GRANDTOTAL.subtract(externallAllocatedAmt).subtract(ESR_LINE_1_AMOUNT)));
@@ -807,7 +807,7 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine line1 = lines.get(0);
 		line1.setC_Payment_ID(0); // if the line has no payment assigned, then we assume that ESR_LINE_1_AMOUNT has not yet been allocated against the invoice
 
-		new ESRImportBL().updateOpenAmtAndStatusDontSave(invoice, lines);
+		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
 		// assertThat(lines.get(0).getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat("'this line's amount has *not* been allocated against the invoice, so it counts in addition to the alreadyAllocatedAmt",
@@ -834,7 +834,7 @@ public class ESRImportBLTest extends ESRTestBase
 		line1.setC_Payment(payment); // if the line has a C_Payment_ID>0 payment assigned, then we assume that ESR_LINE_1_AMOUNT is *already* allocated against the invoice and is therefore part of the
 									 // sum that makes up alreadyAllocatedAmt
 
-		new ESRImportBL().updateOpenAmtAndStatusDontSave(invoice, lines);
+		esrImportBL.updateOpenAmtAndStatusDontSave(invoice, lines);
 
 		// assertThat(lines.get(0).getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat("'this line has been allocated, still the invoice's allocation SUM is 20 => the line's open amount is the invoice's open amount",

@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.Services;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.document.DocTypeQuery;
@@ -12,6 +11,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.util.Services;
 
 /*
  * #%L

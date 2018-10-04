@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
@@ -43,6 +42,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.util.Services;
 
 /**
  * Initial Setup Model

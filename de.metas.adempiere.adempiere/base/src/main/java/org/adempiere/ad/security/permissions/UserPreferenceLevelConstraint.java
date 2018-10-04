@@ -27,10 +27,11 @@ import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.compiere.model.X_AD_Role;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.Check;
 
 /**
  * User's preference level.

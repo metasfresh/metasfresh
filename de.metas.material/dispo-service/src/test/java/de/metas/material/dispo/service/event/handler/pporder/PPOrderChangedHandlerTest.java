@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -23,6 +22,7 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.util.time.SystemTime;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

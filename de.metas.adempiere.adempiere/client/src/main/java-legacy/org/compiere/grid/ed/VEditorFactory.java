@@ -19,10 +19,10 @@ package org.compiere.grid.ed;
 import java.text.DecimalFormat;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;

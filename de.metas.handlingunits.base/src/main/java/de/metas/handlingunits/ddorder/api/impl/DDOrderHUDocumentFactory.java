@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
@@ -42,6 +41,7 @@ import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.handlingunits.document.impl.HandlingUnitHUDocumentFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.quantity.Capacity;
+import de.metas.util.Services;
 
 /**
  * Creates {@link IHUDocument}s from {@link I_DD_Order}.

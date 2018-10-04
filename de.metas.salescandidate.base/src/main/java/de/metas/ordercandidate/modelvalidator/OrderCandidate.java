@@ -30,7 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -42,6 +41,7 @@ import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
 import de.metas.ordercandidate.spi.impl.OLCandPricingASIListener;
+import de.metas.util.Services;
 
 /**
  * Main model interceptor of <code>de.metas.ordercandidate</code> module.

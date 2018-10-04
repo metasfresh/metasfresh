@@ -29,7 +29,6 @@ import static org.junit.Assert.assertThat;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
@@ -41,6 +40,7 @@ import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.util.Services;
 
 public class PrintJobBLTest extends AbstractPrintingTest
 {

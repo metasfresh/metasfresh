@@ -3,11 +3,11 @@ package de.metas.inoutcandidate.api.impl;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
 import org.junit.Ignore;
 
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackageableQuery;
+import de.metas.util.Check;
 
 @Ignore
 public class MockedPackagingDAO extends PackagingDAO

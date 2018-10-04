@@ -29,9 +29,10 @@ import java.util.Set;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Services;
 
 /* package */class VLookupAutoCompleterValidationRule implements IValidationRule
 {

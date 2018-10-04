@@ -28,7 +28,6 @@ import java.util.Map;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.model.GridField;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -43,6 +42,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import de.metas.logging.LogManager;
 
 /**

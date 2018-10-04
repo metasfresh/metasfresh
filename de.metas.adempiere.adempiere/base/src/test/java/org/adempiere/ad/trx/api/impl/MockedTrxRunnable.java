@@ -25,10 +25,11 @@ package org.adempiere.ad.trx.api.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Check;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
 import org.junit.Ignore;
+
+import de.metas.util.Check;
 
 @Ignore
 public class MockedTrxRunnable extends TrxRunnableAdapter

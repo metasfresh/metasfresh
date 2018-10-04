@@ -28,10 +28,11 @@ import java.util.Set;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
+
+import de.metas.util.Check;
 
 /**
  * Defines an {@link IUserRolePermissions} which is included in some other {@link IUserRolePermissions}.

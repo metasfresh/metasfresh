@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidationEngine;
@@ -17,6 +16,7 @@ import org.compiere.model.X_C_DocType;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.util.Services;
 import de.metas.payment.api.IPaymentBL;
 import lombok.NonNull;
 

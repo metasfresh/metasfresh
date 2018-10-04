@@ -26,7 +26,6 @@ package de.metas.materialtracking.spi.impl.listeners;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
@@ -35,6 +34,7 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Services;
 
 public final class PPCostCollectorMaterialTrackingListener extends MaterialTrackingListenerAdapter
 {

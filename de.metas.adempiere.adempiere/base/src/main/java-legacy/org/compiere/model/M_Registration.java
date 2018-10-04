@@ -21,7 +21,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
+
+import de.metas.util.Services;
 
 
 /**

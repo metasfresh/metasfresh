@@ -34,8 +34,6 @@ import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
@@ -47,6 +45,8 @@ import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {

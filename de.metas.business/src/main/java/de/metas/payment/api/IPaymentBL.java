@@ -30,11 +30,12 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+
+import de.metas.util.ISingletonService;
 
 /**
  * @author cg

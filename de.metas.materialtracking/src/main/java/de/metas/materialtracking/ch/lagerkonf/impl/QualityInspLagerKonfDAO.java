@@ -27,13 +27,13 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.util.Services;
 
 import de.metas.materialtracking.ch.lagerkonf.IQualityInspLagerKonfDAO;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_AdditionalFee;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Month_Adj;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_ProcessingFee;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
+import de.metas.util.Services;
 
 public class QualityInspLagerKonfDAO implements IQualityInspLagerKonfDAO
 {

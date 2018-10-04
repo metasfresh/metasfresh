@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 
@@ -18,6 +17,7 @@ import de.metas.adempiere.util.CacheTrx;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class PickingSlotDAO implements IPickingSlotDAO

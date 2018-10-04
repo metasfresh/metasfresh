@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -44,9 +45,9 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.time.SystemTime;
 
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -1256,6 +1257,10 @@ public class TimeUtil
 		else if (obj instanceof Instant)
 		{
 			return new Timestamp(Date.from((Instant)obj).getTime());
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return Timestamp.from(((ZonedDateTime)obj).toInstant());
 		}
 		else
 		{

@@ -31,9 +31,6 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.IProcessor;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Env;
 
@@ -42,6 +39,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+import de.metas.util.Check;
+import de.metas.util.IProcessor;
+import de.metas.util.Services;
 
 /**
  * Context of payment allocation, used by DAO methods and calculation methods.

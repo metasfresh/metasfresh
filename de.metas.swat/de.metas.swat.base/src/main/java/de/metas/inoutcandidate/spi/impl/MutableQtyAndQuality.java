@@ -27,9 +27,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.compiere.util.Env;
 
 public final class MutableQtyAndQuality implements IQtyAndQuality

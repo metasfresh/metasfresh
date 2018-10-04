@@ -43,22 +43,24 @@ package de.metas.shipping.model;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * Shipper Transportation model
@@ -176,7 +178,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			InterfaceWrapperHelper.setTrxName(shippingPackage, get_TrxName());
 			shippingPackage.setProcessed(true);
 			InterfaceWrapperHelper.save(shippingPackage);
-			
+
 			final I_M_Package mPackage = shippingPackage.getM_Package();
 			mPackage.setShipDate(getDateDoc());
 			InterfaceWrapperHelper.save(mPackage);
@@ -304,6 +306,12 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		return sb.toString();
 	}	// getSummary
 
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateDoc());
+	}
+
 	/**
 	 * Invalidate Document
 	 *
@@ -384,7 +392,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			InterfaceWrapperHelper.setTrxName(shippingPackage, get_TrxName());
 			shippingPackage.setProcessed(false);
 			InterfaceWrapperHelper.save(shippingPackage);
-			
+
 			// reset shipping date for mPackages
 			I_M_Package mPackage = shippingPackage.getM_Package();
 			mPackage.setShipDate(null);
@@ -553,7 +561,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			m_lines.forEach(line -> InterfaceWrapperHelper.setTrxName(line, trxName));
 			return m_lines;
 		}
-		
+
 		final String whereClause = I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID + "=?";
 		m_lines = new Query(getCtx(), I_M_ShippingPackage.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { getM_ShipperTransportation_ID() })

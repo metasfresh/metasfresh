@@ -29,10 +29,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.util.Check;
 import org.compiere.Adempiere;
 
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 
 /**
  * Filters user selection provided by {@link ProcessInfo}.

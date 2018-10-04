@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -47,6 +46,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.util.Check;
 
 /**
  * It's possible to create instances of this class directly (intended for testing), but generally, please use a factory to do it.

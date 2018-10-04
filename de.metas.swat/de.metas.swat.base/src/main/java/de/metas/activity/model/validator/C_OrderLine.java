@@ -26,13 +26,13 @@ package de.metas.activity.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Services;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine

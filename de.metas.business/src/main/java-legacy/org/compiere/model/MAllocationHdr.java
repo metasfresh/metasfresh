@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,9 +34,9 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
@@ -45,6 +46,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Payment Allocation Model.
@@ -843,6 +845,12 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		return sb.toString();
 	}	// getSummary
 
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateTrx());
+	}
+
 	/**
 	 * Get Process Message
 	 *
@@ -1029,4 +1037,5 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		setDocAction(DOCACTION_None);
 	}
 	// metas: end
+
 }   // MAllocation

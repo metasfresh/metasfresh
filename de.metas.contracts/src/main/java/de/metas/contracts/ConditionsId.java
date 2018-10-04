@@ -1,7 +1,7 @@
 package de.metas.contracts;
 
-import org.adempiere.util.Check;
-
+import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*
@@ -27,7 +27,7 @@ import lombok.Value;
  */
 
 @Value
-public class ConditionsId
+public class ConditionsId implements RepoIdAware
 {
 	int repoId;
 

@@ -26,8 +26,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.PO;
+
+import de.metas.util.ISingletonService;
 
 /**
  * Model level caching service. Use it to enable e.g.
@@ -94,5 +95,5 @@ public interface IModelCacheService extends ISingletonService
 	 */
 	void addToCache(PO po);
 
-	void invalidate(String tableName, int recordId, String trxName);
+	void invalidate(CacheInvalidateMultiRequest request);
 }

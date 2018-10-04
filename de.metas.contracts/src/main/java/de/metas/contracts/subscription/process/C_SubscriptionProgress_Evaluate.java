@@ -29,10 +29,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -43,6 +41,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  *
@@ -60,9 +60,11 @@ public class C_SubscriptionProgress_Evaluate extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final Timestamp startTime = SystemTime.asTimestamp();
+
+		addLog("Creating/updating C_Subscription_Progress records");
 		final int countProcessedTerms = createOrUpdateSubscriptionProgress();
 
-		addLog("Updating shipment schedules");
+		addLog("Creating/updating shipment schedules");
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.run(() -> {
 			subscriptionBL.evalDeliveries(getCtx(), ITrx.TRXNAME_ThreadInherited);

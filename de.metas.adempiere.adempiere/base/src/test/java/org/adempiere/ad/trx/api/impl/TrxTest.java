@@ -25,9 +25,10 @@ package org.adempiere.ad.trx.api.impl;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.util.Services;
 
 public class TrxTest
 {

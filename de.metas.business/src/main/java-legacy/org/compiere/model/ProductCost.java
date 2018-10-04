@@ -22,14 +22,14 @@ import java.util.Properties;
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Product Cost Model. Summarizes Info in MCost

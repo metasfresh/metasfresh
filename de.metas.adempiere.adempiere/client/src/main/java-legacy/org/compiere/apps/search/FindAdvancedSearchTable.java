@@ -19,9 +19,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import org.adempiere.plaf.VEditorUI;
-import org.adempiere.util.Check;
 import org.compiere.swing.CTable;
 import org.jdesktop.swingx.JXTable;
+
+import de.metas.util.Check;
 
 /**
  * Advanced search table.

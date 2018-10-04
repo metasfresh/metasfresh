@@ -1,10 +1,11 @@
 package de.metas.purchasecandidate.availability;
 
+import static java.math.BigDecimal.ONE;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.adempiere.util.GuavaCollectors;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
@@ -16,6 +17,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
@@ -101,7 +103,10 @@ public class AvailabilityCheckService
 	private static AvailabilityRequestItem createAvailabilityRequestItem(final TrackingId trackingId, final PurchaseCandidatesGroup purchaseCandidatesGroup)
 	{
 		final Quantity qtyToPurchase = purchaseCandidatesGroup.getQtyToPurchase();
-		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(purchaseCandidatesGroup.getVendorProductNo(), qtyToPurchase.getAsBigDecimal(), qtyToPurchase.getUOMId());
+		final ProductAndQuantity productAndQuantity = ProductAndQuantity.of(
+				purchaseCandidatesGroup.getVendorProductNo(),
+				qtyToPurchase.getAsBigDecimal().max(ONE), // check availability for at least one, even if qtyToPurchase is still zero
+				qtyToPurchase.getUOMId());
 
 		return AvailabilityRequestItem.builder()
 				.trackingId(trackingId)

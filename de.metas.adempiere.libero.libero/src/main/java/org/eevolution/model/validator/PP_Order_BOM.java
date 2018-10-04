@@ -26,12 +26,12 @@ package org.eevolution.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.util.Services;
 
 @Validator(I_PP_Order_BOM.class)
 public class PP_Order_BOM

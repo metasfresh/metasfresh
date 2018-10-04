@@ -23,11 +23,12 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.MUOM;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMBL;
+
+import de.metas.util.Services;
 
 /**
  * PP Product BOM Line Model. <code>

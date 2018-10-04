@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -20,6 +19,7 @@ import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 

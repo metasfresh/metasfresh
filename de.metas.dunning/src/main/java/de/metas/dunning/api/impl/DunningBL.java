@@ -38,9 +38,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
@@ -57,7 +54,6 @@ import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
@@ -66,6 +62,9 @@ import de.metas.dunning.spi.IDunningConfigurator;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 
 public class DunningBL implements IDunningBL
@@ -189,7 +188,6 @@ public class DunningBL implements IDunningBL
 
 		for (final IDunnableSource source : sources)
 		{
-
 			final Iterator<IDunnableDoc> dunnableDocs = source.iterator(context);
 			try
 			{
@@ -286,39 +284,7 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public void processDunningDoc(
-			@NonNull final IDunningContext context,
-			@NonNull final I_C_DunningDoc dunningDoc)
-	{
-		if (dunningDoc.isProcessed())
-		{
-			throw new DunningException("@Processed@=@Y@");
-		}
-
-		final IDunningDAO dao = Services.get(IDunningDAO.class);
-
-		final List<I_C_DunningDoc_Line> lines = dao.retrieveDunningDocLines(context, dunningDoc);
-
-		for (final I_C_DunningDoc_Line line : lines)
-		{
-			for (final I_C_DunningDoc_Line_Source source : dao.retrieveDunningDocLineSources(context, line))
-			{
-				processSourceAndItsCandidates(dunningDoc, source);
-			}
-
-			line.setProcessed(true);
-			InterfaceWrapperHelper.save(line);
-		}
-
-		//
-		// Delivery stop (https://github.com/metasfresh/metasfresh/issues/2499)
-		makeDeliveryStopIfNeeded(dunningDoc);
-
-		dunningDoc.setProcessed(true);
-		dao.save(dunningDoc);
-	}
-
-	private void processSourceAndItsCandidates(
+	public void processSourceAndItsCandidates(
 			@NonNull final I_C_DunningDoc dunningDoc,
 			@NonNull final I_C_DunningDoc_Line_Source source)
 	{
@@ -335,7 +301,8 @@ public class DunningBL implements IDunningBL
 		InterfaceWrapperHelper.save(source);
 	}
 
-	private void makeDeliveryStopIfNeeded(@NonNull final I_C_DunningDoc dunningDoc)
+	@Override
+	public void makeDeliveryStopIfNeeded(@NonNull final I_C_DunningDoc dunningDoc)
 	{
 		final org.compiere.model.I_C_DunningLevel dunningLevel = dunningDoc.getC_DunningLevel();
 		if (!dunningLevel.isDeliveryStop())

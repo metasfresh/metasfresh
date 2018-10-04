@@ -4,7 +4,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.CacheMgt;
@@ -13,6 +12,7 @@ import org.compiere.util.DisplayType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

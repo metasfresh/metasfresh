@@ -3,8 +3,6 @@ package org.adempiere.ad.column.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
@@ -12,6 +10,8 @@ import org.compiere.model.MColumn;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -24,13 +24,13 @@ package de.metas.ordercandidate.api;
 
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.ISingletonService;
 
 /**
  * Use this service to get the "actual" values for a given order line candidate. If this service has no getter for a given field (like <code>DateCandidate</code>), it is save to get the value directly

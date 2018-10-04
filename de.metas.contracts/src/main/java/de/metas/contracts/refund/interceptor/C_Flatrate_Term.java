@@ -6,16 +6,16 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.refund.InvoiceCandidateRepository;
+import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -44,11 +44,11 @@ import lombok.NonNull;
 @Component
 public class C_Flatrate_Term
 {
-	private final InvoiceCandidateRepository invoiceCandidateRepository;
+	private final RefundInvoiceCandidateRepository invoiceCandidateRepository;
 
-	private C_Flatrate_Term(@NonNull final InvoiceCandidateRepository invoiceCandidateRepository)
+	private C_Flatrate_Term(@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository)
 	{
-		this.invoiceCandidateRepository = invoiceCandidateRepository;
+		this.invoiceCandidateRepository = refundInvoiceCandidateRepository;
 	}
 
 	/**

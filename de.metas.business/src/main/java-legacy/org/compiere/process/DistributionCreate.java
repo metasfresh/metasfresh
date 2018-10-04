@@ -18,7 +18,6 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionList;
 import org.compiere.model.MDistributionListLine;
@@ -30,6 +29,7 @@ import org.compiere.util.Env;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  *	Create Distribution List Order

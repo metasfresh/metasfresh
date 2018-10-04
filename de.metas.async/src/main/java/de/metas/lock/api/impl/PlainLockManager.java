@@ -1,7 +1,5 @@
 package de.metas.lock.api.impl;
 
-import org.adempiere.util.Services;
-
 import de.metas.lock.api.ILockManager;
 
 /*
@@ -28,6 +26,7 @@ import de.metas.lock.api.ILockManager;
 
 
 import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.util.Services;
 
 
 public class PlainLockManager extends LockManager

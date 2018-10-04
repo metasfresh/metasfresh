@@ -3,7 +3,6 @@ package de.metas.elasticsearch.denormalizers.impl;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
@@ -28,6 +27,7 @@ import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.types.ESIndexType;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /*
  * #%L

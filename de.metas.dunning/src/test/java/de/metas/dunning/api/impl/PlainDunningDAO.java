@@ -10,18 +10,17 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.List;
@@ -31,16 +30,15 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.collections.IteratorUtils;
 
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.collections.IteratorUtils;
 
 public class PlainDunningDAO extends AbstractDunningDAO
 {
@@ -70,32 +68,6 @@ public class PlainDunningDAO extends AbstractDunningDAO
 	}
 
 	@Override
-	public List<I_C_DunningDoc_Line> retrieveDunningDocLines(final IDunningContext dunningContext, final I_C_DunningDoc dunningDoc)
-	{
-		return lookupMap.getRecords(I_C_DunningDoc_Line.class, new IQueryFilter<I_C_DunningDoc_Line>()
-		{
-			@Override
-			public boolean accept(I_C_DunningDoc_Line pojo)
-			{
-				return pojo.getC_DunningDoc_ID() == dunningDoc.getC_DunningDoc_ID();
-			}
-		});
-	}
-
-	@Override
-	public List<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSources(final IDunningContext dunningContext, final I_C_DunningDoc_Line line)
-	{
-		return lookupMap.getRecords(I_C_DunningDoc_Line_Source.class, new IQueryFilter<I_C_DunningDoc_Line_Source>()
-		{
-			@Override
-			public boolean accept(I_C_DunningDoc_Line_Source pojo)
-			{
-				return pojo.getC_DunningDoc_Line_ID() == line.getC_DunningDoc_Line_ID();
-			}
-		});
-	}
-
-	@Override
 	public Iterator<I_C_DunningDoc> retrieveNotProcessedDocumentsIterator(final IDunningContext dunningContext)
 	{
 		return lookupMap.getRecords(I_C_DunningDoc.class, new IQueryFilter<I_C_DunningDoc>()
@@ -108,24 +80,25 @@ public class PlainDunningDAO extends AbstractDunningDAO
 		}).iterator();
 	}
 
-//	private static final String FLAG_CandidateStaled = PlainDunningDAO.class.getName() + "#Staled";
+	// private static final String FLAG_CandidateStaled = PlainDunningDAO.class.getName() + "#Staled";
 
 	/**
 	 * In Plain mode, staled (virtual column) is not supported. Always returning false.
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
 	public boolean isStaled(final I_C_Dunning_Candidate candidate)
 	{
-		//final Boolean value = (Boolean)POJOWrapper.getWrapper(candidate).getValuesMap().get(FLAG_CandidateStaled);
-		//return value != null && value.booleanValue();
+		// final Boolean value = (Boolean)POJOWrapper.getWrapper(candidate).getValuesMap().get(FLAG_CandidateStaled);
+		// return value != null && value.booleanValue();
 		InterfaceWrapperHelper.refresh(candidate);
 		return candidate.isStaled();
 	}
 
 	/**
 	 * This method is <b>not</b> defined in the service interface. It is intended to be used by testing code only.
+	 *
 	 * @param candidate
 	 * @param staled
 	 */
@@ -136,7 +109,7 @@ public class PlainDunningDAO extends AbstractDunningDAO
 
 		candidate.setIsStaled(staled);
 		InterfaceWrapperHelper.save(candidate);
-		//POJOWrapper.getWrapper(candidate).getValuesMap().put(FLAG_CandidateStaled, staled);
+		// POJOWrapper.getWrapper(candidate).getValuesMap().put(FLAG_CandidateStaled, staled);
 	}
 
 	@Override
@@ -195,7 +168,7 @@ public class PlainDunningDAO extends AbstractDunningDAO
 		}
 		return counter;
 	}
-	
+
 	@Override
 	public List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName)
 	{

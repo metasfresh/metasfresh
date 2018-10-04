@@ -32,10 +32,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.time.SystemTime;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -45,6 +43,8 @@ import de.metas.picking.legacy.form.PackingTreeModel;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.picking.service.FreshPackingItemHelper;
 import de.metas.picking.service.IFreshPackingItem;
+import de.metas.util.Check;
+import de.metas.util.time.SystemTime;
 
 /**
  * 

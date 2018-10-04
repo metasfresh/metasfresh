@@ -10,8 +10,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 
 import de.metas.dlm.IDLMService;
@@ -20,6 +18,8 @@ import de.metas.dlm.coordinator.ICoordinatorService;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

@@ -5,12 +5,12 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public abstract class AbstractBPBankAccountDAO implements IESRBPBankAccountDAO

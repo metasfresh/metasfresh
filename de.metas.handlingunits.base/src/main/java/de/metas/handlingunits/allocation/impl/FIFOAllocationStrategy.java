@@ -1,8 +1,5 @@
 package de.metas.handlingunits.allocation.impl;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -34,6 +31,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 {

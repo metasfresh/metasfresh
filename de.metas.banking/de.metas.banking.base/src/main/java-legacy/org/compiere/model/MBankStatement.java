@@ -20,19 +20,21 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 /**
  * Bank Statement Model
@@ -43,13 +45,13 @@ import de.metas.i18n.Msg;
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 <li>BF [ 2824951 ] The payments is not release when Bank Statement is void
  * @see http://sourceforge.net/tracker/?func=detail&aid=2824951&group_id=176962&atid=879332
  * @author Teo Sarca, http://www.arhipac.ro <li>FR [ 2616330 ] Use MPeriod.testPeriodOpen instead of isOpen https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2616330&group_id=176962
- * 
+ *
  * @version $Id: MBankStatement.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MBankStatement extends X_C_BankStatement implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -859925588789443186L;
 
@@ -81,7 +83,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx Current context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -123,7 +125,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Get Bank Statement Lines
-	 * 
+	 *
 	 * @param requery requery
 	 * @return line array
 	 */
@@ -238,7 +240,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -251,7 +253,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -264,7 +266,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -287,9 +289,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 		BigDecimal total = Env.ZERO;
 		Timestamp minDate = getStatementDate();
 		Timestamp maxDate = minDate;
-		for (int i = 0; i < lines.length; i++)
+		for (MBankStatementLine line : lines)
 		{
-			MBankStatementLine line = lines[i];
 			total = total.add(line.getStmtAmt());
 			if (line.getDateAcct().before(minDate))
 				minDate = line.getDateAcct();
@@ -313,7 +314,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -326,7 +327,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -339,7 +340,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -364,9 +365,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 		// Set Payment reconciled
 		MBankStatementLine[] lines = getLines(false);
-		for (int i = 0; i < lines.length; i++)
+		for (MBankStatementLine line : lines)
 		{
-			MBankStatementLine line = lines[i];
 			//
 			// metas: tsa: cash/bank transfer
 			if (line.getC_BP_BankAccountTo_ID() > 0)
@@ -392,7 +392,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 				}
 			}
 			// metas: end
-			
+
 			//
 			// Reconcile the payment
 			if (line.getC_Payment_ID() > 0)
@@ -418,14 +418,14 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Void Document.
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
 	public boolean voidIt()
 	{
 		log.debug("{}", this);
-		
+
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -456,9 +456,8 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 		// Set lines to 0
 		final MBankStatementLine[] lines = getLines(true);
-		for (int i = 0; i < lines.length; i++)
+		for (final MBankStatementLine line : lines)
 		{
-			final MBankStatementLine line = lines[i];
 			if (line.getStmtAmt().compareTo(Env.ZERO) != 0)
 			{
 				String description = Msg.getMsg(getCtx(), "Voided") + " ("
@@ -476,7 +475,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 				line.setTrxAmt(Env.ZERO);
 				line.setChargeAmt(Env.ZERO);
 				line.setInterestAmt(Env.ZERO);
-				
+
 				//
 				// metas: tsa: cash/bank transfer
 				if (line.getLink_BankStatementLine_ID() > 0)
@@ -489,7 +488,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 					}
 				}
 				// metas: tsa: end
-				
+
 				//
 				// Unlink payment
 				if (line.getC_Payment_ID() > 0)
@@ -499,7 +498,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 					InterfaceWrapperHelper.save(payment);
 					line.setC_Payment(null);
 				}
-				
+
 				line.saveEx();
 			}
 		}
@@ -518,7 +517,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Close Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -541,7 +540,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Reverse Correction.
-	 * 
+	 *
 	 * @return false because it's not supported.
 	 */
 	@Override
@@ -563,7 +562,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Reverse Accrual
-	 * 
+	 *
 	 * @return false because it's not supported
 	 */
 	@Override
@@ -585,7 +584,7 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 
 	/**
 	 * Re-activate
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -623,6 +622,12 @@ public class MBankStatement extends X_C_BankStatement implements IDocument
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
 	}	// getSummary
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getStatementDate());
+	}
 
 	/**
 	 * Get Process Message

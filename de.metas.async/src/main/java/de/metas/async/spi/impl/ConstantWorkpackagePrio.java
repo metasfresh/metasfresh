@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.util.Env;
@@ -35,6 +34,7 @@ import org.compiere.util.Env;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.util.Services;
 
 /**
  * TODO: check if we can do this better (using enum??)

@@ -1,10 +1,10 @@
 package de.metas.dlm.exception;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

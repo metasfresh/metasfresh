@@ -27,8 +27,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.beans.impl.UILoadingPropertyChangeListener;
@@ -64,6 +62,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wareneingang (POS).

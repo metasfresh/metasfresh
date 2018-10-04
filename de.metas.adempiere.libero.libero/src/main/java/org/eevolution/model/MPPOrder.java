@@ -41,6 +41,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +50,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
@@ -68,6 +67,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -84,6 +84,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  * PP Order Model.
@@ -883,6 +885,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public String getSummary()
 	{
 		return "" + getDocumentNo() + "/" + getDatePromised();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateOrdered());
 	}
 
 	@Override

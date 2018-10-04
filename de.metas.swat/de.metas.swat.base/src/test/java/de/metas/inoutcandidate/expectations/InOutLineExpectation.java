@@ -31,7 +31,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.mm.attributes.api.impl.AttributeInstanceExpectation;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
@@ -42,6 +41,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.util.Check;
 
 public class InOutLineExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {

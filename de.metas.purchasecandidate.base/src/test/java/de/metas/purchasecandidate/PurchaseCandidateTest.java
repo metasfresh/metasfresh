@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
@@ -25,6 +24,7 @@ import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L

@@ -25,8 +25,9 @@ package org.adempiere.ui.api;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.GridTab;
+
+import de.metas.util.ISingletonService;
 
 public interface IGridTabSummaryInfoFactory extends ISingletonService
 {

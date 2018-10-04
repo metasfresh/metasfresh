@@ -28,11 +28,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterFactory;
+import de.metas.util.Check;
 
 public class ExporterFactory implements IExporterFactory
 {

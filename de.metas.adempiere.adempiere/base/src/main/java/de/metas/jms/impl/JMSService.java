@@ -3,7 +3,6 @@ package de.metas.jms.impl;
 import javax.annotation.Nullable;
 import javax.jms.ConnectionFactory;
 
-import org.adempiere.util.StringUtils;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 import de.metas.jms.EmbeddedActiveMQBrokerService;
 import de.metas.jms.IJMSService;
 import de.metas.jms.JmsConstants;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

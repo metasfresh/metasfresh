@@ -7,7 +7,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
@@ -16,6 +15,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.spi.IESRLineHandler;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**

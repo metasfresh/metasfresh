@@ -34,7 +34,6 @@ import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class SystemBL implements ISystemBL

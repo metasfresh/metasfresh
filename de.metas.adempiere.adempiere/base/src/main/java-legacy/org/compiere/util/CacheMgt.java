@@ -32,9 +32,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.WeakList;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.Adempiere;
@@ -45,6 +42,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.WeakList;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -76,8 +76,6 @@ public final class CacheMgt
 	 */
 	private CacheMgt()
 	{
-		super();
-
 		JMXRegistry.get().registerJMX(new JMXCacheMgt(), OnJMXAlreadyExistsPolicy.Replace);
 	}
 
@@ -391,7 +389,7 @@ public final class CacheMgt
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isNull(trx))
+		if (!trxManager.isActive(trx))
 		{
 			reset(request, ResetMode.LOCAL_AND_BROADCAST);
 		}

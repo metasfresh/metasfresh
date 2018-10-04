@@ -25,13 +25,13 @@ package de.metas.activity.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.util.Services;
 
 
 

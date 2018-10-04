@@ -33,8 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -51,6 +49,8 @@ import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
@@ -225,14 +225,20 @@ public class C_OrderLine
 		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
 	}
 
-	@CalloutMethod(columnNames = I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
-	public void onGroupCompensationPercentageChanged(final I_C_OrderLine orderLine)
+	@CalloutMethod(columnNames = {
+			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationType,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType
+	})
+	public void onGroupCompensationLineChanged(final I_C_OrderLine orderLine)
 	{
 		groupChangesHandler.updateCompensationLineNoSave(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_LineNetAmt,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationType,
+			I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType,
 			I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage
 	}, skipIfCopying = true)
 	public void handleCompensantionGroupChange(final I_C_OrderLine orderLine)
@@ -303,5 +309,12 @@ public class C_OrderLine
 			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
 			orderLineBL.setShipper(orderLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void updateProductDescriptionFromProductBOMIfConfigured(final I_C_OrderLine orderLine)
+	{
+		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
 	}
 }

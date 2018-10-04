@@ -25,10 +25,10 @@ package de.metas.workflow.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
+import de.metas.util.Services;
 import de.metas.workflow.api.IWorkflowBL;
 
 @Interceptor(I_C_Invoice.class)

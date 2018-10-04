@@ -16,8 +16,6 @@ import org.adempiere.ad.ui.spi.IStatefulTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.impl.CompositeTabCallout;
 import org.adempiere.model.I_AD_Tab_Callout;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -30,6 +28,8 @@ import com.google.common.collect.SetMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class TabCalloutFactory implements ITabCalloutFactory
 {

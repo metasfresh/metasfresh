@@ -29,7 +29,6 @@ import java.util.Date;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_WF_Node;
@@ -43,6 +42,7 @@ import org.compiere.wf.MWorkflow;
 import org.compiere.wf.api.IADWorkflowBL;
 import org.compiere.wf.exceptions.WorkflowNotValidException;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ADWorkflowBL implements IADWorkflowBL

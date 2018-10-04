@@ -26,7 +26,6 @@ package de.metas.bpartner.service;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -34,6 +33,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.util.ISingletonService;
 
 public interface IBPartnerOrgBL extends ISingletonService
 {

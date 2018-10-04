@@ -19,6 +19,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
@@ -48,6 +48,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
+import de.metas.util.Services;
 
 /**
  * HR Process Model
@@ -62,7 +63,7 @@ import de.metas.script.ScriptEngineFactory;
 public class MHRProcess extends X_HR_Process implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 570699817555475782L;
 
@@ -92,7 +93,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param HR_Process_ID To load, (0 create new order)
 	 */
@@ -115,7 +116,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 */
@@ -172,7 +173,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -185,7 +186,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -198,7 +199,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**************************************************************************
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -246,7 +247,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -278,7 +279,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -289,7 +290,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -301,7 +302,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Post Document - nothing
-	 * 
+	 *
 	 * @return true if success
 	 */
 	public boolean postIt()
@@ -313,7 +314,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	/**
 	 * Void Document.
 	 * Set Qtys to 0 - Sales: reverse all documents
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -328,7 +329,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	/**
 	 * Close Document.
 	 * Cancel not delivered Qunatities
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -346,7 +347,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Reverse Correction - same void
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -358,7 +359,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -370,7 +371,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Re-activate.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -405,7 +406,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Get Document Owner (Responsible)
-	 * 
+	 *
 	 * @return AD_User_ID
 	 */
 	@Override
@@ -416,7 +417,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Get Document Approval Amount
-	 * 
+	 *
 	 * @return amount
 	 */
 	@Override
@@ -426,7 +427,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	}	// getApprovalAmt
 
 	/**
-	 * 
+	 *
 	 */
 	@Override
 	public int getC_Currency_ID()
@@ -446,9 +447,15 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		return "";
 	}
 
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getDateAcct());
+	}
+
 	/**
 	 * Create PDF
-	 * 
+	 *
 	 * @return File or null
 	 */
 	@Override
@@ -468,7 +475,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Create PDF file
-	 * 
+	 *
 	 * @param file output file
 	 * @return file if success
 	 */
@@ -482,7 +489,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Get Document Info
-	 * 
+	 *
 	 * @return document info (untranslated)
 	 */
 	@Override
@@ -494,7 +501,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Get Lines
-	 * 
+	 *
 	 * @param requery requery
 	 * @return lines
 	 */
@@ -534,7 +541,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Load HR_Movements and store them in a HR_Concept_ID->MHRMovement hashtable
-	 * 
+	 *
 	 * @param movements hashtable
 	 * @param C_PBartner_ID
 	 */
@@ -566,7 +573,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Execute the script
-	 * 
+	 *
 	 * @param scriptCtx
 	 * @param AD_Rule_ID
 	 * @return
@@ -578,7 +585,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		{
 			throw new AdempiereException("@NotFound@ @AD_Rule_ID@ (ID=" + AD_Rule_ID + ")");
 		}
-		
+
 		try
 		{
 			String scriptBody = "";
@@ -588,7 +595,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				String replacement = "process.get";
 				scriptBody = rule.getScript().trim().replaceAll(regex, replacement);
 			}
-			
+
 			final String script = s_scriptImport.toString()
 					+ " double result = 0;"
 					+ "\n" + scriptBody
@@ -598,7 +605,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 					.createExecutor(rule)
 					.putAll(scriptCtx)
 					.execute(script);
-			
+
 			return result;
 		}
 		catch (Exception e)
@@ -609,7 +616,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * creates movements for concepts related to labor
-	 * 
+	 *
 	 * @param C_BPartner_ID
 	 * @param period
 	 * @param scriptCtx
@@ -643,7 +650,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * create movement for cost collector
-	 * 
+	 *
 	 * @param C_BPartner_ID
 	 * @param cc
 	 * @param scriptCtx
@@ -868,7 +875,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : get the value of the concept
-	 * 
+	 *
 	 * @param pconcept
 	 * @return
 	 */
@@ -905,7 +912,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : sets the value of a concept
-	 * 
+	 *
 	 * @param conceptValue
 	 * @param value
 	 */
@@ -938,11 +945,11 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/*
 	 * Helper Method : sets the value of a concept and set if isRegistered
-	 * 
+	 *
 	 * @param conceptValue
-	 * 
+	 *
 	 * @param value
-	 * 
+	 *
 	 * @param isRegistered
 	 */
 	public void setConcept(String conceptValue, double value, boolean isRegistered)
@@ -979,7 +986,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : get the sum of the concept values, grouped by the Category
-	 * 
+	 *
 	 * @param pconcept
 	 * @return
 	 */
@@ -1021,7 +1028,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get Concept [get concept to search key ]
-	 * 
+	 *
 	 * @param pList Value List
 	 * @param amount Amount to search
 	 * @param column Number of column to return (1.......8)
@@ -1060,7 +1067,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get Attribute [get Attribute to search key concept ]
-	 * 
+	 *
 	 * @param pConcept - Value to Concept
 	 * @return Amount of concept, applying to employee
 	 */
@@ -1110,7 +1117,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get Attribute [get Attribute to search key concept ]
-	 * 
+	 *
 	 * @param conceptValue
 	 * @return ServiceDate
 	 */
@@ -1148,7 +1155,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get the number of days between start and end, in Timestamp format
-	 * 
+	 *
 	 * @param date1
 	 * @param date2
 	 * @return no. of days
@@ -1161,7 +1168,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get the number of days between start and end, in String format
-	 * 
+	 *
 	 * @param date1
 	 * @param date2
 	 * @return no. of days
@@ -1175,7 +1182,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get Months, Date in Format Timestamp
-	 * 
+	 *
 	 * @param start
 	 * @param end
 	 * @return no. of month between two dates
@@ -1230,7 +1237,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	 * Helper Method : Concept for a range from-to in periods.
 	 * Periods with values of 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period.
-	 * 
+	 *
 	 * @param conceptValue concept key(value)
 	 * @param periodFrom the search is done by the period value, it helps to search from previous years
 	 * @param periodTo
@@ -1244,7 +1251,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	 * Helper Method : Concept by range from-to in periods from a different payroll
 	 * periods with values 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period
-	 * 
+	 *
 	 * @param conceptValue
 	 * @param pFrom
 	 * @param pTo the search is done by the period value, it helps to search from previous years
@@ -1322,7 +1329,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method: gets Concept value of a payrroll between 2 dates
-	 * 
+	 *
 	 * @param pConcept
 	 * @param pPayrroll
 	 * @param from
@@ -1396,7 +1403,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	 * Helper Method : Attribute that had from some date to another to date,
 	 * if it finds just one period it's seen for the attribute of such period
 	 * if there are two or more attributes based on the days
-	 * 
+	 *
 	 * @param ctx
 	 * @param vAttribute
 	 * @param dateFrom
@@ -1419,7 +1426,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	 * if there are two or more attributes
 	 * pFrom and pTo the search is done by the period value, it helps to search
 	 * from previous year based on the days
-	 * 
+	 *
 	 * @param ctx
 	 * @param vAttribute
 	 * @param periodFrom
@@ -1438,7 +1445,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get AttributeInvoice
-	 * 
+	 *
 	 * @param pConcept - Value to Concept
 	 * @return C_Invoice_ID, 0 if does't
 	 */
@@ -1481,7 +1488,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : Get AttributeDocType
-	 * 
+	 *
 	 * @param pConcept - Value to Concept
 	 * @return C_DocType_ID, 0 if does't
 	 */
@@ -1524,7 +1531,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method : get days from specific period
-	 * 
+	 *
 	 * @param period
 	 * @return no. of days
 	 */

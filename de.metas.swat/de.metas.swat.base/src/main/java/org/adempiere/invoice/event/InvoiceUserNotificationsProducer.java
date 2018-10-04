@@ -1,7 +1,5 @@
 package org.adempiere.invoice.event;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -37,6 +35,8 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.

@@ -34,11 +34,9 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -47,6 +45,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
+import org.eevolution.api.IProductBOMBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -70,17 +69,22 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class OrderLineBL implements IOrderLineBL
 {
-
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
+
+	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -243,7 +247,7 @@ public class OrderLineBL implements IOrderLineBL
 			ol.setC_BPartner_ID(bpartnerId);
 
 			final BPartnerLocationId deliveryLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoIdOr(deliveryLocationId, -1));
+			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryLocationId));
 
 			final int contactId = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
 			ol.setAD_User_ID(contactId);
@@ -287,13 +291,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updateLineNetAmt(@NonNull final I_C_OrderLine orderLine)
+	public void updateLineNetAmt(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		updateLineNetAmt(orderLine, getQtyEntered(orderLine));
 	}
 
 	void updateLineNetAmt(
-			@NonNull final I_C_OrderLine ol,
+			@NonNull final org.compiere.model.I_C_OrderLine ol,
 			@NonNull final Quantity qty)
 	{
 		final Quantity qtyInPriceUOM = convertToPriceUOM(qty, ol);
@@ -607,6 +611,39 @@ public class OrderLineBL implements IOrderLineBL
 				.orderLineBL(this)
 				.build()
 				.computePriceLimit();
+	}
+
+	/**
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/4535
+	 */
+	@Override
+	public void updateProductDescriptionFromProductBOMIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		if (!isSetBOMDescription())
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
+		{
+			return;
+		}
+
+		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+		final String description = productBOMBL.getBOMDescriptionForProductId(productId);
+		if (Check.isEmpty(description, true))
+		{
+			return;
+		}
+
+		orderLine.setProductDescription(description);
+	}
+
+	private boolean isSetBOMDescription()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SetBOMDescription, false);
 	}
 
 }

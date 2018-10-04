@@ -31,13 +31,14 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.Services;
 import org.compiere.apps.IStatusBar;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
+
+import de.metas.util.Services;
 
 /**
  * 

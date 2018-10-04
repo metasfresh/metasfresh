@@ -28,8 +28,9 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellEditor;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Check;
 import org.compiere.swing.CEditor;
+
+import de.metas.util.Check;
 
 /**
  * Cell Editor.

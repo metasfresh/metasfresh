@@ -1,9 +1,11 @@
 package org.adempiere.service;
 
-import org.adempiere.util.Check;
+import java.util.Optional;
+
 import org.compiere.util.Env;
 
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*
@@ -54,6 +56,11 @@ public class OrgId implements RepoIdAware
 		{
 			return ofRepoId(repoId);
 		}
+	}
+
+	public static Optional<OrgId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final OrgId orgId)

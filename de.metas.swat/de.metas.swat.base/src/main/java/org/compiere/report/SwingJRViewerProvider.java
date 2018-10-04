@@ -3,7 +3,6 @@ package org.compiere.report;
 import java.io.File;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.print.JRReportViewerProvider;
 import org.compiere.report.viewer.JasperReportViewerFrame;
 
@@ -11,8 +10,9 @@ import com.google.common.io.Files;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.adempiere.report.jasper.client.JRClientUtil;
 import de.metas.process.ProcessInfo;
+import de.metas.report.jasper.client.JRClientUtil;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
@@ -18,6 +17,7 @@ import org.slf4j.Logger;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import de.metas.util.Services;
 
 public class OrderPA implements IOrderPA
 {

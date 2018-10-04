@@ -2,7 +2,6 @@ package de.metas.report;
 
 import java.util.Collections;
 
-import org.adempiere.util.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -17,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
+import de.metas.util.StringUtils;
 
 /*
  * #%L

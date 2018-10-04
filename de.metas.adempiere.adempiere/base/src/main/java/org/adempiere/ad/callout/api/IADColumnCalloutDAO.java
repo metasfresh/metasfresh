@@ -25,10 +25,11 @@ package org.adempiere.ad.callout.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_ColumnCallout;
 
 import com.google.common.collect.ListMultimap;
+
+import de.metas.util.ISingletonService;
 
 public interface IADColumnCalloutDAO extends ISingletonService
 {

@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingPPOrderDAO;
 import de.metas.materialtracking.model.I_C_Invoice_Detail;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.util.Services;
 
 /*
  * #%L

@@ -28,13 +28,14 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.facet.FacetCollectorRequestBuilder;
 import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetCollectorResult;
-import org.adempiere.util.Check;
+
 import com.google.common.collect.ImmutableList;
 
 public class CompositeFacetCollector<ModelType> extends AbstractFacetCollector<ModelType>

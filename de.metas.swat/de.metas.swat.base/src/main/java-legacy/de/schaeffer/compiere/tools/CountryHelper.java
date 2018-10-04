@@ -28,13 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.ICountryAreaBL;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class CountryHelper {
 	public static List<I_C_Country> countries = new ArrayList<I_C_Country>();

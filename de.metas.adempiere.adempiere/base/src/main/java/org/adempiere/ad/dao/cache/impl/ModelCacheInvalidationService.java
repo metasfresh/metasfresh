@@ -14,7 +14,6 @@ import org.adempiere.ad.dao.cache.ModelCacheInvalidateRequestFactory;
 import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CacheMgt;
 import org.slf4j.Logger;
@@ -25,6 +24,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -77,8 +77,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		if (timing != ModelCacheInvalidationTiming.NEW)
 		{
 			final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
-			request.getRecordsEffective()
-					.forEach(record -> modelCacheService.invalidate(record.getTableName(), record.getRecord_ID(), ITrx.TRXNAME_ThreadInherited));
+			modelCacheService.invalidate(request);
 		}
 
 		//

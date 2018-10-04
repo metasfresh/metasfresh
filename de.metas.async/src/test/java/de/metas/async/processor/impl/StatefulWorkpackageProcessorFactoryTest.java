@@ -26,7 +26,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,6 +33,7 @@ import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
 
 public class StatefulWorkpackageProcessorFactoryTest extends QueueProcessorTestBase
 {

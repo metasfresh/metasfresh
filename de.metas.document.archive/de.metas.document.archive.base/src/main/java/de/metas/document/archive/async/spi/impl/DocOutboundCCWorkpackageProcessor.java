@@ -33,10 +33,6 @@ import java.util.List;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.FileUtils;
-import org.adempiere.util.Services;
-import org.adempiere.util.StreamUtils;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -47,6 +43,10 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.util.Check;
+import de.metas.util.FileUtils;
+import de.metas.util.Services;
+import de.metas.util.StreamUtils;
 
 public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 {

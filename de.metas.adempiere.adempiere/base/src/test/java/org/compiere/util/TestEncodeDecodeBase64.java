@@ -56,10 +56,10 @@ public class TestEncodeDecodeBase64
 		final String dataStr = "1237890";
 		final byte[] data = dataStr.getBytes();
 
-		final byte[] dataEncoded = Util.encodeBase64(data);
+		final byte[] dataEncoded = Util.encodeBase64(data).getBytes();
 		// final String dataEncodedStr = new String(dataEncoded);
 
-		final byte[] dataDecoded = Util.decodeBase64(dataEncoded);
+		final byte[] dataDecoded = Util.decodeBase64(new String(dataEncoded));
 		final String dataDecodedStr = new String(dataDecoded);
 
 		Assert.assertEquals(asList(data), asList(dataDecoded));
@@ -75,10 +75,10 @@ public class TestEncodeDecodeBase64
 		final byte[] data = Util.readBytes(in);
 		Assert.assertNotNull(data);
 
-		final byte[] dataEncoded = Util.encodeBase64(data);
+		final byte[] dataEncoded = Util.encodeBase64(data).getBytes();
 		Assert.assertNotNull(dataEncoded);
 
-		final byte[] dataDecoded = Util.decodeBase64(dataEncoded);
+		final byte[] dataDecoded = Util.decodeBase64(new String(dataEncoded));
 		Assert.assertNotNull(dataDecoded);
 
 		Assert.assertEquals("Expect same size", data.length, dataDecoded.length);
@@ -99,7 +99,7 @@ public class TestEncodeDecodeBase64
 		Element base64Element = XMLHelper.getElement("/Base64", documentReceived);
 
 		final String dataStrReceived = getText(base64Element);
-		final byte[] dataReceived = Util.decodeBase64(dataStrReceived.getBytes());
+		final byte[] dataReceived = Util.decodeBase64(dataStrReceived);
 
 		Assert.assertEquals(asList(data), asList(dataReceived));
 	}
@@ -145,7 +145,7 @@ public class TestEncodeDecodeBase64
 			return null;
 		}
 
-		final List<Byte> list = new ArrayList<Byte>(data.length);
+		final List<Byte> list = new ArrayList<>(data.length);
 		for (byte b : data)
 		{
 			list.add(b);

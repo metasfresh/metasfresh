@@ -22,8 +22,9 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.util.Services;
 
 
 

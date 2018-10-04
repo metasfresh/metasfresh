@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.time.SystemTime;
 import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -27,6 +26,7 @@ import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

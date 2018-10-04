@@ -27,9 +27,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
+
+import de.metas.util.Check;
 
 /**
  * 

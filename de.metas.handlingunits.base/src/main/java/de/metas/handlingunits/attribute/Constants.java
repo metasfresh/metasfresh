@@ -1,7 +1,6 @@
 package de.metas.handlingunits.attribute;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.util.Check;
 
 /*
  * #%L
@@ -27,6 +26,7 @@ import org.adempiere.util.Check;
 
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.util.Check;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -75,6 +75,9 @@ public final class Constants
 
 	public static final String ATTR_Expired = "HU_Expired";
 	public static final String ATTR_Expired_Value_Expired = "expired";
+
+	public static final String ATTR_Quarantine = "HU_Quarantine";
+	public static final String ATTR_Quarantine_Value_Quarantine = "quarantine";
 
 	public static final String ATTR_TE = AttributeConstants.ATTR_TE;
 	public static final String ATTR_DateReceived = AttributeConstants.ATTR_DateReceived;

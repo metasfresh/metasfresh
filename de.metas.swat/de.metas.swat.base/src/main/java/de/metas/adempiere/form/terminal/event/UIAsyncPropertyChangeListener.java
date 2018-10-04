@@ -4,8 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -15,6 +13,8 @@ import de.metas.adempiere.form.IClientUIAsyncInvoker.ClientUIAsyncRunnableAdapte
 import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncExecutor;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

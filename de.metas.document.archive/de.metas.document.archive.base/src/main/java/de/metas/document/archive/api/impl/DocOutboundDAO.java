@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.Query;
@@ -36,6 +35,7 @@ import org.compiere.util.Env;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.util.Check;
 
 public class DocOutboundDAO extends AbstractDocOutboundDAO
 {

@@ -42,6 +42,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,6 @@ import org.adempiere.model.engines.IDocumentLine;
 import org.adempiere.model.engines.StorageEngine;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
@@ -90,6 +90,7 @@ import de.metas.order.IOrderBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.util.Services;
 
 /**
  * PP Cost Collector Model
@@ -815,6 +816,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		final StringBuffer sb = new StringBuffer();
 		sb.append(getDescription());
 		return sb.toString();
+	}
+
+	@Override
+	public LocalDate getDocumentDate()
+	{
+		return TimeUtil.asLocalDate(getMovementDate());
 	}
 
 	@Override

@@ -1,8 +1,6 @@
 package de.metas.contracts.flatrate.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
 
@@ -15,6 +13,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class C_Flatrate_Term_Create_From_OLCand extends JavaProcess implements IProcessPrecondition
 {

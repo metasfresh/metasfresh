@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -48,6 +47,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
+import de.metas.util.Services;
 
 /**
  * See {@link #test_forwardWorkPackagePrio()}.

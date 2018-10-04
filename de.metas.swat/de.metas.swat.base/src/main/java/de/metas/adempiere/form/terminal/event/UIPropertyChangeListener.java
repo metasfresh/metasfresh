@@ -26,8 +26,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -36,6 +34,8 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.adempiere.form.terminal.IComponent;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps a {@link PropertyChangeListener} but catches the exceptions and show them to user.

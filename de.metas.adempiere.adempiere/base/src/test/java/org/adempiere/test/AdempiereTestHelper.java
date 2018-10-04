@@ -34,14 +34,10 @@ import org.adempiere.context.SwingContextProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.UnitTestServiceNamePolicy;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
@@ -57,6 +53,10 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.UnitTestServiceNamePolicy;
+import de.metas.util.time.SystemTime;
 
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.

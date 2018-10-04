@@ -25,8 +25,9 @@ package de.metas.document;
 
 import java.util.Collection;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Recurring;
+
+import de.metas.util.ISingletonService;
 
 public interface IRecurringPA extends ISingletonService {
 

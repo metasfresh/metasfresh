@@ -14,11 +14,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -40,6 +35,11 @@ import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -169,7 +169,6 @@ public class HUShippingFacade
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(completeShipments)
 				.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-				.setManualPackingMaterial(false) // use the HUs!
 				.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.

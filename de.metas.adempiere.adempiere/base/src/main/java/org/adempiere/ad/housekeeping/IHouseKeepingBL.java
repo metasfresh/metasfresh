@@ -24,7 +24,8 @@ package org.adempiere.ad.housekeeping;
 
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.util.ISingletonService;
+
+import de.metas.util.ISingletonService;
 
 public interface IHouseKeepingBL extends ISingletonService
 {

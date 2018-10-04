@@ -27,8 +27,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.adempiere.ad.security.IUserLoginListener;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Client;
+
+import de.metas.util.Check;
 
 public class CompositeModelInterceptor implements IModelInterceptor, IUserLoginListener
 {

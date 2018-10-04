@@ -28,8 +28,6 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.adempiere.util.Check;
-import org.adempiere.util.WeakList;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.slf4j.Logger;
 
@@ -37,6 +35,8 @@ import de.metas.adempiere.form.terminal.DisposableHelper;
 import de.metas.adempiere.form.terminal.IDisposable;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.WeakList;
 
 /* package */final class TerminalContextReferences implements ITerminalContextReferences
 {

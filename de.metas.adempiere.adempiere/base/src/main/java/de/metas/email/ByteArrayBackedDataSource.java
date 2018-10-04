@@ -7,10 +7,11 @@ import java.io.OutputStream;
 
 import javax.activation.DataSource;
 
-import org.adempiere.util.Check;
 import org.compiere.util.MimeType;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Check;
 
 /*
  * #%L
@@ -42,7 +43,7 @@ import com.google.common.base.MoreObjects;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class ByteArrayBackedDataSource implements DataSource
+final class ByteArrayBackedDataSource implements DataSource
 {
 	private static final String DEFAULT_MimeType = MimeType.TYPE_TextPlain;
 

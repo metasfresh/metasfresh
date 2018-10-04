@@ -26,13 +26,13 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.Services;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.compiere.util.SwingUtils;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 
 /**
  *  Status Bar

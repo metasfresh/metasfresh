@@ -2,10 +2,12 @@ package de.metas.rfq;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
@@ -19,6 +21,8 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.rfq.model.X_C_RfQResponse;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -64,6 +68,13 @@ class RfQResponseDocumentHandler implements DocumentHandler
 	public String getDocumentInfo(final DocumentTableFields docFields)
 	{
 		return getSummary(docFields);
+	}
+
+	@Override
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	{
+		final I_C_RfQResponse rfcRecord = extractRfQResponse(docFields);
+		return TimeUtil.asLocalDate(rfcRecord.getDateResponse());
 	}
 
 	@Override

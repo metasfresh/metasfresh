@@ -16,11 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -56,11 +51,16 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-//import de.metas.handlingunits.model.I_M_Warehouse;
+// import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.product.LotNumberLock;
+import de.metas.product.LotNumberQuarantine;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -116,7 +116,7 @@ public class HUs2DDOrderProducer
 	//
 	// Parameters
 	private Properties _ctx;
-	//private I_M_Warehouse _warehouseTo;
+	// private I_M_Warehouse _warehouseTo;
 	private I_M_Locator _locatorTo;
 	private Iterator<HUToDistribute> _hus;
 	private final Timestamp date = SystemTime.asDayTimestamp();
@@ -149,7 +149,7 @@ public class HUs2DDOrderProducer
 
 		final PlainContextAware ctx = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 
-		final I_DD_Order ddOrderOrNull  = huTrxBL
+		final I_DD_Order ddOrderOrNull = huTrxBL
 				.createHUContextProcessorExecutor(ctx)
 				.call(this::processInTrx);
 
@@ -445,10 +445,10 @@ public class HUs2DDOrderProducer
 		// Description
 		final StringBuilder description = new StringBuilder();
 
-		final LotNumberLock lotNumberLock = ddOrderLineCandidate.getLotNumberLock();
-		final String lotNoLockDescription = getDescriptionForLotNoLock(lotNumberLock);
+		final LotNumberQuarantine lotNumberQuarantine = ddOrderLineCandidate.getLotNumberQuarantine();
+		final String lotNoQuarantineDescription = getDescriptionForLotNoQuarantine(lotNumberQuarantine);
 
-		description.append(lotNoLockDescription);
+		description.append(lotNoQuarantineDescription);
 		description.append(ddOrderLineCandidate.getDescription());
 
 		ddOrderline.setDescription(description.toString());
@@ -465,20 +465,20 @@ public class HUs2DDOrderProducer
 		huDDOrderDAO.addToHUsScheduledToMove(ddOrderline, ddOrderLineCandidate.getM_HUs());
 	}
 
-	private static String getDescriptionForLotNoLock(final LotNumberLock lotNumberLock)
+	private static String getDescriptionForLotNoQuarantine(final LotNumberQuarantine lotNumberQuarantine)
 	{
-		if (lotNumberLock == null)
+		if (lotNumberQuarantine == null)
 		{
 			return "";
 		}
 
-		final String lotNoLockDescription = lotNumberLock.getDescription();
-		if (Check.isEmpty(lotNoLockDescription))
+		final String lotNoQuarantineDescription = lotNumberQuarantine.getDescription();
+		if (Check.isEmpty(lotNoQuarantineDescription))
 		{
 			return "";
 		}
 
-		return lotNoLockDescription + "; ";
+		return lotNoQuarantineDescription + "; ";
 	}
 
 	/**
@@ -529,7 +529,7 @@ public class HUs2DDOrderProducer
 		private I_M_HU_PI_Item_Product piItemProduct;
 		private Map<org.compiere.model.I_M_Attribute, Object> attributes = ImmutableMap.of();
 
-		private LotNumberLock lotNoLock;
+		private LotNumberQuarantine lotNoQuarantine;
 
 		public DDOrderLineCandidate(final IHUContext huContext, final IHUProductStorage huProductStorage, final HUToDistribute huToDistribute)
 		{
@@ -568,9 +568,9 @@ public class HUs2DDOrderProducer
 				aggregationKeyBuilder.append(attribute2value.getKey().getValue(), attribute2value.getValue());
 			}
 
-			this.lotNoLock = huToDistribute.getLockLotNo();
+			this.lotNoQuarantine = huToDistribute.getQuarantineLotNo();
 
-			aggregationKeyBuilder.append(lotNoLock == null ? -1 : lotNoLock.getId());
+			aggregationKeyBuilder.append(lotNoQuarantine == null ? -1 : lotNoQuarantine.getId());
 
 			this.aggregationKey = aggregationKeyBuilder.build();
 
@@ -663,9 +663,9 @@ public class HUs2DDOrderProducer
 			return description.toString();
 		}
 
-		public LotNumberLock getLotNumberLock()
+		public LotNumberQuarantine getLotNumberQuarantine()
 		{
-			return lotNoLock;
+			return lotNoQuarantine;
 		}
 
 		public Map<org.compiere.model.I_M_Attribute, Object> getAttributes()
@@ -683,19 +683,19 @@ public class HUs2DDOrderProducer
 		}
 
 		I_M_HU hu;
-		LotNumberLock lockLotNo;
+		LotNumberQuarantine quarantineLotNo;
 		int bpartnerId;
 		int bpartnerLocationId;
 
 		@Builder
 		private HUToDistribute(
 				@NonNull final I_M_HU hu,
-				LotNumberLock lockLotNo,
+				LotNumberQuarantine quarantineLotNo,
 				int bpartnerId,
 				int bpartnerLocationId)
 		{
 			this.hu = hu;
-			this.lockLotNo = lockLotNo;
+			this.quarantineLotNo = quarantineLotNo;
 			this.bpartnerId = bpartnerId;
 			this.bpartnerLocationId = bpartnerLocationId;
 		}

@@ -25,7 +25,7 @@ package org.adempiere.util.comparator;
 
 import java.util.Comparator;
 
-import org.adempiere.util.Check;
+import de.metas.util.Check;
 
 /**
  * An comparator wrapper which is converting an comparator of type <code>IT</code> to a comparator of type <code>OT</code> by performing an unchecked cast. <br/>

@@ -3,10 +3,9 @@ package de.metas.ordercandidate.api;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.util.Check;
-
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;

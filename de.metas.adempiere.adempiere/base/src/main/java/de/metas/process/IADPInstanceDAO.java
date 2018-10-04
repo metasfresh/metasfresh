@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
+
+import de.metas.util.ISingletonService;
 
 public interface IADPInstanceDAO extends ISingletonService
 {

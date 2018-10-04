@@ -24,9 +24,9 @@ package de.metas.invoicecandidate.facet;
 
 
 import org.adempiere.facet.IFacetCollector;
-import org.adempiere.util.ISingletonService;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.ISingletonService;
 
 /**
  * Service responsible for registering and providing all {@link IFacetCollector}s to be used to collect facets from {@link I_C_Invoice_Candidate}s.

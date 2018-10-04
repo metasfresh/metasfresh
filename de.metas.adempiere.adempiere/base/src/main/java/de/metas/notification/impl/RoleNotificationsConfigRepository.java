@@ -3,7 +3,6 @@ package de.metas.notification.impl;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_NotificationGroup;
 import org.compiere.util.CCache;
@@ -17,6 +16,7 @@ import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

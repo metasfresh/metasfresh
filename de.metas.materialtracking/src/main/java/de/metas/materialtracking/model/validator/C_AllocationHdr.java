@@ -27,7 +27,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
@@ -39,6 +38,7 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.spi.impl.listeners.PaymentAllocationLineMaterialTrackingListener;
+import de.metas.util.Services;
 
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr extends MaterialTrackableDocumentByASIInterceptor<I_C_AllocationHdr, I_C_AllocationLine>

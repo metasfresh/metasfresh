@@ -39,8 +39,6 @@ import java.util.Properties;
 import javax.swing.ListSelectionModel;
 
 import org.adempiere.ui.api.IWindowBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
@@ -67,6 +65,8 @@ import de.metas.picking.terminal.form.swing.AbstractPackageTerminal;
 import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Picking First Window Panel, where basically the shipment schedules that sahll be picked can be selectedfor the next window.

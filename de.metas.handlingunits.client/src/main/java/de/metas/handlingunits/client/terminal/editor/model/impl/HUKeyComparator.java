@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.Check;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.util.Check;
 
 /**
  * Comparator for HUKeys, generally used in key layouts when adding children (i.e on {@link RootHUKey})

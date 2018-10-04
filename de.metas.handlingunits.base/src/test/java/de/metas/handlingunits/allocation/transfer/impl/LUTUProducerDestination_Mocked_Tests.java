@@ -24,7 +24,6 @@ package de.metas.handlingunits.allocation.transfer.impl;
 
 import static org.junit.Assert.assertSame;
 
-import org.adempiere.util.Services;
 import org.junit.Test;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;

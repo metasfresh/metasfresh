@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.adempiere.util.Services;
-import org.adempiere.util.collections.CollectionUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
@@ -31,6 +29,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L

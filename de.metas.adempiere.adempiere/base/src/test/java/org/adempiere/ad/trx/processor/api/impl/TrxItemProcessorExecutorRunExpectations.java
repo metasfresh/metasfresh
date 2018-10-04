@@ -14,13 +14,13 @@ import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPol
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.LoggerTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.util.Services;
 import junit.framework.AssertionFailedError;
 
 /*

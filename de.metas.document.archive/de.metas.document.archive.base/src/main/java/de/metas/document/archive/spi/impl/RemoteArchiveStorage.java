@@ -28,8 +28,6 @@ import java.util.Properties;
 import org.adempiere.archive.spi.impl.AbstractArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
@@ -39,6 +37,8 @@ import de.metas.document.archive.esb.api.ArchiveGetDataResponse;
 import de.metas.document.archive.esb.api.ArchiveSetDataRequest;
 import de.metas.document.archive.esb.api.ArchiveSetDataResponse;
 import de.metas.document.archive.esb.api.IArchiveEndpoint;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Remote Filesystem archive implementation

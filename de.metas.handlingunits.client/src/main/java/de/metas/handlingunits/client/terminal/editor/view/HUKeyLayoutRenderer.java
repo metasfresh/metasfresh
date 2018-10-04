@@ -25,12 +25,11 @@ package de.metas.handlingunits.client.terminal.editor.view;
 
 import java.awt.Color;
 
-import org.adempiere.util.Check;
-
 import de.metas.adempiere.form.terminal.DefaultKeyPanelRenderer;
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
+import de.metas.util.Check;
 
 public class HUKeyLayoutRenderer extends DefaultKeyPanelRenderer
 {

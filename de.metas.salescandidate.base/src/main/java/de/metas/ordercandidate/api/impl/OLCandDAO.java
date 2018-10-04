@@ -22,21 +22,35 @@ package de.metas.ordercandidate.api.impl;
  * #L%
  */
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class OLCandDAO implements IOLCandDAO
 {
+	@Override
+	public OptionalInt getOLCandIdByExternalId(@NonNull final String olCandExternalId)
+	{
+		final int olCandId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OLCand.class)
+				.addEqualsFilter(I_C_OLCand.COLUMN_ExternalId, olCandExternalId)
+				.create()
+				.firstIdOnly();
+
+		return olCandId > 0 ? OptionalInt.of(olCandId) : OptionalInt.empty();
+	}
+
 	@Override
 	public List<I_C_OLCand> retrieveReferencing(final Properties ctx, final String tableName, final int recordId, final String trxName)
 	{

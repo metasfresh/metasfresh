@@ -7,8 +7,6 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.M_Element;
@@ -18,6 +16,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessClassParamInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L

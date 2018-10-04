@@ -25,11 +25,11 @@ package de.metas.fresh.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
 import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate

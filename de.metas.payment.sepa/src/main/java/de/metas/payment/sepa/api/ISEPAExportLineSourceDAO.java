@@ -26,9 +26,8 @@ package de.metas.payment.sepa.api;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.util.ISingletonService;
 
 public interface ISEPAExportLineSourceDAO extends ISingletonService
 {

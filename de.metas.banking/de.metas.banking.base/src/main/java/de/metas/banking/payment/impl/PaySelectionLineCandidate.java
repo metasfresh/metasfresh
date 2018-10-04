@@ -27,10 +27,11 @@ import java.math.BigDecimal;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.util.Util;
+
+import de.metas.util.Check;
 
 /**
  * {@link I_C_PaySelectionLine} candidate used to create or update pay selection lines.

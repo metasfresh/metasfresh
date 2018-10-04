@@ -10,7 +10,6 @@ import java.util.Set;
 
 import javax.swing.JCheckBox;
 
-import org.adempiere.util.Services;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.compiere.apps.search.IInfoColumnController;
 import org.compiere.apps.search.IInfoQueryCriteria;
@@ -21,6 +20,8 @@ import org.compiere.apps.search.Info_Column;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.swing.CEditor;
 import org.compiere.util.DB;
+
+import de.metas.util.Services;
 
 /**
  *

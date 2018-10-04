@@ -3,9 +3,10 @@ package org.adempiere.acct.api;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

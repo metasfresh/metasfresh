@@ -21,9 +21,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.util.Services;
 
 /**
  *  Process Instance Model

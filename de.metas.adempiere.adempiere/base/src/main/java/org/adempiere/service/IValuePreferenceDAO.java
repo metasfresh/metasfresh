@@ -2,8 +2,9 @@ package org.adempiere.service;
 
 import java.util.Properties;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Preference;
+
+import de.metas.util.ISingletonService;
 
 /*
  * #%L

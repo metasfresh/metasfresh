@@ -28,12 +28,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.service.OrgId;
-import org.adempiere.util.ISingletonService;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+
+import de.metas.util.ISingletonService;
 
 public interface IWarehouseDAO extends ISingletonService
 {

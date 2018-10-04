@@ -27,8 +27,6 @@ import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TimeUtil;
 
@@ -39,6 +37,8 @@ import de.metas.tourplanning.api.ITourInstanceQueryParams;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class TourInstanceBL implements ITourInstanceBL
 {

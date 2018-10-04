@@ -26,7 +26,6 @@ package org.eevolution.util;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
@@ -36,6 +35,8 @@ import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
+
+import de.metas.util.Check;
 
 public class PPProductPlanningBuilder
 {

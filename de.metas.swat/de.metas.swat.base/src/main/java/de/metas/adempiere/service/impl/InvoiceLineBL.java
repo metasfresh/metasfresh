@@ -33,8 +33,6 @@ import org.adempiere.exceptions.TaxNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
@@ -66,6 +64,8 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
@@ -426,7 +426,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// When invoices are created by the system, there is no need to change an already-set discound (and this code is executed only once anyways)
 		if (invoiceLine.getDiscount().signum() == 0)
 		{
-			invoiceLine.setDiscount(pricingResult.getDiscount().getValueAsBigDecimal());
+			invoiceLine.setDiscount(pricingResult.getDiscount().getValue());
 		}
 
 		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();

@@ -2,9 +2,9 @@ package org.adempiere.ad.migration.logger;
 
 import java.util.Set;
 
-import org.adempiere.util.Services;
 import org.compiere.util.Ini;
 
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*

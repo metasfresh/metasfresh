@@ -10,12 +10,12 @@ package de.metas.dunning.interfaces;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,17 +48,9 @@ public interface I_C_Dunning extends org.compiere.model.I_C_Dunning
 	 */
 	public int getGraceDays();
 
-	/** Column name DunningTimer */
-	public static final String COLUMNNAME_DunningTimer = "DunningTimer";
+	public static final String COLUMNNAME_IsManageDunnableDocGraceDate = "IsManageDunnableDocGraceDate";
 
-	/** Set Mahnauslöser */
-	public void setDunningTimer(String DunningTimer);
+	public void setIsManageDunnableDocGraceDate(boolean IsManageDunnableDocGraceDate);
 
-	/** Get Mahnauslöser */
-	public String getDunningTimer();
-
-	/** Constants for states of the dunning timer */
-	public static final String DUNNINGTIMER_AutomaticGrace = "A";
-	public static final String DUNNINGTIMER_StandardGrace = "S";
-
+	public boolean isManageDunnableDocGraceDate();
 }

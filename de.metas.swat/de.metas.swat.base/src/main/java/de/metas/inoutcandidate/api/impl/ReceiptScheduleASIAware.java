@@ -24,13 +24,13 @@ package de.metas.inoutcandidate.api.impl;
 
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Wraps an {@link I_M_ReceiptSchedule} and makes it behave like an {@link IAttributeSetInstanceAware}

@@ -26,11 +26,12 @@ package org.adempiere.ad.security.permissions;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
 
 /**
  * Defines permissiom on a particular {@link TableResource}.

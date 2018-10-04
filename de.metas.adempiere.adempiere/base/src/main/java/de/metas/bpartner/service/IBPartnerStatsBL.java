@@ -5,10 +5,10 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Util;
 
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

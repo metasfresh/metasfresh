@@ -28,14 +28,13 @@ package de.metas.printing.api;
 
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
-
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.ISingletonService;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;

@@ -1,8 +1,7 @@
 package de.metas.bpartner;
 
-import org.adempiere.util.Check;
-
 import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -46,24 +45,24 @@ public class BPartnerLocationId implements RepoIdAware
 		return new BPartnerLocationId(BPartnerId.ofRepoId(bpartnerId), bpartnerLocationId);
 	}
 
+	public static BPartnerLocationId ofRepoIdOrNull(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId)
+	{
+		return bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
+	}
+
 	private BPartnerLocationId(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(bpartnerLocationId, "bpartnerLocationId");
 		this.bpartnerId = bpartnerId;
 	}
 
+	public static int toRepoId(final BPartnerLocationId bpLocationId)
+	{
+		return toRepoIdOr(bpLocationId, -1);
+	}
+
 	public static int toRepoIdOr(final BPartnerLocationId bpLocationId, final int defaultValue)
 	{
 		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
-	}
-
-	public static int getBPartnerRepoId(final BPartnerLocationId bpartnerLocationId, final int defaultValue)
-	{
-		return bpartnerLocationId != null ? bpartnerLocationId.getBpartnerId().getRepoId() : defaultValue;
-	}
-
-	public static int getBPartnerLocationRepoId(final BPartnerLocationId bpartnerLocationId, final int defaultValue)
-	{
-		return bpartnerLocationId != null ? bpartnerLocationId.getRepoId() : defaultValue;
 	}
 }

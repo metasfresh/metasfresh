@@ -31,8 +31,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.ModelColumn;
-import org.adempiere.util.Check;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 
 final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
