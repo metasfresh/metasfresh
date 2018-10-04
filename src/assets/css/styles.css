@@ -1484,9 +1484,9 @@ td.pulse-off input {
     background-color: rgba(255,255,255,0.8);
 
     .icon {
-        width: 50px;
-        height: 50px;
+        z-index: 99;
         animation:spin 2s linear infinite;
+        opacity: 0.7;
         
         &.hourglass {
             background: url('../images/hourglass-solid.svg') no-repeat scroll center 0;

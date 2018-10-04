@@ -21,16 +21,15 @@ class SpinnerOverlay extends Component {
   }
 
   componentDidMount() {
-    const { showSpinner, spinnerDisplayed } = this.props;
+    const { showSpinner, spinnerDisplayed, delay } = this.props;
 
     if (!spinnerDisplayed) {
       setTimeout(() => {
         this.setState({
           show: true,
         });
-
         showSpinner(this.ID);
-      }, this.props.delay);
+      }, delay);
     }
   }
 
@@ -46,22 +45,32 @@ class SpinnerOverlay extends Component {
   }
 
   render() {
+    const { iconSize } = this.props;
     const { show } = this.state;
+    let style = {};
 
     if (!show) {
       return null;
     }
 
+    if (iconSize) {
+      style = {
+        width: `${iconSize}px`,
+        height: `${iconSize}px`,
+      };
+    }
+
     return (
       <div className="screen-freeze screen-prompt-freeze spinner">
-        <i className="icon hourglass" />
+        <i style={style} className="icon hourglass" />
       </div>
     );
   }
 }
 
 SpinnerOverlay.defaultProps = {
-  delay: 3000,
+  delay: 1000,
+  iconSize: 32,
 };
 
 SpinnerOverlay.propTypes = {
