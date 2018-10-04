@@ -10,6 +10,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_OpenProductsToPick;
+import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_UnlockAll;
+import de.metas.ui.web.pickingV2.packageable.process.PackageablesView_UnlockFromLoggedUser;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -81,7 +83,9 @@ public class PackageableViewFactoryV2 implements IViewFactory
 	private Iterable<? extends RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(PackageablesView_OpenProductsToPick.class));
+				createProcessDescriptor(PackageablesView_OpenProductsToPick.class),
+				createProcessDescriptor(PackageablesView_UnlockFromLoggedUser.class),
+				createProcessDescriptor(PackageablesView_UnlockAll.class));
 	}
 
 	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)

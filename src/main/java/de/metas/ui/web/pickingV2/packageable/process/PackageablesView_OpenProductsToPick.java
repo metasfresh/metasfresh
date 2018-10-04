@@ -1,7 +1,12 @@
 package de.metas.ui.web.pickingV2.packageable.process;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockRequest;
+import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
+import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -36,10 +41,28 @@ public class PackageablesView_OpenProductsToPick extends PackageablesViewBasedPr
 	@Autowired
 	private ProductsToPickViewFactory productsToPickViewFactory;
 
+	@Autowired
+	private ShipmentScheduleLockRepository locksRepo;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		return checkPreconditionsApplicable_SingleSelectedRow();
+		return checkPreconditionsApplicable_SingleSelectedRow()
+				.and(this::acceptIfRowNotLockedByOtherUser);
+	}
+
+	private ProcessPreconditionsResolution acceptIfRowNotLockedByOtherUser()
+	{
+		final PackageableRow row = getSingleSelectedRow();
+
+		if (row.isNotLocked() || row.isLockedBy(getLoggedUserId()))
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+		else
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("row is locked by other users");
+		}
 	}
 
 	@Override
@@ -47,13 +70,34 @@ public class PackageablesView_OpenProductsToPick extends PackageablesViewBasedPr
 	{
 		final PackageableRow row = getSingleSelectedRow();
 
-		final ProductsToPickView productsToPickView = productsToPickViewFactory.createView(row);
+		final ShipmentScheduleLockRequest lockRequest = createLockRequest(row);
+		locksRepo.lock(lockRequest);
 
-		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
-				.target(ViewOpenTarget.ModalOverlay)
-				.viewId(productsToPickView.getViewId().toJson())
-				.build());
+		try
+		{
+			final ProductsToPickView productsToPickView = productsToPickViewFactory.createView(row);
 
-		return MSG_OK;
+			getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+					.target(ViewOpenTarget.ModalOverlay)
+					.viewId(productsToPickView.getViewId().toJson())
+					.build());
+
+			return MSG_OK;
+		}
+		catch (final Exception ex)
+		{
+			locksRepo.unlockNoFail(ShipmentScheduleUnLockRequest.of(lockRequest));
+
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private ShipmentScheduleLockRequest createLockRequest(final PackageableRow row)
+	{
+		return ShipmentScheduleLockRequest.builder()
+				.shipmentScheduleIds(row.getShipmentScheduleIds())
+				.lockType(ShipmentScheduleLockType.PICKING)
+				.lockedBy(getLoggedUserId())
+				.build();
 	}
 }

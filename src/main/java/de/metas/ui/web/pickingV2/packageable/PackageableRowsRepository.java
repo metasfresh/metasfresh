@@ -3,10 +3,13 @@ package de.metas.ui.web.pickingV2.packageable;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
@@ -64,6 +67,7 @@ final class PackageableRowsRepository
 
 	private final Supplier<LookupDataSource> bpartnerLookup;
 	private final Supplier<LookupDataSource> shipperLookup;
+	private final Supplier<LookupDataSource> userLookup;
 
 	public PackageableRowsRepository(@NonNull final MoneyService moneyService)
 	{
@@ -73,6 +77,7 @@ final class PackageableRowsRepository
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
 		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name));
 		shipperLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_M_Shipper.Table_Name));
+		userLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name));
 	}
 
 	public PackageableRowsData getPackageableRowsData()
@@ -86,7 +91,7 @@ final class PackageableRowsRepository
 				.onlyFromSalesOrder(true)
 				.build();
 		return packageablesRepo.stream(query)
-				.collect(GuavaCollectors.toImmutableListMultimap(packageable -> extractPackageableRowId(packageable)))
+				.collect(GuavaCollectors.toImmutableListMultimap(packageable -> extractGroupingKey(packageable)))
 				.asMap()
 				.values()
 				.stream()
@@ -95,9 +100,11 @@ final class PackageableRowsRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static PackageableRowId extractPackageableRowId(final Packageable packageable)
+	private static ArrayKey extractGroupingKey(final Packageable packageable)
 	{
-		return PackageableRowId.of(packageable.getSalesOrderId(), packageable.getWarehouseTypeId());
+		return ArrayKey.of(
+				PackageableRowId.of(packageable.getSalesOrderId(), packageable.getWarehouseTypeId()),
+				packageable.getLockedBy());
 	}
 
 	private PackageableRow createPackageableRowNoFail(final Collection<Packageable> packageables)
@@ -134,8 +141,11 @@ final class PackageableRowsRepository
 		final ShipperId shipperId = Packageable.extractSingleValue(packageables, Packageable::getShipperId).orElse(null);
 		final LookupValue shipper = shipperLookup.get().findById(shipperId);
 
-		OrderId salesOrderId = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderId).get();
+		final OrderId salesOrderId = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderId).get();
 		final String salesOrderDocumentNo = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderDocumentNo).get();
+
+		final UserId lockedByUserId = Packageable.extractSingleValue(packageables, Packageable::getLockedBy).orElse(null);
+		final LookupValue lockedByUser = userLookup.get().findById(lockedByUserId);
 
 		return PackageableRow.builder()
 				.orderId(salesOrderId)
@@ -143,6 +153,7 @@ final class PackageableRowsRepository
 				.customer(customer)
 				.warehouseTypeId(warehouseTypeId)
 				.warehouseTypeName(warehouseTypeName)
+				.lockedByUser(lockedByUser)
 				.lines(packageables.size())
 				.shipper(shipper)
 				.lineNetAmt(buildNetAmtTranslatableString(packageables))

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 
+import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
 import com.google.common.base.Predicates;
@@ -73,7 +74,7 @@ public final class PackageableRow implements IViewRow
 	private final int lines;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "AD_User_ID", seqNo = 50)
-	private final String assignedToUserName;
+	private final LookupValue lockedByUser;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Shipper_ID, seqNo = 60)
 	private final LookupValue shipper;
@@ -103,7 +104,7 @@ public final class PackageableRow implements IViewRow
 			final WarehouseTypeId warehouseTypeId,
 			final ITranslatableString warehouseTypeName,
 			final int lines,
-			final String assignedToUserName,
+			final LookupValue lockedByUser,
 			final LookupValue shipper,
 			final ITranslatableString lineNetAmt,
 			final Collection<Packageable> packageables)
@@ -115,7 +116,7 @@ public final class PackageableRow implements IViewRow
 		this.customer = customer;
 		this.warehouseTypeName = warehouseTypeName;
 		this.lines = lines;
-		this.assignedToUserName = assignedToUserName;
+		this.lockedByUser = lockedByUser;
 		this.shipper = shipper;
 		this.deliveryDate = calculateEarliestDeliveryDate(packageables);
 		this.lineNetAmt = lineNetAmt;
@@ -177,5 +178,21 @@ public final class PackageableRow implements IViewRow
 			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
+	}
+
+	public boolean isLocked()
+	{
+		return lockedByUser != null;
+	}
+
+	public boolean isNotLocked()
+	{
+		return !isLocked();
+	}
+
+	public boolean isLockedBy(@NonNull final UserId userId)
+	{
+		return lockedByUser != null
+				&& UserId.equals(userId, lockedByUser.getIdAs(UserId::ofRepoId));
 	}
 }

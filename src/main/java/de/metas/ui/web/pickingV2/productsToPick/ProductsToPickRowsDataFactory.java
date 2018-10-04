@@ -90,6 +90,8 @@ class ProductsToPickRowsDataFactory
 	private final Map<HuId, ImmutableAttributeSet> huAttributes = new HashMap<>();
 	private final Map<HuId, I_M_HU> husCache = new HashMap<>();
 
+	private static final PickingCandidateId NULL_PickingCandidateId = null;
+
 	private static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
 	private static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
 	private static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
@@ -178,10 +180,9 @@ class ProductsToPickRowsDataFactory
 		getHUs(huIds); // pre-load all HUs
 
 		final Quantity qtyZero = packageable.getQtyToAllocate().toZero();
-		final PickingCandidateId noPickingCandidateId = null;
 
 		final List<ProductsToPickRow> rows = huIds.stream()
-				.map(huId -> createRow(packageable, qtyZero, huId, noPickingCandidateId))
+				.map(huId -> createRow(packageable, qtyZero, huId, NULL_PickingCandidateId))
 				.sorted(Comparator.comparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX)))
 				.collect(ImmutableList.toImmutableList());
 

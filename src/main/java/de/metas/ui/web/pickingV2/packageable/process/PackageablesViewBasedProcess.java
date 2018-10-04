@@ -1,5 +1,7 @@
 package de.metas.ui.web.pickingV2.packageable.process;
 
+import java.util.stream.Stream;
+
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
@@ -61,4 +63,10 @@ public abstract class PackageablesViewBasedProcess extends ViewBasedProcessTempl
 		return PackageableRow.cast(super.getSingleSelectedRow());
 	}
 
+	@Override
+	protected final Stream<PackageableRow> streamSelectedRows()
+	{
+		return super.streamSelectedRows()
+				.map(PackageableRow::cast);
+	}
 }
