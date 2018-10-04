@@ -196,7 +196,10 @@ class TableCell extends PureComponent {
         ? item.fields.find((field, idx) => {
             if (field.type === 'Tooltip') {
               tooltipData = widgetData[idx];
-              return field;
+
+              if (tooltipData && tooltipData.value) {
+                return field;
+              }
             }
             return false;
           })
