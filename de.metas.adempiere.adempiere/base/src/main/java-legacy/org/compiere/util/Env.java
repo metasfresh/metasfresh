@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
@@ -1160,6 +1161,11 @@ public final class Env
 	public static int getAD_User_ID()
 	{
 		return Env.getAD_User_ID(getCtx());
+	}
+	
+	public static UserId getLoggedUserId()
+	{
+		return UserId.ofRepoId(Env.getAD_User_ID(getCtx()));
 	}
 
 	/**
