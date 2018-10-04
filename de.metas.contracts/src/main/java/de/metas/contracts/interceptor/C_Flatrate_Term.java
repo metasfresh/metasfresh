@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -40,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
@@ -116,7 +118,7 @@ public class C_Flatrate_Term
 				.createQueryBuilder(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, 0)
+				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, OrgId.ANY)
 				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
 				.create()
 				.list(I_AD_Org.class);
@@ -608,7 +610,7 @@ public class C_Flatrate_Term
 		final OrderId orderId = OrderId.ofRepoId(contractOrder.getC_Order_ID());
 		
 		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
-		final List<OrderId> orderIds = contractOrderRepository.retrieveAllContractOrderList(orderId);
+		final Set<OrderId> orderIds = contractOrderRepository.retrieveAllContractOrderList(orderId);
 
 		updateStatusIfNeededWhenExtendind(term, orderIds);
 
@@ -617,7 +619,7 @@ public class C_Flatrate_Term
 		updateStausIfNeededWhenVoiding(term);
 	}
 
-	private void updateStatusIfNeededWhenExtendind(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
+	private void updateStatusIfNeededWhenExtendind(final I_C_Flatrate_Term term, final Set<OrderId> orderIds)
 	{
 		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
 				&& term.getC_FlatrateTerm_Next_ID() > 0
@@ -636,7 +638,7 @@ public class C_Flatrate_Term
 		}
 	}
 
-	private void updateStatusIfNeededWhenCancelling(final I_C_Flatrate_Term term, final List<OrderId> orderIds)
+	private void updateStatusIfNeededWhenCancelling(final I_C_Flatrate_Term term, final Set<OrderId> orderIds)
 	{
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))

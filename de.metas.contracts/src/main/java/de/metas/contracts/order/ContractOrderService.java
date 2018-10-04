@@ -5,8 +5,9 @@ package de.metas.contracts.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -96,9 +97,9 @@ public class ContractOrderService
 	 * @param orderId
 	 * @return
 	 */
-	public List<OrderId> retrieveAllContractOrderList(@NonNull final OrderId orderId)
+	public Set<OrderId> retrieveAllContractOrderList(@NonNull final OrderId orderId)
 	{
-		final List<OrderId> orderIds = new ArrayList<>();
+		final Set<OrderId> orderIds = new HashSet<>();
 		final OrderId ancestorId = retrieveOriginalContractOrder(orderId);
 		if (ancestorId != null)
 		{
@@ -145,7 +146,7 @@ public class ContractOrderService
 	 * @param contractOrderIds
 	 * @return
 	 */
-	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull List<OrderId> contractOrderIds)
+	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull Set<OrderId> contractOrderIds)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.load(orderId, I_C_Order.class);
 		final OrderId nextAncestorId = OrderId.ofRepoIdOrNull(order.getRef_FollowupOrder_ID());
