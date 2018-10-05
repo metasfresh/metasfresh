@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1486844787L;
+	private static final long serialVersionUID = 1977464773L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
       super (ctx, M_Picking_Candidate_ID, trxName);
       /** if (M_Picking_Candidate_ID == 0)
         {
+			setC_UOM_ID (0);
 			setM_Picking_Candidate_ID (0);
 			setM_PickingSlot_ID (0);
 			setM_ShipmentSchedule_ID (0);
@@ -207,12 +208,14 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	 * Reference name: M_Picking_Candidate_Status
 	 */
 	public static final int STATUS_AD_Reference_ID=540734;
-	/** CL = CL */
-	public static final String STATUS_CL = "CL";
-	/** IP = IP */
-	public static final String STATUS_IP = "IP";
-	/** PR = PR */
-	public static final String STATUS_PR = "PR";
+	/** Closed = CL */
+	public static final String STATUS_Closed = "CL";
+	/** InProgress = IP */
+	public static final String STATUS_InProgress = "IP";
+	/** Processed = PR */
+	public static final String STATUS_Processed = "PR";
+	/** Voided = VO */
+	public static final String STATUS_Voided = "VO";
 	/** Set Status.
 		@param Status Status	  */
 	@Override

@@ -35,9 +35,10 @@ import lombok.NonNull;
 
 public enum PickingCandidateStatus
 {
-	InProgress(X_M_Picking_Candidate.STATUS_IP), //
-	Processed(X_M_Picking_Candidate.STATUS_PR), //
-	Closed(X_M_Picking_Candidate.STATUS_CL) //
+	Draft(X_M_Picking_Candidate.STATUS_InProgress), //
+	Processed(X_M_Picking_Candidate.STATUS_Processed), //
+	Closed(X_M_Picking_Candidate.STATUS_Closed), //
+	Voided(X_M_Picking_Candidate.STATUS_Voided) //
 	;
 
 	@Getter
