@@ -57,6 +57,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
     * Fixes a Vulnerability Report about bootstrap.
+  * [#1992](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1992) Ugly double border when editing in Date Fields
+    * Adjustment of the Border Layout for mandatory Date Fields.
 
 # metasfresh 5.76
 ## Features
