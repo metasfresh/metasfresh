@@ -15,6 +15,7 @@ package org.adempiere.impexp;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -22,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -44,6 +46,7 @@ import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Abstract MS Excel Format (xls) Exporter
@@ -159,6 +162,12 @@ public abstract class AbstractExcelExporter
 		if (m_lang == null)
 			m_lang = Env.getLanguage(getCtx());
 		return m_lang;
+	}
+	
+	public AbstractExcelExporter setLanguage(final Language language)
+	{
+		this.m_lang = language;
+		return this;
 	}
 
 	private HSSFFont getHeaderFont()
@@ -388,9 +397,10 @@ public abstract class AbstractExcelExporter
 	 * Export to given stream
 	 * 
 	 * @param out
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	public final void export(final OutputStream out) throws Exception
+	public final void export(final OutputStream out) throws IOException
 	{
 		HSSFSheet sheet = createTableSheet();
 		String sheetName = null;
@@ -413,7 +423,7 @@ public abstract class AbstractExcelExporter
 
 					// 03917: poi-3.7 doesn't have this method anymore
 					// cell.setEncoding(HSSFCell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
-					
+
 					//
 					// Fetch cell value
 					CellValue cellValue;
@@ -453,7 +463,7 @@ public abstract class AbstractExcelExporter
 					}
 					//
 					cell.setCellStyle(getStyle(rownum, col));
-					
+
 					// Page break
 					if (isPageBreak(rownum, col))
 					{
@@ -487,17 +497,32 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	/**
-	 * Export to file
-	 * 
-	 * @param file
-	 * @param language reporting language
-	 * @throws Exception
-	 */
-	public void export(final File file, final Language language)
-			throws Exception
+	public File exportToTempFile()
 	{
-		export(file, language, true);
+		final File file;
+		try
+		{
+			file = File.createTempFile("Report_", ".xls");
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary excel file", ex);
+		}
+
+		exportToFile(file);
+		return file;
+	}
+
+	public void exportToFile(@NonNull final File file)
+	{
+		try (final FileOutputStream out = new FileOutputStream(file))
+		{
+			export(out);
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed exporting to " + file, ex);
+		}
 	}
 
 	/**
@@ -508,14 +533,16 @@ public abstract class AbstractExcelExporter
 	 * @param autoOpen auto open file after generated
 	 * @throws Exception
 	 */
-	public void export(File file, final Language language, final boolean autoOpen)
-			throws Exception
+	public void export(File file, final Language language, final boolean autoOpen) throws Exception
 	{
-		m_lang = language;
+		setLanguage(language);
+		
 		if (file == null)
 			file = File.createTempFile("Report_", ".xls");
 		FileOutputStream out = new FileOutputStream(file);
+		
 		export(out);
+		
 		if (autoOpen && Ini.isClient())
 			Env.startBrowser(file.toURI().toString());
 	}
