@@ -95,16 +95,6 @@ UPDATE AD_Column SET ReadOnlyLogic='@AD_Element_ID\0@>0', TechnicalNote='This fi
 UPDATE AD_Column SET IsMandatory='N', TechnicalNote='This column''s value is maintained via AD_Element.',Updated=TO_TIMESTAMP('2018-10-05 11:05:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=111
 ;
 
--- 2018-10-05T11:05:10.812
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('ad_column','Name','VARCHAR(60)',null,null)
-;
-
--- 2018-10-05T11:05:10.820
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('ad_column','Name',null,'NULL',null)
-;
-
 -- 2018-10-05T11:06:29.945
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET TechnicalNote='This column''s value is maintained via AD_Element.',Updated=TO_TIMESTAMP('2018-10-05 11:06:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=116
@@ -114,8 +104,6 @@ UPDATE AD_Column SET TechnicalNote='This column''s value is maintained via AD_El
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET MandatoryLogic='@AD_Element_ID\0@>0',Updated=TO_TIMESTAMP('2018-10-05 11:07:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=116
 ;
-
-
 
 
 
@@ -129,11 +117,3 @@ UPDATE AD_Column SET MandatoryLogic='@AD_Element_ID\0@>0',Updated=TO_TIMESTAMP('
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2018-10-05 13:51:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2604
 ;
-
--- 2018-10-05T13:51:12.231
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('ad_element','Description','VARCHAR(2000)',null,null)
-;
-
-select db_alter_table('ad_element_trl', 'ALTER TABLE public.ad_element_trl ALTER COLUMN description TYPE character varying (2000)');
-
