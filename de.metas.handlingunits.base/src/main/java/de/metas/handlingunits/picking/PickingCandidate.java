@@ -49,7 +49,7 @@ public class PickingCandidate
 
 	@NonNull
 	@Default
-	private PickingCandidateStatus status = PickingCandidateStatus.InProgress;
+	private PickingCandidateStatus status = PickingCandidateStatus.Draft;
 
 	@NonNull
 	private Quantity qtyPicked;

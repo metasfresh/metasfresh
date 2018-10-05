@@ -123,7 +123,7 @@ public class UnProcessPickingCandidateCommand
 
 	private void convertToStatusProcessed(final PickingCandidate pickingCandidate)
 	{
-		if (PickingCandidateStatus.InProgress.equals(pickingCandidate.getStatus()))
+		if (PickingCandidateStatus.Draft.equals(pickingCandidate.getStatus()))
 		{
 			// already in progress => nothing to do
 		}
@@ -228,7 +228,7 @@ public class UnProcessPickingCandidateCommand
 
 	private void markCandidateAsInProgress(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.setStatus(PickingCandidateStatus.InProgress);
+		pickingCandidate.setStatus(PickingCandidateStatus.Draft);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }
