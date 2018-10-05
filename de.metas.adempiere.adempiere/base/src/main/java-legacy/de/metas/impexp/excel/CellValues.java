@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package de.metas.impexp.excel;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

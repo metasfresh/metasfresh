@@ -20,13 +20,13 @@ import java.util.Properties;
 
 import javax.swing.JFileChooser;
 
-import org.adempiere.impexp.GridTabExcelExporter;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
+import de.metas.impexp.excel.GridTabExcelExporter;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 

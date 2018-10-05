@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.ArrayExcelExporter;
-import org.adempiere.impexp.service.ExcelExporterService;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.MAlert;
@@ -47,6 +45,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
 import de.metas.i18n.Msg;
+import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;

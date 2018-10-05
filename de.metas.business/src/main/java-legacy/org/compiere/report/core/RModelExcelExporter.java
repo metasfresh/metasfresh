@@ -13,9 +13,9 @@
  *****************************************************************************/
 package org.compiere.report.core;
 
-import org.adempiere.impexp.AbstractExcelExporter;
-import org.adempiere.impexp.CellValue;
-import org.adempiere.impexp.CellValues;
+import de.metas.impexp.excel.AbstractExcelExporter;
+import de.metas.impexp.excel.CellValue;
+import de.metas.impexp.excel.CellValues;
 
 /**
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL

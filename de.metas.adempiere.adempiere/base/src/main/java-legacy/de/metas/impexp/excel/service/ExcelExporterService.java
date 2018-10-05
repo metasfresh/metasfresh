@@ -1,4 +1,4 @@
-package org.adempiere.impexp.service;
+package de.metas.impexp.excel.service;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

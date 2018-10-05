@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package de.metas.impexp.excel;
 
 import java.util.Date;
 
