@@ -193,14 +193,8 @@ public class PickingCandidateRepository
 				.create()
 				.firstOnly(I_M_Picking_Candidate.class);
 
-		if (existingRecord == null)
-		{
-			return Optional.empty();
-		}
-		else
-		{
-			return Optional.of(toPickingCandidate(existingRecord));
-		}
+		return Optional.ofNullable(existingRecord)
+				.map(this::toPickingCandidate);
 	}
 
 	public void deletePickingCandidates(@NonNull final Collection<PickingCandidate> candidates)
