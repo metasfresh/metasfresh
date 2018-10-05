@@ -43,6 +43,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -1519,7 +1520,6 @@ public class TimeUtil
 		{
 			return null;
 		}
-
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 	}
 
@@ -1529,17 +1529,28 @@ public class TimeUtil
 		{
 			return null;
 		}
-
 		return date.toLocalDateTime().toLocalDate();
 	}
 
-	public static LocalTime asLocalTime(final Date time)
+	public static LocalDate asLocalDate(@Nullable final XMLGregorianCalendar xmlGregorianCalendar)
+	{
+		if (xmlGregorianCalendar == null)
+		{
+			return null;
+		}
+
+		return xmlGregorianCalendar
+				.toGregorianCalendar()
+				.toZonedDateTime()
+				.toLocalDate();
+	}
+
+	public static LocalTime asLocalTime(@Nullable final Date time)
 	{
 		if (time == null)
 		{
 			return null;
 		}
-
 		return time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
 	}
 
@@ -1597,5 +1608,4 @@ public class TimeUtil
 
 		return Date.from(instant);
 	}
-
 }	// TimeUtil

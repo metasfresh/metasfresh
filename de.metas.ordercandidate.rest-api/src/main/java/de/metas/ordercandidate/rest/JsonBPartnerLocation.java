@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -16,12 +17,12 @@ import lombok.Data;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,11 +34,14 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class JsonBPartnerLocation
 {
+	/** This translates to {@code C_BPartner_Location.ExternalId} */
 	String externalId;
 
 	String address1;
 	String address2;
 	String postal;
 	String city;
+
+	@NonNull
 	String countryCode;
 }

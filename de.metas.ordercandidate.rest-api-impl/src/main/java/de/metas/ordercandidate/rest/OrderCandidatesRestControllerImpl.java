@@ -6,7 +6,9 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,9 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,6 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
@@ -113,25 +118,38 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	}
 
 	private OLCandCreateRequest fromJson(
-			final JsonOLCandCreateRequest request,
-			final MasterdataProvider masterdataProvider)
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		final String dataSourceInternalNameToUse = Util.coalesce(
+				request.getDataSourceInternalName(),
+				DATA_SOURCE_INTERNAL_NAME);
+
 		return jsonConverters.fromJson(request, masterdataProvider)
-				.adInputDataSourceInternalName(DATA_SOURCE_INTERNAL_NAME)
+				.adInputDataSourceInternalName(dataSourceInternalNameToUse)
 				.build();
 	}
 
-	@PostMapping("/{externalId}/attachments")
+	@PostMapping("/{dataSourceName}/{externalReference}/attachments")
 	@Override
 	public void attachFile(
-			@PathVariable("externalId") final String olCandExternalId,
+			@PathVariable("dataSourceName") final String dataSourceName,
+			@PathVariable("externalReference") final String externalReference,
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);
 
-		final String filename = file.getOriginalFilename();
+		final OLCandQuery query = OLCandQuery
+				.builder()
+				.inputDataSourceName(dataSourceName)
+				.externalReference(externalReference)
+				.build();
+
+		final String fileName = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
-		olCandsService.addAttachment(olCandExternalId, filename, data);
+		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromByteArray(fileName, data);
+
+		olCandsService.addAttachment(query, request);
 	}
 }

@@ -21,6 +21,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -216,7 +217,8 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			deliverOrderBuilder.deliveryContact(contactPerson);
 		}
 
-		final LocalDate date = TimeUtil.asLocalDate(assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryDate, lineRecord, previousLineRecord));
+		final Timestamp desiredDeliveryDays = assertSameAsPreviousValue(COLUMNNAME_DK_DesiredDeliveryDate, lineRecord, previousLineRecord);
+		final LocalDate date = TimeUtil.asLocalDate(desiredDeliveryDays);
 		if (date != null)
 		{
 			final DeliveryDate deliveryDate = DeliveryDate.builder()

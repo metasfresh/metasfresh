@@ -84,11 +84,11 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public ProductId retrieveProductIdByValue(@NonNull final String value)
 	{
-		return retrieveProductIdByValue(Env.getCtx(), value);
+		return retrieveProductIdByValueOrNull(Env.getCtx(), value);
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#ID#by#" + I_M_Product.COLUMNNAME_Value)
-	public ProductId retrieveProductIdByValue(@CacheCtx final Properties ctx, @NonNull final String value)
+	public ProductId retrieveProductIdByValueOrNull(@CacheCtx final Properties ctx, @NonNull final String value)
 	{
 		final int productRepoId = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)

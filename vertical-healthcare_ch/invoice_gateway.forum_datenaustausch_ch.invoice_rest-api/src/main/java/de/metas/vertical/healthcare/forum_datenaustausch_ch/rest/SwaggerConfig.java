@@ -1,7 +1,12 @@
-package de.metas.vertical.pharma.msv3.server;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
+
+import static de.metas.util.web.MetasfreshRestAPIConstants.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER;
+import static de.metas.util.web.MetasfreshRestAPIConstants.createApiInfo;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.google.common.collect.ImmutableList;
 
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.spi.DocumentationType;
@@ -10,7 +15,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /*
  * #%L
- * metasfresh-pharma.msv3.server
+ * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_rest-api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -38,8 +43,12 @@ public class SwaggerConfig
 	public Docket api()
 	{
 		return new Docket(DocumentationType.SWAGGER_2)
+				.globalOperationParameters(ImmutableList.of(SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
 				.select()
 				.paths(PathSelectors.any())
-				.build();
+				.build()
+				.apiInfo(createApiInfo(
+						"metasfresh healthcare-ch REST API" /* title */,
+						"metasfresh REST API forum-datenaustausch.ch"/* description */));
 	}
 }

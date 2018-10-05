@@ -10,12 +10,12 @@ package de.metas.ordercandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,7 +24,6 @@ package de.metas.ordercandidate.api;
 
 
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.Properties;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -34,13 +33,14 @@ import de.metas.util.ISingletonService;
 
 public interface IOLCandDAO extends ISingletonService
 {
-	OptionalInt getOLCandIdByExternalId(final String olCandExternalId);
-	
+	// makes no sense: we can't assume uniqueness among different external systems.
+	//OptionalInt getOLCandIdByExternalId(final String olCandExternalId);
+
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_OrderLine ol, Class<T> clazz);
 
 	/**
 	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given parameters.
-	 * 
+	 *
 	 * @param ctx
 	 * @param tableName
 	 * @param recordId
@@ -52,7 +52,7 @@ public interface IOLCandDAO extends ISingletonService
 	/**
 	 * Loads an returns all <code>C_Order_Line_Alloc</code> records that reference the given order line.<br>
 	 * Note that this includes records with <code>IsActive='N'</code> as well as records that have a different <code>AD_Client_ID</code>.
-	 * 
+	 *
 	 * @param ol
 	 * @return
 	 */
@@ -61,7 +61,7 @@ public interface IOLCandDAO extends ISingletonService
 	/**
 	 * Loads an returns all <code>C_Order_Line_Alloc</code> records that reference the given order candidate.<br>
 	 * Note that this includes records with <code>IsActive='N'</code> as well as records that have a different <code>AD_Client_ID</code>.
-	 * 
+	 *
 	 * @param ol
 	 * @return
 	 */

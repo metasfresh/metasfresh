@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,7 +37,10 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -46,10 +50,10 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
+import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandSource;
@@ -248,19 +252,27 @@ public class OLCandBL implements IOLCandBL
 
 	@Override
 	public AttachmentEntry addAttachment(
-			@NonNull final String olCandExternalId,
-			final String filename,
-			@NonNull final byte[] data)
+			@NonNull final OLCandQuery olCAndQuery,
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		Check.assumeNotEmpty(filename, "filename is not empty");
 
-		final IOLCandDAO olCandsRepo = Services.get(IOLCandDAO.class);
-
-		final int olCandId = olCandsRepo.getOLCandIdByExternalId(olCandExternalId)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_OLCand_ID@: @ExternalId@=" + olCandExternalId));
-
+		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
 		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-		final TableRecordReference olCandRef = TableRecordReference.of(I_C_OLCand.Table_Name, olCandId);
-		return attachmentEntryService.createNewAttachment(olCandRef, filename, data);
+
+		final List<TableRecordReference> olCandRefs = olCandRepo
+				.getByQuery(olCAndQuery)
+				.stream()
+				.map(olCand -> TableRecordReference.of(I_C_OLCand.Table_Name, olCand.getId()))
+				.collect(ImmutableList.toImmutableList());
+
+		final TableRecordReference firstOLCandRef = olCandRefs.get(0);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(firstOLCandRef, attachmentEntryCreateRequest);
+
+		if (olCandRefs.size() > 1)
+		{
+			final List<TableRecordReference> remainingOLCandRefs = olCandRefs.subList(1, olCandRefs.size());
+			attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(attachmentEntry), remainingOLCandRefs);
+		}
+		return attachmentEntry;
 	}
 }

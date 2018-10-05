@@ -29,6 +29,7 @@
 						</goals>
 						<configuration>
 							<args>
+								<!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
 								<arg>-XautoNameResolution</arg>
 							</args>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</schemaDirectory>

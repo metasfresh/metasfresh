@@ -1,19 +1,18 @@
-package de.metas.ordercandidate.rest;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.attachments.AttachmentEntry;
 import lombok.Builder;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -35,40 +34,37 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@Builder
-public class JsonOLCand
+public class JsonAttachment
 {
-	private int id;
-	private String externalId;
+	private String externalOrderId;
 
-	private String poReference;
+	private final String attachmentId;
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonOrganization org;
+	private final AttachmentEntry.Type type;
 
-	private JsonBPartnerInfo bpartner;
-	
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo billBPartner;
-	
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo dropShipBPartner;
-	
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo handOverBPartner;
+	private final String filename;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate datePromised;
-	
-	private int flatrateConditionsId;
+	private final String contentType;
 
-	private int productId;
-	private String productDescription;
-	private BigDecimal qty;
-	private int uomId;
-	private int huPIItemProductId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String url;
 
-	private int pricingSystemId;
-	private BigDecimal price;
-	private BigDecimal discount;
+	@JsonCreator
+	@Builder
+	private JsonAttachment(
+			@JsonProperty("externalOrderId") final String externalOrderId,
+			@JsonProperty("attachmentId") final String attachmentId,
+			@JsonProperty("type") final AttachmentEntry.Type type,
+			@JsonProperty("filename") final String filename,
+			@JsonProperty("contentType") final String contentType,
+			@JsonProperty("url") final String url)
+	{
+		this.externalOrderId = externalOrderId;
+		this.attachmentId = attachmentId;
+		this.type = type;
+		this.filename = filename;
+		this.contentType = contentType;
+		this.url = url;
+	}
+
 }

@@ -41,7 +41,11 @@ import lombok.Value;
 @Value
 public class OLCandCreateRequest
 {
+	/** ID (e.g. document number), of a source document in a remote system; multiple OLCands can have the same ID */
 	private String externalId;
+
+	private String dataSourceInternalName;
+	private String dataDestInternalName;
 
 	private OrgId orgId;
 
@@ -53,6 +57,8 @@ public class OLCandCreateRequest
 	private String poReference;
 
 	private LocalDate dateRequired;
+	private LocalDate dateInvoiced;
+
 	private int flatrateConditionsId;
 
 	private ProductId productId;
@@ -66,18 +72,19 @@ public class OLCandCreateRequest
 	private Percent discount;
 	// private String currencyCode; // shall come from pricingSystem/priceList
 
-	private String adInputDataSourceInternalName;
-
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalId,
 			final OrgId orgId,
+			@NonNull final  String dataSourceInternalName,
+			@Nullable final  String dataDestInternalName,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
 			final OLCandBPartnerInfo handOverBPartner,
 			final String poReference,
 			@NonNull final LocalDate dateRequired,
+			@Nullable final LocalDate dateInvoiced,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
 			final String productDescription,
@@ -97,12 +104,17 @@ public class OLCandCreateRequest
 
 		this.externalId = externalId;
 		this.orgId = orgId;
+
+		this.dataDestInternalName = dataDestInternalName;
+		this.dataSourceInternalName = dataSourceInternalName;
+
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
 		this.handOverBPartner = handOverBPartner;
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
+		this.dateInvoiced = dateInvoiced;
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
 		this.productDescription = productDescription;
@@ -112,8 +124,6 @@ public class OLCandCreateRequest
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
 		this.discount = discount;
-
-		this.adInputDataSourceInternalName = adInputDataSourceInternalName;
 	}
 
 }

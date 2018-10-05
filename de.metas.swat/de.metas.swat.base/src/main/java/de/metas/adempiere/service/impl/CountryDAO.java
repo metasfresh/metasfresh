@@ -234,7 +234,11 @@ public class CountryDAO implements ICountryDAO
 	@Override
 	public String retrieveCountryCode2ByCountryId(final int countryId)
 	{
-		return getIndexedCountries().getById(countryId).getCountryCode();
+		Check.assumeGreaterThanZero(countryId, "countryId");
+
+		return getIndexedCountries()
+				.getById(countryId)
+				.getCountryCode();
 	}
 
 	@Override

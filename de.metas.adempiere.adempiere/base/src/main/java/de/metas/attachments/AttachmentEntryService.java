@@ -19,6 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.migration.AttachmentMigrationService;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
@@ -124,12 +125,25 @@ public class AttachmentEntryService
 		return result.build();
 	}
 
+	/**
+	 *
+	 * @param referencedRecords may be a single model object, a a single {@link ITableRecordReference} or a collection of both.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
-			@NonNull final Object referencedRecord,
+			@NonNull final Object referencedRecords,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
+		if (referencedRecords instanceof Collection)
+		{
+			return createNewAttachmentLinkAndLinkToAllReferencedRecords(
+					(Collection<Object>)referencedRecords,
+					attachmentEntryCreateRequest);
+		}
+
 		final AttachmentEntry newEntry = attachmentEntryFactory.createAndSaveEntry(attachmentEntryCreateRequest);
-		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
+		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecords);
 
 		final Collection<AttachmentEntry> attachedEntries = linkAttachmentsToModels(ImmutableList.of(newEntry), ImmutableList.of(tableRecordReference));
 		final Collection<AttachmentEntry> attachedEntriesWithIds = attachmentEntryRepository.saveAll(attachedEntries);
@@ -137,18 +151,36 @@ public class AttachmentEntryService
 		return CollectionUtils.singleElement(attachedEntriesWithIds);
 	}
 
+	private AttachmentEntry createNewAttachmentLinkAndLinkToAllReferencedRecords(
+			@NonNull final Collection<Object> referencedRecords,
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
+	{
+		final ImmutableList<Object> referencedRecordsList = ImmutableList.copyOf(referencedRecords);
+
+		Check.assumeNotEmpty(referencedRecordsList, "Parameter referencedRecords may not be empty");
+
+		final Object firstRecord = referencedRecordsList.get(0);
+
+		final AttachmentEntry entry = createNewAttachment(firstRecord, attachmentEntryCreateRequest);
+
+		final List<Object> otherRecords = referencedRecordsList.subList(1, referencedRecords.size());
+		final Collection<AttachmentEntry> entryWithReferencedRecords = linkAttachmentsToModels(ImmutableList.of(entry), otherRecords);
+
+		return CollectionUtils.singleElement(entryWithReferencedRecords);
+	}
+
 	public Collection<AttachmentEntry> linkAttachmentsToModels(
 			@NonNull final Collection<AttachmentEntry> entries,
-			@NonNull final Collection<? extends ITableRecordReference> modelRefs)
+			@NonNull final Collection<? extends Object> referencedRecords)
 	{
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 
 		for (final AttachmentEntry entry : entries)
 		{
 			AttachmentEntry updatedEntry = entry;
-			for (final ITableRecordReference modelRef : modelRefs)
+			for (final Object referencedRecord : referencedRecords)
 			{
-				updatedEntry = updatedEntry.withAdditionalLinkedRecord(modelRef);
+				updatedEntry = updatedEntry.withAdditionalLinkedRecord(TableRecordReference.of(referencedRecord));
 			}
 			result.add(updatedEntry);
 		}

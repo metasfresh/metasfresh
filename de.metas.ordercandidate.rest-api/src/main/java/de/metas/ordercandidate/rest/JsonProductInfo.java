@@ -1,15 +1,14 @@
 package de.metas.ordercandidate.rest;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,41 +33,36 @@ import lombok.Value;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Value
+@Data
 @Builder
-public class JsonOLCand
+public class JsonProductInfo
 {
-	private int id;
-	private String externalId;
 
-	private String poReference;
+	public enum Type
+	{
+		ITEM, SERVICE
+	}
 
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonOrganization org;
+	/** This translates to {@code M_Product.Value}. */
+	@Nullable
+	@ApiModelProperty(value="This translates to {@code M_Product.Value}.")
+	String code;
 
-	private JsonBPartnerInfo bpartner;
-	
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo billBPartner;
-	
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo dropShipBPartner;
-	
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JsonBPartnerInfo handOverBPartner;
+	/**
+	 * This translates to {@code M_Product.Name}.
+	 * If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.
+	 */
+	@Nullable
+	String name;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate datePromised;
-	
-	private int flatrateConditionsId;
+	@NonNull
+	Type type;
 
-	private int productId;
-	private String productDescription;
-	private BigDecimal qty;
-	private int uomId;
-	private int huPIItemProductId;
-
-	private int pricingSystemId;
-	private BigDecimal price;
-	private BigDecimal discount;
+	/**
+	 * This translates to {@code C_UOM.X12DE355}.
+	 * The respective UOM needs to exist in metasfresh and it's ID is set as {@code M_Product.C_UOM_ID}.
+	 * If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.
+	 */
+	@Nullable
+	String uomCode;
 }
