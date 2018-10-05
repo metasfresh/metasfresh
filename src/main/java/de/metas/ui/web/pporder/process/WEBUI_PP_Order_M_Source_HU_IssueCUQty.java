@@ -177,7 +177,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			}
 			else
 			{
-				final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty();
+				final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty().getAsBigDecimal();
 
 				return sourceHuStorageQty;
 			}

@@ -16,7 +16,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
@@ -260,12 +260,12 @@ public class WebuiHUTransformParametersFiller
 
 	private static LookupValuesList retrieveHUPItemProductsForNewTU(final HUEditorRow cuRow)
 	{
-		final I_M_Product product = cuRow.getM_Product();
+		final ProductId productId = cuRow.getProductId();
 		final I_C_BPartner bPartner = cuRow.getM_HU().getC_BPartner();
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(
 				Env.getCtx(),
-				product,
+				productId,
 				bPartner,
 				false); // includeVirtualItem = false..moving a cu onto a "virtual" TU makes no sense. Instead, the user can just leave the CU as it is, or take it out of a physical TU
 	}

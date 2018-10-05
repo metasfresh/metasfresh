@@ -8,14 +8,19 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.DocTypeId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -156,18 +161,18 @@ public class HuTraceQueryCreator
 			@NonNull final DocumentFilterParam parameter)
 	{
 		errorfIfNotEqualsOperator(parameter);
-		errorIfQueryValueGreaterThanZero("ProductId", query.getProductId(), query);
+		errorIfQueryValueNotNull("ProductId", query.getProductId(), query);
 
-		return query.withProductId(extractInt(parameter));
+		return query.withProductId(ProductId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("ShipmentScheduleId", query.getShipmentScheduleId(), query);
+		errorIfQueryValueNotNull("ShipmentScheduleId", query.getShipmentScheduleId(), query);
 
-		return query.withShipmentScheduleId(extractInt(parameter));
+		return query.withShipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updatePpCostCollectorIdFromParameter(
@@ -192,18 +197,18 @@ public class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("VhuId", query.getVhuId(), query);
+		errorIfQueryValueNotNull("VhuId", query.getVhuId(), query);
 
-		return query.withVhuId(extractInt(parameter));
+		return query.withVhuId(extractHuId(parameter));
 	}
 
 	private static HUTraceEventQuery updateVhuSourceIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("VhuSourceId", query.getVhuSourceId(), query);
+		errorIfQueryValueNotNull("VhuSourceId", query.getVhuSourceId(), query);
 
-		return query.withVhuSourceId(extractInt(parameter));
+		return query.withVhuSourceId(extractHuId(parameter));
 	}
 
 	private static HUTraceEventQuery updateTypeFromParameter(
@@ -244,9 +249,9 @@ public class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("TopLevelHuId", query.getTopLevelHuId(), query);
+		errorIfQueryValueNotNull("TopLevelHuId", query.getTopLevelHuId(), query);
 
-		return query.withTopLevelHuId(extractInt(parameter));
+		return query.withTopLevelHuId(extractHuId(parameter));
 	}
 
 	private static HUTraceEventQuery updateInOutIdFromParameter(
@@ -273,10 +278,10 @@ public class HuTraceQueryCreator
 	{
 		if (query.getDocTypeId().isPresent())
 		{
-			errorIfQueryValueGreaterThanZero("DocTypeId", query.getDocTypeId().getAsInt(), query);
+			errorIfQueryValueNotNull("DocTypeId", query.getDocTypeId().orElse(null), query);
 		}
 
-		return query.withDocTypeId(OptionalInt.of(extractInt(parameter)));
+		return query.withDocTypeId(DocTypeId.optionalOfRepoId(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateHuTraceIdFromParameter(@NonNull final HUTraceEventQuery query,
@@ -294,9 +299,9 @@ public class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("OrgId", query.getOrgId(), query);
+		errorIfQueryValueNotNull("OrgId", query.getOrgId(), query);
 
-		return query.withOrgId(extractInt(parameter));
+		return query.withOrgId(OrgId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static void errorIfQueryValueGreaterThanZero(
@@ -344,6 +349,11 @@ public class HuTraceQueryCreator
 		}
 	}
 
+	private static HuId extractHuId(@NonNull final DocumentFilterParam parameter)
+	{
+		return HuId.ofRepoIdOrNull(extractInt(parameter));
+	}
+
 	private static int extractInt(@NonNull final DocumentFilterParam parameter)
 	{
 		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
@@ -357,9 +367,10 @@ public class HuTraceQueryCreator
 		{
 			return (Integer)value;
 		}
-
-		Check.fail("Unable to extract an integer ID from parameter={}", parameter);
-		return -1; // not reached
+		else
+		{
+			throw new AdempiereException("Unable to extract an integer ID from parameter=" + parameter);
+		}
 	}
 
 	private static String extractString(@NonNull final DocumentFilterParam parameter)

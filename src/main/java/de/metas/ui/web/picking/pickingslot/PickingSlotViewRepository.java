@@ -1,7 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,10 +14,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.product.ProductId;
@@ -168,12 +169,22 @@ public class PickingSlotViewRepository
 		final List<I_M_PickingSlot> pickingSlots = retrievePickingSlotsForShipmentSchedule(query);
 
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
-		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
+		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(toPickingCandidatesQuery(query));
 
 		final ImmutableList<PickingSlotRow> result = pickingSlots.stream() // get stream of I_M_PickingSlot
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
 				.collect(ImmutableList.toImmutableList());
 		return result;
+	}
+
+	private static PickingCandidatesQuery toPickingCandidatesQuery(final PickingSlotRepoQuery query)
+	{
+		return PickingCandidatesQuery.builder()
+				.shipmentScheduleIds(query.getShipmentScheduleIds())
+				.onlyNotClosedOrNotRackSystem(query.isOnlyNotClosedOrNotRackSystem())
+				.pickingSlotBarcode(query.getPickingSlotBarcode())
+				.includeShippedHUs(false)
+				.build();
 	}
 
 	/**
@@ -185,13 +196,13 @@ public class PickingSlotViewRepository
 	 */
 	private static List<I_M_PickingSlot> retrievePickingSlotsForShipmentSchedule(@NonNull final PickingSlotRepoQuery repoQuery)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(repoQuery.getCurrentShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(repoQuery.getCurrentShipmentScheduleId());
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
-				.availableForBPartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
-				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.availableForBPartnerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
+				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.barcode(repoQuery.getPickingSlotBarcode())
 				.build();
@@ -205,7 +216,7 @@ public class PickingSlotViewRepository
 	static PickingSlotRow createSourceHURow(@NonNull final HUEditorRow sourceHuEditorRow)
 	{
 		final PickingSlotRow pickingSourceHuRow = PickingSlotRow.fromSourceHUBuilder()
-				.huId(sourceHuEditorRow.getHuIdAsInt())
+				.huId(sourceHuEditorRow.getHuId())
 				.huEditorRowType(sourceHuEditorRow.getType())
 				.huCode(sourceHuEditorRow.getValue())
 				.product(sourceHuEditorRow.getProduct())
@@ -219,7 +230,7 @@ public class PickingSlotViewRepository
 
 	private PickingSlotRow createPickingSlotRow(
 			@NonNull final I_M_PickingSlot pickingSlot,
-			@NonNull final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
+			@NonNull final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId)
 	{
 		final List<PickingSlotRow> pickedHuRows = retrieveHuRowsToIncludeInPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId);
 		return createPickingSlotRowWithIncludedRows(pickingSlot, pickedHuRows);
@@ -227,9 +238,9 @@ public class PickingSlotViewRepository
 
 	private static List<PickingSlotRow> retrieveHuRowsToIncludeInPickingSlotRow(
 			@NonNull final I_M_PickingSlot pickingSlot,
-			@NonNull final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId)
+			@NonNull final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId)
 	{
-		final int pickingSlotId = pickingSlot.getM_PickingSlot_ID();
+		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
 
 		// create picking slot rows for included/picked HUs
 		final List<PickingSlotRow> pickedHuRows = huEditorRowsByPickingSlotId.get(pickingSlotId)
@@ -246,7 +257,7 @@ public class PickingSlotViewRepository
 	 * @param pickingSlotId
 	 * @return
 	 */
-	private static final PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final int pickingSlotId)
+	private static final PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final PickingSlotId pickingSlotId)
 	{
 		final HUEditorRow huEditorRow = from.getHuEditorRow();
 
@@ -259,7 +270,7 @@ public class PickingSlotViewRepository
 
 		return PickingSlotRow.fromPickedHUBuilder()
 				.pickingSlotId(pickingSlotId)
-				.huId(huEditorRow.getHURowId().getHuId().getRepoId())
+				.huId(huEditorRow.getHURowId().getHuId())
 				.huStorageProductId(ProductId.toRepoId(huEditorRow.getHURowId().getStorageProductId()))
 
 				.huEditorRowType(huEditorRow.getType())
@@ -283,7 +294,7 @@ public class PickingSlotViewRepository
 			@NonNull final List<PickingSlotRow> pickedHuRows)
 	{
 		return PickingSlotRow.fromPickingSlotBuilder()
-				.pickingSlotId(pickingSlot.getM_PickingSlot_ID())
+				.pickingSlotId(PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID()))
 				//
 				.pickingSlotName(pickingSlot.getPickingSlot())
 				.pickingSlotWarehouse(warehouseLookup.get().findById(pickingSlot.getM_Warehouse_ID()))
@@ -299,7 +310,7 @@ public class PickingSlotViewRepository
 	{
 		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(query);
 
-		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveAllPickedHUsIndexedByPickingSlotId(pickingSlots);
+		final ListMultimap<PickingSlotId, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveAllPickedHUsIndexedByPickingSlotId(pickingSlots);
 
 		return pickingSlots.stream() // get stream of I_M_PickingSlot
 				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows

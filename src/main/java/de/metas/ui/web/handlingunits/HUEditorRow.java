@@ -14,13 +14,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,6 +28,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
@@ -509,26 +510,16 @@ public final class HUEditorRow implements IViewRow
 		return product;
 	}
 
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
 		final JSONLookupValue productLV = getProduct();
-		return productLV == null ? -1 : productLV.getKeyAsInt();
+		return productLV != null ? ProductId.ofRepoId(productLV.getKeyAsInt()) : null;
 	}
 
 	public String getM_Product_DisplayName()
 	{
 		final JSONLookupValue productLV = getProduct();
 		return productLV == null ? null : productLV.getCaption();
-	}
-
-	public I_M_Product getM_Product()
-	{
-		final int productId = getM_Product_ID();
-		if (productId <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(Env.getCtx(), productId, I_M_Product.class, ITrx.TRXNAME_None);
 	}
 
 	public String getPackingInfo()

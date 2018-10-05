@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -26,6 +27,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -115,6 +117,11 @@ public final class JSONProcessInstanceResult implements Serializable
 		{
 			final SelectViewRowsAction selectViewRowsAction = (SelectViewRowsAction)resultAction;
 			return new JSONSelectViewRowsAction(selectViewRowsAction.getViewId(), selectViewRowsAction.getRowIds());
+		}
+		else if (resultAction instanceof DisplayQRCodeAction)
+		{
+			final DisplayQRCodeAction displayQRCodeAction = (DisplayQRCodeAction)resultAction;
+			return new JSONDisplayQRCodeAction(displayQRCodeAction.getCode());
 		}
 		else
 		{
@@ -225,6 +232,18 @@ public final class JSONProcessInstanceResult implements Serializable
 			this.viewId = viewId.getViewId();
 			this.rowIds = rowIds.toJsonSet();
 		}
+	}
 
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONDisplayQRCodeAction extends JSONResultAction
+	{
+		private final String code;
+
+		protected JSONDisplayQRCodeAction(@NonNull final String code)
+		{
+			super("displayQRCode");
+			this.code = code;
+		}
 	}
 }

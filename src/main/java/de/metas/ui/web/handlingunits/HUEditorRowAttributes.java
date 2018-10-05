@@ -18,7 +18,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUAware;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
@@ -316,7 +316,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public Optional<Date> getBestBeforeDate()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute bestBeforeDateAttribute = attributeDAO.retrieveAttributeByValue(Constants.ATTR_BestBeforeDate);
+		final I_M_Attribute bestBeforeDateAttribute = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_BestBeforeDate);
 		if (!attributesStorage.hasAttribute(bestBeforeDateAttribute))
 		{
 			return Optional.empty();

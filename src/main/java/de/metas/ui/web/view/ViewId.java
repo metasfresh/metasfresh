@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -44,7 +43,6 @@ import lombok.ToString;
  */
 
 @EqualsAndHashCode
-@ToString
 public final class ViewId
 {
 	public static final ViewId of(@Nullable final String windowIdStr, @NonNull final String viewIdStr)
@@ -172,6 +170,13 @@ public final class ViewId
 		return viewId;
 	}
 
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return toJson();
+	}
+
 	@JsonValue
 	public String toJson()
 	{
@@ -223,5 +228,13 @@ public final class ViewId
 		final String viewId = JOINER.join(parts);
 
 		return new ViewId(viewId, parts, windowId);
+	}
+
+	public void assertWindowId(@NonNull final WindowId expectedWindowId)
+	{
+		if (!windowId.equals(expectedWindowId))
+		{
+			throw new AdempiereException("" + this + " does not have expected windowId: " + expectedWindowId);
+		}
 	}
 }

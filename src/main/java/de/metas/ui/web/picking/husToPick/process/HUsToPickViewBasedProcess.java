@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -41,7 +43,6 @@ import lombok.NonNull;
 	@Autowired
 	private IViewsRepository viewsRepo;
 	private final SourceHUsService sourceHuService = SourceHUsService.get();
-	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -85,7 +86,7 @@ import lombok.NonNull;
 			return false;
 		}
 
-		if (huPickingSlotDAO.isHuIdPicked(huRow.getHuId()))
+		if (pickingCandidateService.isHuIdPicked(huRow.getHuId()))
 		{
 			return false;
 		}
@@ -258,9 +259,13 @@ import lombok.NonNull;
 	{
 		final PickingSlotView pickingSlotsView = getPickingSlotView();
 		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
+		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
+		final ShipmentScheduleId shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		pickingCandidateService.addHUToPickingSlot(huId.getRepoId(), pickingSlotId, shipmentScheduleId);
+		pickingCandidateService.pickHU(PickHURequest.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.huId(huId)
+				.pickingSlotId(pickingSlotId)
+				.build());
 	}
 }

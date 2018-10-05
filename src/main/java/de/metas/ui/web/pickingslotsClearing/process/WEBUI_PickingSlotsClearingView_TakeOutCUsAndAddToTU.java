@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -160,7 +161,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends Picking
 		}
 
 		// Remove from picking slots all destroyed HUs
-		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);
+		pickingCandidateService.inactivateForHUIds(HuId.fromRepoIds(huIdsDestroyedCollector));
 
 		return MSG_OK;
 	}

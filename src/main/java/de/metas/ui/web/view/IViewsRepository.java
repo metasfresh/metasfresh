@@ -44,6 +44,8 @@ import lombok.NonNull;
  */
 public interface IViewsRepository
 {
+	IViewsIndexStorage getViewsStorageFor(ViewId viewId);
+
 	List<ViewProfile> getAvailableProfiles(WindowId windowId, JSONViewDataType viewDataType);
 
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, final ViewProfileId profileId);

@@ -22,6 +22,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
@@ -72,6 +73,11 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 	protected PricingConditionsViewFactoryTemplate(@NonNull final WindowId windowId)
 	{
 		this.windowId = windowId;
+	}
+
+	@Override
+	public void setViewsRepository(final IViewsRepository viewsRepository)
+	{
 	}
 
 	@Override

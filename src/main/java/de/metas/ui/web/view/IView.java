@@ -71,12 +71,11 @@ public interface IView
 	 * @return table name for the given row; might also return {@code null}.
 	 */
 	String getTableNameOrNull(@Nullable DocumentId documentId);
-	
+
 	default String getTableNameOrNull()
 	{
 		return getTableNameOrNull(null);
 	}
-
 
 	/**
 	 * @return In case this is an included view, this method will return the parent's viewId. Else null will be returned.
@@ -163,7 +162,14 @@ public interface IView
 		{
 			return null;
 		}
-		return TableRecordReference.of(getTableNameOrNull(rowId), recordId);
+
+		final String tableName = getTableNameOrNull(rowId);
+		if (tableName == null)
+		{
+			return null;
+		}
+
+		return TableRecordReference.of(tableName, recordId);
 	}
 
 	String getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);

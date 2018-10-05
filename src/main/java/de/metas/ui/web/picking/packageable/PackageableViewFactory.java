@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -18,7 +19,6 @@ import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import lombok.NonNull;
 
 /*
@@ -52,7 +52,7 @@ import lombok.NonNull;
 @ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PackageableViewFactory implements IViewFactory
 {
-	private final PackageableViewRepository pickingViewRepo;
+	private final PackageableRowsRepository pickingViewRepo;
 
 	private final PickingCandidateService pickingCandidateService;
 
@@ -62,7 +62,7 @@ public class PackageableViewFactory implements IViewFactory
 	 * @param pickingCandidateService when a new view is created, this stateless instance is given to that view
 	 */
 	public PackageableViewFactory(
-			@NonNull final PackageableViewRepository pickingViewRepo,
+			@NonNull final PackageableRowsRepository pickingViewRepo,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.pickingViewRepo = pickingViewRepo;
@@ -78,11 +78,7 @@ public class PackageableViewFactory implements IViewFactory
 		return ViewLayout.builder()
 				.setWindowId(PickingConstants.WINDOWID_PickingView)
 				.setCaption("Picking")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				//
-				.setHasAttributesSupport(false)
-				.setHasTreeSupport(false)
 				.setIncludedViewLayout(IncludedViewLayout.builder()
 						.openOnSelect(true)
 						.build())
@@ -104,7 +100,7 @@ public class PackageableViewFactory implements IViewFactory
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
 
-		final Set<Integer> shipmentScheduleIds = extractShipmentScheduleIds(request);
+		final Set<ShipmentScheduleId> shipmentScheduleIds = extractShipmentScheduleIds(request);
 		final PackageableRowsData rowsData = pickingViewRepo.createRowsData(viewId, shipmentScheduleIds);
 
 		return PackageableView.builder()
@@ -113,12 +109,12 @@ public class PackageableViewFactory implements IViewFactory
 				.pickingCandidateService(pickingCandidateService)
 				.build();
 	}
-	
-	private static Set<Integer> extractShipmentScheduleIds(final CreateViewRequest request)
+
+	private static Set<ShipmentScheduleId> extractShipmentScheduleIds(final CreateViewRequest request)
 	{
 		return request.getFilterOnlyIds()
 				.stream()
-				.filter(shipmentScheduleId -> shipmentScheduleId > 0)
+				.map(ShipmentScheduleId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

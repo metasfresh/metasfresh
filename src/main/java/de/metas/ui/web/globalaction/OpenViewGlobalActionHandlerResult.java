@@ -1,14 +1,14 @@
-package de.metas.ui.web.config;
+package de.metas.ui.web.globalaction;
 
-import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
-import org.springframework.context.annotation.Configuration;
+import de.metas.ui.web.view.ViewId;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,13 +26,9 @@ import org.springframework.context.annotation.Configuration;
  * #L%
  */
 
-@Configuration
-public class ElasticsearchConfig
+@Value(staticConstructor = "of")
+public class OpenViewGlobalActionHandlerResult implements GlobalActionHandlerResult
 {
-	public ElasticsearchConfig()
-	{
-		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
-		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
-	}
-
+	@NonNull
+	ViewId viewId;
 }

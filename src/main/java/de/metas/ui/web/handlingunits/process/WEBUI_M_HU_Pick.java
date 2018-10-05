@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -9,10 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -63,10 +66,10 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	private PickingCandidateService pickingCandidateService;
 
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
-	private int pickingSlotId;
+	private int pickingSlotIdInt;
 
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, mandatory = true)
-	private int shipmentScheduleId;
+	private int shipmentScheduleIdInt;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -142,7 +145,8 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	{
 		final WEBUI_M_HU_Pick_ParametersFiller filler = WEBUI_M_HU_Pick_ParametersFiller
 				.pickingSlotFillerBuilder()
-				.shipmentScheduleId(shipmentScheduleId).build();
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleIdInt))
+				.build();
 
 		return filler.getPickingSlotValues(context);
 	}
@@ -172,11 +176,17 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 	private void pickHU(final HURow row)
 	{
-		final int huId = row.getHuIdAsInt();
-		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+		final HuId huId = row.getHuId();
+		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlotIdInt);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleIdInt);
+		pickingCandidateService.pickHU(PickHURequest.builder()
+				.shipmentScheduleId(shipmentScheduleId)
+				.huId(huId)
+				.pickingSlotId(pickingSlotId)
+				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
 
-		pickingCandidateService.processForHUIds(ImmutableList.of(huId), pickingSlotId, OptionalInt.of(shipmentScheduleId));
+		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId);
 	}
 
 	@Override
@@ -235,10 +245,5 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		private final HuId huId;
 		private final boolean topLevelHU;
 		private final boolean huStatusActive;
-
-		public int getHuIdAsInt()
-		{
-			return HuId.toRepoId(huId);
-		}
 	}
 }

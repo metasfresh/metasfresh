@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.stock.HUStockInfo;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
@@ -68,9 +67,9 @@ public class StockDetailsRowsData implements IRowsData<StockDetailsRow>
 	}
 
 	@Override
-	public ListMultimap<TableRecordReference, StockDetailsRow> getTableRecordReference2rows()
+	public Stream<DocumentId> streamDocumentIdsToInvalidate(TableRecordReference recordRef)
 	{
-		return null;
+		return Stream.empty();
 	}
 
 	@Override

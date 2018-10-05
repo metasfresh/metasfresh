@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.ui.web.picking.packageable.PackageableViewFactory;
-import de.metas.ui.web.picking.packageable.PackageableViewRepository;
+import de.metas.ui.web.picking.packageable.PackageableRowsRepository;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -38,7 +38,7 @@ import mockit.Mocked;
 public class PickingViewFactoryTests
 {
 	@Mocked
-	private PackageableViewRepository pickingViewRepo;
+	private PackageableRowsRepository pickingViewRepo;
 	
 	@Mocked
 	private PickingCandidateService pickingCandidateService;
