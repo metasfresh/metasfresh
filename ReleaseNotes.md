@@ -50,10 +50,17 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4625](https://github.com/metasfresh/metasfresh/issues/4625) Open Items List Reference Date wrong parm
+    * Fix for the Open Items Reference Date Parm, now able to select to Open Items to a specific date again.
   * [#4632](https://github.com/metasfresh/metasfresh/issues/4632) Swing Picking Terminal: cannot pick
+    * Bugfix for a minor case in Picking Workflow.
 
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
+    * Fixes a Vulnerability Report about bootstrap.
+  * [#1992](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1992) Ugly double border when editing in Date Fields
+    * Adjustment of the Border Layout for mandatory Date Fields.
+  * [#1993](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1993) Date Icon moved few pixels to left for mandatory
+    * Alignment improvement for Calendar Icons in mandatory Date Fields.
 
 # metasfresh 5.76
 ## Features
