@@ -28,8 +28,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.TaxNoExemptFoundException;
 import org.adempiere.exceptions.TaxNotFoundException;
+import org.adempiere.location.CountryId;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.util.ISingletonService;
 
@@ -46,7 +48,7 @@ public interface ITaxBL extends ISingletonService
 	 * @param chargeId
 	 * @param billDate
 	 * @param shipDate
-	 * @param adOrgId
+	 * @param orgId
 	 * @param warehouse
 	 * @param shipC_BPartner_Location_ID place where the service is provided
 	 * @param isSOTrx
@@ -59,8 +61,8 @@ public interface ITaxBL extends ISingletonService
 			int productId,
 			Timestamp billDate,
 			Timestamp shipDate,
-			int adOrgId,
-			I_M_Warehouse warehouse,
+			OrgId orgId,
+			WarehouseId warehouse,
 			int shipC_BPartner_Location_ID,
 			boolean isSOTrx);
 
@@ -79,8 +81,8 @@ public interface ITaxBL extends ISingletonService
 	 * @return taxId
 	 */
 	int retrieveTaxIdForCategory(Properties ctx,
-			int countryFromId,
-			int orgId,
+			CountryId countryFromId,
+			OrgId orgId,
 			org.compiere.model.I_C_BPartner_Location bpLocTo,
 			Timestamp billDate,
 			int taxCategoryId,

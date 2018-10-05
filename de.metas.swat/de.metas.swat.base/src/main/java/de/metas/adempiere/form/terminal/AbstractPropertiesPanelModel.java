@@ -33,7 +33,6 @@ import org.adempiere.util.beans.WeakPropertyChangeSupport;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
-import de.metas.picking.legacy.form.IInputMethod;
 
 public abstract class AbstractPropertiesPanelModel implements IPropertiesPanelModel, IDisposable
 {

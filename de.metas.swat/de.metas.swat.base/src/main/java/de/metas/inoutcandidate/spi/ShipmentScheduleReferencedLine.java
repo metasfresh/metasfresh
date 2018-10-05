@@ -1,9 +1,13 @@
 package de.metas.inoutcandidate.spi;
 
 import java.sql.Timestamp;
+import java.util.Optional;
+
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.DocumentLineDescriptor;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,14 +52,11 @@ public class ShipmentScheduleReferencedLine
 
 	Timestamp preparationDate;
 
-	/**
-	 * Might be zero.
-	 */
 	@NonNull
-	Integer shipperId;
+	Optional<ShipperId> shipperId;
 
 	@NonNull
-	Integer warehouseId;
+	WarehouseId warehouseId;
 
 	@NonNull
 	DocumentLineDescriptor documentLineDescriptor;

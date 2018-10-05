@@ -37,6 +37,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -119,15 +120,15 @@ public class PPOrderPojoSupplier
 
 		//
 		// Calculate duration & Planning dates
-		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.getQty());
+		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.getAsBigDecimal());
 		final Timestamp dateFinishSchedule = demandDateStartSchedule;
 
 		final Timestamp dateStartSchedule = TimeUtil.addDays(dateFinishSchedule, -durationDays);
 
 		final ProductDescriptor productDescriptor = createPPOrderProductDescriptor(mrpContext);
 
-		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class)
-				.convertToProductUOM(qtyToSupply, mrpContext.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(mrpContext.getM_Product_ID());
+		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToSupply, productId);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.orgId(mrpContext.getAD_Org_ID())

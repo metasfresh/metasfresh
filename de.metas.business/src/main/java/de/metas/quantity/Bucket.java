@@ -308,7 +308,7 @@ public class Bucket
 		final I_C_UOM baseUOM = getC_UOM();
 
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(
-				capacity.getM_Product(),
+				capacity.getProductId(),
 				qty,
 				qtyUOM, // uomFrom,
 				baseUOM// uomTo
@@ -320,7 +320,7 @@ public class Bucket
 	{
 		final I_C_UOM baseUOM = getC_UOM();
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(
-				capacity.getM_Product(),
+				capacity.getProductId(),
 				qty,
 				baseUOM, // uomFrom,
 				uomTo// uomTo

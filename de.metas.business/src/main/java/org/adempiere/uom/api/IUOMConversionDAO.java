@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.compiere.model.I_C_UOM_Conversion;
-import org.compiere.model.I_M_Product;
+
+import de.metas.product.ProductId;
 
 import de.metas.util.ISingletonService;
 
 public interface IUOMConversionDAO extends ISingletonService
 {
-
-	List<I_C_UOM_Conversion> retrieveProductConversions(Properties ctx, I_M_Product product);
+	List<I_C_UOM_Conversion> retrieveProductConversions(ProductId productId);
 
 	List<I_C_UOM_Conversion> retrieveGenericConversions(Properties ctx);
 }

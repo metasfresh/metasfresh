@@ -10,6 +10,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +28,7 @@ import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -142,8 +144,8 @@ public class M_ShipmentScheduleTest
 		final ShipmentScheduleReferencedLine shipmentScheduleReferencedLine = //
 				ShipmentScheduleReferencedLine.builder()
 						.groupId(10)
-						.shipperId(20)
-						.warehouseId(30)
+						.shipperId(ShipperId.optionalOfRepoId(20))
+						.warehouseId(WarehouseId.ofRepoId(30))
 						.documentLineDescriptor(orderLineDescriptor).build();
 		// @formatter:off
 		new Expectations(ShipmentScheduleReferencedLineFactory.class)

@@ -2,11 +2,11 @@ package de.metas.handlingunits;
 
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 
@@ -28,7 +28,7 @@ public interface IHUPackageBL extends ISingletonService
 	 * @return
 	 * @throws HUException if <code>hu</code> or <code>shipper</code> is <code>null</code> or if <code>hu</code> has not both a <code>C_BPartner_ID</code> and a <code>C_BPartner_Location_ID</code>.
 	 */
-	de.metas.shipping.interfaces.I_M_Package createM_Package(I_M_HU hu, I_M_Shipper shipper);
+	de.metas.shipping.interfaces.I_M_Package createM_Package(I_M_HU hu, ShipperId shipperId);
 
 	/**
 	 * Update all {@link I_M_Package}s and {@link I_M_ShippingPackage}s which are linked to given <code>hu</code>.

@@ -5,6 +5,7 @@ import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.util.Check;
 
 public class BPartnerKey extends TerminalKey
@@ -48,8 +49,8 @@ public class BPartnerKey extends TerminalKey
 		return value;
 	}
 	
-	public int getC_BPartner_ID()
+	public BPartnerId getBpartnerId()
 	{
-		return value.getKey();
+		return BPartnerId.ofRepoIdOrNull(value.getKey());
 	}
 }

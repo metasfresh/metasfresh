@@ -51,6 +51,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
@@ -71,7 +72,7 @@ import de.metas.util.Services;
 
 	//
 	// Constrained capacity to use
-	private final Map<Integer, Capacity> productId2capacity = new HashMap<>();
+	private final Map<ProductId, Capacity> productId2capacity = new HashMap<>();
 
 	/** How many TUs to produce (maximum) */
 	private int maxTUs = Integer.MAX_VALUE;
@@ -102,7 +103,7 @@ import de.metas.util.Services;
 			return;
 		}
 
-		final int productId = capacity.getM_Product().getM_Product_ID();
+		final ProductId productId = capacity.getProductId();
 		productId2capacity.put(productId, capacity);
 	}
 
@@ -257,7 +258,7 @@ import de.metas.util.Services;
 	 */
 	private Capacity getCapacity(final IAllocationRequest request, final I_M_HU hu)
 	{
-		final int productId = request.getProduct().getM_Product_ID();
+		final ProductId productId = request.getProductId();
 		final Capacity capacityToUse;
 		final Capacity capacityOverride = productId2capacity.get(productId);
 
@@ -277,10 +278,10 @@ import de.metas.util.Services;
 					+ "this={}", tuPI, getC_BPartner(), materialPIItems, this);
 
 			final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProduct(), request.getDate());
+			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getC_BPartner(), request.getProductId(), request.getDate());
 
 			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProduct(), request.getC_UOM());
+			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());
 
 			capacityToUse = capacity;
 		}

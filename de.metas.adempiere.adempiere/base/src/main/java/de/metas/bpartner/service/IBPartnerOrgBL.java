@@ -13,19 +13,20 @@ package de.metas.bpartner.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.location.CountryId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -34,6 +35,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IBPartnerOrgBL extends ISingletonService
 {
@@ -51,12 +53,23 @@ public interface IBPartnerOrgBL extends ISingletonService
 	 * @return
 	 */
 	I_C_Location retrieveOrgLocation(Properties ctx, int orgId, String trxName);
-	
+
 	default I_C_Location retrieveOrgLocation(final int orgId)
 	{
 		return retrieveOrgLocation(Env.getCtx(), orgId, ITrx.TRXNAME_None);
 	}
 
+	default CountryId getOrgCountryId(@NonNull final OrgId orgId)
+	{
+		I_C_Location orgLocation = retrieveOrgLocation(orgId.getRepoId());
+		if (orgLocation == null)
+		{
+			// 03378 : temporary null check. Will be removed when OrgBP_Location is mandatory.
+			return null;
+		}
+
+		return CountryId.ofRepoIdOrNull(orgLocation.getC_Country_ID());
+	}
 
 	/**
 	 * 

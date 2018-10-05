@@ -9,12 +9,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
@@ -24,6 +23,8 @@ import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -42,20 +43,15 @@ public class HUMovementBL implements IHUMovementBL
 	@Override
 	public void setPackingMaterialCActivity(final I_M_MovementLine movementLine)
 	{
-		final IContextAware contextAwareMovement = InterfaceWrapperHelper.getContextAware(movementLine);
-		final I_M_Product product = movementLine.getM_Product();
+		final ClientId clientId = ClientId.ofRepoId(movementLine.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(movementLine.getAD_Org_ID());
+		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 
 		final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
 
-		final I_C_Activity productActivity = productAcctDAO // have multiple lines to easier locate problems in the stackstrace
-				.retrieveActivityForAcct(contextAwareMovement,
-						movementLine.getAD_Org(),
-						product);
-
-		final int productActivityID = productActivity == null ? -1 : productActivity.getC_Activity_ID();
-
-		movementLine.setC_ActivityFrom_ID(productActivityID);
-		movementLine.setC_Activity_ID(productActivityID);
+		movementLine.setC_ActivityFrom_ID(ActivityId.toRepoId(productActivityId));
+		movementLine.setC_Activity_ID(ActivityId.toRepoId(productActivityId));
 
 		InterfaceWrapperHelper.save(movementLine);
 	}
@@ -70,7 +66,7 @@ public class HUMovementBL implements IHUMovementBL
 				Env.getAD_Client_ID(ctx), // AD_Client_ID
 				Env.getAD_Org_ID(ctx) // AD_Org_ID
 		);
-		
+
 		if (directMoveWarehouseId <= 0)
 		{
 			if (throwEx)
@@ -85,13 +81,13 @@ public class HUMovementBL implements IHUMovementBL
 		final I_M_Warehouse directMoveWarehouse = InterfaceWrapperHelper.create(ctx, directMoveWarehouseId, I_M_Warehouse.class, ITrx.TRXNAME_None);
 		if (directMoveWarehouse == null || directMoveWarehouse.getM_Warehouse_ID() <= 0)
 		{
-			if(throwEx)
+			if (throwEx)
 			{
 				throw new AdempiereException("No warehouse found for ID=" + directMoveWarehouseId + ". Check sysconfig " + SYSCONFIG_DirectMove_Warehouse_ID);
 			}
 			return null;
 		}
-		
+
 		return directMoveWarehouse;
 	}
 
@@ -120,7 +116,7 @@ public class HUMovementBL implements IHUMovementBL
 		final Map<Integer, HUMovementBuilder> warehouseId2builder = new HashMap<>();
 		for (final I_M_HU hu : hus)
 		{
-			
+
 			final I_M_Locator huLocator = hu.getM_Locator();
 			final int sourceWarehouseId = huLocator.getM_Warehouse_ID();
 			HUMovementBuilder movementBuilder = warehouseId2builder.get(sourceWarehouseId);

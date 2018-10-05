@@ -71,7 +71,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
 	{
-		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), I_C_OrderLine.class);
+		return getOrderLineById(orderLineId, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends I_C_OrderLine> T getOrderLineById(@NonNull final OrderLineId orderLineId, @NonNull final Class<T> modelClass)
+	{
+		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), modelClass);
 	}
 
 	@Override

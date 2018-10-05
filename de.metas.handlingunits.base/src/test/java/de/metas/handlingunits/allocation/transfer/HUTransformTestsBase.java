@@ -103,7 +103,7 @@ public class HUTransformTestsBase
 			lutuProducer.setM_Locator(locator);
 			lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
-			data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("2"), data.helper.uomKg);
+			data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("2"), data.helper.uomKg);
 			final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 			Assert.assertThat(createdTUs.size(), is(1));

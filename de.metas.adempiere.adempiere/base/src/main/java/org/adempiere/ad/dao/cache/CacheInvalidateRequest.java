@@ -8,12 +8,11 @@ import org.compiere.util.CacheMgt;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -70,6 +69,11 @@ public final class CacheInvalidateRequest
 		final String childTableName = null;
 		final int childRecordId = CacheMgt.RECORD_ID_ALL;
 		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId);
+	}
+
+	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, @NonNull final RepoIdAware rootId)
+	{
+		return rootRecord(rootTableName, rootId.getRepoId());
 	}
 
 	public static CacheInvalidateRequest allChildRecords(@NonNull final String rootTableName, final int rootRecordId, @NonNull final String childTableName)

@@ -55,6 +55,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -188,9 +189,10 @@ public class DesadvBL implements IDesadvBL
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(desadvLine);
+		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 
 		desadvLine.setMovementQty(newMovementQty);
-		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, desadvLine.getM_Product(), desadvLine.getC_UOM(), newMovementQty));
+		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, productId, desadvLine.getC_UOM(), newMovementQty));
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)

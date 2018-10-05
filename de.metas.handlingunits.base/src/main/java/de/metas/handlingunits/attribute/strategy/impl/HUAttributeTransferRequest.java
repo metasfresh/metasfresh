@@ -26,19 +26,19 @@ package de.metas.handlingunits.attribute.strategy.impl;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 
 /* package */final class HUAttributeTransferRequest implements IHUAttributeTransferRequest
 {
 	private final IHUContext huContext;
 
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final BigDecimal qty;
 	private final I_C_UOM uom;
 
@@ -53,7 +53,7 @@ import de.metas.util.Check;
 	private final boolean vhuTransfer;
 
 	public HUAttributeTransferRequest(final IHUContext huContext,
-			final I_M_Product product,
+			final ProductId productId,
 			final BigDecimal qty,
 			final I_C_UOM uom,
 			final IAttributeStorage attributeStorageFrom,
@@ -68,8 +68,8 @@ import de.metas.util.Check;
 		Check.assumeNotNull(huContext, "huContext not null");
 		this.huContext = huContext;
 
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
+		Check.assumeNotNull(productId, "product not null");
+		this.productId = productId;
 
 		Check.assumeNotNull(qty, "qty not null");
 		this.qty = qty;
@@ -94,7 +94,7 @@ import de.metas.util.Check;
 	@Override
 	public String toString()
 	{
-		return "HUAttributeTransferRequest [huContext=" + huContext + ", product=" + product + ", qty=" + qty + ", uom=" + uom + ", attributeStorageFrom=" + attributeStorageFrom
+		return "HUAttributeTransferRequest [huContext=" + huContext + ", product=" + productId + ", qty=" + qty + ", uom=" + uom + ", attributeStorageFrom=" + attributeStorageFrom
 				+ ", attributeStorageTo=" + attributeStorageTo + ", huStorageFrom=" + huStorageFrom + ", huStorageTo=" + huStorageTo + "]";
 	}
 
@@ -105,9 +105,9 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public I_M_Product getM_Product()
+	public ProductId getProductId()
 	{
-		return product;
+		return productId;
 	}
 
 	@Override

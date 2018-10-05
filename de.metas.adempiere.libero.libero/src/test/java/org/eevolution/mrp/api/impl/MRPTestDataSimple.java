@@ -15,6 +15,7 @@ import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -49,7 +50,9 @@ public class MRPTestDataSimple
 	//
 	// Products and BOMs
 	public I_M_Product pTomato;
+	public ProductId pTomatoId;
 	public I_M_Product pOnion;
+	public ProductId pOnionId;
 	public I_M_Product pSalad_2xTomato_1xOnion;
 	public I_PP_Product_BOM pSalad_2xTomato_1xOnion_BOM;
 
@@ -116,7 +119,9 @@ public class MRPTestDataSimple
 	private final void createProductsAndBOMs()
 	{
 		this.pTomato = helper.createProduct("Tomato", uomKg);
+		this.pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
 		this.pOnion = helper.createProduct("Onion", uomKg);
+		this.pOnionId = ProductId.ofRepoId(pOnion.getM_Product_ID());
 		this.pSalad_2xTomato_1xOnion = helper.createProduct("Salad_2xTomato_1xOnion", uomEach);
 
 		//@formatter:off

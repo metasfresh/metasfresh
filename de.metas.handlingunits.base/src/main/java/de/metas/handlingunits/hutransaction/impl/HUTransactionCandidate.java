@@ -28,7 +28,6 @@ import java.util.UUID;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,7 +60,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	// Product/Qty/UOM
 
 	@Getter
-	private final I_M_Product product;
+	private final ProductId productId;
 
 	@Getter
 	private final Quantity quantity;
@@ -92,7 +92,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 				referencedModel, // model
 				huItem, // HU item
 				vhuItem, // virtual HU Item
-				request.getProduct(),
+				request.getProductId(),
 				// Transaction Quantity/UOM
 				// NOTE: we use source quantity/uom because those are in storage's internal UOM
 				// to avoid precision errors while converting again from working UOM to internal storage UOM
@@ -104,14 +104,14 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	public HUTransactionCandidate(final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
-			final I_M_Product product,
+			final ProductId productId,
 			final Quantity quantity,
 			final Date date)
 	{
 		this(model,
 				huItem,
 				vhuItem,
-				product,
+				productId,
 				quantity,
 				date,
 				null, // locator, will be handled
@@ -121,7 +121,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	public HUTransactionCandidate(final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
-			@NonNull final I_M_Product product,
+			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
 			@NonNull final Date date,
 			final I_M_Locator locator,
@@ -169,7 +169,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 		this.vhuItem = vhuItem;
 
 		// Product
-		this.product = product;
+		this.productId = productId;
 
 		// Qty/UOM
 		this.quantity = quantity;
@@ -213,7 +213,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append(getClass().getSimpleName() + " ["
-				+ "product=" + product.getValue()
+				+ "product=" + productId
 				+ ", qty=" + quantity
 				+ ", date=" + date);
 

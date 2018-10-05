@@ -10,14 +10,16 @@ import java.util.function.Function;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Locator;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -141,8 +143,8 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		if (huPickingSlotDAO.isHuIdPicked(vhu.getM_HU_ID()))
+		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
+		if (pickingCandidatesRepo.isHuIdPicked(HuId.ofRepoId(vhu.getM_HU_ID())))
 		{
 			return;
 		}

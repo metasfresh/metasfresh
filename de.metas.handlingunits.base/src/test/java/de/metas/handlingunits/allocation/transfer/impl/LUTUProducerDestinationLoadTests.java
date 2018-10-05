@@ -48,8 +48,8 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
-import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -95,7 +95,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setCreateTUsForRemainingQty(true);
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		assertThat(createdHUs.size(), is(1));
@@ -136,7 +136,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
 		// one IFCO can hold 40kg tomatoes
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("35"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("35"), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 		assertThat(createdHUs.size(), is(1));
@@ -191,7 +191,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("20"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg);
 		assertThat(lutuProducer.getCreatedLUsCount(), is(0));
 		assertThat(lutuProducer.getCreatedHUsCount(), is(1));
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
@@ -237,10 +237,10 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setLUPI(data.piLU);
 		lutuProducer.setLUItemPI(piLU_Item_20_IFCO);
 		lutuProducer.setTUPI(data.piTU_IFCO);
-		lutuProducer.addCUPerTU(data.helper.pTomato, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
+		lutuProducer.addCUPerTU(data.helper.pTomatoProductId, new BigDecimal("5.47"), data.helper.uomKg); // set the TU capacity to be 109.4 / 20
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("109.4"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("109.4"), data.helper.uomKg);
 		assertThat(lutuProducer.getCreatedHUs().size(), is(1));
 		final I_M_HU createdLU = lutuProducer.getCreatedHUs().get(0);
 
@@ -440,11 +440,11 @@ public class LUTUProducerDestinationLoadTests
 		// TU capacity
 		if (tuCapacityOverride != null)
 		{
-			lutuProducer.addCUPerTU(data.helper.pTomato, tuCapacityOverride, data.helper.uomKg);
+			lutuProducer.addCUPerTU(data.helper.pTomatoProductId, tuCapacityOverride, data.helper.uomKg);
 		}
 
 		// load the tomatoes into HUs
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal(cuQty), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal(cuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdHUs = lutuProducer.getCreatedHUs();
 
@@ -522,7 +522,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setMaxLUs(0);
 		lutuProducer.setCreateTUsForRemainingQty(true);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("999999"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("999999"), data.helper.uomKg);
 		final List<I_M_HU> huTruck = lutuProducer.getCreatedHUs();
 
 		//
@@ -577,7 +577,7 @@ public class LUTUProducerDestinationLoadTests
 
 		final ILUTUProducerAllocationDestination lutuProducer = Services.get(ILUTUConfigurationFactory.class).createLUTUProducerAllocationDestination(lutuConfiguration);
 
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("252"), data.helper.uomEach);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("252"), data.helper.uomEach);
 
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 		assertThat(createdLUs.size(), is(1));

@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +13,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.process.ProcessExecutionResult.DisplayQRCode;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 
@@ -51,8 +56,26 @@ public class ProcessExecutionResultTest
 		jsonMapper = new ObjectMapper();
 	}
 
-	@Test
-	public void testJsonSerializeDeserialize() throws Exception
+	private String toJson(final ProcessExecutionResult result) throws JsonProcessingException
+	{
+		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+		// System.out.println("json: \n" + json);
+		return json;
+	}
+
+	private ProcessExecutionResult fromJson(final String json) throws IOException, JsonParseException, JsonMappingException
+	{
+		final ProcessExecutionResult resultFromJson = jsonMapper.readValue(json, ProcessExecutionResult.class);
+		// System.out.println("result (from json): " + resultFromJson);
+		return resultFromJson;
+	}
+
+	private void assertEqualsAsJson(final ProcessExecutionResult expected, final ProcessExecutionResult actual) throws JsonProcessingException
+	{
+		Assert.assertEquals(toJson(expected), toJson(actual));
+	}
+
+	private ProcessExecutionResult createTestResult()
 	{
 		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(12345);
 		result.setRecordToSelectAfterExecution(createDummyTableRecordReference());
@@ -66,36 +89,11 @@ public class ProcessExecutionResultTest
 				.profileId("dummyProfile")
 				.target(ViewOpenTarget.IncludedView)
 				.build());
-		
 		//
-		// System.out.println("result: " + result);
-
-		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
-		// System.out.println("json: \n" + json);
-
-		final ProcessExecutionResult resultFromJson = jsonMapper.readValue(json, ProcessExecutionResult.class);
-		// System.out.println("result (from json): " + resultFromJson);
-
-		// Compare
-		Assert.assertEquals(result.getAD_PInstance_ID(), resultFromJson.getAD_PInstance_ID());
-		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
-		Assert.assertEquals(result.getSummary(), resultFromJson.getSummary());
-		Assert.assertEquals(result.isError(), resultFromJson.isError());
-		Assert.assertEquals(result.isErrorWasReportedToUser(), resultFromJson.isErrorWasReportedToUser());
-		Assert.assertEquals(result.isShowProcessLogs(), resultFromJson.isShowProcessLogs());
-		Assert.assertEquals(result.isRefreshAllAfterExecution(), resultFromJson.isRefreshAllAfterExecution());
-		//
-		Assert.assertArrayEquals(result.getReportData(), resultFromJson.getReportData());
-		Assert.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
-		Assert.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
-		//
-		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
-		//
-		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
-		//
-		Assert.assertEquals(result.getWebuiViewToOpen(), resultFromJson.getWebuiViewToOpen());
-		//
-		// Assert.assertEquals(result.get, resultFromJson.get);
+		result.setDisplayQRCode(DisplayQRCode.builder()
+				.code("some dummy code")
+				.build());
+		return result;
 	}
 
 	private static final TableRecordReference createDummyTableRecordReference()
@@ -116,4 +114,52 @@ public class ProcessExecutionResultTest
 		return list;
 	}
 
+	@Test
+	public void testJsonSerializeDeserialize() throws Exception
+	{
+		final ProcessExecutionResult result = createTestResult();
+
+		//
+		// System.out.println("result: " + result);
+
+		final String json = toJson(result);
+
+		final ProcessExecutionResult resultFromJson = fromJson(json);
+
+		// Compare
+		Assert.assertEquals(result.getAD_PInstance_ID(), resultFromJson.getAD_PInstance_ID());
+		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
+		Assert.assertEquals(result.getSummary(), resultFromJson.getSummary());
+		Assert.assertEquals(result.isError(), resultFromJson.isError());
+		Assert.assertEquals(result.isErrorWasReportedToUser(), resultFromJson.isErrorWasReportedToUser());
+		Assert.assertEquals(result.isShowProcessLogs(), resultFromJson.isShowProcessLogs());
+		Assert.assertEquals(result.isRefreshAllAfterExecution(), resultFromJson.isRefreshAllAfterExecution());
+		//
+		Assert.assertArrayEquals(result.getReportData(), resultFromJson.getReportData());
+		Assert.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
+		Assert.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
+		//
+		Assert.assertEquals(result.getRecordToSelectAfterExecution(), resultFromJson.getRecordToSelectAfterExecution());
+		//
+		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
+		//
+		Assert.assertEquals(result.getWebuiViewToOpen(), resultFromJson.getWebuiViewToOpen());
+		//
+		Assert.assertEquals(result.getDisplayQRCode(), resultFromJson.getDisplayQRCode());
+		//
+		// Assert.assertEquals(result.get, resultFromJson.get);
+
+		assertEqualsAsJson(result, resultFromJson);
+	}
+
+	@Test
+	public void test_updateFrom() throws JsonProcessingException
+	{
+		final ProcessExecutionResult result = createTestResult();
+
+		final ProcessExecutionResult resultCopy = ProcessExecutionResult.newInstanceForADPInstanceId(result.getAD_PInstance_ID());
+		resultCopy.updateFrom(result);
+
+		assertEqualsAsJson(result, resultCopy);
+	}
 }

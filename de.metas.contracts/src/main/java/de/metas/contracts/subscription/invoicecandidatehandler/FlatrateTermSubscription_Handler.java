@@ -27,7 +27,8 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-import org.compiere.model.I_M_Warehouse;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -73,7 +74,6 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		ic.setIsSOTrx(isSOTrx);
 
 		final int taxCategoryId = term.getC_TaxCategory_ID();
-		final I_M_Warehouse warehouse = null;
 
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
 		ic.setQtyOrdered(qty);
@@ -85,8 +85,8 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				term.getM_Product_ID(),
 				ic.getDateOrdered(), // billDate
 				ic.getDateOrdered(), // shipDate
-				term.getAD_Org_ID(),
-				warehouse,
+				OrgId.ofRepoId(term.getAD_Org_ID()),
+				(WarehouseId)null,
 				Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()), // ship location id
 				isSOTrx);
 		ic.setC_Tax_ID(taxId);

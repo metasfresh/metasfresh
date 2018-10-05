@@ -34,7 +34,6 @@ import java.util.concurrent.Callable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
 import org.compiere.util.CCache;

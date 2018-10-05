@@ -32,9 +32,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_TreeNode;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -96,6 +98,48 @@ public class OrgDAO implements IOrgDAO
 				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
 				.firstOnly(I_AD_OrgInfo.class);
+	}
+
+	@Override
+	public WarehouseId getOrgWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_Warehouse_ID());
+	}
+
+	@Override
+	public WarehouseId getOrgPOWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
+	}
+
+	@Override
+	public WarehouseId getOrgDropshipWarehouseId(@NonNull final OrgId orgId)
+	{
+		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+
+		if (orgInfo == null)
+		{
+			return null;
+		}
+
+		return WarehouseId.ofRepoIdOrNull(orgInfo.getDropShip_Warehouse_ID());
 	}
 
 	@Override

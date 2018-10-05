@@ -25,13 +25,13 @@ package de.metas.handlingunits.allocation;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
@@ -62,7 +62,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 *
 	 * @param qtyCUPerTU quantity, {@link IHUCapacityDefinition#DEFAULT}, {@link IHUCapacityDefinition#INFINITY}
 	 */
-	void addCUPerTU(I_M_Product cuProduct, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
+	void addCUPerTU(ProductId cuProductId, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
 
 	/**
 	 * Gets single TU capacity.
@@ -76,10 +76,10 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	/**
 	 * Gets TU defined capacity for given product
 	 *
-	 * @param cuProduct
+	 * @param cuProductId
 	 * @return TU capacity or <code>null</code>
 	 */
-	CapacityInterface getCUPerTU(I_M_Product cuProduct);
+	CapacityInterface getCUPerTU(ProductId cuProductId);
 
 	I_M_HU_PI getLUPI();
 
@@ -246,7 +246,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	/**
 	 * Calculate maximum total CU quantity that this producer can accept for given product.
 	 *
-	 * @param cuProduct
+	 * @param cuProductId
 	 * @return Can return following values
 	 *         <ul>
 	 *         <li>{@link IAllocationRequest#QTY_INFINITE} if it can accept infinite quantity (i.e. some of the CU/TU, TU/LU, count LUs etc quantities are infinite)
@@ -256,12 +256,12 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 *
 	 *         The UOM of returned quantity is {@link #getCUUOM()}.
 	 */
-	Quantity calculateTotalQtyCU(I_M_Product cuProduct);
+	Quantity calculateTotalQtyCU(ProductId cuProductId);
 
 	/**
 	 * Calculates total CU quantity for single TU capacity that was defined.
 	 *
-	 * @see #calculateTotalQtyCU(I_M_Product)
+	 * @see #calculateTotalQtyCU(ProductId)
 	 * @see #getSingleCUPerTU()
 	 */
 	Quantity calculateTotalQtyCU();

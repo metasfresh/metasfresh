@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,6 +47,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.lock.api.LockOwner;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -75,7 +75,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
 		}
 
-		final I_M_Shipper shipper = shipperTransportation.getM_Shipper();
+		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// services
 		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
@@ -100,7 +100,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Package
-			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
+			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipperId);
 			result.add(mpackage);
 
 			//

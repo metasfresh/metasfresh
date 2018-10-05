@@ -134,6 +134,11 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private WebuiViewToOpen webuiViewToOpen = null;
 
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private DisplayQRCode displayQRCode;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiViewId = null;
 
@@ -687,6 +692,12 @@ public class ProcessExecutionResult
 		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 		recordsToOpen = otherResult.recordsToOpen;
 		webuiViewToOpen = otherResult.webuiViewToOpen;
+		displayQRCode = otherResult.displayQRCode;
+	}
+
+	public void setDisplayQRCodeFromString(final String qrCode)
+	{
+		setDisplayQRCode(DisplayQRCode.builder().code(qrCode).build());
 	}
 
 	//
@@ -822,6 +833,20 @@ public class ProcessExecutionResult
 			this.profileId = profileId;
 			this.target = target;
 		}
+	}
 
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	public static final class DisplayQRCode
+	{
+		@JsonProperty("code")
+		String code;
+
+		@lombok.Builder
+		@JsonCreator
+		private DisplayQRCode(@JsonProperty("code") @NonNull final String code)
+		{
+			this.code = code;
+		}
 	}
 }

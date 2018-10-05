@@ -85,7 +85,7 @@ public abstract class AbstractHandlingUnitsBLTest extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, tomatosPerIFCO, uomEach);
+			helper.assignProduct(itemMA, pTomatoId, tomatosPerIFCO, uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}

@@ -1600,6 +1600,38 @@ public class TimeUtil
 		}
 	}
 
+	public static ZonedDateTime asZonedDateTime(final Object obj)
+	{
+		if (obj == null)
+		{
+			return null;
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return (ZonedDateTime)obj;
+		}
+		else if (obj instanceof LocalDateTime)
+		{
+			return ((LocalDateTime)obj).atZone(ZoneId.systemDefault());
+		}
+		else if (obj instanceof LocalDate)
+		{
+			return ((LocalDate)obj).atStartOfDay().atZone(ZoneId.systemDefault());
+		}
+		else if (obj instanceof Timestamp)
+		{
+			return ((Timestamp)obj).toInstant().atZone(ZoneId.systemDefault());
+		}
+		else if (obj instanceof Date)
+		{
+			return ((Date)obj).toInstant().atZone(ZoneId.systemDefault());
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + ZonedDateTime.class);
+		}
+	}
+
 	public static Date asDate(@NonNull final LocalDateTime localDateTime)
 	{
 		final Instant instant = localDateTime

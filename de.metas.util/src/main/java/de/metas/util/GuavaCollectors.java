@@ -276,7 +276,7 @@ public final class GuavaCollectors
 			map1.putAll(map2);
 			return map1;
 		};
-		final Function<M, M> finisher = (map) -> map;
+		final Function<M, M> finisher = Function.identity();
 		return Collector.of(mapSupplier, accumulator, combiner, finisher);
 	}
 
@@ -361,6 +361,30 @@ public final class GuavaCollectors
 	public static <K, V, V2> Function<Map.Entry<K, V>, Map.Entry<K, V2>> mapValue(@NonNull final Function<V, V2> valueMapper)
 	{
 		return entry -> entry(entry.getKey(), valueMapper.apply(entry.getValue()));
+	}
+
+	public static <T, R> Collector<T, ?, R> collectUsingListAccumulator(@NonNull final Function<List<T>, R> finisher)
+	{
+		final Supplier<List<T>> supplier = ArrayList::new;
+		final BiConsumer<List<T>, T> accumulator = List::add;
+		final BinaryOperator<List<T>> combiner = (acc1, acc2) -> {
+			acc1.addAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <T, R, K> Collector<T, ?, R> collectUsingMapAccumulator(@NonNull final Function<T, K> keyMapper, @NonNull final Function<Map<K, T>, R> finisher)
+	{
+		final Supplier<Map<K, T>> supplier = LinkedHashMap::new;
+		final BiConsumer<Map<K, T>, T> accumulator = (map, item) -> map.put(keyMapper.apply(item), item);
+		final BinaryOperator<Map<K, T>> combiner = (acc1, acc2) -> {
+			acc1.putAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 }

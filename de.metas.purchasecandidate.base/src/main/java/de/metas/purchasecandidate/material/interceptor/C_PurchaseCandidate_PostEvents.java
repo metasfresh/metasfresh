@@ -19,6 +19,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
+import de.metas.product.ProductId;
 import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
@@ -140,9 +141,11 @@ public class C_PurchaseCandidate_PostEvents
 	{
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
+		final ProductId productId = ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID());
 		final Quantity purchaseQty = Services.get(IUOMConversionBL.class)
-				.convertToProductUOM(Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), purchaseCandidateRecord.getC_UOM()),
-						purchaseCandidateRecord.getM_Product_ID());
+				.convertToProductUOM(
+						Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), purchaseCandidateRecord.getC_UOM()),
+						productId);
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(purchaseCandidateRecord.getPurchaseDatePromised())

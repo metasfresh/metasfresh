@@ -27,8 +27,6 @@ import java.util.List;
 
 import org.compiere.model.I_AD_Table;
 
-import de.metas.util.ILoggable;
-
 public interface ITableSequenceChecker
 {
 

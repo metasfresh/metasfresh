@@ -12,6 +12,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +21,7 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.shipping.ShipperId;
 
 public class ShipmentScheduleBLTest
 {
@@ -51,15 +53,15 @@ public class ShipmentScheduleBLTest
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
 				.groupId(10)
-				.shipperId(20)
-				.warehouseId(30) // different from the sched's effective WH
+				.shipperId(ShipperId.optionalOfRepoId(20))
+				.warehouseId(WarehouseId.ofRepoId(30)) // different from the sched's effective WH
 				.documentLineDescriptor(OrderLineDescriptor.builder().build()) // documentLineDescriptor is not relevant for this test
 				.build();
 
 		final DeliveryGroupCandidate result = new ShipmentScheduleBL().createGroup(scheduleSourceDoc, sched);
 		assertThat(result.getGroupId()).isEqualTo(10);
-		assertThat(result.getShipperId()).isEqualTo(20);
-		assertThat(result.getWarehouseId()).isEqualTo(35);
+		assertThat(result.getShipperId().get().getRepoId()).isEqualTo(20);
+		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(35);
 		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}
 

@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.process.DocumentTypeVerify;
@@ -1039,7 +1040,7 @@ public final class MSetup
 		 *  Location, Warehouse, Locator
 		 */
 		//  Location (Company)
-		final MLocation loc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, m_trx.getTrxName());
+		final MLocation loc = new MLocation(m_ctx, C_Country_ID, C_Region_ID, City, ITrx.TRXNAME_None);
 		loc.save();
 		sqlCmd = new StringBuffer ("UPDATE AD_OrgInfo SET C_Location_ID=");
 		sqlCmd.append(loc.getC_Location_ID()).append(" WHERE AD_Org_ID=").append(getAD_Org_ID());
@@ -1056,11 +1057,11 @@ public final class MSetup
 		if (!wh.save())
 			log.error("Warehouse NOT inserted");
 
-		//   Locator
-		final MLocator locator = new MLocator(wh, defaultName);
-		locator.setIsDefault(true);
-		if (!locator.save())
-			log.error("Locator NOT inserted");
+//		//   Locator
+//		final MLocator locator = new MLocator(wh, defaultName);
+//		locator.setIsDefault(true);
+//		if (!locator.save())
+//			log.error("Locator NOT inserted");
 
 		//  Update ClientInfo
 		sqlCmd = new StringBuffer ("UPDATE AD_ClientInfo SET ");

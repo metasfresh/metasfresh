@@ -16,26 +16,26 @@ package de.metas.fresh.picking;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.KeyLayout;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.fresh.picking.form.FreshSwingPackageTerminalPanel;
-import de.metas.util.Check;
+import de.metas.fresh.picking.form.SwingPackingTerminalPanel;
 
 /**
  * @author cg
@@ -72,16 +72,14 @@ public class PickingSlotLayout extends KeyLayout
 	@Override
 	protected List<ITerminalKey> createKeys()
 	{
-		final FreshPackingDetailsMd model = getBasePanel().getModel();
-		
-		final List<ITerminalKey> result = new ArrayList<ITerminalKey>(model.getAvailablePickingSlots());
-		return Collections.unmodifiableList(result);
+		final ImmutableList<PickingSlotKey> keys = getBasePanel().getAvailablePickingSlots();
+		return ImmutableList.copyOf(keys);
 	}
 
 	public List<PickingSlotKey> getPickingSlotKeys()
 	{
 		final List<ITerminalKey> keys = getKeys();
-		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<PickingSlotKey>(keys.size());
+		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<>(keys.size());
 		for (final ITerminalKey key : keys)
 		{
 			final PickingSlotKey pks = (PickingSlotKey)key;
@@ -90,20 +88,20 @@ public class PickingSlotLayout extends KeyLayout
 
 		return pickingSlotKeys;
 	}
-	
+
 	public List<PickingSlotKey> getPickingSlotKeys(final PickingSlotKeyGroup group)
 	{
 		final List<ITerminalKey> keys = getKeys();
-		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<PickingSlotKey>();
+		final List<PickingSlotKey> pickingSlotKeys = new ArrayList<>();
 		for (final ITerminalKey key : keys)
 		{
 			final PickingSlotKey pickingSlotKey = (PickingSlotKey)key;
 			final PickingSlotKeyGroup pickingSlotKeyGroup = pickingSlotKey.getPickingSlotKeyGroup();
-			if (!Check.equals(pickingSlotKeyGroup, group))
+			if (!Objects.equals(pickingSlotKeyGroup, group))
 			{
 				continue;
 			}
-			
+
 			pickingSlotKeys.add(pickingSlotKey);
 		}
 
@@ -111,9 +109,9 @@ public class PickingSlotLayout extends KeyLayout
 	}
 
 	@Override
-	public FreshSwingPackageTerminalPanel getBasePanel()
+	public SwingPackingTerminalPanel getBasePanel()
 	{
-		return (FreshSwingPackageTerminalPanel)super.getBasePanel();
+		return SwingPackingTerminalPanel.cast(super.getBasePanel());
 	}
 
 	@Override

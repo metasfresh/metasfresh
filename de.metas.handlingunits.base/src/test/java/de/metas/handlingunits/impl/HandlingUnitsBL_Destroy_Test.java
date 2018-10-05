@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
@@ -53,6 +52,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
@@ -67,7 +67,7 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
 	// CU config
-	private I_M_Product cuProduct;
+	private ProductId cuProductId;
 	private I_C_UOM cuUOM;
 
 	// TU config
@@ -80,6 +80,7 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 	private I_M_HU_PI piLU;
 	private I_M_HU_PI_Item piLU_Item;
 	private BigDecimal qtyTUsPerLU;
+
 
 	@Override
 	protected HUTestHelper createHUTestHelper()
@@ -115,7 +116,8 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 
 	private void createMaterData()
 	{
-		cuProduct = pTomato;
+		cuProductId = ProductId.ofRepoId(pTomato.getM_Product_ID());
+		
 		cuUOM = uomKg;
 
 		//
@@ -124,7 +126,7 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		piTU = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
-			piTU_Item_Product = helper.assignProduct(piTU_Item, cuProduct, qtyCUsPerTU, cuUOM); // 10 x Tomato Per IFCO
+			piTU_Item_Product = helper.assignProduct(piTU_Item, cuProductId, qtyCUsPerTU, cuUOM); // 10 x Tomato Per IFCO
 		}
 
 		//
@@ -160,8 +162,8 @@ public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 		// Empty the TU (i.e. just remove it's storage Qty)
 		{
 			final IHUStorage tuHUStorage = huContext.getHUStorageFactory().getStorage(tuHU);
-			final BigDecimal cuQty = tuHUStorage.getQty(cuProduct, cuUOM);
-			tuHUStorage.addQty(cuProduct, cuQty.negate(), cuUOM);
+			final BigDecimal cuQty = tuHUStorage.getQty(cuProductId, cuUOM);
+			tuHUStorage.addQty(cuProductId, cuQty.negate(), cuUOM);
 			assertTrue("TU's storage shall be empty", tuHUStorage.isEmpty());
 		}
 

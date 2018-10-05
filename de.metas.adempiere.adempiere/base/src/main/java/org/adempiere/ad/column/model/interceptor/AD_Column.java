@@ -1,7 +1,5 @@
 package org.adempiere.ad.column.model.interceptor;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.AccessSqlParser;
@@ -9,7 +7,6 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
 
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -38,13 +35,6 @@ public class AD_Column
 {
 	public static final transient AD_Column instance = new AD_Column();
 
-	@Init
-	public void init()
-	{
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		programaticCalloutProvider.registerAnnotatedCallout(new org.adempiere.ad.column.callout.AD_Column());
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Column.COLUMNNAME_ColumnSQL)
 	public void lowerCaseWhereClause(final I_AD_Column column)
 	{
@@ -59,7 +49,5 @@ public class AD_Column
 		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
 
 		column.setColumnSQL(adaptedWhereClause);
-
 	}
-
 }

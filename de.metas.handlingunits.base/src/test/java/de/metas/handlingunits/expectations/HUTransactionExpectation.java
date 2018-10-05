@@ -13,15 +13,14 @@ package de.metas.handlingunits.expectations;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -35,12 +34,13 @@ import org.junit.Assert;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.product.ProductId;
 
 public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
 
 	private I_M_HU _hu;
-	private I_M_Product _product;
+	private ProductId _productId;
 	private BigDecimal _qty;
 	private I_C_UOM _uom;
 	private IReference<I_M_HU> _vhu;
@@ -60,7 +60,7 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 	public String toString()
 	{
 		return "HUTransactionExpectation ["
-				+ "\n product=" + _product
+				+ "\n product=" + _productId
 				+ "\n qty=" + _qty
 				+ "\n uom=" + _uom
 				+ "\n hu=" + _hu
@@ -88,13 +88,13 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 		{
 			assertModelEquals(prefix + "HU", _hu, transaction.getM_HU());
 		}
-		if (_product != null)
+		if (_productId != null)
 		{
-			assertModelEquals(prefix + "Product", _product, transaction.getProduct());
+			Assert.assertEquals(prefix + "Product", _productId, transaction.getProductId());
 		}
 		if (_qty != null)
 		{
-			assertEquals(prefix + "Qty", _qty, transaction.getQuantity().getQty());
+			assertEquals(prefix + "Qty", _qty, transaction.getQuantity().getAsBigDecimal());
 		}
 		if (_uom != null)
 		{
@@ -122,7 +122,12 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 
 	public HUTransactionExpectation<ParentExpectationType> product(final I_M_Product product)
 	{
-		this._product = product;
+		return product(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null);
+	}
+
+	public HUTransactionExpectation<ParentExpectationType> product(final ProductId productId)
+	{
+		this._productId = productId;
 		return this;
 	}
 

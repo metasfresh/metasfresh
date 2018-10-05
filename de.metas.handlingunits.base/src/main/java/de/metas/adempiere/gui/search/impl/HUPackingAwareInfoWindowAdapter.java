@@ -39,6 +39,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.IProductBL;
@@ -177,7 +178,7 @@ import de.metas.util.Services;
 		{
 			return null;
 		}
-		final I_M_HU_PI_Item_Product huPiItemProduct = Services.get(IHUPIItemProductDAO.class).retrieveForId(Env.getCtx(), huPiItemProductId);
+		final I_M_HU_PI_Item_Product huPiItemProduct = Services.get(IHUPIItemProductDAO.class).getById(HUPIItemProductId.ofRepoId(huPiItemProductId));
 		return huPiItemProduct;
 	}
 

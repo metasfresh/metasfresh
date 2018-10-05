@@ -26,11 +26,11 @@ package de.metas.handlingunits.attribute.strategy;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
 
 /**
  * Provides necessary data from to the transfer strategies when re-propagating values post-transfer to the other storage.
@@ -47,7 +47,7 @@ public interface IHUAttributeTransferRequest
 	/**
 	 * @return product used in transfer between {@link IHUStorage}s
 	 */
-	I_M_Product getM_Product();
+	ProductId getProductId();
 
 	/**
 	 * @return qty to be transferred between {@link IHUStorage}s

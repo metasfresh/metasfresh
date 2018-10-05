@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inventory.IInventoryBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -130,8 +131,9 @@ public class InventoryBL implements IInventoryBL
 	@Override
 	public Quantity getMovementQtyInStockingUOM(final I_M_InventoryLine inventoryLine)
 	{
+		ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 		final Quantity movementQty = getMovementQty(inventoryLine);
-		return Services.get(IUOMConversionBL.class).convertToProductUOM(movementQty, inventoryLine.getM_Product_ID());
+		return Services.get(IUOMConversionBL.class).convertToProductUOM(movementQty, productId);
 	}
 
 	@Override

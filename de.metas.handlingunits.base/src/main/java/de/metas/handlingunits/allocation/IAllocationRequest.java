@@ -30,6 +30,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -52,9 +53,9 @@ public interface IAllocationRequest
 
 	I_M_Product getProduct();
 
-	default int getProductId()
+	default ProductId getProductId()
 	{
-		return getProduct().getM_Product_ID();
+		return ProductId.ofRepoId(getProduct().getM_Product_ID());
 	}
 
 	BigDecimal getQty();
