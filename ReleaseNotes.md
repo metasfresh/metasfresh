@@ -61,6 +61,8 @@ Here come the actual release notes:
     * Adjustment of the Border Layout for mandatory Date Fields.
   * [#1993](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1993) Date Icon moved few pixels to left for mandatory
     * Alignment improvement for Calendar Icons in mandatory Date Fields.
+  * [#1995](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1995) Cypress Test: Manufacturing Order Test fails
+    * Bugfix for failing Manufacturing Order Test with Cypress.
 
 # metasfresh 5.76
 ## Features
