@@ -97,14 +97,14 @@ public class PickingHUsRepositoryTests
 	public void test_retrieveHUsIndexedByPickingSlotId_IP_RackSystem()
 	{
 		final boolean pickingRackSystem = true;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.InProgress, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Draft, pickingRackSystem);
 	}
 
 	@Test
 	public void test_retrieveHUsIndexedByPickingSlotId_IP_NotRackSystem()
 	{
 		final boolean pickingRackSystem = false;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.InProgress, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Draft, pickingRackSystem);
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class PickingHUsRepositoryTests
 			assertThat(result.size()).isEqualTo(1);
 			assertThat(result.get(pickingSlotId)).hasSize(1);
 
-			final boolean expectedProcessed = !PickingCandidateStatus.InProgress.equals(pickingCandidateStatus);
+			final boolean expectedProcessed = !PickingCandidateStatus.Draft.equals(pickingCandidateStatus);
 
 			final PickedHUEditorRow resultRow = result.get(pickingSlotId).get(0);
 			final PickedHUEditorRow expectedRow = new PickedHUEditorRow(huEditorRow, expectedProcessed);

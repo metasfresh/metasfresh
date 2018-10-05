@@ -142,7 +142,7 @@ class ProductsToPickRowsDataFactory
 
 	private List<ProductsToPickRow> createRowsFromPickingCandidates(final AllocablePackageable packageable)
 	{
-		final List<PickingCandidate> pickingCandidates = pickingCandidateRepo.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.InProgress);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepo.getByShipmentScheduleIdAndStatus(packageable.getShipmentScheduleId(), PickingCandidateStatus.Draft);
 
 		return pickingCandidates
 				.stream()

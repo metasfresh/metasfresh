@@ -213,7 +213,7 @@ public class PickingHURowsRepository
 		{
 			return true;
 		}
-		else if (PickingCandidateStatus.InProgress.equals(status))
+		else if (PickingCandidateStatus.Draft.equals(status))
 		{
 			return false;
 		}
