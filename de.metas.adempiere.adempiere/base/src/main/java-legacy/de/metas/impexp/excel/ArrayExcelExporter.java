@@ -16,8 +16,6 @@ package de.metas.impexp.excel;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -29,8 +27,6 @@ import lombok.NonNull;
  */
 public class ArrayExcelExporter extends AbstractExcelExporter
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 	private Properties m_ctx = null;
 	private List<List<Object>> m_data = null;
 
