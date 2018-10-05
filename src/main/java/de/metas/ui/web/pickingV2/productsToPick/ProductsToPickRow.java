@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.HuId;
@@ -79,6 +81,7 @@ public class ProductsToPickRow implements IViewRow
 	@Getter
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Getter
+	@Nullable
 	private final PickingCandidateId pickingCandidateId;
 
 	@Builder(toBuilder = true)
@@ -152,5 +155,11 @@ public class ProductsToPickRow implements IViewRow
 		}
 
 		return toBuilder().qty(qty).build();
+	}
+
+	public boolean isEligibleForReview()
+	{
+		// TODO impl
+		return true;
 	}
 }

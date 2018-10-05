@@ -11,6 +11,7 @@ import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -69,5 +70,18 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return relatedProcessDescriptors;
+	}
+
+	public boolean isEligibleForReview()
+	{
+		if (size() == 0)
+		{
+			return false;
+		}
+
+		final boolean hasNotEligibleRows = streamByIds(DocumentIdsSelection.ALL)
+				.anyMatch(row -> !row.isEligibleForReview());
+
+		return !hasNotEligibleRows;
 	}
 }

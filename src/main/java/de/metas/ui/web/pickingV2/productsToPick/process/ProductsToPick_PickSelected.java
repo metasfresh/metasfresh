@@ -1,5 +1,7 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
+import java.util.List;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -47,7 +49,10 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	@Override
 	protected String doIt()
 	{
-		getSelectedRows().forEach(this::pick);
+		final List<ProductsToPickRow> rows = getSelectedRows();
+		rows.forEach(this::pick);
+
+		invalidateView();
 
 		return MSG_OK;
 	}
@@ -59,7 +64,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 		final ShipmentScheduleId shipmentScheduleId = row.getShipmentScheduleId();
 
 		final Quantity qty = row.getQty();
-		
+
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("not implemented");
 	}
