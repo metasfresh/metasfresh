@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
@@ -50,6 +52,7 @@ import lombok.NonNull;
 
 public class PickHUCommand
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -71,6 +74,7 @@ public class PickHUCommand
 			@NonNull final PickHURequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
+
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		this.huId = request.getHuId();
 		this.pickingSlotId = request.getPickingSlotId();
@@ -79,28 +83,35 @@ public class PickHUCommand
 
 	public void perform()
 	{
+		trxManager.runInThreadInheritedTrx(this::performInTrx);
+	}
+
+	private void performInTrx()
+	{
 		final Quantity qtyToPick = getQtyToPick();
+		if (qtyToPick.signum() <= 0)
+		{
+			throw new AdempiereException("Invalid quanity to pick: " + qtyToPick);
+		}
 
 		final PickingCandidate pickingCandidate = pickingCandidateRepository.getByShipmentScheduleIdAndHuIdAndPickingSlotId(shipmentScheduleId, huId, pickingSlotId)
 				.orElseGet(() -> PickingCandidate.builder()
-						.status(PickingCandidateStatus.InProgress)
+						.status(PickingCandidateStatus.Draft)
 						.qtyPicked(qtyToPick)
 						.shipmentScheduleId(shipmentScheduleId)
 						.huId(huId)
 						.pickingSlotId(pickingSlotId)
 						.build());
+		if (!PickingCandidateStatus.Draft.equals(pickingCandidate.getStatus()))
+		{
+			throw new AdempiereException("Changing processed picking candidate is not allowed")
+					.setParameter("pickingCandidate", pickingCandidate);
+		}
+
 		pickingCandidate.setQtyPicked(qtyToPick);
 		pickingCandidateRepository.save(pickingCandidate);
 
-		//
-		// Try allocating the picking slot
-		if (pickingSlotId != null)
-		{
-			final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
-			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
-			final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
-			huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
-		}
+		allocatePickingSlotIfPossible();
 	}
 
 	private Quantity getQtyToPick()
@@ -145,5 +156,18 @@ public class PickHUCommand
 			_shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		}
 		return _shipmentSchedule;
+	}
+
+	private void allocatePickingSlotIfPossible()
+	{
+		if (pickingSlotId == null)
+		{
+			return;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
+		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
+		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlotId, bpartnerId, bpartnerLocationId);
 	}
 }
