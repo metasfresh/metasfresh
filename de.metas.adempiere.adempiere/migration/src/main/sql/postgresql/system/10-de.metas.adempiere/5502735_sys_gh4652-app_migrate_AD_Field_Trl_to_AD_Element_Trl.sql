@@ -1,6 +1,6 @@
 
 ALTER TABLE AD_Element_Trl ADD COLUMN AD_Field_Saved_ID numeric(10,0);
-ALTER TABLE AD_Field_Trl ADD COLUMN IsSaved character(1) DEFAULT 'N'
+ALTER TABLE AD_Field_Trl ADD COLUMN IsSaved character(1) DEFAULT 'N';
 
 DROP VIEW IF EXISTS AD_Field_Trl_to_save_V CASCADE;
 CREATE VIEW AD_Field_Trl_to_save_V AS
