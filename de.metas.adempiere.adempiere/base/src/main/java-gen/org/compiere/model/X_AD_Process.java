@@ -758,6 +758,8 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String TYPE_Java = "Java";
 	/** Excel = Excel */
 	public static final String TYPE_Excel = "Excel";
+	/** JasperReports = JasperReports */
+	public static final String TYPE_JasperReports = "JasperReports";
 	/** Set Art.
 		@param Type Art	  */
 	@Override
