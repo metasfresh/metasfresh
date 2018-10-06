@@ -75,10 +75,14 @@ public class ExportToExcelProcess extends JavaProcess
 		// 2: underlying record
 		final String recordTableName = getTableName();
 		final int recordId = getRecord_ID();
-		if (recordTableName != null && recordId >= 0)
+		if (recordTableName != null && recordId > 0)
 		{
 			final TableRecordReference recordRef = TableRecordReference.of(recordTableName, recordId);
-			contexts.add(Evaluatees.ofTableRecordReference(recordRef));
+			final Evaluatee evalCtx = Evaluatees.ofTableRecordReference(recordRef);
+			if (evalCtx != null)
+			{
+				contexts.add(evalCtx);
+			}
 		}
 
 		//
