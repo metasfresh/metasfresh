@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.server;
 
@@ -27,8 +27,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.impexp.ArrayExcelExporter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
@@ -44,6 +45,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
 import de.metas.i18n.Msg;
+import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -51,39 +54,39 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
- *	Alert Processor
+ * Alert Processor
  *
- *  @author Jorg Janke
- *  @version $Id: AlertProcessor.java,v 1.4 2006/07/30 00:53:33 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: AlertProcessor.java,v 1.4 2006/07/30 00:53:33 jjanke Exp $
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * 			<li>FR [ 1894573 ] Alert Processor Improvements
- * 			<li>FR [ 2453882 ] Alert Processor : attached file name improvement
+ *         <li>FR [ 1894573 ] Alert Processor Improvements
+ *         <li>FR [ 2453882 ] Alert Processor : attached file name improvement
  * @author Kubotti
- * 			<li>BF [ 2785633 ] Adding a Notice in Alert Processor
+ *         <li>BF [ 2785633 ] Adding a Notice in Alert Processor
  */
 public class AlertProcessor extends AdempiereServer
 {
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.alerts.UserNotifications");
-	
-	public AlertProcessor (MAlertProcessor model)
-	{
-		super (model, 180);		//	3 minute delay
-		m_model = model;
-	}	//	AlertProcessor
 
-	/**	The Concrete Model			*/
-	private MAlertProcessor		m_model = null;
-	/**	Last Summary				*/
-	private StringBuffer 		m_summary = new StringBuffer();
-	/**	Last Error Msg				*/
-	private StringBuffer 		m_errors = new StringBuffer();
+	public AlertProcessor(MAlertProcessor model)
+	{
+		super(model, 180);		// 3 minute delay
+		m_model = model;
+	}	// AlertProcessor
+
+	/** The Concrete Model */
+	private MAlertProcessor m_model = null;
+	/** Last Summary */
+	private StringBuffer m_summary = new StringBuffer();
+	/** Last Error Msg */
+	private StringBuffer m_errors = new StringBuffer();
 
 	/**
-	 * 	Work
+	 * Work
 	 */
 	@Override
-	protected void doWork ()
+	protected void doWork()
 	{
 		m_summary = new StringBuffer();
 		m_errors = new StringBuffer();
@@ -111,21 +114,21 @@ public class AlertProcessor extends AdempiereServer
 		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 		pLog.setTextMsg(m_errors.toString());
 		pLog.save();
-	}	//	doWork
-	
+	}	// doWork
+
 	private boolean isSendAttachmentsAsXls()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("ALERT_SEND_ATTACHMENT_AS_XLS", true, Env.getAD_Client_ID(getCtx()));		
+		return Services.get(ISysConfigBL.class).getBooleanValue("ALERT_SEND_ATTACHMENT_AS_XLS", true, Env.getAD_Client_ID(getCtx()));
 	}
 
-	private boolean processAlert (MAlert alert)
+	private boolean processAlert(MAlert alert)
 	{
 		if (!alert.isValid())
 			return false;
 		log.info("{}", alert);
 
 		StringBuffer message = new StringBuffer(alert.getAlertMessage())
-			.append(Env.NL);
+				.append(Env.NL);
 		//
 		boolean valid = true;
 		boolean processed = false;
@@ -134,19 +137,20 @@ public class AlertProcessor extends AdempiereServer
 		for (int i = 0; i < rules.length; i++)
 		{
 			if (i > 0)
+			{
 				message.append(Env.NL);
-			final String trxName = null;		//	assume r/o
+			}
 
 			MAlertRule rule = rules[i];
 			if (!rule.isValid())
 				continue;
-			log.debug("" + rule);
+			log.debug("{}", rule);
 
-			//	Pre
+			// Pre
 			final String sqlPreProcessing = rule.getPreProcessing();
-			if(!Check.isEmpty(sqlPreProcessing, true))
+			if (!Check.isEmpty(sqlPreProcessing, true))
 			{
-				int no = DB.executeUpdate(sqlPreProcessing, false, trxName);
+				int no = DB.executeUpdate(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -157,20 +161,20 @@ public class AlertProcessor extends AdempiereServer
 					valid = false;
 					break;
 				}
-			}	//	Pre
+			}	// Pre
 
-			//	The processing
+			// The processing
 			try
 			{
 				final String sql = rule.getSql(true);
 				String text = null;
 				if (isSendAttachmentsAsXls())
 				{
-					text = getExcelReport(rule, sql, trxName, attachments);
+					text = getExcelReport(rule, sql, attachments);
 				}
 				else
 				{
-					text = getPlainTextReport(rule, sql, trxName, attachments);
+					text = getPlainTextReport(rule, sql, ITrx.TRXNAME_ThreadInherited, attachments);
 				}
 				if (!Check.isEmpty(text, true))
 				{
@@ -188,11 +192,11 @@ public class AlertProcessor extends AdempiereServer
 				break;
 			}
 
-			//	Post
+			// Post
 			final String sqlPostProcessing = rule.getPostProcessing();
-			if(!Check.isEmpty(sqlPostProcessing, true))
+			if (!Check.isEmpty(sqlPostProcessing, true))
 			{
-				int no = DB.executeUpdate(sqlPostProcessing, false, trxName);
+				int no = DB.executeUpdate(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -203,10 +207,10 @@ public class AlertProcessor extends AdempiereServer
 					valid = false;
 					break;
 				}
-			}	//	Post
-		}	//	 for all rules
+			}	// Post
+		}	// for all rules
 
-		//	Update header if error
+		// Update header if error
 		if (!valid)
 		{
 			alert.setIsValid(false);
@@ -214,7 +218,7 @@ public class AlertProcessor extends AdempiereServer
 			return false;
 		}
 
-		//	Nothing to report
+		// Nothing to report
 		if (!processed)
 		{
 			m_summary.append(alert.getName()).append("=No Result - ");
@@ -233,7 +237,7 @@ public class AlertProcessor extends AdempiereServer
 
 		m_summary.append(alert.getName()).append(" - ");
 		return valid;
-	}	//	processAlert
+	}	// processAlert
 
 	private void notifyUsers(
 			final Set<Integer> userIds,
@@ -241,15 +245,15 @@ public class AlertProcessor extends AdempiereServer
 			final String message,
 			final Collection<File> attachments)
 	{
-		if(userIds.isEmpty())
+		if (userIds.isEmpty())
 		{
 			return;
 		}
-		
+
 		final List<FileSystemResource> attachmentResources = attachments.stream()
 				.map(FileSystemResource::new)
 				.collect(ImmutableList.toImmutableList());
-		
+
 		final INotificationBL userNotificationsService = Services.get(INotificationBL.class);
 		userIds.stream()
 				.filter(userId -> userId >= 0)
@@ -264,67 +268,8 @@ public class AlertProcessor extends AdempiereServer
 	}
 
 	/**
-	 * Get Alert Data
-	 * @param sql
-	 * @param trxName
-	 * @return data
-	 * @throws Exception
-	 */
-	private ArrayList<ArrayList<Object>> getData (String sql, String trxName) throws Exception
-	{
-		ArrayList<ArrayList<Object>> data = new ArrayList<>();
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		Exception error = null;
-		try
-		{
-			pstmt = DB.prepareStatement (sql, trxName);
-			rs = pstmt.executeQuery ();
-			ResultSetMetaData meta = rs.getMetaData();
-			boolean isFirstRow = true;
-			while (rs.next ())
-			{
-				ArrayList<Object> header = (isFirstRow ? new ArrayList<>() : null);
-				ArrayList<Object> row = new ArrayList<>();
-				for (int col = 1; col <= meta.getColumnCount(); col++)
-				{
-					if (isFirstRow) {
-						String columnName = meta.getColumnLabel(col);
-						header.add(columnName);
-					}
-					Object o = rs.getObject(col);
-					row.add(o);
-				}	//	for all columns
-				if (isFirstRow)
-					data.add(header);
-				data.add(row);
-				isFirstRow = false;
-			}
-		}
-		catch (Throwable e)
-		{
-			log.error(sql, e);
-			if (e instanceof Exception)
-				error = (Exception)e;
-			else
-				error = new Exception(e.getMessage(), e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-
-		//	Error occurred
-		if (error != null)
-			throw new Exception ("(" + sql + ") " + Env.NL
-				+ error.getLocalizedMessage());
-
-		return data;
-	}	//	getData
-
-	/**
 	 * Get Plain Text Report (old functionality)
+	 * 
 	 * @param rule (ignored)
 	 * @param sql sql select
 	 * @param trxName transaction
@@ -335,7 +280,7 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	@Deprecated
 	private String getPlainTextReport(MAlertRule rule, String sql, String trxName, Collection<File> attachments)
-	throws Exception
+			throws Exception
 	{
 		StringBuffer result = new StringBuffer();
 		PreparedStatement pstmt = null;
@@ -343,10 +288,10 @@ public class AlertProcessor extends AdempiereServer
 		Exception error = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, trxName);
-			rs = pstmt.executeQuery ();
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
 			ResultSetMetaData meta = rs.getMetaData();
-			while (rs.next ())
+			while (rs.next())
 			{
 				result.append("------------------").append(Env.NL);
 				for (int col = 1; col <= meta.getColumnCount(); col++)
@@ -354,7 +299,7 @@ public class AlertProcessor extends AdempiereServer
 					result.append(meta.getColumnLabel(col)).append(" = ");
 					result.append(rs.getString(col));
 					result.append(Env.NL);
-				}	//	for all columns
+				}	// for all columns
 			}
 			if (result.length() == 0)
 				log.debug("No rows selected");
@@ -370,19 +315,21 @@ public class AlertProcessor extends AdempiereServer
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
+			rs = null;
+			pstmt = null;
 		}
 
-		//	Error occurred
+		// Error occurred
 		if (error != null)
-			throw new Exception ("(" + sql + ") " + Env.NL
-				+ error.getLocalizedMessage());
+			throw new Exception("(" + sql + ") " + Env.NL
+					+ error.getLocalizedMessage());
 
 		return result.toString();
 	}
 
 	/**
 	 * Get Excel Report
+	 * 
 	 * @param rule
 	 * @param sql
 	 * @param trxName
@@ -390,29 +337,37 @@ public class AlertProcessor extends AdempiereServer
 	 * @return summary message to be added into mail content
 	 * @throws Exception
 	 */
-	private String getExcelReport(MAlertRule rule, String sql, String trxName, Collection<File> attachments)
-	throws Exception
+	private String getExcelReport(final MAlertRule rule, final String sql, final Collection<File> attachments) throws Exception
 	{
-		ArrayList<ArrayList<Object>> data = getData(sql, trxName);
+		final ExcelExporterService excelExporterService = Adempiere.getBean(ExcelExporterService.class);
+
+		final List<List<Object>> data = excelExporterService.getDataFromSQL(sql);
 		if (data.size() <= 1)
+		{
 			return null;
-		// File
-		File file = rule.createReportFile("xls");
+		}
+
 		//
-		ArrayExcelExporter exporter = new ArrayExcelExporter(getCtx(), data);
-		exporter.export(file, null, false);
+		final File file = rule.createReportFile("xls");
+		ArrayExcelExporter.builder()
+				.ctx(getCtx())
+				.data(data)
+				.build()
+				.exportToFile(file);
 		attachments.add(file);
-		String msg = rule.getName() + " (@SeeAttachment@ "+file.getName()+")"+Env.NL;
+		
+		final String msg = rule.getName() + " (@SeeAttachment@ " + file.getName() + ")" + Env.NL;
 		return Msg.parseTranslation(Env.getCtx(), msg);
 	}
 
 	/**
-	 * 	Get Server Info
-	 *	@return info
+	 * Get Server Info
+	 * 
+	 * @return info
 	 */
 	@Override
 	public String getServerInfo()
 	{
 		return "#" + getRunCount() + " - Last=" + m_summary.toString();
-	}	//	getServerInfo
+	}	// getServerInfo
 }

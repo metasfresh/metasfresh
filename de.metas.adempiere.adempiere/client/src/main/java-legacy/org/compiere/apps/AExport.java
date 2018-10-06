@@ -17,21 +17,18 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-
-import de.metas.logging.LogManager;
 
 import javax.swing.JFileChooser;
 
-import org.adempiere.impexp.GridTabExcelExporter;
 import org.compiere.model.GridTab;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.impexp.excel.GridTabExcelExporter;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Export button consequences
@@ -101,10 +98,10 @@ public class AExport
 		}
 	}
 	
-	private void createXLS(File outFile, GridTab tab)
-	throws Exception
+	private void createXLS(@NonNull final File outFile, @NonNull final GridTab tab)
 	{
-		GridTabExcelExporter exporter = new GridTabExcelExporter(m_ctx, tab);
-		exporter.export(outFile, null);
+		final GridTabExcelExporter exporter = new GridTabExcelExporter(tab);
+		exporter.exportToFile(outFile);
+		Env.startBrowser(outFile);
 	}
 }

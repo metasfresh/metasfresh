@@ -2,6 +2,9 @@ package de.metas.process.model.interceptor;
 
 import java.util.Properties;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,25 +16,33 @@ import org.compiere.model.MWindow;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Process;
 
+import de.metas.impexp.excel.process.ExportToExcelProcess;
 import de.metas.process.ExecuteUpdateSQL;
+import de.metas.util.Services;
 
 @Interceptor(I_AD_Process.class)
+@Callout(I_AD_Process.class)
 public class AD_Process
 {
 	public static final transient AD_Process instance = new AD_Process();
 
 	private AD_Process()
 	{
-		super();
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
+	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_Type)
 	public void setClassnameIfTypeSQL(final I_AD_Process process)
 	{
 		final String processType = process.getType();
 		if (X_AD_Process.TYPE_SQL.equals(processType))
 		{
 			process.setClassname(ExecuteUpdateSQL.class.getName());
+		}
+		else if (X_AD_Process.TYPE_Excel.equals(processType))
+		{
+			process.setClassname(ExportToExcelProcess.class.getName());
 		}
 	}
 
