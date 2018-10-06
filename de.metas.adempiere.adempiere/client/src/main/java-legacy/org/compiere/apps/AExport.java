@@ -100,7 +100,7 @@ public class AExport
 	
 	private void createXLS(@NonNull final File outFile, @NonNull final GridTab tab)
 	{
-		final GridTabExcelExporter exporter = new GridTabExcelExporter(m_ctx, tab);
+		final GridTabExcelExporter exporter = new GridTabExcelExporter(tab);
 		exporter.exportToFile(outFile);
 		Env.startBrowser(outFile);
 	}
