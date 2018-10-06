@@ -163,7 +163,7 @@ public abstract class AbstractExcelExporter
 	private String convertBooleanToString(final boolean value)
 	{
 		final String adLanguage = getLanguage().getAD_Language();
-		final ITranslatableString translatable = msgBL.translatable(value == true ? "Y" : "N");
+		final ITranslatableString translatable = msgBL.getTranslatableMsgText(value);
 		return translatable.translate(adLanguage);
 	}
 
