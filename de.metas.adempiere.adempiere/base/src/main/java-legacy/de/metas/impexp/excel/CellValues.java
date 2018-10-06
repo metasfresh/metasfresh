@@ -37,7 +37,7 @@ public class CellValues
 	{
 		if (value == null)
 		{
-			;
+			return -1;
 		}
 		else if (value instanceof Timestamp)
 		{
@@ -63,7 +63,6 @@ public class CellValues
 		{
 			return DisplayType.String;
 		}
-		return -1;
 	}
 
 	public static final CellValue toCellValue(final Object value)
