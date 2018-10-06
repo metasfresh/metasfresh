@@ -1,7 +1,5 @@
 package de.metas.impexp.excel;
 
-import java.util.Date;
-
 import javax.annotation.concurrent.Immutable;
 
 import lombok.AccessLevel;
@@ -73,9 +71,9 @@ public final class CellValue
 		return type == CellValueType.Date;
 	}
 
-	public Date dateValue()
+	public java.util.Date dateValue()
 	{
-		return (Date)valueObj;
+		return (java.util.Date)valueObj;
 	}
 
 	public boolean isNumber()
