@@ -113,7 +113,7 @@ public class ProcessPickingCandidateCommand
 	{
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
-		markCandidatesAsProcessed();
+		changeStatusToProcessedAndSave();
 	}
 
 	private void allocateHUsToShipmentSchedule()
@@ -209,15 +209,20 @@ public class ProcessPickingCandidateCommand
 		logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHU.getM_HU_ID());
 	}
 
-	private void markCandidatesAsProcessed()
+	private void changeStatusToProcessedAndSave()
 	{
 		this.processedPickingCandidates = getPickingCandidatesIndexedByHUId()
 				.values()
 				.stream()
-				.peek(pc -> pc.setStatus(PickingCandidateStatus.Processed))
+				.peek(this::changeStatusToProcessed)
 				.collect(ImmutableList.toImmutableList());
 
 		pickingCandidateRepository.saveAll(processedPickingCandidates);
+	}
+
+	private void changeStatusToProcessed(final PickingCandidate pickingCandidate)
+	{
+		pickingCandidate.setStatus(PickingCandidateStatus.Processed);
 	}
 
 	public Collection<PickingCandidate> getProcessedPickingCandidates()

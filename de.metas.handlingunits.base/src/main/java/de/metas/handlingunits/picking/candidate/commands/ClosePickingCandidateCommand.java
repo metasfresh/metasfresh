@@ -121,7 +121,7 @@ public class ClosePickingCandidateCommand
 				huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, pickingCandidate.getHuId());
 			}
 
-			markCandidateAsClosed(pickingCandidate);
+			changeStatusToProcessedAndSave(pickingCandidate);
 		}
 		catch (final Exception ex)
 		{
@@ -136,7 +136,7 @@ public class ClosePickingCandidateCommand
 		}
 	}
 
-	private void markCandidateAsClosed(final PickingCandidate pickingCandidate)
+	private void changeStatusToProcessedAndSave(final PickingCandidate pickingCandidate)
 	{
 		pickingCandidate.setStatus(PickingCandidateStatus.Closed);
 		pickingCandidateRepository.save(pickingCandidate);
