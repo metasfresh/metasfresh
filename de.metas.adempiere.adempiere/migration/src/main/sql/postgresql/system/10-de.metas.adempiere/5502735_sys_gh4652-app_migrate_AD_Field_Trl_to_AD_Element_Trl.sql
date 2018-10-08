@@ -52,7 +52,7 @@ WHERE ft_IsTranslated='Y'
 		(TRIM(COALESCE(ft_help,''))!='' AND ft_help!=ft_help OR et_IsTranslated != et_IsTranslated)
 	)
 ;
-	
+
 --select count(*) from AD_Field_Trl_to_save_V;
 --1406
 
@@ -240,12 +240,12 @@ SELECT
     ft.AD_Field_ID AS ad_field_saved_id -- numeric(10,0),
 FROM ad_element_migrate m
 	JOIN AD_Field_Trl ft ON ft.AD_Field_Id=m.AD_Field_ID AND ft.IsTranslated='Y'
-
--- with this,
-SELECT * FROM AD_Field_Trl_to_save_V
+;
+-- with this, insert done
+-- SELECT * FROM AD_Field_Trl_to_save_V
 --should return no results anymore
 
-
+--cleanup
 ALTER TABLE AD_Element_Trl DROP COLUMN AD_Field_Saved_ID;
 ALTER TABLE AD_Field_Trl DROP COLUMN IsSaved;
 DROP VIEW AD_Field_Trl_to_save_V CASCADE;
