@@ -248,6 +248,6 @@ FROM ad_element_migrate m
 
 --cleanup
 COMMIT;
+DROP VIEW AD_Field_Trl_to_save_V CASCADE;
 ALTER TABLE AD_Element_Trl DROP COLUMN AD_Field_Saved_ID;
 ALTER TABLE AD_Field_Trl DROP COLUMN IsSaved;
-DROP VIEW AD_Field_Trl_to_save_V CASCADE;
