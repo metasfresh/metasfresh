@@ -805,8 +805,32 @@ public interface I_AD_Process
     public static final String COLUMNNAME_SQLStatement = "SQLStatement";
 
 	/**
+	 * Set Technical note.
+	 * A note that is not indended for the user documentation, but for developers, customizers etc
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTechnicalNote (java.lang.String TechnicalNote);
+
+	/**
+	 * Get Technical note.
+	 * A note that is not indended for the user documentation, but for developers, customizers etc
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTechnicalNote();
+
+    /** Column definition for TechnicalNote */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_TechnicalNote = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "TechnicalNote", null);
+    /** Column name TechnicalNote */
+    public static final String COLUMNNAME_TechnicalNote = "TechnicalNote";
+
+	/**
 	 * Set Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -816,7 +840,6 @@ public interface I_AD_Process
 
 	/**
 	 * Get Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

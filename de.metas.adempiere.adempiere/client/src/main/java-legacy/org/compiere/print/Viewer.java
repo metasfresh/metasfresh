@@ -1053,14 +1053,18 @@ public class Viewer extends CFrame
 			else if (ext.equals("html") || ext.equals("htm"))
 				m_reportEngine.createHTML(outFile, false, m_reportEngine.getPrintFormat().getLanguage());
 			else if (ext.equals("xls"))
+			{
 				m_reportEngine.createXLS(outFile, m_reportEngine.getPrintFormat().getLanguage());
+				Env.startBrowser(outFile);
+			}
 			else
+			{
 				ADialog.error(m_WindowNo, this, "FileInvalidExtension");
+			}
 		}
-		catch (Exception e) {
-			ADialog.error(m_WindowNo, this, "Error", e.getLocalizedMessage());
-			if (LogManager.isLevelFinest())
-				e.printStackTrace();
+		catch (Exception ex)
+		{
+			ADialog.error(m_WindowNo, this, ex);
 		}
 		cmd_drill();	//	setCursor
 	}	//	cmd_export
