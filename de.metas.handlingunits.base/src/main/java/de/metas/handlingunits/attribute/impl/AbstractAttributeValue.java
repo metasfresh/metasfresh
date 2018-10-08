@@ -10,18 +10,17 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -44,6 +43,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -84,7 +84,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	private final CompositeAttributeValueListener listeners = new CompositeAttributeValueListener();
 
 	public AbstractAttributeValue(
-			@NonNull final IAttributeStorage attributeStorage, 
+			@NonNull final IAttributeStorage attributeStorage,
 			@NonNull final I_M_Attribute attribute)
 	{
 		this.attributeStorage = attributeStorage;
@@ -102,14 +102,14 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			valueType = attribute.getAttributeValueType();
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		final I_M_Attribute attribute = getM_Attribute();
 		final String name = attribute == null ? "?" : attribute.getName();
 		final Object value = getValue();
-		
+
 		return MoreObjects.toStringHelper(this)
 				.add("name", name)
 				.add("value", value)
@@ -203,7 +203,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			valueStr = null;
 			valueBD = null;
 			valueDate = valueToDate(value);
-			
+
 			valueOld = getInternalValueDate();
 			valueNew = valueDate;
 		}
@@ -280,7 +280,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			valueStr = null;
 			valueBD = null;
 			valueDate = valueToDate(value);
-			
+
 			valueOld = getInternalValueDateInitial();
 			valueNew = valueDate;
 		}
@@ -411,7 +411,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		}
 		return null;
 	}
-	
+
 	@Override
 	public final Date getValueAsDate()
 	{
@@ -421,11 +421,11 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		}
 		return null;
 	}
-	
+
 	@Override
 	public final Date getValueInitialAsDate()
 	{
-		if(isDateValue())
+		if (isDateValue())
 		{
 			return getInternalValueDateInitial();
 		}
@@ -553,7 +553,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @return value as NamePair; never returns null
 	 * @throws InvalidAttributeValueException
@@ -604,28 +604,28 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 				+ " Available values are: " + getAvailableValues()
 				+ "\n Normalized value: " + valueNormalized);
 	}
-	
+
 	private static final String extractKey(final Map<String, String> keyNamePairAsMap, final I_M_Attribute attribute)
 	{
-		if(keyNamePairAsMap == null)
+		if (keyNamePairAsMap == null)
 		{
 			return null;
 		}
-		
+
 		final String key = keyNamePairAsMap.get("key"); // keep in sync with de.metas.ui.web.window.datatypes.json.JSONLookupValue.PROPERTY_Key
 		return key;
 	}
-	
+
 	@Override
 	public List<? extends NamePair> getAvailableValues()
 	{
 		final IAttributeValuesProvider attributeValuesProvider = getAttributeValuesProvider();
 		final Evaluatee evalCtx = attributeValuesProvider.prepareContext(getAttributeStorage());
 		final List<? extends NamePair> availableValues = attributeValuesProvider.getAvailableValues(evalCtx);
-		
+
 		//
 		// Case: we are dealing with a high volume attribute values list and we got not values (i.e. they were not loaded)
-		// Solution: we are searching and loading just the current value and return it as a singleton list 
+		// Solution: we are searching and loading just the current value and return it as a singleton list
 		if (attributeValuesProvider.isHighVolume()
 				&& availableValues.isEmpty()
 				&& getValue() != null)
@@ -636,25 +636,20 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 				final NamePair valueNP = valueToAttributeValue(value);
 				return ImmutableList.of(valueNP);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.warn("Failed finding the M_AttributeValue for value=" + value, e);
 			}
 		}
-		
+
 		return availableValues;
 	}
-	
+
 	protected final Date valueToDate(final Object value)
 	{
 		if (value == null)
 		{
 			return null;
-		}
-		
-		if (value instanceof Date)
-		{
-			return (Date)value;
 		}
 		else if (value instanceof String)
 		{
@@ -662,17 +657,23 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			{
 				return Env.parseTimestamp(value.toString());
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + Date.class, e);
 			}
 		}
 		else
 		{
-			throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + Date.class);
+			try
+			{
+				return TimeUtil.asDate(value);
+			}
+			catch (final Exception ex)
+			{
+				throw new InvalidAttributeValueException("Cannot convert value '" + value + "' (" + value.getClass() + ") to " + Date.class, ex);
+			}
 		}
 	}
-
 
 	@Override
 	public NamePair getNullAttributeValue()
@@ -692,7 +693,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	{
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(valueType);
 	}
-	
+
 	@Override
 	public final boolean isDateValue()
 	{
