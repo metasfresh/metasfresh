@@ -133,9 +133,9 @@ $$ LANGUAGE plpgsql;
 select migrate();
 
 --
--- now deal with the cases where AD_Field_Trls with different name, description or help refer to the same AD_Element.
--- for these AD_Field_Trls, we create new AD_Element and AD_Element_Trl records and link them with AD_Field.AD_Name_ID.
---
+-- Now deal with the cases where AD_Field_Trls with different name, description or help refer to the same AD_Element.
+-- For these AD_Field_Trls, we create new AD_Element records and link them with AD_Field.AD_Name_ID.
+-- When that's done, we create AD_Element_Trl records for the respective preexisting AD_Field_Trls and newly added AD_Elements.
 
 --drop table ad_element_migrate;
 CREATE TEMP TABLE ad_element_migrate AS
@@ -148,6 +148,7 @@ SELECT
 	entitytype
 FROM AD_Field f
 WHERE EXISTS (select 1 from AD_Field_Trl_to_save_V v WHERE v.AD_Field_ID=f.AD_Field_ID)
+;
 
 INSERT INTO AD_Element (
 	ad_element_id, -- numeric(10,0) NOT NULL,
