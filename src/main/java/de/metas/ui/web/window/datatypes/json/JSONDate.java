@@ -82,18 +82,24 @@ public final class JSONDate
 	{
 		if (widgetType == DocumentFieldWidgetType.Date)
 		{
-			return fromDateString(valueStr);
+			return toJULDate(valueStr);
 		}
 		else
 		{
-			return fromDateTimeString(valueStr);
+			return toJULDateWithTime(valueStr);
 		}
 	}
 
 	public static LocalDateTime localDateTimeFromJson(final String valueStr)
 	{
 		// TODO: optimize, convert directly
-		return TimeUtil.asLocalDateTime(fromDateTimeString(valueStr));
+		return TimeUtil.asLocalDateTime(toJULDateWithTime(valueStr));
+	}
+
+	public static ZonedDateTime zonedDateTimeFromJson(final String valueStr)
+	{
+		// TODO: optimize, convert directly
+		return TimeUtil.asZonedDateTime(toJULDateWithTime(valueStr));
 	}
 
 	public static Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
@@ -102,12 +108,19 @@ public final class JSONDate
 		{
 			return null;
 		}
-		if (value instanceof Date)
+		else if (value instanceof Date)
 		{
 			return (Date)value;
 		}
-		final String valueStr = value.toString().trim();
-		return JSONDate.fromJson(valueStr, widgetType);
+		else if (value instanceof String)
+		{
+			final String valueStr = value.toString().trim();
+			return fromJson(valueStr, widgetType);
+		}
+		else
+		{
+			return TimeUtil.asDate(value);
+		}
 	}
 
 	public static LocalDateTime localDateTimeFromObject(final Object value)
@@ -134,7 +147,7 @@ public final class JSONDate
 		return new Date(ts.getTime());
 	}
 
-	private static final Date fromDateTimeString(final String valueStr)
+	private static final Date toJULDateWithTime(final String valueStr)
 	{
 		try
 		{
@@ -156,7 +169,7 @@ public final class JSONDate
 			{
 				final String errmsg = "Failed converting '" + valueStr + "' to date."
 						+ "\n Please use following format: " + DATE_PATTEN + "."
-						+ "\n e.g. " + DATE_FORMAT.format(Instant.now());
+						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
 				final IllegalArgumentException exFinal = new IllegalArgumentException(errmsg, ex1);
 				exFinal.addSuppressed(ex2);
 				throw exFinal;
@@ -164,7 +177,7 @@ public final class JSONDate
 		}
 	}
 
-	private static final Date fromDateString(final String valueStr)
+	private static final Date toJULDate(final String valueStr)
 	{
 		try
 		{

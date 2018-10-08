@@ -3,7 +3,6 @@ package de.metas.ui.web.picking.husToPick.process;
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -241,7 +240,6 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	{
 		final I_M_Product product = getProduct();
 		final I_C_UOM uom = productBL.getStockingUOM(product);
-		final Date date = SystemTime.asDate();
 
 		final HuId huIdToSplit = retrieveHUIdToSplit();
 		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()
@@ -250,7 +248,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 						.setHUContext(huContext)
 						.setProduct(product)
 						.setQuantity(getQtyCU(), uom)
-						.setDate(date)
+						.setDate(SystemTime.asDate())
 						.setFromReferencedModel(null) // N/A
 						.setForceQtyAllocation(false)
 						.create())

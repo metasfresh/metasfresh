@@ -20,12 +20,12 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import de.metas.util.Services;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.FullTextSearchFilterContext;
 import de.metas.ui.web.window.descriptor.FullTextSearchSqlDocumentFilterConverter;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -159,7 +159,8 @@ public final class DocumentFilterDescriptorsProviderFactory
 	private DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
 	{
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
-		if (widgetType == DocumentFieldWidgetType.DateTime)
+		if (widgetType == DocumentFieldWidgetType.DateTime
+				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
 			return DocumentFieldWidgetType.Date;
 		}

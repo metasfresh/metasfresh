@@ -2,7 +2,7 @@ package de.metas.ui.web.config;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -137,7 +137,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	public Map<String, Object> getErrorAttributes(final RequestAttributes requestAttributes, final boolean includeStackTrace)
 	{
 		final Map<String, Object> errorAttributes = new LinkedHashMap<>();
-		errorAttributes.put(ATTR_Timestamp, new Date());
+		errorAttributes.put(ATTR_Timestamp, ZonedDateTime.now());
 		addStatus(errorAttributes, requestAttributes);
 		addErrorDetails(errorAttributes, requestAttributes, includeStackTrace);
 		addPath(errorAttributes, requestAttributes);

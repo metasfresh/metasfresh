@@ -151,7 +151,15 @@ public final class DescriptorsFactoryHelper
 		}
 		else if (displayType == DisplayType.DateTime)
 		{
-			return DocumentFieldWidgetType.DateTime;
+			if (WindowConstants.FIELDNAME_Created.equals(columnName)
+					|| WindowConstants.FIELDNAME_Updated.equals(columnName))
+			{
+				return DocumentFieldWidgetType.ZonedDateTime;
+			}
+			else
+			{
+				return DocumentFieldWidgetType.DateTime;
+			}
 		}
 		//
 		//
@@ -163,7 +171,7 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentFieldWidgetType.Password;
 		}
-		else if(displayType == DisplayType.URL)
+		else if (displayType == DisplayType.URL)
 		{
 			return DocumentFieldWidgetType.URL;
 		}
@@ -226,7 +234,7 @@ public final class DescriptorsFactoryHelper
 			throw new DocumentLayoutBuildException("Unknown displayType=" + displayType + " of columnName=" + columnName);
 		}
 	}
-	
+
 	public static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType, final LookupDescriptor lookupDescriptor)
 	{
 		final DocumentFieldWidgetType widgetType = extractWidgetType(columnName, displayType);
@@ -241,10 +249,10 @@ public final class DescriptorsFactoryHelper
 						, columnName, displayType, widgetType //
 						, lookupSourceType, lookupWidgetType);
 			}
-			
+
 			return lookupWidgetType;
 		}
-		
+
 		return widgetType;
 	}
 
