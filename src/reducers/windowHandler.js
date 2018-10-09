@@ -518,8 +518,9 @@ export default function windowHandler(state = initialState, action) {
         rawModal: {
           ...state.rawModal,
           visible: false,
-          type: null,
+          windowId: null,
           viewId: null,
+          profileId: null,
         },
       };
     case OPEN_RAW_MODAL:
@@ -528,8 +529,9 @@ export default function windowHandler(state = initialState, action) {
         rawModal: {
           ...state.rawModal,
           visible: true,
-          type: action.windowType,
+          windowId: action.windowId,
           viewId: action.viewId,
+          profileId: action.profileId,
         },
       };
     case OPEN_FILTER_BOX:

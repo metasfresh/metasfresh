@@ -66,11 +66,12 @@ export function setLatestNewDocument(id) {
   };
 }
 
-export function openRawModal(windowType, viewId) {
+export function openRawModal(windowId, viewId, profileId) {
   return {
     type: OPEN_RAW_MODAL,
-    windowType: windowType,
+    windowId: windowId,
     viewId: viewId,
+    profileId: profileId,
   };
 }
 
@@ -1000,7 +1001,7 @@ export function handleProcessResponse(response, type, id) {
           case 'openView':
             await dispatch(closeModal());
 
-            await dispatch(openRawModal(action.windowId, action.viewId));
+            await dispatch(openRawModal(action.windowId, action.viewId, action.profileId));
 
             break;
           case 'openReport':
