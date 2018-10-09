@@ -108,7 +108,7 @@ public class UnProcessPickingCandidateCommand
 
 		restoreHUsFromSourceHUs(huId);
 
-		pickingCandidates.forEach(this::markCandidateAsInProgress);
+		pickingCandidates.forEach(this::changeStatusToDraftAndSave);
 	}
 
 	@NonNull
@@ -226,7 +226,7 @@ public class UnProcessPickingCandidateCommand
 		}
 	}
 
-	private void markCandidateAsInProgress(final PickingCandidate pickingCandidate)
+	private void changeStatusToDraftAndSave(final PickingCandidate pickingCandidate)
 	{
 		pickingCandidate.setStatus(PickingCandidateStatus.Draft);
 		pickingCandidateRepository.save(pickingCandidate);

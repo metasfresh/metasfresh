@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -445,6 +448,13 @@ public class ProcessExecutionResult
 		reportData = data;
 		reportFilename = filename;
 		reportContentType = contentType;
+	}
+
+	public void setReportData(@NonNull final File file)
+	{
+		reportData = Util.readBytes(file);
+		reportFilename = file.getName();
+		reportContentType = MimeType.getMimeType(reportFilename);
 	}
 
 	public byte[] getReportData()

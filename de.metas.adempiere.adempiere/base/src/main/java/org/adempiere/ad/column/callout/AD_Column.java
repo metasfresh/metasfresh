@@ -44,7 +44,7 @@ import de.metas.util.Services;
  *
  */
 @Callout(I_AD_Column.class)
-@Component
+@Component("org.adempiere.ad.column.callout.AD_Column")
 public class AD_Column
 {
 	public static final String ENTITYTYPE_Dictionary = "D";

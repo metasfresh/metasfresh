@@ -81,12 +81,12 @@ public class PickHUCommand
 		this.qtyToPick = request.getQtyToPick();
 	}
 
-	public void perform()
+	public PickHUResult perform()
 	{
-		trxManager.runInThreadInheritedTrx(this::performInTrx);
+		return trxManager.callInThreadInheritedTrx(this::performInTrx);
 	}
 
-	private void performInTrx()
+	private PickHUResult performInTrx()
 	{
 		final Quantity qtyToPick = getQtyToPick();
 		if (qtyToPick.signum() <= 0)
@@ -112,6 +112,10 @@ public class PickHUCommand
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();
+
+		return PickHUResult.builder()
+				.pickingCandidateId(pickingCandidate.getId())
+				.build();
 	}
 
 	private Quantity getQtyToPick()
