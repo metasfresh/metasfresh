@@ -50,7 +50,7 @@ public class ESSystem implements IESSystem
 	@VisibleForTesting
 	public static final String ESServer_Classname = "de.metas.elasticsearch.ESServer";
 
-	private static final String SYSCONFIG_Enabled = "de.metas.elasticsearch.PostKpiEvents";
+	public static final String SYSCONFIG_Enabled = "de.metas.elasticsearch.PostKpiEvents";
 	private static final boolean SYSCONFIG_Enabled_Default = true;
 
 	@Override
