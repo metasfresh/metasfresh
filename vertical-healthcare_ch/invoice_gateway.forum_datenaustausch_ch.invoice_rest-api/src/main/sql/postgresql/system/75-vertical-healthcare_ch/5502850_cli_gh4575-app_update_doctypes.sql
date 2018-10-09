@@ -30,8 +30,8 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 ;
 
 --Fix theses two ValueNames so we can improve the validationRule a bit while we extend it.
-UPDATE SET ValueName='AP' WHERE AD_Ref_List_ID=540740;
-UPDATE SET ValueName='AQ' WHERE AD_Ref_List_ID=540739;
+UPDATE AD_Ref_List SET ValueName='AP' WHERE AD_Ref_List_ID=540740;
+UPDATE AD_Ref_List SET ValueName='AQ' WHERE AD_Ref_List_ID=540739;
 
 
 -- 2018-10-08T10:55:54.956

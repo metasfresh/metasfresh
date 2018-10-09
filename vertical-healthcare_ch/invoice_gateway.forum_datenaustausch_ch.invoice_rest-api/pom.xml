@@ -18,6 +18,7 @@
 		-->
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<packaging>jar</packaging>
