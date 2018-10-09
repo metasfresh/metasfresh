@@ -344,6 +344,7 @@ public class ADProcessPostProcessService
 			{
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
+						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
 						.build();
 			}
 			else
