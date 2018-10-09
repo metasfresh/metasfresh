@@ -33,6 +33,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -90,6 +91,7 @@ public class M_InOutLine_HandlerTest
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner(bPartner);
 		inout.setM_Warehouse_ID(1);
+		inout.setMovementDate(SystemTime.asTimestamp());
 		save(inout);
 
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
