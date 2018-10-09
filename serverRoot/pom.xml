@@ -76,6 +76,13 @@
 			<artifactId>de.metas.inbound.mail</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
