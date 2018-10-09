@@ -228,3 +228,83 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:10:3
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540413,'en_US') 
 ;
 
+-- 2018-10-09T15:18:01.400
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:18:01','YYYY-MM-DD HH24:MI:SS'),PrintName='Pricing System' WHERE AD_Element_ID=505135 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:18:01.404
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(505135,'en_US') 
+;
+
+-- 2018-10-09T15:18:32.335
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:18:32','YYYY-MM-DD HH24:MI:SS'),PrintName='Aggregation for Sales Invoices' WHERE AD_Element_ID=542719 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:18:32.343
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542719,'en_US') 
+;
+
+-- 2018-10-09T15:18:52.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:18:52','YYYY-MM-DD HH24:MI:SS'),PrintName='Aggregation for Sales Invoice Lines' WHERE AD_Element_ID=542849 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:18:52.925
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542849,'en_US') 
+;
+
+-- 2018-10-09T15:19:17.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:19:17','YYYY-MM-DD HH24:MI:SS'),PrintName='Consolidate Shipments allowed' WHERE AD_Element_ID=502393 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:19:17.772
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(502393,'en_US') 
+;
+
+-- 2018-10-09T15:19:38.315
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:19:38','YYYY-MM-DD HH24:MI:SS'),PrintName='ADR Customer' WHERE AD_Element_ID=542343 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:19:38.321
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542343,'en_US') 
+;
+
+-- 2018-10-09T15:20:05.615
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:20:05','YYYY-MM-DD HH24:MI:SS'),PrintName='Disable Order Checkup Report' WHERE AD_Element_ID=542907 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:20:05.619
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542907,'en_US') 
+;
+
+-- 2018-10-09T15:20:30.283
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:20:30','YYYY-MM-DD HH24:MI:SS'),PrintName='Hide Packing Material in Shipment' WHERE AD_Element_ID=542803 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:20:30.288
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542803,'en_US') 
+;
+
+-- 2018-10-09T15:21:19.912
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:21:19','YYYY-MM-DD HH24:MI:SS'),PrintName='Customer Group' WHERE AD_Element_ID=542888 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:21:19.916
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542888,'en_US') 
+;
+
