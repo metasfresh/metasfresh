@@ -33,6 +33,7 @@
 								<arg>-XautoNameResolution</arg>
 							</args>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</schemaDirectory>
+							<bindingDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</bindingDirectory>
 							<generatePackage>de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request</generatePackage>
 						</configuration>
 					</execution>
