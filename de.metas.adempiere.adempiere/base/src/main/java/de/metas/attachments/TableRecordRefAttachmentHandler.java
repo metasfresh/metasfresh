@@ -3,9 +3,11 @@ package de.metas.attachments;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -86,7 +88,8 @@ public abstract class TableRecordRefAttachmentHandler<T> implements AttachmentHa
 					.createCompositeQueryFilter(modelClass)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(TableRecordReference.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
-					.addEqualsFilter(TableRecordReference.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
+					.addEqualsFilter(TableRecordReference.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.addFilter(getAdditionalFilter());
 
 			refereningIcFilters.filter(referencingIcFilter);
 		}
@@ -104,6 +107,11 @@ public abstract class TableRecordRefAttachmentHandler<T> implements AttachmentHa
 				.builder()
 				.additionalReferences(set)
 				.build();
+	}
+
+	protected IQueryFilter<T> getAdditionalFilter()
+	{
+		return ConstantQueryFilter.of(true);
 	}
 
 }
