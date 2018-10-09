@@ -213,6 +213,10 @@ public class AttachmentEntryService
 			@NonNull final Collection<? extends Object> originalReferencedRecords,
 			@NonNull final ImmutableList<AttachmentEntry> attachmentEntriesToSave)
 	{
+		if(attachmentEntriesToSave.isEmpty())
+		{
+			return ImmutableList.of(); // no need to fire up the handler(s)
+		}
 		final ExpandResult additionalReferences = attachmentHandlerRegistry.expand(originalReferencedRecords);
 
 		final ImmutableList<AttachmentEntry> destAttachmentEntriesWithAdditionalRefs = //

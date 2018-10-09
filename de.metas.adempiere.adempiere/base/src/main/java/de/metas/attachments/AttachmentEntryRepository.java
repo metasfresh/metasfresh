@@ -21,11 +21,10 @@ import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
 
 import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -67,10 +66,6 @@ public class AttachmentEntryRepository
 		return forRecord(attachmentEntryRecord);
 	}
 
-	/**
-	 * Gets the attachment that references exactly the given recordReferences (not more, not less).
-	 * If there is no such attachment, the method returns {@code null}.
-	 */
 	public List<AttachmentEntry> getByReferencedRecord(@NonNull final ITableRecordReference referencedRecord)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -83,22 +78,19 @@ public class AttachmentEntryRepository
 				.create()
 				.list();
 
-		final ImmutableListMultimap<Integer, I_AD_Attachment_MultiRef> //
-		attachmentId2mutliRefRecords = Multimaps.index(multiRefRecords, I_AD_Attachment_MultiRef::getAD_AttachmentEntry_ID);
+		final List<Integer> attachmentEntryIds = CollectionUtils.extractDistinctElements(multiRefRecords, I_AD_Attachment_MultiRef::getAD_AttachmentEntry_ID);
 
 		final List<I_AD_AttachmentEntry> attachmentEntryRecords = queryBL
 				.createQueryBuilder(I_AD_AttachmentEntry.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID, attachmentId2mutliRefRecords.keySet())
+				.addInArrayFilter(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID, attachmentEntryIds)
 				.create()
 				.list();
 
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 		for (final I_AD_AttachmentEntry attachmentEntryRecord : attachmentEntryRecords)
 		{
-			final AttachmentEntry attachmentEntry = forRecord(
-					attachmentEntryRecord,
-					attachmentId2mutliRefRecords.get(attachmentEntryRecord.getAD_AttachmentEntry_ID()));
+			final AttachmentEntry attachmentEntry = forRecord(attachmentEntryRecord);
 			result.add(attachmentEntry);
 		}
 
