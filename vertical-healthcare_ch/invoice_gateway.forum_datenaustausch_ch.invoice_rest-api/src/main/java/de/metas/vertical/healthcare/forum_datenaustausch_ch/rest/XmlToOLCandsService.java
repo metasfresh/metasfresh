@@ -1,6 +1,7 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 import static org.compiere.util.Util.coalesce;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.JsonBPartner;
 import de.metas.ordercandidate.rest.JsonBPartnerContact;
 import de.metas.ordercandidate.rest.JsonBPartnerInfo;
 import de.metas.ordercandidate.rest.JsonBPartnerLocation;
 import de.metas.ordercandidate.rest.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
+import de.metas.ordercandidate.rest.JsonDocTypeInfo;
 import de.metas.ordercandidate.rest.JsonOLCand;
 import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
 import de.metas.ordercandidate.rest.JsonOLCandCreateBulkResponse;
@@ -36,7 +40,7 @@ import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
 import de.metas.ordercandidate.rest.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
 import de.metas.ordercandidate.rest.JsonProductInfo;
 import de.metas.ordercandidate.rest.JsonProductInfo.Type;
-import de.metas.ordercandidate.rest.OrderCandidatesRestControllerImpl;
+import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -89,34 +93,34 @@ public class XmlToOLCandsService
 {
 	public static final String INPUT_SOURCE_INTERAL_NAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 
-	private final OrderCandidatesRestControllerImpl orderCandidatesRestEndpoint;
+	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
-	private XmlToOLCandsService(@NonNull final OrderCandidatesRestControllerImpl orderCandidatesRestEndpoint)
+	private XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
 	{
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
 	}
 
-	public String createOLCands(@NonNull final MultipartFile xmlInvoiceFile)
+	public JsonAttachment createOLCands(@NonNull final MultipartFile xmlInvoiceFile)
 	{
 		final RequestType xmlInvoice = unmarshal(xmlInvoiceFile);
 
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(xmlInvoice);
 
-		final JsonOLCandCreateBulkResponse orderCandidates = orderCandidatesRestEndpoint.createOrders(jsonOLCandCreateBulkRequest);
+		final JsonOLCandCreateBulkResponse orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
 
 		final String poReference = CollectionUtils.extractSingleElement(orderCandidates.getResult(), JsonOLCand::getPoReference);
-		attachXmlToOLCandidates(xmlInvoiceFile, poReference);
+		final JsonAttachment result = attachXmlToOLCandidates(xmlInvoiceFile, poReference);
 
-		return poReference;
+		return result;
 	}
 
-	private void attachXmlToOLCandidates(
+	private JsonAttachment attachXmlToOLCandidates(
 			@NonNull final MultipartFile xmlInvoiceFile,
 			@NonNull final String externalReference)
 	{
 		try
 		{
-			orderCandidatesRestEndpoint.attachFile(INPUT_SOURCE_INTERAL_NAME, externalReference, xmlInvoiceFile);
+			return orderCandidatesRestEndpoint.attachFile(INPUT_SOURCE_INTERAL_NAME, externalReference, xmlInvoiceFile);
 		}
 		catch (IOException e)
 		{
@@ -124,7 +128,7 @@ public class XmlToOLCandsService
 		}
 	}
 
-	public static RequestType unmarshal(@NonNull final MultipartFile file)
+	private static RequestType unmarshal(@NonNull final MultipartFile file)
 	{
 		try
 		{
@@ -207,7 +211,14 @@ public class XmlToOLCandsService
 			@NonNull final InvoiceType invoice)
 	{
 		final String poReference = invoice.getRequestId();
-		requestBuilder.poReference(poReference);
+		if (poReference.startsWith("KV_"))
+		{
+			requestBuilder.poReference(poReference.substring(3));
+		}
+		else
+		{
+			requestBuilder.poReference(poReference);
+		}
 
 		final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getRequestDate());
 		requestBuilder.dateInvoiced(dateInvoiced);
@@ -243,9 +254,11 @@ public class XmlToOLCandsService
 			@NonNull final GarantType tiersGarant)
 	{
 		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
+		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getInsurance()));
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getInsurance()));
 
 		final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
+		patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getPatient()));
 		patientBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getPatient()));
 
 		// todo: what about "Gemeinde"?
@@ -258,9 +271,11 @@ public class XmlToOLCandsService
 			@NonNull final PayantType tiersPayant)
 	{
 		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
+		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getInsurance()));
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getInsurance()));
 
 		final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
+		patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getPatient()));
 		patientBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getPatient()));
 
 		// todo: what about "Gemeinde"?
@@ -268,16 +283,33 @@ public class XmlToOLCandsService
 		return ImmutableList.of(insuranceBuilder, patientBuilder);
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(InsuranceAddressType insurance)
+	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final InsuranceAddressType insurance)
+	{
+		return JsonDocTypeInfo.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice)
+				.docSubType("KV")
+				.build();
+	}
+
+	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final PatientAddressType patient)
+	{
+		return JsonDocTypeInfo.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice)
+				.docSubType("EA")
+				.build();
+	}
+
+	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final InsuranceAddressType insurance)
 	{
 		final CompanyType company = insurance.getCompany();
+		final String insuranceBPartnerCode = createBPartnerCode(insurance);
 
-		final JsonBPartnerLocation location = createJsonBPartnerLocation(company.getPostal());
+		final JsonBPartnerLocation location = createJsonBPartnerLocation(insuranceBPartnerCode, company.getPostal());
 
 		final JsonBPartner bPartner = JsonBPartner
 				.builder()
 				.name(company.getCompanyname())
-				.code("EAN-" + insurance.getEanParty())
+				.code(insuranceBPartnerCode)
 				.build();
 
 		// final JsonBPartnerContact contact = createJsonBPartnerContact(insurance.getPerson());
@@ -292,19 +324,25 @@ public class XmlToOLCandsService
 		return bPartnerInfo;
 	}
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(PatientAddressType patient)
+	private String createBPartnerCode(@NonNull final InsuranceAddressType insurance)
+	{
+		return "EAN-" + insurance.getEanParty();
+	}
+
+	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final PatientAddressType patient)
 	{
 		final PersonType person = patient.getPerson();
 
 		final String personName = createNameString(person);
+		final String partientBPartnerCode = createBPartnerCode(patient);
 
 		final JsonBPartner bPartner = JsonBPartner
 				.builder()
 				.name(personName)
-				.code("SSN-" + patient.getSsn())
+				.code(partientBPartnerCode)
 				.build();
 
-		final JsonBPartnerLocation location = createJsonBPartnerLocation(person.getPostal());
+		final JsonBPartnerLocation location = createJsonBPartnerLocation(partientBPartnerCode, person.getPostal());
 
 		// final JsonBPartnerLocation location = JsonBPartnerLocation
 		// .builder()
@@ -323,7 +361,14 @@ public class XmlToOLCandsService
 		return bPartnerInfo;
 	}
 
-	private JsonBPartnerLocation createJsonBPartnerLocation(final PostalAddressType postal)
+	private String createBPartnerCode(@NonNull final PatientAddressType patient)
+	{
+		return "SSN-" + patient.getSsn();
+	}
+
+	private JsonBPartnerLocation createJsonBPartnerLocation(
+			@NonNull final String bPartnerCode,
+			@NonNull final PostalAddressType postal)
 	{
 		final JsonBPartnerLocationBuilder builder = JsonBPartnerLocation.builder();
 
@@ -345,22 +390,26 @@ public class XmlToOLCandsService
 			builder.address1(pobox);
 		}
 		final JsonBPartnerLocation location = builder
-				.externalId("singleAddress") // TODO
+				.externalId(bPartnerCode + "_singleAddress") // TODO
 				.city(city)
+				.postal(zip.getValue())
+				.state(statecode)
 				.postal(statecode)
 				.countryCode(coalesce(countrycode, "CH")) // TODO
 				.build();
 		return location;
 	}
 
-	private JsonBPartnerContact createJsonBPartnerContact(@NonNull final PersonType person)
+	private JsonBPartnerContact createJsonBPartnerContact(
+			@NonNull final String bPartnerCode,
+			@NonNull final PersonType person)
 	{
 		final String personName = createNameString(person);
 
 		return JsonBPartnerContact
 				.builder()
 				.name(personName)
-				.externalId(personName)
+				.externalId(bPartnerCode + "_singlePerson") // TODO
 				.build();
 	}
 
@@ -432,27 +481,57 @@ public class XmlToOLCandsService
 				final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
 				final RecordOtherType recordOtherType = (RecordOtherType)record;
 
-				final JsonProductInfo product = JsonProductInfo.builder()
-						.code(recordOtherType.getCode())
-						.name(recordOtherType.getName())
-						.type(Type.SERVICE)
-						.uomCode("HUR")
-						.build();
+				final String externalId = createExternalId(invoiceRecipientBuilder, recordOtherType);
 
-				final BigDecimal unit = coalesce(recordOtherType.getUnit(), ONE); // tax point (TP) of the applied service
-				final BigDecimal unitFactor = coalesce(recordOtherType.getUnitFactor(), ONE); // tax point value (TPV) of the applied service
-				final BigDecimal externalFactor = coalesce(recordOtherType.getExternalFactor(), ONE);
+				final JsonProductInfo product = createProduct(recordOtherType);
 
-				final BigDecimal price = unit.multiply(unitFactor).multiply(externalFactor);
+				final BigDecimal price = createPrice(recordOtherType);
 
 				serviceRecordBuilder
+						.externalId(externalId)
 						.product(product)
-						.qty(recordOtherType.getQuantity())
-						.price(price);
+						.price(price)
+						.currencyCode("CHF") // TODO
+						.discount(ZERO)
+						.qty(recordOtherType.getQuantity());
 
 				result.add(serviceRecordBuilder);
 			}
 		}
 		return result.build();
+	}
+
+	private String createExternalId(
+			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
+			@NonNull final RecordOtherType recordOtherType)
+	{
+		final JsonOLCandCreateRequest request = requestBuilder.build();
+
+		return request.getBpartner().getBpartner().getCode()
+				+ "_"
+				+ request.getPoReference()
+				+ "_"
+				+ recordOtherType.getRecordId();
+	}
+
+	private JsonProductInfo createProduct(@NonNull final RecordOtherType recordOtherType)
+	{
+		final JsonProductInfo product = JsonProductInfo.builder()
+				.code(recordOtherType.getCode())
+				.name(recordOtherType.getName())
+				.type(Type.SERVICE)
+				.uomCode("HUR")
+				.build();
+		return product;
+	}
+
+	private BigDecimal createPrice(@NonNull final RecordOtherType recordOtherType)
+	{
+		final BigDecimal unit = coalesce(recordOtherType.getUnit(), ONE); // tax point (TP) of the applied service
+		final BigDecimal unitFactor = coalesce(recordOtherType.getUnitFactor(), ONE); // tax point value (TPV) of the applied service
+		final BigDecimal externalFactor = coalesce(recordOtherType.getExternalFactor(), ONE);
+
+		final BigDecimal price = unit.multiply(unitFactor).multiply(externalFactor);
+		return price;
 	}
 }

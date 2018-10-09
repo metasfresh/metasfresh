@@ -41,25 +41,12 @@ public interface ITaxBL extends ISingletonService
 	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, int, boolean, boolean)} first.<br>
 	 * If that doesn't work, try retrieving the German tax
 	 *
-	 * @param ctx
-	 * @param model
-	 * @param taxCategoryId
-	 * @param productId
-	 * @param chargeId
-	 * @param billDate
-	 * @param shipDate
-	 * @param orgId
-	 * @param warehouse
 	 * @param shipC_BPartner_Location_ID place where the service is provided
-	 * @param isSOTrx
-	 * @param trxName
-	 * @return taxId
 	 */
 	int getTax(Properties ctx,
 			Object model,
 			int taxCategoryId,
 			int productId,
-			Timestamp billDate,
 			Timestamp shipDate,
 			OrgId orgId,
 			WarehouseId warehouse,

@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -35,34 +36,19 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
 @Builder
-public class JsonProductInfo
+@ApiModel(description = "Specifies a document type that needs to be present in metasfresh in order to be looked up.")
+public class JsonDocTypeInfo
 {
-
-	public enum Type
-	{
-		ITEM, SERVICE
-	}
-
-	/** This translates to {@code M_Product.Value}. */
-	@Nullable
-	@ApiModelProperty(value="This translates to <code>M_Product.Value</code>.")
-	private String code;
-
-	/**
-	 * This translates to {@code M_Product.Name}.
-	 * If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.
-	 */
-	@Nullable
-	private String name;
-
 	@NonNull
-	private Type type;
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "This translates to <code>C_DocType.DocBaseType</code>.\n")
+	private String docBaseType;
 
-	/**
-	 * This translates to <code>C_UOM.X12DE355</code>.
-	 * The respective UOM needs to exist in metasfresh and it's ID is set as <code>M_Product.C_UOM_ID</code>.
-	 * If this is empty, and a product with the given <code>code</code> does not yet exist, then the request will fail.
-	 */
 	@Nullable
-	private String uomCode;
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to <code>C_DocType.DocSubType</code>.\n"
+					+ "An empty value means that the matching <code>C_DocType</code> record's <code>DocSubType</code> needs to be <code>null</code>")
+	private String docSubType;
 }

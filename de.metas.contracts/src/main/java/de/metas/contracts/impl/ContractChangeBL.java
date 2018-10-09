@@ -55,6 +55,7 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -279,7 +280,8 @@ public class ContractChangeBL implements IContractChangeBL
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
 		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
-		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class)
+				.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docbasetype)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(openInvoice.getAD_Client_ID())
@@ -287,7 +289,7 @@ public class ContractChangeBL implements IContractChangeBL
 				.build());
 
 		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
-				.C_DocType_ID(targetDocTypeID)
+				.C_DocType_ID(targetDocTypeID.getRepoId())
 				.completeAndAllocate(true)
 				.referenceOriginalOrder(true)
 				.referenceInvoice(true)

@@ -35,7 +35,7 @@ import lombok.Data;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Data
 @Builder
-@ApiModel(description="Note that given the respective use-case, either one of both proerties migh be <code>null</code>, but not both at once.")
+@ApiModel(description="Note that given the respective use-case, either one of both properties migh be <code>null</code>, but not both at once.")
 public class JsonBPartner
 {
 	@Nullable
@@ -44,12 +44,12 @@ public class JsonBPartner
 			value = "This translates to <code>C_BPartner.Value</code>. If Set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
-	String code;
+	private String code;
 
 	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.Name</code>.\n"
 					+ "If this is empty, and a BPartner with the given <code>code</code> does not yet exist, then the request will fail.")
-	String name;
+	private String name;
 }

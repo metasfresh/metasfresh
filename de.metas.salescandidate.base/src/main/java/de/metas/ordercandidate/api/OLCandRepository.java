@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
@@ -110,7 +111,10 @@ public class OLCandRepository
 
 		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()));
-		//olCandPO.setDateCandidate(DateCandidate); // TODO: find out wtf DateCandidate is about
+
+		olCandPO.setDateInvoiced(TimeUtil.asTimestamp(request.getDateInvoiced()));
+		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
+
 		olCandPO.setC_Flatrate_Conditions_ID(request.getFlatrateConditionsId());
 
 		olCandPO.setM_Product_ID(request.getProductId().getRepoId());
@@ -128,6 +132,7 @@ public class OLCandRepository
 		{
 			olCandPO.setIsManualPrice(true);
 			olCandPO.setPriceEntered(request.getPrice());
+			olCandPO.setC_Currency_ID(request.getCurrencyId().getRepoId());
 		}
 
 		if (request.getDiscount() != null)

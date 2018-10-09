@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -64,15 +65,17 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	@PostMapping
 	@Override
-	public JsonOLCand createOrder(@RequestBody final JsonOLCandCreateRequest request)
+	public JsonOLCand createOrderLineCandidate(@RequestBody final JsonOLCandCreateRequest request)
 	{
-		return createOrders(JsonOLCandCreateBulkRequest.of(request)).getSingleResult();
+		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request)).getSingleResult();
 	}
 
 	@PostMapping(PATH_BULK)
 	@Override
-	public JsonOLCandCreateBulkResponse createOrders(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
+	public JsonOLCandCreateBulkResponse createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
+		bulkRequest.validate();
+
 		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance(Env.getCtx());
 
 		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
@@ -81,20 +84,26 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		return trxManager.call(() -> creatOrdersInTrx(bulkRequest, masterdataProvider));
 	}
 
-	private void assertCanCreate(final JsonOLCandCreateRequest request, final MasterdataProvider masterdataProvider)
+	private void assertCanCreate(
+			@NonNull final JsonOLCandCreateRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
-	private void createOrUpdateMasterdata(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
+	private void createOrUpdateMasterdata(
+			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		bulkRequest.getRequests()
 				.stream()
 				.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
 	}
 
-	private void createOrUpdateMasterdata(final JsonOLCandCreateRequest json, final MasterdataProvider masterdataProvider)
+	private void createOrUpdateMasterdata(
+			@NonNull final JsonOLCandCreateRequest json,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
 
@@ -104,7 +113,9 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		masterdataProvider.getCreateBPartnerInfo(json.getHandOverBPartner(), orgId);
 	}
 
-	private JsonOLCandCreateBulkResponse creatOrdersInTrx(final JsonOLCandCreateBulkRequest bulkRequest, final MasterdataProvider masterdataProvider)
+	private JsonOLCandCreateBulkResponse creatOrdersInTrx(
+			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
@@ -125,14 +136,15 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				request.getDataSourceInternalName(),
 				DATA_SOURCE_INTERNAL_NAME);
 
-		return jsonConverters.fromJson(request, masterdataProvider)
+		return jsonConverters
+				.fromJson(request, masterdataProvider)
 				.adInputDataSourceInternalName(dataSourceInternalNameToUse)
 				.build();
 	}
 
 	@PostMapping("/{dataSourceName}/{externalReference}/attachments")
 	@Override
-	public void attachFile(
+	public JsonAttachment attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 			@PathVariable("externalReference") final String externalReference,
 			@RequestParam("file") @NonNull final MultipartFile file)
@@ -150,6 +162,29 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 		final byte[] data = file.getBytes();
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromByteArray(fileName, data);
 
-		olCandsService.addAttachment(query, request);
+		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);
+
+		return toJsonAttachment(
+				externalReference,
+				dataSourceName,
+				attachmentEntry);
+	}
+
+	private JsonAttachment toJsonAttachment(
+			@NonNull final String externalReference,
+			@NonNull final String dataSourceName,
+			@NonNull final AttachmentEntry entry)
+	{
+		final String attachmentId = Integer.toString(entry.getId().getRepoId());
+
+		return JsonAttachment.builder()
+				.externalReference(externalReference)
+				.dataSourceName(dataSourceName)
+				.attachmentId(attachmentId)
+				.type(entry.getType())
+				.filename(entry.getFilename())
+				.contentType(entry.getContentType())
+				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
+				.build();
 	}
 }

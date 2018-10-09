@@ -23,10 +23,12 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
@@ -35,6 +37,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
@@ -85,6 +92,8 @@ final class MasterdataProvider
 	private final ICountryDAO countryRepo = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
+
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final OrgId defaultOrgId;
 
@@ -190,6 +199,7 @@ final class MasterdataProvider
 		{
 			productRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Product.class);
 			productRecord.setAD_Org_ID(context.getOrgId().getRepoId());
+			productRecord.setValue(json.getCode());
 		}
 
 		try
@@ -341,6 +351,10 @@ final class MasterdataProvider
 		if (!Check.isEmpty(name, true))
 		{
 			bpartnerRecord.setName(name);
+			if (Check.isEmpty(bpartnerRecord.getCompanyName(), true))
+			{
+				bpartnerRecord.setCompanyName(name);
+			}
 		}
 		else if (isNew)
 		{
@@ -362,7 +376,7 @@ final class MasterdataProvider
 				.build();
 	}
 
-	private BPartnerLocationId getCreateBPartnerLocationId(final JsonBPartnerLocation json, final Context context)
+	private BPartnerLocationId getCreateBPartnerLocationId(@Nullable final JsonBPartnerLocation json, @NonNull final Context context)
 	{
 		if (json == null)
 		{
@@ -647,6 +661,40 @@ final class MasterdataProvider
 				.build();
 	}
 
+	public DocTypeId getDocTypeId(
+			@NonNull final JsonDocTypeInfo invoiceDocType,
+			@NonNull final OrgId orgId)
+	{
+		final String docSubType = Util.firstNotEmptyTrimmed(
+				invoiceDocType.getDocSubType(),
+				DocTypeQuery.DOCSUBTYPE_NONE);
+
+		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId.getRepoId());
+
+		final DocTypeQuery query = DocTypeQuery
+				.builder()
+				.docBaseType(invoiceDocType.getDocBaseType())
+				.docSubType(docSubType)
+				.adClientId(orgRecord.getAD_Client_ID())
+				.adOrgId(orgRecord.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query);
+	}
+
+	public CurrencyId getCurrencyId(@NonNull final String currencyCode)
+	{
+		if (Check.isEmpty(currencyCode))
+		{
+			return null;
+		}
+		final I_C_Currency currencyRecord = Services
+				.get(ICurrencyDAO.class)
+				.retrieveCurrencyByISOCode(Env.getCtx(), currencyCode);
+		Check.errorIf(currencyRecord == null, "Unable to retrieve a C_Currency for ISO code={}", currencyCode);
+		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+	}
+
 	@lombok.Value
 	@lombok.Builder
 	private static class PermissionRequest
@@ -692,7 +740,7 @@ final class MasterdataProvider
 	@SuppressWarnings("serial")
 	private static class PermissionNotGrantedException extends AdempiereException
 	{
-		public PermissionNotGrantedException(String message)
+		public PermissionNotGrantedException(@NonNull final String message)
 		{
 			super(message);
 		}

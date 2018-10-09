@@ -8,7 +8,9 @@ import javax.annotation.Nullable;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
 
+import de.metas.document.DocTypeId;
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -41,7 +43,6 @@ import lombok.Value;
 @Value
 public class OLCandCreateRequest
 {
-	/** ID (e.g. document number), of a source document in a remote system; multiple OLCands can have the same ID */
 	private String externalId;
 
 	private String dataSourceInternalName;
@@ -57,7 +58,9 @@ public class OLCandCreateRequest
 	private String poReference;
 
 	private LocalDate dateRequired;
+
 	private LocalDate dateInvoiced;
+	private DocTypeId docTypeInvoiceId;
 
 	private int flatrateConditionsId;
 
@@ -69,8 +72,8 @@ public class OLCandCreateRequest
 
 	private PricingSystemId pricingSystemId;
 	private BigDecimal price;
+	private CurrencyId currencyId; // mandatory if price is provided
 	private Percent discount;
-	// private String currencyCode; // shall come from pricingSystem/priceList
 
 	@Builder
 	private OLCandCreateRequest(
@@ -83,8 +86,9 @@ public class OLCandCreateRequest
 			final OLCandBPartnerInfo dropShipBPartner,
 			final OLCandBPartnerInfo handOverBPartner,
 			final String poReference,
-			@NonNull final LocalDate dateRequired,
+			@Nullable final LocalDate dateRequired,
 			@Nullable final LocalDate dateInvoiced,
+			@Nullable final DocTypeId docTypeInvoiceId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
 			final String productDescription,
@@ -93,6 +97,7 @@ public class OLCandCreateRequest
 			final int huPIItemProductId,
 			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
+			final CurrencyId currencyId,
 			final Percent discount,
 			//
 			final String adInputDataSourceInternalName)
@@ -114,7 +119,10 @@ public class OLCandCreateRequest
 		this.handOverBPartner = handOverBPartner;
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
+
 		this.dateInvoiced = dateInvoiced;
+		this.docTypeInvoiceId = docTypeInvoiceId;
+
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
 		this.productDescription = productDescription;
@@ -123,7 +131,7 @@ public class OLCandCreateRequest
 		this.huPIItemProductId = huPIItemProductId;
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
+		this.currencyId = currencyId;
 		this.discount = discount;
 	}
-
 }

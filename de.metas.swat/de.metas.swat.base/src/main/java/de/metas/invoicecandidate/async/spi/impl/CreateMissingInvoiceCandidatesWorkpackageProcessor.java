@@ -70,7 +70,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		protected boolean isEligibleForScheduling(final Object model)
 		{
 			//
-			// Check if we shall create the invoice candidates
+			// Check if *we* shall create the invoice candidates
 			final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			final List<IInvoiceCandidateHandler> handlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, tableName);

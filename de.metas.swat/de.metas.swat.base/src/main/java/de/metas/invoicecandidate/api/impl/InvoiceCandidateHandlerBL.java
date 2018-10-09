@@ -35,14 +35,17 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.compiere.Adempiere;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 import ch.qos.logback.classic.Level;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -162,11 +165,10 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
-	 *
-	 * @param model
-	 * @param handler
 	 */
-	private final void scheduleCreateMissingCandidatesFor(final Object model, final IInvoiceCandidateHandler handler)
+	private final void scheduleCreateMissingCandidatesFor(
+			@NonNull final Object model,
+			@NonNull final IInvoiceCandidateHandler handler)
 	{
 		final Object modelToSchedule = handler.getModelForInvoiceCandidateGenerateScheduling(model);
 		CreateMissingInvoiceCandidatesWorkpackageProcessor.schedule(modelToSchedule);
@@ -265,6 +267,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final int bufferSize,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
+		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+
 		//
 		// Retrieve actual models for whom we will generate invoice candidates
 		final Iterator<? extends Object> models;
@@ -312,6 +316,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 					// Update generated invoice candidates
 					updateDefaultsAndSave(result);
+
+					// the created ICs shall have the same attachments that their source objects have.
+					attachmentEntryService.shareAttachmentLinks(
+							ImmutableList.of(request.getModel(Object.class)),
+							result.getC_Invoice_Candidates());
 
 					// Collect candidates (we will invalidate them all together)
 					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());

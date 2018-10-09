@@ -24,7 +24,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		return shippingPackage;
 	}
-	
+
 	private void updateShippingPackageFromPackage(final I_M_ShippingPackage shippingPackage, final I_M_Package mpackage)
 	{
 		shippingPackage.setM_Package_ID(mpackage.getM_Package_ID());
@@ -49,12 +49,15 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		final String docBaseType = de.metas.shipping.util.Constants.C_DocType_DocBaseType_ShipperTransportation;
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
-				.build());
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
 	}

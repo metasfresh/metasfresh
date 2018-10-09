@@ -3,6 +3,7 @@ package de.metas.ordercandidate.rest;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -35,13 +36,17 @@ import lombok.NonNull;
 public class JsonBPartnerLocation
 {
 	/** This translates to {@code C_BPartner_Location.ExternalId} */
-	String externalId;
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "This translates to <code>C_BPartner_Location.ExternalId</code>.\n"
+					+ "Needs to be unique over all business partners (not only the one this location belong to).")
+	private String externalId;
 
-	String address1;
-	String address2;
-	String postal;
-	String city;
+	private String address1;
+	private String address2;
+	private String postal;
+	private String city;
+	private String state;
 
 	@NonNull
-	String countryCode;
+	private String countryCode;
 }

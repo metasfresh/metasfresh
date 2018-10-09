@@ -67,7 +67,7 @@ public class AttachmentEntryServiceTest
 	public void linkEntriesToModel()
 	{
 		// invoke the method under test
-		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
 		// assert that bpartnerRecord's attachments are unchanged
 		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
@@ -84,7 +84,7 @@ public class AttachmentEntryServiceTest
 	@Test
 	public void getEntries()
 	{
-		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
 		attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment3", "bPartnerAttachment3.data".getBytes());
 
@@ -105,7 +105,7 @@ public class AttachmentEntryServiceTest
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord2, "productRecord2", "productRecord2.data".getBytes());
 
-		attachmentEntryService.linkAttachmentsToModels(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
 
 		// invoke the method under test
 		attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);

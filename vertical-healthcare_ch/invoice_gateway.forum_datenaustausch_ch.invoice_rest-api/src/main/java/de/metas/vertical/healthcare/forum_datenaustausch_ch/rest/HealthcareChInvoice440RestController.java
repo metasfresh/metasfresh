@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.Profiles;
+import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -36,26 +37,24 @@ import lombok.NonNull;
  */
 
 @RestController
-@RequestMapping(ImportInvoice440RestController.ENDPOINT)
+@RequestMapping(HealthcareChInvoice440RestController.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
 @Api(value = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
-public class ImportInvoice440RestController
+public class HealthcareChInvoice440RestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/forum-datenaustausch.ch";
 
 	private final XmlToOLCandsService xmlToOLCandsService;
 
-	public ImportInvoice440RestController(@NonNull final XmlToOLCandsService xmlToOLCandsService)
+	public HealthcareChInvoice440RestController(@NonNull final XmlToOLCandsService xmlToOLCandsService)
 	{
 		this.xmlToOLCandsService = xmlToOLCandsService;
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440")
-	// TODO *maybe* check if the framework can do the marshaling...if it's nice&easy
 	@ApiOperation(value = "Upload forum-datenaustausch.ch invoice-XML into metasfresh")
-	public String importInvoiceXML(@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile)
+	public JsonAttachment importInvoiceXML(@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile)
 	{
-		final String externalOrderId = xmlToOLCandsService.createOLCands(xmlInvoiceFile);
-		return externalOrderId;
+		return xmlToOLCandsService.createOLCands(xmlInvoiceFile);
 	}
 }

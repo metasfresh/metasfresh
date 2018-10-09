@@ -6,15 +6,16 @@ import de.metas.ordercandidate.api.IOLCandValidatorBL;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
+import lombok.NonNull;
 
 public class OLCandValidatorBL implements IOLCandValidatorBL
 {
 	@Override
-	public boolean validate(final I_C_OLCand olCand)
+	public boolean validate(@NonNull final I_C_OLCand olCand)
 	{
 		final OLCandRegistry olCandRegistry = Adempiere.getBean(OLCandRegistry.class);
 		final IOLCandValidator validators = olCandRegistry.getValidators();
-		
+
 		// 08072
 		// before validating, unset the isserror and set the error message on null.
 		// this way they will be up to date after validation

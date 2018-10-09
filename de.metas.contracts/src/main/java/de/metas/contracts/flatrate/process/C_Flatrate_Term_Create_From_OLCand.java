@@ -49,7 +49,7 @@ public class C_Flatrate_Term_Create_From_OLCand extends JavaProcess implements I
 
 	/**
 	 * Method returns true if the given gridTab is a {@link I_C_OLCand} with the correct data destination.
-	 * 
+	 *
 	 * @param gridTab
 	 */
 	@Override
@@ -60,12 +60,18 @@ public class C_Flatrate_Term_Create_From_OLCand extends JavaProcess implements I
 			return ProcessPreconditionsResolution.reject();
 		}
 
+		if(context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+
 		final I_C_OLCand olCand = context.getSelectedModel(I_C_OLCand.class);
 		if(olCand.isError())
 		{
 			return ProcessPreconditionsResolution.reject("line has errors");
 		}
-		
+
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 		final I_AD_InputDataSource dest = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), Contracts_Constants.DATA_DESTINATION_INTERNAL_NAME, false, get_TrxName());

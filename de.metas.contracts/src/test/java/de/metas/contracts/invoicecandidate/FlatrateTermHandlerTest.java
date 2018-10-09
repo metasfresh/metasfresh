@@ -128,7 +128,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, taxCategoryId
 						, term1.getM_Product_ID()
 						, term1.getStartDate()
-						, term1.getStartDate()
 						, OrgId.ofRepoId(term1.getAD_Org_ID())
 						, (WarehouseId)null
 						, Util.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())

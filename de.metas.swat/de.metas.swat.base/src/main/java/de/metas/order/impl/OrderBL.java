@@ -59,6 +59,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
@@ -355,7 +356,9 @@ public class OrderBL implements IOrderBL
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
 					.build();
-			final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+			final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
 			if (docTypeId <= 0)
 			{
 				logger.error("No POO found for {}", docTypeQuery);
@@ -377,7 +380,9 @@ public class OrderBL implements IOrderBL
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+		final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
 		if (docTypeId <= 0)
 		{
 			logger.error("Not found for {}", docTypeQuery);

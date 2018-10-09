@@ -53,11 +53,13 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<!-- 
 		<dependency>
 			<groupId>de.metas.ordercandidate</groupId>
 			<artifactId>de.metas.ordercandidate.rest-api-impl</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>org.springframework</groupId>

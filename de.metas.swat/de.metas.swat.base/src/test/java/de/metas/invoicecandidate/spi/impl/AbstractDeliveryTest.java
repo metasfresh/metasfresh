@@ -101,7 +101,7 @@ public abstract class AbstractDeliveryTest
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, clientId.getRepoId());
 
 		initHandlers();
-		
+
 		final I_M_Product product = newInstance(I_M_Product.class);
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
@@ -134,8 +134,16 @@ public abstract class AbstractDeliveryTest
 			result = activityId;
 
 			taxBL.getTax(
-					ctx, order, -1 // taxCategoryId
-			, orderLine.getM_Product_ID(), order.getDatePromised(), order.getDatePromised(), OrgId.ofRepoId(order.getAD_Org_ID()), WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()), order.getC_BPartner_Location_ID(), order.isSOTrx());
+					ctx,
+					order,
+					-1, // taxCategoryId
+			 orderLine.getM_Product_ID(),
+			 order.getDatePromised(),
+			 OrgId.ofRepoId(order.getAD_Org_ID()),
+			 WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+			 order.getC_BPartner_Location_ID(),
+			 order.isSOTrx());
+
 			minTimes = 0;
 			result = 3;
 		}};

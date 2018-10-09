@@ -34,9 +34,9 @@ public interface OrderCandidatesRestEndpoint
 
 	String PATH_BULK = "/bulk";
 
-	JsonOLCand createOrder(JsonOLCandCreateRequest request);
+	JsonOLCand createOrderLineCandidate(JsonOLCandCreateRequest request);
 
-	JsonOLCandCreateBulkResponse createOrders(JsonOLCandCreateBulkRequest bulkRequest);
+	JsonOLCandCreateBulkResponse createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
 
-	void attachFile(String dataSourceName, String olCandExternalId, MultipartFile file) throws IOException;
+	JsonAttachment attachFile(String dataSourceName, String externalReference, MultipartFile file) throws IOException;
 }

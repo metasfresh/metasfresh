@@ -230,12 +230,13 @@ public class HUs2DDOrderProducer
 
 		//
 		// DD_Order document type
-		docTypeDO_ID = DocTypeId.ofRepoIdOrNull(Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(
-				DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-						.adClientId(Env.getAD_Client_ID())
-						.adOrgId(orgId.getRepoId())
-						.build()));
+		docTypeDO_ID = Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(
+						DocTypeQuery.builder()
+								.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+								.adClientId(Env.getAD_Client_ID())
+								.adOrgId(orgId.getRepoId())
+								.build());
 
 	}
 

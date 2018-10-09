@@ -1,7 +1,5 @@
 package de.metas.ordercandidate.rest;
 
-import static org.compiere.util.Util.coalesce;
-
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -16,6 +14,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.Percent;
+import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -68,10 +67,15 @@ public class JsonConverters
 		final UomId uomId = masterdataProvider.getProductUOMId(productId, request.getUomCode());
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
+		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
+				//
 				.dataSourceInternalName(request.getDataSourceInternalName())
+				.externalId(request.getExternalId())
+				//
 				.dataDestInternalName(request.getDataDestInternalName())
 				//
 				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
@@ -81,8 +85,11 @@ public class JsonConverters
 				//
 				.poReference(request.getPoReference())
 				//
-				.dateRequired(coalesce(request.getDateRequired(), request.getDateInvoiced()))
+				.dateRequired(request.getDateRequired())
+				//
 				.dateInvoiced(request.getDateInvoiced())
+				.docTypeInvoiceId(masterdataProvider.getDocTypeId(request.getInvoiceDocType(), orgId))
+
 				.flatrateConditionsId(request.getFlatrateConditionsId())
 				//
 				.productId(productId)
@@ -93,6 +100,8 @@ public class JsonConverters
 				//
 				.pricingSystemId(pricingSystemId)
 				.price(request.getPrice())
+				.currencyId(currencyId)
+
 				.discount(Percent.ofNullable(request.getDiscount()));
 	}
 
