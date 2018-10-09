@@ -317,11 +317,14 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 					// Update generated invoice candidates
 					updateDefaultsAndSave(result);
 
-					// the created ICs shall have the same attachments that their source objects have.
-					attachmentEntryService.shareAttachmentLinks(
+					if(!result.getC_Invoice_Candidates().isEmpty())
+					{
+						// the created ICs shall have the same attachments that their source objects have.
+						// if an attachment is added to the request model later, then that will be handled via InvoiceCandidateAttachmentHandler.
+						attachmentEntryService.shareAttachmentLinks(
 							ImmutableList.of(request.getModel(Object.class)),
 							result.getC_Invoice_Candidates());
-
+					}
 					// Collect candidates (we will invalidate them all together)
 					invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 				}

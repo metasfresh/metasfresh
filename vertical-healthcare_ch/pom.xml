@@ -20,6 +20,7 @@
 		<module>invoice_gateway.forum_datenaustausch_ch.invoice_450_request</module>
 		<module>invoice_gateway.forum_datenaustausch_ch.invoice_450_response</module>
 		<module>invoice_gateway.forum_datenaustausch_ch.invoice_commons</module>
+		<module>invoice_gateway.forum_datenaustausch_ch.invoice_rest-api</module>
 	</modules>
 
 </project>

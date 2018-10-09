@@ -37,7 +37,7 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@ApiModel("Describes a data attachment within metasfresh")
+@ApiModel(description = "Describes a data attachment that exists within metasfresh")
 public class JsonAttachment
 {
 	@ApiModelProperty( //

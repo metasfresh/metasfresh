@@ -12,7 +12,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
@@ -63,14 +62,9 @@ public abstract class TableRecordRefAttachmentHandler<T> implements AttachmentHa
 	}
 
 	@Override
-	public final ExpandResult expand(Collection<? extends ITableRecordReference> newlyLinkedRecordRefs)
+	public final ExpandResult expand(@NonNull final Collection<? extends ITableRecordReference> newlyLinkedRecordRefs)
 	{
-		final ImmutableList<? extends ITableRecordReference> filtered = newlyLinkedRecordRefs
-				.stream()
-				.filter(recordRef -> tableName.equals(recordRef.getTableName()))
-				.collect(ImmutableList.toImmutableList());
-
-		if (filtered.isEmpty())
+		if (newlyLinkedRecordRefs.isEmpty())
 		{
 			return ExpandResult.EMPTY;
 		}
