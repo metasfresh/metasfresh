@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.elasticsearch.impl.ESSystem;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 
@@ -236,7 +237,8 @@ public class KPIDataLoader
 		catch (final NoNodeAvailableException e)
 		{
 			// elastic search transport error => nothing to do about it
-			throw e;
+			throw new AdempiereException("" + e.getLocalizedMessage() + "."
+					+ "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_Enabled + "` to `N`.", e);
 		}
 		catch (final Exception e)
 		{
