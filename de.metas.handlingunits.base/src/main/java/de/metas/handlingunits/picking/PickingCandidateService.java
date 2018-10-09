@@ -15,6 +15,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
+import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlotCommand;
 import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
@@ -68,9 +69,9 @@ public class PickingCandidateService
 		this.pickingCandidateRepository = pickingCandidateRepository;
 	}
 
-	public void pickHU(final PickHURequest request)
+	public PickHUResult pickHU(final PickHURequest request)
 	{
-		PickHUCommand.builder()
+		return PickHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.request(request)
 				.build()
