@@ -24,8 +24,6 @@ function addBarcodeScanner(WrappedComponent) {
         codeSelected: result || null,
         scanning: false,
       });
-
-      console.log('DETECTED: ', result);
     };
 
     renderScanner = () => {
