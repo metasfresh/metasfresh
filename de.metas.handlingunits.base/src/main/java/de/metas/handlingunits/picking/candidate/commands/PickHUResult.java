@@ -1,10 +1,15 @@
-package org.adempiere.impexp;
+package de.metas.handlingunits.picking.candidate.commands;
+
+import de.metas.handlingunits.picking.PickingCandidateId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +27,10 @@ package org.adempiere.impexp;
  * #L%
  */
 
-public enum CellValueType
+@Value
+@Builder
+public class PickHUResult
 {
-	Date, Number, Boolean, String
+	@NonNull
+	PickingCandidateId pickingCandidateId;
 }

@@ -11,10 +11,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
-package org.adempiere.impexp;
+package de.metas.impexp.excel;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -22,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -36,14 +38,16 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Abstract MS Excel Format (xls) Exporter
@@ -116,8 +120,10 @@ public abstract class AbstractExcelExporter
 	 */
 	public abstract boolean isPageBreak(int row, int col);
 
-	/** Logger */
-	protected final Logger log = LogManager.getLogger(getClass());
+	//
+	private final Logger logger = LogManager.getLogger(getClass());
+	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
+	
 	//
 	private final HSSFWorkbook m_workbook;
 	private final HSSFDataFormat m_dataFormat;
@@ -153,12 +159,25 @@ public abstract class AbstractExcelExporter
 		// ms excel doesn't support UTF8 charset
 		return StringUtils.stripDiacritics(str);
 	}
+	
+	private String convertBooleanToString(final boolean value)
+	{
+		final String adLanguage = getLanguage().getAD_Language();
+		final ITranslatableString translatable = msgBL.getTranslatableMsgText(value);
+		return translatable.translate(adLanguage);
+	}
 
 	protected Language getLanguage()
 	{
 		if (m_lang == null)
 			m_lang = Env.getLanguage(getCtx());
 		return m_lang;
+	}
+	
+	public AbstractExcelExporter setLanguage(final Language language)
+	{
+		this.m_lang = language;
+		return this;
 	}
 
 	private HSSFFont getHeaderFont()
@@ -232,7 +251,7 @@ public abstract class AbstractExcelExporter
 		}
 		//
 		if (LogManager.isLevelFinest())
-			log.trace("NumberFormat: " + format);
+			logger.trace("NumberFormat: " + format);
 		return format.toString();
 
 	}
@@ -314,7 +333,7 @@ public abstract class AbstractExcelExporter
 			}
 			catch (Exception e)
 			{
-				log.warn("Error setting sheet " + prevSheetIndex + " name to " + prevSheetName, e);
+				logger.warn("Error setting sheet " + prevSheetIndex + " name to " + prevSheetName, e);
 			}
 		}
 	}
@@ -388,9 +407,10 @@ public abstract class AbstractExcelExporter
 	 * Export to given stream
 	 * 
 	 * @param out
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	public final void export(final OutputStream out) throws Exception
+	public final void export(final OutputStream out) throws IOException
 	{
 		HSSFSheet sheet = createTableSheet();
 		String sheetName = null;
@@ -413,7 +433,7 @@ public abstract class AbstractExcelExporter
 
 					// 03917: poi-3.7 doesn't have this method anymore
 					// cell.setEncoding(HSSFCell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
-					
+
 					//
 					// Fetch cell value
 					CellValue cellValue;
@@ -423,7 +443,7 @@ public abstract class AbstractExcelExporter
 					}
 					catch (final Exception ex)
 					{
-						log.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
+						logger.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
 						cellValue = null;
 					}
 
@@ -444,7 +464,7 @@ public abstract class AbstractExcelExporter
 					else if (cellValue.isBoolean())
 					{
 						final boolean value = cellValue.booleanValue();
-						cell.setCellValue(new HSSFRichTextString(Msg.getMsg(getLanguage(), value == true ? "Y" : "N")));
+						cell.setCellValue(new HSSFRichTextString(convertBooleanToString(value)));
 					}
 					else
 					{
@@ -453,7 +473,7 @@ public abstract class AbstractExcelExporter
 					}
 					//
 					cell.setCellStyle(getStyle(rownum, col));
-					
+
 					// Page break
 					if (isPageBreak(rownum, col))
 					{
@@ -482,41 +502,36 @@ public abstract class AbstractExcelExporter
 		// Workbook Info
 		if (LogManager.isLevelFine())
 		{
-			log.debug("Sheets #" + m_sheetCount);
-			log.debug("Styles used #" + m_styles.size());
+			logger.debug("Sheets #" + m_sheetCount);
+			logger.debug("Styles used #" + m_styles.size());
 		}
 	}
 
-	/**
-	 * Export to file
-	 * 
-	 * @param file
-	 * @param language reporting language
-	 * @throws Exception
-	 */
-	public void export(final File file, final Language language)
-			throws Exception
+	public File exportToTempFile()
 	{
-		export(file, language, true);
+		final File file;
+		try
+		{
+			file = File.createTempFile("Report_", ".xls");
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary excel file", ex);
+		}
+
+		exportToFile(file);
+		return file;
 	}
 
-	/**
-	 * Export to file
-	 * 
-	 * @param file
-	 * @param language reporting language
-	 * @param autoOpen auto open file after generated
-	 * @throws Exception
-	 */
-	public void export(File file, final Language language, final boolean autoOpen)
-			throws Exception
+	public void exportToFile(@NonNull final File file)
 	{
-		m_lang = language;
-		if (file == null)
-			file = File.createTempFile("Report_", ".xls");
-		FileOutputStream out = new FileOutputStream(file);
-		export(out);
-		if (autoOpen && Ini.isClient())
-			Env.startBrowser(file.toURI().toString());
+		try (final FileOutputStream out = new FileOutputStream(file))
+		{
+			export(out);
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed exporting to " + file, ex);
+		}
 	}
 }

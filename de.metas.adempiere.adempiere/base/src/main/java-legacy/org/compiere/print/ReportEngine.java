@@ -1106,13 +1106,12 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 *
 	 * @param outFile output file
 	 * @param language
-	 * @throws Exception if error
 	 */
 	public void createXLS(File outFile, Language language)
-			throws Exception
 	{
-		PrintDataExcelExporter exp = new PrintDataExcelExporter(getPrintData(), getPrintFormat());
-		exp.export(outFile, language);
+		final PrintDataExcelExporter exp = new PrintDataExcelExporter(getPrintData(), getPrintFormat());
+		exp.setLanguage(language);
+		exp.exportToFile(outFile);
 	}
 
 	/**************************************************************************

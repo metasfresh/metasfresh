@@ -666,7 +666,7 @@ public final class Msg
 	 */
 	public static String translate(final String adLanguage, final boolean isSOTrx, final String text)
 	{
-		if (text == null || text.equals(""))
+		if (text == null || text.isEmpty())
 		{
 			return "";
 		}
