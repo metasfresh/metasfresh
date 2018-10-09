@@ -308,3 +308,53 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:21:1
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542888,'en_US') 
 ;
 
+-- 2018-10-09T15:22:49.489
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:22:49','YYYY-MM-DD HH24:MI:SS'),PrintName='Delivery Via Rule' WHERE AD_Element_ID=542451 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:22:49.495
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542451,'en_US') 
+;
+
+-- 2018-10-09T15:23:22.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:23:22','YYYY-MM-DD HH24:MI:SS'),PrintName='Purchase Pricing System' WHERE AD_Element_ID=505274 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:23:22.261
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(505274,'en_US') 
+;
+
+-- 2018-10-09T15:24:02.460
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:24:02','YYYY-MM-DD HH24:MI:SS'),PrintName='Farming Producer' WHERE AD_Element_ID=542256 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:24:02.468
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542256,'en_US') 
+;
+
+-- 2018-10-09T15:25:35.574
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:25:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation for Purchase Invoices',PrintName='Aggregation for Purchase Invoices',Description='' WHERE AD_Element_ID=542718 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:25:35.578
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542718,'en_US') 
+;
+
+-- 2018-10-09T15:26:05.010
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:26:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aggregation for Purchase Invoice Lines',PrintName='Aggregation for Purchase Invoice Lines' WHERE AD_Element_ID=542848 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:26:05.017
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542848,'en_US') 
+;
+
