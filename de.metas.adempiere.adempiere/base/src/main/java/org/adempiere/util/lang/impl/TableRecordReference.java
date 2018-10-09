@@ -133,7 +133,9 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final List<TableRecordReference> ofRecordIds(final String tableName, final Collection<Integer> recordIds)
+	public static final List<TableRecordReference> ofRecordIds(
+			@NonNull final String tableName,
+			@Nullable final Collection<Integer> recordIds)
 	{
 		if (recordIds == null || recordIds.isEmpty())
 		{

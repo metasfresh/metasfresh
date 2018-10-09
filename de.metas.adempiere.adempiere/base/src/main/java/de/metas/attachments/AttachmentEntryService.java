@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -17,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
+import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
 import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -52,6 +53,7 @@ public class AttachmentEntryService
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
+	private final AttachmentHandlerRegistry attachmentHandlerRegistry;
 
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
@@ -59,11 +61,13 @@ public class AttachmentEntryService
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
+		final AttachmentHandlerRegistry attachmentHandlerRegistry = new AttachmentHandlerRegistry(Optional.empty());
 
 		return new AttachmentEntryService(
 				attachmentEntryRepository,
 				attachmentEntryFactory,
-				attachmentMigrationService);
+				attachmentMigrationService,
+				attachmentHandlerRegistry);
 	}
 
 	/**
@@ -74,11 +78,13 @@ public class AttachmentEntryService
 	public AttachmentEntryService(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
-			@NonNull final AttachmentMigrationService attachmentMigrationService)
+			@NonNull final AttachmentMigrationService attachmentMigrationService,
+			@NonNull final AttachmentHandlerRegistry attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
+		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
 	}
 
 	public AttachmentEntry createNewAttachment(
@@ -146,10 +152,14 @@ public class AttachmentEntryService
 		final AttachmentEntry newEntry = attachmentEntryFactory.createAndSaveEntry(attachmentEntryCreateRequest);
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecords);
 
-		final Collection<AttachmentEntry> attachedEntries = createAttachmentLinks(ImmutableList.of(newEntry), ImmutableList.of(tableRecordReference));
-		final Collection<AttachmentEntry> attachedEntriesWithIds = attachmentEntryRepository.saveAll(attachedEntries);
+		final ImmutableList<TableRecordReference> tableRecordReferenceAsList = ImmutableList.of(tableRecordReference);
+		final Collection<AttachmentEntry> attachedEntries = createAttachmentLinks(
+				ImmutableList.of(newEntry),
+				tableRecordReferenceAsList);
 
-		return CollectionUtils.singleElement(attachedEntriesWithIds);
+		final ImmutableList<AttachmentEntry> attachedEntriesWithIds = attachmentEntryRepository.saveAll(attachedEntries);
+
+		return CollectionUtils.singleElement(expandAndSave(tableRecordReferenceAsList, attachedEntriesWithIds));
 	}
 
 	private AttachmentEntry createNewAttachmentLinkAndLinkToAllReferencedRecords(
@@ -174,30 +184,45 @@ public class AttachmentEntryService
 			@NonNull final Collection<AttachmentEntry> entries,
 			@NonNull final Collection<? extends Object> referencedRecords)
 	{
-		final ImmutableList.Builder<AttachmentEntry> result = createAttachmentLinksDontSave(entries, referencedRecords);
-		return attachmentEntryRepository.saveAll(result.build());
+		final ImmutableList<AttachmentEntry> unsavedAttachmentsWithLinks = createAttachmentLinksDontSave(entries, referencedRecords);
+
+		return expandAndSave(referencedRecords, unsavedAttachmentsWithLinks);
 	}
 
 	public Collection<AttachmentEntry> shareAttachmentLinks(
 			@NonNull final Collection<? extends Object> referencedRecordsSource,
 			@NonNull final Collection<? extends Object> referencedRecordsDest)
 	{
-		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
+		final ImmutableList.Builder<AttachmentEntry> destAttachmentEntries = ImmutableList.builder();
 
 		for (final Object referencedRecordSource : referencedRecordsSource)
 		{
 			final List<AttachmentEntry> sourceAttachmentEntries = //
 					attachmentEntryRepository.getByReferencedRecord(TableRecordReference.of(referencedRecordSource));
 
-			final Builder<AttachmentEntry> destAttachmentEntries = //
+			final ImmutableList<AttachmentEntry> destAttachmentEntriesForRecordSource = //
 					createAttachmentLinksDontSave(sourceAttachmentEntries, referencedRecordsDest);
-			result.addAll(destAttachmentEntries.build());
+
+			destAttachmentEntries.addAll(destAttachmentEntriesForRecordSource);
 		}
 
-		return attachmentEntryRepository.saveAll(result.build());
+		return expandAndSave(referencedRecordsDest, destAttachmentEntries.build());
 	}
 
-	private ImmutableList.Builder<AttachmentEntry> createAttachmentLinksDontSave(
+	private Collection<AttachmentEntry> expandAndSave(
+			@NonNull final Collection<? extends Object> originalReferencedRecords,
+			@NonNull final ImmutableList<AttachmentEntry> attachmentEntriesToSave)
+	{
+		final ExpandResult additionalReferences = attachmentHandlerRegistry.expand(originalReferencedRecords);
+
+		final ImmutableList<AttachmentEntry> destAttachmentEntriesWithAdditionalRefs = //
+				createAttachmentLinksDontSave(attachmentEntriesToSave, additionalReferences.getAdditionalReferences());
+
+		final Collection<AttachmentEntry> result = attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
+		return result;
+	}
+
+	private ImmutableList<AttachmentEntry> createAttachmentLinksDontSave(
 			@NonNull final Collection<AttachmentEntry> entries,
 			@NonNull final Collection<? extends Object> referencedRecords)
 	{
@@ -212,7 +237,7 @@ public class AttachmentEntryService
 			}
 			result.add(updatedEntry);
 		}
-		return result;
+		return result.build();
 	}
 
 	public AttachmentEntry unattach(

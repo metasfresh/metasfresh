@@ -129,7 +129,7 @@ public class AttachmentEntryRepository
 		return builder.build();
 	}
 
-	public Collection<AttachmentEntry> saveAll(@NonNull final Collection<AttachmentEntry> attachmentEntries)
+	public ImmutableList<AttachmentEntry> saveAll(@NonNull final Collection<AttachmentEntry> attachmentEntries)
 	{
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 		for (final AttachmentEntry attachmentEntry : attachmentEntries)
