@@ -1,6 +1,7 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import com.google.common.collect.ImmutableList;
 
@@ -46,6 +47,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	}
 
 	private final ImmutableList<RelatedProcessDescriptor> relatedProcessDescriptors;
+	private final ProductsToPickRowsData rowsData;
 
 	@Builder
 	private ProductsToPickView(
@@ -56,6 +58,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	{
 		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
 
+		this.rowsData = rowsData;
 		this.relatedProcessDescriptors = relatedProcessDescriptors;
 	}
 
@@ -83,5 +86,10 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 				.anyMatch(row -> !row.isEligibleForReview());
 
 		return !hasNotEligibleRows;
+	}
+
+	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
+	{
+		rowsData.changeRow(rowId, mapper);
 	}
 }

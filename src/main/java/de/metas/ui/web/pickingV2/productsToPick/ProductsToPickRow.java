@@ -49,26 +49,33 @@ import lombok.ToString;
 @ToString(exclude = "_fieldNameAndJsonValues")
 public class ProductsToPickRow implements IViewRow
 {
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID", seqNo = 10)
+	static final String FIELD_Product = "product";
+	@ViewColumn(fieldName = FIELD_Product, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID", seqNo = 10)
 	private final LookupValue product;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", seqNo = 20)
+	static final String FIELD_Locator = "locator";
+	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", seqNo = 20)
 	private final LookupValue locator;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber", seqNo = 30)
+	static final String FIELD_LotNumber = "lotNumber";
+	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber", seqNo = 30)
 	private final String lotNumber;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate", seqNo = 40)
+	static final String FIELD_ExpiringDate = "expiringDate";
+	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate", seqNo = 40)
 	@Getter
 	private final LocalDate expiringDate;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", seqNo = 50)
+	static final String FIELD_RepackNumber = "repackNumber";
+	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", seqNo = 50)
 	private final String repackNumber;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60) // Damaged
+	static final String FIELD_Damaged = "damaged";
+	@ViewColumn(fieldName = FIELD_Damaged, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60) // Damaged
 	private final Boolean damaged;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
+	static final String FIELD_Qty = "qty";
+	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
 	@Getter
 	private final Quantity qty;
 
@@ -157,9 +164,28 @@ public class ProductsToPickRow implements IViewRow
 		return toBuilder().qty(qty).build();
 	}
 
+	public ProductsToPickRow withPickingCandidateId(@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		if (PickingCandidateId.equals(this.pickingCandidateId, pickingCandidateId))
+		{
+			return this;
+		}
+
+		return toBuilder().pickingCandidateId(pickingCandidateId).build();
+	}
+
+	public boolean isToBePicked()
+	{
+		return getPickingCandidateId() == null;
+	}
+
+	public boolean isPrepared()
+	{
+		return getPickingCandidateId() != null;
+	}
+
 	public boolean isEligibleForReview()
 	{
-		// TODO impl
-		return true;
+		return isPrepared();
 	}
 }

@@ -1,11 +1,9 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
+import java.util.List;
+
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.globalaction.GlobalActionEvent;
-import de.metas.ui.web.globalaction.GlobalActionEvents;
-import de.metas.ui.web.pickingV2.PickingConstantsV2;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickView;
-import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 
 /*
  * #%L
@@ -29,28 +27,30 @@ import de.metas.ui.web.view.ViewId;
  * #L%
  */
 
-public class ProductsToPick_Request4EyesReview extends ProductsToPickViewBasedProcess
+public class ProductsToPick_VoidSelected extends ProductsToPickViewBasedProcess
 {
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final ProductsToPickView view = getView();
-		if (!view.isEligibleForReview())
+		final List<ProductsToPickRow> selectedRows = getSelectedRows();
+		if (selectedRows.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows are eligible");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
-		final ProductsToPickView view = getView();
-		final ViewId viewId = view.getViewId();
-		final GlobalActionEvent openViewEvent = GlobalActionEvents.openView(viewId, PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review);
-
-		getResult().setDisplayQRCode(openViewEvent.toDisplayQRCodeProcessResult());
+		// TODO Auto-generated method stub
 		return MSG_OK;
 	}
 

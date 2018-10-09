@@ -108,7 +108,7 @@ public class CORSFilter implements Filter
 			}
 			else
 			{
-				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set");
+				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set.\n Please and set `{}` sysconfig or disable CORS (`{}` sysconfig).", WebuiURLs.SYSCONFIG_FRONTEND_URL, SYSCONFIG_IsCORSEnabled);
 			}
 		}
 
