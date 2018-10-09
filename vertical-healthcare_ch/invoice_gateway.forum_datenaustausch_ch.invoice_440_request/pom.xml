@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.vertical.healthcare_ch</groupId>
 		<artifactId>vertical-healthcare_ch</artifactId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -17,7 +17,6 @@
 		<plugins>
 			<plugin>
 				<!-- source for the response xsd: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceRequest_450.zip -->
-				<!-- NOTE about "<clearOutputDir>false</clearOutputDir>" further down: don't clear the directory because else we will lose previously generated files	-->
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
 				<executions>
@@ -33,7 +32,6 @@
 								<arg>-XautoNameResolution</arg>
 							</args>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</schemaDirectory>
-							<bindingDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</bindingDirectory>
 							<generatePackage>de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request</generatePackage>
 						</configuration>
 					</execution>
