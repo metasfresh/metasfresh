@@ -4,7 +4,7 @@
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-	<jxb:bindings schemaLocation="generalInvoiceRequest_440.xsd">
+	<jxb:bindings schemaLocation="generalInvoiceResponse_440.xsd">
 		<jxb:globalBindings>
 			<!-- We need the doubles to be converted to BigDecimal, because we need to calculate with them using full precision. -->
 			<jxb:javaType name="java.math.BigDecimal" xmlType="xs:double" />
