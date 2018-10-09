@@ -14,7 +14,6 @@ import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.EAN;
 import de.metas.invoice_gateway.spi.model.Invoice;
 import de.metas.invoice_gateway.spi.model.Money;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440.Invoice440ExportClient;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.RequestType;
 
 /*
@@ -52,6 +51,7 @@ public class Invoice440ExportClientTest
 				.invoiceTimestamp(Instant.now())
 				.invoiceDate(LocalDate.now())
 				.documentNumber("123456789_123456789_123456789_123456789_") // too long; max length is 35; expect some exception
+				.alreadyPaidAmount(Money.of(TEN, "CHF"))
 				.build();
 
 		// invoke the method under test

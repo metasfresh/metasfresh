@@ -439,6 +439,8 @@ public class C_Invoice_Candidate
 		final TableRecordReference referencedRecord = TableRecordReference.ofReferenced(ic);
 		final TableRecordReference icRecord = TableRecordReference.of(ic);
 
+		// Invoke the method after commit to make sure that when we do it, the IC exists "globally"
+		// This prevents race conditions in case someone creates e.g. a C_OLCand and then adds an attachment which the ICs are created asynchronously
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
