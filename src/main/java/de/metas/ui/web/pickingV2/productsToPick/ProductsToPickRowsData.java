@@ -1,16 +1,21 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,17 +47,47 @@ class ProductsToPickRowsData implements IRowsData<ProductsToPickRow>
 		return new ProductsToPickRowsData(rows);
 	}
 
-	private final ImmutableMap<DocumentId, ProductsToPickRow> topLevelRowsByDocumentId;
+	private final ImmutableList<DocumentId> rowIdsOrdered;
+	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> rowsById;
 
 	private ProductsToPickRowsData(final List<ProductsToPickRow> rows)
 	{
-		topLevelRowsByDocumentId = Maps.uniqueIndex(rows, ProductsToPickRow::getId);
+		rowIdsOrdered = rows.stream()
+				.map(ProductsToPickRow::getId)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		rowsById = rows.stream()
+				.map(row -> GuavaCollectors.entry(row.getId(), row))
+				.collect(GuavaCollectors.toMap(ConcurrentHashMap::new));
 	}
 
 	@Override
 	public Map<DocumentId, ProductsToPickRow> getDocumentId2TopLevelRows()
 	{
-		return topLevelRowsByDocumentId;
+		return rowsById;
+	}
+
+	@Override
+	public Collection<ProductsToPickRow> getTopLevelRows()
+	{
+		return rowIdsOrdered.stream()
+				.map(rowsById::get)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void changeRow(@NonNull final DocumentId rowId, @NonNull UnaryOperator<ProductsToPickRow> mapper)
+	{
+		rowsById.compute(rowId, (k, row) -> {
+			if (row == null)
+			{
+				throw new AdempiereException("No row found for id: " + k);
+			}
+			else
+			{
+				return mapper.apply(row);
+			}
+		});
 	}
 
 	@Override

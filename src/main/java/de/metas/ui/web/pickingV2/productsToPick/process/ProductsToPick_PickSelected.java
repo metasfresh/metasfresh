@@ -2,13 +2,16 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import java.util.List;
 
-import de.metas.handlingunits.HuId;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.quantity.Quantity;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -34,38 +37,56 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 {
+	@Autowired
+	private PickingCandidateService pickingCandidatesService;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		if (selectedRowIds.isEmpty())
+		final List<ProductsToPickRow> selectedRows = getSelectedRows();
+		if (selectedRows.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
-		final List<ProductsToPickRow> rows = getSelectedRows();
-		rows.forEach(this::pick);
+		getSelectedRows()
+				.stream()
+				.filter(ProductsToPickRow::isToBePicked)
+				.forEach(this::pickRow);
 
 		invalidateView();
 
 		return MSG_OK;
 	}
 
-	private void pick(final ProductsToPickRow row)
+	private void pickRow(final ProductsToPickRow row)
 	{
-		final PickingCandidateId pickingCandidateId = row.getPickingCandidateId();
-		final HuId huId = row.getHuId();
-		final ShipmentScheduleId shipmentScheduleId = row.getShipmentScheduleId();
+		final PickHURequest request = PickHURequest.builder()
+				.shipmentScheduleId(row.getShipmentScheduleId())
+				.huId(row.getHuId())
+				.qtyToPick(row.getQty())
+				.build();
 
-		final Quantity qty = row.getQty();
+		final PickHUResult result = pickingCandidatesService.pickHU(request);
 
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("not implemented");
+		updateViewFromPickResult(row.getId(), result);
+	}
+
+	private void updateViewFromPickResult(final DocumentId rowId, final PickHUResult result)
+	{
+		final PickingCandidateId pickingCandidateId = result.getPickingCandidateId();
+		getView().changeRow(rowId, row -> row.withPickingCandidateId(pickingCandidateId));
 	}
 }

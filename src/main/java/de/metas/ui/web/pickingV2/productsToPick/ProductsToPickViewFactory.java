@@ -16,6 +16,7 @@ import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
@@ -59,11 +60,31 @@ public class ProductsToPickViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
-		return ViewLayout.builder()
-				.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
-				.setCaption("Pick products") // TODO: trl
-				.addElementsFromViewRowClass(ProductsToPickRow.class, viewDataType)
-				.build();
+		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(profileId))
+		{
+			return ViewLayout.builder()
+					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
+					.setCaption("Review") // TODO: trl
+					.addElementsFromViewRowClassAndFieldNames(
+							ProductsToPickRow.class,
+							viewDataType,
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Product),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Damaged),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
+							ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty))
+					.build();
+		}
+		else
+		{
+			return ViewLayout.builder()
+					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
+					.setCaption("Pick products") // TODO: trl
+					.addElementsFromViewRowClass(ProductsToPickRow.class, viewDataType)
+					.build();
+		}
 	}
 
 	@Override
