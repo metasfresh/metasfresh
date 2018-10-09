@@ -6,7 +6,7 @@ import { DATE_FORMAT } from '../constants/Constants';
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return get(
     `${config.API_URL}/documentView/${windowId}/layout?viewType=${viewType}${
-      viewProfileId ? `&profileId= + ${viewProfileId}` : ''
+      viewProfileId ? `&profileId=${viewProfileId}` : ''
     }`
   );
 }
