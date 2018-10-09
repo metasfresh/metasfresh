@@ -72,7 +72,8 @@ public class AttachmentEntryServiceTest
 		// assert that bpartnerRecord's attachments are unchanged
 		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
-		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry1);
+		// we need to compare them without linked records because productRecordEntries.get(0) now also has the product
+		assertThat(bpartnerRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
 		assertThat(bpartnerRecordEntries.get(1)).isEqualTo(bpartnerAttachmentEntry2);
 
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);

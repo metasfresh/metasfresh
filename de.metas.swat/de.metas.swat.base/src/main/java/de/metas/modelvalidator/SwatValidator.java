@@ -99,6 +99,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.inventory.model.interceptor.M_Inventory;
 import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
@@ -254,6 +255,7 @@ public class SwatValidator implements ModelValidator
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);
+		invoiceCandidateListeners.addListener(AttachmentInvoiceCandidateListener.INSTANCE);
 
 		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_C_InvoiceLine.Table_Name, C_InvoiceLine_TabCallout.class);
 
