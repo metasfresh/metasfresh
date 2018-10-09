@@ -452,6 +452,53 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.go</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.datev</groupId>
+			<artifactId>metasfresh-datev</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<!-- Elasticsearch -->
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.inbound</groupId>
+			<artifactId>de.metas.inbound.mail</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.swat</groupId>
@@ -492,52 +539,13 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.go</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.metas.datev</groupId>
-			<artifactId>metasfresh-datev</artifactId>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_rest-api</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
 
-		<!-- Elasticsearch -->
-		<dependency>
-			<groupId>de.metas.elasticsearch</groupId>
-			<artifactId>de.metas.elasticsearch</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.elasticsearch</groupId>
-			<artifactId>de.metas.elasticsearch.server</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.inbound</groupId>
-			<artifactId>de.metas.inbound.mail</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
 
 	</dependencies>
 
@@ -930,7 +938,7 @@ note: when adding new records, please roughly order them by alphabet.
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
