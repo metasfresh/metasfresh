@@ -1,6 +1,5 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
 
-import static de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440.Util.toDouble;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
@@ -249,12 +248,12 @@ public class Invoice440ExportClient implements InvoiceExportClient
 
 		balanceType.setCurrency(amount.getCurrency());
 
-		balanceType.setAmount(toDouble(amount.getAmount()));
+		balanceType.setAmount(amount.getAmount());
 
 		final Money alreadyPaidAmount = invoice.getAlreadyPaidAmount();
 		Check.assume(CURRENCY_CHF.equals(alreadyPaidAmount.getCurrency()), "The given invoice.alreadyPaidAmount's currency needs to be CHF; invoice={}", invoice);
 
-		final double amountDue = toDouble(amount.getAmount().subtract(alreadyPaidAmount.getAmount()));
+		final BigDecimal amountDue = amount.getAmount().subtract(alreadyPaidAmount.getAmount());
 		balanceType.setAmountDue(amountDue);
 
 		balanceType.setVat(createVatType(invoice));
@@ -273,7 +272,7 @@ public class Invoice440ExportClient implements InvoiceExportClient
 			vatType.getVatRate().add(createVatRateType(invoiceTax));
 		}
 
-		vatType.setVat(toDouble(vat));
+		vatType.setVat(vat);
 		vatType.setVatNumber(invoice.getBiller().getVatNumber());
 		return vatType;
 	}
@@ -282,9 +281,9 @@ public class Invoice440ExportClient implements InvoiceExportClient
 	{
 		final VatRateType vatRateType = jaxbRequestObjectFactory.createVatRateType();
 
-		vatRateType.setAmount(toDouble(invoiceTax.getBaseAmount()));
-		vatRateType.setVatRate(toDouble(invoiceTax.getRatePercent()));
-		vatRateType.setVat(toDouble(invoiceTax.getVatAmount()));
+		vatRateType.setAmount(invoiceTax.getBaseAmount());
+		vatRateType.setVatRate(invoiceTax.getRatePercent());
+		vatRateType.setVat(invoiceTax.getVatAmount());
 
 		return vatRateType;
 	}
