@@ -2,8 +2,8 @@ package de.metas.ui.web.view.descriptor.annotation;
 
 import java.lang.reflect.Field;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -17,12 +17,14 @@ import org.adempiere.util.reflect.FieldReference;
 import org.compiere.util.Env;
 import org.reflections.ReflectionUtils;
 
+import com.google.common.base.Predicates;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -43,6 +45,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -111,7 +114,7 @@ public final class ViewColumnHelper
 			@NonNull final JSONViewDataType viewType)
 	{
 		return getDescriptor(dataType)
-				.getColumns().stream()
+				.streamColumns()
 				.filter(column -> column.isDisplayed(viewType))
 				.sorted(Comparator.comparing(column -> column.getSeqNo(viewType)))
 				.map(column -> createLayoutElement(column))
@@ -305,39 +308,50 @@ public final class ViewColumnHelper
 	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
-		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
-		getDescriptor(rowClass)
-				.getColumns()
-				.forEach(column -> {
-					final Object value = extractFieldValueAsJson(row, column);
-					if (!JSONNullValue.isNull(value))
-					{
-						result.put(column.getFieldName(), value);
-					}
-				});
-		return ImmutableMap.copyOf(result);
+		return getDescriptor(rowClass)
+				.streamColumns()
+				.map(column -> extractFieldNameAndValueAsJson(row, column))
+				.filter(Predicates.notNull())
+				.collect(GuavaCollectors.toImmutableMap());
+	}
+
+	private static final <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJson(final T row, final ClassViewColumnDescriptor column)
+	{
+		final Object value = extractFieldValueAsJson(row, column);
+		if (JSONNullValue.isNull(value))
+		{
+			return null;
+		}
+
+		return GuavaCollectors.entry(column.getFieldName(), value);
 	}
 
 	private static final <T extends IViewRow> Object extractFieldValueAsJson(final T row, final ClassViewColumnDescriptor column)
 	{
-		final Field field = column.getFieldReference().getField();
-		if (!field.isAccessible())
-		{
-			field.setAccessible(true);
-		}
 		try
 		{
+			final Field field = column.getField();
+			if (!field.isAccessible())
+			{
+				field.setAccessible(true);
+			}
+
 			final Object value = field.get(row);
 			if (value instanceof Supplier<?>)
 			{
 				final Supplier<?> supplier = (Supplier<?>)value;
-				Values.valueToJsonObject(supplier.get());
+				return Values.valueToJsonObject(supplier.get());
 			}
-			return Values.valueToJsonObject(value);
+			else
+			{
+				return Values.valueToJsonObject(value);
+			}
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("column", column)
+					.setParameter("row", row);
 		}
 	}
 
@@ -352,26 +366,31 @@ public final class ViewColumnHelper
 	{
 		public static final ClassViewDescriptor EMPTY = builder().build();
 
-		@Getter
-		private final ImmutableList<ClassViewColumnDescriptor> columns;
-
+		private final ImmutableMap<String, ClassViewColumnDescriptor> columnsByName;
 		@Getter
 		private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
 		@Builder
 		private ClassViewDescriptor(@Singular ImmutableList<ClassViewColumnDescriptor> columns)
 		{
-			this.columns = columns;
+			this.columnsByName = Maps.uniqueIndex(columns, ClassViewColumnDescriptor::getFieldName);
 			this.widgetTypesByFieldName = columns.stream()
 					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
 		}
 
+		public Stream<ClassViewColumnDescriptor> streamColumns()
+		{
+			return columnsByName.values().stream();
+		}
+
 		public ClassViewColumnDescriptor getColumnByName(@NonNull final String fieldName)
 		{
-			return columns.stream()
-					.filter(column -> fieldName.equals(column.getFieldName()))
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("No column found for " + fieldName + " in " + this));
+			final ClassViewColumnDescriptor column = columnsByName.get(fieldName);
+			if (column == null)
+			{
+				throw new AdempiereException("No column found for " + fieldName + " in " + this);
+			}
+			return column;
 		}
 	}
 
@@ -382,6 +401,7 @@ public final class ViewColumnHelper
 		@NonNull
 		private final String fieldName;
 		@NonNull
+		@Getter(AccessLevel.NONE)
 		private final FieldReference fieldReference;
 
 		@NonNull
@@ -415,6 +435,11 @@ public final class ViewColumnHelper
 
 			int seqNo = layout.getSeqNo();
 			return seqNo >= 0 ? seqNo : Integer.MAX_VALUE;
+		}
+
+		public Field getField()
+		{
+			return fieldReference.getField();
 		}
 	}
 
