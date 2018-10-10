@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserQRCodeReader, BrowserBarcodeReader } from '@zxing/library';
+import classnames from 'classnames';
 
 export default class BarcodeScanner extends Component {
   constructor(props) {
@@ -28,6 +29,7 @@ export default class BarcodeScanner extends Component {
     reader
       .decodeFromInputVideoDevice(undefined, 'video')
       .then(result => this._onDetected(result))
+      // eslint-disable-next-line no-console
       .catch(err => console.error(err));
   };
 
@@ -43,15 +45,17 @@ export default class BarcodeScanner extends Component {
     close && this.props.onClose();
   };
 
-  _changeReader = type => {
+  _changeReader = () => {
     this.QrReader.reset();
     this.BarcodeReader.reset();
 
     this.props.onClose(true);
 
+    const newMode = this.state.mode === 'Qr' ? 'Barcode' : 'Qr';
+
     this.setState(
       {
-        mode: type,
+        mode: newMode,
       },
       () => this._process
     );
@@ -60,13 +64,22 @@ export default class BarcodeScanner extends Component {
   render() {
     return (
       <div className="row scanner-wrapper">
+        <i
+          className={classnames('btn-control btn-mode', {
+            [`btn-${this.state.mode}`]: this.state.mode,
+          })}
+          onClick={this._changeReader}
+        />
         <video
           className="col-sm-12 viewport scanner-window"
           id="video"
           width="1280"
           height="720"
         />
-        <i className="btn-close meta-icon-close-1" onClick={this._handleStop} />
+        <i
+          className="btn-control btn-close meta-icon-close-1"
+          onClick={this._handleStop}
+        />
       </div>
     );
   }

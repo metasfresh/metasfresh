@@ -48,14 +48,38 @@
         left:0;
     }
 
-    .btn-close {
+    .btn-control {
         position: absolute;
         top: 5px;
+        z-index: 1000;
+        cursor: pointer;
+    }
+
+    .btn-close {
         right: 5px;
-        z-index: 10000;
 
         @media (min-width: $breakpoint-md){
             font-size: 20px;
+        }
+    }
+
+    .btn-mode {
+        left: 5px;
+        width: 35px;
+        height: 35px;
+        background: no-repeat scroll 0 center;
+
+        @media (min-width: $breakpoint-md){
+            width: 25px;
+            height: 25px;
+        }
+
+        &.btn-Qr {
+            background-image: url('../images/qrcode-solid.svg');
+        }
+
+        &.btn-Barcode {
+            background-image: url('../images/barcode-solid.svg');
         }
     }
 }
