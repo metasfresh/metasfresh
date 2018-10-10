@@ -15,7 +15,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -524635489L;
+	private static final long serialVersionUID = 1233112750L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
@@ -179,8 +179,6 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Reserved = R */
-	public static final String HUSTATUS_Reserved = "R";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override
