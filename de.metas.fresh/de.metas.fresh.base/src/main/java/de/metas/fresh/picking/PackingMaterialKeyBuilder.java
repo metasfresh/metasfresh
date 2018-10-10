@@ -43,9 +43,9 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -170,10 +170,10 @@ public class PackingMaterialKeyBuilder
 				return null;
 			}
 
-			final int piId = piVersion.getM_HU_PI_ID();
+			final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID());
 
 			// Make sure it's a concrete PI (i.e. not Virtual, not No-PI)
-			if (!Services.get(IHandlingUnitsBL.class).isConcretePI(piId))
+			if(!piId.isRealPackingInstructions())
 			{
 				piItemIdBlackList.add(piItemId);
 				return null;

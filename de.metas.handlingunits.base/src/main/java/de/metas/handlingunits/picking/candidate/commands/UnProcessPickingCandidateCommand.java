@@ -102,7 +102,7 @@ public class UnProcessPickingCandidateCommand
 		assertHUIsPicked(hu);
 
 		// if everything is OK, go ahead
-		pickingCandidates.forEach(this::convertToStatusProcessed);
+		pickingCandidates.forEach(this::unCloseIfNeeded);
 		qtyPickedList.forEach(InterfaceWrapperHelper::delete);
 		updateHUStatusToActive(hu);
 
@@ -121,27 +121,17 @@ public class UnProcessPickingCandidateCommand
 		return _hu;
 	}
 
-	private void convertToStatusProcessed(final PickingCandidate pickingCandidate)
+	private void unCloseIfNeeded(final PickingCandidate pickingCandidate)
 	{
-		if (PickingCandidateStatus.Draft.equals(pickingCandidate.getStatus()))
+		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
 		{
-			// already in progress => nothing to do
+			return;
 		}
-		else if (PickingCandidateStatus.Processed.equals(pickingCandidate.getStatus()))
-		{
-			// already status processed => nothing to do
-		}
-		else if (PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
-		{
-			UnClosePickingCandidateCommand.builder()
-					.pickingCandidate(pickingCandidate)
-					.build()
-					.perform();
-		}
-		else
-		{
-			throw new AdempiereException("Cannot converted candidate to status Processed").setParameter("pickingCandidate", pickingCandidate);
-		}
+		
+		UnClosePickingCandidateCommand.builder()
+				.pickingCandidate(pickingCandidate)
+				.build()
+				.perform();
 	}
 
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final List<PickingCandidate> pickingCandidates)

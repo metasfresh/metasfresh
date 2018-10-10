@@ -30,6 +30,7 @@ import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFFooter;
 import org.apache.poi.hssf.usermodel.HSSFHeader;
+import org.apache.poi.hssf.usermodel.HSSFHyperlink;
 import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -123,7 +124,7 @@ public abstract class AbstractExcelExporter
 	//
 	private final Logger logger = LogManager.getLogger(getClass());
 	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
-	
+
 	//
 	private final HSSFWorkbook m_workbook;
 	private final HSSFDataFormat m_dataFormat;
@@ -159,7 +160,7 @@ public abstract class AbstractExcelExporter
 		// ms excel doesn't support UTF8 charset
 		return StringUtils.stripDiacritics(str);
 	}
-	
+
 	private String convertBooleanToString(final boolean value)
 	{
 		final String adLanguage = getLanguage().getAD_Language();
@@ -173,7 +174,7 @@ public abstract class AbstractExcelExporter
 			m_lang = Env.getLanguage(getCtx());
 		return m_lang;
 	}
-	
+
 	public AbstractExcelExporter setLanguage(final Language language)
 	{
 		this.m_lang = language;
@@ -470,6 +471,12 @@ public abstract class AbstractExcelExporter
 					{
 						final String value = fixString(cellValue.stringValue());	// formatted
 						cell.setCellValue(new HSSFRichTextString(value));
+
+						final HSSFHyperlink hyperlink = createHyperlinkIfURL(value);
+						if (hyperlink != null)
+						{
+							cell.setHyperlink(hyperlink);
+						}
 					}
 					//
 					cell.setCellStyle(getStyle(rownum, col));
@@ -504,6 +511,27 @@ public abstract class AbstractExcelExporter
 		{
 			logger.debug("Sheets #" + m_sheetCount);
 			logger.debug("Styles used #" + m_styles.size());
+		}
+	}
+
+	private HSSFHyperlink createHyperlinkIfURL(final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return null;
+		}
+
+		final String urlStr = str.trim();
+		if (urlStr.startsWith("http://")
+				|| urlStr.startsWith("https://"))
+		{
+			final HSSFHyperlink hyperlink = m_workbook.getCreationHelper().createHyperlink(HSSFHyperlink.LINK_URL);
+			hyperlink.setAddress(urlStr);
+			return hyperlink;
+		}
+		else
+		{
+			return null;
 		}
 	}
 
