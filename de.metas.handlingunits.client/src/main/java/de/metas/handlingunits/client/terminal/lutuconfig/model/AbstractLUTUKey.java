@@ -3,11 +3,11 @@ package de.metas.handlingunits.client.terminal.lutuconfig.model;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AbstractLUTUKey extends AbstractLUTUCUKey
 {
@@ -15,7 +15,7 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 	private final I_M_HU_PI_Item huPIItemChildJoin;
 	private String _id;
 	private final KeyNamePair value;
-	private final boolean isNoPI;
+	private final boolean isTemplatePI;
 	private final boolean isVirtualPI;
 
 	public AbstractLUTUKey(final ITerminalContext terminalContext, final I_M_HU_PI huPI)
@@ -23,21 +23,19 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 		this(terminalContext, huPI, null); // huPIItemChildJoin=null
 	}
 
-	public AbstractLUTUKey(final ITerminalContext terminalContext, final I_M_HU_PI huPI, final I_M_HU_PI_Item huPIItemChildJoin)
+	public AbstractLUTUKey(final ITerminalContext terminalContext, @NonNull final I_M_HU_PI huPI, final I_M_HU_PI_Item huPIItemChildJoin)
 	{
 		super(terminalContext);
 
-		Check.assumeNotNull(huPI, "huPI not null");
 		this.huPI = huPI;
 		this.huPIItemChildJoin = huPIItemChildJoin;
 
-		final int huPIId = huPI.getM_HU_PI_ID();
+		final HuPackingInstructionsId huPIId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		isNoPI = huPIId == handlingUnitsDAO.getPackingItemTemplate_HU_PI_ID();
-		isVirtualPI = huPIId == handlingUnitsDAO.getVirtual_HU_PI_ID();
+		isTemplatePI = huPIId.isTemplate();
+		isVirtualPI = huPIId.isVirtual();
 
-		value = new KeyNamePair(huPIId, huPI.getName());
+		value = KeyNamePair.of(huPIId, huPI.getName());
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class AbstractLUTUKey extends AbstractLUTUCUKey
 
 	public final boolean isNoPI()
 	{
-		return isNoPI;
+		return isTemplatePI;
 	}
 
 	public final boolean isVirtualPI()

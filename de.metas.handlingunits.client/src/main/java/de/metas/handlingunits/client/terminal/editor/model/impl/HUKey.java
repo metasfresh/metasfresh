@@ -40,6 +40,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.Optional;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -136,8 +137,8 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		value = new KeyNamePair(huId, name);
 
 		// FIXME: aggregate by CU too
-		final int piId = handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID();
-		if (handlingUnitsBL.isConcretePI(piId))
+		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(handlingUnitsBL.getPIVersion(hu).getM_HU_PI_ID());
+		if (piId.isRealPackingInstructions())
 		{
 			aggregationKey = Util.mkKey(piId);
 		}
