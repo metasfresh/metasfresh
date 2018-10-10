@@ -22,6 +22,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import de.metas.util.Check;
@@ -252,8 +253,8 @@ public class ContactPersonRepository
 			final EmailAddress emailAddress = EmailAddress.of(
 					contactPersonRecord.getEMail(),
 					StringUtils.toBoolean(emailDeactivated, null));
-			builder
-					.address(emailAddress);
+
+			builder.address(emailAddress);
 		}
 
 		BPartnerId bpartnerId = null;
@@ -272,6 +273,7 @@ public class ContactPersonRepository
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
 				.bpLocationId(bpartnerlocationId)
+				.language(Language.getLanguage(contactPersonRecord.getAD_Language()))
 				.build();
 	}
 

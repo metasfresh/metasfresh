@@ -69,7 +69,7 @@ public class UserServiceTest
 		final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
 		ContactPerson contactPerson = createContactPerson(user1.getAD_User_ID(), newContactPersonAddress, platformId);
 
-		userService.updateUserEmailFromContactPerson(contactPerson, oldEmailAddress);
+		userService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, null);
 
 		final List<I_AD_User> resultUsers = retrieveUsers();
 
@@ -93,7 +93,7 @@ public class UserServiceTest
 
 		final String anotherEmailAddress = "AnotheremailAddress@AnotherEmailAddress.AnotherEmailAddress";
 
-		userService.updateUserEmailFromContactPerson(contactPerson, anotherEmailAddress);
+		userService.updateUserFromContactPersonIfFeasible(contactPerson, anotherEmailAddress, null);
 
 		final List<I_AD_User> resultUsers = retrieveUsers();
 
@@ -116,7 +116,7 @@ public class UserServiceTest
 		final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
 		ContactPerson contactPerson = createContactPerson(user1.getAD_User_ID(), newContactPersonAddress, platformId);
 
-		userService.updateUserEmailFromContactPerson(contactPerson, oldEmailAddress);
+		userService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, null);
 
 		final List<I_AD_User> resultUsers = retrieveUsers();
 
@@ -125,7 +125,6 @@ public class UserServiceTest
 		final String resultEmailAddress = resultUsers.get(0).getEMail();
 
 		assertSame(newContactPersonAddress, resultEmailAddress);
-
 	}
 
 	@Test
@@ -138,7 +137,7 @@ public class UserServiceTest
 		final String newContactPersonAddress = "Newtestmail@Newtestmail.Newtestmail";
 		ContactPerson contactPerson = createContactPerson(user1.getAD_User_ID(), newContactPersonAddress, platformId);
 
-		userService.updateUserEmailFromContactPerson(contactPerson, oldEmailAddress);
+		userService.updateUserFromContactPersonIfFeasible(contactPerson, oldEmailAddress, null);
 
 		final List<I_AD_User> resultUsers = retrieveUsers();
 

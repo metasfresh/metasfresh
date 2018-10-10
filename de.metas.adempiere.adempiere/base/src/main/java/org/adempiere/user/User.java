@@ -3,6 +3,7 @@ package org.adempiere.user;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Language;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,4 +46,23 @@ public class User
 
 	@Nullable
 	String emailAddress;
+
+	/**
+	 * Changes are persisted by the repo!
+	 */
+	@Nullable
+	Language userLanguage;
+
+	/**
+	 * Read-only; changes are <b>not</b> persisted by the repo!
+	 */
+	@Nullable
+	Language bPartnerLanguage;
+
+	/**
+	 * Either the user's or bPartner's or context's or base language. Never {@code null}.
+	 * Read-only; changes are <b>not</b> persisted by the repo!
+	 */
+	@NonNull
+	Language language;
 }

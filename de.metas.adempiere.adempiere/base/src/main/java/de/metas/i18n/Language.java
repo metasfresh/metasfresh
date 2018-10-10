@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -51,7 +52,7 @@ import de.metas.util.Check;
 
 /**
  * Language.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @author based on initial version developed by Jorg Janke
  */
@@ -231,7 +232,7 @@ public final class Language implements Serializable
 	/**
 	 * Get Language.
 	 * If language does not exist, create it on the fly assuming that it is valid
-	 * 
+	 *
 	 * @param langInfo either language (en) or locale (en_US) or display name
 	 * @return language instance
 	 */
@@ -275,7 +276,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Is it the base language
-	 * 
+	 *
 	 * @param langInfo either language (en) or locale (en-US) or display name
 	 * @return true if base language
 	 */
@@ -293,7 +294,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Get Base Language
-	 * 
+	 *
 	 * @return Base Language
 	 * @throws AdempiereException if the base language was not already configured or it could not be determined
 	 */
@@ -315,13 +316,13 @@ public final class Language implements Serializable
 
 	/**
 	 * Set the actual base language. Do not call this method because this is part of internal API.
-	 * 
+	 *
 	 * @param baseADLanguageSupplier base language supplier
 	 */
 	public static void setBaseLanguage(final Supplier<String> baseADLanguageSupplier)
 	{
 		Check.assumeNotNull(baseADLanguageSupplier, "baseADLanguageSupplier not null");
-		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(()->{
+		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(() -> {
 			final String baseADLanguage = baseADLanguageSupplier.get();
 			final Language language = getLanguage(baseADLanguage);
 			if (language == null)
@@ -341,9 +342,9 @@ public final class Language implements Serializable
 			{
 				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
 			}
-			
+
 			return language;
-			
+
 		});
 	}
 
@@ -359,7 +360,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Get Base Language code. (e.g. de_DE)
-	 * 
+	 *
 	 * @return Base Language
 	 * @throws AdempiereException if the base language was not already configured
 	 */
@@ -369,9 +370,27 @@ public final class Language implements Serializable
 		return getBaseLanguage().getAD_Language(); // metas
 	}   // getBase
 
+	public static String asLanguageString(@Nullable final Language language)
+	{
+		if (language == null)
+		{
+			return null;
+		}
+		return language.getAD_Language();
+	}
+
+	public static Language asLanguage(@Nullable final String languageInfo)
+	{
+		if (Check.isEmpty(languageInfo, true))
+		{
+			return null;
+		}
+		return getLanguage(languageInfo);
+	}
+
 	/**
 	 * Get Supported Language
-	 * 
+	 *
 	 * @param locale Locale
 	 * @return AD_Language (e.g. en_US)
 	 */
@@ -381,7 +400,7 @@ public final class Language implements Serializable
 		return language.getAD_Language();
 	}
 
-	public static Language getLanguage(final Locale locale)
+	public static Language getLanguage(@Nullable final Locale locale)
 	{
 		if (locale != null)
 		{
@@ -454,7 +473,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Get Language Name
-	 * 
+	 *
 	 * @param langInfo either language (en) or locale (en-US) or display name
 	 * @return Language Name (e.g. English)
 	 */
@@ -480,7 +499,7 @@ public final class Language implements Serializable
 
 	/**************************************************************************
 	 * Get Default Login Language
-	 * 
+	 *
 	 * @return default Language
 	 * @deprecated Please use {@link Env#getLanguage(java.util.Properties)} instead
 	 */
@@ -494,7 +513,7 @@ public final class Language implements Serializable
 
 	/**************************************************************************
 	 * Define Language
-	 * 
+	 *
 	 * @param name - displayed value, e.g. English
 	 * @param AD_Language - the code of system supported language, e.g. en_US
 	 *            (might be different than Locale - i.e. if the system does not support the language)
@@ -519,7 +538,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Define Language with A4 and default decimal point and date format
-	 * 
+	 *
 	 * @param name - displayed value, e.g. English
 	 * @param AD_Language - the code of system supported language, e.g. en_US
 	 *            (might be different than Locale - i.e. if the system does not support the language)
@@ -548,7 +567,7 @@ public final class Language implements Serializable
 	/**
 	 * Get Language Name.
 	 * e.g. English
-	 * 
+	 *
 	 * @return name
 	 */
 	public String getName()
@@ -559,7 +578,7 @@ public final class Language implements Serializable
 	/**
 	 * Get Application Dictionary Language (system supported).
 	 * e.g. en-US
-	 * 
+	 *
 	 * @return AD_Language
 	 */
 	public String getAD_Language()
@@ -569,7 +588,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Set Application Dictionary Language (system supported).
-	 * 
+	 *
 	 * @param AD_Language e.g. en-US
 	 */
 	public void setAD_Language(final String AD_Language)
@@ -589,7 +608,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Get Locale
-	 * 
+	 *
 	 * @return locale
 	 */
 	public Locale getLocale()
@@ -600,7 +619,7 @@ public final class Language implements Serializable
 	/**
 	 * Get Language Code.
 	 * e.g. en - derived from Locale
-	 * 
+	 *
 	 * @return language code
 	 */
 	public String getLanguageCode()
@@ -610,7 +629,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Component orientation is Left To Right
-	 * 
+	 *
 	 * @return true if left-to-right
 	 */
 	public boolean isLeftToRight()
@@ -625,7 +644,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Returns true if Decimal Point (not comma)
-	 * 
+	 *
 	 * @return use of decimal point
 	 */
 	public boolean isDecimalPoint()
@@ -640,7 +659,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Is This the Base Language
-	 * 
+	 *
 	 * @return true if base Language
 	 */
 	public boolean isBaseLanguage()
@@ -702,7 +721,7 @@ public final class Language implements Serializable
 	 * Get (Short) Date Format.
 	 * The date format must parseable by org.compiere.grid.ed.MDocDate
 	 * i.e. leading zero for date and month
-	 * 
+	 *
 	 * @return date format MM/dd/yyyy - dd.MM.yyyy
 	 */
 	public SimpleDateFormat getDateFormat()
@@ -729,7 +748,7 @@ public final class Language implements Serializable
 	/**
 	 * Get Date Time Format.
 	 * Used for Display only
-	 * 
+	 *
 	 * @return Date Time format MMM d, yyyy h:mm:ss a z -or- dd.MM.yyyy HH:mm:ss z
 	 *         -or- j nnn aaaa, H' ?????? 'm' ????'
 	 */
@@ -745,7 +764,7 @@ public final class Language implements Serializable
 	/**
 	 * Get Time Format.
 	 * Used for Display only
-	 * 
+	 *
 	 * @return Time format h:mm:ss z or HH:mm:ss z
 	 */
 	public SimpleDateFormat getTimeFormat()
@@ -758,7 +777,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Get default MediaSize
-	 * 
+	 *
 	 * @return media size
 	 */
 	public MediaSize getMediaSize()
@@ -768,7 +787,7 @@ public final class Language implements Serializable
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return string representation
 	 */
 	@Override
@@ -809,7 +828,7 @@ public final class Language implements Serializable
 
 	/**
 	 * Sets default time style to be used when getting DateTime format or Time format.
-	 * 
+	 *
 	 * @param timeStyle one of {@link DateFormat#SHORT}, {@link DateFormat#MEDIUM}, {@link DateFormat#LONG}.
 	 */
 	public static void setDefaultTimeStyle(final int timeStyle)

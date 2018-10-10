@@ -23,6 +23,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.email.EMail;
@@ -30,10 +31,12 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class UserBL implements IUserBL
 {
@@ -173,7 +176,7 @@ public class UserBL implements IUserBL
 
 	/**
 	 * Generates and set user's password reset code.
-	 * 
+	 *
 	 * @return generated password reset code
 	 */
 	private static String generateAndSetPasswordResetCode(final I_AD_User user)
@@ -429,5 +432,18 @@ public class UserBL implements IUserBL
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
 		return checkCanSendEMail(user);
+	}
+
+	@Override
+	public Language getUserLanguage(@NonNull final I_AD_User userRecord)
+	{
+		final int bPartnerId = userRecord.getC_BPartner_ID();
+
+		final String languageStr = Util.coalesceSuppliers(
+				() -> userRecord.getAD_Language(),
+				() -> bPartnerId > 0 ? userRecord.getC_BPartner().getAD_Language() : null,
+				() -> Env.getADLanguageOrBaseLanguage());
+
+		return Language.getLanguage(languageStr);
 	}
 }

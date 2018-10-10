@@ -14,7 +14,7 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -41830456L;
+	private static final long serialVersionUID = -146166051L;
 
     /** Standard Constructor */
     public X_MKTG_ContactPerson (Properties ctx, int MKTG_ContactPerson_ID, String trxName)
@@ -42,6 +42,31 @@ public class X_MKTG_ContactPerson extends org.compiere.model.PO implements I_MKT
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** 
+	 * AD_Language AD_Reference_ID=327
+	 * Reference name: AD_Language System
+	 */
+	public static final int AD_LANGUAGE_AD_Reference_ID=327;
+	/** Set Sprache.
+		@param AD_Language 
+		Sprache für diesen Eintrag
+	  */
+	@Override
+	public void setAD_Language (java.lang.String AD_Language)
+	{
+
+		set_Value (COLUMNNAME_AD_Language, AD_Language);
+	}
+
+	/** Get Sprache.
+		@return Sprache für diesen Eintrag
+	  */
+	@Override
+	public java.lang.String getAD_Language () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException

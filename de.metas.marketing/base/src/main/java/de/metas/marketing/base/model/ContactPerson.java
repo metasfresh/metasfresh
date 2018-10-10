@@ -9,6 +9,7 @@ import org.adempiere.user.UserId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -55,6 +56,7 @@ public class ContactPerson implements DataRecord
 				.bPartnerId(user.getBpartnerId())
 				.bpLocationId(bpLocationId)
 				.address(emailaddress)
+				.language(user.getLanguage())
 				.build();
 	}
 
@@ -93,6 +95,14 @@ public class ContactPerson implements DataRecord
 
 	@Nullable
 	BoilerPlateId boilerPlateId;
+
+	/**
+	 * Note that if we get a contact from an external system like cleverreach, the language might not be known.
+	 * In that case, we guess based on our own language.
+	 */
+
+	@Nullable
+	Language language;
 
 	public String getEmailAddessStringOrNull()
 	{

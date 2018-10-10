@@ -3,10 +3,14 @@
  */
 package de.metas.letter;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.translate;
+
+import javax.annotation.Nullable;
 
 import org.springframework.stereotype.Repository;
 
+import de.metas.i18n.Language;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import lombok.NonNull;
 
@@ -23,11 +27,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,18 +43,32 @@ import lombok.NonNull;
 @Repository
 public class BoilerPlateRepository
 {
-	private BoilerPlate toBoilerPlate(@NonNull final I_AD_BoilerPlate boilerPlateRecord)
+	public BoilerPlate getByBoilerPlateId(
+			@NonNull final BoilerPlateId boilerPlateId,
+			@Nullable final Language language)
 	{
-		return BoilerPlate.builder()
-				.id(BoilerPlateId.ofRepoId(boilerPlateRecord.getAD_BoilerPlate_ID()))
-				.subject(boilerPlateRecord.getSubject())
-				.textSnippext(boilerPlateRecord.getTextSnippext())
-				.build();
+		final I_AD_BoilerPlate boilerPlateRecord = loadOutOfTrx(boilerPlateId, I_AD_BoilerPlate.class);
+		return toBoilerPlate(boilerPlateRecord, language);
 	}
 
-
-	public BoilerPlate getByBoilerPlateId(@NonNull final BoilerPlateId boilerPlateId)
+	private BoilerPlate toBoilerPlate(
+			@NonNull final I_AD_BoilerPlate boilerPlateRecord,
+			@Nullable final Language language)
 	{
-		return toBoilerPlate(load(boilerPlateId.getRepoId(), I_AD_BoilerPlate.class));
+		final I_AD_BoilerPlate recordToUse;
+		if (language != null)
+		{
+			recordToUse = translate(boilerPlateRecord, I_AD_BoilerPlate.class, language.getAD_Language());
+		}
+		else
+		{
+			recordToUse = boilerPlateRecord;
+		}
+
+		return BoilerPlate.builder()
+				.id(BoilerPlateId.ofRepoId(recordToUse.getAD_BoilerPlate_ID()))
+				.subject(recordToUse.getSubject())
+				.textSnippext(recordToUse.getTextSnippext())
+				.build();
 	}
 }
