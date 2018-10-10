@@ -25,3 +25,36 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,2169,540894,540452,0,TO_TIMESTAMP('2018-10-02 15:58:13','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',30,TO_TIMESTAMP('2018-10-02 15:58:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+
+-- 2018-10-10T11:15:36.159
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Table SET WhereClause='DocStatus IN (''CO'', ''CL'') AND COALESCE(C_DocType_ID, 0)>0',Updated=TO_TIMESTAMP('2018-10-10 11:15:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540452
+;
+
+-- 2018-10-10T11:15:46.113
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Column SET AD_Column_ID=2163,Updated=TO_TIMESTAMP('2018-10-10 11:15:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=540893
+;
+
+-- 2018-10-10T11:15:50.448
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Index_Column WHERE AD_Index_Column_ID=540892
+;
+
+
+
+
+
+
+
+
+-- 2018-10-10T11:40:20.828
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,2172,540895,540452,0,TO_TIMESTAMP('2018-10-10 11:40:20','YYYY-MM-DD HH24:MI:SS'),100,'U','Y',40,TO_TIMESTAMP('2018-10-10 11:40:20','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-10-10T11:40:41.207
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Column SET EntityType='D',Updated=TO_TIMESTAMP('2018-10-10 11:40:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=540895
+;
