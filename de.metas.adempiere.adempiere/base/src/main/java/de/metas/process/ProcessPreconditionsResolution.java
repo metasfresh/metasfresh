@@ -12,6 +12,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -68,7 +69,8 @@ public final class ProcessPreconditionsResolution
 	{
 		final boolean accepted = false;
 		final boolean internal = false;
-		return new ProcessPreconditionsResolution(accepted, reason, internal);
+		final ITranslatableString captionOverride = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
 	}
 
 	/**
@@ -109,7 +111,8 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final ITranslatableString reason = ImmutableTranslatableString.constant(reasonStr);
 		final boolean internal = true;
-		return new ProcessPreconditionsResolution(accepted, reason, internal);
+		final ITranslatableString captionOverride = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
 	}
 
 	public static final ProcessPreconditionsResolution rejectBecauseNoSelection()
@@ -117,7 +120,8 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
 		final boolean internal = false;
-		return new ProcessPreconditionsResolution(accepted, reason, internal);
+		final ITranslatableString captionOverride = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
 	}
 
 	public static final ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
@@ -125,7 +129,8 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
 		final boolean internal = false;
-		return new ProcessPreconditionsResolution(accepted, reason, internal);
+		final ITranslatableString captionOverride = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
 	}
 
 	/**
@@ -139,33 +144,25 @@ public final class ProcessPreconditionsResolution
 		return accept ? ACCEPTED : REJECTED_UnknownReason;
 	}
 
-	public static final ProcessPreconditionsResolution.Builder builder()
-	{
-		return new Builder();
-	}
-
-	private static final ProcessPreconditionsResolution ACCEPTED = new ProcessPreconditionsResolution(true, null, false);
-	private static final ProcessPreconditionsResolution REJECTED_UnknownReason = new ProcessPreconditionsResolution(false, null, true);
+	private static final ProcessPreconditionsResolution ACCEPTED = new ProcessPreconditionsResolution(true, null, false, null);
+	private static final ProcessPreconditionsResolution REJECTED_UnknownReason = new ProcessPreconditionsResolution(false, null, true, null);
 
 	private final boolean accepted;
 	private final ITranslatableString reason;
 	private final boolean internal;
 	private final ITranslatableString captionOverride;
 
-	private ProcessPreconditionsResolution(final boolean accepted, final ITranslatableString reason, final boolean internal)
+	@Builder(toBuilder = true)
+	private ProcessPreconditionsResolution(
+			@NonNull final Boolean accepted,
+			final ITranslatableString reason,
+			@NonNull final Boolean internal,
+			final ITranslatableString captionOverride)
 	{
 		this.accepted = accepted;
 		this.reason = reason;
 		this.internal = internal;
-		captionOverride = null;
-	}
-
-	private ProcessPreconditionsResolution(final ProcessPreconditionsResolution.Builder builder)
-	{
-		accepted = builder.isAccepted();
-		reason = builder.getReason();
-		internal = false;
-		captionOverride = builder.getCaptionOverride();
+		this.captionOverride = captionOverride;
 	}
 
 	@Override
@@ -204,94 +201,19 @@ public final class ProcessPreconditionsResolution
 		return internal;
 	}
 
+	public ProcessPreconditionsResolution toInternal()
+	{
+		if (internal)
+		{
+			return this;
+		}
+
+		return toBuilder().internal(true).build();
+	}
+
 	public String getCaptionOverrideOrNull(final String adLanguage)
 	{
 		return captionOverride == null ? null : captionOverride.translate(adLanguage);
-	}
-
-	private Builder toBuilder()
-	{
-		return new Builder(this);
-	}
-
-	public static final class Builder
-	{
-		private Boolean accepted;
-		private ITranslatableString reason;
-		private ITranslatableString captionOverride;
-
-		private Builder()
-		{
-		}
-
-		private Builder(@NonNull final ProcessPreconditionsResolution template)
-		{
-			accepted = template.accepted;
-			reason = template.reason;
-			captionOverride = template.captionOverride;
-		}
-
-		public ProcessPreconditionsResolution build()
-		{
-			return new ProcessPreconditionsResolution(this);
-		}
-
-		public ProcessPreconditionsResolution accept()
-		{
-			accepted = Boolean.TRUE;
-			reason = null;
-			return build();
-		}
-
-		public ProcessPreconditionsResolution reject(final String reason)
-		{
-			accepted = Boolean.FALSE;
-			this.reason = ImmutableTranslatableString.constant(reason);
-			return build();
-		}
-
-		private boolean isAccepted()
-		{
-			Check.assumeNotNull(accepted, "accepted/rejected shall be set");
-			return accepted.booleanValue();
-		}
-
-		private ITranslatableString getReason()
-		{
-			return reason;
-		}
-
-		/**
-		 * Set a translatable string to be shown as "process name", instead of the actual {@code AD_Process.Name}.
-		 * 
-		 * @param captionOverride optional, may be {@code null} to have no override.
-		 * @return
-		 */
-		public ProcessPreconditionsResolution.Builder setCaptionOverride(final ITranslatableString captionOverride)
-		{
-			this.captionOverride = captionOverride;
-			return this;
-		}
-
-		/**
-		 * Set a constant string to be shown as "process name", instead of the actual {@code AD_Process.Name}.
-		 * <p>
-		 * Note: this method makes sense, because there are cases where we choose not to translate a string.<br>
-		 * Known example: packing instruction names, such as "IFCO 6410 x 10"
-		 * 
-		 * @param captionOverride optional, may be {@code null} to have no override.
-		 * @return
-		 */
-		public ProcessPreconditionsResolution.Builder setCaptionOverride(final String captionOverride)
-		{
-			this.captionOverride = captionOverride == null ? null : ImmutableTranslatableString.constant(captionOverride);
-			return this;
-		}
-
-		private ITranslatableString getCaptionOverride()
-		{
-			return captionOverride;
-		}
 	}
 
 	/**
@@ -308,9 +230,7 @@ public final class ProcessPreconditionsResolution
 			return this;
 		}
 
-		return toBuilder()
-				.setCaptionOverride(captionOverrideNew)
-				.build();
+		return toBuilder().captionOverride(captionOverrideNew).build();
 	}
 
 	public ProcessPreconditionsResolution and(Supplier<ProcessPreconditionsResolution> resolutionSupplier)
