@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { BrowserQRCodeReader, BrowserBarcodeReader } from '@zxing/library';
+import { BrowserBarcodeReader } from '@zxing/library';
 import classnames from 'classnames';
+
+import BrowserQRCodeReader from '../../../services/CustomBrowserQRCodeReader';
 
 export default class BarcodeScanner extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      mode: 'Barcode',
+      mode: 'Qr',
     };
 
-    this.QrReader = new BrowserQRCodeReader();
-    this.BarcodeReader = new BrowserBarcodeReader();
+    this.reader = new BrowserQRCodeReader();
   }
 
   componentDidMount() {
@@ -24,13 +25,13 @@ export default class BarcodeScanner extends Component {
   }
 
   _process = () => {
-    const reader = this[`${this.state.mode}Reader`];
-
-    reader
+    this.reader
       .decodeFromInputVideoDevice(undefined, 'video')
       .then(result => this._onDetected(result))
       // eslint-disable-next-line no-console
-      .catch(err => console.error(err));
+      .catch(() => {
+        this._changeReader();
+      });
   };
 
   _onDetected = result => {
@@ -39,25 +40,22 @@ export default class BarcodeScanner extends Component {
   };
 
   _handleStop = close => {
-    this.QrReader.stop();
-    this.BarcodeReader.stop();
+    this.reader.stop();
 
     close && this.props.onClose();
   };
 
   _changeReader = () => {
-    this.QrReader.reset();
-    this.BarcodeReader.reset();
+    this.reader.stop();
+    this.reader = new BrowserBarcodeReader();
 
     this.props.onClose(true);
 
-    const newMode = this.state.mode === 'Qr' ? 'Barcode' : 'Qr';
-
     this.setState(
       {
-        mode: newMode,
+        mode: 'Barcode',
       },
-      () => this._process
+      () => this._process()
     );
   };
 
@@ -72,7 +70,6 @@ export default class BarcodeScanner extends Component {
             className={classnames('btn-control btn-mode', {
               [`btn-${mode}`]: mode,
             })}
-            onClick={this._changeReader}
             title={`Scan ${mode}`}
           />
         </div>
