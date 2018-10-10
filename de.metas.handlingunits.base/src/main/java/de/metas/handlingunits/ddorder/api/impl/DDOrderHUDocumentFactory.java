@@ -40,6 +40,7 @@ import de.metas.handlingunits.document.IHUDocumentFactory;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentFactory;
 import de.metas.handlingunits.document.impl.HandlingUnitHUDocumentFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.util.Services;
 
@@ -76,7 +77,7 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 	{
 		final IHUDocumentFactory huFactory = getHandlingUnitsHUDocumentFactory();
 
-		final Set<Integer> seenHuIds = new HashSet<Integer>();
+		final Set<Integer> seenHuIds = new HashSet<>();
 		for (final I_DD_OrderLine line : Services.get(IDDOrderDAO.class).retrieveLines(ddOrder))
 		{
 			//
@@ -102,7 +103,7 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 			final BigDecimal qtyToDeliver = line.getQtyOrdered().subtract(line.getQtyDelivered());
 			final Capacity targetCapacity = Capacity.createCapacity(
 					qtyToDeliver, // qty
-					line.getM_Product(),
+					ProductId.ofRepoId(line.getM_Product_ID()),
 					line.getC_UOM(),
 					false// allowNegativeCapacity
 					);

@@ -46,6 +46,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MAttributeSetInstance;
@@ -53,7 +54,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MTransaction;
-import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -353,10 +353,9 @@ public class StorageEngine
 				M_Product_ID, M_AttributeSetInstance_ID,
 				Qty, trxName);
 		// Get default Location
-		if (M_Locator_ID == 0)
+		if (M_Locator_ID <= 0)
 		{
-			MWarehouse wh = MWarehouse.get(ctx, M_Warehouse_ID);
-			M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID();
+			M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(M_Warehouse_ID)).getRepoId();
 		}
 		return M_Locator_ID;
 	}	// setM_Locator_ID

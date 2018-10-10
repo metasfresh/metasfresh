@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.api.impl;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -70,12 +72,14 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
@@ -83,6 +87,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageAttributeSegment;
 import de.metas.storage.IStorageSegment;
 import de.metas.util.Check;
@@ -262,6 +267,31 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					+ " WHERE " //
 					+ "   s.C_OrderLine_ID=ol.C_OrderLine_ID " //
 					+ "   AND ol.M_Product_ID=? ";
+
+	@Override
+	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
+	{
+		return getById(id, I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule> T getById(@NonNull final ShipmentScheduleId id, @NonNull final Class<T> modelClass)
+	{
+		return load(id, modelClass);
+	}
+
+	@Override
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		return getByIdsOutOfTrx(ids, I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids, final Class<T> modelClass)
+	{
+		final List<T> shipmentSchedules = loadByRepoIdAwaresOutOfTrx(ids, modelClass);
+		return Maps.uniqueIndex(shipmentSchedules, ss -> ShipmentScheduleId.ofRepoId(ss.getM_ShipmentSchedule_ID()));
+	}
 
 	@Override
 	public Collection<I_M_ShipmentSchedule> retrieveForOrder(final I_C_Order order, final String trxName)
@@ -1318,5 +1348,23 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.create()
 				.delete();
 		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsByShipmentScheduleIds(@NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class)
+				.stream()
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

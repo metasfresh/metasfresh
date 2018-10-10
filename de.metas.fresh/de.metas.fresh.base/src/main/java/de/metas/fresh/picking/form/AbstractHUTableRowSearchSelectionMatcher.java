@@ -39,7 +39,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.picking.legacy.form.AbstractTableRowSearchSelectionMatcher;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -149,13 +149,13 @@ import lombok.NonNull;
 
 		//
 		// Fetch products from HU Storage
-		final TreeSet<Integer> productIds = new TreeSet<>();
+		final TreeSet<ProductId> productIds = new TreeSet<>();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx);
 		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 		for (IHUProductStorage productStorage : productStorages)
 		{
-			final int productId = productStorage.getM_Product().getM_Product_ID();
+			final ProductId productId = productStorage.getProductId();
 			productIds.add(productId);
 		}
 		setProductIds(productIds);

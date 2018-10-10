@@ -31,7 +31,6 @@ import java.util.Collection;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -42,6 +41,9 @@ import de.metas.adempiere.form.terminal.ITerminalKeyStatus;
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.fresh.picking.form.PackingStates;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,9 +51,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.terminal.Utils;
-import de.metas.picking.terminal.Utils.PackingStates;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.service.IPackingItem;
+import de.metas.picking.service.PackingSlot;
+import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -133,6 +136,16 @@ public class PickingSlotKey extends TerminalKey
 	public I_M_PickingSlot getM_PickingSlot()
 	{
 		return pickingSlot;
+	}
+
+	public PickingSlotId getPickingSlotId()
+	{
+		return PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
+	}
+
+	public PackingSlot getPackingSlot()
+	{
+		return PackingSlot.ofPickingSlotId(getPickingSlotId());
 	}
 
 	@Override
@@ -346,7 +359,7 @@ public class PickingSlotKey extends TerminalKey
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
 	 */
-	public CapacityInterface getHUTotalCapacity(final I_M_Product product, final I_C_UOM uom)
+	public CapacityInterface getHUTotalCapacity(final ProductId productId, final I_C_UOM uom)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
 		if (piItemProduct == null)
@@ -359,15 +372,15 @@ public class PickingSlotKey extends TerminalKey
 		// * now user wants to load another product on that HU, so M_HU.M_HU_PI_Item_Product_ID.M_Product_ID will not match given "product"
 		//
 		// HOTFIX: just skip calculating the capacity and return null. In this case, it is assumed that the caller will skip enforcing the capacity.
-		if (product != null
+		if (productId != null
 				&& !piItemProduct.isAllowAnyProduct()
-				&& piItemProduct.getM_Product_ID() != product.getM_Product_ID())
+				&& piItemProduct.getM_Product_ID() != productId.getRepoId())
 		{
-			logger.info("Product {} is not matching {}. Returning null capacity.", product, piItemProduct);
+			logger.info("Product {} is not matching {}. Returning null capacity.", productId, piItemProduct);
 			return null;
 		}
 
-		return huCapacityBL.getCapacity(piItemProduct, product, uom);
+		return huCapacityBL.getCapacity(piItemProduct, productId, uom);
 	}
 
 	private String buildPickingSlotName()
@@ -387,7 +400,7 @@ public class PickingSlotKey extends TerminalKey
 
 		if (pickingSlot.getM_Warehouse_ID() > 0)
 		{
-			final String warehouseName = Utils.mkTruncatedstring(pickingSlot.getM_Warehouse().getName(), maxLength);
+			final String warehouseName = truncatedString(pickingSlot.getM_Warehouse().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
 					.append(Util.maskHTML(warehouseName))
@@ -396,7 +409,7 @@ public class PickingSlotKey extends TerminalKey
 
 		if (null != pickingSlot.getC_BPartner())
 		{
-			final String bpName = Utils.mkTruncatedstring(pickingSlot.getC_BPartner().getName(), maxLength);
+			final String bpName = truncatedString(pickingSlot.getC_BPartner().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
 					.append(Util.maskHTML(bpName))
@@ -405,7 +418,7 @@ public class PickingSlotKey extends TerminalKey
 
 		if (null != pickingSlot.getC_BPartner_Location())
 		{
-			final String bplName = Utils.mkTruncatedstring(pickingSlot.getC_BPartner_Location().getName(), maxLength);
+			final String bplName = truncatedString(pickingSlot.getC_BPartner_Location().getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
 					.append(bplName)
@@ -413,6 +426,34 @@ public class PickingSlotKey extends TerminalKey
 		}
 
 		return pickingSlotName.toString();
+	}
+
+	private static String truncatedString(final String text, final int length)
+	{
+		final String[] bits = text.split("\\\\n");
+		final StringBuilder newtxt = new StringBuilder();
+		for (final String s : bits)
+		{
+			if (newtxt.length() > 0)
+			{
+				newtxt.append("<br>");
+			}
+
+			if (s.length() > length)
+			{
+				newtxt.append(s.substring(0, length - 3).concat("..."));
+			}
+			else
+			{
+				newtxt.append(s);
+			}
+		}
+
+		if (newtxt.length() == 0)
+		{
+			return text;
+		}
+		return newtxt.toString();
 	}
 
 	/**
@@ -562,7 +603,7 @@ public class PickingSlotKey extends TerminalKey
 		return false;
 	}
 
-	public boolean isCompatible(final FreshProductKey productKey)
+	public boolean isCompatible(final ProductKey productKey)
 	{
 		Check.assumeNotNull(productKey, "productKey not null");
 
@@ -570,8 +611,8 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if bpartner/location is accepted
-		final int bpartnerId = productKey.getC_BPartner_ID();
-		final int bpartnerLocationId = productKey.getC_BPartner_Location_ID();
+		final BPartnerId bpartnerId = productKey.getBPartnerId();
+		final BPartnerLocationId bpartnerLocationId = productKey.getBPartnerLocationId();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
 			return false;
@@ -597,7 +638,7 @@ public class PickingSlotKey extends TerminalKey
 		return true;
 	}
 
-	public boolean isCompatible(IFreshPackingItem packingItem)
+	public boolean isCompatible(IPackingItem packingItem)
 	{
 		if (packingItem == null)
 		{
@@ -608,8 +649,8 @@ public class PickingSlotKey extends TerminalKey
 
 		//
 		// Check if picking slot accepts packingItem's BPartner and Location
-		final int bpartnerId = packingItem.getC_BPartner_ID();
-		final int bpartnerLocationId = packingItem.getC_BPartner_Location_ID();
+		final BPartnerId bpartnerId = packingItem.getBPartnerId();
+		final BPartnerLocationId bpartnerLocationId = packingItem.getBPartnerLocationId();
 		if (!huPickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId))
 		{
 			return false;
@@ -640,7 +681,7 @@ public class PickingSlotKey extends TerminalKey
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	public void allocateDynamicPickingSlotIfPossible(final int bpartnerId, final int bpartnerLocationId)
+	public void allocateDynamicPickingSlotIfPossible(final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_M_PickingSlot pickingSlot = getM_PickingSlot();
 		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);

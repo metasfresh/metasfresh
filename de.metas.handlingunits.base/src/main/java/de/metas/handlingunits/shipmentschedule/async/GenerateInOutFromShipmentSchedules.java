@@ -74,10 +74,10 @@ import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPicke
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -98,7 +98,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	//
 	// Services
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	//
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
@@ -288,11 +287,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private ShipmentScheduleWithHU createCandidateForDeliver(@NonNull final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
 	{
 		// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
-		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
-		final ShipmentScheduleWithHU candidate = //
-				ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver, quantityTypeToUse);
-
-		return candidate;
+		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
+		return ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver, quantityTypeToUse);
 	}
 
 	private Collection<? extends ShipmentScheduleWithHU> createCandidatesForPick(@NonNull final I_M_ShipmentSchedule schedule,
@@ -536,12 +532,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		//
 		// Create Allocation Request: whole Qty to Deliver
-		final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
+		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				schedule.getM_Product(),
 				qtyToDeliver,
-				shipmentScheduleBL.getUomOfProduct(schedule),      // uom
 				SystemTime.asDate(),
 				schedule,      // reference model
 				false // forceQtyAllocation

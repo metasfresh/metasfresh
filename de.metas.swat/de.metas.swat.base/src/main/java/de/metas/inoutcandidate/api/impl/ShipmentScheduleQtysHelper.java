@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.compiere.model.X_C_Order.DELIVERYRULE_Force;
-
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -17,6 +15,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -122,9 +121,8 @@ import lombok.experimental.UtilityClass;
 	@VisibleForTesting
 	/* package */static void setQtyToDeliverForDiscardedShipmentSchedule(final I_M_ShipmentSchedule discardedShipmentSchedule)
 	{
-		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(discardedShipmentSchedule);
-		final boolean ruleForce = DELIVERYRULE_Force.equals(deliveryRule);
-
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+		final boolean ruleForce = DeliveryRule.FORCE.equals(shipmentScheduleEffectiveBL.getDeliveryRule(discardedShipmentSchedule));
 		if (!ruleForce)
 		{
 			discardedShipmentSchedule.setQtyToDeliver(BigDecimal.ZERO);
@@ -139,7 +137,7 @@ import lombok.experimental.UtilityClass;
 		else
 		{
 			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
-			final BigDecimal qtyOrdered = Services.get(IShipmentScheduleEffectiveBL.class).computeQtyOrdered(discardedShipmentSchedule);
+			final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(discardedShipmentSchedule);
 
 			// task 07884-IT1: even if the rule is force: if there is an unconfirmed qty, then *don't* deliver it again
 			discardedShipmentSchedule.setQtyToDeliver(mkQtyToDeliver(qtyOrdered, discardedShipmentSchedule.getQtyPickList()));

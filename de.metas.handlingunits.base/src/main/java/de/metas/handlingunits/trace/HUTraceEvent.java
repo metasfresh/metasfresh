@@ -2,9 +2,16 @@ package de.metas.handlingunits.trace;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.OptionalInt;
 
+import org.adempiere.service.OrgId;
+
+import de.metas.document.DocTypeId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -43,7 +50,7 @@ public class HUTraceEvent
 	OptionalInt huTraceEventId = OptionalInt.empty();
 
 	@NonNull
-	Integer orgId;
+	OrgId orgId;
 
 	@NonNull
 	HUTraceType type;
@@ -52,9 +59,9 @@ public class HUTraceEvent
 	Instant eventTime;
 
 	@NonNull
-	Integer vhuId;
+	HuId vhuId;
 
-	int productId;
+	ProductId productId;
 
 	@NonNull
 	BigDecimal qty;
@@ -66,13 +73,13 @@ public class HUTraceEvent
 	 * The topmost HU as seen from the vhu.
 	 */
 	@NonNull
-	Integer topLevelHuId;
+	HuId topLevelHuId;
 
-	int vhuSourceId;
+	HuId vhuSourceId;
 
 	int inOutId;
 
-	int shipmentScheduleId;
+	ShipmentScheduleId shipmentScheduleId;
 
 	int movementId;
 
@@ -82,12 +89,9 @@ public class HUTraceEvent
 
 	String docStatus;
 
-	/**
-	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
-	 */
 	@NonNull
 	@Default
-	OptionalInt docTypeId = OptionalInt.empty();
+	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
 

@@ -15,6 +15,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -120,8 +122,8 @@ public class DDOrderProducer
 
 		ddOrderRecord.setC_DocType_ID(getC_DocType_ID(pojo.getOrgId()));
 
-		final int inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(Env.getCtx(), pojo.getOrgId());
-		ddOrderRecord.setM_Warehouse_ID(inTransitWarehouseId);
+		final WarehouseId inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(OrgId.ofRepoId(pojo.getOrgId()));
+		ddOrderRecord.setM_Warehouse_ID(inTransitWarehouseId.getRepoId());
 
 		ddOrderRecord.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderRecord.setDocAction(X_DD_Order.DOCACTION_Complete);

@@ -37,6 +37,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  * Transaction Manager
@@ -187,14 +188,24 @@ public interface ITrxManager extends ISingletonService
 
 	<T> T call(Callable<T> callable);
 
-	void run(Runnable runnable);
+	default void run(final Runnable runnable)
+	{
+		runInNewTrx(runnable);
+	}
+
+	void runInNewTrx(Runnable runnable);
 
 	/**
 	 * Same as calling {@link #run(String, TrxRunnable)} with trxName=null
 	 *
 	 * @see #run(String, TrxRunnable)
 	 */
-	void run(TrxRunnable r);
+	void runInNewTrx(TrxRunnable runnable);
+
+	default void run(final TrxRunnable runnable)
+	{
+		runInNewTrx(runnable);
+	};
 
 	/**
 	 * Same as calling {@link #call(String, TrxRunnable)} with trxName=null
@@ -233,6 +244,11 @@ public interface ITrxManager extends ISingletonService
 	 * @see #call(String, boolean, TrxRunnable)
 	 */
 	<T> T call(String trxName, TrxCallable<T> callable);
+
+	default <T> T callInThreadInheritedTrx(@NonNull final TrxCallable<T> callable)
+	{
+		return call(ITrx.TRXNAME_ThreadInherited, callable);
+	}
 
 	/**
 	 * @see #call(String, boolean, TrxCallable)

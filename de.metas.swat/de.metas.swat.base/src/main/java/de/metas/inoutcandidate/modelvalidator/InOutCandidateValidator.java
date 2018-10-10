@@ -162,7 +162,7 @@ public final class InOutCandidateValidator implements ModelValidator
 	{
 		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
 		{
-			final boolean isDiversechanged = productPO.is_ValueChanged(I_M_Product.COLUMNNAME_IS_DIVERSE);
+			final boolean isDiversechanged = productPO.is_ValueChanged(I_M_Product.COLUMNNAME_IsDiverse);
 			final boolean isProductTypeChanged = productPO.is_ValueChanged(org.compiere.model.I_M_Product.COLUMNNAME_ProductType);
 
 			if (isDiversechanged || isProductTypeChanged)

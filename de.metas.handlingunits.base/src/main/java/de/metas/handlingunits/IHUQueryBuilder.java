@@ -86,6 +86,8 @@ public interface IHUQueryBuilder
 	/** Retrieves all HUs which are matching our criterias */
 	List<I_M_HU> list();
 
+	Set<HuId> listIds();
+
 	/** Retrieves all HUs which are matching our criterias, but no more then <code>limit</code> number. */
 	List<I_M_HU> list(final int limit);
 

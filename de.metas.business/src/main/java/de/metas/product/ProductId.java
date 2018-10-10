@@ -1,11 +1,15 @@
 package de.metas.product;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
 import lombok.Value;
@@ -68,8 +72,18 @@ public class ProductId implements RepoIdAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static boolean equals(final ProductId o1, final ProductId o2)
+	{
+		return Objects.equals(o1, o2);
+	}
+
 	private ProductId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "productId");
+	}
+
+	public TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(I_M_Product.Table_Name, getRepoId());
 	}
 }

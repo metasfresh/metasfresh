@@ -51,6 +51,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -116,8 +117,8 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		trxLine.setAD_Org_ID(trxHdr.getAD_Org_ID());
 		trxLine.setM_HU_Trx_Hdr(trxHdr);
 		trxLine.setDateTrx(TimeUtil.asTimestamp(trxLineCandidate.getDate()));
-		trxLine.setM_Product(trxLineCandidate.getProduct());
-		trxLine.setQty(trxLineCandidate.getQuantity().getQty());
+		trxLine.setM_Product_ID(trxLineCandidate.getProductId().getRepoId());
+		trxLine.setQty(trxLineCandidate.getQuantity().getAsBigDecimal());
 		trxLine.setC_UOM(trxLineCandidate.getQuantity().getUOM());
 		trxLine.setM_HU(hu);
 		trxLine.setM_HU_Item(huItem);
@@ -214,7 +215,8 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		{
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUItemStorage itemStorage = storageFactory.getStorage(vhuItem);
-			itemStorage.addQty(trxLine.getM_Product(), trxLine.getQty(), trxLine.getC_UOM());
+			final ProductId productId = ProductId.ofRepoId(trxLine.getM_Product_ID());
+			itemStorage.addQty(productId, trxLine.getQty(), trxLine.getC_UOM());
 		}
 
 		trxLine.setProcessed(true);

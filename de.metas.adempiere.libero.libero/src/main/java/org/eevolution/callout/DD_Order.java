@@ -3,12 +3,12 @@ package org.eevolution.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.CalloutInOut;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_Order;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -104,11 +104,11 @@ public class DD_Order
 	public void onC_Order_ID(final I_DD_Order ddOrder)
 	{
 		final I_C_Order order = ddOrder.getC_Order();
-		if(order == null || order.getC_Order_ID() <= 0)
+		if (order == null || order.getC_Order_ID() <= 0)
 		{
 			return;
 		}
-		
+
 		// Get Details
 		ddOrder.setDateOrdered(order.getDateOrdered());
 		ddOrder.setPOReference(order.getPOReference());
@@ -119,12 +119,12 @@ public class DD_Order
 		ddOrder.setC_Project_ID(order.getC_Project_ID());
 		ddOrder.setUser1_ID(order.getUser1_ID());
 		ddOrder.setUser2_ID(order.getUser2_ID());
-		
+
 		// Warehouse (05251 begin: we need to use the advisor)
-		final I_M_Warehouse wh =  Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
-		ddOrder.setM_Warehouse_ID(wh.getM_Warehouse_ID());
-		
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
+		Check.assumeNotNull(warehouseId, "IWarehouseAdvisor finds a ware house for {}", order);
+		ddOrder.setM_Warehouse_ID(warehouseId.getRepoId());
+
 		//
 		ddOrder.setDeliveryRule(order.getDeliveryRule());
 		ddOrder.setDeliveryViaRule(order.getDeliveryViaRule());

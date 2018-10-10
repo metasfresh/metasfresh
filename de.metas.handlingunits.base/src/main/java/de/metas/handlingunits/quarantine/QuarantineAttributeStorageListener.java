@@ -4,7 +4,7 @@ import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -64,13 +64,13 @@ public class QuarantineAttributeStorageListener implements IAttributeStorageList
 			return;
 		}
 
-		if (!storage.hasAttribute(Constants.ATTR_Quarantine))
+		if (!storage.hasAttribute(HUAttributeConstants.ATTR_Quarantine))
 		{
 			return;
 		}
 
 		final String attributeIdentifier = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = LotNumberDateAttributeDAO.LotNumberAttribute.equals(attributeIdentifier);
+		final boolean relevantAttributeHasChanged = LotNumberDateAttributeDAO.ATTR_LotNumber.equals(attributeIdentifier);
 
 		if (!relevantAttributeHasChanged)
 		{
@@ -79,11 +79,11 @@ public class QuarantineAttributeStorageListener implements IAttributeStorageList
 
 		if (lotNumberQuarantineService.isQuarantineLotNumber(huAttributeStorage))
 		{
-			storage.setValue(Constants.ATTR_Quarantine, Constants.ATTR_Quarantine_Value_Quarantine);
+			storage.setValue(HUAttributeConstants.ATTR_Quarantine, HUAttributeConstants.ATTR_Quarantine_Value_Quarantine);
 		}
 		else
 		{
-			storage.setValue(Constants.ATTR_Quarantine, null);
+			storage.setValue(HUAttributeConstants.ATTR_Quarantine, null);
 		}
 	}
 

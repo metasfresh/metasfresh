@@ -1,7 +1,6 @@
 package de.metas.handlingunits.reservation;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import java.util.function.Supplier;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
@@ -100,7 +98,6 @@ public class HUReservationService
 				.husToNewCUs(husToNewCUsRequest);
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final I_M_Product productRecord = loadOutOfTrx(reservationRequest.getProductId(), I_M_Product.class);
 		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 
 		final HUReservationBuilder huReservationBuilder = HUReservation
@@ -112,7 +109,7 @@ public class HUReservationService
 		{
 			final Quantity qty = storageFactory
 					.getStorage(newCU)
-					.getQuantity(productRecord, uomRecord);
+					.getQuantity(reservationRequest.getProductId(), uomRecord);
 
 			reservedQtySum = reservedQtySum.add(qty);
 			huReservationBuilder.vhuId2reservedQty(HuId.ofRepoId(newCU.getM_HU_ID()), qty);

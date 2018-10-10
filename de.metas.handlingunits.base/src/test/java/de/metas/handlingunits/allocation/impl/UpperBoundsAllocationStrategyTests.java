@@ -94,8 +94,8 @@ public class UpperBoundsAllocationStrategyTests
 		assertThat(result.getTransactions().size(), is(1));
 
 		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
-		assertThat(huTransaction.getProduct(), is(helper.pTomato));
-		assertThat(huTransaction.getQuantity().getQty(), is(requestQty));
+		assertThat(huTransaction.getProductId(), is(helper.pTomatoProductId));
+		assertThat(huTransaction.getQuantity().getAsBigDecimal(), is(requestQty));
 		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
 		assertThat(huTransaction.getM_HU(), is(vhu));
 	}
@@ -111,7 +111,7 @@ public class UpperBoundsAllocationStrategyTests
 
 		final IAllocationRequest request = mkRequest(requestQty);
 
-		final Capacity capacity = Capacity.createCapacity(sixThousand, helper.pTomato, helper.uomKg, false);
+		final Capacity capacity = Capacity.createCapacity(sixThousand, helper.pTomatoProductId, helper.uomKg, false);
 
 		final UpperBoundAllocationStrategy testee = new UpperBoundAllocationStrategy(capacity);
 		final IAllocationResult result = testee.execute(vhu, request);
@@ -122,8 +122,8 @@ public class UpperBoundsAllocationStrategyTests
 		assertThat(result.getTransactions().size(), is(1));
 
 		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
-		assertThat(huTransaction.getProduct(), is(helper.pTomato));
-		assertThat(huTransaction.getQuantity().getQty(), is(sixThousand));
+		assertThat(huTransaction.getProductId(), is(helper.pTomatoProductId));
+		assertThat(huTransaction.getQuantity().getAsBigDecimal(), is(sixThousand));
 		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
 		assertThat(huTransaction.getM_HU(), is(vhu));
 	}

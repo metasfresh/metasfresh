@@ -31,7 +31,6 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -45,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage_Snapshot;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -138,7 +138,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product product = model.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(model.getM_Product_ID());
 		final I_C_UOM uom = model.getC_UOM();
 		final Quantity quantity = new Quantity(qtyDiff, uom);
 		final Date date = getDateTrx();
@@ -149,7 +149,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				null, // huItem
 				null, // vhuItem
-				product,
+				productId,
 				quantity.negate(),
 				date,
 				locator,
@@ -161,7 +161,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
-				product,
+				productId,
 				quantity,
 				date,
 				locator,

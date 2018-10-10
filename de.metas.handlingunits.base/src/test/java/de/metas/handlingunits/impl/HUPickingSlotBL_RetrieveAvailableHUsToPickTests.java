@@ -1,7 +1,7 @@
 package de.metas.handlingunits.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
@@ -11,25 +11,34 @@ import java.util.Set;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -61,7 +70,9 @@ import mockit.Mocked;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(Theories.class)
+// @RunWith(Theories.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PickingCandidateRepository.class })
 public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 {
 	@Injectable
@@ -70,11 +81,19 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	@Mocked
 	private HUStorageRecord storageRecord;
 
+	@Autowired
+	private PickingCandidateRepository pickingCandidatesRepo;
+
+	private I_C_UOM uom;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		Services.get(IStorageEngineService.class).registerStorageEngine(storageEngine);
+
+		uom = newInstance(I_C_UOM.class);
+		saveRecord(uom);
 	}
 
 	@Test
@@ -87,29 +106,33 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	/**
 	 * There is a HU but no picking candidate, so the HU shall be returned.
 	 */
-	@Theory
-	public void testNoPickingCandidate(final boolean onlyTopLevelHUs)
+	@Test
+	public void testNoPickingCandidate()
 	{
-		final I_M_HU vhu = newInstance(I_M_HU.class);
-		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		vhu.setM_Locator_ID(LOCATOR_ID);
-		save(vhu);
+		testNoPickingCandidate(false);
+		testNoPickingCandidate(true);
+	}
+
+	private void testNoPickingCandidate(final boolean onlyTopLevelHUs)
+	{
+		final I_M_HU vhu = createHU();
 
 		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result).isNotEmpty();
 	}
 
-	@Theory
-	public void testExistingPickingCandidate(final boolean onlyTopLevelHUs)
+	@Test
+	public void testExistingPickingCandidate()
 	{
-		final I_M_HU vhu = newInstance(I_M_HU.class);
-		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		vhu.setM_Locator_ID(LOCATOR_ID);
-		save(vhu);
+		testExistingPickingCandidate(false);
+		testExistingPickingCandidate(true);
+	}
 
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(vhu);
-		save(pickingCandidate);
+	private void testExistingPickingCandidate(final boolean onlyTopLevelHUs)
+	{
+		final I_M_HU vhu = createHU();
+
+		createPickingCandidate(vhu);
 
 		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result)
@@ -117,24 +140,27 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 				.isEmpty();
 	}
 
-	@Theory
-	public void testVhuWithTuNoExistingPickingCandidate(final boolean onlyTopLevelHUs)
+	@Test
+	public void testVhuWithTuNoExistingPickingCandidate()
 	{
-		final I_M_HU tu = newInstance(I_M_HU.class);
-		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		tu.setM_Locator_ID(LOCATOR_ID);
-		save(tu);
+		testVhuWithTuNoExistingPickingCandidate(false);
+		testVhuWithTuNoExistingPickingCandidate(true);
+	}
+
+	private void testVhuWithTuNoExistingPickingCandidate(final boolean onlyTopLevelHUs)
+	{
+		final I_M_HU tu = createHU();
 
 		final I_M_HU_Item item = newInstance(I_M_HU_Item.class);
 		item.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		item.setM_HU(tu);
-		save(item);
+		saveRecord(item);
 
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		vhu.setM_Locator_ID(LOCATOR_ID);
 		vhu.setM_HU_Item_Parent(item);
-		save(vhu);
+		saveRecord(vhu);
 
 		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		if (onlyTopLevelHUs)
@@ -147,27 +173,28 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		}
 	}
 
-	@Theory
-	public void testVhuWithTuExistingPickingCandidateForVhu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testVhuWithTuExistingPickingCandidateForVhu()
 	{
-		final I_M_HU tu = newInstance(I_M_HU.class);
-		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		tu.setM_Locator_ID(LOCATOR_ID);
-		save(tu);
+		testVhuWithTuExistingPickingCandidateForVhu(false);
+		testVhuWithTuExistingPickingCandidateForVhu(true);
+	}
+
+	private void testVhuWithTuExistingPickingCandidateForVhu(final boolean onlyTopLevelHUs)
+	{
+		final I_M_HU tu = createHU();
 
 		final I_M_HU_Item item = newInstance(I_M_HU_Item.class);
 		item.setM_HU(tu);
-		save(item);
+		saveRecord(item);
 
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		vhu.setM_Locator_ID(LOCATOR_ID);
 		vhu.setM_HU_Item_Parent(item);
-		save(vhu);
+		saveRecord(vhu);
 
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(vhu);
-		save(pickingCandidate);
+		createPickingCandidate(vhu);
 
 		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result)
@@ -175,29 +202,30 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 				.isEmpty();
 	}
 
-	@Theory
-	public void testTuWithVhuExistingPickingCandidateForTu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testTuWithVhuExistingPickingCandidateForTu()
 	{
-		final I_M_HU tu = newInstance(I_M_HU.class);
-		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		tu.setM_Locator_ID(LOCATOR_ID);
-		save(tu);
+		testTuWithVhuExistingPickingCandidateForTu(false);
+		testTuWithVhuExistingPickingCandidateForTu(true);
+	}
+
+	private void testTuWithVhuExistingPickingCandidateForTu(final boolean onlyTopLevelHUs)
+	{
+		final I_M_HU tu = createHU();
 		POJOWrapper.setInstanceName(tu, "tu");
 
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(tu);
-		save(pickingCandidate);
+		createPickingCandidate(tu);
 
 		final I_M_HU_Item item = newInstance(I_M_HU_Item.class);
 		item.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		item.setM_HU(tu);
-		save(item);
+		saveRecord(item);
 
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		vhu.setM_Locator_ID(LOCATOR_ID);
 		vhu.setM_HU_Item_Parent(item);
-		save(vhu);
+		saveRecord(vhu);
 		POJOWrapper.setInstanceName(vhu, "vhu");
 
 		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
@@ -206,40 +234,49 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 				.isEmpty();
 	}
 
-	@Theory
-	public void testLuWithTuAndVhuAndPickingCandidateForVhu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testLuWithTuAndVhuAndPickingCandidateForVhu()
+	{
+		testLuWithTuAndVhuAndPickingCandidateForVhu(false);
+		testLuWithTuAndVhuAndPickingCandidateForVhu(true);
+	}
+
+	private void testLuWithTuAndVhuAndPickingCandidateForVhu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
-
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(luTuVhu.getVhu());
-		save(pickingCandidate);
+		createPickingCandidate(luTuVhu.getVhu());
 
 		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
 	}
 
-	@Theory
-	public void testLuWithTuAndVhuAndPickingCandidateForTu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testLuWithTuAndVhuAndPickingCandidateForTu()
+	{
+		testLuWithTuAndVhuAndPickingCandidateForTu(false);
+		testLuWithTuAndVhuAndPickingCandidateForTu(true);
+	}
+
+	private void testLuWithTuAndVhuAndPickingCandidateForTu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
-
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(luTuVhu.getTu());
-		save(pickingCandidate);
+		createPickingCandidate(luTuVhu.getTu());
 
 		final List<I_M_HU> result = common(luTuVhu.getTu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
 	}
 
-	@Theory
-	public void testVhuWithTuAndLuAndPickingCandidateForLu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testVhuWithTuAndLuAndPickingCandidateForLu()
+	{
+		testVhuWithTuAndLuAndPickingCandidateForLu(false);
+		testVhuWithTuAndLuAndPickingCandidateForLu(true);
+	}
+
+	private void testVhuWithTuAndLuAndPickingCandidateForLu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
-
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(luTuVhu.getLu());
-		save(pickingCandidate);
+		createPickingCandidate(luTuVhu.getLu());
 
 		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
@@ -251,14 +288,20 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	 *
 	 * @param onlyTopLevelHUs
 	 */
-	@Theory
-	public void testVhuWithTuAndLuAndSourceHuForLu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testVhuWithTuAndLuAndSourceHuForLu()
+	{
+		testVhuWithTuAndLuAndSourceHuForLu(false);
+		testVhuWithTuAndLuAndSourceHuForLu(true);
+	}
+
+	private void testVhuWithTuAndLuAndSourceHuForLu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
 
 		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
 		sourceHU.setM_HU(luTuVhu.getLu());
-		save(sourceHU);
+		saveRecord(sourceHU);
 
 		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
@@ -267,36 +310,40 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	/**
 	 * Creates a LU with two TUs. One of the two TUs is already picked. Verifies that the LU, the not-picked TU and the not-picked TU's VHU are returned.
 	 */
-	@Theory
-	public void testLuWithTwoTusAndVhusAndPickingCandidateForOneTu(final boolean onlyTopLevelHUs)
+	@Test
+	public void testLuWithTwoTusAndVhusAndPickingCandidateForOneTu()
+	{
+		testLuWithTwoTusAndVhusAndPickingCandidateForOneTu(false);
+		testLuWithTwoTusAndVhusAndPickingCandidateForOneTu(true);
+	}
+
+	private void testLuWithTwoTusAndVhusAndPickingCandidateForOneTu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
 
 		final I_M_HU_Item secondLuItem = newInstance(I_M_HU_Item.class);
 		secondLuItem.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		secondLuItem.setM_HU(luTuVhu.getLu());
-		save(secondLuItem);
+		saveRecord(secondLuItem);
 
 		final I_M_HU secondTu = newInstance(I_M_HU.class);
 		secondTu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		secondTu.setM_Locator_ID(LOCATOR_ID);
 		secondTu.setM_HU_Item_Parent(secondLuItem);
-		save(secondTu);
+		saveRecord(secondTu);
 
 		final I_M_HU_Item secondTuItem = newInstance(I_M_HU_Item.class);
 		secondTuItem.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		secondTuItem.setM_HU(secondTu);
-		save(secondTuItem);
+		saveRecord(secondTuItem);
 
 		final I_M_HU secondVhu = newInstance(I_M_HU.class);
 		secondVhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		secondVhu.setM_Locator_ID(LOCATOR_ID);
 		secondVhu.setM_HU_Item_Parent(secondTuItem);
-		save(secondVhu);
+		saveRecord(secondVhu);
 
-		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
-		pickingCandidate.setM_HU(secondTu);
-		save(pickingCandidate);
+		createPickingCandidate(secondTu);
 
 		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		if (onlyTopLevelHUs)
@@ -311,36 +358,56 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		}
 	}
 
+	private void createPickingCandidate(final I_M_HU hu)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		saveRecord(shipmentSchedule);
+
+		final PickingCandidate pickingCandidate = PickingCandidate.builder()
+				.status(PickingCandidateStatus.Processed) // not relevant
+				.qtyPicked(Quantity.zero(uom)) // not relevant
+				.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
+				.build();
+		pickingCandidatesRepo.save(pickingCandidate);
+	}
+
+	private I_M_HU createHU()
+	{
+		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		hu.setM_Locator_ID(LOCATOR_ID);
+		saveRecord(hu);
+		return hu;
+	}
+
 	private LuTuVhu createLuTuVhu()
 	{
-		final I_M_HU lu = newInstance(I_M_HU.class);
-		lu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		lu.setM_Locator_ID(LOCATOR_ID);
-		save(lu);
+		final I_M_HU lu = createHU();
 		POJOWrapper.setInstanceName(lu, "lu");
 
 		final I_M_HU_Item luItem = newInstance(I_M_HU_Item.class);
 		luItem.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		luItem.setM_HU(lu);
-		save(luItem);
+		saveRecord(luItem);
 
 		final I_M_HU tu = newInstance(I_M_HU.class);
 		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		tu.setM_Locator_ID(LOCATOR_ID);
 		tu.setM_HU_Item_Parent(luItem);
-		save(tu);
+		saveRecord(tu);
 		POJOWrapper.setInstanceName(tu, "tu");
 
 		final I_M_HU_Item tuItem = newInstance(I_M_HU_Item.class);
 		tuItem.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		tuItem.setM_HU(tu);
-		save(tuItem);
+		saveRecord(tuItem);
 
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		vhu.setM_Locator_ID(LOCATOR_ID);
 		vhu.setM_HU_Item_Parent(tuItem);
-		save(vhu);
+		saveRecord(vhu);
 		POJOWrapper.setInstanceName(vhu, "vhu");
 
 		return new LuTuVhu(lu, tu, vhu);
@@ -369,11 +436,15 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 			final boolean onlyTopLevelHUs)
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
+		saveRecord(warehouse);
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		saveRecord(bpartner);
 
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setM_Warehouse(warehouse);
-		save(shipmentSchedule);
+		shipmentSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(shipmentSchedule);
 
 		// @formatter:off
 		new Expectations()
@@ -388,7 +459,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 		final List<I_M_HU> result = new HUPickingSlotBL()
 				.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
-						.shipmentSchedules(ImmutableList.of(shipmentSchedule))
+						.shipmentSchedule(shipmentSchedule)
 						.onlyTopLevelHUs(onlyTopLevelHUs)
 						.build());
 		return result;

@@ -79,6 +79,7 @@ import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -403,8 +404,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		// Create Receipt schedule allocations if possible.
 		// If no packing material receipt schedules were found for this product, there is nothing we can do
-		final int productId = candidate.getM_Product_ID();
-		final List<I_M_ReceiptSchedule> packingMaterialReceiptSchedules = huReceiptScheduleDAO.retrievePackingMaterialReceiptSchedules(getCtx(), getCurrentHeaderAggregationKey(), productId);
+		final ProductId productId = candidate.getProductId();
+		final List<I_M_ReceiptSchedule> packingMaterialReceiptSchedules = huReceiptScheduleDAO.retrievePackingMaterialReceiptSchedules(getCtx(), getCurrentHeaderAggregationKey(), productId.getRepoId());
 		if (!packingMaterialReceiptSchedules.isEmpty())
 		{
 			receiptScheduleBL.createReceiptScheduleAllocations(packingMaterialReceiptSchedules, receiptLine);
@@ -701,7 +702,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext1)
-					.setProduct(rs.getM_Product())
+					.setProductId(ProductId.ofRepoId(rs.getM_Product_ID()))
 					.setQty(receiptScheduleBL.getQtyMoved(rs))
 					.setUOM(rs.getC_UOM())
 					.setAttributeStorageFrom(huAttributeStorageFrom)

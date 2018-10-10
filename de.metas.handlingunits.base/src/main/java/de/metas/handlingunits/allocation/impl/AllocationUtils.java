@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -44,6 +43,8 @@ import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -100,7 +101,7 @@ public final class AllocationUtils
 		final IAllocationRequestBuilder builder = createAllocationRequestBuilder();
 		builder.setBaseAllocationRequest(originalRequest);
 
-		builder.setProduct(unloadTrx.getProduct());
+		builder.setProduct(unloadTrx.getProductId());
 		builder.setQuantity(qty);
 		builder.setDate(unloadTrx.getDate());
 
@@ -130,7 +131,12 @@ public final class AllocationUtils
 		return builder;
 	}
 
-	public static IAllocationRequest createQtyRequest(final IHUContext huContext, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final Date date)
+	public static IAllocationRequest createQtyRequest(
+			final IHUContext huContext,
+			final I_M_Product product,
+			final BigDecimal qty,
+			final I_C_UOM uom,
+			final Date date)
 	{
 		final Object referenceModel = null;
 		return createQtyRequest(huContext, product, qty, uom, date, referenceModel);
@@ -180,6 +186,44 @@ public final class AllocationUtils
 			final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
+		return createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(product)
+				.setQuantity(qty)
+				.setDate(date)
+				.setFromReferencedModel(referenceModel)
+				.setForceQtyAllocation(forceQtyAllocation)
+				.create();
+	}
+
+	public static IAllocationRequest createQtyRequest(
+			final IHUContext huContext,
+			final ProductId productId,
+			final Quantity qty,
+			final Date date)
+	{
+		return createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(productId)
+				.setQuantity(qty)
+				.setDate(date)
+				.setFromReferencedModel(null)
+				.setForceQtyAllocation(false)
+				.create();
+	}
+
+	public static IAllocationRequest createQtyRequest(
+			final IHUContext huContext,
+			final ProductId productId,
+			final Quantity qty,
+			final Date date,
+			final Object referenceModel,
+			final boolean forceQtyAllocation)
+	{
+		final I_M_Product product = productId != null
+				? Services.get(IProductDAO.class).getById(productId)
+				: null;
+
 		return createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(product)
@@ -274,8 +318,7 @@ public final class AllocationUtils
 	public static IAllocationResult createQtyAllocationResult(final BigDecimal qtyToAllocate,
 			final BigDecimal qtyAllocated,
 			final List<IHUTransactionCandidate> trxs,
-			final List<IHUTransactionAttribute> attributeTrxs
-			)
+			final List<IHUTransactionAttribute> attributeTrxs)
 	{
 		return new AllocationResult(qtyToAllocate, qtyAllocated, trxs, attributeTrxs);
 	}

@@ -118,9 +118,8 @@ public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 		for (final I_M_Storage currentStorage : storageService
 				.retrieveStorages(replenish.getM_Product_ID(), trxName)) {
 
-			if (storageService.retrieveWarehouseId(currentStorage, trxName) == replenish
-					.getM_Warehouse_ID()) {
-
+			if (storageService.retrieveWarehouseId(currentStorage).getRepoId() == replenish.getM_Warehouse_ID())
+			{
 				qtyAvailable = qtyAvailable.add(currentStorage.getQtyOnHand()
 						.subtract(currentStorage.getQtyReserved()));
 				qtyOrdered = qtyOrdered.add(currentStorage.getQtyOrdered());

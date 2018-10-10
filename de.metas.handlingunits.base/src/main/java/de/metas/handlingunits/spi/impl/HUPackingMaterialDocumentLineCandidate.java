@@ -25,6 +25,7 @@ package de.metas.handlingunits.spi.impl;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -43,8 +44,10 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Packing Material Document Line candidate.
@@ -89,7 +92,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 
 			private final int getM_Product_ID(final HUPackingMaterialDocumentLineCandidate candidate)
 			{
-				return candidate == null ? -1 : candidate.getM_Product_ID();
+				return candidate == null ? -1 : candidate.getProductId().getRepoId();
 			}
 		};
 
@@ -142,13 +145,9 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return product;
 	}
 
-	/**
-	 *
-	 * @return packing material product's M_Product_ID
-	 */
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return product.getM_Product_ID();
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	/**
@@ -167,11 +166,11 @@ public final class HUPackingMaterialDocumentLineCandidate
 	 */
 	public BigDecimal getQty(final I_C_UOM uomTo)
 	{
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final I_C_UOM uomFrom = getC_UOM();
 		final BigDecimal qtySrc = getQty();
 
-		final BigDecimal qty = Services.get(IUOMConversionBL.class).convertQty(product, qtySrc, uomFrom, uomTo);
+		final BigDecimal qty = Services.get(IUOMConversionBL.class).convertQty(productId, qtySrc, uomFrom, uomTo);
 		return qty;
 	}
 
@@ -233,15 +232,14 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return materialTrackingId > 0 ? materialTrackingId : -1;
 	}
 
-	protected void add(final HUPackingMaterialDocumentLineCandidate candidateToAdd)
+	protected void add(@NonNull final HUPackingMaterialDocumentLineCandidate candidateToAdd)
 	{
-		Check.assumeNotNull(candidateToAdd, "candidateToAdd not null");
 		if (this == candidateToAdd)
 		{
 			throw new IllegalArgumentException("Cannot add to it self: " + candidateToAdd);
 		}
 
-		if (getM_Product_ID() != candidateToAdd.getM_Product_ID()
+		if (!Objects.equals(getProductId(), candidateToAdd.getProductId())
 				|| getC_UOM_ID() != candidateToAdd.getC_UOM_ID()
 				|| getM_Locator_ID() != candidateToAdd.getM_Locator_ID()
 				|| getM_MaterialTracking_ID() != candidateToAdd.getM_MaterialTracking_ID())

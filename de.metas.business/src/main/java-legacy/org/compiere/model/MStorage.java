@@ -24,7 +24,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -375,7 +379,7 @@ public class MStorage extends X_M_Storage
 	 * @param trxName transaction
 	 * @return existing/new or null
 	 */
-	public static MStorage getCreate(final Properties ctx, final int M_Locator_ID,
+	private static MStorage getCreate(final Properties ctx, final int M_Locator_ID,
 			final int M_Product_ID, final int M_AttributeSetInstance_ID, final String trxName)
 	{
 		if (M_Locator_ID == 0)
@@ -393,11 +397,7 @@ public class MStorage extends X_M_Storage
 		}
 
 		// Insert row based on locator
-		final MLocator locator = new MLocator(ctx, M_Locator_ID, trxName);
-		if (locator.get_ID() != M_Locator_ID)
-		{
-			throw new IllegalArgumentException("Not found M_Locator_ID=" + M_Locator_ID);
-		}
+		final I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorByRepoId(M_Locator_ID);
 		//
 		retValue = new MStorage(locator, M_Product_ID, M_AttributeSetInstance_ID);
 		retValue.save(trxName);
@@ -471,9 +471,8 @@ public class MStorage extends X_M_Storage
 			storage0 = get(ctx, M_Locator_ID, M_Product_ID, reservationAttributeSetInstance_ID, trxName);
 			if (storage0 == null)	// create if not existing - should not happen
 			{
-				final MWarehouse wh = MWarehouse.get(ctx, M_Warehouse_ID);
-				final int xM_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID();
-				storage0 = getCreate(ctx, xM_Locator_ID,
+				final LocatorId xM_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId((WarehouseId.ofRepoId(M_Warehouse_ID)));
+				storage0 = getCreate(ctx, xM_Locator_ID.getRepoId(),
 						M_Product_ID, reservationAttributeSetInstance_ID, trxName);
 			}
 		}
@@ -707,10 +706,10 @@ public class MStorage extends X_M_Storage
 	 * @param M_Product_ID product
 	 * @param M_AttributeSetInstance_ID attribute
 	 */
-	private MStorage(final MLocator locator, final int M_Product_ID, final int M_AttributeSetInstance_ID)
+	private MStorage(final I_M_Locator locator, final int M_Product_ID, final int M_AttributeSetInstance_ID)
 	{
-		this(locator.getCtx(), 0, locator.get_TrxName());
-		setClientOrg(locator);
+		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+		setClientOrgFromModel(locator);
 		setM_Locator_ID(locator.getM_Locator_ID());
 		setM_Product_ID(M_Product_ID);
 		setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
@@ -750,9 +749,9 @@ public class MStorage extends X_M_Storage
 	 */
 	public int getM_Warehouse_ID()
 	{
-		if (m_M_Warehouse_ID == 0)
+		if (m_M_Warehouse_ID <= 0)
 		{
-			final MLocator loc = MLocator.get(getCtx(), getM_Locator_ID());
+			final I_M_Locator loc = Services.get(IWarehouseDAO.class).getLocatorByRepoId(getM_Locator_ID());
 			m_M_Warehouse_ID = loc.getM_Warehouse_ID();
 		}
 		return m_M_Warehouse_ID;

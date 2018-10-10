@@ -23,7 +23,6 @@ package de.metas.handlingunits;
  */
 
 import java.util.List;
-import java.util.Properties;
 
 import org.compiere.model.I_M_Warehouse;
 
@@ -38,7 +37,7 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 * @param ctx
 	 * @return
 	 */
-	List<I_M_Warehouse> retrievePickingWarehouses(Properties ctx);
+	List<I_M_Warehouse> retrievePickingWarehouses();
 
 	/**
 	 * Suggests an after-picking locator in the same warehouse as given <code>locator</code>.
@@ -61,10 +60,9 @@ public interface IHUWarehouseDAO extends ISingletonService
 	/**
 	 * Retrieve the warehouses where the quality returns will be kept.
 	 * These warehouses must have the field <code>de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse</code> set on true.
-	 * See task #1056
+	 * See task #1056.
 	 * 
-	 * @param ctx
-	 * @return
+	 * This method fails if no Warehouses were found.
 	 */
-	List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouse(Properties ctx);
+	List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses();
 }

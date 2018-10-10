@@ -19,6 +19,7 @@ package org.compiere.util;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
+import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -42,6 +43,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
@@ -62,6 +64,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * System Environment and static variables.
@@ -1161,6 +1164,11 @@ public final class Env
 	{
 		return Env.getAD_User_ID(getCtx());
 	}
+	
+	public static UserId getLoggedUserId()
+	{
+		return UserId.ofRepoId(Env.getAD_User_ID(getCtx()));
+	}
 
 	/**
 	 * Get Login AD_Role_ID
@@ -1698,6 +1706,12 @@ public final class Env
 		s_log.info("Starting browser using url={}", url);
 		Services.get(IClientUI.class).showURL(url);
 	}   // startBrowser
+	
+	public static void startBrowser(@NonNull final File file)
+	{
+		startBrowser(file.toURI().toString());
+	}
+
 
 	/**
 	 * Do we run on Apple

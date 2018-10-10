@@ -26,17 +26,23 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -44,69 +50,55 @@ import lombok.NonNull;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEffectiveBL.class);
 
 	@Override
 	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final I_C_BPartner_Location location = InterfaceWrapperHelper.create(
-				sched.getC_BP_Location_Override_ID() <= 0 ? sched.getC_BPartner_Location() : sched.getC_BP_Location_Override(),
-				I_C_BPartner_Location.class);
-		return location;
+		final BPartnerLocationId locationId = getBPartnerLocationId(sched);
+		return Services.get(IBPartnerDAO.class).getBPartnerLocationById(locationId);
 	}
 
 	@Override
-	public int getC_BPartner_ID(@NonNull final I_M_ShipmentSchedule sched)
+	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		if (sched.getC_BPartner_Override_ID() <= 0)
 		{
-			return sched.getC_BPartner_ID();
+			return BPartnerId.ofRepoId(sched.getC_BPartner_ID());
 		}
 		else
 		{
-			return sched.getC_BPartner_Override_ID();
+			return BPartnerId.ofRepoId(sched.getC_BPartner_Override_ID());
 		}
 	}
 
 	@Override
-	public String getDeliveryRule(@NonNull final I_M_ShipmentSchedule sched)
+	public DeliveryRule getDeliveryRule(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final String deliveryRule = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
-		return deliveryRule;
+		final String deliveryRuleCode = Check.isEmpty(sched.getDeliveryRule_Override(), true) ? sched.getDeliveryRule() : sched.getDeliveryRule_Override();
+		return DeliveryRule.ofCode(deliveryRuleCode);
 	}
 
 	@Override
-	public I_M_Warehouse getWarehouse(@NonNull final I_M_ShipmentSchedule sched)
+	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID))
 		{
-			return sched.getM_Warehouse_Override();
+			return WarehouseId.ofRepoId(sched.getM_Warehouse_Override_ID());
 		}
-		return sched.getM_Warehouse();
+		return WarehouseId.ofRepoId(sched.getM_Warehouse_ID());
 	}
 
 	@Override
-	public int getWarehouseId(final I_M_ShipmentSchedule sched)
+	public LocatorId getDefaultLocatorId(final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "sched not null");
-		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID))
-		{
-			return sched.getM_Warehouse_Override_ID();
-		}
-		return sched.getM_Warehouse_ID();
+		final WarehouseId warehouseId = getWarehouseId(sched);
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(final I_M_ShipmentSchedule sched)
+	public BigDecimal getQtyToDeliverBD(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final I_M_Warehouse warehouse = getWarehouse(sched);
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-		return locator;
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver(final I_M_ShipmentSchedule sched)
-	{
-		Check.assumeNotNull(sched, "sched not null");
 		if (!InterfaceWrapperHelper.isNull(sched, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override))
 		{
 			return sched.getQtyToDeliver_Override();
@@ -117,22 +109,47 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(
-				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner() : sched.getC_BPartner_Override(),
-				I_C_BPartner.class);
-		return bPartner;
+		final BPartnerId bpartnerId = getBPartnerId(sched);
+		return Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override
-	public int getC_BP_Location_ID(final I_M_ShipmentSchedule sched)
+	public BPartnerLocationId getBPartnerLocationId(final I_M_ShipmentSchedule sched)
 	{
-		if (sched.getC_BP_Location_Override_ID() <= 0)
+		final int bpartnerId = sched.getC_BPartner_ID();
+		final int bpLocationId = sched.getC_BPartner_Location_ID();
+
+		final int bpartnerIdOverride = sched.getC_BPartner_Override_ID();
+		final int bpLocationIdOverride = sched.getC_BP_Location_Override_ID();
+
+		if (bpartnerIdOverride > 0)
 		{
-			return sched.getC_BPartner_Location_ID();
+			if (bpLocationIdOverride > 0)
+			{
+				return BPartnerLocationId.ofRepoId(bpartnerIdOverride, bpLocationIdOverride);
+			}
+			else if (bpartnerId == bpartnerIdOverride)
+			{
+				return BPartnerLocationId.ofRepoId(bpartnerIdOverride, bpLocationId);
+			}
+			else
+			{
+				logger.warn("C_BPartner_ID and C_BPartner_Override_ID are not matching. Returning standard location."
+						+ "\n BPartner/Location={}/{}"
+						+ "\n BPartner/Location Override={}/{}", bpartnerId, bpLocationId, bpartnerIdOverride, bpLocationIdOverride);
+				return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationId);
+			}
 		}
 		else
 		{
-			return sched.getC_BP_Location_Override_ID();
+			if (bpLocationIdOverride > 0)
+			{
+				return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationIdOverride);
+			}
+			else
+			{
+				return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationId);
+			}
 		}
 	}
 

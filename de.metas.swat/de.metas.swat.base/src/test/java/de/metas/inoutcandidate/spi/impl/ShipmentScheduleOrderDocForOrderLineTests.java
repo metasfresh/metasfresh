@@ -58,7 +58,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 
 		final I_M_Warehouse wh = newInstance(I_M_Warehouse.class);
 		save(wh);
-		
+
 		final I_C_BPartner billBPartner = newInstance(I_C_BPartner.class);
 		save(billBPartner);
 
@@ -70,6 +70,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order(order);
+		orderLine.setM_Shipper_ID(1);
 		save(orderLine);
 		final TableRecordReference ref = TableRecordReference.of(orderLine);
 

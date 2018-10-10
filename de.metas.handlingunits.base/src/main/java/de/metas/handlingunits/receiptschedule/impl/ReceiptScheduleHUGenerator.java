@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -15,9 +16,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -42,6 +44,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -253,29 +256,26 @@ public class ReceiptScheduleHUGenerator
 		return this;
 	}
 
-	private I_M_Product getM_Product()
+	private ProductId getSingleProductId()
 	{
-		final Map<Integer, I_M_Product> products = new HashMap<>();
-		for (final I_M_ReceiptSchedule schedule : getReceiptSchedules())
-		{
-			final IProductStorage productStorage = getProductStorage(schedule);
-			final I_M_Product product = productStorage.getM_Product();
-			products.put(product.getM_Product_ID(), product);
-		}
+		final Set<ProductId> productIds = getReceiptSchedules()
+				.stream()
+				.map(this::getProductStorage)
+				.map(IProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		if (products.isEmpty())
+		if (productIds.isEmpty())
 		{
 			throw new HUException("No products were found");
 		}
-		else if (products.size() == 1)
+		else if (productIds.size() == 1)
 		{
-			final I_M_Product product = products.values().iterator().next();
-			return product;
+			return productIds.iterator().next();
 		}
 		else
 		{
 			// shall not happen
-			throw new HUException("More then one products were found: " + products.values());
+			throw new HUException("More then one products were found: " + productIds);
 		}
 	}
 
@@ -456,7 +456,7 @@ public class ReceiptScheduleHUGenerator
 		// Create Allocation Request
 		IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				getM_Product(),
+				getSingleProductId(),
 				qty,
 				SystemTime.asDate(),
 				receiptSchedule, // referencedModel,

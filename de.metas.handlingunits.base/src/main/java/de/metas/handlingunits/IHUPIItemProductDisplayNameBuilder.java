@@ -56,6 +56,8 @@ public interface IHUPIItemProductDisplayNameBuilder
 	String buildItemProductDisplayName();
 
 	IHUPIItemProductDisplayNameBuilder setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPIItemProduct);
+	
+	IHUPIItemProductDisplayNameBuilder setM_HU_PI_Item_Product(final HUPIItemProductId id);
 
 	IHUPIItemProductDisplayNameBuilder setQtyTUPlanned(final BigDecimal qtyTUPlanned);
 

@@ -13,11 +13,11 @@ package de.metas.product.acct.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,49 +28,52 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ProductAcctDAO implements IProductAcctDAO
 {
 
 	@Override
-	public I_C_Activity retrieveActivityForAcct(
-			final IContextAware contextProvider,
-			final I_AD_Org org,
-			final I_M_Product product)
+	public ActivityId retrieveActivityForAcct(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final ProductId productId)
 	{
-		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(contextProvider.getCtx(),
-				org.getAD_Client_ID(),
-				org.getAD_Org_ID());
+		final Properties ctx = Env.getCtx();
+
+		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(
+				ctx,
+				clientId.getRepoId(),
+				orgId.getRepoId());
 		if (acctSchema == null)
 		{
 			return null;
 		}
 
-		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(contextProvider.getCtx(), acctSchema.getC_AcctSchema_ID(), product.getM_Product_ID());
+		final I_M_Product_Acct acctInfo = retrieveProductAcctOrNull(ctx, acctSchema.getC_AcctSchema_ID(), productId.getRepoId());
 		if (acctInfo == null)
 		{
 			return null;
 		}
 
-		final I_C_Activity activity = acctInfo.getC_Activity();
-		return activity;
+		return ActivityId.ofRepoIdOrNull(acctInfo.getC_Activity_ID());
 	}
 
-	@Override
 	@Cached(cacheName = I_M_Product_Acct.Table_Name)
 	public I_M_Product_Acct retrieveProductAcctOrNull(@CacheCtx final Properties ctx, final int acctSchemaId, final int productId)
 	{
@@ -92,13 +95,17 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Override
-	public I_M_Product_Acct retrieveProductAcctOrNull(final I_M_Product product)
+	public ActivityId getProductActivityId(@NonNull final ProductId productId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-
+		final Properties ctx = Env.getCtx();
 		final I_C_AcctSchema schema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
+		final I_M_Product_Acct productAcct = retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), productId.getRepoId());
+		if (productAcct == null)
+		{
+			return null;
+		}
 
-		return retrieveProductAcctOrNull(ctx, schema.getC_AcctSchema_ID(), product.getM_Product_ID());
+		return ActivityId.ofRepoIdOrNull(productAcct.getC_Activity_ID());
 	}
 
 	@Override

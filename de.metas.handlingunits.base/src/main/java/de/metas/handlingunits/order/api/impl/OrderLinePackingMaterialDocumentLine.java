@@ -28,10 +28,10 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,15 +53,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public int getM_Product_ID()
+	public ProductId getProductId()
 	{
-		return orderLine.getM_Product_ID();
-	}
-
-	@Override
-	public I_M_Product getM_Product()
-	{
-		return orderLine.getM_Product();
+		return ProductId.ofRepoId(orderLine.getM_Product_ID());
 	}
 
 	/**
@@ -87,7 +81,7 @@ import lombok.NonNull;
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(
-				ctx, getM_Product(), orderLine.getC_UOM(), qty);
+				ctx, getProductId(), orderLine.getC_UOM(), qty);
 
 		orderLine.setQtyEntered(qtyEntered);
 	}

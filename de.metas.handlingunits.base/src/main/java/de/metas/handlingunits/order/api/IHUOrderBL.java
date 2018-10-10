@@ -27,11 +27,11 @@ import java.util.Properties;
 import java.util.function.Consumer;
 
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -116,10 +116,10 @@ public interface IHUOrderBL extends ISingletonService
 	 * If an {@link I_M_HU_PI_Item_Product} was found, the consumer fill be called.
 	 *
 	 * @param order
-	 * @param product
+	 * @param productId
 	 * @param pipConsumer {@link I_M_HU_PI_Item_Product} consumer
 	 */
-	void findM_HU_PI_Item_Product(org.compiere.model.I_C_Order order, I_M_Product product, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
+	void findM_HU_PI_Item_Product(org.compiere.model.I_C_Order order, ProductId productId, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
 
-	void findM_HU_PI_Item_ProductForForecast(I_M_Forecast forecast, I_M_Product product, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
+	void findM_HU_PI_Item_ProductForForecast(I_M_Forecast forecast, ProductId productId, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
 }

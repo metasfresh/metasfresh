@@ -20,28 +20,47 @@ Here come the actual release notes:
 
 * metasfresh
   * [#4567](https://github.com/metasfresh/metasfresh/issues/4567) Automatic Lot No. Handling into Quarantine Warehouse
+    * New Quarantine Handling Feature in Material Receipt.
   * [#4628](https://github.com/metasfresh/metasfresh/issues/4628) Split material dispo for M_Transaction with different attributes
+    * Improvement of the ATP Calculation for Transactions that were not fulfilled same as planned.
 
 * metasfresh-webui-frontend
   * [#1952](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1952) Advanced tooltip support
     * New Feature that allows to show advanced tooltips in WebUI frontend.
   * [#1955](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1955) Get rid of GET plugins.js 404 Not Found console error
     * Eliminating the error in console log for missing plugins.js.
+  * [#1958](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1958) Use user language for messages and errors in Forgot Password feature (frontend)
+    * Improvement of User Messages translation in Forgot Password workflow.
   * [#1972](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1972) Support active indication for filters without parameters
     * Extended functionality for the new Filter Features. Here improving Filter behavior for Filters with undisplayed filter parms.
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
     * Updating bootstrap to new version because of security issue.
+  * [#1978](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1978) Make actions cypress friendly
+    * Improvement of Cypress Testing in metasfresh WebUI.
+  * [#1981](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1981) Make composite widget fields cypress friendly
+    * Improvement of Cypress Testing in metasfresh WebUI.
+  * [#1983](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1983) Height of date fields is off
+    * Fixing the height of Date Fields.
   * [#1985](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1985) Make tooltip icons always visible
     * Showing the Lookup Fields Tooltips now also when the Field is readonly.
+  * [#1987](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1987) Adjustments to tooltip widget
+    * Layout Improvements for the new Tooltip widget.
 
 ## Fixes
 
 * metasfresh
   * [#4625](https://github.com/metasfresh/metasfresh/issues/4625) Open Items List Reference Date wrong parm
+    * Fix for the Open Items Reference Date Parm, now able to select to Open Items to a specific date again.
   * [#4632](https://github.com/metasfresh/metasfresh/issues/4632) Swing Picking Terminal: cannot pick
+    * Bugfix for a minor case in Picking Workflow.
 
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
+    * Fixes a Vulnerability Report about bootstrap.
+  * [#1992](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1992) Ugly double border when editing in Date Fields
+    * Adjustment of the Border Layout for mandatory Date Fields.
+  * [#1993](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1993) Date Icon moved few pixels to left for mandatory
+    * Alignment improvement for Calendar Icons in mandatory Date Fields.
 
 # metasfresh 5.76
 ## Features

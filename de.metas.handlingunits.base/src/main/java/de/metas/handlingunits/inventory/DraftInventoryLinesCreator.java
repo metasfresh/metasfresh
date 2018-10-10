@@ -14,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -120,11 +121,12 @@ public class DraftInventoryLinesCreator
 		inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
 
 		inventoryLine.setM_Locator_ID(hu.getM_Locator_ID());
-		inventoryLine.setM_Product_ID(huProductStorage.getM_Product_ID());
-		inventoryLine.setC_UOM(huProductStorage.getC_UOM());
-
-		inventoryLine.setQtyBook(huProductStorage.getQty());
-		inventoryLine.setQtyCount(huProductStorage.getQty());
+		inventoryLine.setM_Product_ID(huProductStorage.getProductId().getRepoId());
+		
+		final Quantity qty = huProductStorage.getQty();
+		inventoryLine.setC_UOM_ID(qty.getUOMId());
+		inventoryLine.setQtyBook(qty.getAsBigDecimal());
+		inventoryLine.setQtyCount(qty.getAsBigDecimal());
 
 		Services.get(IInventoryDAO.class).save(inventoryLine);
 

@@ -48,10 +48,10 @@ public class AggregateHUFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public List<I_M_Warehouse> retrieveWarehouses(final Properties ctx)
+	public List<I_M_Warehouse> retrieveWarehouses()
 	{
 		// Retrieve all picking warehouses.
-		return Services.get(IHUWarehouseDAO.class).retrievePickingWarehouses(ctx);
+		return Services.get(IHUWarehouseDAO.class).retrievePickingWarehouses();
 	}
 
 	@Override

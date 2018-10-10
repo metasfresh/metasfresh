@@ -26,7 +26,6 @@ package de.metas.handlingunits.attribute.strategy.impl;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -34,6 +33,7 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 /**
@@ -43,7 +43,7 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 {
 	private final IHUContext huContext;
 
-	private I_M_Product product = null;
+	private ProductId productId = null;
 	private BigDecimal qty = null;
 	private I_C_UOM uom = null;
 
@@ -74,7 +74,7 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 	public IHUAttributeTransferRequest create()
 	{
 		return new HUAttributeTransferRequest(huContext,
-				product, qty, uom,
+				productId, qty, uom,
 				attributeStorageFrom, attributeStorageTo,
 				huStorageFrom, huStorageTo,
 				qtyUnloaded,
@@ -82,9 +82,9 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 	}
 
 	@Override
-	public IHUAttributeTransferRequestBuilder setProduct(final I_M_Product product)
+	public IHUAttributeTransferRequestBuilder setProductId(final ProductId productId)
 	{
-		this.product = product;
+		this.productId = productId;
 		return this;
 	}
 
@@ -105,7 +105,7 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 	@Override
 	public IHUAttributeTransferRequestBuilder setQuantity(final Quantity quantity)
 	{
-		qty = quantity.getQty();
+		qty = quantity.getAsBigDecimal();
 		uom = quantity.getUOM();
 		return this;
 	}

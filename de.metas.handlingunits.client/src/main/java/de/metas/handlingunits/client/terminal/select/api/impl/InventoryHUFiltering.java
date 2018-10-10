@@ -55,10 +55,9 @@ public class InventoryHUFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public List<I_M_Warehouse> retrieveWarehouses(final Properties ctx)
+	public List<I_M_Warehouse> retrieveWarehouses()
 	{
-		// Retrieve all warehouses.
-		return Services.get(IWarehouseDAO.class).retrieveWarehousesForCtx(ctx);
+		return Services.get(IWarehouseDAO.class).getAllWarehouses();
 	}
 
 	@Override

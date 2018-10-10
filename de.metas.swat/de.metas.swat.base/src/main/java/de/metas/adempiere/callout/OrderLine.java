@@ -1,15 +1,17 @@
 package de.metas.adempiere.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.CalloutEngine;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class OrderLine extends CalloutEngine
@@ -17,10 +19,11 @@ public class OrderLine extends CalloutEngine
 	public String product(final ICalloutField calloutField)
 	{
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
-		if (orderLine.getM_Product_ID() > 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId != null)
 		{
-			I_M_Product product = InterfaceWrapperHelper.create(orderLine.getM_Product(), I_M_Product.class);
-			orderLine.setIsDiverse(product.isDiverse());
+			final IProductBL productBL = Services.get(IProductBL.class);
+			orderLine.setIsDiverse(productBL.isDiverse(productId));
 		}
 		else
 		{
@@ -41,10 +44,10 @@ public class OrderLine extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		final int orgDropShipWarehouseId = Services.get(IOrgDAO.class)
-				.retrieveOrgInfo(calloutField.getCtx(), order.getAD_Org_ID(), ITrx.TRXNAME_None)
-				.getDropShip_Warehouse_ID();
-		if (orderLine.getM_Warehouse_ID() == orgDropShipWarehouseId)
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		final WarehouseId orgDropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(orgId);
+		if (orgDropShipWarehouseId != null && orderLine.getM_Warehouse_ID() == orgDropShipWarehouseId.getRepoId())
 		{
 			// order line's warehouse is the dropship warehouse; nothing to do
 			return NO_ERROR;

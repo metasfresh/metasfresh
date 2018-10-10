@@ -25,17 +25,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
@@ -58,7 +58,7 @@ import de.metas.util.Services;
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHandlingUnitsInfoFactory handlingUnitsInfoFactory = Services.get(IHandlingUnitsInfoFactory.class);
 
-	private final List<I_M_InOutLine> inOutLines = new ArrayList<I_M_InOutLine>();
+	private final List<I_M_InOutLine> inOutLines = new ArrayList<>();
 
 	// Loaded informations
 	private boolean _loaded = false;
@@ -166,7 +166,7 @@ import de.metas.util.Services;
 		Check.assumeNotNull(productUOM, "productUOM not null");
 
 		// Define the conversion context (in case we need it)
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(_product);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(_product);
 
 		//
 		// UOM

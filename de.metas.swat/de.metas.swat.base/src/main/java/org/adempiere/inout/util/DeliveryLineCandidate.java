@@ -7,6 +7,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -93,7 +94,7 @@ public class DeliveryLineCandidate
 		return shipmentSchedule.getBill_BPartner_ID();
 	}
 	
-	public String getDeliveryRule()
+	public DeliveryRule getDeliveryRule()
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		return shipmentScheduleBL.getDeliveryRule(shipmentSchedule);

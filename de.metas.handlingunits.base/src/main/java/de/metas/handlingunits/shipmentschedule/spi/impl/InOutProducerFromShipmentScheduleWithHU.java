@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -117,7 +119,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private boolean createPackingLines = false;
 
 	private boolean shipmentDateToday = false;
-
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -307,8 +308,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// BPartner, Location & Contact
 		{
-			shipment.setC_BPartner_ID(shipmentScheduleEffectiveValuesBL.getC_BPartner_ID(shipmentSchedule));
-			shipment.setC_BPartner_Location_ID(shipmentScheduleEffectiveValuesBL.getBPartnerLocation(shipmentSchedule).getC_BPartner_Location_ID());
+			final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule);
+			final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule);
+			shipment.setC_BPartner_ID(bpartnerId.getRepoId());
+			shipment.setC_BPartner_Location_ID(bpLocationId.getRepoId());
 			shipment.setAD_User_ID(shipmentScheduleEffectiveValuesBL.getAD_User_ID(shipmentSchedule));
 		}
 
@@ -322,7 +325,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Warehouse
 		{
-			shipment.setM_Warehouse_ID(shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule));
+			shipment.setM_Warehouse_ID(shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule).getRepoId());
 		}
 
 		//

@@ -26,18 +26,20 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Read-only HU Product Storage based on {@link IHUStorage} and a particular product.
@@ -48,35 +50,29 @@ import de.metas.util.Services;
 /* package */class HUProductStorage implements IHUProductStorage
 {
 	private final IHUStorage huStorage;
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final CapacityInterface capacityTotal;
 
-	public HUProductStorage(final IHUStorage huStorage,
-			final I_M_Product product,
-			final I_C_UOM uom)
+	public HUProductStorage(
+			@NonNull final IHUStorage huStorage,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM uom)
 	{
-		super();
-
-		Check.assumeNotNull(huStorage, "huStorage not null");
 		this.huStorage = huStorage;
-
-		Check.assumeNotNull(product, "product not null");
-		this.product = product;
-
-		Check.assumeNotNull(uom, "uom not null");
+		this.productId = productId;
 		this.uom = uom;
 
 		// NOTE: we are creating infinite capacity because we cannot determine the capacity at HU Storage Level
 		// Capacity is defined only on HU_Item_Storage level.
-		capacityTotal = Capacity.createInfiniteCapacity(product, uom);
+		capacityTotal = Capacity.createInfiniteCapacity(productId, uom);
 	}
 
 	@Override
 	public String toString()
 	{
 		return getClass().getSimpleName() + "["
-				+ "\nProduct: " + product.getName()
+				+ "\nProduct: " + productId
 				+ "\nQty: " + getQty()
 				+ "\nCapacity: " + capacityTotal
 				+ "\nItem storage: " + huStorage
@@ -85,9 +81,9 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public I_M_Product getM_Product()
+	public ProductId getProductId()
 	{
-		return product;
+		return productId;
 	}
 
 	@Override
@@ -99,7 +95,7 @@ import de.metas.util.Services;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final CapacityInterface capacityAvailable = capacityTotal.subtractQuantity(Quantity.of(getQty(), getC_UOM()));
+		final CapacityInterface capacityAvailable = capacityTotal.subtractQuantity(getQty());
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;
@@ -108,30 +104,25 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public BigDecimal getQty()
+	public Quantity getQty()
 	{
-		final BigDecimal qty = huStorage.getQty(getM_Product(), getC_UOM());
-		return qty;
+		return huStorage.getQuantity(getProductId(), getC_UOM());
 	}
 
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		final I_M_Product product = getM_Product();
-		final BigDecimal qty = getQty();
-		final I_C_UOM uomFrom = getC_UOM();
+		UOMConversionContext conversionCtx = UOMConversionContext.of(getProductId());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal convertQty = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uomFrom, uom);
-		return Quantity.of(convertQty, uom);
+		return uomConversionBL.convertQuantityTo(getQty(), conversionCtx, uom);
 	}
 
 	@Override
 	public final BigDecimal getQtyInStockingUOM()
 	{
-		final I_M_Product product = getM_Product();
-		final I_C_UOM uom = product.getC_UOM();
-		return getQty(uom).getQty();
+		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(getProductId());
+		return getQty(productUOM).getAsBigDecimal();
 	}
 
 	@Override
@@ -172,7 +163,7 @@ import de.metas.util.Services;
 	@Override
 	public boolean isEmpty()
 	{
-		return huStorage.isEmpty(getM_Product());
+		return huStorage.isEmpty(getProductId());
 	}
 
 	@Override

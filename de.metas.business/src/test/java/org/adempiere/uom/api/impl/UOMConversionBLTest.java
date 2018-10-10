@@ -13,32 +13,29 @@ package org.adempiere.uom.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.UOMConstants;
@@ -58,6 +55,11 @@ public class UOMConversionBLTest extends UOMTestBase
 		// Service under test
 		this.conversionBL = new UOMConversionBL();
 		Services.registerService(IUOMConversionBL.class, conversionBL);
+	}
+
+	private ProductId createProduct(final String name, I_C_UOM uom)
+	{
+		return uomConversionHelper.createProduct(name, uom);
 	}
 
 	@Test
@@ -117,7 +119,6 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal qtyExpected = new BigDecimal(qtyStrExpected);
 		Assert.assertEquals("Invalid qty", qtyExpected, qtyRounded);
 	}
-	
 
 	@Test
 	public void test_Convert()
@@ -129,7 +130,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 		final I_C_UOM millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, "mm");
 
-		final I_M_Product folie = uomConversionHelper.createProduct("Folie", rolle);
+		final ProductId folieId = createProduct("Folie", rolle);
 
 		BigDecimal qtyToConvert = BigDecimal.ONE;
 
@@ -137,18 +138,18 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal divideRate = new BigDecimal("0.000000666667");
 
 		uomConversionHelper.createUOMConversion(
-				folie.getM_Product_ID(),
+				folieId,
 				rolle,
 				millimeter,
 				multiplyRate,
 				divideRate);
 
-		BigDecimal convertedQty = conversionBL.convertQty(folie, qtyToConvert, rolle, millimeter);
+		BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, rolle, millimeter);
 		BigDecimal expectedQty = new BigDecimal(1500000.00);
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 
 		qtyToConvert = new BigDecimal(1500000);
-		convertedQty = conversionBL.convertQty(folie, qtyToConvert, millimeter, rolle);
+		convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
 		expectedQty = new BigDecimal(1);
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 
@@ -159,7 +160,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	{
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
-		final I_M_Product folie = uomConversionHelper.createProduct("Folie", rolle);
+		final ProductId folieId = createProduct("Folie", rolle);
 
 		final I_C_UOM millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, "mm");
 		final I_C_UOM meter = uomConversionHelper.createUOM("meter", 2, 0, "MTR");
@@ -167,7 +168,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal divideRate = new BigDecimal("1.00000000000000000000");
 
 		uomConversionHelper.createUOMConversion(
-				-1,
+				(ProductId)null,
 				meter,
 				millimeter,
 				multiplyRate,
@@ -175,7 +176,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		BigDecimal qtyToConvert = new BigDecimal(2000);
 		BigDecimal expectedQty = new BigDecimal(2);
-		BigDecimal convertedQty = conversionBL.convertQty(folie, qtyToConvert, millimeter, meter);
+		BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, meter);
 
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 	}
@@ -189,7 +190,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal divideRate = new BigDecimal("1.00000000000000000000");
 
 		uomConversionHelper.createUOMConversion(
-				-1,
+				(ProductId)null,
 				meter,
 				millimeter,
 				multiplyRate,
@@ -207,7 +208,7 @@ public class UOMConversionBLTest extends UOMTestBase
 	{
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
-		final I_M_Product folie = uomConversionHelper.createProduct("Folie", rolle);
+		final ProductId folieId = createProduct("Folie", rolle);
 
 		final I_C_UOM millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, "mm");
 
@@ -215,7 +216,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal divideRate = new BigDecimal("0.000000666667");
 
 		uomConversionHelper.createUOMConversion(
-				-1,
+				(ProductId)null,
 				rolle,
 				millimeter,
 				multiplyRate,
@@ -223,7 +224,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		final BigDecimal qtyToConvert = new BigDecimal(3000000);
 		BigDecimal expectedQty = new BigDecimal(2);
-		BigDecimal convertedQty = conversionBL.convertQty(folie, qtyToConvert, millimeter, rolle);
+		BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
 
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 	}
@@ -239,7 +240,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal divideRate = new BigDecimal("0.000000666667");
 
 		uomConversionHelper.createUOMConversion(
-				-1,
+				(ProductId)null,
 				rolle,
 				millimeter,
 				multiplyRate,
@@ -263,7 +264,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal divideRate = new BigDecimal("0.000000666667");
 
 		uomConversionHelper.createUOMConversion(
-				-1,
+				(ProductId)null,
 				rolle,
 				millimeter,
 				multiplyRate,
@@ -371,18 +372,18 @@ public class UOMConversionBLTest extends UOMTestBase
 		final I_C_UOM uomMillimeter = uomConversionHelper.createUOM("Millimeter", 2, 4);
 		final I_C_UOM uomRolle = uomConversionHelper.createUOM("Rolle", 4, 4);
 
-		final I_M_Product product = uomConversionHelper.createProduct("Folie", uomRolle);
+		final ProductId productId = createProduct("Folie", uomRolle);
 
 		//
 		// Conversion: Rolle -> Millimeter
 		// 1 Rolle = 1_500_000 millimeters
 		uomConversionHelper.createUOMConversion(
-				product.getM_Product_ID(), // M_Product_ID
+				productId,
 				uomRolle,
 				uomMillimeter,
 				new BigDecimal(1_500_000), // multiply rate
 				new BigDecimal(0.000000666667)  // divide rate
-				);
+		);
 
 		final I_C_UOM uomSource = uomMillimeter;
 		final BigDecimal qtyToConvert = new BigDecimal("28600");
@@ -390,7 +391,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
 		// NOTE: we particulary picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
 		final BigDecimal qtyConvertedExpected = new BigDecimal("0.0191");
-		final BigDecimal qtyConvertedActual = conversionBL.convertToProductUOM(ctx, product, uomSource, qtyToConvert);
+		final BigDecimal qtyConvertedActual = conversionBL.convertToProductUOM(ctx, productId, uomSource, qtyToConvert);
 
 		// NOTE: we don't use compareTo because we also want to match the precision
 		Assert.assertEquals("Invalid converted qty", qtyConvertedExpected, qtyConvertedActual);
@@ -402,26 +403,26 @@ public class UOMConversionBLTest extends UOMTestBase
 		final I_C_UOM uomMillimeter = uomConversionHelper.createUOM("Millimeter", 2, 4);
 		final I_C_UOM uomRolle = uomConversionHelper.createUOM("Rolle", 4, 4);
 
-		final I_M_Product product = uomConversionHelper.createProduct("Folie", uomMillimeter);
+		final ProductId productId = createProduct("Folie", uomMillimeter);
 
 		//
 		// Conversion: Rolle -> Millimeter
 		// 1 Rolle = 1_500_000 millimeters
 		uomConversionHelper.createUOMConversion(
-				product.getM_Product_ID(), // M_Product_ID
+				productId,
 				uomRolle,
 				uomMillimeter,
 				new BigDecimal(1_500_000), // multiply rate
 				new BigDecimal(0.000000666667)  // divide rate
-				);
+		);
 
 		final I_C_UOM uomDest = uomRolle;
 		final BigDecimal qtyToConvert = new BigDecimal("28600");
 
 		// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
-		// NOTE: we particulary picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
+		// NOTE: we particularly picked those numbers to make sure that Product UOM's precision (i.e. Rolle, precision=4) is used and not source UOM's precision
 		final BigDecimal qtyConvertedExpected = new BigDecimal("0.0191");
-		final BigDecimal qtyConvertedActual = conversionBL.convertFromProductUOM(ctx, product, uomDest, qtyToConvert);
+		final BigDecimal qtyConvertedActual = conversionBL.convertFromProductUOM(ctx, productId, uomDest, qtyToConvert);
 
 		// NOTE: we don't use compareTo because we also want to match the precision
 		Assert.assertEquals("Invalid converted qty", qtyConvertedExpected, qtyConvertedActual);
@@ -433,11 +434,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		Ini.setClient(false);
 		final I_C_UOM rolle = uomConversionHelper.createUOM("Rolle", 2, 0, "RL");
 
-		final I_M_Product folie = InterfaceWrapperHelper.create(Env.getCtx(), I_M_Product.class, ITrx.TRXNAME_None);
-		folie.setC_UOM_ID(rolle.getC_UOM_ID());
-		folie.setName("Folie");
-		folie.setValue("Folie");
-		InterfaceWrapperHelper.save(folie);
+		final ProductId folieId = createProduct("Folie", rolle);
 
 		final I_C_UOM millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, "mm");
 
@@ -445,7 +442,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		BigDecimal divideRate = new BigDecimal("0.000000666667");
 
 		uomConversionHelper.createUOMConversion(
-				-1,
+				(ProductId)null,
 				rolle,
 				millimeter,
 				multiplyRate,
@@ -453,7 +450,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		final BigDecimal qtyToConvert = new BigDecimal(3000000);
 		BigDecimal expectedQty = new BigDecimal(2);
-		BigDecimal convertedQty = Services.get(IUOMConversionBL.class).convertQty(folie, qtyToConvert, millimeter, rolle);
+		BigDecimal convertedQty = Services.get(IUOMConversionBL.class).convertQty(folieId, qtyToConvert, millimeter, rolle);
 
 		Assert.assertTrue(expectedQty.compareTo(convertedQty) == 0);
 	}
@@ -463,11 +460,11 @@ public class UOMConversionBLTest extends UOMTestBase
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
-		final I_M_Product product = uomConversionHelper.createProduct("product", uom1);
+		final ProductId productId = createProduct("product", uom1);
 
-		uomConversionHelper.createUOMConversion(product, uom1, uom2, new BigDecimal("2"), new BigDecimal("3"));
+		uomConversionHelper.createUOMConversion(productId, uom1, uom2, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionFromProductUOM(ctx, product, uom2);
+		final BigDecimal rate = conversionBL.getRateForConversionFromProductUOM(productId, uom2);
 		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate);
 	}
 
@@ -476,11 +473,11 @@ public class UOMConversionBLTest extends UOMTestBase
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
-		final I_M_Product product = uomConversionHelper.createProduct("product", uom1);
+		final ProductId productId = createProduct("product", uom1);
 
-		uomConversionHelper.createUOMConversion(product, uom2, uom1, new BigDecimal("2"), new BigDecimal("3"));
+		uomConversionHelper.createUOMConversion(productId, uom2, uom1, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionFromProductUOM(ctx, product, uom2);
+		final BigDecimal rate = conversionBL.getRateForConversionFromProductUOM(productId, uom2);
 		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("3"), rate);
 	}
 
@@ -489,11 +486,11 @@ public class UOMConversionBLTest extends UOMTestBase
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
-		final I_M_Product product = uomConversionHelper.createProduct("product", uom1);
+		final ProductId productId = createProduct("product", uom1);
 
-		uomConversionHelper.createUOMConversion(product, uom1, uom2, new BigDecimal("2"), new BigDecimal("3"));
+		uomConversionHelper.createUOMConversion(productId, uom1, uom2, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(ctx, product, uom2);
+		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(productId, uom2);
 		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("3"), rate);
 	}
 
@@ -502,14 +499,14 @@ public class UOMConversionBLTest extends UOMTestBase
 	{
 		final I_C_UOM uom1 = uomConversionHelper.createUOM("uom1", 2, 4);
 		final I_C_UOM uom2 = uomConversionHelper.createUOM("uom2", 2, 4);
-		final I_M_Product product = uomConversionHelper.createProduct("product", uom1);
+		final ProductId productId = createProduct("product", uom1);
 
-		uomConversionHelper.createUOMConversion(product, uom2, uom1, new BigDecimal("2"), new BigDecimal("3"));
+		uomConversionHelper.createUOMConversion(productId, uom2, uom1, new BigDecimal("2"), new BigDecimal("3"));
 
-		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(ctx, product, uom2);
+		final BigDecimal rate = conversionBL.getRateForConversionToProductUOM(productId, uom2);
 		Assert.assertEquals("Invalid conversion rate for  uom1->uom2", new BigDecimal("2"), rate);
 	}
-	
+
 	@Test
 	public void test_convertTo_CurrentUOM()
 	{
@@ -519,7 +516,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final I_C_UOM sourceUOM = uomConversionHelper.createUOM("UOM2", 2);
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
 
-		final IUOMConversionContext conversionCtx = null; // don't care, shall not be used
+		final UOMConversionContext conversionCtx = null; // don't care, shall not be used
 		final Quantity quantityConv = conversionBL.convertQuantityTo(quantity, conversionCtx, uom);
 		Assert.assertSame("Invalid converted quantity", quantity, quantityConv);
 	}
@@ -533,7 +530,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final I_C_UOM sourceUOM = uomConversionHelper.createUOM("UOM2", 2);
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
 
-		final IUOMConversionContext conversionCtx = null; // don't care, shall not be used
+		final UOMConversionContext conversionCtx = null; // don't care, shall not be used
 		final Quantity quantityConv = conversionBL.convertQuantityTo(quantity, conversionCtx, sourceUOM);
 		new QuantityExpectation()
 				.sameQty(sourceQty)
@@ -560,12 +557,12 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		//
 		// Create conversion rate: uom -> otherUOM (for product)
-		final I_M_Product product = uomConversionHelper.createProduct("product", uom);
-		uomConversionHelper.createUOMConversion(product, uom, otherUOM, new BigDecimal("2"), new BigDecimal("0.5"));
+		final ProductId productId = createProduct("product", uom);
+		uomConversionHelper.createUOMConversion(productId, uom, otherUOM, new BigDecimal("2"), new BigDecimal("0.5"));
 
 		//
 		// Create UOM Conversion context
-		final IUOMConversionContext uomConversionCtx = uomConversionHelper.createUOMConversionContext(product);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 
 		//
 		// Convert the quantity to "otherUOM" and validate

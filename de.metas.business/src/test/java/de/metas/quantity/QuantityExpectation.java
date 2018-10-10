@@ -56,11 +56,11 @@ public class QuantityExpectation
 
 		if (_qty != null)
 		{
-			assertSameOrEquals(prefix + "Qty", _qtySame, _qty, quantity.getQty());
+			assertSameOrEquals(prefix + "Qty", _qtySame, _qty, quantity.getAsBigDecimal());
 		}
 		if (_uom != null)
 		{
-			Assert.assertSame(prefix + "UOM", _uom, quantity.getUOM());
+			Assert.assertEquals(prefix + "UOM", _uom, quantity.getUOM());
 		}
 
 		if (_sourceQty != null)
@@ -69,12 +69,12 @@ public class QuantityExpectation
 		}
 		if (_sourceUOM != null)
 		{
-			Assert.assertSame(prefix + "Source UOM", _sourceUOM, quantity.getSourceUOM());
+			Assert.assertEquals(prefix + "Source UOM", _sourceUOM, quantity.getSourceUOM());
 		}
 
 		if (_sourceSameAsCurrent)
 		{
-			assertSameOrEquals(prefix + "Source Qty (same as current)", true, quantity.getQty(), quantity.getSourceQty());
+			assertSameOrEquals(prefix + "Source Qty (same as current)", true, quantity.getAsBigDecimal(), quantity.getSourceQty());
 			Assert.assertSame(prefix + "Source UOM (same as current)", quantity.getUOM(), quantity.getSourceUOM());
 		}
 

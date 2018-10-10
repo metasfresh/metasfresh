@@ -61,7 +61,7 @@ import de.metas.util.Check;
 		this.product = product;
 
 		Check.assumeNotNull(quantity, "quantity not null");
-		Check.assumeNotNull(quantity.getQty().signum() >= 0, "qty >= 0 ({})", quantity);
+		Check.assumeNotNull(quantity.signum() >= 0, "qty >= 0 ({})", quantity);
 		this.quantity = quantity;
 
 		Check.assumeNotNull(date, "date not null");
@@ -107,7 +107,7 @@ import de.metas.util.Check;
 	@Override
 	public BigDecimal getQty()
 	{
-		return quantity.getQty();
+		return quantity.getAsBigDecimal();
 	}
 
 	@Override

@@ -30,10 +30,14 @@ import java.text.DecimalFormat;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DisplayType;
 
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class HUPIItemProductDisplayNameBuilder implements IHUPIItemProductDisplayNameBuilder
 {
@@ -238,6 +242,13 @@ import de.metas.util.Check;
 	{
 		_huPIItemProduct = huPIItemProduct;
 		return this;
+	}
+	
+	@Override
+	public IHUPIItemProductDisplayNameBuilder setM_HU_PI_Item_Product(@NonNull final HUPIItemProductId id)
+	{
+		final I_M_HU_PI_Item_Product huPIItemProduct = Services.get(IHUPIItemProductDAO.class).getById(id);
+		return setM_HU_PI_Item_Product(huPIItemProduct);
 	}
 
 	private I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()

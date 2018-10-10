@@ -1,9 +1,7 @@
 package de.metas.picking.service.impl;
 
 import java.text.MessageFormat;
-import java.util.Map;
 import java.util.Properties;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -24,16 +22,14 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.service.IFreshPackingItem;
-import de.metas.picking.service.IPackingContext;
-import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
-import de.metas.picking.service.PackingItemsMap;
-import de.metas.quantity.Quantity;
+import de.metas.picking.service.PackingItemPart;
+import de.metas.picking.service.PackingItemParts;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 public class PackingService implements IPackingService
 {
@@ -46,19 +42,17 @@ public class PackingService implements IPackingService
 	public void removeProductQtyFromHU(
 			final Properties ctx,
 			final I_M_HU hu,
-			final Map<I_M_ShipmentSchedule, Quantity> schedules2qty)
+			PackingItemParts parts)
 	{
-		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> {
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.run((TrxRunnable)localTrxName -> {
 
 			final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
 
-			for (final Map.Entry<I_M_ShipmentSchedule, Quantity> e : schedules2qty.entrySet())
+			for (final PackingItemPart part : parts.toList())
 			{
-				final I_M_ShipmentSchedule schedule = e.getKey();
-				final Quantity qtyToRemove = e.getValue();
-
-				removeProductQtyFromHU(huContext, hu, schedule, qtyToRemove);
+				removeProductQtyFromHU(huContext, hu, part);
 			}
 		});
 	}
@@ -66,19 +60,21 @@ public class PackingService implements IPackingService
 	private void removeProductQtyFromHU(
 			final IHUContext huContext,
 			final I_M_HU hu,
-			final I_M_ShipmentSchedule schedule,
-			final Quantity qtyToRemove)
+			final PackingItemPart part)
 	{
+		final ShipmentScheduleId shipmentScheduleId = part.getShipmentScheduleId();
+		final I_M_ShipmentSchedule schedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
+
 		//
 		// Allocation Request
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				schedule.getM_Product(),
-				qtyToRemove.getQty(),
-				qtyToRemove.getUOM(),
+				part.getProductId(),
+				part.getQty(),
 				SystemTime.asDate(),
-				schedule // reference model
-				);
+				schedule, // reference model
+				false // forceQtyAllocation
+		);
 
 		//
 		// Allocation Destination
@@ -101,68 +97,5 @@ public class PackingService implements IPackingService
 			final String errmsg = MessageFormat.format(PackingService.ERR_CANNOT_FULLY_UNLOAD_RESULT, hu, result);
 			throw new AdempiereException(errmsg);
 		}
-	}
-
-	@Override
-	public IPackingContext createPackingContext(final Properties ctx)
-	{
-		return new PackingContext(ctx);
-	}
-
-	@Override
-	public void packItem(
-			@NonNull final IPackingContext packingContext,
-			@NonNull final IFreshPackingItem itemToPack,
-			@NonNull final Quantity qtyToPack,
-			@NonNull final IPackingHandler packingHandler)
-	{
-		final int key = packingContext.getPackingItemsMapKey();
-
-		// Packing items
-		// NOTE: we are doing a copy and work on it, in case something fails. At the end we will set it back
-		final PackingItemsMap packingItems = packingContext.getPackingItemsMap().copy();
-
-		//
-		// Remove the itemToPack from unpacked items
-		// NOTE: If there will be remaining qty, a NEW item with remaining Qty will be added to unpacked items
-		packingItems.removeUnpackedItem(itemToPack);
-
-		//
-		// Pack our "itemToPack": it will be splitted into 2 items as follows
-		// => itemToPackRemaining will be added back to unpacked items
-		// => itemPacked will be added to packed items
-		{
-			final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate = //
-					shipmentSchedule ->  packingHandler.isPackingAllowedForShipmentSchedule(shipmentSchedule);
-
-			final IFreshPackingItem itemToPackRemaining = itemToPack.copy();
-			final IFreshPackingItem itemPacked = itemToPackRemaining.subtractToPackingItem(qtyToPack, acceptShipmentSchedulePredicate);
-
-			//
-			// Process our packed item
-			packingHandler.itemPacked(itemPacked);
-
-			//
-			// Add our itemPacked to packed items
-			// If an existing matching packed item will be found, our item will be merged there
-			// If not, it will be added as a new packed item
-			packingItems.appendPackedItem(key, itemPacked);
-
-			//
-			// Update back "itemToPack" to have a up2date version
-			// NOTE: so far we worked on a copy (to avoid inconsistencies in case an exception is thrown in the middle)
-			itemToPack.setSchedules(itemToPackRemaining);
-
-			//
-			// If there was a remaining qty in "itemToPack" then add it back to unpacked items
-			// NOTE: we keep the old object instead of adding "itemToPackRemaining" because if we are not doing like this then subsequent calls to this method, using the same itemToPack will fail
-			if (itemToPack.getQtySum().signum() != 0)
-			{
-				packingItems.addUnpackedItem(itemToPack);
-			}
-		}
-
-		// Set back the packing items
-		packingContext.setPackingItemsMap(packingItems);
 	}
 }

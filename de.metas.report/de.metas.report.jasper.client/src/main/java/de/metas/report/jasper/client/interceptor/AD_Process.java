@@ -3,7 +3,10 @@ package de.metas.report.jasper.client.interceptor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_AD_Process;
 import org.springframework.stereotype.Component;
 
 import de.metas.report.jasper.client.process.JasperReportStarter;
@@ -39,9 +42,18 @@ public class AD_Process
 {
 	public AD_Process()
 	{
-		Services
-				.get(IProgramaticCalloutProvider.class)
-				.registerAnnotatedCallout(this);
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
+	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_Type)
+	public void setClassnameIfTypeSQL(final I_AD_Process process)
+	{
+		final String processType = process.getType();
+		if (X_AD_Process.TYPE_JasperReports.equals(processType))
+		{
+			process.setClassname(JasperReportStarter.class.getName());
+		}
 	}
 
 	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_IsReport)

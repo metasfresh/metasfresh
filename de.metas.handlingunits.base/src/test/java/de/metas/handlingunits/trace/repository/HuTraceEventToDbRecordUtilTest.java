@@ -78,6 +78,9 @@ public class HuTraceEventToDbRecordUtilTest
 		dbRecord.setEventTime(SystemTime.asTimestamp());
 		dbRecord.setHUTraceType(X_M_HU_Trace.HUTRACETYPE_MATERIAL_MOVEMENT);
 		dbRecord.setVHUStatus(X_M_HU_Trace.VHUSTATUS_Active);
+		dbRecord.setVHU_ID(1);
+		dbRecord.setM_HU_ID(2);
+		dbRecord.setM_Product_ID(3);
 		// save(dbRecord); we might nor might not save in the individual tests
 
 		return dbRecord;

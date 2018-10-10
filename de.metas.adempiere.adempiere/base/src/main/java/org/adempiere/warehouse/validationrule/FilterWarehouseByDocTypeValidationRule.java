@@ -1,21 +1,19 @@
 package org.adempiere.warehouse.validationrule;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -51,43 +49,39 @@ public final class FilterWarehouseByDocTypeValidationRule extends AbstractJavaVa
 		final String docType = evalCtx.get_ValueAsString(COLUMNNAME_C_DocType_ID);
 		final String docTypeTarget = evalCtx.get_ValueAsString(COLUMNNAME_C_DocTypeTarget_ID);
 
-		final int docTypeId = StringUtils.toIntegerOrZero(docType);
-		final int docTypeTargetId = StringUtils.toIntegerOrZero(docTypeTarget);
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(StringUtils.toIntegerOrZero(docType));
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(StringUtils.toIntegerOrZero(docTypeTarget));
 
-		if (docTypeId <= 0 && docTypeTargetId <= 0)
+		if (docTypeId == null && docTypeTargetId == null)
 		{
 			// Not a document. All warehouses available.
 			return true;
 		}
 
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-		final int warehouseId = StringUtils.toIntegerOrZero(item.getID());
-		Check.assume(warehouseId > 0, "Invalid warehouse {}", item.getID());
-
-		final Properties ctx = Env.getCtx();
-		final String trxName = ITrx.TRXNAME_None;
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(NumberUtils.asInt(item.getID(), -1));
+		Check.assumeNotNull(warehouseId, "Invalid warehouse {}", item.getID());
 
 		// Check if we have any available doc types assigned to our warehouse.
 		// If not, we shall accept this warehouse right away (task 09301).
 		// As soon as there is assigned at least on doc type, we will enforce the restrictions.
-		if (!warehouseDAO.hasAvailableDocTypes(ctx, warehouseId, trxName))
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		if (warehousesRepo.isAllowAnyDocType(warehouseId))
 		{
 			return true; // no restrictions defined => accept this warehouse
 		}
 
 		// First check for doc type.
-		if (docTypeId > 0)
+		if (docTypeId != null)
 		{
-			final I_C_DocType type = loadOutOfTrx(docTypeId, I_C_DocType.class);
-			return warehouseDAO.isDocTypeAllowed(ctx, warehouseId, type, trxName);
+			final String docBaseType = Services.get(IDocTypeDAO.class).getById(docTypeId).getDocBaseType();
+			return warehousesRepo.isDocTypeAllowed(warehouseId, docBaseType);
 		}
 
 		// For orders, also check doc type target
-		if (docTypeTargetId > 0)
+		if (docTypeTargetId != null)
 		{
-			final I_C_DocType type = loadOutOfTrx(docTypeTargetId, I_C_DocType.class);
-			return warehouseDAO.isDocTypeAllowed(ctx, warehouseId, type, trxName);
+			final String docBaseType = Services.get(IDocTypeDAO.class).getById(docTypeTargetId).getDocBaseType();
+			return warehousesRepo.isDocTypeAllowed(warehouseId, docBaseType);
 		}
 
 		return false;

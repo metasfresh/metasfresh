@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.product.LotNumberQuarantine;
 import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -183,7 +184,7 @@ public class DistributeAndMoveReceiptCreator
 
 	private LotNumberQuarantine getQuarantineLotNoOrNull(final I_M_InOutLine inOutLine)
 	{
-		final int productId = inOutLine.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 
 		final I_M_AttributeSetInstance receiptLineASI = inOutLine.getM_AttributeSetInstance();
 		if (receiptLineASI == null)

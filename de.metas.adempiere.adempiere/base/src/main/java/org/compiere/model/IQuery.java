@@ -133,8 +133,12 @@ public interface IQuery<T>
 		return mapById(getModelClass());
 	}
 
-
 	int firstId();
+
+	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return idMapper.apply(firstId());
+	}
 
 	/**
 	 * Return first ID. If there are more results and exception is thrown.
@@ -143,6 +147,11 @@ public interface IQuery<T>
 	 * @throws DBException
 	 */
 	int firstIdOnly() throws DBException;
+
+	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return idMapper.apply(firstIdOnly());
+	}
 
 	<ET extends T> ET first() throws DBException;
 

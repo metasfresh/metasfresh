@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.product.ProductId;
 
 /**
  * Test case:
@@ -272,11 +272,11 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 	 * from the given {@code tuHU} onto an LU.
 	 * 
 	 * @param tuHU
-	 * @param product
+	 * @param productId
 	 * @param qty
 	 * @return
 	 */
-	protected final List<I_M_HU> splitOnLU(final I_M_HU tuHU, final I_M_Product product, final BigDecimal qty)
+	protected final List<I_M_HU> splitOnLU(final I_M_HU tuHU, final ProductId productId, final BigDecimal qty)
 	{
 		final List<I_M_HU> splitLUs = new HUSplitBuilder(helper.ctx)
 				.setHUToSplit(tuHU)
@@ -288,7 +288,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 				.setTU_M_HU_PI_Item(piTU_Item)
 				.setTUPerLU(new BigDecimal("1"))
 				// CU
-				.setCUProduct(product)
+				.setCUProductId(productId)
 				.setCUPerTU(qty)
 				.setCUUOM(productUOM)
 				//

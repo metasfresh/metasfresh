@@ -27,11 +27,11 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.product.ProductId;
 
 /**
  * @author ad
@@ -49,7 +49,7 @@ public interface IHUDocumentLine
 
 	int getC_BPartner_Location_ID();
 
-	I_M_Product getM_Product();
+	ProductId getProductId();
 
 	BigDecimal getQty();
 

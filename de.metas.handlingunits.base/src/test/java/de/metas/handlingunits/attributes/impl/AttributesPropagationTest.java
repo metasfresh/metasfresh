@@ -37,10 +37,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
@@ -77,7 +77,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		huDefBag = helper.createHUDefinition(HUTestHelper.NAME_Bag_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefBag);
-			helper.assignProduct(itemMA, pTomato, BigDecimal.TEN, uomEach);
+			helper.assignProduct(itemMA, pTomatoId, BigDecimal.TEN, uomEach);
 
 			helper.createHU_PI_Item_PackingMaterial(huDefBag, pmBag);
 
@@ -101,7 +101,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		{
 			//helper.createHU_PI_Item_IncludedHU(huDefIFCO, huDefIFCO, BigDecimal.ONE);
 			final I_M_HU_PI_Item   piTU_Item_IFCO = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(piTU_Item_IFCO, pTomato, BigDecimal.TEN, uomEach);
+			helper.assignProduct(piTU_Item_IFCO, pTomatoId, BigDecimal.TEN, uomEach);
 
 			// value will not be propagated
 			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)

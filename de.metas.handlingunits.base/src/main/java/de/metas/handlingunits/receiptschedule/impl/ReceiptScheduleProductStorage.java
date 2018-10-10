@@ -26,10 +26,12 @@ package de.metas.handlingunits.receiptschedule.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.util.Services;
 
@@ -49,8 +51,8 @@ import de.metas.util.Services;
 		final boolean allowNegativeCapacity = !enforceCapacity; // true because we want to over/under allocate on this receipt schedule
 		capacityTotal = Capacity.createCapacity(
 				receiptScheduleBL.getQtyOrdered(schedule), // qty
-				schedule.getM_Product(), // product
-				schedule.getC_UOM(), // uom
+				ProductId.ofRepoId(schedule.getM_Product_ID()), // product
+				Services.get(IUOMDAO.class).getById(schedule.getC_UOM_ID()), // uom
 				allowNegativeCapacity
 				);
 	}

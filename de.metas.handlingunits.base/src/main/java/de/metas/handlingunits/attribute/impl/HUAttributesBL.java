@@ -37,7 +37,7 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -129,7 +129,7 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
 
-		final I_M_Attribute attr_QualityDiscountPercent = Services.get(IAttributeDAO.class).retrieveAttributeByValue(Constants.ATTR_QualityDiscountPercent_Value);
+		final I_M_Attribute attr_QualityDiscountPercent = Services.get(IAttributeDAO.class).retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityDiscountPercent_Value);
 
 		if (!attributeStorage.hasAttribute(attr_QualityDiscountPercent))
 		{

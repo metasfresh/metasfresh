@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,15 +15,14 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -31,9 +32,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -58,6 +60,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -89,7 +93,6 @@ public abstract class ReceiptScheduleTestBase
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
 	@Mocked
 	protected IProductAcctDAO productAcctDAO; // 07629
-	private I_C_Activity activity; // 07629
 
 	protected Properties ctx;
 	/** Today (date+time) */
@@ -98,7 +101,7 @@ public abstract class ReceiptScheduleTestBase
 	protected Timestamp date2;
 
 	// Masterdata
-	protected I_AD_Org org;
+	private OrgId orgId;
 	protected I_C_BPartner bpartner1;
 	protected I_C_BPartner bpartner2;
 	protected I_M_Product product1_wh1;
@@ -114,7 +117,7 @@ public abstract class ReceiptScheduleTestBase
 
 	protected I_C_UOM productUOM = null;
 	protected I_C_UOM priceUOM; // 07090
-	
+
 	// #653
 	public I_M_Attribute attr_LotNumberDate;
 	public I_M_Attribute attr_LotNumber;
@@ -135,9 +138,11 @@ public abstract class ReceiptScheduleTestBase
 		date = SystemTime.asTimestamp();
 		date2 = SystemTime.asDayTimestamp();
 		Env.setContext(ctx, Env.CTXNAME_Date, date2);
+
 		// Master data
-		org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, ITrx.TRXNAME_None);
-		InterfaceWrapperHelper.save(org);
+		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, ITrx.TRXNAME_None);
+		saveRecord(org);
+		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		bpartner1 = createBPartner("BP1");
 		bpartner2 = createBPartner("BP2");
@@ -154,27 +159,34 @@ public abstract class ReceiptScheduleTestBase
 		receiptDocType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, ITrx.TRXNAME_None);
 		receiptDocType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
 		receiptDocType.setAD_Org_ID(0); // same org as the receipt schedules
-		InterfaceWrapperHelper.save(receiptDocType);
+		saveRecord(receiptDocType);
 
 		priceUOM = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
 		priceUOM.setName("priceUOM");
 		priceUOM.setAD_Org_ID(0);
-		InterfaceWrapperHelper.save(priceUOM);
+		saveRecord(priceUOM);
 
 		// 07629 just adding to fix existing tests; TODO extend the tests
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
-		activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
+		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
+		saveRecord(activity);
+		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		//@formatter:off
 		new Expectations()
 		{{
-			productAcctDAO.retrieveActivityForAcct((IContextAware)any, org, (I_M_Product)any); minTimes=0; result = activity;
+			productAcctDAO.retrieveActivityForAcct(
+					(ClientId)any, 
+					orgId, 
+					(ProductId)any);
+			
+			minTimes=0;
+			result = activityId;
 		}};
 		//@formatter:on
-		
-		//#653
-		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.LotNumberDateAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-		
-		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
+		// #653
+		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		setup();
 	}
@@ -195,7 +207,7 @@ public abstract class ReceiptScheduleTestBase
 		final I_C_BPartner bp = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, ITrx.TRXNAME_None);
 		bp.setValue(name);
 		bp.setName(name);
-		InterfaceWrapperHelper.save(bp);
+		saveRecord(bp);
 		return bp;
 	}
 
@@ -210,7 +222,7 @@ public abstract class ReceiptScheduleTestBase
 			product.setM_Locator_ID(locator.getM_Locator_ID());
 		}
 
-		InterfaceWrapperHelper.save(product);
+		saveRecord(product);
 		return product;
 	}
 
@@ -219,8 +231,8 @@ public abstract class ReceiptScheduleTestBase
 		final I_M_Warehouse wh = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, ITrx.TRXNAME_None);
 		wh.setValue(name);
 		wh.setName(name);
-		wh.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(wh);
+		wh.setAD_Org_ID(orgId.getRepoId());
+		saveRecord(wh);
 		return wh;
 	}
 
@@ -233,7 +245,7 @@ public abstract class ReceiptScheduleTestBase
 		locator.setX("X");
 		locator.setY("Y");
 		locator.setZ("Z");
-		InterfaceWrapperHelper.save(locator);
+		saveRecord(locator);
 		return locator;
 	}
 
@@ -264,7 +276,7 @@ public abstract class ReceiptScheduleTestBase
 		final String headerAggregationKey = receiptScheduleBL.getHeaderAggregationKeyBuilder().buildKey(receiptSchedule);
 		receiptSchedule.setHeaderAggregationKey(headerAggregationKey);
 
-		InterfaceWrapperHelper.save(receiptSchedule);
+		saveRecord(receiptSchedule);
 
 		return receiptSchedule;
 	}
@@ -293,7 +305,7 @@ public abstract class ReceiptScheduleTestBase
 		}
 
 		// more if needed
-		InterfaceWrapperHelper.save(order);
+		saveRecord(order);
 		return order;
 	}
 
@@ -329,20 +341,20 @@ public abstract class ReceiptScheduleTestBase
 		//
 		// Warehouse
 		orderLine.setM_Warehouse_ID(order.getM_Warehouse_ID());
-		
+
 		//
 		// BPartner
 		orderLine.setC_BPartner(order.getC_BPartner());
 		orderLine.setC_BPartner_Location(order.getC_BPartner_Location());
-		
+
 		// more if needed
 
 		//
 		// Save & return
-		InterfaceWrapperHelper.save(orderLine);
+		saveRecord(orderLine);
 		return orderLine;
 	}
-	
+
 	public I_M_Attribute createM_Attribute(final String name,
 			final String valueType,
 			final boolean isInstanceAttribute)
@@ -361,7 +373,7 @@ public abstract class ReceiptScheduleTestBase
 		// Configure ASI usage
 		attr.setIsInstanceAttribute(isInstanceAttribute);
 
-		InterfaceWrapperHelper.save(attr);
+		saveRecord(attr);
 		return attr;
 	}
 

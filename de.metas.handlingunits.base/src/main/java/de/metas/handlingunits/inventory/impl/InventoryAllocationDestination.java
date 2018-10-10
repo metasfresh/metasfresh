@@ -42,7 +42,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Inventory;
 import org.compiere.util.TimeUtil;
@@ -82,6 +81,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -165,7 +165,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		// For each receipt line which received this HU
 		for (final I_M_InOutLine receiptLine : getReceiptLinesOrEmpty(topLevelHU, request.getProductId()))
 		{
-			final BigDecimal qtyToMoveTotal = qty.getQty();
+			final BigDecimal qtyToMoveTotal = qty.getAsBigDecimal();
 			final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(hu);
 			final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
 			final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
@@ -230,7 +230,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Update the result
 			{
-				result.subtractAllocatedQty(qtySource.getQty());
+				result.subtractAllocatedQty(qtySource.getAsBigDecimal());
 
 				final IHUTransactionCandidate trx = new HUTransactionCandidate(
 						inventoryLine, // Reference model
@@ -265,11 +265,11 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return uomConversionBL.convertToProductUOM(qtySource, request.getProductId());
 	}
 
-	private List<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final int productId)
+	private List<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final ProductId productId)
 	{
 		final List<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
 				.stream()
-				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId) // #1604: skip inoutlines for other products
+				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId.getRepoId()) // #1604: skip inoutlines for other products
 				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
 				.collect(ImmutableList.toImmutableList());
 		
@@ -489,9 +489,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 					.orElse(null);
 			if (materialItem != null)
 			{
-				final I_M_Product product = receiptLine.getM_Product();
+				final ProductId productId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
 				final Date date = receipt.getMovementDate();
-				return huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, bpartner, product, date);
+				return huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, bpartner, productId, date);
 			}
 		}
 

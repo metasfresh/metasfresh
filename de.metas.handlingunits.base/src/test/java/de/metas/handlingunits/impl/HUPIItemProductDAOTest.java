@@ -59,16 +59,17 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class HUPIItemProductDAOTest
 {
 	private HUPIItemProductDAO dao;
-	private I_M_Product product1;
-	private I_M_Product product2;
+	private ProductId product1;
+	private ProductId product2;
 
-	private I_M_Product packagingProduct1;
-	private I_M_Product packagingProduct2;
+	private ProductId packagingProduct1;
+	private ProductId packagingProduct2;
 
 	private I_C_BPartner bpartner1;
 	private I_C_BPartner bpartner2;
@@ -116,7 +117,7 @@ public class HUPIItemProductDAOTest
 		final List<I_M_HU_PI_Item_Product> itemProducts = Arrays.asList(
 				createM_HU_PI_Item_Product(product1, null, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit), createM_HU_PI_Item_Product(product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit));
 
-		final List<I_M_HU_PI_Item_Product> itemProductsOrdered = new ArrayList<I_M_HU_PI_Item_Product>(itemProducts);
+		final List<I_M_HU_PI_Item_Product> itemProductsOrdered = new ArrayList<>(itemProducts);
 		Collections.sort(itemProductsOrdered, orderBy);
 
 		assertEqualsByDescription("Invalid item at index=1", itemProducts.get(1), itemProductsOrdered.get(0));
@@ -188,12 +189,16 @@ public class HUPIItemProductDAOTest
 				is(piip2));
 	}
 
-	private void test_retrieveMaterialItemProduct_product_bpartner_date(final I_M_HU_PI_Item_Product expected,
-			final I_M_Product product, final I_C_BPartner bpartner, final Date date, final String huUnitType)
+	private void test_retrieveMaterialItemProduct_product_bpartner_date(
+			final I_M_HU_PI_Item_Product expected,
+			final ProductId productId, 
+			final I_C_BPartner bpartner, 
+			final Date date, 
+			final String huUnitType)
 	{
 		final boolean allowInfiniteCapacity = true;
-		final I_M_HU_PI_Item_Product actual = dao.retrieveMaterialItemProduct(product, bpartner, date, huUnitType, allowInfiniteCapacity);
-		final String message = "Invalid for product=" + product.getValue() + ", bpartner=" + bpartner.getValue() + ", date=" + date;
+		final I_M_HU_PI_Item_Product actual = dao.retrieveMaterialItemProduct(productId, bpartner, date, huUnitType, allowInfiniteCapacity);
+		final String message = "Invalid for product=" + productId + ", bpartner=" + bpartner.getValue() + ", date=" + date;
 		assertEqualsByDescription(message, expected, actual);
 	}
 
@@ -204,14 +209,14 @@ public class HUPIItemProductDAOTest
 		Assert.assertEquals(message, expectedDescription, actualDescription);
 	}
 
-	private I_M_Product createProduct(final String value)
+	private ProductId createProduct(final String value)
 	{
 		final I_M_Product p = InterfaceWrapperHelper.create(Env.getCtx(), I_M_Product.class, ITrx.TRXNAME_None);
 		p.setValue(value);
 		p.setName(value);
 		InterfaceWrapperHelper.save(p);
 
-		return p;
+		return ProductId.ofRepoId(p.getM_Product_ID());
 	}
 
 	private I_C_BPartner createBPartner(final String value)
@@ -249,28 +254,28 @@ public class HUPIItemProductDAOTest
 		return piItem;
 	}
 
-	private void addPackingmaterialToItem(final I_M_Product packackingProduct, final I_M_HU_PI_Item materialPiItem)
+	private void addPackingmaterialToItem(final ProductId packingProductId, final I_M_HU_PI_Item materialPiItem)
 	{
 		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
-		packingMaterial.setM_Product(packackingProduct);
+		packingMaterial.setM_Product_ID(packingProductId.getRepoId());
 		InterfaceWrapperHelper.save(packingMaterial);
 
 		final I_M_HU_PI_Item packingMaterialPiItem = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
 		packingMaterialPiItem.setM_HU_PI_Version(materialPiItem.getM_HU_PI_Version());
-		
+
 		packingMaterialPiItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		packingMaterialPiItem.setM_HU_PackingMaterial(packingMaterial);
 		packingMaterialPiItem.setQty(BigDecimal.ONE);
-		
+
 		InterfaceWrapperHelper.save(packingMaterialPiItem);
 	}
 
-	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final I_M_Product product, final I_C_BPartner bpartner, final Timestamp validFrom, final String huUnitType)
+	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final ProductId productId, final I_C_BPartner bpartner, final Timestamp validFrom, final String huUnitType)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 
-		piItemProduct.setM_Product(product);
-		if (product == null)
+		piItemProduct.setM_Product_ID(ProductId.toRepoId(productId));
+		if (productId == null)
 		{
 			piItemProduct.setIsAllowAnyProduct(true);
 		}

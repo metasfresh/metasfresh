@@ -49,11 +49,18 @@ public interface IOrderDAO extends ISingletonService
 
 	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
 
+	<T extends I_C_OrderLine> T getOrderLineById(final OrderLineId orderLineId, Class<T> modelClass);
+
 	Map<OrderAndLineId, I_C_OrderLine> getOrderLinesByIds(Collection<OrderAndLineId> orderAndLineIds);
 
 	default I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return getOrderLineById(orderAndLineId.getOrderLineId());
+		return getOrderLineById(orderAndLineId, I_C_OrderLine.class);
+	}
+
+	default <T extends I_C_OrderLine> T getOrderLineById(@NonNull final OrderAndLineId orderAndLineId, @NonNull final Class<T> modelClass)
+	{
+		return getOrderLineById(orderAndLineId.getOrderLineId(), modelClass);
 	}
 
 	default <T extends org.compiere.model.I_C_OrderLine> List<T> getOrderLinesByIds(final Collection<OrderAndLineId> orderAndLineIds, final Class<T> modelType)

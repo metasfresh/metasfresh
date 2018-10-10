@@ -1,7 +1,13 @@
 package de.metas.i18n;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
@@ -106,6 +112,18 @@ public interface ITranslatableString
 		{
 			return new CompositeTranslatableString(trls, joiningString);
 		}
+	}
+
+	public static Collector<ITranslatableString, ?, ITranslatableString> joining(final String joiningString)
+	{
+		final Supplier<List<ITranslatableString>> supplier = ArrayList::new;
+		final BiConsumer<List<ITranslatableString>, ITranslatableString> accumulator = (accum, e) -> accum.add(e);
+		final BinaryOperator<List<ITranslatableString>> combiner = (accum1, accum2) -> {
+			accum1.addAll(accum2);
+			return accum1;
+		};
+		final Function<List<ITranslatableString>, ITranslatableString> finisher = accum -> compose(joiningString, accum);
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	public static ITranslatableString constant(final String value)

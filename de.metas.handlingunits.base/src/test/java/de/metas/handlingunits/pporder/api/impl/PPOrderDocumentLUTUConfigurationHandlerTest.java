@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 {
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private I_C_UOM productUOM;
-	private I_M_Product product;
+	private ProductId productId;
 	private I_M_HU_PI_Item_Product piTU_Item_Product;
 	private I_M_HU_PI_Item_Product huDefItemProductVirtual;
 
@@ -61,13 +61,13 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 
 		final HUTestHelper huTestHelper = new HUTestHelper();
 
-		product = huTestHelper.pTomato;
+		productId = huTestHelper.pTomatoProductId;
 		productUOM = huTestHelper.pTomato.getC_UOM();
 
 		// 10 CUs fit into one TU
 		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
-		piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, product, BigDecimal.TEN, productUOM);
+		piTU_Item_Product = huTestHelper.assignProduct(piTU_Item, productId, TEN, productUOM);
 
 		// 3 TUs fit onto 1 LU
 		final I_M_HU_PI piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -93,11 +93,11 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 	{
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setM_HU_PI_Item_Product(piTU_Item_Product);
-		orderLine.setM_Product(product);
+		orderLine.setM_Product_ID(productId.getRepoId());
 		save(orderLine);
 
 		final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
-		ppOrder.setM_Product(product);
+		ppOrder.setM_Product_ID(productId.getRepoId());
 		ppOrder.setC_OrderLine(orderLine);
 		ppOrder.setC_UOM(productUOM);
 		ppOrder.setQtyOrdered(TEN);

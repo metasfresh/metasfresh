@@ -170,7 +170,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			return UomId.ofRepoId(productsBL.getStockingUOMId(productId));
+			return productsBL.getStockingUOMId(productId);
 		}
 	}
 

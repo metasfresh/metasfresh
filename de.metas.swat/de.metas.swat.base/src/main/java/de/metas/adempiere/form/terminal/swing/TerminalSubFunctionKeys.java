@@ -1,5 +1,12 @@
 package de.metas.adempiere.form.terminal.swing;
 
+import de.metas.adempiere.form.terminal.ITerminalBasePanel;
+import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.adempiere.form.terminal.ITerminalKey;
+import de.metas.adempiere.form.terminal.ITerminalKeyListener;
+import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
+import de.metas.adempiere.form.terminal.POSKeyLayout;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,12 +31,6 @@ package de.metas.adempiere.form.terminal.swing;
 
 
 import net.miginfocom.swing.MigLayout;
-import de.metas.adempiere.form.terminal.ITerminalBasePanel;
-import de.metas.adempiere.form.terminal.ITerminalFactory;
-import de.metas.adempiere.form.terminal.ITerminalKey;
-import de.metas.adempiere.form.terminal.ITerminalKeyListener;
-import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
-import de.metas.adempiere.form.terminal.POSKeyLayout;
 
 /**
  * Function Key Sub Panel
@@ -77,9 +78,4 @@ public abstract class TerminalSubFunctionKeys
 	}
 
 	public abstract int getC_POSKeyLayout_ID();
-
-	public void setCurrentLine(ITerminalKey key)
-	{
-		getTerminalBasePanel().updateInfo();
-	}
 }

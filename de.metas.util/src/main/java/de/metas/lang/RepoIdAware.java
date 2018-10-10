@@ -22,7 +22,13 @@ package de.metas.lang;
  * #L%
  */
 
-public interface RepoIdAware
+public interface RepoIdAware extends Comparable<RepoIdAware>
 {
 	int getRepoId();
+
+	@Override
+	default int compareTo(final RepoIdAware other)
+	{
+		return getRepoId() - other.getRepoId();
+	}
 }

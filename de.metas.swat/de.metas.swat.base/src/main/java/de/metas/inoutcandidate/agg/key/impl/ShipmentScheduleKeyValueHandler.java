@@ -51,12 +51,12 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		values.add(VERSION);
 
 		values.add(sched.getC_DocType_ID());
-		values.add(shipmentScheduleEffectiveBL.getC_BPartner_ID(sched));
+		values.add(shipmentScheduleEffectiveBL.getBPartnerId(sched).getRepoId());
 		values.add(shipmentScheduleEffectiveBL.getC_BP_Location_ID(sched));
 		if (!shipmentScheduleBL.isSchedAllowsConsolidate(sched))
 		{

@@ -24,14 +24,19 @@ package de.metas.handlingunits.impl;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_Locator;
@@ -41,23 +46,30 @@ import lombok.NonNull;
 
 public class HUWarehouseDAO implements IHUWarehouseDAO
 {
+	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
+
 	@Override
-	public List<I_M_Warehouse> retrievePickingWarehouses(final Properties ctx)
+	public List<I_M_Warehouse> retrievePickingWarehouses()
 	{
+		final Properties ctx = Env.getCtx();
+
 		// 06902: We only take warehouses that have at least one *active* after picking locator.
 		final IQuery<I_M_Locator> subQuery = Services.get(IQueryBL.class).createQueryBuilder(I_M_Locator.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Locator.COLUMNNAME_IsAfterPickingLocator, true)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		final List<I_M_Warehouse> warehouses = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_isPickingWarehouse, true)
 				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Locator.COLUMNNAME_M_Warehouse_ID, subQuery)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_M_Warehouse.class);
+				.listIds()
+				.stream()
+				.map(WarehouseId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		return warehouses;
+		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds);
 	}
 
 	@Override
@@ -85,11 +97,9 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
-		final List<org.compiere.model.I_M_Locator> locators = warehouseDAO.retrieveLocators(warehouseId);
 
-		for (final org.compiere.model.I_M_Locator currentLocator : locators)
+		for (final I_M_Locator huCurrentLocator : warehouseDAO.getLocators(warehouseId, I_M_Locator.class))
 		{
-			final I_M_Locator huCurrentLocator = InterfaceWrapperHelper.create(currentLocator, I_M_Locator.class);
 			if (!huCurrentLocator.isActive())
 			{
 				continue;
@@ -106,12 +116,26 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	}
 
 	@Override
-	public List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouse(final Properties ctx)
+	public List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses()
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(de.metas.handlingunits.model.I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+		final Set<WarehouseId> warehouseIds = retriveQualityReturnWarehouseIds();
+
+		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds, de.metas.handlingunits.model.I_M_Warehouse.class);
+	}
+
+	private Set<WarehouseId> retriveQualityReturnWarehouseIds()
+	{
+		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
 				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list();
+				.listIds(WarehouseId::ofRepoId);
+
+		if (warehouseIds.isEmpty())
+		{
+			throw new AdempiereException("@" + MSG_NoQualityWarehouse + "@");
+		}
+		return warehouseIds;
 	}
 }

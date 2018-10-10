@@ -16,9 +16,9 @@ import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
-import de.metas.util.Services;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*

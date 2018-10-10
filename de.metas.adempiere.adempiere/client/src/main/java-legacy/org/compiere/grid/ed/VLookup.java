@@ -816,7 +816,7 @@ public class VLookup extends JComponent
 			// Not in Lookup - set to Null
 			if (m_combo.getSelectedItem() == null)
 			{
-				log.info(m_columnName + "=" + value + ": not in Lookup - set to NULL");
+				log.info("{}={}: not in Lookup - set to NULL", m_columnName, value);
 				actionCombo(null);             // data binding (calls setValue again)
 				m_value = null;
 			}
@@ -953,8 +953,6 @@ public class VLookup extends JComponent
 			return;
 		}
 
-		log.info(m_columnName + " - " + e.getActionCommand() + ", ComboValue=" + m_combo.getSelectedItem());
-
 		// Combo Selection
 		if (e.getSource() == m_combo)
 		{
@@ -966,7 +964,7 @@ public class VLookup extends JComponent
 				// don't allow selection of inactive
 				if (s.startsWith(MLookup.INACTIVE_S) && s.endsWith(MLookup.INACTIVE_E))
 				{
-					log.info(m_columnName + " - selection inactive set to NULL");
+					log.info("{} - selection inactive set to NULL", m_columnName);
 					value = null;
 				}
 			}
@@ -1243,7 +1241,7 @@ public class VLookup extends JComponent
 		// Result
 		if (result != null && result.length > 0)
 		{
-			log.info(m_columnName + " - Result = " + result.toString() + " (" + result.getClass().getName() + ")");
+			log.debug(m_columnName + " - Result = " + result.toString() + " (" + result.getClass().getName() + ")");
 			// make sure that value is in cache
 			lookup.getDirect(IValidationContext.NULL, result[0], false, true); // saveInCache=false, cacheLocal=true
 			if (resetValue)
@@ -1263,12 +1261,12 @@ public class VLookup extends JComponent
 		}
 		else if (cancelled)
 		{
-			log.info(m_columnName + " - Result = null (cancelled)");
+			log.debug("{} - Result = null (cancelled)", m_columnName);
 			actionCombo(null);
 		}
 		else
 		{
-			log.info(m_columnName + " - Result = null (not cancelled)");
+			log.debug("{} - Result = null (not cancelled)", m_columnName);
 			setValue(m_value);      // to re-display value
 		}
 	}	// actionButton
@@ -1791,7 +1789,6 @@ public class VLookup extends JComponent
 				selectedItemKey = getValue();
 				validationCtx = getValidationContext();
 			}
-			log.info(m_columnName + " #" + lookup.getSize() + ", Selected=" + selectedItemKey);
 
 			//
 			// Actually refresh the combo
@@ -1810,7 +1807,6 @@ public class VLookup extends JComponent
 
 		//
 		setCursor(Cursor.getDefaultCursor());
-		log.info(m_columnName + " #" + lookup.getSize() + ", Selected=" + m_combo.getSelectedItem());
 	}	// actionRefresh
 
 	/**
@@ -1832,13 +1828,9 @@ public class VLookup extends JComponent
 		}
 
 		final Object selectedObj = lookup.getSelectedItem();
-		log.info(m_columnName + " - Start    Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
 
 		lookup.fillComboBox(isMandatory(), true, true, false);     // only validated & active
-
-		log.info(m_columnName + " - Update   Count=" + m_combo.getItemCount() + ", Selected=" + selectedObj);
 		lookup.setSelectedItem(selectedObj);
-		log.info(m_columnName + " - Selected Count=" + m_combo.getItemCount() + ", Selected=" + lookup.getSelectedItem());
 
 		return true;
 	}
@@ -1935,7 +1927,6 @@ public class VLookup extends JComponent
 		if (e.getSource() == m_text)
 		{
 			String text = m_text.getText();
-			log.info(m_columnName + " (Text) " + m_columnName + " = " + m_value + " - " + text);
 			m_haveFocus = false;
 			// Skip if empty
 			if ((m_value == null
@@ -1965,7 +1956,6 @@ public class VLookup extends JComponent
 		//
 		m_settingFocus = true;  // prevents actionPerformed
 		//
-		log.info(m_columnName + " = " + m_combo.getSelectedItem());
 		Object obj = m_combo.getSelectedItem();
 		/*
 		 * // set original model

@@ -27,19 +27,19 @@ import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
@@ -58,7 +58,7 @@ public final class HUStorageRecord implements IStorageRecord
 
 	private final String id;
 	private final HUStorageRecord_HUPart huPart;
-	private final I_M_Product product;
+	private final ProductId productId;
 	private final Quantity qtyOnHand;
 	private String _summary;
 
@@ -71,14 +71,14 @@ public final class HUStorageRecord implements IStorageRecord
 		id = I_M_HU_Storage.Table_Name + "#" + huStorage.getM_HU_Storage_ID();
 		this.huPart = huPart;
 
-		product = huStorage.getM_Product();
+		productId = ProductId.ofRepoId(huStorage.getM_Product_ID());
 
 		//
 		// Get QtyOnHand from HU Storage
 		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), huStorage.getC_UOM());
 		// ... and convert it to product's storage UOM
-		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 		qtyOnHand = uomConversionBL.convertQuantityTo(qtyOnHandSrc, uomConversionCtx, productUOM);
 	}
 
@@ -117,7 +117,8 @@ public final class HUStorageRecord implements IStorageRecord
 			summary.append("\n@C_BPartner_ID@: ").append(bpartner.getValue()).append("_").append(bpartner.getName());
 		}
 
-		summary.append("\n@M_Product_ID@: ").append(product.getValue()).append("_").append(product.getName());
+		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		summary.append("\n@M_Product_ID@: ").append(productName);
 
 		// Append attributes
 		final IAttributeStorage huAttributes = huPart.getAttributes();
@@ -144,9 +145,9 @@ public final class HUStorageRecord implements IStorageRecord
 	}
 
 	@Override
-	public I_M_Product getProduct()
+	public ProductId getProductId()
 	{
-		return product;
+		return productId;
 	}
 
 	@Override
@@ -170,7 +171,7 @@ public final class HUStorageRecord implements IStorageRecord
 	@Override
 	public BigDecimal getQtyOnHand()
 	{
-		return qtyOnHand.getQty();
+		return qtyOnHand.getAsBigDecimal();
 	}
 
 	public I_M_HU getVHU()

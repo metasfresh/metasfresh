@@ -62,13 +62,11 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -167,7 +165,6 @@ public final class VTreePanel extends CPanel
 	{
 		super();
 		tree.setModel(new AdempiereTreeModel()); // set an empty tree model just to avoid displaying the sample tree nodes
-		log.info("Bar=" + hasBar + ", Editable=" + editable);
 
 		m_hasBar = hasBar;
 		m_editable = editable;
@@ -202,7 +199,6 @@ public final class VTreePanel extends CPanel
 	 */
 	public boolean initTree(final int AD_Tree_ID)
 	{
-		log.info("AD_Tree_ID=" + AD_Tree_ID);
 		//
 		m_AD_Tree_ID = AD_Tree_ID;
 
@@ -216,7 +212,6 @@ public final class VTreePanel extends CPanel
 				.build();
 		m_root = vTree.getRoot();
 		m_root.setName(Services.get(IMsgBL.class).getMsg(Env.getCtx(), vTree.getName())); // translate name of menu.
-		log.info("root={}", m_root);
 
 		treeModel = new AdempiereTreeModel(m_root);
 		treeModel.setMTree(vTree);
@@ -651,7 +646,7 @@ public final class VTreePanel extends CPanel
 	 */
 	public void nodeChanged(final boolean save, final MTreeNode info)
 	{
-		log.info("Save=" + save + ", Info=" + info);
+		log.debug("Save={}, Info={}", save, info);
 		// if ID==0=root - don't update it
 		if (info.getNode_ID() == 0)
 		{

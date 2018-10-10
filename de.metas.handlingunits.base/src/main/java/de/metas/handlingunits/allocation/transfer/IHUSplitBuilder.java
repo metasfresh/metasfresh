@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
@@ -34,6 +33,7 @@ import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.product.ProductId;
 
 /**
  * Instances of this interface can be used to perform HU split.
@@ -65,10 +65,10 @@ public interface IHUSplitBuilder
 
 	/**
 	 *
-	 * @param product the (endcustomer) product which we want to take from the HU. Not a packaging product, but the actual good.
+	 * @param cuProductId the (endcustomer) product which we want to take from the HU. Not a packaging product, but the actual good.
 	 * @return
 	 */
-	IHUSplitBuilder setCUProduct(I_M_Product product);
+	IHUSplitBuilder setCUProductId(ProductId cuProductId);
 
 	/**
 	 * Set the qty which we want to split off. Note that the BL will split less if the capacity of the "splitting target" is less.<br>

@@ -24,6 +24,9 @@ package de.metas.adempiere.modelvalidator;
 
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MClient;
@@ -31,7 +34,6 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -54,9 +56,9 @@ import de.metas.util.Services;
  */
 public class ProhibitInconsistentDropshipValues implements ModelValidator
 {
-	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_B_PARTNER_LOCATION_6P = "MOrderLine_InconsistentDropShip_soOl_BPartner_Location";
-	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_WAREHOUSE_6P = "MOrderLine_InconsistentDropShip_soOl_Warehouse";
-	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_PRODUCT_8P = "MOrderLine_InconsistentDropShip_soOl_Product";
+//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_B_PARTNER_LOCATION_6P = "MOrderLine_InconsistentDropShip_soOl_BPartner_Location";
+//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_WAREHOUSE_6P = "MOrderLine_InconsistentDropShip_soOl_Warehouse";
+//	private static final String ERR_ORDERLINE_INCONSISTENT_DROP_SHIP_SOOL_PRODUCT_8P = "MOrderLine_InconsistentDropShip_soOl_Product";
 
 	private static final String ERR_INCONSISTENT_DROP_SHIP_MORDER_WAREHOUSE_3P = "InconsistentDropShip_MOrder_Warehouse";
 	private static final String ERR_INCONSISTENT_DROP_SHIP_MORDER_DROPSHIP_3P = "InconsistentDropShip_MOrder_Dropship";
@@ -162,8 +164,9 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 				}
 				else
 				{
-
-					final boolean hasDropshipWarehouse = io.getM_Warehouse_ID() == MOrgInfo.get(io.getCtx(), po.getAD_Org_ID(), io.get_TrxName()).getDropShip_Warehouse_ID();
+					final OrgId orgId = OrgId.ofRepoId(po.getAD_Org_ID());
+					final WarehouseId dropshipWarehouseId = Services.get(IOrgDAO.class).getOrgDropshipWarehouseId(orgId);
+					final boolean hasDropshipWarehouse = dropshipWarehouseId != null && dropshipWarehouseId.getRepoId() == io.getM_Warehouse_ID();
 					if (io.isDropShip() != hasDropshipWarehouse)
 					{
 
@@ -255,8 +258,9 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 			}
 			else
 			{
-
-				final boolean hasDropshipWarehouse = o.getM_Warehouse_ID() == MOrgInfo.get(o.getCtx(), po.getAD_Org_ID(), o.get_TrxName()).getDropShip_Warehouse_ID();
+				final OrgId orgId = OrgId.ofRepoId(po.getAD_Org_ID());
+				final WarehouseId dropshipWarehouseId = Services.get(IOrgDAO.class).getOrgDropshipWarehouseId(orgId);
+				final boolean hasDropshipWarehouse = dropshipWarehouseId != null && dropshipWarehouseId.getRepoId() == o.getM_Warehouse_ID();
 				if (isPurchaseOrder && o.isDropShip() != hasDropshipWarehouse)
 				{
 
@@ -291,14 +295,16 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 		}
 		else if (po instanceof MOrderLine)
 		{
-			final MOrderLine ol = (MOrderLine)po;
-			final boolean hasDropshipWarehouse = ol.getM_Warehouse_ID() == MOrgInfo.get(ol.getCtx(), ol.getAD_Org_ID(), ol.get_TrxName()).getDropShip_Warehouse_ID();
-			final MOrder parentOrder = ol.getParent();
-			final boolean isPOorderline = !parentOrder.isSOTrx();
-			if (isPOorderline)
-			{
-				// this relType somehow doesn't exist anymore. we comment this out..maybe the logic can be an inspiration when we approach this topic once again.
-				// @formatter:off
+			// this relType somehow doesn't exist anymore. we comment this out..maybe the logic can be an inspiration when we approach this topic once again.
+			// @formatter:off
+//			final MOrderLine ol = (MOrderLine)po;
+//			final OrgId orgId = OrgId.ofRepoId(po.getAD_Org_ID());
+//			final WarehouseId dropshipWarehouseId = Services.get(IOrgDAO.class).getOrgDropshipWarehouseId(orgId);
+//			final boolean hasDropshipWarehouse = dropshipWarehouseId != null && dropshipWarehouseId.getRepoId() == ol.getM_Warehouse_ID();
+//			final MOrder parentOrder = ol.getParent();
+//			final boolean isPOorderline = !parentOrder.isSOTrx();
+//			if (isPOorderline)
+//			{
 //				final I_AD_RelationType relType = MRelationType.retrieveForInternalName(ol.getCtx(), MMPurchaseSchedule.RELTYPE_SO_LINE_PO_LINE_INT_NAME, ol.get_TrxName());
 //				final List<MOrderLine> soOls = MRelation.retrieveDestinations(ol.getCtx(), relType, ol, ol.get_TrxName());
 //				for (final MOrderLine soOl : soOls)
@@ -352,22 +358,9 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 //						}
 //					}
 //				}
-				// @formatter:on
-			}
+//			}
+			// @formatter:on
 		}
 		return null;
-	}
-
-	private String getParentDocNoToUse(final MOrder parent)
-	{
-		if (parent == null)
-		{
-			return "<Parent order not set>";
-		}
-
-		else
-		{
-			return parent.getDocumentNo();
-		}
 	}
 }

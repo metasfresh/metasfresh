@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.spi.impl;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -13,6 +14,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -58,7 +60,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 				.preparationDate(getOrderPreparationDate(shipmentSchedule))
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
 				.warehouseId(getWarehouseId(shipmentSchedule))
-				.shipperId(shipmentSchedule.getC_OrderLine().getM_Shipper_ID())
+				.shipperId(ShipperId.optionalOfRepoId(shipmentSchedule.getC_OrderLine().getM_Shipper_ID()))
 				.documentLineDescriptor(getDocumentLineDescriptor(shipmentSchedule))
 				.build();
 	}
@@ -101,11 +103,9 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 				.setParameter("order", shipmentSchedule.getC_Order());
 	}
 
-	private int getWarehouseId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return Services.get(IWarehouseAdvisor.class)
-				.evaluateWarehouse(shipmentSchedule.getC_OrderLine())
-				.getM_Warehouse_ID();
+		return Services.get(IWarehouseAdvisor.class).evaluateWarehouse(shipmentSchedule.getC_OrderLine());
 	}
 
 	private DocumentLineDescriptor getDocumentLineDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

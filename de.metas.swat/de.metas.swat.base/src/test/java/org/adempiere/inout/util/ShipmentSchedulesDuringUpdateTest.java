@@ -9,11 +9,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
+import de.metas.shipping.ShipperId;
 
 /*
  * #%L
@@ -51,8 +53,8 @@ public class ShipmentSchedulesDuringUpdateTest
 		AdempiereTestHelper.get().init();
 		group = DeliveryGroupCandidate.builder()
 				.groupId(20)
-				.shipperId(30)
-				.warehouseId(40)
+				.shipperId(ShipperId.optionalOfRepoId(30))
+				.warehouseId(WarehouseId.ofRepoId(40))
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 
@@ -63,7 +65,7 @@ public class ShipmentSchedulesDuringUpdateTest
 	@Test
 	public void addAndRemoveLine()
 	{
-		final DeliveryLineCandidate line1 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_CompleteLine, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
+		final DeliveryLineCandidate line1 = createLine(DeliveryRule.COMPLETE_LINE, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
 
 		shipmentCandidates.addLine(line1);
 		assertThat(shipmentCandidates.getAllLines()).containsExactly(line1);
@@ -71,7 +73,7 @@ public class ShipmentSchedulesDuringUpdateTest
 		final I_M_ShipmentSchedule sched1Reloaded = load(line1.getShipmentScheduleId(), I_M_ShipmentSchedule.class);
 		final DeliveryLineCandidate line1WithReloadedSched = group.addLine(sched1Reloaded, line1.getCompleteStatus());
 		line1WithReloadedSched.setQtyToDeliver(line1.getQtyToDeliver());
-		
+
 		shipmentCandidates.removeLine(line1WithReloadedSched);
 		assertThat(shipmentCandidates.getAllLines()).isEmpty();
 	}
@@ -79,8 +81,8 @@ public class ShipmentSchedulesDuringUpdateTest
 	@Test
 	public void updateCompleteStatus_completeLine()
 	{
-		final DeliveryLineCandidate line1 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_CompleteLine, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
-		final DeliveryLineCandidate line2 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_CompleteLine, CompleteStatus.OK, LINE_2_QTY);
+		final DeliveryLineCandidate line1 = createLine(DeliveryRule.COMPLETE_LINE, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
+		final DeliveryLineCandidate line2 = createLine(DeliveryRule.COMPLETE_LINE, CompleteStatus.OK, LINE_2_QTY);
 
 		shipmentCandidates.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
@@ -94,8 +96,8 @@ public class ShipmentSchedulesDuringUpdateTest
 	@Test
 	public void updateCompleteStatus_availiability()
 	{
-		final DeliveryLineCandidate line1 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_Availability, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
-		final DeliveryLineCandidate line2 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_Availability, CompleteStatus.INCOMPLETE_LINE, LINE_2_QTY);
+		final DeliveryLineCandidate line1 = createLine(DeliveryRule.AVAILABILITY, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
+		final DeliveryLineCandidate line2 = createLine(DeliveryRule.AVAILABILITY, CompleteStatus.INCOMPLETE_LINE, LINE_2_QTY);
 
 		shipmentCandidates.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
@@ -109,8 +111,8 @@ public class ShipmentSchedulesDuringUpdateTest
 	@Test
 	public void updateCompleteStatus_completeOrder()
 	{
-		final DeliveryLineCandidate line1 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_CompleteOrder, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
-		final DeliveryLineCandidate line2 = createLine(X_M_ShipmentSchedule.DELIVERYRULE_CompleteOrder, CompleteStatus.OK, LINE_2_QTY);
+		final DeliveryLineCandidate line1 = createLine(DeliveryRule.COMPLETE_ORDER, CompleteStatus.INCOMPLETE_LINE, LINE_1_QTY);
+		final DeliveryLineCandidate line2 = createLine(DeliveryRule.COMPLETE_ORDER, CompleteStatus.OK, LINE_2_QTY);
 
 		shipmentCandidates.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
@@ -123,10 +125,10 @@ public class ShipmentSchedulesDuringUpdateTest
 		assertThat(line2.isDiscarded()).isTrue();
 	}
 
-	private DeliveryLineCandidate createLine(String deliveryRule, CompleteStatus completeStatus, BigDecimal qty)
+	private DeliveryLineCandidate createLine(DeliveryRule deliveryRule, CompleteStatus completeStatus, BigDecimal qty)
 	{
 		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
-		sched.setDeliveryRule(deliveryRule);
+		sched.setDeliveryRule(deliveryRule.getCode());
 		save(sched);
 
 		final DeliveryLineCandidate line = group.addLine(sched, completeStatus);

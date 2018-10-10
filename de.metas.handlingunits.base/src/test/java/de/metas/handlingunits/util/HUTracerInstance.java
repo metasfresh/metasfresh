@@ -49,6 +49,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.IProductBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -288,7 +289,7 @@ public class HUTracerInstance
 	public void dump(final PrintStream out, final String linePrefix, final IProductStorage productStorage)
 	{
 		out.println(linePrefix
-				+ "Product=" + productStorage.getM_Product().getName()
+				+ "Product=" + Services.get(IProductBL.class).getProductValueAndName(productStorage.getProductId())
 				+ ", Qty=" + productStorage.getQty()
 				+ ", UOM=" + productStorage.getC_UOM().getUOMSymbol());
 	}

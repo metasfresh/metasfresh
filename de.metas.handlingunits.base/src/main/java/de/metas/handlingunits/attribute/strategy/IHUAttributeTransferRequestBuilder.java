@@ -26,10 +26,10 @@ package de.metas.handlingunits.attribute.strategy;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
 public interface IHUAttributeTransferRequestBuilder
@@ -40,7 +40,7 @@ public interface IHUAttributeTransferRequestBuilder
 	 * @param product
 	 * @return builder
 	 */
-	IHUAttributeTransferRequestBuilder setProduct(I_M_Product product);
+	IHUAttributeTransferRequestBuilder setProductId(ProductId productId);
 
 	/**
 	 * Set qty that's being transferred

@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -30,13 +32,16 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
@@ -49,6 +54,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
@@ -96,6 +102,8 @@ import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.testsupport.AbstractTestSupport;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -136,11 +144,13 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected I_M_PriceList_Version priceListVersion_PO;
 
 	// task 07442
-	protected I_AD_Org org;
-	protected I_M_Product product;
-	protected I_C_Activity activity;
+	protected ClientId clientId;
+	protected OrgId orgId;
+	protected ProductId productId;
+	protected ActivityId activityId;
+	protected WarehouseId warehouseId;
 
-	private I_C_Country country_DE;
+	private CountryId countryId_DE;
 
 	/**
 	 * Don't access directly, use {@link #getInvoiceCandidateValidator()}
@@ -158,6 +168,11 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
+
+		final I_AD_Client client = InterfaceWrapperHelper.newInstance(I_AD_Client.class);
+		saveRecord(client);
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, client.getAD_Client_ID());
+		clientId = ClientId.ofRepoId(client.getAD_Client_ID());
 
 		modelInterceptorsRegistered = false;
 		// FIXME: make sure all tests based on this abstract test support model interceptors
@@ -196,9 +211,10 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		// Setup taxes
 		config_Taxes();
 
-		this.country_DE = InterfaceWrapperHelper.create(ctx, I_C_Country.class, trxName);
+		final I_C_Country country_DE = InterfaceWrapperHelper.create(ctx, I_C_Country.class, trxName);
 		country_DE.setAD_Language("de");
 		InterfaceWrapperHelper.save(country_DE);
+		countryId_DE = CountryId.ofRepoId(country_DE.getC_Country_ID());
 
 		config_StandardDocTypes();
 		config_Pricing();
@@ -210,9 +226,22 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		bpLoc.setC_Location_ID(loc.getC_Location_ID());
 		InterfaceWrapperHelper.save(bpLoc);
 
-		org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
-		product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, trxName);
-		activity = InterfaceWrapperHelper.create(ctx, I_C_Activity.class, trxName);
+		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
+		InterfaceWrapperHelper.save(org);
+		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, trxName);
+		warehouse.setAD_Org_ID(org.getAD_Org_ID());
+		InterfaceWrapperHelper.save(warehouse);
+		warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, trxName);
+		InterfaceWrapperHelper.save(product);
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final I_C_Activity activity = InterfaceWrapperHelper.create(ctx, I_C_Activity.class, trxName);
+		InterfaceWrapperHelper.save(activity);
+		activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 
 		//
 		// Services
@@ -320,25 +349,22 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 
 	protected void config_Taxes()
 	{
-		final Properties ctx = Env.getCtx();
-		final PlainContextAware context = new PlainContextAware(ctx);
-
-		final I_C_TaxCategory taxCategory_None = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class, context);
+		final I_C_TaxCategory taxCategory_None = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
 		taxCategory_None.setC_TaxCategory_ID(100);
 		taxCategory_None.setName("None");
 		InterfaceWrapperHelper.save(taxCategory_None);
 
-		this.tax_NotFound = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, ITrx.TRXNAME_None);
+		tax_NotFound = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax_NotFound.setC_Tax_ID(100);
 		tax_NotFound.setC_TaxCategory(taxCategory_None);
 		InterfaceWrapperHelper.save(tax_NotFound);
 
-		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class, context);
+		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
 		taxCategory_Default.setC_TaxCategory_ID(1000000);
 		taxCategory_Default.setName("Default");
 		InterfaceWrapperHelper.save(taxCategory_Default);
 
-		this.tax_Default = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, ITrx.TRXNAME_None);
+		tax_Default = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax_Default.setC_Tax_ID(1000000);
 		tax_Default.setC_TaxCategory(taxCategory_Default);
 		InterfaceWrapperHelper.save(tax_Default);
@@ -346,17 +372,14 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 
 	protected void config_StandardDocTypes()
 	{
-		final Properties ctx = Env.getCtx();
-		final PlainContextAware context = new PlainContextAware(ctx);
-
-		final I_C_DocType docType_ARI = InterfaceWrapperHelper.newInstance(I_C_DocType.class, context);
+		final I_C_DocType docType_ARI = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_ARI.setName("ARI");
 		docType_ARI.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		docType_ARI.setIsSOTrx(true);
 		docType_ARI.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_ARI);
 
-		final I_C_DocType docType_API = InterfaceWrapperHelper.newInstance(I_C_DocType.class, context);
+		final I_C_DocType docType_API = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_API.setName("API");
 		docType_API.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
 		docType_API.setIsSOTrx(false);
@@ -366,25 +389,22 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 
 	protected void config_Pricing()
 	{
-		final Properties ctx = Env.getCtx();
-		final PlainContextAware context = new PlainContextAware(ctx);
-
 		//
 		// create the "none" PS and PL
-		final I_M_PricingSystem pricingSystem_None = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class, context);
+		final I_M_PricingSystem pricingSystem_None = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
 		pricingSystem_None.setM_PricingSystem_ID(IPriceListDAO.M_PricingSystem_ID_None);
 		pricingSystem_None.setName("None");
 		InterfaceWrapperHelper.save(pricingSystem_None);
 
-		final I_M_PriceList priceList_None = InterfaceWrapperHelper.newInstance(I_M_PriceList.class, context);
+		final I_M_PriceList priceList_None = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		priceList_None.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None);
 		priceList_None.setM_PricingSystem_ID(pricingSystem_None.getM_PricingSystem_ID());
 		priceList_None.setName("None");
 		priceList_None.setIsSOPriceList(true);
-		priceList_None.setC_Country_ID(country_DE.getC_Country_ID());
+		priceList_None.setC_Country_ID(countryId_DE.getRepoId());
 		InterfaceWrapperHelper.save(priceList_None);
 
-		final int currencyPrecision = currencyConversionBL.getBaseCurrency(ctx).getStdPrecision();
+		final int currencyPrecision = currencyConversionBL.getBaseCurrency(Env.getCtx()).getStdPrecision();
 
 		//
 		// create a sales PS and PLV
@@ -621,7 +641,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
@@ -633,7 +653,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 
 		//
 		// Refresh invoice candidates
-		for (I_C_Invoice_Candidate ic : invoiceCandidates)
+		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
 			InterfaceWrapperHelper.refresh(ic);
 		}

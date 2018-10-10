@@ -18,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
 /*
@@ -60,16 +61,16 @@ public class ISourceHuService_SourceHusQueryTest
 		final I_M_HU hu = createHuWithLocatorOfWarehouse(warehouse);
 
 		createStorageOfHuWithProductIdAndQty(hu, BigDecimal.ZERO);
-		final I_M_Product storageProduct2 = createStorageOfHuWithProductIdAndQty(hu, BigDecimal.TEN);
-		final I_M_Product storageProduct3 = createStorageOfHuWithProductIdAndQty(hu, BigDecimal.ONE);
+		final ProductId storageProductId2 = createStorageOfHuWithProductIdAndQty(hu, BigDecimal.TEN);
+		final ProductId storageProductId3 = createStorageOfHuWithProductIdAndQty(hu, BigDecimal.ONE);
 
 		final MatchingSourceHusQuery query = SourceHUsService.MatchingSourceHusQuery.fromHuId(HuId.ofRepoId(hu.getM_HU_ID()));
 		assertThat(query).isNotNull();
-		assertThat(query.getWarehouseId()).isEqualTo(warehouse.getM_Warehouse_ID());
-		assertThat(query.getProductIds()).containsOnly(storageProduct2.getM_Product_ID(), storageProduct3.getM_Product_ID());
+		assertThat(query.getWarehouseId().getRepoId()).isEqualTo(warehouse.getM_Warehouse_ID());
+		assertThat(query.getProductIds()).containsOnly(storageProductId2, storageProductId3);
 	}
 
-	private I_M_Product createStorageOfHuWithProductIdAndQty(@NonNull final I_M_HU hu, @NonNull final BigDecimal qty)
+	private ProductId createStorageOfHuWithProductIdAndQty(@NonNull final I_M_HU hu, @NonNull final BigDecimal qty)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
 		save(product);
@@ -83,7 +84,7 @@ public class ISourceHuService_SourceHusQueryTest
 		huStorage.setQty(qty);
 		save(huStorage);
 
-		return product;
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	private I_M_HU createHuWithLocatorOfWarehouse(final I_M_Warehouse warehouse)

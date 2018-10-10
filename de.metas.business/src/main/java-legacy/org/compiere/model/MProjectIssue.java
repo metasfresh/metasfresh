@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 
 import de.metas.product.IProductBL;
@@ -169,7 +170,7 @@ public class MProjectIssue extends X_C_ProjectIssue
 			get_TrxName());
 		mTrx.setC_ProjectIssue_ID(getC_ProjectIssue_ID());
 		//
-		MLocator loc = MLocator.get(getCtx(), getM_Locator_ID());
+		final I_M_Locator loc = Services.get(IWarehouseDAO.class).getLocatorByRepoId(getM_Locator_ID());
 		if (Services.get(IStorageBL.class).add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(),
 				getM_Product_ID(), getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID(),
 				getMovementQty().negate(), null, null, get_TrxName()))
