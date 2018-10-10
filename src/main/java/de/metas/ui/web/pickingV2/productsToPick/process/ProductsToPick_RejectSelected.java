@@ -27,7 +27,7 @@ import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
  * #L%
  */
 
-public class ProductsToPick_VoidSelected extends ProductsToPickViewBasedProcess
+public class ProductsToPick_RejectSelected extends ProductsToPickViewBasedProcess
 {
 
 	@Override
@@ -39,9 +39,9 @@ public class ProductsToPick_VoidSelected extends ProductsToPickViewBasedProcess
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isWaitingApproval))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be approved");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -50,8 +50,21 @@ public class ProductsToPick_VoidSelected extends ProductsToPickViewBasedProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		// TODO Auto-generated method stub
+		getSelectedRows()
+				.stream()
+				.filter(ProductsToPickRow::isWaitingApproval)
+				.forEach(this::rejectRow);
+
+		invalidateView();
+
 		return MSG_OK;
+	}
+
+	private void rejectRow(final ProductsToPickRow row)
+	{
+		// TODO: update/persist picking candidate
+
+		getView().changeRow(row.getId(), ProductsToPickRow::withApprovalStatusRejected);
 	}
 
 }
