@@ -62,14 +62,20 @@ export default class BarcodeScanner extends Component {
   };
 
   render() {
+    const { mode } = this.state;
+
     return (
       <div className="row scanner-wrapper">
-        <i
-          className={classnames('btn-control btn-mode', {
-            [`btn-${this.state.mode}`]: this.state.mode,
-          })}
-          onClick={this._changeReader}
-        />
+        <div className="scan-mode">
+          Scan mode:
+          <i
+            className={classnames('btn-control btn-mode', {
+              [`btn-${mode}`]: mode,
+            })}
+            onClick={this._changeReader}
+            title={`Scan ${mode}`}
+          />
+        </div>
         <video
           className="col-sm-12 viewport scanner-window"
           id="video"

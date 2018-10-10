@@ -48,6 +48,14 @@
         left:0;
     }
 
+    .scan-mode {
+        position: absolute;
+        z-index: 1000;
+        top: 5px;
+        left: 5px;
+        display: flex;
+    }
+
     .btn-control {
         position: absolute;
         top: 5px;
@@ -64,9 +72,11 @@
     }
 
     .btn-mode {
-        left: 5px;
-        width: 35px;
-        height: 35px;
+        position: initial;
+        display: block;
+        margin-left: 10px;
+        width: 40x;
+        height: 40px;
         background: no-repeat scroll 0 center;
 
         @media (min-width: $breakpoint-md){

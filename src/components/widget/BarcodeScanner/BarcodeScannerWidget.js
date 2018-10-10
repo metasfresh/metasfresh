@@ -32,7 +32,10 @@ function addBarcodeScanner(WrappedComponent) {
           <div className="col-sm-12">
             <BarcodeScanner
               onDetected={this.onBarcodeDetected}
-              onClose={() => this.scanBarcode(false)}
+              onClose={val => {
+                const value = typeof val !== 'undefined' ? val : false;
+                this.scanBarcode(value);
+              }}
             />
           </div>
         </div>
