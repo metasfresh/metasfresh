@@ -9,7 +9,8 @@ class ScannerError extends Error {}
  */
 export default class CustomBrowserQRCodeReader extends BrowserQRCodeReader {
   /**
-   * 
+   * Extend the built-in method. Throw a custom error when QR code not found during
+   * the timeout time.
    */
   readerDecode(binaryBitmap) {
     if (!this.timer) {
@@ -22,6 +23,6 @@ export default class CustomBrowserQRCodeReader extends BrowserQRCodeReader {
     }
 
     this.timer.destroy();
-    throw new ScannerError("No QR Code found. Fall back to barcode scanner")
+    throw new ScannerError('No QR Code found. Fall back to barcode scanner');
   }
 }
