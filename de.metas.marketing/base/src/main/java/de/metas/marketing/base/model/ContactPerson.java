@@ -96,11 +96,6 @@ public class ContactPerson implements DataRecord
 	@Nullable
 	BoilerPlateId boilerPlateId;
 
-	/**
-	 * Note that if we get a contact from an external system like cleverreach, the language might not be known.
-	 * In that case, we guess based on our own language.
-	 */
-
 	@Nullable
 	Language language;
 
