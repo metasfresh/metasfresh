@@ -60,11 +60,11 @@
         position: absolute;
         top: 5px;
         z-index: 1000;
-        cursor: pointer;
     }
 
     .btn-close {
         right: 5px;
+        cursor: pointer;
 
         @media (min-width: $breakpoint-md){
             font-size: 20px;
