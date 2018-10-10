@@ -46,6 +46,11 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- 
+			we can and need to depend on the SPI, 
+			but not on metasfresh-invoice_gateway.api, because invoice_gateway.api depends on us.
+			Likewise, de.metas.business depends on us
+		-->
 		<dependency>
 			<groupId>de.metas.invoice_gateway</groupId>
 			<artifactId>metasfresh-invoice_gateway.spi</artifactId>

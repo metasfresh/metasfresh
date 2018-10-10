@@ -48,7 +48,7 @@ public class MetasfreshRestAPIConstants
 			.description("Authorization token")
 			.modelRef(new ModelRef("string"))
 			.parameterType("header")
-			.required(false)
+			.required(true)
 			.build();
 
 	public ApiInfo createApiInfo(

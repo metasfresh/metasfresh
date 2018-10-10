@@ -70,4 +70,8 @@ public class Invoice
 
 	@Singular
 	List<InvoiceLine> invoiceLines;
+
+	@Singular
+	List<InvoiceAttachment> invoiceAttachments;
+
 }
