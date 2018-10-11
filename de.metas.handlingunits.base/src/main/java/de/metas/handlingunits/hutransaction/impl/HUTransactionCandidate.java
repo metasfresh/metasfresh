@@ -27,7 +27,8 @@ import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -66,7 +67,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	private final Quantity quantity;
 
 	// Physical position and status
-	private final I_M_Locator locator;
+	private final LocatorId locatorId;
 
 	private final String huStatus;
 
@@ -124,7 +125,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
 			@NonNull final Date date,
-			final I_M_Locator locator,
+			final LocatorId locatorId,
 			final String huStatus)
 	{
 		id = UUID.randomUUID().toString();
@@ -180,17 +181,18 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 		final I_M_HU effectiveHU = getEffectiveHU();
 
 		// Locator
-		if (locator != null)
+		if (locatorId != null)
 		{
-			this.locator = locator;
+			this.locatorId = locatorId;
 		}
 		else if (effectiveHU != null)
 		{
-			this.locator = effectiveHU.getM_Locator();
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			this.locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(effectiveHU.getM_Locator_ID());
 		}
 		else
 		{
-			this.locator = null;
+			this.locatorId = null;
 		}
 
 		// HUStatus
@@ -359,9 +361,9 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	}
 
 	@Override
-	public I_M_Locator getM_Locator()
+	public LocatorId getLocatorId()
 	{
-		return locator;
+		return locatorId;
 	}
 
 	@Override

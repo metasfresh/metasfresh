@@ -21,6 +21,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -846,7 +847,7 @@ public class HUTransformService
 					.createHUBuilder(huContext)
 					.setC_BPartner(sourceTuHU.getC_BPartner())
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
-					.setM_Locator(sourceTuHU.getM_Locator())
+					.setLocatorId(LocatorId.ofRecord(sourceTuHU.getM_Locator()))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.create(luPIItem.getM_HU_PI_Version());

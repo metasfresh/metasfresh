@@ -1,9 +1,6 @@
 package de.metas.handlingunits.allocation.impl;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -13,16 +10,16 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * This producer is used if stuff needs to be allocated into a "flat" HU and no capacity constraints need to be taken into account.
  * I.e. don't invoke it with a palet and expect it to magically discover or create and allocate to included HUs.
  * <p>
  * For most real world use cases, you will probably want to use {@link LUTUProducerDestination} instead of this one.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -33,32 +30,22 @@ public class HUProducerDestination extends AbstractProducerDestination
 		return new HUProducerDestination(huPI);
 	}
 
+	public static final HUProducerDestination of(@NonNull final HuPackingInstructionsId packingInstructionsId)
+	{
+		final I_M_HU_PI huPI = Services.get(IHandlingUnitsDAO.class).getPackingInstructionById(packingInstructionsId);
+		return new HUProducerDestination(huPI);
+	}
+
 	/**
 	 * @return producer which will create one VHU
 	 */
 	public static final HUProducerDestination ofVirtualPI()
 	{
-		final I_M_HU_PI vhuPI = Services.get(IHandlingUnitsDAO.class).retrieveVirtualPI(Env.getCtx());
-		return new HUProducerDestination(vhuPI)
+		return of(HuPackingInstructionsId.VIRTUAL)
 				.setMaxHUsToCreate(1); // we want one VHU
 	}
-	
-	public static final HUProducerDestination ofM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID)
-	{
-		final I_M_HU_PI_Item_Product piItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
-		return ofM_HU_PI_Item_Product(piItemProduct);
-	}
-	
-	public static final HUProducerDestination ofM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piItemProduct)
-	{
-		final I_M_HU_PI huPI = piItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		return new HUProducerDestination(huPI);
-	}
 
-	
-	private final I_M_HU_PI _huPI;
-
-	private boolean _allowCreateNewHU = true;
+	private final I_M_HU_PI huPI;
 
 	protected IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
 
@@ -66,19 +53,17 @@ public class HUProducerDestination extends AbstractProducerDestination
 	 * Maximum number of HUs allowed to be created
 	 */
 	private int maxHUsToCreate = Integer.MAX_VALUE;
-
 	private I_M_HU_Item parentHUItem;
 
-	private HUProducerDestination(final I_M_HU_PI huPI)
+	private HUProducerDestination(@NonNull final I_M_HU_PI huPI)
 	{
-		Check.assumeNotNull(huPI, "huPI not null");
-		_huPI = huPI;
+		this.huPI = huPI;
 	}
 
 	@Override
 	protected I_M_HU_PI getM_HU_PI()
 	{
-		return _huPI;
+		return huPI;
 	}
 
 	@Override
@@ -92,36 +77,20 @@ public class HUProducerDestination extends AbstractProducerDestination
 	@Override
 	public boolean isAllowCreateNewHU()
 	{
-		if (!_allowCreateNewHU)
-		{
-			return false;
-		}
-
-		//
 		// Check if we already reached the maximum number of HUs that we are allowed to create
-		if (getCreatedHUsCount() >= maxHUsToCreate)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	public HUProducerDestination setAllowCreateNewHU(final boolean allowCreateNewHU)
-	{
-		_allowCreateNewHU = allowCreateNewHU;
-		return this;
+		return getCreatedHUsCount() < maxHUsToCreate;
 	}
 
 	public HUProducerDestination setMaxHUsToCreate(final int maxHUsToCreate)
 	{
+		Check.assumeGreaterOrEqualToZero(maxHUsToCreate, "maxHUsToCreate");
 		this.maxHUsToCreate = maxHUsToCreate;
 		return this;
 	}
 
 	/**
 	 * Then this producer creates a new HU, than i uses the given {@code parentHUItem} for the new HU's {@link I_M_HU#COLUMN_M_HU_Item_Parent_ID}.
-	 * 
+	 *
 	 * @param parentHUItem
 	 */
 	public HUProducerDestination setParent_HU_Item(final I_M_HU_Item parentHUItem)

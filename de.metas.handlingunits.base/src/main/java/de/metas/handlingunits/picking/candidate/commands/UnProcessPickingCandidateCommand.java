@@ -127,7 +127,7 @@ public class UnProcessPickingCandidateCommand
 		{
 			return;
 		}
-		
+
 		UnClosePickingCandidateCommand.builder()
 				.pickingCandidate(pickingCandidate)
 				.build()
@@ -218,7 +218,7 @@ public class UnProcessPickingCandidateCommand
 
 	private void changeStatusToDraftAndSave(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.setStatus(PickingCandidateStatus.Draft);
+		pickingCandidate.changeStatusToDraft();
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

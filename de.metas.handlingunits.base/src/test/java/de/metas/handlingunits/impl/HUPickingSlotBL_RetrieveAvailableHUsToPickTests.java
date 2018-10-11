@@ -358,15 +358,18 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		}
 	}
 
-	private void createPickingCandidate(final I_M_HU hu)
+	private void createPickingCandidate(final I_M_HU packedToHU)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		saveRecord(shipmentSchedule);
 
+		final HuId packedHUId = HuId.ofRepoId(packedToHU.getM_HU_ID());
+
 		final PickingCandidate pickingCandidate = PickingCandidate.builder()
 				.status(PickingCandidateStatus.Processed) // not relevant
 				.qtyPicked(Quantity.zero(uom)) // not relevant
-				.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.pickFromHuId(packedHUId)
+				.packedToHuId(packedHUId)
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.build();
 		pickingCandidatesRepo.save(pickingCandidate);

@@ -25,8 +25,8 @@ package de.metas.handlingunits;
 import java.util.Date;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -76,8 +76,6 @@ public interface IHUBuilder extends IHUIterator
 	@Override
 	void setStorageFactory(IHUStorageFactory storageFactory);
 
-	I_M_HU_Item getM_HU_Item_Parent();
-
 	/**
 	 * If the type of the given {@code parentItem} is {@link X_M_HU_Item#ITEMTYPE_HUAggregate}, then {@link #create(I_M_HU_PI_Version)} will create an aggregate VHU
 	 * which will contain packing material {@link I_M_HU_Item} according to the {@link I_M_HU_PI_Version} that was given as parameter to the {@code create} method.
@@ -89,11 +87,7 @@ public interface IHUBuilder extends IHUIterator
 	 */
 	IHUBuilder setM_HU_Item_Parent(I_M_HU_Item parentItem);
 
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
 	IHUBuilder setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product piip);
-
-	I_C_BPartner getC_BPartner();
 
 	IHUBuilder setC_BPartner(I_C_BPartner bpartner);
 
@@ -106,9 +100,7 @@ public interface IHUBuilder extends IHUIterator
 	 *
 	 * @param locator
 	 */
-	IHUBuilder setM_Locator(I_M_Locator locator);
-
-	I_M_Locator getM_Locator();
+	IHUBuilder setLocatorId(LocatorId locatorId);
 
 	/**
 	 * Sets {@link I_M_HU#COLUMN_HUStatus} to be used when creating a new HU.
@@ -119,11 +111,7 @@ public interface IHUBuilder extends IHUIterator
 	 */
 	IHUBuilder setHUStatus(String huStatus);
 
-	String getHUStatus();
-
 	IHUBuilder setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration lutuConfiguration);
-
-	I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
 
 	/**
 	 * For material receipts, flag that the HU's PM owner will be "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}

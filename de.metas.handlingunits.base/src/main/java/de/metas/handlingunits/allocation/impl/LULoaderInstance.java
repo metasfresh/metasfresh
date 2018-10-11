@@ -28,8 +28,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
@@ -63,7 +63,7 @@ import de.metas.util.Services;
 	private final IHUContext huContext;
 	private final I_C_BPartner bpartner;
 	private final int bpartnerLocationId;
-	private final I_M_Locator locator;
+	private final LocatorId locatorId;
 	private final String huStatus;
 
 	private final I_M_HU luHU;
@@ -84,14 +84,14 @@ import de.metas.util.Services;
 	public LULoaderInstance(final IHUContext huContext,
 			final I_C_BPartner bpartner,
 			final int bpartnerLocationId,
-			final I_M_Locator locator,
+			final LocatorId locatorId,
 			final String huStatus,
 			final I_M_HU_PI_Version tuPIVersion)
 	{
 		this.huContext = huContext;
 		this.bpartner = bpartner;
 		this.bpartnerLocationId = bpartnerLocationId;
-		this.locator = locator;
+		this.locatorId = locatorId;
 		this.huStatus = huStatus;
 
 		assertUnitTypeOrNull(tuPIVersion, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -111,7 +111,7 @@ import de.metas.util.Services;
 		huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
 		huBuilder.setC_BPartner(bpartner);
 		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
-		huBuilder.setM_Locator(locator);
+		huBuilder.setLocatorId(locatorId);
 		huBuilder.setHUStatus(huStatus);
 		// set up a little custom anonymous listener so that if the huBuilder created a HU item (*not* an aggregate one), it shall be added to this LULoaderInstance's HU
 		huBuilder.setListener(new HUIteratorListenerAdapter()
@@ -134,7 +134,7 @@ import de.metas.util.Services;
 		return "LULoaderInstance ["
 				+ "bpartner=" + bpartner
 				+ ", bpartnerLocationId=" + bpartnerLocationId
-				+ ", locator=" + locator
+				+ ", locator=" + locatorId
 				+ ", huStatus=" + huStatus
 				+ ", luItemInstances=" + luItemInstances
 				+ ", luHU=" + luHU
@@ -263,7 +263,7 @@ import de.metas.util.Services;
 
 		//
 		// Check same Locator
-		if (tuHU.getM_Locator_ID() != getM_Locator_ID())
+		if(!LocatorId.equalsByRepoId(tuHU.getM_Locator_ID(), getLocatorRepoId()))
 		{
 			return false;
 		}
@@ -292,14 +292,8 @@ import de.metas.util.Services;
 		return bpartnerId;
 	}
 
-	private int getM_Locator_ID()
+	private int getLocatorRepoId()
 	{
-		if (locator == null)
-		{
-			return 0;
-		}
-
-		final int locatorId = locator.getM_Locator_ID();
-		return locatorId;
+		return LocatorId.toRepoId(locatorId);
 	}
 }

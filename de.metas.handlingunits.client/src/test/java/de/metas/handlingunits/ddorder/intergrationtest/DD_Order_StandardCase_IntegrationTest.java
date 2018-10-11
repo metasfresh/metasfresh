@@ -81,7 +81,7 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 	@Override
 	protected void step029_CreateRawMaterialHUs_On_RawMaterialsWarehouse()
 	{
-		/* final List<I_M_HU> luHUs = */ generateLUs(piTU_Item_Product_Tomato, mrpMasterData.warehouse_rawMaterials01_locator, 1);
+		/* final List<I_M_HU> luHUs = */ generateLUs(piTU_Item_Product_Tomato, mrpMasterData.warehouse_rawMaterials01_locatorId, 1);
 		// luHUs.forEach(hu -> helper.commitAndDumpHU(hu));
 	}
 
@@ -135,8 +135,8 @@ public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProc
 		Assert.assertThat("Invalid DD OrderLine - QtyOrdered", ddOrderLine.getQtyOrdered(), Matchers.comparesEqualTo(new BigDecimal("200")));
 		Assert.assertThat("Invalid DD OrderLine - QtyDelivered", ddOrderLine.getQtyDelivered(), Matchers.comparesEqualTo(new BigDecimal("1")));
 		Assert.assertThat("Invalid DD OrderLine - QtyInTrasit", ddOrderLine.getQtyInTransit(), Matchers.comparesEqualTo(new BigDecimal("0")));
-		Assert.assertEquals("Invalid DD OrderLine - Locator From", mrpMasterData.warehouse_rawMaterials01_locator, ddOrderLine.getM_Locator());
-		Assert.assertEquals("Invalid DD OrderLine - Locator To", mrpMasterData.warehouse_plant01_locator, ddOrderLine.getM_LocatorTo());
+		Assert.assertEquals("Invalid DD OrderLine - Locator From", mrpMasterData.warehouse_rawMaterials01_locatorId.getRepoId(), ddOrderLine.getM_Locator_ID());
+		Assert.assertEquals("Invalid DD OrderLine - Locator To", mrpMasterData.warehouse_plant01_locatorId.getRepoId(), ddOrderLine.getM_LocatorTo_ID());
 		//
 		// Validate DD_OrderLine's MRP records
 		mrpHelper.newMRPExpectation()

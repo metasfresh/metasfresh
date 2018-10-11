@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1977464773L;
+	private static final long serialVersionUID = -1858961420L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -23,10 +23,11 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
       super (ctx, M_Picking_Candidate_ID, trxName);
       /** if (M_Picking_Candidate_ID == 0)
         {
+			setApprovalStatus (null); // ?
 			setC_UOM_ID (0);
 			setM_Picking_Candidate_ID (0);
-			setM_PickingSlot_ID (0);
 			setM_ShipmentSchedule_ID (0);
+			setPickStatus (null); // ?
 			setQtyPicked (BigDecimal.ZERO); // 0
 			setStatus (null); // IP
         } */
@@ -46,6 +47,34 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** 
+	 * ApprovalStatus AD_Reference_ID=540920
+	 * Reference name: M_Picking_Candidate_ApprovalStatus
+	 */
+	public static final int APPROVALSTATUS_AD_Reference_ID=540920;
+	/** ToBeApproved = ? */
+	public static final String APPROVALSTATUS_ToBeApproved = "?";
+	/** Approved = A */
+	public static final String APPROVALSTATUS_Approved = "A";
+	/** Rejected = R */
+	public static final String APPROVALSTATUS_Rejected = "R";
+	/** Set Approval Status.
+		@param ApprovalStatus Approval Status	  */
+	@Override
+	public void setApprovalStatus (java.lang.String ApprovalStatus)
+	{
+
+		set_Value (COLUMNNAME_ApprovalStatus, ApprovalStatus);
+	}
+
+	/** Get Approval Status.
+		@return Approval Status	  */
+	@Override
+	public java.lang.String getApprovalStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ApprovalStatus);
+	}
 
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
@@ -182,6 +211,102 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI getPackTo_HU_PI() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PackTo_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+	}
+
+	@Override
+	public void setPackTo_HU_PI(de.metas.handlingunits.model.I_M_HU_PI PackTo_HU_PI)
+	{
+		set_ValueFromPO(COLUMNNAME_PackTo_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, PackTo_HU_PI);
+	}
+
+	/** Set Pack To.
+		@param PackTo_HU_PI_ID Pack To	  */
+	@Override
+	public void setPackTo_HU_PI_ID (int PackTo_HU_PI_ID)
+	{
+		if (PackTo_HU_PI_ID < 1) 
+			set_Value (COLUMNNAME_PackTo_HU_PI_ID, null);
+		else 
+			set_Value (COLUMNNAME_PackTo_HU_PI_ID, Integer.valueOf(PackTo_HU_PI_ID));
+	}
+
+	/** Get Pack To.
+		@return Pack To	  */
+	@Override
+	public int getPackTo_HU_PI_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PackTo_HU_PI_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
+	}
+
+	/** Set Pick From HU.
+		@param PickFrom_HU_ID Pick From HU	  */
+	@Override
+	public void setPickFrom_HU_ID (int PickFrom_HU_ID)
+	{
+		if (PickFrom_HU_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_HU_ID, Integer.valueOf(PickFrom_HU_ID));
+	}
+
+	/** Get Pick From HU.
+		@return Pick From HU	  */
+	@Override
+	public int getPickFrom_HU_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickFrom_HU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * PickStatus AD_Reference_ID=540919
+	 * Reference name: M_Picking_Candidate_PickStatus
+	 */
+	public static final int PICKSTATUS_AD_Reference_ID=540919;
+	/** ToBePicked = ? */
+	public static final String PICKSTATUS_ToBePicked = "?";
+	/** Picked = P */
+	public static final String PICKSTATUS_Picked = "P";
+	/** WillNotBePicked = N */
+	public static final String PICKSTATUS_WillNotBePicked = "N";
+	/** Set Pick Status.
+		@param PickStatus Pick Status	  */
+	@Override
+	public void setPickStatus (java.lang.String PickStatus)
+	{
+
+		set_Value (COLUMNNAME_PickStatus, PickStatus);
+	}
+
+	/** Get Pick Status.
+		@return Pick Status	  */
+	@Override
+	public java.lang.String getPickStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PickStatus);
 	}
 
 	/** Set Qty Picked.

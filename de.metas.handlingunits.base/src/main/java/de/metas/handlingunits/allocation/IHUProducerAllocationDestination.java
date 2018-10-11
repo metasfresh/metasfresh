@@ -10,24 +10,23 @@ package de.metas.handlingunits.allocation;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -49,10 +48,12 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	List<I_M_HU> getCreatedHUs();
 
 	/**
-	 *
 	 * @return how many HUs were created so far
 	 */
 	int getCreatedHUsCount();
+
+	/** @return single created HU or null if no HUs were created */
+	I_M_HU getSingleCreatedHU();
 
 	/**
 	 * Sets HUStatus to be used for newly created HUs.
@@ -63,8 +64,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 */
 	IHUProducerAllocationDestination setHUStatus(String huStatus);
 
-	String getHUStatus();
-
 	/**
 	 * Sets locator to be used for newly created HUs.
 	 *
@@ -72,7 +71,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param locator
 	 */
-	IHUProducerAllocationDestination setM_Locator(I_M_Locator locator);
+	IHUProducerAllocationDestination setLocatorId(final LocatorId locatorId);
 
 	/**
 	 * Sets BPartner to be used for newly created HUs.
@@ -83,8 +82,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 */
 	IHUProducerAllocationDestination setC_BPartner(I_C_BPartner bpartner);
 
-	I_C_BPartner getC_BPartner();
-
 	/**
 	 * Sets BPartner Location to be used for newly created HUs.
 	 *
@@ -94,9 +91,5 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 */
 	IHUProducerAllocationDestination setC_BPartner_Location_ID(int bpartnerLocationId);
 
-	int getC_BPartner_Location_ID();
-
-	I_M_Locator getM_Locator();
-	
 	IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwsnerPM);
 }

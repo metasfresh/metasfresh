@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
@@ -122,7 +123,7 @@ public class LUTUProducerDestinationLoadTests
 		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
 		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
-		final I_M_Locator locator = createLocator("testLocator", warehouse);
+		final LocatorId locatorId = LocatorId.ofRecord(createLocator("testLocator", warehouse));
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 
@@ -132,7 +133,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuProducer.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
 
 		lutuProducer.setC_BPartner(bpartner);
-		lutuProducer.setM_Locator(locator);
+		lutuProducer.setLocatorId(locatorId);
 		lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
 		// one IFCO can hold 40kg tomatoes
@@ -146,7 +147,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='Palet'])", is("1")));
@@ -155,7 +156,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI)", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/Item[@ItemType='MI'])", is("1")));
@@ -166,7 +167,7 @@ public class LUTUProducerDestinationLoadTests
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
-		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)", is(Integer.toString(locator.getM_Locator_ID())))); // verify that the locator is propagated
+		assertThat(createdHuXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Item[@ItemType='PM' and @M_HU_PackingMaterial_Product_Value='IFCO'])", is("1")));
 		assertThat(createdHuXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='35.000' and @C_UOM_Name='Kg'])", is("1")));

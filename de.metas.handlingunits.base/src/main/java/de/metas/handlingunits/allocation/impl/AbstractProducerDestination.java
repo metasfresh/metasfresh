@@ -1,32 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
 import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +16,11 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Locator;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -90,7 +67,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	//
 	// Parameters
-	private I_M_Locator _locator = null;
+	private LocatorId _locatorId = null;
 	private String _huStatus = null;
 	private I_C_BPartner _bpartner = null;
 	private int _bpartnerLocationId = -1;
@@ -281,7 +258,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		// Configure HU Builder
 		final IHUBuilder huBuilder = AllocationUtils.createHUBuilder(request);
 		huBuilder.setM_HU_Item_Parent(parentItem);
-		huBuilder.setM_Locator(getM_Locator());
+		huBuilder.setLocatorId(getLocatorId());
 		final String huStatus = getHUStatus();
 
 		if (!Check.isEmpty(huStatus, true))
@@ -302,7 +279,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		//
 		// Link to LU/TU Configuration if any
 		huBuilder.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
-		
+
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
 		return huBuilder;
@@ -318,17 +295,16 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected abstract I_M_HU_Item getParent_HU_Item();
 
 	@Override
-	public final IHUProducerAllocationDestination setM_Locator(final I_M_Locator locator)
+	public IHUProducerAllocationDestination setLocatorId(final LocatorId locatorId)
 	{
 		assertConfigurable();
-		_locator = locator;
+		_locatorId = locatorId;
 		return this;
 	}
 
-	@Override
-	public final I_M_Locator getM_Locator()
+	protected final LocatorId getLocatorId()
 	{
-		return _locator;
+		return _locatorId;
 	}
 
 	@Override
@@ -339,8 +315,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return this;
 	}
 
-	@Override
-	public final String getHUStatus()
+	protected final String getHUStatus()
 	{
 		return _huStatus;
 	}
@@ -353,8 +328,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return this;
 	}
 
-	@Override
-	public I_C_BPartner getC_BPartner()
+	protected final I_C_BPartner getC_BPartner()
 	{
 		return _bpartner;
 	}
@@ -367,8 +341,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return this;
 	}
 
-	@Override
-	public int getC_BPartner_Location_ID()
+	protected final int getC_BPartner_Location_ID()
 	{
 		return _bpartnerLocationId;
 	}
@@ -478,14 +451,30 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	{
 		if (_createdHUs.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		//
-		// Make sure all created HUs have the thread inerited transaction name
+		// Make sure all created HUs have the thread inherited transaction name
 		InterfaceWrapperHelper.setThreadInheritedTrxName(_createdHUs);
+		return ImmutableList.copyOf(_createdHUs);
+	}
 
-		return Collections.unmodifiableList(new ArrayList<>(_createdHUs));
+	@Override
+	public final I_M_HU getSingleCreatedHU()
+	{
+		if (_createdHUs.isEmpty())
+		{
+			return null;
+		}
+		else if (_createdHUs.size() == 1)
+		{
+			return _createdHUs.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("Expected only one created HU but found more: " + this);
+		}
 	}
 
 	@Override
@@ -518,7 +507,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 			if (currentHUCursor == null)
 			{
 				// If there is no current HU to work with, stop here. This happens e.g. if there are 5 TU allowed on one LU and we already created those 5 TUs.
-				// that's not a problem per se, it just means that 
+				// that's not a problem per se, it just means that
 				// either another component needs to finish the job. e.g. we might need to go back from TU level to LU level and create another palet,
 				// or there are already pre-loaded HUs that have everything we needed
 				break;
@@ -703,19 +692,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	{
 		return _lutuConfiguration;
 	}
-	
+
 	@Override
 	public final IHUProducerAllocationDestination setIsHUPlanningReceiptOwnerPM(boolean isHUPlanningReceiptOwnerPM)
 	{
 		this._isHUPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM;
 		return this;
 	}
-	
+
 	public final boolean isHUPlanningReceiptOwnerPM()
 	{
 		return _isHUPlanningReceiptOwnerPM;
 	}
-
 
 	/**
 	 * Sets this producer in "non-configurable" state. No further configuration to this producer will be allowed after calling this method.
