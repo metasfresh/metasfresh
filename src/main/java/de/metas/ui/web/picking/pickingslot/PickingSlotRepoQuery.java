@@ -71,5 +71,4 @@ public class PickingSlotRepoQuery
 		this.onlyNotClosedOrNotRackSystem = onlyNotClosedOrNotRackSystem != null ? onlyNotClosedOrNotRackSystem : true;
 		this.pickingSlotBarcode = pickingSlotBarcode;
 	}
-
 }

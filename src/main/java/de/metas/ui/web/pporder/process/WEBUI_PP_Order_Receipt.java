@@ -187,9 +187,8 @@ public class WEBUI_PP_Order_Receipt
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
 		if (!Check.isEmpty(packingInfo, true))
 		{
-			return ProcessPreconditionsResolution.builder()
-					.setCaptionOverride(packingInfo)
-					.accept();
+			return ProcessPreconditionsResolution.accept()
+					.deriveWithCaptionOverride(packingInfo);
 		}
 
 		//

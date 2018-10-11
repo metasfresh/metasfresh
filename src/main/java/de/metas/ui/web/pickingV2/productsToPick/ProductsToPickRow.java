@@ -50,46 +50,53 @@ import lombok.ToString;
 public class ProductsToPickRow implements IViewRow
 {
 	static final String FIELD_Product = "product";
-	@ViewColumn(fieldName = FIELD_Product, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID", seqNo = 10)
+	@ViewColumn(fieldName = FIELD_Product, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Product_ID")
 	private final LookupValue product;
 
 	static final String FIELD_Locator = "locator";
-	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", seqNo = 20)
+	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID")
 	private final LookupValue locator;
 
 	static final String FIELD_LotNumber = "lotNumber";
-	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber", seqNo = 30)
+	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "LotNumber")
 	private final String lotNumber;
 
 	static final String FIELD_ExpiringDate = "expiringDate";
-	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate", seqNo = 40)
+	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, captionKey = "ExpiringDate")
 	@Getter
 	private final LocalDate expiringDate;
 
 	static final String FIELD_RepackNumber = "repackNumber";
-	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber", seqNo = 50)
+	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, captionKey = "RepackNumber")
 	private final String repackNumber;
 
 	static final String FIELD_Damaged = "damaged";
-	@ViewColumn(fieldName = FIELD_Damaged, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch", seqNo = 60) // Damaged
+	@ViewColumn(fieldName = FIELD_Damaged, widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Bruch")
 	private final Boolean damaged;
 
 	static final String FIELD_Qty = "qty";
-	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", seqNo = 70)
+	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty")
 	@Getter
 	private final Quantity qty;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Processed", seqNo = 80)
-	private final boolean processed;
+	static final String FIELD_PickStatus = "pickStatus";
+	@ViewColumn(fieldName = FIELD_PickStatus, widgetType = DocumentFieldWidgetType.Text, captionKey = "PickStatus")
+	private final ProductsToPickRow_PickStatus pickStatus;
+
+	static final String FIELD_ApprovalStatus = "approvalStatus";
+	@ViewColumn(fieldName = FIELD_ApprovalStatus, widgetType = DocumentFieldWidgetType.Text, captionKey = "ApprovalStatus")
+	private final ProductsToPickRow_ApprovalStatus approvalStatus;
 
 	//
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final ProductsToPickRowId rowId;
 	@Getter
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Getter
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
+
+	//
+	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
 	@Builder(toBuilder = true)
 	private ProductsToPickRow(
@@ -104,6 +111,9 @@ public class ProductsToPickRow implements IViewRow
 			//
 			@NonNull final Quantity qty,
 			//
+			@NonNull final ProductsToPickRow_PickStatus pickStatus,
+			@NonNull final ProductsToPickRow_ApprovalStatus approvalStatus,
+			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			final PickingCandidateId pickingCandidateId)
 	{
@@ -114,10 +124,15 @@ public class ProductsToPickRow implements IViewRow
 		this.expiringDate = expiringDate;
 		this.repackNumber = repackNumber;
 		this.damaged = damaged;
+
 		this.qty = qty;
+
+		this.pickStatus = pickStatus;
+		this.approvalStatus = approvalStatus;
+
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
-		this.processed = pickingCandidateId != null;
+		// this.processed = pickingCandidateId != null;
 	}
 
 	@Override
@@ -129,7 +144,8 @@ public class ProductsToPickRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return processed;
+		return false;
+		// return processed;
 	}
 
 	@Override
@@ -164,28 +180,69 @@ public class ProductsToPickRow implements IViewRow
 		return toBuilder().qty(qty).build();
 	}
 
-	public ProductsToPickRow withPickingCandidateId(@NonNull final PickingCandidateId pickingCandidateId)
+	public ProductsToPickRow withPickingCandidateIdAndStatus(@NonNull final PickingCandidateId pickingCandidateId, @NonNull final ProductsToPickRow_PickStatus pickStatus)
 	{
-		if (PickingCandidateId.equals(this.pickingCandidateId, pickingCandidateId))
+		if (PickingCandidateId.equals(this.pickingCandidateId, pickingCandidateId)
+				&& this.pickStatus == pickStatus)
 		{
 			return this;
 		}
 
-		return toBuilder().pickingCandidateId(pickingCandidateId).build();
+		return toBuilder()
+				.pickingCandidateId(pickingCandidateId)
+				.pickStatus(pickStatus)
+				.build();
+	}
+
+	public ProductsToPickRow withPickStatus_WillNotBePicked()
+	{
+		return withPickStatus(ProductsToPickRow_PickStatus.WILL_NOT_BE_PICKED);
+	}
+
+	private ProductsToPickRow withPickStatus(@NonNull final ProductsToPickRow_PickStatus pickStatus)
+	{
+		if (this.pickStatus == pickStatus)
+		{
+			return this;
+		}
+
+		return toBuilder().pickStatus(pickStatus).build();
+	}
+
+	public ProductsToPickRow withApprovalStatusApproved()
+	{
+		return withApprovalStatus(ProductsToPickRow_ApprovalStatus.APPROVED);
+	}
+
+	public ProductsToPickRow withApprovalStatusRejected()
+	{
+		return withApprovalStatus(ProductsToPickRow_ApprovalStatus.REJECTED);
+	}
+
+	private ProductsToPickRow withApprovalStatus(@NonNull final ProductsToPickRow_ApprovalStatus approvalStatus)
+	{
+		if (this.approvalStatus.equals(approvalStatus))
+		{
+			return this;
+		}
+
+		return toBuilder().approvalStatus(approvalStatus).build();
 	}
 
 	public boolean isToBePicked()
 	{
-		return getPickingCandidateId() == null;
+		return pickStatus == ProductsToPickRow_PickStatus.TO_BE_PICKED;
 	}
 
-	public boolean isPrepared()
+	public boolean isEligibleForApproval()
 	{
-		return getPickingCandidateId() != null;
+		return pickStatus == ProductsToPickRow_PickStatus.PICKED
+				|| pickStatus == ProductsToPickRow_PickStatus.WILL_NOT_BE_PICKED;
 	}
 
-	public boolean isEligibleForReview()
+	public boolean isWaitingApproval()
 	{
-		return isPrepared();
+		return isEligibleForApproval()
+				&& approvalStatus == ProductsToPickRow_ApprovalStatus.TO_BE_APPROVED;
 	}
 }

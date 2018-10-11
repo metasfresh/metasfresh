@@ -2,17 +2,8 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
-import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow_PickStatus;
-import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -36,10 +27,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * #L%
  */
 
-public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
+public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBasedProcess
 {
-	@Autowired
-	private PickingCandidateService pickingCandidatesService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -47,7 +36,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 		final List<ProductsToPickRow> selectedRows = getSelectedRows();
 		if (selectedRows.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
 
 		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
@@ -59,35 +48,22 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	}
 
 	@Override
-	@RunOutOfTrx
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
 		getSelectedRows()
 				.stream()
 				.filter(ProductsToPickRow::isToBePicked)
-				.forEach(this::pickRow);
+				.forEach(this::markAsWillNotPick);
 
 		invalidateView();
 
 		return MSG_OK;
 	}
 
-	private void pickRow(final ProductsToPickRow row)
+	private void markAsWillNotPick(final ProductsToPickRow row)
 	{
-		final PickHURequest request = PickHURequest.builder()
-				.shipmentScheduleId(row.getShipmentScheduleId())
-				.huId(row.getHuId())
-				.qtyToPick(row.getQty())
-				.build();
+		// TODO: update/persist picking candidate
 
-		final PickHUResult result = pickingCandidatesService.pickHU(request);
-
-		updateViewFromPickResult(row.getId(), result);
-	}
-
-	private void updateViewFromPickResult(final DocumentId rowId, final PickHUResult result)
-	{
-		final PickingCandidateId pickingCandidateId = result.getPickingCandidateId();
-		getView().changeRow(rowId, row -> row.withPickingCandidateIdAndStatus(pickingCandidateId, ProductsToPickRow_PickStatus.PICKED));
+		getView().changeRow(row.getId(), ProductsToPickRow::withPickStatus_WillNotBePicked);
 	}
 }

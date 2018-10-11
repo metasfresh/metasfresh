@@ -83,7 +83,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 		}
 
 		final boolean hasNotEligibleRows = streamByIds(DocumentIdsSelection.ALL)
-				.anyMatch(row -> !row.isEligibleForReview());
+				.anyMatch(row -> !row.isEligibleForApproval());
 
 		return !hasNotEligibleRows;
 	}

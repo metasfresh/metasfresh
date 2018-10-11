@@ -238,6 +238,9 @@ class ProductsToPickRowsDataFactory
 				.productId(productId)
 				.build();
 
+		final ProductsToPickRow_PickStatus pickStatus = pickingCandidateId != null ? ProductsToPickRow_PickStatus.PICKED : ProductsToPickRow_PickStatus.TO_BE_PICKED;
+		final ProductsToPickRow_ApprovalStatus approvalStatus = ProductsToPickRow_ApprovalStatus.TO_BE_APPROVED;
+
 		return ProductsToPickRow.builder()
 				.rowId(rowId)
 				.product(product)
@@ -250,6 +253,9 @@ class ProductsToPickRowsDataFactory
 				.damaged(attributes.getValueAsBooleanIfExists(ATTR_Damaged).orElse(null))
 				//
 				.qty(qty)
+				//
+				.pickStatus(pickStatus)
+				.approvalStatus(approvalStatus)
 				//
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.pickingCandidateId(pickingCandidateId)

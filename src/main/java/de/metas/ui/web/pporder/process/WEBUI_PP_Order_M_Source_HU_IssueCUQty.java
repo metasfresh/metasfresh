@@ -30,7 +30,6 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -108,7 +107,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest
 				.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
-				.productId(ProductId.ofRepoId(row.getM_Product_ID()))
+				.productId(row.getProductId())
 				.qtyCU(Quantity.of(qtyCU, row.getC_UOM()))
 				.build();
 
