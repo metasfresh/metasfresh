@@ -65,6 +65,8 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	@Override
 	public boolean isAllowClosingPerUserRequest()
 	{
+		// don't allow closing per user request because the same view is used the the Picker and the Reviewer.
+		// So the first one which is closing the view would delete it.
 		return false;
 	}
 
