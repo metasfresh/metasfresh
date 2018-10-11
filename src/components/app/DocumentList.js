@@ -759,10 +759,6 @@ class DocumentList extends Component {
       );
     }
 
-    const showQuickActions = Boolean(
-      !isModal || inBackground || selectionValid
-    );
-
     if (layout && data) {
       return (
         <div
@@ -829,39 +825,37 @@ class DocumentList extends Component {
                 )}
               </div>
 
-              {showQuickActions && (
-                <QuickActions
-                  processStatus={processStatus}
-                  ref={c => {
-                    this.quickActionsComponent = c && c.getWrappedInstance();
-                  }}
-                  selected={selected}
-                  viewId={viewId}
-                  windowType={windowType}
-                  fetchOnInit={fetchQuickActionsOnInit}
-                  disabled={hasIncluded && blurWhenOpen}
-                  shouldNotUpdate={inBackground && !hasIncluded}
-                  inBackground={disablePaginationShortcuts}
-                  inModal={inModal}
-                  stopShortcutPropagation={stopShortcutPropagation}
-                  childView={
-                    hasIncluded
-                      ? {
-                          viewId: includedView.viewId,
-                          viewSelectedIds: childSelected,
-                        }
-                      : NO_VIEW
-                  }
-                  parentView={
-                    isIncluded
-                      ? {
-                          viewId: parentDefaultViewId,
-                          viewSelectedIds: parentSelected,
-                        }
-                      : NO_VIEW
-                  }
-                />
-              )}
+              <QuickActions
+                processStatus={processStatus}
+                ref={c => {
+                  this.quickActionsComponent = c && c.getWrappedInstance();
+                }}
+                selected={selected}
+                viewId={viewId}
+                windowType={windowType}
+                fetchOnInit={fetchQuickActionsOnInit}
+                disabled={hasIncluded && blurWhenOpen}
+                shouldNotUpdate={inBackground && !hasIncluded}
+                inBackground={disablePaginationShortcuts}
+                inModal={inModal}
+                stopShortcutPropagation={stopShortcutPropagation}
+                childView={
+                  hasIncluded
+                    ? {
+                        viewId: includedView.viewId,
+                        viewSelectedIds: childSelected,
+                      }
+                    : NO_VIEW
+                }
+                parentView={
+                  isIncluded
+                    ? {
+                        viewId: parentDefaultViewId,
+                        viewSelectedIds: parentSelected,
+                      }
+                    : NO_VIEW
+                }
+              />
             </div>
           )}
           <div className="document-list-body">
