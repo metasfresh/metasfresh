@@ -358,3 +358,53 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:26:0
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542848,'en_US') 
 ;
 
+-- 2018-10-09T15:27:45.063
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:27:45','YYYY-MM-DD HH24:MI:SS'),Name='Active ' WHERE AD_Element_ID=348 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:27:45.072
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(348,'en_US') 
+;
+
+-- 2018-10-09T15:27:48.179
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:27:48','YYYY-MM-DD HH24:MI:SS'),Name='Active' WHERE AD_Element_ID=348 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:27:48.186
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(348,'en_US') 
+;
+
+-- 2018-10-09T15:29:02.240
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:29:02','YYYY-MM-DD HH24:MI:SS'),Name='Default Contact',PrintName='Default Contact' WHERE AD_Element_ID=500035 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:29:02.244
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(500035,'en_US') 
+;
+
+-- 2018-10-09T15:29:47.016
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:29:47','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Christmas Gift',PrintName='Christmas Gift' WHERE AD_Element_ID=542245 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:29:47.019
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542245,'en_US') 
+;
+
+-- 2018-10-09T15:30:07.957
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:30:07','YYYY-MM-DD HH24:MI:SS'),PrintName='Christmas Gift' WHERE AD_Element_ID=542543 AND AD_Language='en_US'
+;
+
+-- 2018-10-09T15:30:07.960
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542543,'en_US') 
+;
+
