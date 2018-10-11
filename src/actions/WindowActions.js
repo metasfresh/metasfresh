@@ -31,6 +31,7 @@ import {
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
+  TOGGLE_OVERLAY,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -63,6 +64,13 @@ export function setLatestNewDocument(id) {
   return {
     type: SET_LATEST_NEW_DOCUMENT,
     id: id,
+  };
+}
+
+export function toggleOverlay(data) {
+  return {
+    type: TOGGLE_OVERLAY,
+    data: data,
   };
 }
 
@@ -998,6 +1006,9 @@ export function handleProcessResponse(response, type, id) {
 
       if (action) {
         switch (action.type) {
+          case 'displayQRCode':
+            dispatch(toggleOverlay({ type: 'qr', data: action.code }));
+            break;
           case 'openView':
             await dispatch(closeModal());
 
@@ -1211,12 +1222,12 @@ function getProcessData({
     }
   }
 
-  return axios.post(config.API_URL + '/process/' + processId, payload);
+  return axios.post(`${config.API_URL}/process/${processId}`, payload);
 }
 
 export function startProcess(processType, pinstanceId) {
   return axios.get(
-    config.API_URL + '/process/' + processType + '/' + pinstanceId + '/start'
+    `${config.API_URL}/process/${processType}/${pinstanceId}/start`
   );
 }
 

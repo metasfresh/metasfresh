@@ -20,6 +20,7 @@ import {
 import BlankPage from '../components/BlankPage';
 import Container from '../components/Container';
 import Window from '../components/Window';
+import Overlay from '../components/app/Overlay';
 import { introHints, introSteps } from '../components/intro/intro';
 
 class MasterWindow extends Component {
@@ -47,6 +48,7 @@ class MasterWindow extends Component {
     indicator: PropTypes.string.isRequired,
     me: PropTypes.object.isRequired,
     pluginModal: PropTypes.object,
+    overlay: PropTypes.object,
   };
 
   componentDidMount() {
@@ -312,6 +314,7 @@ class MasterWindow extends Component {
       params,
       rawModal,
       pluginModal,
+      overlay,
       includedView,
       processStatus,
       enableTutorial,
@@ -378,6 +381,8 @@ class MasterWindow extends Component {
         showIndicator={!modal.visible}
         handleDeletedStatus={this.handleDeletedStatus}
       >
+        <Overlay data={overlay.data} showOverlay={overlay.visible} />
+
         {dataId === 'notfound' ? (
           <BlankPage what="Document" />
         ) : (
@@ -423,6 +428,7 @@ const mapStateToProps = state => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
+  overlay: state.windowHandler.overlay,
   indicator: state.windowHandler.indicator,
   includedView: state.listHandler.includedView,
   enableTutorial: state.appHandler.enableTutorial,

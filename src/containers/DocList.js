@@ -11,18 +11,7 @@ import {
 } from '../actions/WindowActions';
 import Container from '../components/Container';
 import DocumentList from '../components/app/DocumentList';
-
-const mapStateToProps = state => ({
-  modal: state.windowHandler.modal,
-  rawModal: state.windowHandler.rawModal,
-  pluginModal: state.windowHandler.pluginModal,
-  latestNewDocument: state.windowHandler.latestNewDocument,
-  indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
-  processStatus: state.appHandler.processStatus,
-  breadcrumb: state.menuHandler.breadcrumb,
-  pathname: state.routing.locationBeforeTransitions.pathname,
-});
+import Overlay from '../components/app/Overlay';
 
 class DocList extends Component {
   state = {
@@ -42,6 +31,7 @@ class DocList extends Component {
     indicator: PropTypes.string.isRequired,
     processStatus: PropTypes.string.isRequired,
     pluginModal: PropTypes.object,
+    overlay: PropTypes.object,
   };
 
   componentDidMount = () => {
@@ -99,6 +89,7 @@ class DocList extends Component {
       modal,
       rawModal,
       pluginModal,
+      overlay,
       indicator,
       processStatus,
       includedView,
@@ -134,6 +125,8 @@ class DocList extends Component {
         showIndicator={!modal.visible && !rawModal.visible}
         masterDocumentList={this.masterDocumentList}
       >
+        <Overlay data={overlay.data} showOverlay={overlay.visible} />
+
         <div
           className={classnames('document-lists-wrapper', {
             'modal-overlay': rawModal.visible,
@@ -190,5 +183,18 @@ class DocList extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  modal: state.windowHandler.modal,
+  rawModal: state.windowHandler.rawModal,
+  pluginModal: state.windowHandler.pluginModal,
+  overlay: state.windowHandler.overlay,
+  latestNewDocument: state.windowHandler.latestNewDocument,
+  indicator: state.windowHandler.indicator,
+  includedView: state.listHandler.includedView,
+  processStatus: state.appHandler.processStatus,
+  breadcrumb: state.menuHandler.breadcrumb,
+  pathname: state.routing.locationBeforeTransitions.pathname,
+});
 
 export default connect(mapStateToProps)(DocList);
