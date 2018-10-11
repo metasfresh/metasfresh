@@ -1,13 +1,20 @@
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { BrowserQRCodeSvgWriter } from '@zxing/library';
+import currentDevice from 'current-device';
 
 class QRCode extends Component {
   constructor(props) {
     super(props);
 
-    this.width = 300;
-    this.height = 300;
+    let val = 400;
+
+    if (currentDevice.type === 'mobile') {
+      val = 300;
+    }
+
+    this.width = val;
+    this.height = val;
   }
   componentDidMount() {
     const { data } = this.props;
@@ -15,7 +22,7 @@ class QRCode extends Component {
     if (data) {
       const codeWriter = new BrowserQRCodeSvgWriter('qr-code');
 
-      codeWriter.write(data.data, 300, 300);
+      codeWriter.write(data.data, this.width, this.height);
     }
   }
 
