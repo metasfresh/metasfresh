@@ -69,6 +69,10 @@ const initialState = {
     validStatus: {},
     includedTabsInfo: {},
   },
+  overlay: {
+    visible: false,
+    data: null,
+  },
   rawModal: {
     visible: false,
     windowType: null,
@@ -194,6 +198,14 @@ export default function windowHandler(state = initialState, action) {
           visible: false,
           type: '',
           id: null,
+        },
+      };
+    case 'TOGGLE_OVERLAY':
+      return {
+        ...state,
+        overlay: {
+          visible: !state.overlay.visible,
+          data: action.data || null,
         },
       };
 
