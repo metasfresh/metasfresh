@@ -264,7 +264,7 @@ import lombok.NonNull;
 
 		pickingCandidateService.pickHU(PickHURequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
-				.huId(huId)
+				.pickFromHuId(huId)
 				.pickingSlotId(pickingSlotId)
 				.build());
 	}

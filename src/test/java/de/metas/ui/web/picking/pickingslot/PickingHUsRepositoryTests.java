@@ -58,6 +58,9 @@ public class PickingHUsRepositoryTests
 {
 	private static final ShipmentScheduleId M_SHIPMENT_SCHEDULE_ID = ShipmentScheduleId.ofRepoId(123);
 
+	private final boolean RACK_SYSTEM_PICKINGSLOT_YES = true;
+	private final boolean RACK_SYSTEM_PICKINGSLOT_NO = false;
+
 	@Before
 	public void init()
 	{
@@ -94,45 +97,39 @@ public class PickingHUsRepositoryTests
 	 * @param pickingCandidateStatus this value is given to the picking candidate we test with, and we verify that this value is correctly translated it to the resulting {@link PickingSlotHUEditorRow#isProcessed()}.
 	 */
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_IP_RackSystem()
+	public void test_retrieveHUsIndexedByPickingSlotId_Draft_RackSystem()
 	{
-		final boolean pickingRackSystem = true;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Draft, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Draft, RACK_SYSTEM_PICKINGSLOT_YES);
 	}
 
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_IP_NotRackSystem()
+	public void test_retrieveHUsIndexedByPickingSlotId_Draft_NotRackSystem()
 	{
-		final boolean pickingRackSystem = false;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Draft, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Draft, RACK_SYSTEM_PICKINGSLOT_NO);
 	}
 
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_PR_RackSystem()
+	public void test_retrieveHUsIndexedByPickingSlotId_Processed_RackSystem()
 	{
-		final boolean pickingRackSystem = true;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Processed, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Processed, RACK_SYSTEM_PICKINGSLOT_YES);
 	}
 
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_PR_NotRackSystem()
+	public void test_retrieveHUsIndexedByPickingSlotId_Processed_NotRackSystem()
 	{
-		final boolean pickingRackSystem = false;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Processed, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Processed, RACK_SYSTEM_PICKINGSLOT_NO);
 	}
 
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_CL_RackSystem()
+	public void test_retrieveHUsIndexedByPickingSlotId_Closed_RackSystem()
 	{
-		final boolean pickingRackSystem = true;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Closed, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Closed, RACK_SYSTEM_PICKINGSLOT_YES);
 	}
 
 	@Test
-	public void test_retrieveHUsIndexedByPickingSlotId_CL_NotRackSystem()
+	public void test_retrieveHUsIndexedByPickingSlotId_Closed_NotRackSystem()
 	{
-		final boolean pickingRackSystem = false;
-		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Closed, pickingRackSystem);
+		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Closed, RACK_SYSTEM_PICKINGSLOT_NO);
 	}
 
 	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final PickingCandidateStatus pickingCandidateStatus, final boolean pickingRackSystem)
@@ -148,7 +145,8 @@ public class PickingHUsRepositoryTests
 				.qtyPicked(Quantity.zero(uom))
 				.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
 				.pickingSlotId(pickingSlotId)
-				.huId(huId)
+				.pickFromHuId(huId)
+				.packedToHuId(PickingCandidateStatus.Draft.equals(pickingCandidateStatus) ? null : huId)
 				.build());
 
 		final HUEditorRow huEditorRow = HUEditorRow

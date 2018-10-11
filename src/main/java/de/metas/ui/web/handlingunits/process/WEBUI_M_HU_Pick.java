@@ -181,7 +181,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleIdInt);
 		pickingCandidateService.pickHU(PickHURequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
-				.huId(huId)
+				.pickFromHuId(huId)
 				.pickingSlotId(pickingSlotId)
 				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.

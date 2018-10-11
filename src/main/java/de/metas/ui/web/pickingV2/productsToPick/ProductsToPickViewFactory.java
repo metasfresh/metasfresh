@@ -7,11 +7,12 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_ApproveSelected;
-import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
-import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_RejectSelected;
-import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ApproveSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_ProcessAll;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesReview_RejectSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -122,8 +123,9 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
 				//
-				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_ApproveSelected.class))
-				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_RejectSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ApproveSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_RejectSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))
 				//
 				.build();
 

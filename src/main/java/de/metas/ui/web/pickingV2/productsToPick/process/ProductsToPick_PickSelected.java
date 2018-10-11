@@ -4,15 +4,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow_PickStatus;
-import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -74,20 +72,13 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 
 	private void pickRow(final ProductsToPickRow row)
 	{
-		final PickHURequest request = PickHURequest.builder()
+		final PickHUResult result = pickingCandidatesService.pickHU(PickHURequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
-				.huId(row.getHuId())
 				.qtyToPick(row.getQty())
-				.build();
+				.pickFromHuId(row.getHuId())
+				.packToId(HuPackingInstructionsId.VIRTUAL)
+				.build());
 
-		final PickHUResult result = pickingCandidatesService.pickHU(request);
-
-		updateViewFromPickResult(row.getId(), result);
-	}
-
-	private void updateViewFromPickResult(final DocumentId rowId, final PickHUResult result)
-	{
-		final PickingCandidateId pickingCandidateId = result.getPickingCandidateId();
-		getView().changeRow(rowId, row -> row.withPickingCandidateIdAndStatus(pickingCandidateId, ProductsToPickRow_PickStatus.PICKED));
+		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());
 	}
 }

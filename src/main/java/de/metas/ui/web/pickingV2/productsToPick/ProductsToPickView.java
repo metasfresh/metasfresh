@@ -82,14 +82,23 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 			return false;
 		}
 
-		final boolean hasNotEligibleRows = streamByIds(DocumentIdsSelection.ALL)
-				.anyMatch(row -> !row.isEligibleForApproval());
-
-		return !hasNotEligibleRows;
+		return streamByIds(DocumentIdsSelection.ALL)
+				.allMatch(ProductsToPickRow::isEligibleForApproval);
 	}
 
 	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
 	{
 		rowsData.changeRow(rowId, mapper);
+	}
+
+	public boolean isApproved()
+	{
+		if (size() == 0)
+		{
+			return false;
+		}
+
+		return streamByIds(DocumentIdsSelection.ALL)
+				.allMatch(ProductsToPickRow::isApproved);
 	}
 }

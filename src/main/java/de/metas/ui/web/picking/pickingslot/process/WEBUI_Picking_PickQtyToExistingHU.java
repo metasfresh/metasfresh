@@ -102,7 +102,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 
 		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
 				.qtyCU(qtyCU)
-				.targetHUId(pickingSlotRow.getHuId())
+				.packToHuId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 				.allowOverDelivery(allowOverDelivery)

@@ -10,9 +10,9 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_Locator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.HuId;
@@ -149,7 +149,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 			pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
 					.qtyCU(qtyCU)
-					.targetHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.packToHuId(HuId.ofRepoId(hu.getM_HU_ID()))
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 					.allowOverDelivery(allowOverDelivery)
@@ -159,10 +159,10 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	private I_M_HU createAndAddHU(@NonNull final PickingSlotRow pickingSlotRow)
 	{
-		final I_M_Locator pickingSlotLocator = getPickingSlotLocator(pickingSlotRow);
+		final LocatorId pickingSlotLocatorId = getPickingSlotLocatorId(pickingSlotRow);
 
 		// Create a new empty TU
-		final I_M_HU hu = createTU(huPIItemProduct, pickingSlotLocator);
+		final I_M_HU hu = createTU(huPIItemProduct, pickingSlotLocatorId);
 
 		// Add the TU to picking slot (as candidate)
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
@@ -170,7 +170,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		pickingCandidateService.pickHU(PickHURequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
-				.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.pickFromHuId(HuId.ofRepoId(hu.getM_HU_ID()))
 				.pickingSlotId(pickingSlotId)
 				.build());
 
@@ -218,27 +218,31 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 	}
 
-	private final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
+	private final LocatorId getPickingSlotLocatorId(final PickingSlotRow pickingSlotRow)
 	{
+		if (pickingSlotRow.getPickingSlotLocatorId() != null)
+		{
+			return pickingSlotRow.getPickingSlotLocatorId();
+		}
+
 		final WarehouseId pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
 		if (pickingSlotWarehouseId == null)
 		{
 			throw new AdempiereException("Picking slot with M_PickingSlot_ID=" + pickingSlotRow.getPickingSlotId() + " has no warehouse configured");
 		}
-		final I_M_Locator pickingSlotLocator = Services.get(IWarehouseBL.class).getDefaultLocator(pickingSlotWarehouseId);
-		return pickingSlotLocator;
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(pickingSlotWarehouseId);
 	}
 
 	/**
 	 * Creates a new M_HU within the processe's interited trx.
 	 * 
 	 * @param itemProduct
-	 * @param locator
+	 * @param locatorId
 	 * @return
 	 */
 	private static final I_M_HU createTU(
 			@NonNull final I_M_HU_PI_Item_Product itemProduct,
-			@NonNull final I_M_Locator locator)
+			@NonNull final LocatorId locatorId)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
@@ -249,7 +253,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 				.call(huContext -> handlingUnitsDAO.createHUBuilder(huContext)
 						.setM_HU_Item_Parent(null) // no parent
 						.setM_HU_PI_Item_Product(itemProduct)
-						.setM_Locator(locator)
+						.setLocatorId(locatorId)
 
 						// we are going to load from a "real" source HU onto this HU, so both shall be active. Otherwise it would look as if stuff was vanishing for the source HU
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
