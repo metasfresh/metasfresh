@@ -205,7 +205,7 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         overlay: {
           visible: !state.overlay.visible,
-          data: action.data || null,
+          data: action.data ? { ...action.data } : null,
         },
       };
 

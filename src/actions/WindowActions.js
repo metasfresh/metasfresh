@@ -1006,7 +1006,6 @@ export function handleProcessResponse(response, type, id) {
       if (action) {
         switch (action.type) {
           case 'displayQRCode':
-            console.log('qrcode');
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView':
