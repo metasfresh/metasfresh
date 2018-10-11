@@ -37,6 +37,7 @@ import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Product storage oriented on {@link I_M_ShipmentSchedule}'s QtyPicked.
@@ -46,12 +47,17 @@ import de.metas.util.Services;
  */
 public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStorage
 {
+	public static ShipmentScheduleQtyPickedProductStorage of(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
+	}
+	
 	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private boolean staled = false;
 
-	public ShipmentScheduleQtyPickedProductStorage(final I_M_ShipmentSchedule shipmentSchedule)
+	public ShipmentScheduleQtyPickedProductStorage(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		setConsiderForceQtyAllocationFromRequest(false); // TODO: consider changing it to "true" (default)
 
