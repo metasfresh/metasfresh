@@ -354,7 +354,7 @@ class Lookup extends Component {
       autoFocus,
       newRecordWindowId,
       scanning,
-      barcodeSelected,
+      codeSelected,
       scannerElement,
       forceFullWidth,
     } = this.props;
@@ -444,8 +444,8 @@ class Lookup extends Component {
             ) {
               let defaultValue = localClearing ? null : itemByProperty.value;
 
-              if (barcodeSelected) {
-                defaultValue = { caption: barcodeSelected };
+              if (codeSelected) {
+                defaultValue = { caption: codeSelected };
               }
 
               let width = null;

@@ -48,14 +48,48 @@
         left:0;
     }
 
-    .btn-close {
+    .scan-mode {
+        position: absolute;
+        z-index: 1000;
+        top: 5px;
+        left: 5px;
+        display: flex;
+    }
+
+    .btn-control {
         position: absolute;
         top: 5px;
+        z-index: 1000;
+    }
+
+    .btn-close {
         right: 5px;
-        z-index: 10000;
+        cursor: pointer;
 
         @media (min-width: $breakpoint-md){
             font-size: 20px;
+        }
+    }
+
+    .btn-mode {
+        position: initial;
+        display: block;
+        margin-left: 10px;
+        width: 40x;
+        height: 40px;
+        background: no-repeat scroll 0 center;
+
+        @media (min-width: $breakpoint-md){
+            width: 25px;
+            height: 25px;
+        }
+
+        &.btn-Qr {
+            background-image: url('../images/qrcode-solid.svg');
+        }
+
+        &.btn-Barcode {
+            background-image: url('../images/barcode-solid.svg');
         }
     }
 }
