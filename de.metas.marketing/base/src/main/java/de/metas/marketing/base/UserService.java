@@ -75,6 +75,10 @@ public class UserService
 		if (updateUserLanguage)
 		{
 			updatedUser.userLanguage(contactPerson.getLanguage());
+			if (contactPerson.getLanguage() != null)
+			{
+				updatedUser.language(contactPerson.getLanguage());
+			}
 		}
 		userRepo.save(updatedUser.build());
 	}
@@ -92,5 +96,4 @@ public class UserService
 		final boolean userValueInSyncWithOldcontactValue = Objects.equals(currentUserValue, oldContactValue);
 		return userValueInSyncWithOldcontactValue;
 	}
-
 }

@@ -21,6 +21,7 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -60,9 +61,15 @@ public final class Language implements Serializable
 {
 	private static final long serialVersionUID = 7907858733034838149L;
 
+	@VisibleForTesting
 	public static final String AD_Language_en_US = "en_US";
-	private static final String AD_Language_en_GB = "en_GB";
-	private static final String AD_Language_en_AU = "en_AU";
+
+	@VisibleForTesting
+	public static final String AD_Language_en_GB = "en_GB";
+
+	@VisibleForTesting
+	public static final String AD_Language_en_AU = "en_AU";
+
 	private static final String AD_Language_ca_ES = "ca_ES";
 	private static final String AD_Language_hr_HR = "hr_HR";
 	private static final String AD_Language_de_DE = "de_DE";

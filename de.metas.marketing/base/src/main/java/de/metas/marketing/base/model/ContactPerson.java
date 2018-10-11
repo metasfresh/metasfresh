@@ -47,7 +47,7 @@ public class ContactPerson implements DataRecord
 			@NonNull final PlatformId platformId,
 			@Nullable final BPartnerLocationId bpLocationId)
 	{
-		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.of(user.getEmailAddress());
+		final EmailAddress emailaddress = Check.isEmpty(user.getEmailAddress(), true) ? null : EmailAddress.ofString(user.getEmailAddress());
 
 		return ContactPerson.builder()
 				.platformId(platformId)

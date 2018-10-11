@@ -47,7 +47,7 @@ public class DocOutBoundRecipientRepository
 
 	private DocOutBoundRecipient ofRecord(@NonNull final I_AD_User userRecord)
 	{
-		final Language userLanguage = getUserLanguageOrNull(userRecord);
+		final Language userLanguage = Language.asLanguage(userRecord.getAD_Language());
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord);
@@ -59,21 +59,6 @@ public class DocOutBoundRecipientRepository
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bPartnerLanguage)
 				.build();
-	}
-
-	private Language getUserLanguageOrNull(final I_AD_User userRecord)
-	{
-		final Language userLanguage;
-		final String userLanguageStr = userRecord.getAD_Language();
-		if (Check.isEmpty(userLanguageStr, true))
-		{
-			userLanguage = null;
-		}
-		else
-		{
-			userLanguage = Language.getLanguage(userLanguageStr);
-		}
-		return userLanguage;
 	}
 
 	private boolean computeInvoiceAsEmail(@NonNull final I_AD_User userRecord)

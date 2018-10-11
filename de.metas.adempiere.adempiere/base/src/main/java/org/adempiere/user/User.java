@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,7 +32,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
 public class User
 {
 	/** can be null for not-yet-saved users */
@@ -65,4 +65,29 @@ public class User
 	 */
 	@NonNull
 	Language language;
+
+	@Builder(toBuilder = true)
+	private User(
+			@Nullable final UserId id,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final String name,
+			@Nullable final String emailAddress,
+			@Nullable final Language userLanguage,
+			@Nullable final Language bPartnerLanguage,
+			@NonNull final Language language)
+	{
+		this.id = id;
+		this.bpartnerId = bpartnerId;
+		this.name = name;
+		this.emailAddress = emailAddress;
+		this.userLanguage = userLanguage;
+		this.bPartnerLanguage = bPartnerLanguage;
+		this.language = language;
+
+		Check.assume(
+				userLanguage == null || userLanguage.equals(language),
+				"If a userLanguage parameter is specified, it needs to be equal to the language paramter; this={}",
+				language);
+	}
+
 }
