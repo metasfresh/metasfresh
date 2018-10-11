@@ -225,7 +225,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				return EmailParams
 						.builder()
 						.subject(boilerPlate.getSubject())
-						.message(boilerPlate.getTextSnippext())
+						.message(boilerPlate.getTextSnippet())
 						.build();
 			}
 		}

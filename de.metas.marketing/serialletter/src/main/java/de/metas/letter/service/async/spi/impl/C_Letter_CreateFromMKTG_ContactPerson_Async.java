@@ -75,7 +75,7 @@ public class C_Letter_CreateFromMKTG_ContactPerson_Async extends WorkpackageProc
 				if (boilerPlate != null)
 				{
 					subject = boilerPlate.getSubject();
-					body = boilerPlate.getTextSnippext();
+					body = boilerPlate.getTextSnippet();
 				}
 			}
 			Letter letter = Letter.builder()

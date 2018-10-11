@@ -68,7 +68,7 @@ public class BoilerPlateRepository
 		return BoilerPlate.builder()
 				.id(BoilerPlateId.ofRepoId(recordToUse.getAD_BoilerPlate_ID()))
 				.subject(recordToUse.getSubject())
-				.textSnippext(recordToUse.getTextSnippext())
+				.textSnippet(recordToUse.getTextSnippet())
 				.build();
 	}
 }
