@@ -25,13 +25,16 @@ package de.metas.inoutcandidate.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.order.DeliveryRule;
 import de.metas.util.ISingletonService;
 
 /**
@@ -43,29 +46,30 @@ import de.metas.util.ISingletonService;
 // TODO 06178: clean up the method names (both ID and Object getters are fine, but the names should be alligned)
 public interface IShipmentScheduleEffectiveBL extends ISingletonService
 {
-	I_M_Warehouse getWarehouse(I_M_ShipmentSchedule sched);
+	WarehouseId getWarehouseId(I_M_ShipmentSchedule sched);
 
-	int getWarehouseId(I_M_ShipmentSchedule sched);
-
-	I_M_Locator getDefaultLocator(I_M_ShipmentSchedule sched);
+	LocatorId getDefaultLocatorId(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner_Location getBPartnerLocation(I_M_ShipmentSchedule sched);
 
 	/**
-	 * return the "effective" C_BPartner_ID (either C_BPartner_ID or if set C_BPartner_Override_ID)
-	 *
-	 * @param sched
-	 * @return
+	 * @return the "effective" C_BPartner_ID (either C_BPartner_ID or if set C_BPartner_Override_ID)
 	 */
-	int getC_BPartner_ID(I_M_ShipmentSchedule sched);
+	BPartnerId getBPartnerId(I_M_ShipmentSchedule sched);
 
-	String getDeliveryRule(I_M_ShipmentSchedule sched);
+	DeliveryRule getDeliveryRule(I_M_ShipmentSchedule sched);
 
-	BigDecimal getQtyToDeliver(I_M_ShipmentSchedule sched);
+	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
 
-	int getC_BP_Location_ID(I_M_ShipmentSchedule sched);
+	@Deprecated
+	default int getC_BP_Location_ID(final I_M_ShipmentSchedule sched)
+	{
+		return BPartnerLocationId.toRepoId(getBPartnerLocationId(sched));
+	}
+
+	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule sched);
 
 	I_AD_User getAD_User(I_M_ShipmentSchedule sched);
 

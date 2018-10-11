@@ -17,6 +17,8 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsApproved;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;

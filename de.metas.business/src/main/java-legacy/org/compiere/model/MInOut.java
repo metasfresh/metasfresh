@@ -35,6 +35,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
@@ -59,6 +60,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
@@ -257,7 +259,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			setMovementDate(Env.getDate(ctx));	// use Login date (08306)
 			setDateAcct(getMovementDate());
 			// setMovementType (MOVEMENTTYPE_CustomerShipment);
-			setDeliveryRule(DELIVERYRULE_Availability);
+			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 			setDeliveryViaRule(DELIVERYVIARULE_Pickup);
 			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
 			setDocStatus(DOCSTATUS_Drafted);
@@ -304,9 +306,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		//
 
 		// 04579 fixing this problem so i can create a shipment for a PO order
-		final I_M_Warehouse wh = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
-		Check.assumeNotNull(wh, "IWarehouseAdvisor finds a ware house for {}", order);
-		setM_Warehouse_ID(wh.getM_Warehouse_ID());
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
+		Check.assumeNotNull(warehouseId, "IWarehouseAdvisor finds a ware house for {}", order);
+		setM_Warehouse_ID(warehouseId.getRepoId());
 
 		setIsSOTrx(order.isSOTrx());
 		// metas: better setting of the movement type
@@ -1460,7 +1462,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				if (oLine != null)
 				{
 					reservationAttributeSetInstance_ID = oLine.getM_AttributeSetInstance_ID();
-					sameWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID() == getM_Warehouse_ID();
+					sameWarehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getRepoId() == getM_Warehouse_ID();
 				}
 
 				final IStorageBL storageBL = Services.get(IStorageBL.class);
@@ -1506,12 +1508,12 @@ public class MInOut extends X_M_InOut implements IDocument
 						if (!sameWarehouse)
 						{
 							// correct qtyOrdered in warehouse of order
-							final MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
+							final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine);
 							// task 08999 : update the storage async
 							storageBL.addAsync(
 									getCtx(),
-									Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID(),
-									Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(),
+									warehouseId.getRepoId(),
+									Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
 									sLine.getM_Product_ID(),
 									ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 									BigDecimal.ZERO, reservedDiff, orderedDiff, get_TrxName());
@@ -1553,12 +1555,13 @@ public class MInOut extends X_M_InOut implements IDocument
 					if (!sameWarehouse)
 					{
 						// correct qtyOrdered in warehouse of order
-						final MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
+						final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine);
 						// task 08999 : update the storage async
 						storageBL.addAsync(
 								getCtx(),
-								Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID(),
-								Services.get(IWarehouseBL.class).getDefaultLocator(wh).getM_Locator_ID(), +sLine.getM_Product_ID(),
+								warehouseId.getRepoId(),
+								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
 					}

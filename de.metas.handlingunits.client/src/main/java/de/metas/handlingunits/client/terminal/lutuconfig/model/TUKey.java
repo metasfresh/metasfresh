@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Util;
 
@@ -35,13 +34,17 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class TUKey extends AbstractLUTUKey
 {
 	private final I_M_HU_PI_Item_Product tuPIItemProduct;
-	private final I_M_Product cuProduct;
+	private final ProductId cuProductId;
 	private final I_C_UOM cuUOM;
 	private final BigDecimal qtyCUsPerTU;
 	private final boolean qtyCUsPerTUInfinite;
@@ -49,7 +52,7 @@ public class TUKey extends AbstractLUTUKey
 	public TUKey(final ITerminalContext terminalContext,
 			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final I_M_HU_PI huPI,
-			final I_M_Product cuProduct,
+			@NonNull final ProductId cuProductId,
 			final I_C_UOM cuUOM,
 			final boolean qtyCUPerTUInfinite,
 			final BigDecimal qtyCUPerTU)
@@ -59,8 +62,7 @@ public class TUKey extends AbstractLUTUKey
 		//
 		this.tuPIItemProduct = tuPIItemProduct;
 
-		Check.assumeNotNull(cuProduct, "cuProduct not null");
-		this.cuProduct = cuProduct;
+		this.cuProductId = cuProductId;
 
 		// Check.assumeNotNull(cuUOM, "cuUOM not null");
 		this.cuUOM = cuUOM;
@@ -81,13 +83,13 @@ public class TUKey extends AbstractLUTUKey
 	protected String buildId()
 	{
 		final int huPIId = getM_HU_PI().getM_HU_PI_ID();
-		final int cuProductId = getCuProduct().getM_Product_ID();
+		final ProductId cuProductId = getCuProductId();
 		final I_C_UOM cuUOM = getCuUOM();
 		final int cuUOMId = cuUOM == null ? -1 : cuUOM.getC_UOM_ID();
 		final BigDecimal qtyCUsPerTU = NumberUtils.stripTrailingDecimalZeros(this.qtyCUsPerTU);
 		final String id = getClass().getName()
 				+ "#M_HU_PI_ID=" + huPIId
-				+ "#M_Product_ID=" + cuProductId
+				+ "#M_Product_ID=" + cuProductId.getRepoId()
 				+ "#C_UOM_ID=" + cuUOMId
 				+ "#isQtyCUsPerTUInfinite=" + isQtyCUsPerTUInfinite()
 				+ "#QtyCUPerTU=" + qtyCUsPerTU;
@@ -104,12 +106,13 @@ public class TUKey extends AbstractLUTUKey
 
 		final StringBuilder qtyLineStr = new StringBuilder();
 
-		final I_M_Product cuProduct = getCuProduct();
+		final ProductId cuProductId = getCuProductId();
 		final I_C_UOM cuUOM = getCuUOM();
 		final BigDecimal qtyCUsPerTU = getQtyCUsPerTU();
 		final boolean qtyCUsPerTUInfinite = isQtyCUsPerTUInfinite();
 
-		qtyLineStr.append(cuProduct == null ? "?" : HUTerminalHelper.truncateName(cuProduct.getName()));
+		final String cuProductName = Services.get(IProductBL.class).getProductName(cuProductId);
+		qtyLineStr.append(cuProductId == null ? "?" : HUTerminalHelper.truncateName(cuProductName));
 		if (!qtyCUsPerTUInfinite)
 		{
 			final String cuCapacityStr = qtyCUsPerTU == null ? "?" : qtyFormat.format(qtyCUsPerTU);
@@ -139,9 +142,9 @@ public class TUKey extends AbstractLUTUKey
 		return name.toString();
 	}
 
-	public I_M_Product getCuProduct()
+	public ProductId getCuProductId()
 	{
-		return cuProduct;
+		return cuProductId;
 	}
 
 	public BigDecimal getQtyCUsPerTU()

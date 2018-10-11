@@ -40,11 +40,11 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_DD_OrderLine;
-import org.eevolution.model.X_M_Warehouse_Routing;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.client.terminal.ddorder.model.IDDOrderTableRow;
@@ -65,9 +65,9 @@ public class DDOrderFiltering extends AbstractFiltering
 	}
 
 	@Override
-	public List<I_M_Warehouse> retrieveWarehouses(final Properties ctx)
+	public List<I_M_Warehouse> retrieveWarehouses()
 	{
-		return Services.get(IWarehouseDAO.class).retrieveWarehouses(ctx, X_M_Warehouse_Routing.DOCBASETYPE_DistributionOrder);
+		return Services.get(IWarehouseDAO.class).getWarehousesAllowedForDocBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder);
 	}
 
 	@Override

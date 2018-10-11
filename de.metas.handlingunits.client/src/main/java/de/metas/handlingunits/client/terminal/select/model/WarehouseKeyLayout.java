@@ -66,7 +66,7 @@ public class WarehouseKeyLayout extends DefaultKeyLayout
 		return keyLayoutId;
 	}
 
-	public void createAndSetKeysFromWarehouses(final List<I_M_Warehouse> warehouses)
+	public void createAndSetKeysFromWarehouses(final List<? extends I_M_Warehouse> warehouses)
 	{
 		// gh #458: pass the actual business logic to the super class which also will handle the ITerminalContextReferences.
 		disposeCreateDetachReverences(
@@ -80,7 +80,7 @@ public class WarehouseKeyLayout extends DefaultKeyLayout
 
 					//
 					// Create Keys
-					final List<ITerminalKey> keys = new ArrayList<ITerminalKey>();
+					final List<ITerminalKey> keys = new ArrayList<>();
 					for (final I_M_Warehouse warehouse : warehouses)
 					{
 						final WarehouseKey key = new WarehouseKey(getTerminalContext(), warehouse);

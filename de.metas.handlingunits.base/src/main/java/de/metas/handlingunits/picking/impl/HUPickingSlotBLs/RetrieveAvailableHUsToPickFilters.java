@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.util.Services;
@@ -51,13 +53,13 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RetrieveAvailableHUsToPickFilters
 {
-
 	private static final Predicate<I_M_HU> NOT_PICKED_NOT_SOURCE_HU = hu -> {
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 
-		return !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !sourceHuService.isSourceHu(hu.getM_HU_ID());
+		return !pickingCandidatesRepo.isHuIdPicked(huId) && !sourceHuService.isSourceHu(huId);
 	};
 
 	/**

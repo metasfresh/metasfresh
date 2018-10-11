@@ -49,6 +49,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -221,15 +222,15 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		//
 		// Convert our Qtys from their qtyUOM to BOM's UOM
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final I_M_Product product = orderBOMLine.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
 		final I_C_UOM bomUOM = orderBOMLine.getC_UOM();
-		final BigDecimal qtyIssueConv = uomConversionBL.convertQty(product, qtyIssue, qtyUOM, bomUOM);
-		final BigDecimal qtyScrapConv = uomConversionBL.convertQty(product, qtyScrap, qtyUOM, bomUOM);
-		final BigDecimal qtyRejectConv = uomConversionBL.convertQty(product, qtyReject, qtyUOM, bomUOM);
+		final BigDecimal qtyIssueConv = uomConversionBL.convertQty(productId, qtyIssue, qtyUOM, bomUOM);
+		final BigDecimal qtyScrapConv = uomConversionBL.convertQty(productId, qtyScrap, qtyUOM, bomUOM);
+		final BigDecimal qtyRejectConv = uomConversionBL.convertQty(productId, qtyReject, qtyUOM, bomUOM);
 
 		final I_PP_Cost_Collector cc = MPPCostCollector.createCollector(
 				order, 															// MPPOrder
-				product.getM_Product_ID(),									// M_Product_ID
+				productId.getRepoId(),											// M_Product_ID
 				locatorId,														// M_Locator_ID
 				attributeSetInstanceId,											// M_AttributeSetInstance_ID
 				order.getS_Resource_ID(),										// S_Resource_ID

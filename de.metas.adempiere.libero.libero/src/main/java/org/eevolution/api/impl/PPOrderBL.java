@@ -93,8 +93,7 @@ public class PPOrderBL implements IPPOrderBL
 		final BigDecimal qtyEnteredToUse;
 		if (QtyEntered != null && order.getC_UOM_ID() > 0)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			final int precision = Services.get(IUOMConversionBL.class).getPrecision(ctx, order.getC_UOM_ID());
+			final int precision = Services.get(IUOMConversionBL.class).getPrecision(order.getC_UOM_ID());
 			qtyEnteredToUse = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		else

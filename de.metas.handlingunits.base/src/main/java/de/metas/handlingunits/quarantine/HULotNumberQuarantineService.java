@@ -7,11 +7,10 @@ import java.util.List;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
@@ -19,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.LotNumberQuarantine;
 import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -62,7 +62,7 @@ public class HULotNumberQuarantineService
 
 	public boolean isQuarantineLotNumber(@NonNull final AbstractHUAttributeStorage huAttributeStorage)
 	{
-		final String lotNumber = huAttributeStorage.getValueAsString(LotNumberDateAttributeDAO.LotNumberAttribute);
+		final String lotNumber = huAttributeStorage.getValueAsString(LotNumberDateAttributeDAO.ATTR_LotNumber);
 
 		final List<IHUProductStorage> productStorages = handlingUnitsBL
 				.getStorageFactory()
@@ -71,10 +71,8 @@ public class HULotNumberQuarantineService
 
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final I_M_Product productRecord = productStorage.getM_Product();
-
-			final LotNumberQuarantine lotNumberQuarantine = lotNumberQuarantineRepository.getByProductIdAndLot(productRecord.getM_Product_ID(), lotNumber);
-
+			final ProductId productId = productStorage.getProductId();
+			final LotNumberQuarantine lotNumberQuarantine = lotNumberQuarantineRepository.getByProductIdAndLot(productId, lotNumber);
 			if (lotNumberQuarantine != null)
 			{
 				return true;
@@ -86,7 +84,7 @@ public class HULotNumberQuarantineService
 	public boolean isQuarantineHU(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Quarantine);
+		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_Quarantine);
 
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 
@@ -95,13 +93,13 @@ public class HULotNumberQuarantineService
 			return false;
 		}
 
-		return Constants.ATTR_Quarantine_Value_Quarantine.equals(huAttribute.getValue());
+		return HUAttributeConstants.ATTR_Quarantine_Value_Quarantine.equals(huAttribute.getValue());
 	}
 
 	public void markHUAsQuarantine(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_Quarantine);
+		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_Quarantine);
 
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 
@@ -111,7 +109,7 @@ public class HULotNumberQuarantineService
 			return;
 		}
 
-		huAttribute.setValue(Constants.ATTR_Quarantine_Value_Quarantine);
+		huAttribute.setValue(HUAttributeConstants.ATTR_Quarantine_Value_Quarantine);
 
 		save(huAttribute);
 	}

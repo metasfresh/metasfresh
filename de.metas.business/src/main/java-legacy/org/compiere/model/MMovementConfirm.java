@@ -24,8 +24,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -455,21 +456,23 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 	 */
 	private boolean createDifferenceDoc (MMovement move, MMovementLineConfirm confirm)
 	{
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		
 		MMovementLine mLine = confirm.getLine();
 
 		//	Difference - Create Inventory Difference for Source Location
-		if (Env.ZERO.compareTo(confirm.getDifferenceQty()) != 0)
+		if (confirm.getDifferenceQty().signum() != 0)
 		{
 			//	Get Warehouse for Source
-			MLocator loc = MLocator.get(getCtx(), mLine.getM_Locator_ID());
-			if (m_inventoryFrom != null
-				&& m_inventoryFrom.getM_Warehouse_ID() != loc.getM_Warehouse_ID())
+			final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(mLine.getM_Locator_ID());
+			if (m_inventoryFrom != null 
+				&& m_inventoryFrom.getM_Warehouse_ID() != warehouseId.getRepoId())
 				m_inventoryFrom = null;
 
 			if (m_inventoryFrom == null)
 			{
-				MWarehouse wh = MWarehouse.get(getCtx(), loc.getM_Warehouse_ID());
-				m_inventoryFrom = new MInventory (wh, ITrx.TRXNAME_ThreadInherited);
+				I_M_Warehouse wh = warehousesRepo.getById(warehouseId);
+				m_inventoryFrom = new MInventory(wh);
 				m_inventoryFrom.setDescription(Msg.translate(getCtx(), "M_MovementConfirm_ID") + " " + getDocumentNo());
 				if (!m_inventoryFrom.save(get_TrxName()))
 				{
@@ -500,18 +503,20 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 		}	//	Difference
 
 		//	Scrapped - Create Inventory Difference for Target Location
-		if (Env.ZERO.compareTo(confirm.getScrappedQty()) != 0)
+		if (confirm.getScrappedQty().signum() != 0)
 		{
 			//	Get Warehouse for Target
-			MLocator loc = MLocator.get(getCtx(), mLine.getM_LocatorTo_ID());
+			final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(mLine.getM_LocatorTo_ID());
 			if (m_inventoryTo != null
-				&& m_inventoryTo.getM_Warehouse_ID() != loc.getM_Warehouse_ID())
+				&& m_inventoryTo.getM_Warehouse_ID() != warehouseId.getRepoId())
+			{
 				m_inventoryTo = null;
-
+			}
+		
 			if (m_inventoryTo == null)
 			{
-				MWarehouse wh = MWarehouse.get(getCtx(), loc.getM_Warehouse_ID());
-				m_inventoryTo = new MInventory (wh, ITrx.TRXNAME_ThreadInherited);
+				I_M_Warehouse wh = warehousesRepo.getById(warehouseId);
+				m_inventoryTo = new MInventory (wh);
 				m_inventoryTo.setDescription(Msg.translate(getCtx(), "M_MovementConfirm_ID") + " " + getDocumentNo());
 				if (!m_inventoryTo.save(get_TrxName()))
 				{

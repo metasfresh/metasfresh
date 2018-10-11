@@ -1,6 +1,7 @@
 package de.metas.order;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -42,6 +43,11 @@ public class OrderLineId implements RepoIdAware
 	public static OrderLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrderLineId(repoId) : null;
+	}
+
+	public static Optional<OrderLineId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int getRepoIdOr(final OrderLineId orderLineId, final int defaultValue)

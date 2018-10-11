@@ -37,7 +37,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -68,6 +67,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -239,7 +239,7 @@ public class LUTUAssignBuilder
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product mockProduct = mockProductStorage.getM_Product();
+		final ProductId mockProductId = mockProductStorage.getProductId();
 		final BigDecimal mockQty = BigDecimal.ZERO;
 		final I_C_UOM mockUOM = mockProductStorage.getC_UOM();
 		final Quantity mockQuantity = new Quantity(mockQty, mockUOM);
@@ -252,7 +252,7 @@ public class LUTUAssignBuilder
 		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				null, // huItem from
 				null, // vhuItem from
-				mockProduct,
+				mockProductId,
 				mockQuantity.negate(),
 				date,
 				null, // locator from
@@ -264,7 +264,7 @@ public class LUTUAssignBuilder
 		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				luItem, // huItem
 				null, // vhuItem
-				mockProduct,
+				mockProductId,
 				mockQuantity,
 				date,
 				getM_Locator(),
@@ -321,8 +321,10 @@ public class LUTUAssignBuilder
 		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 		final IHUStorage huStorageFrom = storageFactory.getStorage(luHU);
 
+		final ProductId productId = documentLine.getProductId();
+		
 		final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-				.setProduct(documentLine.getM_Product())
+				.setProductId(productId)
 				.setQty(documentLine.getQty())
 				.setUOM(documentLine.getC_UOM())
 				.setAttributeStorageFrom(asiAttributeStorageFrom)

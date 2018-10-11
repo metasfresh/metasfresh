@@ -41,7 +41,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -159,7 +159,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	/**
 	 * Set request's initial attribute values defaults to be used when new HUs are created.
 	 *
-	 * Mainly this method is setting the {@link Constants#ATTR_CostPrice}.
+	 * Mainly this method is setting the {@link HUAttributeConstants#ATTR_CostPrice}.
 	 *
 	 * @param request request to be updated
 	 * @param receiptSchedules receipt schedule from where to extract the inital attributes

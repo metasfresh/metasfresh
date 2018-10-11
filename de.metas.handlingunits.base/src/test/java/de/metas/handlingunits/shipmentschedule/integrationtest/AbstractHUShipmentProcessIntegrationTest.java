@@ -201,8 +201,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
-			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
-			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
+			helper.assignProduct(piTU_Item, pTomatoId, BigDecimal.TEN, productUOM);
+			helper.assignProduct(piTU_Item, pSaladId, BigDecimal.TEN, productUOM);
 
 		}
 

@@ -25,13 +25,14 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,10 +64,10 @@ public class PPOrderBOMLineProductStorage extends AbstractProductStorage
 	protected Capacity retrieveTotalCapacity()
 	{
 		checkStaled();
-		
-		final I_M_Product product = orderBOMLine.getM_Product();
-		final I_C_UOM uom = orderBOMLine.getC_UOM();
-		return Capacity.createInfiniteCapacity(product, uom);
+
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
+		return Capacity.createInfiniteCapacity(productId, uom);
 	}
 
 	/** @return quantity that was already issued/received on this order BOM Line */

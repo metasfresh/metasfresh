@@ -114,7 +114,7 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 		{
 			piTU_item = helper.createHU_PI_Item_Material(piTU);
 			// huDefIFCO_pip_Tomato =
-			helper.assignProduct(piTU_item, pTomato, BigDecimal.TEN, uomKg);
+			helper.assignProduct(piTU_item, pTomatoId, BigDecimal.TEN, uomKg);
 		}
 
 		piLU = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

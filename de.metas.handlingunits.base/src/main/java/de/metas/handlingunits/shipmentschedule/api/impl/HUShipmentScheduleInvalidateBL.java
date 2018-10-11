@@ -108,7 +108,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 		// finalize the builder and create the segment
 		final IStorageSegment storageSegment = storageSegmentBuilder
 				.addM_Product_ID(schedule.getM_Product_ID())
-				.addM_Warehouse(shipmentScheduleEffectiveBL.getWarehouse(schedule))
+				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
 				.addM_AttributeSetInstance_ID(schedule.getM_AttributeSetInstance_ID())
 				.build();
 		return storageSegment;

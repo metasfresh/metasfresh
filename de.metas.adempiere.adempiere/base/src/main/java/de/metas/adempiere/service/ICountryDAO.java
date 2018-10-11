@@ -28,9 +28,11 @@ package de.metas.adempiere.service;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.location.CountryId;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
+import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
@@ -41,6 +43,7 @@ import de.metas.util.ISingletonService;
  */
 public interface ICountryDAO extends ISingletonService
 {
+	I_C_Country getById(CountryId id);
 
 	/**
 	 * retrieve custom user info
@@ -60,13 +63,12 @@ public interface ICountryDAO extends ISingletonService
 	 */
 	I_C_Country getDefault(Properties ctx);
 
-	/**
-	 * Get Country (cached)
-	 * 
-	 * @param ctx context
-	 * @param C_Country_ID ID
-	 * @return Country
-	 */
+	default CountryId getDefaultCountryId()
+	{
+		return CountryId.ofRepoId(getDefault(Env.getCtx()).getC_Country_ID());
+	}
+
+	@Deprecated
 	public I_C_Country get(Properties ctx, int C_Country_ID);
 
 	/**
@@ -95,6 +97,8 @@ public interface ICountryDAO extends ISingletonService
 	String retrieveCountryCode2ByCountryId(int countryId);
 
 	String retrieveCountryCode3ByCountryId(int countryId);
+
+	ITranslatableString getCountryNameById(CountryId id);
 
 	ITranslatableString getCountryNameById(int countryId);
 

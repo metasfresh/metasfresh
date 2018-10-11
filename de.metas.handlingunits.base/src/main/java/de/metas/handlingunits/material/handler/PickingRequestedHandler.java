@@ -1,11 +1,10 @@
 package de.metas.handlingunits.material.handler;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.compiere.model.I_C_BPartner_Location;
@@ -15,13 +14,19 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -78,36 +83,35 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 	@Override
 	public void handleEvent(@NonNull final PickingRequestedEvent event)
 	{
-		final int shipmentScheduleId = event.getShipmentScheduleId();
-		final int pickingSlotId;
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(event.getShipmentScheduleId());
+		final PickingSlotId pickingSlotId;
 		if (event.getPickingSlotId() > 0)
 		{
-			pickingSlotId = event.getPickingSlotId();
+			pickingSlotId = PickingSlotId.ofRepoId(event.getPickingSlotId());
 		}
 		else
 		{
 			pickingSlotId = allocatePickingSlot(shipmentScheduleId);
 		}
 
-		for (final int huId : event.getTopLevelHuIdsToPick())
+		final Set<HuId> huIds = HuId.ofRepoIds(event.getTopLevelHuIdsToPick());
+		for (final HuId huId : huIds)
 		{
 			// NOTE: we are not moving the HU to shipment schedule's locator.
-			pickingCandidateService.addHUToPickingSlot(
-					huId,
-					pickingSlotId,
-					shipmentScheduleId);
+			pickingCandidateService.pickHU(PickHURequest.builder()
+					.shipmentScheduleId(shipmentScheduleId)
+					.huId(huId)
+					.pickingSlotId(pickingSlotId)
+					.build());
 		}
 
-		pickingCandidateService.processForHUIds(
-				event.getTopLevelHuIdsToPick(),
-				pickingSlotId,
-				OptionalInt.of(shipmentScheduleId));
+		pickingCandidateService.processForHUIds(huIds, shipmentScheduleId);
 	}
 
-	private int allocatePickingSlot(final int shipmentScheduleId)
+	private PickingSlotId allocatePickingSlot(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final int bpLocationId = Services.get(IShipmentScheduleEffectiveBL.class).getC_BP_Location_ID(shipmentSchedule);
+		final I_M_ShipmentSchedule shipmentSchedule = Services.get(IShipmentSchedulePA.class).getById(shipmentScheduleId);
+		final BPartnerLocationId bpLocationId = Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerLocationId(shipmentSchedule);
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.availableForBPartnerLocationId(bpLocationId)
 				.build();
@@ -125,7 +129,8 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 		Loggables.get().addLog(
 				"Retrieved an available picking slot, because none was set in the event; pickingSlot={}",
 				firstPickingSlot);
-		return firstPickingSlot.getM_PickingSlot_ID();
+
+		return PickingSlotId.ofRepoId(firstPickingSlot.getM_PickingSlot_ID());
 	}
 
 }

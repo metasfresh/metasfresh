@@ -32,9 +32,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUContextFactory;
@@ -52,6 +50,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -164,10 +163,8 @@ public final class M_HU
 
 		//
 		// Extract the data needed to create the HU Transactions
-		final I_M_Product product = productStorage.getM_Product();
-		final BigDecimal qty = productStorage.getQty();
-		final I_C_UOM uom = productStorage.getC_UOM();
-		final Quantity quantity = new Quantity(qty, uom);
+		final ProductId productId = productStorage.getProductId();
+		final Quantity quantity = productStorage.getQty();
 		final Date date = huContext.getDate();
 		final Object referencedModel = vhu; // there's no document model for our HUTransactions
 
@@ -176,7 +173,7 @@ public final class M_HU
 		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
-				product,
+				productId,
 				quantity.negate(),
 				date,
 				locatorOld,
@@ -188,7 +185,7 @@ public final class M_HU
 		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
-				product,
+				productId,
 				quantity,
 				date,
 				locatorNew,

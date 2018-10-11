@@ -78,7 +78,7 @@ public class AttributesPropagation_1Palet_2IFCO_Test extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO, uomEach);
+			helper.assignProduct(itemMA, pTomatoId, AttributesPropagation_1Palet_2IFCO_Test.COUNT_TOMATOS_PER_IFCO, uomEach);
 			helper.createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 		}
 

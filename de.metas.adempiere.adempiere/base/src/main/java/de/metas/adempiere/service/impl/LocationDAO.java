@@ -1,16 +1,20 @@
 package de.metas.adempiere.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_City;
 import org.compiere.model.I_C_Location;
 
 import de.metas.adempiere.service.ILocationDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,6 +40,12 @@ import de.metas.util.Services;
 
 public class LocationDAO implements ILocationDAO
 {
+	@Override
+	public I_C_Location getById(@NonNull final LocationId id)
+	{
+		return loadOutOfTrx(id, I_C_Location.class);
+	}
+
 	@Override
 	public void save(final I_C_Location location)
 	{

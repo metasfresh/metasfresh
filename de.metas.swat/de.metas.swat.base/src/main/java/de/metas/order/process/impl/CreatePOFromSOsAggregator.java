@@ -11,9 +11,6 @@ import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -65,7 +62,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final I_C_Order dummyOrder;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
@@ -180,11 +177,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(salesOrder);
-		final String trxName = InterfaceWrapperHelper.getTrxName(salesOrder);
 
-		final I_AD_Org org = salesOrder.getAD_Org();
+		final OrgId orgId = OrgId.ofRepoId(salesOrder.getAD_Org_ID());
 
-		purchaseOrder.setAD_Org(org);
+		purchaseOrder.setAD_Org_ID(orgId.getRepoId());
 		purchaseOrder.setLink_Order_ID(salesOrder.getC_Order_ID());
 		purchaseOrder.setIsSOTrx(false);
 		orderBL.setDocTypeTargetId(purchaseOrder);
@@ -239,11 +235,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			}
 
 			// get default drop ship warehouse
-			final I_AD_OrgInfo orginfo = orgDAO.retrieveOrgInfo(ctx, org.getAD_Org_ID(), trxName);
-
-			if (orginfo.getDropShip_Warehouse_ID() != 0)
+			final WarehouseId dropshipWarehouseId = orgDAO.getOrgDropshipWarehouseId(orgId);
+			if (dropshipWarehouseId != null)
 			{
-				purchaseOrder.setM_Warehouse_ID(orginfo.getDropShip_Warehouse_ID());
+				purchaseOrder.setM_Warehouse_ID(dropshipWarehouseId.getRepoId());
 			}
 			else
 			{
@@ -265,7 +260,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	private int findWareousePOId(final I_C_Order salesOrder)
 	{
-		final WarehouseId warehousePOId = warehouseDAO.retrieveOrgWarehousePOId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()));
+		final WarehouseId warehousePOId = orgsRepo.getOrgPOWarehouseId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()));
 		if (warehousePOId != null)
 		{
 			return warehousePOId.getRepoId();

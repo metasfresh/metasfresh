@@ -54,7 +54,7 @@ public class LUTUJoinOrMergeBL implements ILUTUJoinOrMergeBL
 	@Override
 	public List<I_M_HU> joinOrMergeHUs(final ITerminalContext terminalCtx, final ILUTUJoinKey luKey, final List<? extends ILUTUJoinKey> tuKeys)
 	{
-		final List<I_M_HU> joinedHUs = new ArrayList<I_M_HU>();
+		final List<I_M_HU> joinedHUs = new ArrayList<>();
 
 		Services.get(IHUTrxBL.class)
 				.createHUContextProcessorExecutor(terminalCtx)
@@ -121,9 +121,9 @@ public class LUTUJoinOrMergeBL implements ILUTUJoinOrMergeBL
 				mergeBuilder.setSourceHUs(ImmutableList.of(tuHU));
 				mergeBuilder.setTargetTU(luHU);
 
-				mergeBuilder.setCUProduct(storage.getM_Product());
-				mergeBuilder.setCUUOM(storage.getC_UOM());
-				mergeBuilder.setCUQty(storage.getQty());
+				mergeBuilder.setCUProductId(storage.getProductId());
+				mergeBuilder.setCUUOM(storage.getQty().getUOM());
+				mergeBuilder.setCUQty(storage.getQty().getAsBigDecimal());
 				mergeBuilder.setCUTrxReferencedModel(storage.getM_HU());
 
 				mergeBuilder.mergeTUs();

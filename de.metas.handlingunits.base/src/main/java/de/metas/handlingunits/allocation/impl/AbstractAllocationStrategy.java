@@ -220,7 +220,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 				referencedModel,
 				itemFirstNotPureVirtual, // HU Item
 				vhuItem, // VHU Item
-				requestActual.getProduct(), // Product
+				requestActual.getProductId(), // Product
 				qtyTrx, // Qty/UOM
 				requestActual.getDate() // Date
 		);

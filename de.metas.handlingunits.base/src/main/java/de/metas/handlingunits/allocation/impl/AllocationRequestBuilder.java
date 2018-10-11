@@ -37,8 +37,11 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.storage.EmptyHUListener;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -110,6 +113,12 @@ import lombok.NonNull;
 	{
 		this.product = product;
 		return this;
+	}
+
+	@Override
+	public IAllocationRequestBuilder setProduct(final ProductId productId)
+	{
+		return setProduct(productId != null ? Services.get(IProductDAO.class).getById(productId) : null);
 	}
 
 	public I_M_Product getProductToUse()

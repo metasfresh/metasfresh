@@ -21,6 +21,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -121,12 +122,13 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 	{
 		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
 
+		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
 		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHand(), huBasedDataRecord.getC_UOM());
-		final Quantity qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, huBasedDataRecord.getM_Product_ID());
+		final Quantity qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
-				.onHandQtyChange(qtyInStockingUOM.getQty())
+				.onHandQtyChange(qtyInStockingUOM.getAsBigDecimal())
 				.build();
 		return dataUpdateRequest;
 	}

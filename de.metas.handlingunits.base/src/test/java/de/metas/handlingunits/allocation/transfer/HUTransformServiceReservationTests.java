@@ -288,7 +288,7 @@ public class HUTransformServiceReservationTests
 
 		// create a standalone-CU
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, FOUR, data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, FOUR, data.helper.uomKg);
 
 		final I_M_HU saladCU = producer.getCreatedHUs().get(0);
 

@@ -1,5 +1,8 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.contracts
@@ -13,21 +16,22 @@ package de.metas.contracts.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -36,12 +40,13 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import de.metas.contracts.IContractsDAO;
-import de.metas.contracts.impl.PlainContractChangeDAO;
 import de.metas.util.Services;
 import de.metas.util.time.TimeSource;
 
 public class ContractsTestBase
 {
+	protected ClientId clientId;
+
 	/** Watches current test and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
@@ -51,7 +56,7 @@ public class ContractsTestBase
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
-	
+
 	protected IContractsDAO dao;
 	protected PlainContractChangeDAO contractChangeDAO;
 
@@ -60,17 +65,21 @@ public class ContractsTestBase
 	{
 		AdempiereTestHelper.get().init();
 
+		I_AD_Client client = newInstance(I_AD_Client.class);
+		save(client);
+		clientId = ClientId.ofRepoId(client.getAD_Client_ID());
+
 		dao = Services.get(IContractsDAO.class);
 
 		//
 		// Setup context
 		final Properties ctx = Env.getCtx();
 		ctx.clear();
-		Env.setContext(ctx, "#AD_Client_ID", 1);
-		Env.setContext(ctx, "#AD_Org_ID", 1);
-		Env.setContext(ctx, "#AD_Role_ID", 1);
-		Env.setContext(ctx, "#AD_User_ID", 1);
-		
+		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, client.getAD_Client_ID());
+		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1);
+		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1);
+		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 1);
+
 		init();
 	}
 

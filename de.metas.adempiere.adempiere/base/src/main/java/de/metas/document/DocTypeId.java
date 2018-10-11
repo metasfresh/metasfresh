@@ -1,5 +1,7 @@
 package de.metas.document;
 
+import java.util.Optional;
+
 import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
 import lombok.Value;
@@ -29,8 +31,6 @@ import lombok.Value;
 @Value(staticConstructor = "ofRepoId")
 public class DocTypeId implements RepoIdAware
 {
-	int repoId;
-
 	public static DocTypeId ofRepoId(final int repoId)
 	{
 		return new DocTypeId(repoId);
@@ -41,9 +41,21 @@ public class DocTypeId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private DocTypeId(final int repoId)
+	public static Optional<DocTypeId> optionalOfRepoId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	int repoId;
+
+	private DocTypeId(final int docTypeRepoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(docTypeRepoId, "docTypeRepoId");
+	}
+
+	public static int toRepoId(final DocTypeId docTypeId)
+	{
+		return docTypeId != null ? docTypeId.getRepoId() : -1;
 	}
 
 }

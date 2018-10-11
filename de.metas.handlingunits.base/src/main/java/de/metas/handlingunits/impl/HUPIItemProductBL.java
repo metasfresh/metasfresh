@@ -51,7 +51,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			@NonNull final I_M_Product product)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final List<I_M_HU_PI_Item_Product> result = new ArrayList<I_M_HU_PI_Item_Product>();
+		final List<I_M_HU_PI_Item_Product> result = new ArrayList<>();
 
 		final I_C_BPartner bpartner = null;
 		final List<I_M_HU_PI_Item> versionPIItems = handlingUnitsDAO.retrievePIItems(version, bpartner);
@@ -79,7 +79,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			return Collections.emptyList();
 		}
 
-		final List<I_M_HU_PI_Item> nestedItemDefinitions = new ArrayList<I_M_HU_PI_Item>();
+		final List<I_M_HU_PI_Item> nestedItemDefinitions = new ArrayList<>();
 		for (final I_M_HU_PI_Item itemDef : itemDefs)
 		{
 			final String itemType = itemDef.getItemType();
@@ -114,7 +114,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@Override
 	public boolean isVirtualHUPIItemProduct(final I_M_HU_PI_Item_Product piip)
 	{
-		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID;
+		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId();
 	}
 
 	@Override

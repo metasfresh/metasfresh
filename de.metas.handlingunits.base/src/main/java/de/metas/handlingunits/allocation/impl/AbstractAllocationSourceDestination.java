@@ -37,8 +37,8 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
@@ -186,9 +186,8 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 	public List<IPair<IAllocationRequest, IAllocationResult>> unloadAll(final IHUContext huContext)
 	{
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
-				storage.getM_Product(), // product
+				storage.getProductId(), // product
 				storage.getQty(), // qty
-				storage.getC_UOM(), // uom
 				huContext.getDate() // date
 		);
 

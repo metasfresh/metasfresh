@@ -101,7 +101,7 @@ import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
 import de.metas.handlingunits.attribute.impl.WeightableFactory;
@@ -143,6 +143,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -571,7 +572,7 @@ public class HUTestHelper
 		attr_WeightTare = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTare_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
 		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_WeightTareAdjust_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
-		attr_CostPrice = attributesTestHelper.createM_Attribute(Constants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
+		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
 		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityDiscountPercent_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_QualityNotice_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -586,12 +587,12 @@ public class HUTestHelper
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
-		attr_LotNumberDate = attributesTestHelper.createM_Attribute(Constants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.LotNumberAttribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(Constants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(Constants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
@@ -660,14 +661,14 @@ public class HUTestHelper
 	{
 		final I_M_HU_PI huDefNone = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefNone.setName("NoPI");
-		huDefNone.setM_HU_PI_ID(HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_ID);
+		huDefNone.setM_HU_PI_ID(HuPackingInstructionsId.TEMPLATE.getRepoId());
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
 		createVersion(huDefNone, true, huUnitType, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Version_ID);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
-		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID);
+		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID.getRepoId());
 
 		return huDefNone;
 	}
@@ -676,7 +677,7 @@ public class HUTestHelper
 	{
 		final I_M_HU_PI huDefVirtual = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefVirtual.setName("VirtualPI");
-		huDefVirtual.setM_HU_PI_ID(HandlingUnitsDAO.VIRTUAL_HU_PI_ID);
+		huDefVirtual.setM_HU_PI_ID(HuPackingInstructionsId.VIRTUAL.getRepoId());
 		InterfaceWrapperHelper.save(huDefVirtual);
 
 		createVersion(huDefVirtual,
@@ -684,7 +685,7 @@ public class HUTestHelper
 				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HandlingUnitsDAO.VIRTUAL_HU_PI_Version_ID);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
-		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID);
+		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId());
 
 		return huDefVirtual;
 	}
@@ -1119,19 +1120,26 @@ public class HUTestHelper
 		return piItem;
 	}
 
+	@Deprecated
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom)
 	{
-		final I_C_BPartner bpartner = null;
-		return assignProduct(itemPI, product, capacity, uom, bpartner);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		return assignProduct(itemPI, productId, capacity, uom);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom)
+	{
+		final I_C_BPartner bpartner = null;
+		return assignProduct(itemPI, productId, capacity, uom, bpartner);
+	}
+
+	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom, final I_C_BPartner bpartner)
 	{
 		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
 
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
-		itemDefProduct.setM_Product(product);
+		itemDefProduct.setM_Product_ID(productId.getRepoId());
 		itemDefProduct.setQty(capacity);
 		itemDefProduct.setC_UOM(uom);
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
@@ -1253,22 +1261,22 @@ public class HUTestHelper
 	}
 
 	public AbstractAllocationSourceDestination createDummySourceDestination(
-			final I_M_Product product,
+			final ProductId productId,
 			final BigDecimal qtyCapacity,
 			final boolean fullyLoaded)
 	{
-		return createDummySourceDestination(product, qtyCapacity, uomEach, fullyLoaded);
+		return createDummySourceDestination(productId, qtyCapacity, uomEach, fullyLoaded);
 	}
 
 	public AbstractAllocationSourceDestination createDummySourceDestination(
-			final I_M_Product product,
+			final ProductId productId,
 			final BigDecimal qtyCapacity,
 			final I_C_UOM uom,
 			final boolean fullyLoaded)
 	{
 		final Capacity capacity = Capacity.createCapacity(
 				qtyCapacity,
-				product,
+				productId,
 				uom,
 				false // allowNegativeCapacity
 		);
@@ -1279,16 +1287,7 @@ public class HUTestHelper
 		return new GenericAllocationSourceDestination(storage, referencedModel);
 	}
 
-	/**
-	 * Create HUs using {@link HUProducerDestination}.<br>
-	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
-	 *
-	 * @param huPI
-	 * @param productToLoad
-	 * @param qtyToLoad
-	 * @param qtyToLoadUOM
-	 * @return created HUs
-	 */
+	@Deprecated
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,
@@ -1296,7 +1295,28 @@ public class HUTestHelper
 			final BigDecimal qtyToLoad,
 			final I_C_UOM qtyToLoadUOM)
 	{
-		final IAllocationSource source = createDummySourceDestination(productToLoad,
+		final ProductId productIdToLoad = ProductId.ofRepoId(productToLoad.getM_Product_ID());
+		return createHUs(huContext, huPI, productIdToLoad, qtyToLoad, qtyToLoadUOM);
+	}
+
+	/**
+	 * Create HUs using {@link HUProducerDestination}.<br>
+	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
+	 *
+	 * @param huPI
+	 * @param productIdToLoad
+	 * @param qtyToLoad
+	 * @param qtyToLoadUOM
+	 * @return created HUs
+	 */
+	public List<I_M_HU> createHUs(
+			final IHUContext huContext,
+			final I_M_HU_PI huPI,
+			final ProductId productIdToLoad,
+			final BigDecimal qtyToLoad,
+			final I_C_UOM qtyToLoadUOM)
+	{
+		final IAllocationSource source = createDummySourceDestination(productIdToLoad,
 				new BigDecimal("100000000"),  // qtyCapacity
 				qtyToLoadUOM,  // UOM
 				true // fullyLoaded => empty
@@ -1309,11 +1329,11 @@ public class HUTestHelper
 		final Object referenceModel = null;
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				productToLoad,
-				qtyToLoad,
-				qtyToLoadUOM,
+				productIdToLoad,
+				Quantity.of(qtyToLoad, qtyToLoadUOM),
 				getTodayDate(),  // date
-				referenceModel);
+				referenceModel,
+				false);
 
 		loader.load(request);
 
@@ -1334,22 +1354,22 @@ public class HUTestHelper
 			final BigDecimal cuQty)
 	{
 		final Capacity tuCapacity = allocationDestination.getSingleCUPerTU();
-		final I_M_Product cuProduct = tuCapacity.getM_Product();
+		final ProductId cuProductId = tuCapacity.getProductId();
 		final I_C_UOM cuUOM = tuCapacity.getC_UOM();
 
-		final AbstractAllocationSourceDestination allocationSource = createDummySourceDestination(cuProduct,
+		final AbstractAllocationSourceDestination allocationSource = createDummySourceDestination(cuProductId,
 				Quantity.QTY_INFINITE,
-				cuProduct.getC_UOM(),
+				Services.get(IProductBL.class).getStockingUOM(cuProductId),
 				true // fullyLoaded
 		);
 		final Object referencedModel = allocationSource.getReferenceModel();
 
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
-				cuProduct,
-				cuQty,
-				cuUOM,
+				cuProductId,
+				Quantity.of(cuQty, cuUOM),
 				getTodayDate(),
-				referencedModel);
+				referencedModel,
+				false);
 
 		//
 		// Execute transfer => HUs will be generated
@@ -1385,13 +1405,13 @@ public class HUTestHelper
 	{
 		final I_C_BPartner bpartner = null;
 		final int bpartnerLocationId = -1;
-		final I_M_Product cuProduct = tuPIItemProduct.getM_Product();
+		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
 		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
-				cuProduct,
+				cuProductId,
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
@@ -1471,19 +1491,19 @@ public class HUTestHelper
 	 * Note: this method performs the load using an {@link IHUContext} that was created with {@link #createMutableHUContextOutOfTransaction()}.
 	 *
 	 * @param producer used as the loader's {@link IAllocationDestination}
-	 * @param cuProduct
+	 * @param cuProductId
 	 * @param loadCuQty
 	 * @param loadCuUOM
 	 */
 	public final void load(
 			final IHUProducerAllocationDestination producer,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final BigDecimal loadCuQty,
 			final I_C_UOM loadCuUOM)
 	{
 		load(TestHelperLoadRequest.builder()
 				.producer(producer)
-				.cuProduct(cuProduct)
+				.cuProductId(cuProductId)
 				.loadCuQty(loadCuQty)
 				.loadCuUOM(loadCuUOM)
 				.build());
@@ -1492,7 +1512,7 @@ public class HUTestHelper
 	public final void load(TestHelperLoadRequest r)
 	{
 		final IAllocationSource source = createDummySourceDestination(
-				r.getCuProduct(),
+				r.getCuProductId(),
 				Quantity.QTY_INFINITE,
 				r.getLoadCuUOM(),
 				true); // fullyLoaded
@@ -1508,9 +1528,8 @@ public class HUTestHelper
 		}
 
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
-				r.getCuProduct(), // product
-				r.getLoadCuQty(), // qty
-				r.getLoadCuUOM(), // uom
+				r.getCuProductId(), // product
+				Quantity.of(r.getLoadCuQty(), r.getLoadCuUOM()), // qty
 				SystemTime.asTimestamp());
 
 		huLoader.load(request);
@@ -1524,7 +1543,7 @@ public class HUTestHelper
 		final IHUProducerAllocationDestination producer;
 
 		@NonNull
-		final I_M_Product cuProduct;
+		final ProductId cuProductId;
 
 		@NonNull
 		final BigDecimal loadCuQty;
@@ -1756,12 +1775,12 @@ public class HUTestHelper
 
 	public boolean isNoPI(final I_M_HU_PI pi)
 	{
-		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_ID();
+		return HuPackingInstructionsId.isTemplateRepoId(pi.getM_HU_PI_ID());
 	}
 
 	public boolean isVirtualPI(final I_M_HU_PI pi)
 	{
-		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID();
+		return HuPackingInstructionsId.isVirtualRepoId(pi.getM_HU_PI_ID());
 	}
 
 	public boolean isVirtualPIItem(final I_M_HU_PI_Item piItem)
@@ -1777,7 +1796,7 @@ public class HUTestHelper
 	/**
 	 * @param huToSplit
 	 * @param documentLine
-	 * @param cuProduct
+	 * @param cuProductId
 	 * @param cuQty
 	 * @param cuUOM
 	 * @param cuPerTU
@@ -1791,7 +1810,7 @@ public class HUTestHelper
 	public List<I_M_HU> splitHUs(
 			final IHUContext huContext,
 			final I_M_HU huToSplit,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final BigDecimal cuQty,
 			final I_C_UOM cuUOM,
 			final BigDecimal cuPerTU,
@@ -1800,14 +1819,14 @@ public class HUTestHelper
 			final I_M_HU_PI_Item tuPIItem,
 			final I_M_HU_PI_Item luPIItem)
 	{
-		return newSplitBuilder(huContext, huToSplit, cuProduct, cuQty, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate, tuPIItem, luPIItem)
+		return newSplitBuilder(huContext, huToSplit, cuProductId, cuQty, cuUOM, cuPerTU, tuPerLU, maxLUToAllocate, tuPIItem, luPIItem)
 				.split();
 	}
 
 	public IHUSplitBuilder newSplitBuilder(
 			final IHUContext huContext,
 			final I_M_HU huToSplit,
-			final I_M_Product cuProduct,
+			final ProductId cuProductId,
 			final BigDecimal cuQty,
 			final I_C_UOM cuUOM,
 			final BigDecimal cuPerTU,
@@ -1825,7 +1844,7 @@ public class HUTestHelper
 		//
 		// Create Allocation Request for all Qty from CU Key
 
-		splitBuilder.setCUProduct(cuProduct);
+		splitBuilder.setCUProductId(cuProductId);
 		splitBuilder.setCUQty(cuQty);
 		splitBuilder.setCUUOM(cuUOM);
 
@@ -1878,17 +1897,23 @@ public class HUTestHelper
 	 * @param huContext
 	 * @param sourceHUs
 	 * @param targetHU
-	 * @param cuProduct
+	 * @param cuProductId
 	 * @param cuQty
 	 * @param cuUOM
 	 */
-	public void mergeTUs(final IHUContext huContext, final List<I_M_HU> sourceHUs, final I_M_HU targetHU, final I_M_Product cuProduct, final BigDecimal cuQty, final I_C_UOM cuUOM)
+	public void mergeTUs(
+			final IHUContext huContext,
+			final List<I_M_HU> sourceHUs,
+			final I_M_HU targetHU,
+			final ProductId cuProductId,
+			final BigDecimal cuQty,
+			final I_C_UOM cuUOM)
 	{
 		final ITUMergeBuilder mergeBuilder = new TUMergeBuilder(huContext);
 		mergeBuilder.setSourceHUs(sourceHUs);
 		mergeBuilder.setTargetTU(targetHU);
 
-		mergeBuilder.setCUProduct(cuProduct);
+		mergeBuilder.setCUProductId(cuProductId);
 		mergeBuilder.setCUQty(cuQty);
 		mergeBuilder.setCUUOM(cuUOM);
 

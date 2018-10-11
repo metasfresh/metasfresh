@@ -33,7 +33,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -50,6 +49,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -140,7 +140,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		huDefIFCO_10 = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			materialItemTomato_10 = helper.createHU_PI_Item_Material(huDefIFCO_10);
-			materialItemProductTomato_10 = helper.assignProduct(materialItemTomato_10, getCUProduct(), BigDecimal.TEN, uomKg); // 10 x Tomato Per IFCO
+			materialItemProductTomato_10 = helper.assignProduct(materialItemTomato_10, getCUProductId(), BigDecimal.TEN, uomKg); // 10 x Tomato Per IFCO
 
 			packingMaterialItemIFCO_10 = helper.createHU_PI_Item_PackingMaterial(huDefIFCO_10, pmIFCO);
 		}
@@ -148,7 +148,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		huDefIFCO_5 = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			materialItemTomato_5 = helper.createHU_PI_Item_Material(huDefIFCO_5);
-			materialItemProductTomato_5 = helper.assignProduct(materialItemTomato_5, getCUProduct(), BigDecimal.valueOf(5), uomKg); // 5 x Tomato Per IFCO
+			materialItemProductTomato_5 = helper.assignProduct(materialItemTomato_5, getCUProductId(), BigDecimal.valueOf(5), uomKg); // 5 x Tomato Per IFCO
 
 			packingMaterialItemIFCO_5 = helper.createHU_PI_Item_PackingMaterial(huDefIFCO_5, pmIFCO);
 		}
@@ -156,7 +156,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		huDefIFCO_2 = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			materialItemTomato_2 = helper.createHU_PI_Item_Material(huDefIFCO_2);
-			materialItemProductTomato_2 = helper.assignProduct(materialItemTomato_2, getCUProduct(), BigDecimal.valueOf(2), uomKg); // 2 x Tomato Per IFCO
+			materialItemProductTomato_2 = helper.assignProduct(materialItemTomato_2, getCUProductId(), BigDecimal.valueOf(2), uomKg); // 2 x Tomato Per IFCO
 
 			packingMaterialItemIFCO_2 = helper.createHU_PI_Item_PackingMaterial(huDefIFCO_2, pmIFCO);
 		}
@@ -172,7 +172,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		huDefPaloxe_430 = helper.createHUDefinition(HUTestHelper.NAME_Paloxe_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			materialItemTomato_430 = helper.createHU_PI_Item_Material(huDefPaloxe_430);
-			materialItemProductTomato_430 = helper.assignProduct(materialItemTomato_430, getCUProduct(), BigDecimal.valueOf(430), uomKg); // 430 x Tomato Per Paloxe
+			materialItemProductTomato_430 = helper.assignProduct(materialItemTomato_430, getCUProductId(), BigDecimal.valueOf(430), uomKg); // 430 x Tomato Per Paloxe
 
 			packingMaterialItemPaloxe_430 = helper.createHU_PI_Item_PackingMaterial(huDefPaloxe_430, pmPaloxe);
 		}
@@ -189,9 +189,9 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		// nothing at this level
 	}
 
-	protected final I_M_Product getCUProduct()
+	protected final ProductId getCUProductId()
 	{
-		return pTomato;
+		return pTomatoId;
 	}
 
 	protected final I_C_UOM getCUUOM()
@@ -221,7 +221,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
-				getCUProduct(),
+				getCUProductId(),
 				getCUUOM(),
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
@@ -323,7 +323,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct, 
-				getCUProduct(), 
+				getCUProductId(), 
 				getCUUOM(), 
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
@@ -356,7 +356,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 			for (final I_M_HU tuHU : tuHUs)
 			{
 				final IHUStorage tradingUnitStorage = huStorageFactory.getStorage(tuHU);
-				final BigDecimal tradingUnitQty = tradingUnitStorage.getQty(getCUProduct(), getCUUOM());
+				final BigDecimal tradingUnitQty = tradingUnitStorage.getQty(getCUProductId(), getCUUOM());
 				if (tradingUnitQty.intValueExact() != customerUnitQty)
 				{
 					continue;
@@ -388,7 +388,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 			final BigDecimal tuPerLU,
 			final BigDecimal maxLUToAllocate)
 	{
-		final I_M_Product cuProduct = getCUProduct();
+		final ProductId cuProductId = getCUProductId();
 		final I_C_UOM cuUOM = getCUUOM();
 
 		final List<I_M_HU> loadingUnits = new ArrayList<>();
@@ -402,7 +402,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 				helper.splitHUs(
 						huContext,
 						luToSplit,
-						cuProduct, cuQty, cuUOM,
+						cuProductId, cuQty, cuUOM,
 						cuPerTU, tuPerLU, maxLUToAllocate,
 						tuPIItem, luPIItem));
 		// }

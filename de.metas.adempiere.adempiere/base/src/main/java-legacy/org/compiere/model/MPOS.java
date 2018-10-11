@@ -20,7 +20,11 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.CCache;
+
+import de.metas.util.Services;
 
 
 /**
@@ -110,7 +114,8 @@ public class MPOS extends X_C_POS
 			{
 				throw new AdempiereException("@AD_Org_ID@: @C_CashBook_ID@");
 			}
-			MWarehouse wh = MWarehouse.get(getCtx(), getM_Warehouse_ID(), get_TrxName());
+			
+			final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(getM_Warehouse_ID()));
 			if (wh.getAD_Org_ID() != getAD_Org_ID())
 			{
 				throw new AdempiereException("@AD_Org_ID@: @M_Warehouse_ID@");

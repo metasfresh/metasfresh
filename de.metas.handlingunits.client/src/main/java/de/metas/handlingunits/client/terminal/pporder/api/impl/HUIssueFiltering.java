@@ -40,12 +40,12 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_M_Warehouse_Routing;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -69,9 +69,9 @@ public class HUIssueFiltering implements IHUIssueFiltering
 	private static final String SYSCONFIG_FilterHUsByQualityInspection = "de.metas.handlingunits.client.terminal.pporder.api.impl.HUIssueFiltering.FilterHUsByQualityInspection";
 
 	@Override
-	public List<I_M_Warehouse> retrieveWarehouse(final Properties ctx)
+	public List<I_M_Warehouse> retrieveWarehouse()
 	{
-		return Services.get(IWarehouseDAO.class).retrieveWarehouses(ctx, X_M_Warehouse_Routing.DOCBASETYPE_ManufacturingOrder);
+		return Services.get(IWarehouseDAO.class).getWarehousesAllowedForDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
 	}
 
 	@Override

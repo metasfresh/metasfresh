@@ -49,8 +49,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -143,7 +143,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	public SetMultimap<Integer, HuId> retrieveAllHUIdsIndexedByPickingSlotId(
+	public SetMultimap<PickingSlotId, HuId> retrieveAllHUIdsIndexedByPickingSlotId(
 			final Collection<? extends de.metas.picking.model.I_M_PickingSlot> pickingSlots)
 	{
 		if (pickingSlots.isEmpty())
@@ -153,13 +153,15 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 
 		final Set<Integer> pickingSlotIds = pickingSlots.stream().map(pickingSlot -> pickingSlot.getM_PickingSlot_ID()).collect(ImmutableSet.toImmutableSet());
 
-		final LinkedHashMultimap<Integer, HuId> pickingSlotId2huIds = LinkedHashMultimap.create();
+		final LinkedHashMultimap<PickingSlotId, HuId> pickingSlotId2huIds = LinkedHashMultimap.create();
 
 		// Retrieve current picking slot HUs
 		pickingSlots.stream()
 				.map(pickingSlot -> InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class))
 				.filter(pickingSlot -> pickingSlot.getM_HU_ID() > 0)
-				.forEach(pickingSlot -> pickingSlotId2huIds.put(pickingSlot.getM_PickingSlot_ID(), HuId.ofRepoId(pickingSlot.getM_HU_ID())));
+				.forEach(pickingSlot -> pickingSlotId2huIds.put(
+						PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID()),
+						HuId.ofRepoId(pickingSlot.getM_HU_ID())));
 
 		// Retrieve the HUs from picking slot queue.
 		Services.get(IQueryBL.class)
@@ -169,7 +171,9 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.orderBy(I_M_PickingSlot_HU.COLUMN_M_PickingSlot_HU_ID)
 				.create()
 				.stream(I_M_PickingSlot_HU.class)
-				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(pickingSlotHU.getM_PickingSlot_ID(), HuId.ofRepoId(pickingSlotHU.getM_HU_ID())));
+				.forEach(pickingSlotHU -> pickingSlotId2huIds.put(
+						PickingSlotId.ofRepoId(pickingSlotHU.getM_PickingSlot_ID()),
+						HuId.ofRepoId(pickingSlotHU.getM_HU_ID())));
 
 		return ImmutableSetMultimap.copyOf(pickingSlotId2huIds);
 	}
@@ -287,39 +291,21 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Picking_Candidate.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
-	public boolean isHuIdPicked(final int huId)
+	public boolean isPickingRackSystem(@NonNull final PickingSlotId pickingSlotId)
 	{
-		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.match();
-		return isAlreadyPicked;
-	}
-
-	@Override
-	public boolean isPickingRackSystem(final int pickingSlotId)
-	{
-		if (pickingSlotId <= 0)
-		{
-			return false;
-		}
-
 		return retrieveAllPickingSlotIdsWhichAreRackSystems().contains(pickingSlotId);
 	}
 
 	@Cached(cacheName = I_M_PickingSlot.Table_Name + "#by#" + I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, expireMinutes = Cached.EXPIREMINUTES_Never)
 	@Override
-	public Set<Integer> retrieveAllPickingSlotIdsWhichAreRackSystems()
+	public Set<PickingSlotId> retrieveAllPickingSlotIdsWhichAreRackSystems()
 	{
-		final List<Integer> pickingSlotIds = Services.get(IQueryBL.class)
+		final Set<PickingSlotId> pickingSlotIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_PickingSlot.class)
 				.addEqualsFilter(I_M_PickingSlot.COLUMNNAME_IsPickingRackSystem, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds();
+				.listIds(PickingSlotId::ofRepoId);
 
 		return ImmutableSet.copyOf(pickingSlotIds);
 	}

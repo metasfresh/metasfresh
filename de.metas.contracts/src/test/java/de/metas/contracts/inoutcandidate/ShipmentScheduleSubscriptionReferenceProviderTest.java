@@ -6,11 +6,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionReferenceProvider;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -62,7 +62,7 @@ public class ShipmentScheduleSubscriptionReferenceProviderTest
 		save(term);
 
 		// @formatter:off
-		new Expectations() {{ flatrateBL.getWarehouseId(term); result = 23;	}};
+		new Expectations() {{ flatrateBL.getWarehouseId(term); result = WarehouseId.ofRepoId(23); }};
 		// @formatter:on
 
 		final I_C_SubscriptionProgress subscriptionLine = newInstance(I_C_SubscriptionProgress.class);
@@ -79,7 +79,7 @@ public class ShipmentScheduleSubscriptionReferenceProviderTest
 		final ShipmentScheduleReferencedLine result = new ShipmentScheduleSubscriptionReferenceProvider().provideFor(sched);
 		assertThat(result).isNotNull();
 		assertThat(result.getGroupId()).isEqualTo(term.getC_Flatrate_Term_ID());
-		assertThat(result.getWarehouseId()).isEqualTo(23);
+		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(23);
 	}
 
 }

@@ -332,7 +332,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		//
 		m_loader.setPriority(Thread.NORM_PRIORITY);
-		log.info("");
 		while (m_loader.isAlive())
 		{
 			try
@@ -344,7 +343,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				log.error("", e);
 			}
 		}
-		log.info("fini");
 	}   // waitLoadComplete
 
 	public boolean isLoadComplete()
@@ -1182,9 +1180,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		// e.g. Column=UPPER(Name), Key=AD_Element_ID, Query=UPPER(AD_Element.Name) LIKE '%CUSTOMER%'
 		if (tableName == null)
 		{
-			log.info("Not successfull - Column="
-					+ colName + ", Key=" + tabKeyColumn
-					+ ", Query=" + query);
+			log.debug("Not successfull - Column={}, Key={}, Query={}", colName, tabKeyColumn, query);
 			return query.getWhereClause();
 		}
 
@@ -1196,7 +1192,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				.append(tableName).append(" xx WHERE ")
 				.append(query.getWhereClause(true))
 				.append(")");
-		log.debug(result.toString());
+		log.debug("{}", result);
 		return result.toString();
 	}	// validateQuery
 
@@ -2516,7 +2512,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			DB.close(rs, pstmt);
 		}
-		log.info("#" + m_Chats.size());
+		log.debug("{} chat records loaded", m_Chats.size());
 	}	// loadChats
 
 	/**
@@ -2827,7 +2823,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return m_currentRow;
 		}
-		log.info("Row=" + targetRow);
+		log.debug("navigate: row={}", targetRow);
 
 		// Row range check
 		int newRow = verifyRow(targetRow);
@@ -2870,7 +2866,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public int navigateCurrent()
 	{
-		log.info("Row=" + m_currentRow);
+		log.debug("navigateCurrent: row={}", m_currentRow);
 		return setCurrentRow(m_currentRow, true);
 	}   // navigateCurrent
 

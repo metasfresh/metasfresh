@@ -3,7 +3,6 @@ package de.metas.process;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;

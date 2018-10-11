@@ -21,16 +21,17 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.RepoIdAwares;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery.AvailableToPromiseQueryBuilder;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -134,17 +135,17 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	private AvailableToPromiseQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final WarehouseId shipmentScheduleWarehouseId = WarehouseId.ofRepoId(shipmentScheduleEffectiveBL.getWarehouseId(sched));
-		final List<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
+		final WarehouseId shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
+		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
 
 		final int productId = sched.getM_Product_ID();
-		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
 
 		final AvailableToPromiseQueryBuilder stockQueryBuilder = AvailableToPromiseQuery.builder()
 				.warehouseIds(RepoIdAwares.asRepoIds(warehouseIds))
 				.productId(productId)
-				.bpartnerId(bpartnerId)
+				.bpartnerId(bpartnerId.getRepoId())
 				.date(TimeUtil.asLocalDateTime(date));
 
 		// Add query attributes

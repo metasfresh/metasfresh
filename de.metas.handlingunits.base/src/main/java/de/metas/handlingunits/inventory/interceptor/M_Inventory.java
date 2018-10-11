@@ -1,7 +1,5 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -10,7 +8,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
@@ -47,6 +44,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -128,7 +126,7 @@ public class M_Inventory
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
 			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
-					.setProduct(inventoryLine.getM_Product())
+					.setProductId(ProductId.ofRepoId(inventoryLine.getM_Product_ID()))
 					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getAsBigDecimal())
 					.setUOM(inventoryLine.getC_UOM())
 					.setAttributeStorageFrom(asiAttributeStorageFrom)
@@ -198,9 +196,9 @@ public class M_Inventory
 
 	private GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_M_InventoryLine inventoryLine)
 	{
-		final I_M_Product product = loadOutOfTrx(inventoryLine.getM_Product_ID(), I_M_Product.class);
+		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
-		final PlainProductStorage productStorage = new PlainProductStorage(product, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
+		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
 		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
 	}
 

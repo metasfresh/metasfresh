@@ -17,9 +17,8 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
@@ -56,6 +55,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -439,7 +439,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Add Qty To Issue
-			final I_M_Product product = huTransaction.getProduct();
+			final ProductId productId = huTransaction.getProductId();
 			final Quantity qtyToIssue = huTransaction.getQuantity();
 
 			// Get HU from counterpart transaction
@@ -456,7 +456,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Add Qty To Issue
-			issueCandidate.addQtyToIssue(product, qtyToIssue, huTopLevel);
+			issueCandidate.addQtyToIssue(productId, qtyToIssue, huTopLevel);
 
 			//
 			// Collect the material tracking if any
@@ -620,22 +620,22 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 
 		/**
-		 * @param product
+		 * @param productId
 		 * @param qtyToIssueToAdd
 		 * @param huToAssign HU to be assigned to generated cost collector
 		 */
-		public void addQtyToIssue(@NonNull final I_M_Product product, @NonNull final Quantity qtyToIssueToAdd, @NonNull final I_M_HU huToAssign)
+		public void addQtyToIssue(@NonNull final ProductId productId, @NonNull final Quantity qtyToIssueToAdd, @NonNull final I_M_HU huToAssign)
 		{
 			// Validate
-			if (product.getM_Product_ID() != orderBOMLine.getM_Product_ID())
+			if (productId.getRepoId() != orderBOMLine.getM_Product_ID())
 			{
 				throw new HUException("Invalid product to issue."
 						+ "\nExpected: " + orderBOMLine.getM_Product()
-						+ "\nGot: " + product
+						+ "\nGot: " + productId
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}
 
-			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product.getM_Product_ID());
+			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 			final Quantity qtyToIssueToAddConv = uomConversionBL.convertQuantityTo(qtyToIssueToAdd, uomConversionCtx, uom);
 
 			qtyToIssue = qtyToIssue.add(qtyToIssueToAddConv.getAsBigDecimal());

@@ -107,7 +107,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
 
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
-		receiptSchedule.setM_Product(storages.get(0).getM_Product());
+		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
 		receiptSchedule.setC_UOM(storages.get(0).getC_UOM());
 		InterfaceWrapperHelper.save(receiptSchedule);
 
@@ -255,7 +255,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		}
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 		final I_M_ReceiptSchedule rs2 = create_receiptSchedule_for_CU(cu2, "3");
 		final TableRecordReference rs2TableRef = TableRecordReference.of(rs2);
@@ -345,7 +345,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		}
 		// create a standalone-CU
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pSalad, four, data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, four, data.helper.uomKg);
 
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
 
@@ -415,7 +415,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			final I_M_HU_PI piTU_IFCO = data.helper.createHUDefinition("TU_IFCO-4kg-tomatoes", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 			final I_M_HU_PI_Item piTU_Item_IFCO = data.helper.createHU_PI_Item_Material(piTU_IFCO);
 
-			data.helper.assignProduct(piTU_Item_IFCO, data.helper.pTomato, new BigDecimal("4"), data.helper.uomKg);
+			data.helper.assignProduct(piTU_Item_IFCO, data.helper.pTomatoProductId, new BigDecimal("4"), data.helper.uomKg);
 			data.helper.createHU_PI_Item_PackingMaterial(piTU_IFCO, data.helper.pmIFCO);
 			piLU_Item_10_IFCOs = data.helper.createHU_PI_Item_IncludedHU(data.piLU, piTU_IFCO, new BigDecimal("10"));
 
@@ -426,7 +426,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		}
 		//
 		// create our initial HU hierarchy
-		data.helper.load(lutuProducer, data.helper.pTomato, new BigDecimal("40"), data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, new BigDecimal("40"), data.helper.uomKg);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		//
@@ -444,10 +444,10 @@ public class HUTransformServiceReceiptCandidatesTests
 
 			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 			final IHUStorageDAO storageDAO = storageFactory.getHUStorageDAO();
-			final I_M_HU_Storage luTomatoStorage = storageDAO.retrieveStorage(firstLU, data.helper.pTomato.getM_Product_ID());
+			final I_M_HU_Storage luTomatoStorage = storageDAO.retrieveStorage(firstLU, data.helper.pTomatoProductId);
 			assertThat(luTomatoStorage.getQty(), comparesEqualTo(new BigDecimal("40")));
 
-			final I_M_HU_Storage tuTomatoStorage = storageDAO.retrieveStorage(aggregateTU, data.helper.pTomato.getM_Product_ID());
+			final I_M_HU_Storage tuTomatoStorage = storageDAO.retrieveStorage(aggregateTU, data.helper.pTomatoProductId);
 			assertThat(tuTomatoStorage.getQty(), comparesEqualTo(new BigDecimal("40")));
 		}
 
@@ -604,7 +604,7 @@ public class HUTransformServiceReceiptCandidatesTests
 							{
 								return Result.CONTINUE;
 							}
-							actualStorageQtyCU.setValue(actualStorageQtyCU.getValue().add(itemStorage.getQty(data.helper.pTomato, data.helper.uomKg)));
+							actualStorageQtyCU.setValue(actualStorageQtyCU.getValue().add(itemStorage.getQty(data.helper.pTomatoProductId, data.helper.uomKg)));
 							return Result.CONTINUE;
 						}
 					})
@@ -619,7 +619,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
 	{
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pTomato, new BigDecimal(strCuQty), data.helper.uomKg);
+		data.helper.load(producer, data.helper.pTomatoProductId, new BigDecimal(strCuQty), data.helper.uomKg);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
 		assertThat(createdCUs.size(), is(1));
@@ -635,7 +635,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		lutuProducer.setTUPI(data.piTU_IFCO);
 
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
+		data.helper.load(lutuProducer, data.helper.pTomatoProductId, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdTUs.size(), is(1));

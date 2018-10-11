@@ -27,6 +27,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -619,8 +621,9 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			log.info("Scrapped=" + confirm.getScrappedQty());
 			if (m_inventory == null)
 			{
-				MWarehouse wh = MWarehouse.get(getCtx(), inout.getM_Warehouse_ID());
-				m_inventory = new MInventory (wh, get_TrxName());
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+				final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(warehouseId);
+				m_inventory = new MInventory (wh);
 				m_inventory.setDescription(Msg.translate(getCtx(), "M_InOutConfirm_ID") + " " + getDocumentNo());
 				m_inventory.saveEx();
 				setM_Inventory_ID(m_inventory.getM_Inventory_ID());

@@ -1,7 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,6 +33,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -219,20 +220,21 @@ public class HUShippingFacade
 
 		mpackagesCreated
 				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(I_M_Package::getM_Shipper_ID))
+				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> extractShipperId(mpackage)))
 				.asMap()
 				.forEach(this::generateShipperDeliveryOrderIfNeeded);
 	}
 
+	private static ShipperId extractShipperId(I_M_Package mpackage)
+	{
+		return ShipperId.ofRepoId(mpackage.getM_Shipper_ID());
+	}
+
 	private void generateShipperDeliveryOrderIfNeeded(
-			final int shipperId,
+			final ShipperId shipperId,
 			@NonNull final Collection<I_M_Package> mpackages)
 	{
-		final I_M_Shipper shipper = Check.assumeNotNull(
-				loadOutOfTrx(shipperId, I_M_Shipper.class),
-				"An M_Shipper record for shipperId={} exists",
-				shipperId);
-
+		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		if (Check.isEmpty(shipperGatewayId, true))
 		{

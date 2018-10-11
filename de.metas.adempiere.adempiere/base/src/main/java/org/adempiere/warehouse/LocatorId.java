@@ -1,8 +1,13 @@
 package org.adempiere.warehouse;
 
+import java.util.Collection;
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_M_Locator;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
 import lombok.NonNull;
@@ -67,4 +72,12 @@ public class LocatorId implements RepoIdAware
 				locatorRecord.getM_Locator_ID());
 	}
 
+	public static Set<Integer> toRepoIds(final Collection<LocatorId> locatorIds)
+	{
+		if (locatorIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return locatorIds.stream().map(LocatorId::getRepoId).collect(ImmutableSet.toImmutableSet());
+	}
 }

@@ -34,7 +34,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.attributes.impl.LUWeightsExpectations;
@@ -111,7 +111,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 			Check.assume(rs_PriceActual.signum() > 0, "Price Actual > 0: {}", rs_PriceActual);
 
 			rs_PriceActual_Expectation = HUAttributeExpectation.newExpectation()
-					.attribute(Constants.ATTR_CostPrice)
+					.attribute(HUAttributeConstants.ATTR_CostPrice)
 					.attribute(helper.attr_CostPrice) // just to be sure ;)
 					.piAttribute(helper.huDefVirtual_Attr_CostPrice)
 					.valueNumber(rs_PriceActual);

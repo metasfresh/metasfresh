@@ -42,7 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.AsyncBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -128,7 +128,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
-		final AsyncBPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new AsyncBPartnerStatisticsUpdater();
+		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		//
 		// Register C_Invoice_Candidate model interceptor

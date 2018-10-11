@@ -63,7 +63,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
@@ -83,6 +82,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -553,9 +553,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		boolean forceIssue = false;
 		final I_C_OrderLine oline = getC_OrderLine();
-		final String orderDeliveryRule = oline.getC_Order().getDeliveryRule();
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_CompleteOrder.equals(orderDeliveryRule))
+		final DeliveryRule orderDeliveryRule = DeliveryRule.ofCode(oline.getC_Order().getDeliveryRule());
+		if (DeliveryRule.COMPLETE_LINE.equals(orderDeliveryRule) ||
+				DeliveryRule.COMPLETE_ORDER.equals(orderDeliveryRule))
 		{
 			final boolean isCompleteQtyDeliver = isQtyAvailable(this, issue, today);
 			if (!isCompleteQtyDeliver)
@@ -563,13 +563,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				throw new LiberoException("@NoQtyAvailable@");
 			}
 		}
-		else if (X_C_Order.DELIVERYRULE_Availability.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_AfterReceipt.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_Manual.equals(orderDeliveryRule))
+		else if (DeliveryRule.AVAILABILITY.equals(orderDeliveryRule) ||
+				DeliveryRule.AFTER_RECEIPT.equals(orderDeliveryRule) ||
+				DeliveryRule.MANUAL.equals(orderDeliveryRule))
 		{
 			throw new LiberoException("@ActionNotSupported@");
 		}
-		else if (X_C_Order.DELIVERYRULE_Force.equals(orderDeliveryRule))
+		else if (DeliveryRule.FORCE.equals(orderDeliveryRule))
 		{
 			forceIssue = true;
 		}

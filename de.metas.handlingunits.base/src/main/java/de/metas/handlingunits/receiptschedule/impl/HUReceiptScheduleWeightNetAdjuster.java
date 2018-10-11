@@ -34,7 +34,6 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -64,6 +63,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -268,7 +269,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		final I_C_UOM weightNetUOM = weightable.getWeightNetUOM();
 		Check.assumeNotNull(weightNetUOM, "Weight Net UOM was set");
 
-		final I_M_Product product = receiptSchedule.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(receiptSchedule.getM_Product_ID());
 		final IHUStorage vhuStorage = huContext.getHUStorageFactory()
 				.getStorage(vhu);
 		if (!vhuStorage.isSingleProductStorage())
@@ -278,7 +279,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 			return;
 		}
 
-		final BigDecimal qtyHUStorage = vhuStorage.getQty(product, weightNetUOM);
+		final BigDecimal qtyHUStorage = vhuStorage.getQty(productId, weightNetUOM);
 		final BigDecimal qtyAllocatedTarget = weightNet; // how much we really need to allocate to this receipt schedule
 		final BigDecimal qtyToAllocateAbs = qtyAllocatedTarget.subtract(qtyHUStorage);
 		logger.debug("HU Storage Qty: {}", qtyHUStorage);
@@ -320,9 +321,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 		// Create Allocation Request
 		IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(
 				huContext,
-				product,
-				qtyToAllocate,
-				weightNetUOM,
+				productId,
+				Quantity.of(qtyToAllocate, weightNetUOM),
 				SystemTime.asDate(),
 				receiptSchedule, // referenceModel
 				true // forceAllocation => we want to transfer that quantity, no matter what

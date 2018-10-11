@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -34,7 +35,8 @@ import org.compiere.util.KeyNamePair;
 import de.metas.adempiere.form.terminal.DefaultKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.util.Check;
+import de.metas.bpartner.BPartnerId;
+import lombok.NonNull;
 
 /**
  * Plain key layout for BPartners
@@ -71,11 +73,11 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 		}
 		else
 		{
-			bpartnersSorted = new TreeSet<KeyNamePair>(bpartners);
+			bpartnersSorted = new TreeSet<>(bpartners);
 		}
 		//
 		// Check if our keys are actually changed
-		if (Check.equals(this._bpartnerKNPs, bpartnersSorted))
+		if (Objects.equals(this._bpartnerKNPs, bpartnersSorted))
 		{
 			return;
 		}
@@ -86,7 +88,7 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 
 					//
 					// Create Keys
-					final List<ITerminalKey> keys = new ArrayList<ITerminalKey>(bpartnersSorted.size());
+					final List<ITerminalKey> keys = new ArrayList<>(bpartnersSorted.size());
 					for (final KeyNamePair bpartner : bpartnersSorted)
 					{
 						final BPartnerKey key = new BPartnerKey(getTerminalContext(), bpartner);
@@ -101,7 +103,7 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 		this._bpartnerKNPs = bpartnersSorted;
 	}
 
-	public BPartnerKey getKeyByBPartnerId(final int bpartnerId)
+	public BPartnerKey getKeyByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		final List<ITerminalKey> keys = getKeysOrNull();
 		if (keys == null || keys.isEmpty())
@@ -112,7 +114,7 @@ public class BPartnerKeyLayout extends DefaultKeyLayout
 		for (final ITerminalKey key : keys)
 		{
 			final BPartnerKey bpartnerKey = (BPartnerKey)key;
-			if (bpartnerKey.getC_BPartner_ID() == bpartnerId)
+			if(bpartnerId.equals(bpartnerKey.getBpartnerId()))
 			{
 				return bpartnerKey;
 			}

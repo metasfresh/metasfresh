@@ -23,6 +23,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.user.UserId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -1133,5 +1134,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.create()
 				.setApplyAccessFilterRW(false)
 				.createSelection(adPInstanceId);
+	}
+	
+	protected final UserId getLoggedUserId()
+	{
+		return Env.getLoggedUserId();
 	}
 }

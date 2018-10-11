@@ -1,7 +1,5 @@
 package de.metas.fresh.picking;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.text.MessageFormat;
 
 /*
@@ -37,14 +35,18 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotDAO;
-import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
@@ -82,7 +84,7 @@ public class PickingSlotKeyBuilder
 		this.terminalContext = terminalContext;
 	}
 
-	public void addBPartner(final int bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
+	public void addBPartner(final BPartnerId bpartnerId, final BPartnerLocationId bpartnerLocationId, final Set<WarehouseId> allowedWarehouseIds)
 	{
 		final PickingSlotQuery pickingSlotRequest = PickingSlotQuery.builder()
 				.availableForBPartnerId(bpartnerId)
@@ -97,7 +99,7 @@ public class PickingSlotKeyBuilder
 			addIfValid(pickingSlot, allowedWarehouseIds);
 		}
 	}
-	
+
 	private void assertPickingSlotsListNotEmpty(@NonNull final List<I_M_PickingSlot> result, @NonNull final PickingSlotQuery query)
 	{
 		if (!result.isEmpty())
@@ -105,14 +107,12 @@ public class PickingSlotKeyBuilder
 			return;
 		}
 
-		final int bpartnerId = query.getAvailableForBPartnerId();
-		final int bpartnerLocationId = query.getAvailableForBPartnerLocationId();
+		final BPartnerId bpartnerId = query.getAvailableForBPartnerId();
+		final BPartnerLocationId bpartnerLocationId = query.getAvailableForBPartnerLocationId();
 
-		final I_C_BPartner bpartner = bpartnerId <= 0 ? null : loadOutOfTrx(bpartnerId, I_C_BPartner.class);
-		final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();
-
-		final I_C_BPartner_Location bparterLocation = bpartnerLocationId <= 0 ? null : loadOutOfTrx(bpartnerLocationId, I_C_BPartner_Location.class);
-		final String bpartnerLocationStr = bparterLocation == null ? "<" + bpartnerLocationId + ">" : bparterLocation.getAddress();
+		final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
+		final String bpartnerStr = bpartnersService.getBPartnerValue(bpartnerId);
+		final String bpartnerLocationStr = bpartnersService.getAddressStringByBPartnerLocationId(bpartnerLocationId);
 
 		final String translatedErrMsgWithParams = Services.get(IMsgBL.class).parseTranslation(Env.getCtx(), "@PickingSlot_NotFoundFor_PartnerAndLocation@");
 
@@ -121,10 +121,9 @@ public class PickingSlotKeyBuilder
 				.setParameter("query", query);
 	}
 
-
 	private void addIfValid(
 			@NonNull final I_M_PickingSlot pickingSlot,
-			@NonNull final Set<Integer> allowedWarehouseIds)
+			@NonNull final Set<WarehouseId> allowedWarehouseIds)
 	{
 		if (!pickingSlot.isActive())
 		{
@@ -140,7 +139,7 @@ public class PickingSlotKeyBuilder
 		// Filter by warehouse
 		if (allowedWarehouseIds != null && !allowedWarehouseIds.isEmpty())
 		{
-			final int warehouseId = pickingSlot.getM_Warehouse_ID();
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
 			if (!allowedWarehouseIds.contains(warehouseId))
 			{
 				return; // skip because it's not in our list of accepted warehouses
@@ -151,16 +150,16 @@ public class PickingSlotKeyBuilder
 		pickingSlotsKeys.put(pickingSlotId, pickingSlotKey);
 	}
 
-	public List<PickingSlotKey> getPickingSlotKeys()
+	public ImmutableList<PickingSlotKey> getPickingSlotKeys()
 	{
 		if (pickingSlotsKeys.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
 		final List<PickingSlotKey> result = new ArrayList<>(pickingSlotsKeys.values());
 		Collections.sort(result, pickingSlotKeysComparator);
 
-		return result;
+		return ImmutableList.copyOf(result);
 	}
 }

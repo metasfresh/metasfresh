@@ -47,7 +47,8 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -86,15 +87,15 @@ import lombok.NonNull;
 	}
 
 	private I_M_HU_Storage retrieveOrCreateStorageLine(
-			final I_M_Product product,
+			final ProductId productId,
 			final I_C_UOM uomIfNew)
 	{
-		I_M_HU_Storage storage = dao.retrieveStorage(hu, product.getM_Product_ID());
+		I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
 		if (storage == null)
 		{
 			storage = dao.newInstance(I_M_HU_Storage.class, hu);
 			storage.setM_HU(hu);
-			storage.setM_Product(product);
+			storage.setM_Product_ID(productId.getRepoId());
 			storage.setC_UOM(uomIfNew);
 			storage.setQty(BigDecimal.ZERO);
 
@@ -132,26 +133,26 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public BigDecimal getQty(final I_M_Product product, final I_C_UOM uom)
+	public BigDecimal getQty(final ProductId productId, final I_C_UOM uom)
 	{
-		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(product, uom);
+		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(productId, uom);
 		final BigDecimal qty = storageLine.getQty();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product.getM_Product_ID(), qty, storageLine.getC_UOM(), uom);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, storageLine.getC_UOM(), uom);
 		return qtyConv;
 	}
 
 	@Override
-	public void addQty(final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
+	public void addQty(final ProductId productId, final BigDecimal qty, final I_C_UOM uom)
 	{
 		if (qty.signum() == 0)
 		{
 			return;
 		}
 
-		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(product, uom);
+		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(productId, uom);
 
 		final I_C_UOM uomStorage = storageLine.getC_UOM();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(product.getM_Product_ID(), qty, uom, uomStorage);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
 
 		//
 		// Update storage line
@@ -163,15 +164,15 @@ import lombok.NonNull;
 
 		//
 		// Roll-up
-		rollupIncremental(product, qtyConv, uomStorage);
+		rollupIncremental(productId, Quantity.of(qtyConv, uomStorage));
 	}
 
-	private void rollupIncremental(final I_M_Product product, final BigDecimal qtyDelta, final I_C_UOM uom)
+	private void rollupIncremental(final ProductId productId, final Quantity qtyDelta)
 	{
 		final IGenericHUStorage parentStorage = getParentStorage();
 		if (parentStorage != null)
 		{
-			parentStorage.addQty(product, qtyDelta, uom);
+			parentStorage.addQty(productId, qtyDelta.getAsBigDecimal(), qtyDelta.getUOM());
 		}
 	}
 
@@ -180,10 +181,9 @@ import lombok.NonNull;
 	{
 		for (final IHUProductStorage productStorage : getProductStorages())
 		{
-			final I_M_Product product = productStorage.getM_Product();
-			final BigDecimal qtyDelta = productStorage.getQty();
-			final I_C_UOM uom = productStorage.getC_UOM();
-			rollupIncremental(product, qtyDelta, uom);
+			final ProductId productId = productStorage.getProductId();
+			final Quantity qtyDelta = productStorage.getQty();
+			rollupIncremental(productId, qtyDelta);
 		}
 	}
 
@@ -192,10 +192,9 @@ import lombok.NonNull;
 	{
 		for (final IHUProductStorage productStorage : getProductStorages())
 		{
-			final I_M_Product product = productStorage.getM_Product();
-			final BigDecimal qtyDelta = productStorage.getQty().negate();
-			final I_C_UOM uom = productStorage.getC_UOM();
-			rollupIncremental(product, qtyDelta, uom);
+			final ProductId productId = productStorage.getProductId();
+			final Quantity qtyDelta = productStorage.getQty().negate();
+			rollupIncremental(productId, qtyDelta);
 		}
 	}
 
@@ -226,10 +225,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public boolean isEmpty(final I_M_Product product)
+	public boolean isEmpty(@NonNull final ProductId productId)
 	{
-		Check.assumeNotNull(product, "product not null");
-		final I_M_HU_Storage storage = dao.retrieveStorage(hu, product.getM_Product_ID());
+		final I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
 		if (storage == null)
 		{
 			return true;
@@ -274,18 +272,18 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final I_M_Product getSingleProductOrNull()
+	public ProductId getSingleProductIdOrNull()
 	{
 		final List<I_M_HU_Storage> storages = dao.retrieveStorages(hu);
 
-		I_M_Product product = null;
+		ProductId productId = null;
 		for (final I_M_HU_Storage storage : storages)
 		{
-			if (product == null)
+			if (productId == null)
 			{
-				product = storage.getM_Product();
+				productId = ProductId.ofRepoId(storage.getM_Product_ID());
 			}
-			else if (product.getM_Product_ID() != storage.getM_Product_ID())
+			else if (productId.getRepoId() != storage.getM_Product_ID())
 			{
 				// found more then one product stored in our HU
 				return null;
@@ -296,7 +294,19 @@ import lombok.NonNull;
 			}
 		}
 
-		return product;
+		return productId;
+	}
+
+	@Override
+	public final I_M_Product getSingleProductOrNull()
+	{
+		ProductId productId = getSingleProductIdOrNull();
+		if (productId == null)
+		{
+			return null;
+		}
+
+		return Services.get(IProductDAO.class).getById(productId);
 	}
 
 	@Override
@@ -314,21 +324,20 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUProductStorage getProductStorage(final I_M_Product product)
+	public IHUProductStorage getProductStorage(final ProductId productId)
 	{
-		final IHUProductStorage productStorage = getProductStorageOrNull(product);
+		final IHUProductStorage productStorage = getProductStorageOrNull(productId);
 		if (productStorage == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_Storage_ID@ (@M_Product_ID@:" + product.getName() + "; @M_HU_ID@:" + getM_HU().getM_HU_ID() + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_Storage_ID@ (@M_Product_ID@:" + productId + "; @M_HU_ID@:" + getM_HU().getM_HU_ID() + ")");
 		}
 
 		return productStorage;
 	}
 
 	@Override
-	public IHUProductStorage getProductStorageOrNull(final int productId)
+	public IHUProductStorage getProductStorageOrNull(@NonNull final ProductId productId)
 	{
-		Check.assume(productId > 0, "product > 0");
 		final I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
 		if (storage == null)
 		{
@@ -341,31 +350,10 @@ import lombok.NonNull;
 	@Override
 	public final Quantity getQtyForProductStorages(@NonNull final I_C_UOM uom)
 	{
-		final IUOMConversionBL uomConvertionBL = Services.get(IUOMConversionBL.class);
-
-		final List<IHUProductStorage> productStorages = getProductStorages();
-
-		if (Check.isEmpty(productStorages))
-		{
-			return Quantity.zero(uom);
-		}
-
-		BigDecimal fullCUQty = BigDecimal.ZERO;
-
-		for (final IProductStorage productStorage : productStorages)
-		{
-			if (uom.getC_UOM_ID() != productStorage.getC_UOM().getC_UOM_ID())
-			{
-				final BigDecimal qtyInInitialUOM = uomConvertionBL.convertQty(productStorage.getM_Product_ID(), productStorage.getQty(), productStorage.getC_UOM(), uom);
-
-				fullCUQty = fullCUQty.add(qtyInInitialUOM);
-			}
-			else
-			{
-				fullCUQty = fullCUQty.add(productStorage.getQty());
-			}
-		}
-		return Quantity.of(fullCUQty, uom);
+		return getProductStorages()
+				.stream()
+				.map(productStorage -> productStorage.getQty(uom))
+				.reduce(Quantity.zero(uom), Quantity::add);
 	}
 
 	@Override
@@ -383,9 +371,9 @@ import lombok.NonNull;
 
 	private final IHUProductStorage createProductStorage(final I_M_HU_Storage storage)
 	{
-		final I_M_Product product = storage.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(storage.getM_Product_ID());
 		final I_C_UOM uom = storage.getC_UOM();
-		final HUProductStorage productStorage = new HUProductStorage(this, product, uom);
+		final HUProductStorage productStorage = new HUProductStorage(this, productId, uom);
 		return productStorage;
 	}
 

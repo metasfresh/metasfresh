@@ -1,29 +1,25 @@
 package de.metas.picking.api.impl;
 
+import java.util.Objects;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 public class PickingSlotBL implements IPickingSlotBL
 {
 	@Override
-	public boolean isAvailableForAnyBPartner(final I_M_PickingSlot pickingSlot)
+	public boolean isAvailableForAnyBPartner(@NonNull final I_M_PickingSlot pickingSlot)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
 		final int pickingSlotBPartnerId = pickingSlot.getC_BPartner_ID();
-		if (pickingSlotBPartnerId <= 0)
-		{
-			return true;
-		}
-
-		return false;
+		return pickingSlotBPartnerId <= 0;
 	}
 
 	@Override
-	public boolean isAvailableForBPartnerID(final I_M_PickingSlot pickingSlot, final int bpartnerId)
+	public boolean isAvailableForBPartnerId(@NonNull final I_M_PickingSlot pickingSlot, final BPartnerId bpartnerId)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
-
 		//
 		// General use Picking Slot, accept it right away
 		if (isAvailableForAnyBPartner(pickingSlot))
@@ -33,20 +29,20 @@ public class PickingSlotBL implements IPickingSlotBL
 
 		//
 		// Check BPartner
-		final int pickingSlotBPartnerId = pickingSlot.getC_BPartner_ID();
+		final BPartnerId pickingSlotBPartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
 		// Any BPartner Picking Slot
-		if (pickingSlotBPartnerId <= 0)
+		if (pickingSlotBPartnerId == null)
 		{
 			// accept any partner
 		}
 		// Picking slot specific for BP
 		else
 		{
-			if (bpartnerId <= 0)
+			if (bpartnerId == null)
 			{
 				// no particular partner was requested, (i.e. M_HU_PI_Item_Product does not have a BP set), accept it
 			}
-			else if (bpartnerId == pickingSlotBPartnerId)
+			else if (bpartnerId.equals(pickingSlotBPartnerId))
 			{
 				// same BP, accept it
 			}
@@ -62,12 +58,11 @@ public class PickingSlotBL implements IPickingSlotBL
 	}
 
 	@Override
-	public boolean isAvailableForBPartnerAndLocation(final I_M_PickingSlot pickingSlot,
-			final int bpartnerId,
-			final int bpartnerLocationId)
+	public boolean isAvailableForBPartnerAndLocation(
+			@NonNull final I_M_PickingSlot pickingSlot,
+			final BPartnerId bpartnerId,
+			final BPartnerLocationId bpartnerLocationId)
 	{
-		Check.assumeNotNull(pickingSlot, "pickingSlot not null");
-
 		//
 		// General use Picking Slot, accept it right away
 		if (isAvailableForAnyBPartner(pickingSlot))
@@ -77,27 +72,31 @@ public class PickingSlotBL implements IPickingSlotBL
 
 		//
 		// Check if is available for BPartner
-		if (!isAvailableForBPartnerID(pickingSlot, bpartnerId))
+		if (!isAvailableForBPartnerId(pickingSlot, bpartnerId))
 		{
 			return false;
 		}
 
 		//
 		// Check BPartner Location
-		final int pickingSlotBPartnerLocationId = pickingSlot.getC_BPartner_Location_ID();
+		final BPartnerId pickingSlotBPartnerId = BPartnerId.ofRepoId(pickingSlot.getC_BPartner_ID());
+		final BPartnerLocationId pickingSlotBPartnerLocationId = pickingSlotBPartnerId != null
+				? BPartnerLocationId.ofRepoIdOrNull(pickingSlotBPartnerId, pickingSlot.getC_BPartner_Location_ID())
+				: null;
+
 		// Any BP Location Picking Slot
-		if (pickingSlotBPartnerLocationId <= 0)
+		if (pickingSlotBPartnerLocationId == null)
 		{
 			// accept any location
 		}
 		// Picking slot specific for BP Location
 		else
 		{
-			if (bpartnerLocationId <= 0)
+			if (bpartnerLocationId == null)
 			{
 				// no particular location was requested, accept it
 			}
-			else if (bpartnerLocationId == pickingSlotBPartnerLocationId)
+			else if (Objects.equals(bpartnerLocationId, pickingSlotBPartnerLocationId))
 			{
 				// same BP Location, accept it
 			}

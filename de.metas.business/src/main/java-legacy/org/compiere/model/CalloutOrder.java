@@ -27,8 +27,9 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -45,6 +46,7 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.Percent;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -109,7 +111,7 @@ public class CalloutOrder extends CalloutEngine
 		// Delivery Rule
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
-			order.setDeliveryRule(X_C_Order.DELIVERYRULE_Force);
+			order.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		}
 		// NOTE: Don't override default configured DeliveryRule (see task 09250)
 		// else
@@ -1142,9 +1144,10 @@ public class CalloutOrder extends CalloutEngine
 			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
 			final I_C_UOM uomTo = orderLine.getC_UOM();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product_ID());
+			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
 
-			final BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
+			final BigDecimal QtyEntered1 = uomConversionBL.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
@@ -1152,7 +1155,7 @@ public class CalloutOrder extends CalloutEngine
 				orderLine.setQtyEntered(QtyEntered);
 			}
 
-			BigDecimal QtyOrdered = uomConverter.convertQty(QtyEntered1, uomFrom, uomTo);
+			BigDecimal QtyOrdered = uomConversionBL.convertQty(uomConversionCtx, QtyEntered1, uomFrom, uomTo);
 			if (QtyOrdered == null)
 			{
 				QtyOrdered = QtyEntered;

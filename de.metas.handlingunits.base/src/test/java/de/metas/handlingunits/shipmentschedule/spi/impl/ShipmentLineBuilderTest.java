@@ -65,7 +65,7 @@ public class ShipmentLineBuilderTest
 
 		final I_M_HU_PI huDefIFCO = huTestHelper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item itemMA = huTestHelper.createHU_PI_Item_Material(huDefIFCO);
-		piipWithCapacityEight = huTestHelper.assignProduct(itemMA, huTestHelper.pTomato, EIGHT, huTestHelper.uomEach);
+		piipWithCapacityEight = huTestHelper.assignProduct(itemMA, huTestHelper.pTomatoProductId, EIGHT, huTestHelper.uomEach);
 
 		orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setM_Product(huTestHelper.pTomato);

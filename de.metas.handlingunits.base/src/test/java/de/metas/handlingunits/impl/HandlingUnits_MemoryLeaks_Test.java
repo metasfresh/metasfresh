@@ -77,7 +77,7 @@ public class HandlingUnits_MemoryLeaks_Test extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO), uomEach);
+			helper.assignProduct(itemMA, pTomatoId, BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO), uomEach);
 		}
 		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		{
@@ -138,6 +138,6 @@ public class HandlingUnits_MemoryLeaks_Test extends AbstractHUTest
 	{
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(1 * COUNT_IFCOs_Per_Palet * COUNT_Tomatoes_Per_IFCO); // 1palet
-		helper.createHUs(huContext, huDefPalet, pTomato, qtyToLoadBD, uomEach);
+		helper.createHUs(huContext, huDefPalet, pTomatoId, qtyToLoadBD, uomEach);
 	}
 }

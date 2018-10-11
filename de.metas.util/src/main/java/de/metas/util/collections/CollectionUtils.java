@@ -6,12 +6,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -305,4 +307,43 @@ public final class CollectionUtils
 		return element;
 	}
 
+	public static <K, V> Collection<V> getAllOrLoad(
+			@NonNull final Map<K, V> map,
+			@NonNull final Collection<K> keys,
+			@NonNull final Function<Collection<K>, Map<K, V>> valuesLoader)
+	{
+		if (keys.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		//
+		// Fetch from cache what's available
+		final List<V> values = new ArrayList<>(keys.size());
+		final Set<K> keysToLoad = new HashSet<>();
+		for (final K key : ImmutableSet.copyOf(keys))
+		{
+			final V value = map.get(key);
+			if (value == null)
+			{
+				keysToLoad.add(key);
+			}
+			else
+			{
+				values.add(value);
+			}
+		}
+
+		//
+		// Load the missing keys if any
+		if (!keysToLoad.isEmpty())
+		{
+			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+			map.putAll(valuesLoaded); // add loaded values to cache
+			values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
+		}
+
+		//
+		return values;
+	}
 }

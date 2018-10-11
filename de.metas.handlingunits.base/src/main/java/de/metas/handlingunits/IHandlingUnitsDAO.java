@@ -76,10 +76,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
 			.thenComparing(
 					queryOrderBy.getComparator(I_M_HU_Item.class));
-	
+
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getByIds(Collection<HuId> huIds);
 
 	/**
 	 * Save the given {@code hu}
@@ -104,11 +106,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
 
-	int getPackingItemTemplate_HU_PI_ID();
-
 	int getPackingItemTemplate_HU_PI_Item_ID();
-
-	int getVirtual_HU_PI_ID();
 
 	int getVirtual_HU_PI_Version_ID();
 
@@ -367,14 +365,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
-
-	/**
-	 * Retrieve all the warehouses that contain the HUs in the given list
-	 *
-	 * @param hus
-	 * @return
-	 */
-	List<I_M_Warehouse> retrieveWarehousesForHUs(List<I_M_HU> hus);
 
 	/**
 	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs

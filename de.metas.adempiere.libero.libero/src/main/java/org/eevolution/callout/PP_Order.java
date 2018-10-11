@@ -35,6 +35,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -144,19 +145,19 @@ public class PP_Order extends CalloutEngine
 	/** Calculates and sets QtyOrdered from QtyEntered and UOM */
 	private final void updateQtyOrdered(final I_PP_Order ppOrder)
 	{
-		final int productId = ppOrder.getM_Product_ID();
-		final int uomToId = ppOrder.getC_UOM_ID();
+		final ProductId productId = ProductId.ofRepoIdOrNull(ppOrder.getM_Product_ID());
+		final I_C_UOM uomTo = ppOrder.getC_UOM();
 		final BigDecimal qtyEntered = ppOrder.getQtyEntered();
 
 		BigDecimal qtyOrdered;
-		if (productId <= 0 || uomToId <= 0)
+		if (productId == null || uomTo == null)
 		{
 			qtyOrdered = qtyEntered;
 		}
 		else
 		{
 			qtyOrdered = Services.get(IUOMConversionBL.class)
-					.convertToProductUOM(Env.getCtx(), ppOrder.getM_Product(), ppOrder.getC_UOM(), qtyEntered);
+					.convertToProductUOM(Env.getCtx(), productId, uomTo, qtyEntered);
 			if (qtyOrdered == null)
 			{
 				qtyOrdered = qtyEntered;

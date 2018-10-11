@@ -27,11 +27,10 @@ import java.util.Properties;
 
 public interface ITerminalBasePanel extends ITerminalPanel
 {
-	String TITLE_PACKAGE_TERMINAL = "PackageTerminal";
+	@Override
+	void dispose();
 
 	public boolean isProcessed();
-
-	public void updateInfo();
 
 	@Override
 	public Properties getCtx();

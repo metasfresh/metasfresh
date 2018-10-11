@@ -39,7 +39,7 @@ import org.compiere.model.I_M_InOut;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.attribute.Constants;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -136,7 +136,7 @@ public class HUInOutDAO implements IHUInOutDAO
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
-		final AttributeId receiptInOutLineAttributeId = attributeDAO.retrieveAttributeIdByValue(Constants.ATTR_ReceiptInOutLine_ID);
+		final AttributeId receiptInOutLineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_ReceiptInOutLine_ID);
 
 		final I_M_HU_Attribute huAttrReceiptInOutLine = huAttributesDAO.retrieveAttribute(hu, receiptInOutLineAttributeId);
 		if (huAttrReceiptInOutLine == null

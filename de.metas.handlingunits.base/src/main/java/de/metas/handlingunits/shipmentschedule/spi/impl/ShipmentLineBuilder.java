@@ -46,7 +46,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
@@ -84,6 +83,8 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -108,6 +109,7 @@ import lombok.NonNull;
 	private final transient IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	/**
 	 * Shipment on which the new shipment line will be created
@@ -117,7 +119,7 @@ import lombok.NonNull;
 	//
 	// Shipment Line attributes
 	private IHUContext huContext;
-	private I_M_Product product = null;
+	private ProductId productId = null;
 
 	private Object attributesAggregationKey = null;
 	private int orderLineId = -1;
@@ -205,7 +207,7 @@ import lombok.NonNull;
 		}
 
 		// Check: same product
-		if (product.getM_Product_ID() != candidate.getM_Product_ID())
+		if(!Objects.equals(productId, candidate.getProductId()))
 		{
 			return false;
 		}
@@ -249,7 +251,7 @@ import lombok.NonNull;
 
 		//
 		// Product, ASI, UOM (retrieved from Shipment Schedule)
-		product = candidate.getM_Product();
+		productId = candidate.getProductId();
 		attributeValues.addAll(candidate.getAttributeValues());
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
 		uom = shipmentScheduleBL.getUomOfProduct(candidate.getM_ShipmentSchedule());
@@ -277,7 +279,7 @@ import lombok.NonNull;
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
 		final BigDecimal qtyToAddConverted = uomConversionBL.convertQty(
-				product.getM_Product_ID(),
+				productId,
 				qtyToAdd, // Qty
 				qtyToAddUOM, // From UOM
 				uom // To UOM
@@ -396,7 +398,7 @@ import lombok.NonNull;
 
 		//
 		// Product & ASI (retrieved from Shipment Schedule)
-		shipmentLine.setM_Product(product);
+		shipmentLine.setM_Product_ID(productId.getRepoId());
 
 		final I_M_AttributeSetInstance newASI;
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -457,8 +459,9 @@ import lombok.NonNull;
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, product, product.getC_UOM());
-					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty, product.getC_UOM());
+					final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
+					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty, productUOM);
 					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUFromCapacity));
 				}
 			}
@@ -536,10 +539,11 @@ import lombok.NonNull;
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
+			final I_C_UOM productUOM = productBL.getStockingUOM(productId);
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-					.setProduct(product)
+					.setProductId(productId)
 					.setQty(shipmentLine.getMovementQty())
-					.setUOM(product.getC_UOM())
+					.setUOM(productUOM)
 					.setAttributeStorageFrom(huAttributeStorageFrom)
 					.setAttributeStorageTo(shipmentLineAttributeStorageTo)
 					.setHUStorageFrom(huStorageFrom);

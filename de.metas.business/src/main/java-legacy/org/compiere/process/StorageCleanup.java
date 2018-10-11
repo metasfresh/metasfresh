@@ -19,8 +19,10 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.adempiere.exceptions.DBException;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
@@ -201,7 +203,7 @@ public class StorageCleanup extends JavaProcess
 				target.getM_Product_ID(), 0, get_TrxName());
 			if (storage0 == null)
 			{
-				MLocator defaultLoc = MLocator.getDefault(getCtx(), M_Locator_ID);
+				MLocator defaultLoc = findOldestLocatorWithSameWarehouse(M_Locator_ID);
 				if (M_Locator_ID != defaultLoc.getM_Locator_ID())
 				{
 					M_Locator_ID = defaultLoc.getM_Locator_ID();
@@ -240,6 +242,46 @@ public class StorageCleanup extends JavaProcess
 			}
 		}
 	}	//	eliminateReservation
+
+	/**
+	 * 	Get oldest Default Locator of warehouse with locator
+	 *	@param ctx context
+	 *	@param M_Locator_ID locator
+	 *	@return locator or null
+	 */
+	private MLocator findOldestLocatorWithSameWarehouse(final int M_Locator_ID)
+	{
+		String trxName = null;
+		MLocator retValue = null;
+		String sql = "SELECT * FROM M_Locator l "
+			+ "WHERE IsActive = 'Y' AND  IsDefault='Y'"
+			+ " AND EXISTS (SELECT * FROM M_Locator lx "
+				+ "WHERE l.M_Warehouse_ID=lx.M_Warehouse_ID AND lx.M_Locator_ID=?) "
+			+ "ORDER BY Created";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement (sql, trxName);
+			pstmt.setInt (1, M_Locator_ID);
+			rs = pstmt.executeQuery ();
+			while (rs.next ())
+			{
+				retValue = new MLocator (getCtx(), rs, trxName);
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		
+		return retValue;
+	}	//	getDefault
 
 	/**
 	 * 	Get Storage Sources

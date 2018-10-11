@@ -1,5 +1,7 @@
 package de.metas.storage;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.storage
@@ -23,11 +25,11 @@ package de.metas.storage;
  */
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.order.OrderLineId;
 
@@ -38,16 +40,13 @@ import de.metas.order.OrderLineId;
  */
 public interface IStorageQuery
 {
-	/**
-	 * @return user readable summary of this query
-	 */
-	String getSummary();
-
 	IStorageQuery addProduct(I_M_Product product);
 
 	IStorageQuery addPartner(I_C_BPartner bpartner);
 
-	IStorageQuery addWarehouse(I_M_Warehouse warehouse);
+	IStorageQuery addWarehouseId(WarehouseId warehouseId);
+	
+	IStorageQuery addWarehouseIds(Collection<WarehouseId> warehouseIds);
 
 	/**
 	 * Add another attribute filter, <b>if</b> the given <code>attribute</code> is relevant according to the respective storage engine implementation.

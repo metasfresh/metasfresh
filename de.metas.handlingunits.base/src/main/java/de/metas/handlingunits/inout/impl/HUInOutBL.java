@@ -359,12 +359,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public void moveHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
 	{
-		final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
-
-		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(ctx);
-
-		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
-
+		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouses();
 		final I_M_Warehouse qualiytReturnWarehouse = warehouses.get(0);
 
 		Services.get(IHUMovementBL.class).moveHUsToWarehouse(husToReturn, qualiytReturnWarehouse);

@@ -754,6 +754,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void deleteAll(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(InterfaceWrapperHelper::delete);
+	}
+
 	/**
 	 *
 	 * @param model

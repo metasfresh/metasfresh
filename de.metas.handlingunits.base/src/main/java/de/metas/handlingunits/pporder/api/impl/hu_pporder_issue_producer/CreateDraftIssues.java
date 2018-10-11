@@ -31,6 +31,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -197,7 +198,7 @@ public class CreateDraftIssues
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
-		final int productId = productStorage.getM_Product_ID();
+		final ProductId productId = productStorage.getProductId();
 		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
 
 		final I_PP_Order_Qty candidate = newInstance(I_PP_Order_Qty.class);
@@ -207,7 +208,7 @@ public class CreateDraftIssues
 
 		candidate.setM_Locator_ID(hu.getM_Locator_ID());
 		candidate.setM_HU_ID(hu.getM_HU_ID());
-		candidate.setM_Product_ID(productId);
+		candidate.setM_Product_ID(productId.getRepoId());
 
 		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
 		candidate.setQty(qtyToIssue.getAsBigDecimal());
@@ -221,12 +222,12 @@ public class CreateDraftIssues
 		return candidate;
 	}
 
-	private I_PP_Order_BOMLine getTargetOrderBOMLine(final int productId)
+	private I_PP_Order_BOMLine getTargetOrderBOMLine(final ProductId productId)
 	{
 		final List<I_PP_Order_BOMLine> targetBOMLines = targetOrderBOMLines;
 		return targetBOMLines
 				.stream()
-				.filter(bomLine -> bomLine.getM_Product_ID() == productId)
+				.filter(bomLine -> bomLine.getM_Product_ID() == productId.getRepoId())
 				.findFirst()
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
 	}
@@ -246,7 +247,7 @@ public class CreateDraftIssues
 		}
 		else
 		{
-			return Quantity.of(from.getQty(), from.getC_UOM());
+			return from.getQty();
 		}
 	}
 }

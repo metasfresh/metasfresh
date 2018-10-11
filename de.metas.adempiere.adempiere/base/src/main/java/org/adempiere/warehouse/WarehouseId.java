@@ -1,8 +1,13 @@
 package org.adempiere.warehouse;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lang.RepoIdAware;
@@ -31,11 +36,13 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class WarehouseId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static WarehouseId ofRepoId(final int repoId)
 	{
 		return new WarehouseId(repoId);
@@ -44,6 +51,11 @@ public class WarehouseId implements RepoIdAware
 	public static WarehouseId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new WarehouseId(repoId) : null;
+	}
+
+	public static Optional<WarehouseId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoId(repoId));
 	}
 
 	public static int toRepoId(final WarehouseId warehouseId)
@@ -61,6 +73,13 @@ public class WarehouseId implements RepoIdAware
 
 	private WarehouseId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "warehouseId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

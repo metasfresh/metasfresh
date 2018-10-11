@@ -5,6 +5,7 @@ import java.util.Date;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -74,6 +75,11 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 *
 	 * @param shipmentSchedule
 	 * @return PI item product or null.
+	 */
+	HUPIItemProductId getPackingMaterialId(I_M_ShipmentSchedule shipmentSchedule);
+
+	/**
+	 * @see #getPackingMaterialId(I_M_ShipmentSchedule)
 	 */
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(I_M_ShipmentSchedule shipmentSchedule);
 

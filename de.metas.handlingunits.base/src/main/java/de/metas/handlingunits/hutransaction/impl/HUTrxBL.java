@@ -385,7 +385,7 @@ public class HUTrxBL implements IHUTrxBL
 					// trxCandidate.getM_HU(), just delegates to HU_Item
 					trx.getM_HU_Item() == null ? -1 : trx.getM_HU_Item().getM_HU_Item_ID(),
 					trx.getM_Locator() == null ? -1 : trx.getM_Locator().getM_Locator_ID(),
-					trx.getProduct() == null ? -1 : trx.getProduct().getM_Product_ID(),
+					trx.getProductId() == null ? -1 : trx.getProductId().getRepoId(),
 					// trxCandidate.getQuantity(),
 					trx.getReferencedModel() == null ? -1 : TableRecordReference.of(trx.getReferencedModel()),
 					// trxCandidate.getVHU(), just delegates to VHU_Item
@@ -399,7 +399,7 @@ public class HUTrxBL implements IHUTrxBL
 						final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
 								existingCand.getM_HU_Item(),
 								existingCand.getVHU_Item(),
-								existingCand.getProduct(),
+								existingCand.getProductId(),
 								existingCand.getQuantity().add(newCand.getQuantity()),
 								existingCand.getDate(),
 								existingCand.getM_Locator(),

@@ -137,7 +137,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		m_PriceStd = scalePrice.getPriceStd();
 		m_PriceList = scalePrice.getPriceList();
 		m_PriceLimit = scalePrice.getPriceLimit();
-		m_C_UOM_ID = Services.get(IProductBL.class).getStockingUOMId(productId);
+		m_C_UOM_ID = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
 
 		if (priceListId == null)
 		{

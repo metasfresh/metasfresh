@@ -1,7 +1,5 @@
 package de.metas.handlingunits.trace.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +15,8 @@ import org.compiere.model.I_M_MovementLine;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -54,10 +54,13 @@ import lombok.NonNull;
 
 public class M_HU_Trace_CreateForHU extends JavaProcess
 {
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_HU hu = getRecord(I_M_HU.class);
+		final HuId huId = HuId.ofRepoId(getRecord_ID());
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 
 		writeTraceForHu(hu);
 
@@ -112,9 +115,9 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 			final List<HUTraceEvent> newlyInsertedEvents = createdEvents.get(true);
 			for (final HUTraceEvent newlyInsertedEvent : newlyInsertedEvents)
 			{
-				if (newlyInsertedEvent.getVhuSourceId() > 0)
+				if (newlyInsertedEvent.getVhuSourceId() != null)
 				{
-					final I_M_HU sourceHU = create(getCtx(), newlyInsertedEvent.getVhuSourceId(), I_M_HU.class, get_TrxName());
+					final I_M_HU sourceHU = handlingUnitsDAO.getById(newlyInsertedEvent.getVhuSourceId());
 
 					addLog("Recursing for for source M_HU={}", sourceHU);
 					writeTraceForHu(sourceHU);

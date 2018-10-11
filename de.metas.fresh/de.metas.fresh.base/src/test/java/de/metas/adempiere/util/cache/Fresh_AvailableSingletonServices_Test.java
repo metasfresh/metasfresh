@@ -47,6 +47,7 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class) // JAX-RS
 				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl it's coming from spring context
 				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl it's coming from spring context
+				.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class) // skip for now because the impl it's coming from spring context
 				//
 				.skipServiceInterface(org.adempiere.util.testservice.ITestServiceWithFailingConstructor.class) // because it's supposed to fail
 				.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class) // because it's supposed to fail
