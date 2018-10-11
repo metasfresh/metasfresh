@@ -1001,7 +1001,9 @@ export function handleProcessResponse(response, type, id) {
           case 'openView':
             await dispatch(closeModal());
 
-            await dispatch(openRawModal(action.windowId, action.viewId, action.profileId));
+            await dispatch(
+              openRawModal(action.windowId, action.viewId, action.profileId)
+            );
 
             break;
           case 'openReport':
