@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
@@ -177,7 +177,7 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.pickingSlotId(10)
 				.shipmentScheduleId(20)
-				.topLevelHuIdsToPick(ImmutableList.of(30, 40))
+				.topLevelHuIdsToPick(ImmutableSet.of(30, 40))
 				.build();
 
 		event.assertValid();
