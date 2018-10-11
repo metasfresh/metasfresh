@@ -113,3 +113,11 @@
         float: none;
     }
 }
+
+.overlay {
+    .qr-bg {
+        background: white;
+        display: flex;
+        padding: 20px;
+    }
+}
