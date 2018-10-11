@@ -43,13 +43,13 @@ describe('New boiler plate (textsnippet) test', function() {
         // cy.clickOnCheckBox('IsTranslated');
         //    
         // question: could we have a variable number of arguments, so that we could also call the same command with
-        // cy.selectSingleRow('AD_Language', 'Deutsch (CH)', 'AD_BoilderPlate_ID', '100005');
+        // cy.selectSingleRow('AD_Language', 'Deutsch (CH)', 'AD_BoilerPlate_ID', '100005');
         // we need this for the case of subtabs that don't have a unique (visible) column to identify them
-        // maybe, at any rate, we can provide a didicated query type..then it might look like this (syntax might be wrong, but i hope you get the point):
+        // maybe, at any rate, we can provide a dedicated query type..then it might look like this (syntax might be wrong, but i hope you get the point):
         //
         // const RowQuery query = RowQuery.builder()
         //                                .filter('AD_Language', 'Deutsch (CH)')
-        //                                .filter('AD_BoilderPlate_ID', '100005')
+        //                                .filter('AD_BoilerPlate_ID', '100005')
         //                                .build();
         // cy.selectSingleRow(query);
    });
