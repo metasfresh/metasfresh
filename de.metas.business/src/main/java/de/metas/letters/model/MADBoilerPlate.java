@@ -463,9 +463,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		for (final MADBoilerPlate boilerPlate : getAll(Env.getCtx()))
 		{
-			if (boilerPlate.getTextSnippext() != null)
+			if (boilerPlate.getTextSnippet() != null)
 			{
-				result.put(boilerPlate.getName(), boilerPlate.getTextSnippext());
+				result.put(boilerPlate.getName(), boilerPlate.getTextSnippet());
 			}
 			else
 			{
@@ -516,7 +516,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public String getTextSnippetPlain()
 	{
-		return getPlainText(getTextSnippext());
+		return getPlainText(getTextSnippet());
 	}
 
 	public static String getPlainText(String html)
@@ -545,13 +545,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return text;
 	}
 
-	public String getTextSnippext(String AD_Language)
+	public String getTextSnippet(String AD_Language)
 	{
 		if (AD_Language == null)
 		{
 			AD_Language = Env.getAD_Language(getCtx());
 		}
-		return get_Translation(COLUMNNAME_TextSnippext, AD_Language);
+		return get_Translation(COLUMNNAME_TextSnippet, AD_Language);
 	}
 
 	/**
@@ -711,7 +711,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public String getTextSnippetParsed(final boolean isEmbeded, final BoilerPlateContext context)
 	{
 		final String AD_Language = getAD_Language(Env.getCtx(), context);
-		final String text = getTextSnippext(AD_Language);
+		final String text = getTextSnippet(AD_Language);
 		return parseText(getCtx(), text, isEmbeded, context, get_TrxName());
 	}
 
@@ -998,7 +998,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		result.append(' ');
 		result.append(getName());
 		result.append(" (");
-		result.append(getTextSnippext().substring(0, 20));
+		result.append(getTextSnippet().substring(0, 20));
 		result.append("...)");
 		return result.toString();
 	}

@@ -47,7 +47,7 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecordId);
 
 		final MKTG_ContactPerson_ProcessBase contactPersonProcessBase = Adempiere.getBean(MKTG_ContactPerson_ProcessBase.class);
-		contactPersonProcessBase.createContactPersonsForPartner(currentSelectionFilter, campaignId, null);
+		contactPersonProcessBase.createContactPersonsForPartner(currentSelectionFilter, campaignId, null/*defaultAddressType*/);
 
 		return MSG_OK;
 	}

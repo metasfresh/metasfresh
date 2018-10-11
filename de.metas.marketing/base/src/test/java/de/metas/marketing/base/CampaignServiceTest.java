@@ -1,5 +1,7 @@
 package de.metas.marketing.base;
 
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.asLanguage;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -152,6 +154,7 @@ public class CampaignServiceTest
 		final User user = User.builder()
 				.name(name)
 				.emailAddress(mail)
+				.language(asLanguage(AD_Language_en_AU))
 				.build();
 		return userRepository.save(user);
 	}
@@ -459,6 +462,7 @@ public class CampaignServiceTest
 				.name(name)
 				.emailAddress(mail)
 				.bpartnerId(bpartnerId)
+				.language(asLanguage(AD_Language_en_AU))
 				.build();
 		return userRepository.save(user);
 	}

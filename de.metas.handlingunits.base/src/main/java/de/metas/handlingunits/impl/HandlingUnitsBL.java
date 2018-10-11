@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
@@ -91,26 +92,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(ctx, trxName);
-	}
-
-	@Override
-	public boolean isConcretePI(final int piId)
-	{
-		if (piId <= 0)
-		{
-			return false;
-		}
-		final IHandlingUnitsDAO dao = Services.get(IHandlingUnitsDAO.class);
-		if (piId == dao.getPackingItemTemplate_HU_PI_ID())
-		{
-			return false;
-		}
-		if (piId == dao.getVirtual_HU_PI_ID())
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	@Override
@@ -294,13 +275,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final int piId = piVersion.getM_HU_PI_ID();
-		if (piId == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsId.isVirtualRepoId(piVersion.getM_HU_PI_ID());
 	}
 
 	@Override
@@ -311,13 +286,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final int piId = huPI.getM_HU_PI_ID();
-		if (piId == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsId.isVirtualRepoId(huPI.getM_HU_PI_ID());
 	}
 
 	@Override

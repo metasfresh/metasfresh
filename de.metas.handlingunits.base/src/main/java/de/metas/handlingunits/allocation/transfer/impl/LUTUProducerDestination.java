@@ -35,8 +35,8 @@ import org.compiere.model.I_C_UOM;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -427,7 +427,7 @@ public class LUTUProducerDestination
 	public void setTUPI(@NonNull final I_M_HU_PI tuPI)
 	{
 		// verify the tuPI's HU-type
-		final boolean tuPIisVirtual = tuPI.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID();
+		final boolean tuPIisVirtual = HuPackingInstructionsId.isVirtualRepoId(tuPI.getM_HU_PI_ID());
 		final String expectedHuType = tuPIisVirtual ? X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI : X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 		assertCorrectHuType(tuPI, expectedHuType);
 
