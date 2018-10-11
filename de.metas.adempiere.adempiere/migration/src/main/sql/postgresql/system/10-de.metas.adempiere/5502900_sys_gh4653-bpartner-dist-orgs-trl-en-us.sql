@@ -498,3 +498,283 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:51:1
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(113,'en_US') 
 ;
 
+-- 2018-10-11T10:57:12.223
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:57:12','YYYY-MM-DD HH24:MI:SS'),Name='ESR Receiver ' WHERE AD_Element_ID=541924 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:57:12.229
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541924,'en_US') 
+;
+
+-- 2018-10-11T10:57:15.243
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:57:15','YYYY-MM-DD HH24:MI:SS'),Name='ESR Receiver' WHERE AD_Element_ID=541924 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:57:15.246
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541924,'en_US') 
+;
+
+-- 2018-10-11T10:57:41.670
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:57:41','YYYY-MM-DD HH24:MI:SS'),PrintName='ESR Participant' WHERE AD_Element_ID=541925 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:57:41.677
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541925,'en_US') 
+;
+
+-- 2018-10-11T10:58:02.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:58:02','YYYY-MM-DD HH24:MI:SS'),Name='ESR Receiver ' WHERE AD_Element_ID=541924 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:58:02.389
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541924,'en_US') 
+;
+
+-- 2018-10-11T10:58:05.184
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:58:05','YYYY-MM-DD HH24:MI:SS'),Name='ESR Receiver' WHERE AD_Element_ID=541924 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:58:05.190
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541924,'en_US') 
+;
+
+-- 2018-10-11T10:59:02.027
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:59:02','YYYY-MM-DD HH24:MI:SS'),PrintName='ESR Account' WHERE AD_Element_ID=541939 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:59:02.037
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541939,'en_US') 
+;
+
+-- 2018-10-11T11:05:14.696
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:05:14','YYYY-MM-DD HH24:MI:SS'),Name='Product ' WHERE AD_Element_ID=454 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:05:14.707
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(454,'en_US') 
+;
+
+-- 2018-10-11T11:05:18.676
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:05:18','YYYY-MM-DD HH24:MI:SS'),Name='Product' WHERE AD_Element_ID=454 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:05:18.686
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(454,'en_US') 
+;
+
+-- 2018-10-11T11:07:07.778
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Produkt Hersteller',Updated=TO_TIMESTAMP('2018-10-11 11:07:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541155
+;
+
+-- 2018-10-11T11:07:28.523
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:07:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Product Manufacturer' WHERE AD_Tab_ID=541155 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:11:45.405
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Hersteller ',Updated=TO_TIMESTAMP('2018-10-11 11:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544128
+;
+
+-- 2018-10-11T11:11:45.407
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Manufacturer_ID', Name='Hersteller ', Description='Hersteller des Produktes', Help='' WHERE AD_Element_ID=544128
+;
+
+-- 2018-10-11T11:11:45.408
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Manufacturer_ID', Name='Hersteller ', Description='Hersteller des Produktes', Help='', AD_Element_ID=544128 WHERE UPPER(ColumnName)='MANUFACTURER_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-10-11T11:11:45.409
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Manufacturer_ID', Name='Hersteller ', Description='Hersteller des Produktes', Help='' WHERE AD_Element_ID=544128 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-10-11T11:11:45.409
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Hersteller ', Description='Hersteller des Produktes', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=544128) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 544128)
+;
+
+-- 2018-10-11T11:11:45.421
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Hersteller', Name='Hersteller ' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=544128)
+;
+
+-- 2018-10-11T11:11:48.260
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Hersteller',Updated=TO_TIMESTAMP('2018-10-11 11:11:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=544128
+;
+
+-- 2018-10-11T11:11:48.263
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Manufacturer_ID', Name='Hersteller', Description='Hersteller des Produktes', Help='' WHERE AD_Element_ID=544128
+;
+
+-- 2018-10-11T11:11:48.267
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Manufacturer_ID', Name='Hersteller', Description='Hersteller des Produktes', Help='', AD_Element_ID=544128 WHERE UPPER(ColumnName)='MANUFACTURER_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-10-11T11:11:48.270
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Manufacturer_ID', Name='Hersteller', Description='Hersteller des Produktes', Help='' WHERE AD_Element_ID=544128 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-10-11T11:11:48.271
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Hersteller', Description='Hersteller des Produktes', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=544128) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 544128)
+;
+
+-- 2018-10-11T11:11:48.293
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Hersteller', Name='Hersteller' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=544128)
+;
+
+-- 2018-10-11T11:12:03.930
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:12:03','YYYY-MM-DD HH24:MI:SS'),PrintName='Manufacturer' WHERE AD_Element_ID=544128 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:12:03.944
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544128,'en_US') 
+;
+
+-- 2018-10-11T11:13:11.640
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Beschreibung ',Updated=TO_TIMESTAMP('2018-10-11 11:13:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=275
+;
+
+-- 2018-10-11T11:13:11.641
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Description', Name='Beschreibung ', Description=NULL, Help=NULL WHERE AD_Element_ID=275
+;
+
+-- 2018-10-11T11:13:11.664
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Description', Name='Beschreibung ', Description=NULL, Help=NULL, AD_Element_ID=275 WHERE UPPER(ColumnName)='DESCRIPTION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-10-11T11:13:11.664
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Description', Name='Beschreibung ', Description=NULL, Help=NULL WHERE AD_Element_ID=275 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-10-11T11:13:11.665
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Beschreibung ', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=275) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 275)
+;
+
+-- 2018-10-11T11:13:11.686
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Beschreibung', Name='Beschreibung ' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=275)
+;
+
+-- 2018-10-11T11:13:14.326
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Beschreibung',Updated=TO_TIMESTAMP('2018-10-11 11:13:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=275
+;
+
+-- 2018-10-11T11:13:14.327
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Description', Name='Beschreibung', Description=NULL, Help=NULL WHERE AD_Element_ID=275
+;
+
+-- 2018-10-11T11:13:14.354
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Description', Name='Beschreibung', Description=NULL, Help=NULL, AD_Element_ID=275 WHERE UPPER(ColumnName)='DESCRIPTION' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-10-11T11:13:14.355
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Description', Name='Beschreibung', Description=NULL, Help=NULL WHERE AD_Element_ID=275 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-10-11T11:13:14.356
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Beschreibung', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=275) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 275)
+;
+
+-- 2018-10-11T11:13:14.387
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Beschreibung', Name='Beschreibung' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=275)
+;
+
+-- 2018-10-11T11:13:24.762
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:13:24','YYYY-MM-DD HH24:MI:SS'),Name='Description ' WHERE AD_Element_ID=275 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:13:24.766
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(275,'en_US') 
+;
+
+-- 2018-10-11T11:13:27.918
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:13:27','YYYY-MM-DD HH24:MI:SS'),Name='Description' WHERE AD_Element_ID=275 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:13:27.922
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(275,'en_US') 
+;
+
+-- 2018-10-11T11:16:10.257
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Sperre Verkauf Grund', PrintName='Sperre Verkauf Grund',Updated=TO_TIMESTAMP('2018-10-11 11:16:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543956
+;
+
+-- 2018-10-11T11:16:10.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='ExclusionFromSaleReason', Name='Sperre Verkauf Grund', Description=NULL, Help=NULL WHERE AD_Element_ID=543956
+;
+
+-- 2018-10-11T11:16:10.259
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExclusionFromSaleReason', Name='Sperre Verkauf Grund', Description=NULL, Help=NULL, AD_Element_ID=543956 WHERE UPPER(ColumnName)='EXCLUSIONFROMSALEREASON' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-10-11T11:16:10.260
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExclusionFromSaleReason', Name='Sperre Verkauf Grund', Description=NULL, Help=NULL WHERE AD_Element_ID=543956 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-10-11T11:16:10.261
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Sperre Verkauf Grund', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543956) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 543956)
+;
+
+-- 2018-10-11T11:16:10.271
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Sperre Verkauf Grund', Name='Sperre Verkauf Grund' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543956)
+;
+
+-- 2018-10-11T11:16:21.336
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 11:16:21','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Element_ID=543956 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T11:16:21.344
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543956,'en_US') 
+;
+
