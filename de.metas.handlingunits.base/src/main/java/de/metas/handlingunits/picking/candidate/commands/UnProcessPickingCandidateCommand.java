@@ -102,13 +102,13 @@ public class UnProcessPickingCandidateCommand
 		assertHUIsPicked(hu);
 
 		// if everything is OK, go ahead
-		pickingCandidates.forEach(this::convertToStatusProcessed);
+		pickingCandidates.forEach(this::unCloseIfNeeded);
 		qtyPickedList.forEach(InterfaceWrapperHelper::delete);
 		updateHUStatusToActive(hu);
 
 		restoreHUsFromSourceHUs(huId);
 
-		pickingCandidates.forEach(this::markCandidateAsInProgress);
+		pickingCandidates.forEach(this::changeStatusToDraftAndSave);
 	}
 
 	@NonNull
@@ -121,27 +121,17 @@ public class UnProcessPickingCandidateCommand
 		return _hu;
 	}
 
-	private void convertToStatusProcessed(final PickingCandidate pickingCandidate)
+	private void unCloseIfNeeded(final PickingCandidate pickingCandidate)
 	{
-		if (PickingCandidateStatus.InProgress.equals(pickingCandidate.getStatus()))
+		if (!PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
 		{
-			// already in progress => nothing to do
+			return;
 		}
-		else if (PickingCandidateStatus.Processed.equals(pickingCandidate.getStatus()))
-		{
-			// already status processed => nothing to do
-		}
-		else if (PickingCandidateStatus.Closed.equals(pickingCandidate.getStatus()))
-		{
-			UnClosePickingCandidateCommand.builder()
-					.pickingCandidate(pickingCandidate)
-					.build()
-					.perform();
-		}
-		else
-		{
-			throw new AdempiereException("Cannot converted candidate to status Processed").setParameter("pickingCandidate", pickingCandidate);
-		}
+		
+		UnClosePickingCandidateCommand.builder()
+				.pickingCandidate(pickingCandidate)
+				.build()
+				.perform();
 	}
 
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final List<PickingCandidate> pickingCandidates)
@@ -226,9 +216,9 @@ public class UnProcessPickingCandidateCommand
 		}
 	}
 
-	private void markCandidateAsInProgress(final PickingCandidate pickingCandidate)
+	private void changeStatusToDraftAndSave(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.setStatus(PickingCandidateStatus.InProgress);
+		pickingCandidate.setStatus(PickingCandidateStatus.Draft);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

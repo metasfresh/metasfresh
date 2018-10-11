@@ -374,4 +374,17 @@ public final class GuavaCollectors
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
+
+	public static <T, R, K> Collector<T, ?, R> collectUsingMapAccumulator(@NonNull final Function<T, K> keyMapper, @NonNull final Function<Map<K, T>, R> finisher)
+	{
+		final Supplier<Map<K, T>> supplier = LinkedHashMap::new;
+		final BiConsumer<Map<K, T>, T> accumulator = (map, item) -> map.put(keyMapper.apply(item), item);
+		final BinaryOperator<Map<K, T>> combiner = (acc1, acc2) -> {
+			acc1.putAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
 }

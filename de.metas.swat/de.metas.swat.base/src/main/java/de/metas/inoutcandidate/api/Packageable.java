@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
@@ -93,6 +94,9 @@ public class Packageable
 	OrderLineId salesOrderLineIdOrNull;
 	@Nullable
 	Money salesOrderLineNetAmt;
+	
+	@Nullable
+	UserId lockedBy;
 
 	public static <T> Optional<T> extractSingleValue(@NonNull final Collection<Packageable> packageables, @NonNull Function<Packageable, T> mapper)
 	{

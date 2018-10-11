@@ -11,10 +11,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
-package org.adempiere.impexp;
+package de.metas.impexp.excel;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -22,12 +23,14 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFFooter;
 import org.apache.poi.hssf.usermodel.HSSFHeader;
+import org.apache.poi.hssf.usermodel.HSSFHyperlink;
 import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -36,14 +39,16 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Abstract MS Excel Format (xls) Exporter
@@ -116,8 +121,10 @@ public abstract class AbstractExcelExporter
 	 */
 	public abstract boolean isPageBreak(int row, int col);
 
-	/** Logger */
-	protected final Logger log = LogManager.getLogger(getClass());
+	//
+	private final Logger logger = LogManager.getLogger(getClass());
+	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	//
 	private final HSSFWorkbook m_workbook;
 	private final HSSFDataFormat m_dataFormat;
@@ -154,11 +161,24 @@ public abstract class AbstractExcelExporter
 		return StringUtils.stripDiacritics(str);
 	}
 
+	private String convertBooleanToString(final boolean value)
+	{
+		final String adLanguage = getLanguage().getAD_Language();
+		final ITranslatableString translatable = msgBL.getTranslatableMsgText(value);
+		return translatable.translate(adLanguage);
+	}
+
 	protected Language getLanguage()
 	{
 		if (m_lang == null)
 			m_lang = Env.getLanguage(getCtx());
 		return m_lang;
+	}
+
+	public AbstractExcelExporter setLanguage(final Language language)
+	{
+		this.m_lang = language;
+		return this;
 	}
 
 	private HSSFFont getHeaderFont()
@@ -232,7 +252,7 @@ public abstract class AbstractExcelExporter
 		}
 		//
 		if (LogManager.isLevelFinest())
-			log.trace("NumberFormat: " + format);
+			logger.trace("NumberFormat: " + format);
 		return format.toString();
 
 	}
@@ -314,7 +334,7 @@ public abstract class AbstractExcelExporter
 			}
 			catch (Exception e)
 			{
-				log.warn("Error setting sheet " + prevSheetIndex + " name to " + prevSheetName, e);
+				logger.warn("Error setting sheet " + prevSheetIndex + " name to " + prevSheetName, e);
 			}
 		}
 	}
@@ -388,9 +408,10 @@ public abstract class AbstractExcelExporter
 	 * Export to given stream
 	 * 
 	 * @param out
+	 * @throws IOException
 	 * @throws Exception
 	 */
-	public final void export(final OutputStream out) throws Exception
+	public final void export(final OutputStream out) throws IOException
 	{
 		HSSFSheet sheet = createTableSheet();
 		String sheetName = null;
@@ -413,7 +434,7 @@ public abstract class AbstractExcelExporter
 
 					// 03917: poi-3.7 doesn't have this method anymore
 					// cell.setEncoding(HSSFCell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
-					
+
 					//
 					// Fetch cell value
 					CellValue cellValue;
@@ -423,7 +444,7 @@ public abstract class AbstractExcelExporter
 					}
 					catch (final Exception ex)
 					{
-						log.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
+						logger.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
 						cellValue = null;
 					}
 
@@ -444,16 +465,22 @@ public abstract class AbstractExcelExporter
 					else if (cellValue.isBoolean())
 					{
 						final boolean value = cellValue.booleanValue();
-						cell.setCellValue(new HSSFRichTextString(Msg.getMsg(getLanguage(), value == true ? "Y" : "N")));
+						cell.setCellValue(new HSSFRichTextString(convertBooleanToString(value)));
 					}
 					else
 					{
 						final String value = fixString(cellValue.stringValue());	// formatted
 						cell.setCellValue(new HSSFRichTextString(value));
+
+						final HSSFHyperlink hyperlink = createHyperlinkIfURL(value);
+						if (hyperlink != null)
+						{
+							cell.setHyperlink(hyperlink);
+						}
 					}
 					//
 					cell.setCellStyle(getStyle(rownum, col));
-					
+
 					// Page break
 					if (isPageBreak(rownum, col))
 					{
@@ -482,41 +509,57 @@ public abstract class AbstractExcelExporter
 		// Workbook Info
 		if (LogManager.isLevelFine())
 		{
-			log.debug("Sheets #" + m_sheetCount);
-			log.debug("Styles used #" + m_styles.size());
+			logger.debug("Sheets #" + m_sheetCount);
+			logger.debug("Styles used #" + m_styles.size());
 		}
 	}
 
-	/**
-	 * Export to file
-	 * 
-	 * @param file
-	 * @param language reporting language
-	 * @throws Exception
-	 */
-	public void export(final File file, final Language language)
-			throws Exception
+	private HSSFHyperlink createHyperlinkIfURL(final String str)
 	{
-		export(file, language, true);
+		if (str == null || str.isEmpty())
+		{
+			return null;
+		}
+
+		final String urlStr = str.trim();
+		if (urlStr.startsWith("http://")
+				|| urlStr.startsWith("https://"))
+		{
+			final HSSFHyperlink hyperlink = m_workbook.getCreationHelper().createHyperlink(HSSFHyperlink.LINK_URL);
+			hyperlink.setAddress(urlStr);
+			return hyperlink;
+		}
+		else
+		{
+			return null;
+		}
 	}
 
-	/**
-	 * Export to file
-	 * 
-	 * @param file
-	 * @param language reporting language
-	 * @param autoOpen auto open file after generated
-	 * @throws Exception
-	 */
-	public void export(File file, final Language language, final boolean autoOpen)
-			throws Exception
+	public File exportToTempFile()
 	{
-		m_lang = language;
-		if (file == null)
+		final File file;
+		try
+		{
 			file = File.createTempFile("Report_", ".xls");
-		FileOutputStream out = new FileOutputStream(file);
-		export(out);
-		if (autoOpen && Ini.isClient())
-			Env.startBrowser(file.toURI().toString());
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary excel file", ex);
+		}
+
+		exportToFile(file);
+		return file;
+	}
+
+	public void exportToFile(@NonNull final File file)
+	{
+		try (final FileOutputStream out = new FileOutputStream(file))
+		{
+			export(out);
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed exporting to " + file, ex);
+		}
 	}
 }

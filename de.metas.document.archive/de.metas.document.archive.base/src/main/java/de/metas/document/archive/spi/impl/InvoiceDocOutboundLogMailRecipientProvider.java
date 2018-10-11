@@ -70,7 +70,8 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	public Optional<DocOutBoundRecipient> provideMailRecipient(
+			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final I_C_Invoice invoiceRecord = TableRecordReference
 				.ofReferenced(docOutboundLogRecord)
@@ -95,7 +96,8 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
 		if (billContact != null)
 		{
-			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId()));
+			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
+			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 			return Optional.of(docOutBoundRecipient);
 		}
 		return Optional.empty();

@@ -51,10 +51,8 @@ import lombok.NonNull;
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
 	@Override
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(final I_M_HU hu)
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
 		// Services
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);

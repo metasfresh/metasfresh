@@ -26,13 +26,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -74,17 +71,18 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *  Account Viewer
@@ -1183,7 +1181,8 @@ public class AcctViewer extends CFrame
 		try
 		{
 			RModelExcelExporter exporter = new RModelExcelExporter(model);
-			exporter.export(null, null);
+			final File file = exporter.exportToTempFile();
+			Env.startBrowser(file);
 		}
 		catch (Exception e)
 		{

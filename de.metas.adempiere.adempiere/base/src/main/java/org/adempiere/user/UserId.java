@@ -1,5 +1,7 @@
 package org.adempiere.user;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -53,6 +55,11 @@ public class UserId implements RepoIdAware
 			final int defaultValue)
 	{
 		return userId != null ? userId.getRepoId() : defaultValue;
+	}
+
+	public static boolean equals(final UserId userId1, final UserId userId2)
+	{
+		return Objects.equals(userId1, userId2);
 	}
 
 	int repoId;

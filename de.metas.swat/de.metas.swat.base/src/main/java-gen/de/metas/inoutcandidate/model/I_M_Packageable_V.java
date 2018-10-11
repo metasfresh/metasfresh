@@ -563,6 +563,33 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Locked By.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLockedBy_User_ID (int LockedBy_User_ID);
+
+	/**
+	 * Get Locked By.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLockedBy_User_ID();
+
+	public org.compiere.model.I_AD_User getLockedBy_User();
+
+	public void setLockedBy_User(org.compiere.model.I_AD_User LockedBy_User);
+
+    /** Column definition for LockedBy_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User> COLUMN_LockedBy_User_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_AD_User>(I_M_Packageable_V.class, "LockedBy_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name LockedBy_User_ID */
+    public static final String COLUMNNAME_LockedBy_User_ID = "LockedBy_User_ID";
+
+	/**
 	 * Set Merkmale.
 	 * Merkmals Ausprägungen zum Produkt
 	 *

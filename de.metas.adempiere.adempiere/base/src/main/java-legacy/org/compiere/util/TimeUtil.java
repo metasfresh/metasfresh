@@ -1242,29 +1242,9 @@ public class TimeUtil
 		{
 			return Timestamp.valueOf((LocalDateTime)obj);
 		}
-		else if (obj instanceof LocalDate)
-		{
-			final LocalDate localDate = (LocalDate)obj;
-			final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-			return Timestamp.from(instant);
-		}
-		else if (obj instanceof LocalTime)
-		{
-			final LocalTime localTime = (LocalTime)obj;
-			final Instant instant = localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
-			return Timestamp.from(instant);
-		}
-		else if (obj instanceof Instant)
-		{
-			return new Timestamp(Date.from((Instant)obj).getTime());
-		}
-		else if (obj instanceof ZonedDateTime)
-		{
-			return Timestamp.from(((ZonedDateTime)obj).toInstant());
-		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Timestamp.class);
+			return Timestamp.from(asInstant(obj));
 		}
 	}
 
@@ -1513,50 +1493,36 @@ public class TimeUtil
 		return dayOfWeek - 1;
 	}
 
-	public static LocalDate asLocalDate(final Date date)
+	public static LocalDate asLocalDate(final Object obj)
 	{
-		if (date == null)
+		if (obj == null)
 		{
 			return null;
 		}
-
-		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		else if (obj instanceof LocalDate)
+		{
+			return (LocalDate)obj;
+		}
+		else
+		{
+			return asLocalDateTime(obj).toLocalDate();
+		}
 	}
 
-	public static LocalDate asLocalDate(final Timestamp date)
+	public static LocalTime asLocalTime(final Object obj)
 	{
-		if (date == null)
+		if (obj == null)
 		{
 			return null;
 		}
-
-		return date.toLocalDateTime().toLocalDate();
-	}
-
-	public static LocalTime asLocalTime(final Date time)
-	{
-		if (time == null)
+		else if (obj instanceof LocalTime)
 		{
-			return null;
+			return (LocalTime)obj;
 		}
-
-		return time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
-	}
-
-	public static LocalDateTime asLocalDateTime(final Timestamp date)
-	{
-		return date != null ? date.toLocalDateTime() : null;
-	}
-
-	public static LocalDateTime asLocalDateTime(final Date date)
-	{
-		if (date == null)
+		else
 		{
-			return null;
+			return asLocalDateTime(obj).toLocalTime();
 		}
-		return date.toInstant()
-				.atZone(ZoneId.systemDefault())
-				.toLocalDateTime();
 	}
 
 	public static LocalDateTime asLocalDateTime(final Object obj)
@@ -1577,15 +1543,9 @@ public class TimeUtil
 		{
 			return ((Timestamp)obj).toLocalDateTime();
 		}
-		else if (obj instanceof Date)
-		{
-			return ((Date)obj).toInstant()
-					.atZone(ZoneId.systemDefault())
-					.toLocalDateTime();
-		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + LocalDateTime.class);
+			return asInstant(obj).atZone(ZoneId.systemDefault()).toLocalDateTime();
 		}
 	}
 
@@ -1599,35 +1559,65 @@ public class TimeUtil
 		{
 			return (ZonedDateTime)obj;
 		}
-		else if (obj instanceof LocalDateTime)
-		{
-			return ((LocalDateTime)obj).atZone(ZoneId.systemDefault());
-		}
-		else if (obj instanceof LocalDate)
-		{
-			return ((LocalDate)obj).atStartOfDay().atZone(ZoneId.systemDefault());
-		}
-		else if (obj instanceof Timestamp)
-		{
-			return ((Timestamp)obj).toInstant().atZone(ZoneId.systemDefault());
-		}
-		else if (obj instanceof Date)
-		{
-			return ((Date)obj).toInstant().atZone(ZoneId.systemDefault());
-		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + ZonedDateTime.class);
+			return asInstant(obj).atZone(ZoneId.systemDefault());
 		}
 	}
 
-	public static Date asDate(@NonNull final LocalDateTime localDateTime)
+	public static Date asDate(final Object obj)
 	{
-		final Instant instant = localDateTime
-				.atZone(ZoneId.systemDefault())
-				.toInstant();
+		if (obj == null)
+		{
+			return null;
+		}
+		else if (obj instanceof Date)
+		{
+			return (Date)obj;
+		}
+		else
+		{
+			return Date.from(asInstant(obj));
+		}
+	}
 
-		return Date.from(instant);
+	public static Instant asInstant(final Object obj)
+	{
+		if (obj == null)
+		{
+			return null;
+		}
+		else if (obj instanceof Instant)
+		{
+			return (Instant)obj;
+		}
+		else if (obj instanceof Date)
+		{
+			return ((Date)obj).toInstant();
+		}
+		else if (obj instanceof LocalDateTime)
+		{
+			final LocalDateTime localDateTime = (LocalDateTime)obj;
+			return localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+		}
+		else if (obj instanceof LocalDate)
+		{
+			final LocalDate localDate = (LocalDate)obj;
+			return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		}
+		else if (obj instanceof LocalTime)
+		{
+			final LocalTime localTime = (LocalTime)obj;
+			return localTime.atDate(DATE_1970_01_01).atZone(ZoneId.systemDefault()).toInstant();
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return ((ZonedDateTime)obj).toInstant();
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
+		}
 	}
 
 }	// TimeUtil
