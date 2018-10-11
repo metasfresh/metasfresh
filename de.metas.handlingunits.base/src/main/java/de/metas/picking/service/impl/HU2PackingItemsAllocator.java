@@ -175,7 +175,7 @@ public class HU2PackingItemsAllocator
 		_huContext = huContext;
 	}
 
-	private final List<I_M_HU> getFromHUs()
+	private final ImmutableList<I_M_HU> getFromHUs()
 	{
 		return _fromHUs;
 	}
@@ -505,6 +505,8 @@ public class HU2PackingItemsAllocator
 		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
+
+		// Check over-delivery
 		if (!allowOverDelivery)
 		{
 			final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
