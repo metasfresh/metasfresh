@@ -31,6 +31,7 @@ import {
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
+  TOGGLE_OVERLAY,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -68,7 +69,7 @@ export function setLatestNewDocument(id) {
 
 export function toggleOverlay(data) {
   return {
-    type: 'TOGGLE_OVERLAY',
+    type: TOGGLE_OVERLAY,
     data: data,
   };
 }

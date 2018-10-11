@@ -32,6 +32,7 @@ import {
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
+  TOGGLE_OVERLAY,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -200,11 +201,11 @@ export default function windowHandler(state = initialState, action) {
           id: null,
         },
       };
-    case 'TOGGLE_OVERLAY':
+    case TOGGLE_OVERLAY:
       return {
         ...state,
         overlay: {
-          visible: !state.overlay.visible,
+          visible: action.data === false ? false : !state.overlay.visible,
           data: action.data ? { ...action.data } : null,
         },
       };
