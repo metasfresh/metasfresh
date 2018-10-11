@@ -408,3 +408,93 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-09 15:30:0
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542543,'en_US') 
 ;
 
+-- 2018-10-11T10:48:47.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:48:47','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Element_ID=544129 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:48:47.827
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544129,'en_US') 
+;
+
+-- 2018-10-11T10:49:30.195
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:49:30','YYYY-MM-DD HH24:MI:SS'),Name='Active ' WHERE AD_Element_ID=348 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:49:30.206
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(348,'en_US') 
+;
+
+-- 2018-10-11T10:49:34.315
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:49:34','YYYY-MM-DD HH24:MI:SS'),Name='Active' WHERE AD_Element_ID=348 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:49:34.322
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(348,'en_US') 
+;
+
+-- 2018-10-11T10:50:16.467
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:50:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Mandant ' WHERE AD_Element_ID=102 AND AD_Language='fr_CH'
+;
+
+-- 2018-10-11T10:50:16.479
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(102,'fr_CH') 
+;
+
+-- 2018-10-11T10:50:29.887
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:50:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='N' WHERE AD_Element_ID=102 AND AD_Language='fr_CH'
+;
+
+-- 2018-10-11T10:50:29.895
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(102,'fr_CH') 
+;
+
+-- 2018-10-11T10:50:45.596
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:50:45','YYYY-MM-DD HH24:MI:SS'),Name='Client ' WHERE AD_Element_ID=102 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:50:45.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(102,'en_US') 
+;
+
+-- 2018-10-11T10:50:49.070
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:50:49','YYYY-MM-DD HH24:MI:SS'),Name='Client' WHERE AD_Element_ID=102 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:50:49.089
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(102,'en_US') 
+;
+
+-- 2018-10-11T10:51:11.054
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:51:11','YYYY-MM-DD HH24:MI:SS'),Name='Organisation ' WHERE AD_Element_ID=113 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:51:11.063
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(113,'en_US') 
+;
+
+-- 2018-10-11T10:51:14.602
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-11 10:51:14','YYYY-MM-DD HH24:MI:SS'),Name='Organisation' WHERE AD_Element_ID=113 AND AD_Language='en_US'
+;
+
+-- 2018-10-11T10:51:14.618
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(113,'en_US') 
+;
+
