@@ -61,8 +61,17 @@ public class EmailAddress implements ContactAddress
 		return boolIfPresent.orElse(null);
 	}
 
-	public static EmailAddress of(@NonNull final String emailAddress)
+	public static EmailAddress ofString(@NonNull final String emailAddress)
 	{
+		return new EmailAddress(emailAddress, null);
+	}
+
+	public static EmailAddress ofStringOrNull(@Nullable final String emailAddress)
+	{
+		if (Check.isEmpty(emailAddress, true))
+		{
+			return null;
+		}
 		return new EmailAddress(emailAddress, null);
 	}
 

@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.DocOutBoundRecipient;
 import de.metas.document.archive.DocOutBoundRecipientRepository;
@@ -26,6 +27,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.order.model.I_C_BPartner;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -67,11 +69,15 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
 		save(bPartnerLocationRecord);
 
+		final UserRepository userRepository = new UserRepository();
+
 		dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
 				new DocOutBoundRecipientRepository(),
-				new BPartnerBL(new UserRepository()),
+				new BPartnerBL(userRepository),
 				new DunningService());
 
+		final BPartnerBL bPartnerBL = new BPartnerBL(userRepository);
+		Services.registerService(IBPartnerBL.class, bPartnerBL);
 	}
 
 	@Test

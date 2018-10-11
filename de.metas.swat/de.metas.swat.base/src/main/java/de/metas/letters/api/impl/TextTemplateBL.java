@@ -255,7 +255,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		if (textTemplate != null)
 		{
 			letter.setLetterSubject(textTemplate.getSubject());
-			letter.setLetterBody(textTemplate.getTextSnippext());
+			letter.setLetterBody(textTemplate.getTextSnippet());
 		}
 	}
 
