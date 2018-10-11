@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -21,12 +22,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,7 +62,7 @@ public class PickingCandidateId implements RepoIdAware
 
 	private PickingCandidateId(final int pickingCandidateRepoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(pickingCandidateRepoId, "pickingCandidateRepoId");
+		repoId = Check.assumeGreaterThanZero(pickingCandidateRepoId, "pickingCandidateRepoId");
 	}
 
 	@Override
@@ -69,5 +70,10 @@ public class PickingCandidateId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final PickingCandidateId o1, final PickingCandidateId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

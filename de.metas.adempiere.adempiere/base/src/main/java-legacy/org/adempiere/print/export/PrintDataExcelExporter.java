@@ -18,9 +18,6 @@ import java.util.Date;
 
 import javax.print.attribute.standard.MediaSizeName;
 
-import org.adempiere.impexp.AbstractExcelExporter;
-import org.adempiere.impexp.CellValue;
-import org.adempiere.impexp.CellValues;
 import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.compiere.print.MPrintFormat;
@@ -28,6 +25,10 @@ import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.MPrintPaper;
 import org.compiere.print.PrintData;
 import org.compiere.print.PrintDataElement;
+
+import de.metas.impexp.excel.AbstractExcelExporter;
+import de.metas.impexp.excel.CellValue;
+import de.metas.impexp.excel.CellValues;
 
 /**
  * Export PrintData to Excel (XLS) file

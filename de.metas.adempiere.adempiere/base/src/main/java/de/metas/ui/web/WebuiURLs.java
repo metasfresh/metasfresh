@@ -52,7 +52,7 @@ public class WebuiURLs
 	private static final String PARAM_viewId = "viewId";
 	private static final String PARAM_ResetPasswordToken = "token";
 
-	private static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
+	public static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
 	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
 	private static final String SYSCONFIG_RESET_PASSWORD_PATH = "webui.frontend.path.resetPassword";

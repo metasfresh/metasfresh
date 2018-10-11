@@ -44,5 +44,5 @@ public class BoilerPlate
 	String subject;
 
 	@Nullable
-	String textSnippext;
+	String textSnippet;
 }

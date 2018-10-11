@@ -1,10 +1,10 @@
-package org.adempiere.impexp;
+package de.metas.inoutcandidate.model;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +22,12 @@ package org.adempiere.impexp;
  * #L%
  */
 
-public enum CellValueType
+public interface I_M_ShipmentSchedule_Lock
 {
-	Date, Number, Boolean, String
+	public static final String Table_Name = "M_ShipmentSchedule_Lock";
+
+	public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+	public static final String COLUMNNAME_LockedBy_User_ID = "LockedBy_User_ID";
+	public static final String COLUMNNAME_LockType = "LockType";
+	public static final String COLUMNNAME_Created = "Created";
 }

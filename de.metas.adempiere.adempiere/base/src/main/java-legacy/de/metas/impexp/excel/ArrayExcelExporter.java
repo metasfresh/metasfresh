@@ -11,14 +11,13 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
-package org.adempiere.impexp;
+package de.metas.impexp.excel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.i18n.Msg;
-import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * Export excel from ArrayList of data
@@ -29,11 +28,13 @@ import de.metas.util.Check;
 public class ArrayExcelExporter extends AbstractExcelExporter
 {
 	private Properties m_ctx = null;
-	private ArrayList<ArrayList<Object>> m_data = null;
+	private List<List<Object>> m_data = null;
 
-	public ArrayExcelExporter(final Properties ctx, final ArrayList<ArrayList<Object>> data)
+	@Builder
+	private ArrayExcelExporter(
+			@NonNull final Properties ctx,
+			@NonNull final List<List<Object>> data)
 	{
-		super();
 		m_ctx = ctx;
 		m_data = data;
 	}
@@ -61,12 +62,11 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	@Override
 	public String getHeaderName(final int col)
 	{
-		Object o = m_data.get(0).get(col);
-		String name = o != null ? o.toString() : null;
-		String nameTrl = Msg.translate(getLanguage(), name);
-		if (Check.isEmpty(nameTrl))
-			nameTrl = name;
-		return nameTrl;
+		final Object headerNameObj = m_data.get(0).get(col);
+		final String headerName = headerNameObj != null ? headerNameObj.toString() : null;
+
+		final String adLanguage = getLanguage().getAD_Language();
+		return msgBL.translatable(headerName).translate(adLanguage);
 	}
 
 	@Override

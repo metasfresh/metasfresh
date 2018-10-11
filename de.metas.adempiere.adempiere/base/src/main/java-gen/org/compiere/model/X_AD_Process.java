@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -506244645L;
+	private static final long serialVersionUID = -1956284711L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -24,24 +24,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
         {
 			setAccessLevel (null);
 			setAD_Process_ID (0);
-			setAllowProcessReRun (true);
-// Y
-			setEntityType (null);
-// U
-			setIsApplySecuritySettings (false);
-// N
+			setAllowProcessReRun (true); // Y
+			setEntityType (null); // U
+			setIsApplySecuritySettings (false); // N
 			setIsBetaFunctionality (false);
-			setIsOneInstanceOnly (false);
-// N
+			setIsOneInstanceOnly (false); // N
 			setIsReport (false);
 			setIsServerProcess (false);
-			setIsUseBPartnerLanguage (true);
-// Y
+			setIsUseBPartnerLanguage (true); // Y
 			setName (null);
-			setRefreshAllAfterExecution (false);
-// N
-			setType (null);
-// Java
+			setRefreshAllAfterExecution (false); // N
+			setType (null); // Java
 			setValue (null);
         } */
     }
@@ -735,6 +728,25 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return (java.lang.String)get_Value(COLUMNNAME_SQLStatement);
 	}
 
+	/** Set Technical note.
+		@param TechnicalNote 
+		A note that is not indended for the user documentation, but for developers, customizers etc
+	  */
+	@Override
+	public void setTechnicalNote (java.lang.String TechnicalNote)
+	{
+		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
+	}
+
+	/** Get Technical note.
+		@return A note that is not indended for the user documentation, but for developers, customizers etc
+	  */
+	@Override
+	public java.lang.String getTechnicalNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TechnicalNote);
+	}
+
 	/** 
 	 * Type AD_Reference_ID=540087
 	 * Reference name: AD_Process Type
@@ -744,10 +756,12 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String TYPE_SQL = "SQL";
 	/** Java = Java */
 	public static final String TYPE_Java = "Java";
+	/** Excel = Excel */
+	public static final String TYPE_Excel = "Excel";
+	/** JasperReports = JasperReports */
+	public static final String TYPE_JasperReports = "JasperReports";
 	/** Set Art.
-		@param Type 
-		Type of Validation (SQL, Java Script, Java Language)
-	  */
+		@param Type Art	  */
 	@Override
 	public void setType (java.lang.String Type)
 	{
@@ -756,8 +770,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	/** Get Art.
-		@return Type of Validation (SQL, Java Script, Java Language)
-	  */
+		@return Art	  */
 	@Override
 	public java.lang.String getType () 
 	{

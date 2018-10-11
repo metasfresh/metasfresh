@@ -14,7 +14,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1209238149L;
+	private static final long serialVersionUID = -1198187071L;
 
     /** Standard Constructor */
     public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
@@ -247,6 +247,24 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Los-Nr..
+		@param Lot 
+		Los-Nummer (alphanumerisch)
+	  */
+	@Override
+	public void setLot (java.lang.String Lot)
+	{
+		throw new IllegalArgumentException ("Lot is virtual column");	}
+
+	/** Get Los-Nr..
+		@return Los-Nummer (alphanumerisch)
+	  */
+	@Override
+	public java.lang.String getLot () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Lot);
 	}
 
 	/** Set Handling Units.
