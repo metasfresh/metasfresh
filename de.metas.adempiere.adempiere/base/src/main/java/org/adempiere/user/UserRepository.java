@@ -5,10 +5,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import org.adempiere.user.api.IUserBL;
 import org.compiere.model.I_AD_User;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.Language;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -44,11 +48,21 @@ public class UserRepository
 
 	public User ofRecord(@NonNull final I_AD_User userRecord)
 	{
+		final IUserBL userBL = Services.get(IUserBL.class);
+		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+
+		final Language userLanguage = Language.asLanguage(userRecord.getAD_Language());
+		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord);
+		final Language language = userBL.getUserLanguage(userRecord);
+
 		return User.builder()
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
 				.name(userRecord.getName())
 				.emailAddress(userRecord.getEMail())
+				.userLanguage(userLanguage)
+				.bPartnerLanguage(bPartnerLanguage)
+				.language(language)
 				.build();
 	}
 
@@ -66,7 +80,7 @@ public class UserRepository
 
 		userRecord.setName(user.getName());
 		userRecord.setEMail(user.getEmailAddress());
-
+		userRecord.setAD_Language(Language.asLanguageString(user.getLanguage()));
 		saveRecord(userRecord);
 
 		return user

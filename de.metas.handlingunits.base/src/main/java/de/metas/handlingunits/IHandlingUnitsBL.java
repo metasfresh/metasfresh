@@ -66,19 +66,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	IMutableHUContext createMutableHUContext(Properties ctx, String trxName);
 
-	/**
-	 * Checks if given <code>piId</code> (M_HU_PI_ID) is a concrete PI definition.
-	 * <p>
-	 * A concrete PI definition is a PI which is actually defined.
-	 *
-	 * e.g. is not No-PI, not Virtual-PI.
-	 * </p>
-	 *
-	 * @param piId
-	 * @return true if is a concrete PI
-	 */
-	boolean isConcretePI(int piId);
-
 	I_C_UOM getHandlingUOM(I_M_Product product);
 
 	I_C_UOM getC_UOM(I_M_Transaction mtrx);

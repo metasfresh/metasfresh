@@ -15,7 +15,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1819817381L;
+	private static final long serialVersionUID = -1606928726L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Line (Properties ctx, int M_HU_Trx_Line_ID, String trxName)
@@ -154,8 +154,6 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Reserved = R */
-	public static final String HUSTATUS_Reserved = "R";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override

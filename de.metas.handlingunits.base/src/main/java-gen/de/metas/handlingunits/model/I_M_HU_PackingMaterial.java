@@ -119,36 +119,6 @@ public interface I_M_HU_PackingMaterial
     public static final String COLUMNNAME_AllowedPackingWeight = "AllowedPackingWeight";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, org.compiere.model.I_AD_User>(I_M_HU_PackingMaterial.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Einheit Abessungen.
 	 * Maßeinheit für die Abmessungen (Höhe, Breite, Länge) des Packmittels, sowie Grundmaßeinheit für alle Volumenangaben.
 	 *
@@ -203,6 +173,36 @@ public interface I_M_HU_PackingMaterial
     public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, org.compiere.model.I_C_UOM> COLUMN_C_UOM_Weight_ID = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, org.compiere.model.I_C_UOM>(I_M_HU_PackingMaterial.class, "C_UOM_Weight_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_Weight_ID */
     public static final String COLUMNNAME_C_UOM_Weight_ID = "C_UOM_Weight_ID";
+
+	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, org.compiere.model.I_AD_User>(I_M_HU_PackingMaterial.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Beschreibung.
