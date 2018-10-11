@@ -66,7 +66,7 @@ export function setLatestNewDocument(id) {
   };
 }
 
-function toggleOverlay(data) {
+export function toggleOverlay(data) {
   return {
     type: 'TOGGLE_OVERLAY',
     data: data,
@@ -1007,7 +1007,7 @@ export function handleProcessResponse(response, type, id) {
         switch (action.type) {
           case 'displayQRCode':
             console.log('qrcode');
-            toggleOverlay({ type: 'qr', data: action.code });
+            dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView':
             await dispatch(closeModal());
