@@ -21,10 +21,10 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 	{
 		final I_C_Order existentOrder = getRecord(I_C_Order.class);
 		final I_C_Order newOrder = ExtendContractOrder.extend(existentOrder);
-		
+
 		final int adWindowId = getProcessInfo().getAD_Window_ID();
 		final TableRecordReference ref = TableRecordReference.of(newOrder);
-		
+
 		if (adWindowId > 0 && !Ini.isClient())
 		{
 			getResult().setRecordToOpen(ref, adWindowId, OpenTarget.SingleDocument);
@@ -33,7 +33,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 		{
 			getResult().setRecordToSelectAfterExecution(ref);
 		}
-		
+
 		return MSG_OK;
 	}
 
@@ -41,7 +41,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
-		
+
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
@@ -49,17 +49,17 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 
 		if (!I_C_Order.Table_Name.equals(context.getTableName()))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on C_Order table");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The process only runs with C_Order table");
 		}
-		
+
 		final ContractOrderService contractOrderRepository = Adempiere.getBean(ContractOrderService.class);
 		if (!contractOrderRepository.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not running on contract order");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The process only runs with a contract order");
 		}
-		
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	
+
 }
