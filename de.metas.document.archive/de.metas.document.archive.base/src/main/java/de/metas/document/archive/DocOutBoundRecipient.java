@@ -2,6 +2,7 @@ package de.metas.document.archive;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.Language;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,4 +40,10 @@ public class DocOutBoundRecipient
 	String emailAddress;
 
 	boolean invoiceAsEmail;
+
+	@Nullable
+	Language userLanguage;
+
+	@Nullable
+	Language bPartnerLanguage;
 }
