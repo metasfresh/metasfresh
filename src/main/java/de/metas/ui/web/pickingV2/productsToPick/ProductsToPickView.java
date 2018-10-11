@@ -63,6 +63,12 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	}
 
 	@Override
+	public boolean isAllowClosingPerUserRequest()
+	{
+		return false;
+	}
+
+	@Override
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
 		// TODO Auto-generated method stub
