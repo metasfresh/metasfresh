@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
-import { BrowserQRCodeSvgWriter } from '@zxing/library';
 
 import { toggleOverlay } from '../../actions/WindowActions';
+import QRCode from './QRCode';
 
 class Overlay extends Component {
   handleKeyDown = e => {
     const { toggleOverlay } = this.props;
 
     if (e.key === 'Escape') {
-      toggleOverlay();
+      toggleOverlay(false);
     }
   };
 
@@ -19,10 +18,6 @@ class Overlay extends Component {
 
     if (data) {
       document.addEventListener('keydown', this.handleKeyDown);
-
-      const codeWriter = new BrowserQRCodeSvgWriter('qr-code');
-
-      codeWriter.write(data.data, 300, 300);
     }
   }
 
@@ -30,14 +25,8 @@ class Overlay extends Component {
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  handleClickOutside = () => {
-    const { toggleOverlay } = this.props;
-
-    toggleOverlay();
-  };
-
   render() {
-    const { data } = this.props;
+    const { data, toggleOverlay } = this.props;
 
     if (!data) {
       return null;
@@ -45,10 +34,10 @@ class Overlay extends Component {
 
     return (
       <div className="overlay overlay-field js-not-unselect">
-        <div id="qr-code" />
+        <QRCode data={data} toggleOverlay={toggleOverlay} />
       </div>
     );
   }
 }
 
-export default connect(null, { toggleOverlay })(onClickOutside(Overlay));
+export default connect(null, { toggleOverlay })(Overlay);
