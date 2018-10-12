@@ -94,6 +94,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.hus(husToDeliver)
 				.addToShipperTransportationId(shipperTransportationId)
 				.completeShipments(true)
+				.failIfNoShipmentCandidatesFound(true)
 				.invoiceMode(BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS)
 				.createShipperDeliveryOrders(true)
 				.build()
