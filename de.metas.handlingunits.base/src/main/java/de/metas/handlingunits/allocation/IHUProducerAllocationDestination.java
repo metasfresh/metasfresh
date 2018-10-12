@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 
 /**
@@ -54,6 +55,9 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 
 	/** @return single created HU or null if no HUs were created */
 	I_M_HU getSingleCreatedHU();
+
+	/** @return single created HU or null if no HUs were created */
+	HuId getSingleCreatedHuId();
 
 	/**
 	 * Sets HUStatus to be used for newly created HUs.
