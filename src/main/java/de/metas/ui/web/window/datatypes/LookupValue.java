@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.lang.ReferenceListAwareEnum;
 import de.metas.lang.RepoIdAware;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
@@ -89,9 +90,16 @@ public abstract class LookupValue
 				return idInt;
 			}
 		}
-		else
+		else // string key
 		{
-			return idObj.toString();
+			if (idObj instanceof ReferenceListAwareEnum)
+			{
+				return ((ReferenceListAwareEnum)idObj).getCode();
+			}
+			else
+			{
+				return idObj.toString();
+			}
 		}
 	}
 
