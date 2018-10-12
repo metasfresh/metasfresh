@@ -33,9 +33,9 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -83,7 +83,7 @@ import lombok.NonNull;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_Item _parentItem = null;
 	private I_M_HU_PI_Item_Product _piip = null;
-	private I_M_Locator _locator = null;
+	private LocatorId _locatorId = null;
 
 	private boolean _huPlanningReceiptOwnerPM = false; // DB default false
 
@@ -111,8 +111,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	@Override
-	public final I_C_BPartner getC_BPartner()
+	protected final I_C_BPartner getC_BPartner()
 	{
 		return _bpartner;
 	}
@@ -136,14 +135,12 @@ import lombok.NonNull;
 		return this;
 	}
 
-	@Override
-	public final I_M_HU_Item getM_HU_Item_Parent()
+	protected final I_M_HU_Item getM_HU_Item_Parent()
 	{
 		return _parentItem;
 	}
 
-	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	protected final I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
 		return _piip;
 	}
@@ -156,16 +153,15 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IHUBuilder setM_Locator(final I_M_Locator locator)
+	public final IHUBuilder setLocatorId(final LocatorId locatorId)
 	{
-		_locator = locator;
+		_locatorId = locatorId;
 		return this;
 	}
 
-	@Override
-	public final I_M_Locator getM_Locator()
+	protected final LocatorId getLocatorId()
 	{
-		return _locator;
+		return _locatorId;
 	}
 
 	@Override
@@ -176,8 +172,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	@Override
-	public final String getHUStatus()
+	protected final String getHUStatus()
 	{
 		return _huStatus;
 	}
@@ -205,8 +200,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	@Override
-	public final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
+	protected final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		return _lutuConfiguration;
 	}
@@ -411,8 +405,8 @@ import lombok.NonNull;
 		}
 		else
 		{
-			final I_M_Locator locator = getM_Locator();
-			hu.setM_Locator(locator);
+			final LocatorId locatorId = getLocatorId();
+			hu.setM_Locator_ID(LocatorId.toRepoId(locatorId));
 		}
 
 		//

@@ -95,12 +95,12 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 		}
 
 		final Set<HuId> huIds = HuId.ofRepoIds(event.getTopLevelHuIdsToPick());
-		for (final HuId huId : huIds)
+		for (final HuId huIdToPick : HuId.ofRepoIds(event.getTopLevelHuIdsToPick()))
 		{
 			// NOTE: we are not moving the HU to shipment schedule's locator.
 			pickingCandidateService.pickHU(PickHURequest.builder()
 					.shipmentScheduleId(shipmentScheduleId)
-					.huId(huId)
+					.pickFromHuId(huIdToPick)
 					.pickingSlotId(pickingSlotId)
 					.build());
 		}

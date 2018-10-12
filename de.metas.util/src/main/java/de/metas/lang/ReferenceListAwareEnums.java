@@ -1,10 +1,17 @@
-package de.metas.handlingunits;
+package de.metas.lang;
+
+import java.util.Arrays;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,29 +20,20 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import de.metas.handlingunits.model.I_M_HU;
-
-/**
- * Pair of LU/TU/VHU
- *
- * @author tsa
- *
- */
-public interface ILUTUCUPair
+@UtilityClass
+public class ReferenceListAwareEnums
 {
-	I_M_HU getM_TU_HU();
-
-	I_M_HU getM_LU_HU();
-
-	I_M_HU getVHU();
+	public static <T extends ReferenceListAwareEnum> ImmutableMap<String, T> indexByCode(final T[] values)
+	{
+		return Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
+	}
 }

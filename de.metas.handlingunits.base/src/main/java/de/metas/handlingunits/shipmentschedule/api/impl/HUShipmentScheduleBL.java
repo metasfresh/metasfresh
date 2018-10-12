@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -63,6 +65,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -83,7 +86,9 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
@@ -103,103 +108,91 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
 
 	@Override
-	public I_M_ShipmentSchedule_QtyPicked addQtyPicked(
-			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
-			final Quantity qtyPickedDiff,
-			final I_M_HU tuOrVHU)
+	public void addQtyPickedAndUpdateHU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull Quantity qtyPicked,
+			@NonNull HuId tuOrVHUId)
+	{
+		Check.assume(qtyPicked.signum() > 0, "qtyPicked is positive but it was {}", qtyPicked);
+
+		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
+
+		addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU);
+	}
+
+	@Override
+	public void addQtyPicked(
+			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
+			@NonNull final Quantity qtyPicked,
+			@NonNull final I_M_HU tuOrVHU)
 	{
 		// Services
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 
 		// Retrieve VHU, TU and LU
 		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
-		final I_M_HU vhu;
-		final I_M_HU tuHU;
-		if (handlingUnitsBL.isVirtual(tuOrVHU))
-		{
-			vhu = tuOrVHU;
-			tuHU = handlingUnitsBL.getTransportUnitHU(tuOrVHU);
-			Check.assumeNotNull(tuHU, "TU shall exist for virtual HU: {}", vhu);
-		}
-		else
-		{
-			vhu = null;
-			tuHU = tuOrVHU;
-		}
-		final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(tuHU);
+		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
 
 		// Create ShipmentSchedule Qty Picked record
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked schedQtyPicked = //
-				shipmentScheduleAllocBL.addQtyPicked(sched, qtyPickedDiff);
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
+		schedQtyPicked = shipmentScheduleAllocBL.addQtyPicked(sched, qtyPicked);
 
 		// Set HU specific stuff
-		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = //
-				create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
+		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
+		setHUs(schedQtyPickedHU, husPair);
 
-		schedQtyPickedHU.setVHU(vhu);
-		schedQtyPickedHU.setM_LU_HU(luHU);
-		schedQtyPickedHU.setM_TU_HU(tuHU);
-
-		ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(schedQtyPickedHU)
+		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU)
 				.updateQtyTUAndQtyLU();
+		saveRecord(schedQtyPickedHU);
 
-		save(schedQtyPickedHU);
-
-		updateHuFromSchedQtyPicked(schedQtyPickedHU);
-
-		return schedQtyPickedHU;
+		//
+		// Update LU/TU/VHU
+		final I_M_HU topLevelHU = husPair.getTopLevelHU();
+		setHUStatusToPicked(topLevelHU);
+		setHUPartnerAndLocationFromSched(topLevelHU, sched);
+		handlingUnitsRepo.saveHU(topLevelHU);
 	}
 
-	private void updateHuFromSchedQtyPicked(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU)
+	private void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)
+	{
+		qtyPickedRecord.setM_LU_HU(husPair.getM_LU_HU());
+		qtyPickedRecord.setM_TU_HU(husPair.getM_TU_HU());
+		qtyPickedRecord.setVHU(husPair.getVHU());
+	}
+
+	private void setHUStatusToPicked(@NonNull final I_M_HU hu)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
-		final I_M_HU tuHU = schedQtyPickedHU.getM_TU_HU();
-		final I_M_HU luHU = schedQtyPickedHU.getM_LU_HU();
-
-		// Change HU status to Picked
 		// huContext might be needed if the M_HU_Status record has ExChangeGebindeLagerWhenEmpty='Y'
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 
-		// if the TU is contained by an U, it is sufficient to update the HU_Status of the LU, because all its children will be updated afterwards.
-		if (luHU != null)
-		{
-			huStatusBL.setHUStatus(huContext, luHU, X_M_HU.HUSTATUS_Picked);
-			handlingUnitsDAO.saveHU(luHU);
-		}
-		// Fallback: set the TU's status as picked if it doesn't have a parent.
-		else
-		{
-			huStatusBL.setHUStatus(huContext, tuHU, X_M_HU.HUSTATUS_Picked);
-		}
-
-		// update HU from sched
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched = //
-				schedQtyPickedHU.getM_ShipmentSchedule();
-		setHUPartnerAndLocationFromSched(sched, tuHU);
-
-		handlingUnitsDAO.saveHU(tuHU);
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
+		// handlingUnitsDAO.saveHU(hu); // don't save it here
 	}
 
 	/**
 	 * This method updates the given <code>hu</code>'s <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> from the given <code>sched</code>'s effective values.
 	 *
-	 * Note that these changes are propagated to the HU's children by a model validator.
+	 * NOTE:
+	 * * this method is NOT saving the <code>hu</code>
+	 * * these changes will be propagated to the HU's children by a model interceptor.
 	 *
-	 * @param sched
 	 * @param hu
+	 * @param sched
 	 * @see IShipmentScheduleEffectiveBL
 	 * @see de.metas.handlingunits.model.validator.M_HU#updateChildren(I_M_HU)
 	 */
 	private void setHUPartnerAndLocationFromSched(
-			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
-			final I_M_HU hu)
+			final I_M_HU hu,
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerId schedEffectiveBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);

@@ -15,7 +15,6 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.util.Services;
@@ -97,12 +96,8 @@ public class ClosePickingCandidateCommand
 
 	private boolean isEligible(final PickingCandidate pickingCandidate)
 	{
-		if (!PickingCandidateStatus.Processed.equals(pickingCandidate.getStatus()))
-		{
-			return false;
-		}
-
-		return pickingSlotIsRackSystem == null || pickingSlotIsRackSystem == isPickingSlotRackSystem(pickingCandidate);
+		return pickingCandidate.isProcessed()
+				&& (pickingSlotIsRackSystem == null || pickingSlotIsRackSystem == isPickingSlotRackSystem(pickingCandidate));
 	}
 
 	private boolean isPickingSlotRackSystem(final PickingCandidate pickingCandidate)
@@ -115,10 +110,12 @@ public class ClosePickingCandidateCommand
 	{
 		try
 		{
+			pickingCandidate.assertProcessed();
+			
 			final PickingSlotId pickingSlotId = pickingCandidate.getPickingSlotId();
 			if (pickingSlotId != null)
 			{
-				huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, pickingCandidate.getHuId());
+				huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, pickingCandidate.getPackedToHuId());
 			}
 
 			changeStatusToProcessedAndSave(pickingCandidate);
@@ -138,7 +135,7 @@ public class ClosePickingCandidateCommand
 
 	private void changeStatusToProcessedAndSave(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.setStatus(PickingCandidateStatus.Closed);
+		pickingCandidate.changeStatusToClosed();
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }

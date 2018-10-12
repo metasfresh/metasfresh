@@ -187,6 +187,12 @@ import lombok.NonNull;
 			return baseAllocationRequest.getDate();
 		}
 
+		final Date contextDate = getHUContextToUse().getDate();
+		if (contextDate != null)
+		{
+			return contextDate;
+		}
+
 		throw new AdempiereException("Date not set in " + this);
 	}
 

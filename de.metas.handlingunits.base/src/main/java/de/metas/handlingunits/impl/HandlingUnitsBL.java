@@ -33,6 +33,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -559,36 +560,25 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public LUTUCUPair getTopLevelParentAsLUTUCUPair(final I_M_HU hu)
+	public LUTUCUPair getTopLevelParentAsLUTUCUPair(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
-		//
-		// Get the LU, TU and VHU
-		final I_M_HU luHU;
-		final I_M_HU tuHU;
-		final I_M_HU vhu;
-		if (isVirtual(hu))
+		if (isLoadingUnit(hu))
 		{
-			vhu = hu;
-			tuHU = getTransportUnitHU(vhu);
-			luHU = getLoadingUnitHU(tuHU);
+			return LUTUCUPair.ofLU(hu);
 		}
-		else if (isTransportUnit(hu))
+		else if (isTransportUnitOrAggregate(hu))
 		{
-			vhu = null;
-			tuHU = hu;
-			luHU = getLoadingUnitHU(tuHU);
+			final I_M_HU tuHU = hu;
+			final I_M_HU luHU = getLoadingUnitHU(tuHU);
+			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
-		else
+		else // if (isVirtual(hu))
 		{
-			vhu = null;
-			tuHU = null;
-			luHU = hu;
-			assertLoadingUnit(luHU); // just to be sure
+			final I_M_HU vhu = hu;
+			final I_M_HU tuHU = getTransportUnitHU(vhu);
+			final I_M_HU luHU = tuHU != null ? getLoadingUnitHU(tuHU) : null;
+			return LUTUCUPair.ofVHU(vhu, tuHU, luHU);
 		}
-
-		return new LUTUCUPair(luHU, tuHU, vhu);
 	}
 
 	@Override
@@ -639,9 +629,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU getTransportUnitHU(final I_M_HU hu)
+	public I_M_HU getTransportUnitHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		// corner case: top level VHU
+		if (isTopLevel(hu) && isVirtual(hu))
+		{
+			return null;
+		}
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 

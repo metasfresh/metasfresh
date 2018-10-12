@@ -34,6 +34,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -97,7 +98,7 @@ public class LUTUAssignBuilder
 	private IHUDocumentLine _documentLine = null;
 	private I_C_BPartner _bpartner;
 	private int _bpLocationId = -1;
-	private I_M_Locator _locator;
+	private LocatorId _locatorId;
 	private String _huStatus;
 	private boolean _isHUPlanningReceiptOwnerPM = false;
 
@@ -169,7 +170,7 @@ public class LUTUAssignBuilder
 		huBuilder.setC_BPartner(getC_BPartner());
 		huBuilder.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
 		huBuilder.setDate(SystemTime.asDate());
-		huBuilder.setM_Locator(getM_Locator());
+		huBuilder.setLocatorId(getLocatorId());
 		huBuilder.setHUStatus(X_M_HU.HUSTATUS_Planning);
 
 		//
@@ -267,7 +268,7 @@ public class LUTUAssignBuilder
 				mockProductId,
 				mockQuantity,
 				date,
-				getM_Locator(),
+				getLocatorId(),
 				getHUStatus());
 		huTransactionTo.setSkipProcessing(); // i.e. don't change HU's storage
 		huTransactionTo.pair(huTransactionFrom);
@@ -431,14 +432,14 @@ public class LUTUAssignBuilder
 	public LUTUAssignBuilder setM_Locator(final I_M_Locator locator)
 	{
 		assertConfigurable();
-		_locator = locator;
+		_locatorId = LocatorId.ofRecordOrNull(locator);
 		return this;
 	}
 
-	public I_M_Locator getM_Locator()
+	private LocatorId getLocatorId()
 	{
-		Check.assumeNotNull(_locator, "_locator not null");
-		return _locator;
+		Check.assumeNotNull(_locatorId, "_locatorId not null");
+		return _locatorId;
 	}
 
 	public LUTUAssignBuilder setHUStatus(final String huStatus)

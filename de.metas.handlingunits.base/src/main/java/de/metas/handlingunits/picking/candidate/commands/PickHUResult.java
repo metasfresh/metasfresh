@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.PickingCandidate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,5 +32,5 @@ import lombok.Value;
 public class PickHUResult
 {
 	@NonNull
-	PickingCandidateId pickingCandidateId;
+	PickingCandidate pickingCandidate;
 }

@@ -51,6 +51,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
@@ -127,7 +128,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 *
 	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment.
 	 */
-	private final Set<Integer> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
+	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	public InOutProducerFromShipmentScheduleWithHU(final InOutGenerateResult result)
 	{

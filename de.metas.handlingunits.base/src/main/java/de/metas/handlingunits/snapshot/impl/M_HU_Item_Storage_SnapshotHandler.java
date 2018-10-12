@@ -29,8 +29,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -129,8 +130,11 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 
 		final I_M_HU_Item vhuItem = model.getM_HU_Item();
 		final I_M_HU vhu = vhuItem.getM_HU();
-		final I_M_Locator locator = vhu.getM_Locator();
 		final String huStatus = vhu.getHUStatus();
+		
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(vhu.getM_Locator_ID());
+		
 
 		final BigDecimal qtyOld = modelOld.getQty();
 		final BigDecimal qtyNew = model.getQty();
@@ -152,7 +156,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 				productId,
 				quantity.negate(),
 				date,
-				locator,
+				locatorId,
 				huStatus);
 		huTransactionFrom.setSkipProcessing(); // i.e. don't change HU's storage
 
@@ -164,7 +168,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 				productId,
 				quantity,
 				date,
-				locator,
+				locatorId,
 				huStatus);
 		huTransactionTo.setSkipProcessing(); // i.e. don't change HU's storage
 

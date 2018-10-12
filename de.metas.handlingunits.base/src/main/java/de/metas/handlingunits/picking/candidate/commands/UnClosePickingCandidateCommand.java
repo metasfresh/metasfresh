@@ -78,6 +78,6 @@ class UnClosePickingCandidateCommand
 					.setParameter("pickingCandidate", pickingCandidate);
 		}
 
-		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlotId, pickingCandidate.getHuId());
+		huPickingSlotBL.removeFromPickingSlotQueue(pickingSlotId, pickingCandidate.getPackedToHuId());
 	}
 }

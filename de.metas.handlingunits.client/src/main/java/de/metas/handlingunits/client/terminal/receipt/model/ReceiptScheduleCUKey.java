@@ -35,7 +35,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -62,7 +61,6 @@ public class ReceiptScheduleCUKey extends CUKey
 {
 	// services
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	// Parameters
 	private final ReceiptScheduleTableRow receiptScheduleRow;
@@ -120,10 +118,7 @@ public class ReceiptScheduleCUKey extends CUKey
 
 		//
 		// Allocation Destination: HU producer which will create 1 VHU
-		final ITerminalContext terminalContext = getTerminalContext();
-		final Properties ctx = terminalContext.getCtx();
-		final HUProducerDestination huProducer = HUProducerDestination.of(handlingUnitsDAO.retrieveVirtualPI(ctx));
-		huProducer.setMaxHUsToCreate(1); // we want one VHU
+		final HUProducerDestination huProducer = HUProducerDestination.ofVirtualPI();
 
 		//
 		// Transfer Qty

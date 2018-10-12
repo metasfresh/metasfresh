@@ -26,7 +26,7 @@ package de.metas.handlingunits.allocation.impl;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
 
-public class GenericAllocationSourceDestination extends AbstractAllocationSourceDestination
+public final class GenericAllocationSourceDestination extends AbstractAllocationSourceDestination
 {
 	public GenericAllocationSourceDestination(final IProductStorage storage, final I_M_HU_Item huItem, final Object referenceModel)
 	{

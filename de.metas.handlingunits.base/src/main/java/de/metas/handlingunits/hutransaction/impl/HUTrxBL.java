@@ -384,7 +384,7 @@ public class HUTrxBL implements IHUTrxBL
 					trx.getHUStatus(),
 					// trxCandidate.getM_HU(), just delegates to HU_Item
 					trx.getM_HU_Item() == null ? -1 : trx.getM_HU_Item().getM_HU_Item_ID(),
-					trx.getM_Locator() == null ? -1 : trx.getM_Locator().getM_Locator_ID(),
+					trx.getLocatorId(),
 					trx.getProductId() == null ? -1 : trx.getProductId().getRepoId(),
 					// trxCandidate.getQuantity(),
 					trx.getReferencedModel() == null ? -1 : TableRecordReference.of(trx.getReferencedModel()),
@@ -402,7 +402,7 @@ public class HUTrxBL implements IHUTrxBL
 								existingCand.getProductId(),
 								existingCand.getQuantity().add(newCand.getQuantity()),
 								existingCand.getDate(),
-								existingCand.getM_Locator(),
+								existingCand.getLocatorId(),
 								existingCand.getHUStatus());
 
 						if (existingCand.isSkipProcessing())
