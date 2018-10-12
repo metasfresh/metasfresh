@@ -18,7 +18,6 @@ import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 import de.metas.util.Loggables;
@@ -69,7 +68,6 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	}
 
 	@Override
-	@RunOutOfTrx
 	protected String doIt()
 	{
 		processAllPickingCandidates();
