@@ -109,13 +109,8 @@ export function quickActionsRequest(
     parentViewSelectedIds: parentView.viewSelectedIds,
   });
 
-  return get(
-    config.API_URL +
-      '/documentView/' +
-      windowId +
-      '/' +
-      viewId +
-      '/quickActions' +
-      (query ? '?' + query : '')
-  );
+  return get(`
+    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
+    query ? `?${query}` : ''
+  }`);
 }
