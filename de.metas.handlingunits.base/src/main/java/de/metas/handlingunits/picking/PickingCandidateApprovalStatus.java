@@ -1,14 +1,12 @@
 package de.metas.handlingunits.picking;
 
-import java.util.stream.Stream;
-
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.lang.ReferenceListAwareEnum;
-import de.metas.util.GuavaCollectors;
+import de.metas.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -43,8 +41,7 @@ public enum PickingCandidateApprovalStatus implements ReferenceListAwareEnum
 
 	public static final int AD_REFERENCE_ID = X_M_Picking_Candidate.APPROVALSTATUS_AD_Reference_ID;
 
-	private static final ImmutableMap<String, PickingCandidateApprovalStatus> typesByCode = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(PickingCandidateApprovalStatus::getCode));
+	private static final ImmutableMap<String, PickingCandidateApprovalStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	@Getter
 	private String code;
