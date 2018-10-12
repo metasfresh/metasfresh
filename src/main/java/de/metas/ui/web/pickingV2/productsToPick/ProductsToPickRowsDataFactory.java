@@ -190,7 +190,7 @@ class ProductsToPickRowsDataFactory
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(null)
-				.reservedToSalesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
 				.build()
 				.listIds();
 		getHUs(huIds); // pre-load all HUs

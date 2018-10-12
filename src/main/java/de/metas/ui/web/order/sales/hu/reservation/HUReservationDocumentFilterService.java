@@ -75,7 +75,7 @@ public class HUReservationDocumentFilterService
 				.warehouseId(salesOrderLine.getWarehouseId())
 				.productId(salesOrderLine.getProductId())
 				.asiId(salesOrderLine.getAsiId())
-				.reservedToSalesOrderLineId(salesOrderLine.getId())
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(salesOrderLine.getId())
 				.build();
 	}
 
@@ -92,7 +92,7 @@ public class HUReservationDocumentFilterService
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
 				.asiId(null) // ignore attributes
-				.reservedToSalesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.reservedToSalesOrderLineIdOrNotReservedAtAll(packageable.getSalesOrderLineIdOrNull())
 				.build();
 	}
 
@@ -101,7 +101,7 @@ public class HUReservationDocumentFilterService
 			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
-			@Nullable final OrderLineId reservedToSalesOrderLineId)
+			@Nullable final OrderLineId reservedToSalesOrderLineIdOrNotReservedAtAll)
 	{
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
@@ -123,13 +123,13 @@ public class HUReservationDocumentFilterService
 		}
 
 		// Reservation
-		if (reservedToSalesOrderLineId == null)
+		if (reservedToSalesOrderLineIdOrNotReservedAtAll == null)
 		{
 			huQuery.setExcludeReserved();
 		}
 		else
 		{
-			huQuery.setExcludeReservedToOtherThan(reservedToSalesOrderLineId);
+			huQuery.setExcludeReservedToOtherThan(reservedToSalesOrderLineIdOrNotReservedAtAll);
 		}
 
 		return huQuery;
