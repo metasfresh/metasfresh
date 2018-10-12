@@ -583,6 +583,15 @@
     "@webassemblyjs/wast-parser" "1.5.12"
     long "^3.2.0"
 
+"@zxing/library@^0.8.3":
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/@zxing/library/-/library-0.8.3.tgz#19dfb1a2c33997f43ad4fa8af8cfb20d2a95a400"
+  integrity sha512-7PVM1JGKbAHeRyC9zbZIhJUZhWcNcLGcvK4bt92ihCp2QAXvUlPWb0zPK2ZiMKOzz2TldrUK3M+3cugapdH5Kg==
+  dependencies:
+    ts-custom-error "^2.2.1"
+  optionalDependencies:
+    text-encoding "^0.6.4"
+
 JSONStream@^0.8.4:
   version "0.8.4"
   resolved "https://registry.yarnpkg.com/JSONStream/-/JSONStream-0.8.4.tgz#91657dfe6ff857483066132b4618b62e8f4887bd"
@@ -12982,6 +12991,11 @@ tether@^1.4.3:
   resolved "https://registry.yarnpkg.com/tether/-/tether-1.4.3.tgz#fd547024c47b6e5c9b87e1880f997991a9a6ad54"
   integrity sha512-YCfE/Ym9MpZpzUmzbek7MiLEyTofxx2YS0rJfSOUXX0aZtfQgxcgw7/Re2oGJUsREWZtEF0DzBKCjqH+DzgL6A==
 
+text-encoding@^0.6.4:
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/text-encoding/-/text-encoding-0.6.4.tgz#e399a982257a276dae428bb92845cb71bdc26d19"
+  integrity sha1-45mpgiV6J22uQou5KEXLcb3CbRk=
+
 text-table@^0.2.0, text-table@~0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
@@ -13037,6 +13051,11 @@ timed-out@^4.0.0, timed-out@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/timed-out/-/timed-out-4.0.1.tgz#f32eacac5a175bea25d7fab565ab3ed8741ef56f"
   integrity sha1-8y6srFoXW+ol1/q1Zas+2HQe9W8=
+
+timer-machine@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/timer-machine/-/timer-machine-1.1.0.tgz#c66d3c226ec53ae48f54bdc03c402fe9840647fe"
+  integrity sha1-xm08Im7FOuSPVL3APEAv6YQGR/4=
 
 timers-browserify@^2.0.4:
   version "2.0.6"
@@ -13132,6 +13151,11 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
+
+ts-custom-error@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/ts-custom-error/-/ts-custom-error-2.2.1.tgz#47086fbc34df5c7c2d4fba8c92d8767662066951"
+  integrity sha512-lHKZtU+PXkVuap6nlFZybIAFLUO8B3jbCs1VynBL8AUSAHfeG6HpztcBTDRp5I+fN5820N9kGg+eTIvr+le2yg==
 
 tslib@^1.9.0:
   version "1.9.2"
