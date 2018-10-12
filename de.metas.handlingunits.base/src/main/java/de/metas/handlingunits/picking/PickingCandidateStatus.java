@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.lang.ReferenceListAwareEnum;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
@@ -33,13 +34,18 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum PickingCandidateStatus
+public enum PickingCandidateStatus implements ReferenceListAwareEnum
 {
 	Draft(X_M_Picking_Candidate.STATUS_InProgress), //
 	Processed(X_M_Picking_Candidate.STATUS_Processed), //
 	Closed(X_M_Picking_Candidate.STATUS_Closed), //
 	Voided(X_M_Picking_Candidate.STATUS_Voided) //
 	;
+
+	public static final int AD_REFERENCE_ID = X_M_Picking_Candidate.STATUS_AD_Reference_ID;
+
+	private static final ImmutableMap<String, PickingCandidateStatus> typesByCode = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(PickingCandidateStatus::getCode));
 
 	@Getter
 	private String code;
@@ -58,7 +64,4 @@ public enum PickingCandidateStatus
 		}
 		return type;
 	}
-
-	private static ImmutableMap<String, PickingCandidateStatus> typesByCode = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(PickingCandidateStatus::getCode));
 }
