@@ -3,9 +3,9 @@ package de.metas.handlingunits.picking.candidate.commands;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
 import com.google.common.collect.ImmutableList;
@@ -13,23 +13,25 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.picking.service.IPackingItem;
-import de.metas.picking.service.PackingItemPart;
-import de.metas.picking.service.PackingItemPartId;
-import de.metas.picking.service.PackingItems;
-import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -60,80 +62,78 @@ import lombok.NonNull;
 public class ProcessPickingCandidatesCommand
 {
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ImmutableList<PickingCandidate> pickingCandidates;
-	private final boolean allowOverDelivery;
 
-	private Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesCache = new HashMap<>();
+	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesCache = new HashMap<>();
 
 	@Builder
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			//
-			@NonNull final List<PickingCandidate> pickingCandidates,
-			final boolean allowOverDelivery)
+			@NonNull final List<PickingCandidate> pickingCandidates)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.pickingCandidates = ImmutableList.copyOf(pickingCandidates);
-		this.allowOverDelivery = allowOverDelivery;
 	}
 
 	public void perform()
 	{
-		pickingCandidates.forEach(this::process);
+		pickingCandidates.forEach(PickingCandidate::assertDraft);
+
+		trxManager.runInThreadInheritedTrx(() -> pickingCandidates.forEach(this::processInTrx));
 	}
 
-	private void process(final PickingCandidate pickingCandidate)
+	private void processInTrx(final PickingCandidate pc)
 	{
-		trxManager.runInThreadInheritedTrx(() -> processInTrx(pickingCandidate));
-
 		shipmentSchedulesCache.clear(); // because we want to get the fresh QtyToDeliver each time!
+
+		final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId());
+		final IHUProducerAllocationDestination packToDestination = createPackToDestination(pc);
+
+		HULoader.of(pickFromSource, packToDestination)
+				.load(createPackToAllocationRequest(pc));
+
+		final HuId packedHuId = packToDestination.getSingleCreatedHuId();
+		if (packedHuId == null)
+		{
+			throw new AdempiereException("Nothing packed for " + pc);
+		}
+
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(pc.getShipmentScheduleId(), pc.getQtyPicked(), packedHuId);
+
+		pc.changeStatusToProcessed(packedHuId);
+		pickingCandidateRepository.save(pc);
 	}
 
-	private void processInTrx(final PickingCandidate pickingCandidate)
+	private IAllocationRequest createPackToAllocationRequest(final PickingCandidate pc)
 	{
-		pickingCandidate.assertDraft();
-		
-		final IPackingItem itemToPack = createPackingItem(pickingCandidate);
-
-		final HuId pickFromHuId = pickingCandidate.getPickFromHuId();
-		final I_M_HU pickFromHU = handlingUnitsRepo.getByIdOutOfTrx(pickFromHuId); // HU2PackingItemsAllocator requires out-of-trx
-
-		final IHUProducerAllocationDestination packToDestination = createPackToDestinationOrNull(pickingCandidate);
-
-		HU2PackingItemsAllocator.builder()
-				.pickFromHU(pickFromHU)
-				.itemToPack(itemToPack)
-				.qtyToPack(itemToPack.getQtySum())
-				.packToDestination(packToDestination)
-				.allowOverDelivery(allowOverDelivery)
-				.allocate();
-
-		final HuId packedToHuId = Optional.ofNullable(packToDestination)
-				.map(IHUProducerAllocationDestination::getSingleCreatedHU)
-				.map(I_M_HU::getM_HU_ID)
-				.map(HuId::ofRepoId)
-				.orElse(pickFromHuId);
-
-		pickingCandidate.changeStatusToProcessed(packedToHuId);
-		pickingCandidateRepository.save(pickingCandidate);
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+		return AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(getProductId(pc))
+				.setQuantity(pc.getQtyPicked())
+				.setFromReferencedTableRecord(pc.getId().toTableRecordReference())
+				.setForceQtyAllocation(true)
+				.create();
 	}
 
-	private IHUProducerAllocationDestination createPackToDestinationOrNull(final PickingCandidate pickingCandidate)
+	private IHUProducerAllocationDestination createPackToDestination(final PickingCandidate pickingCandidate)
 	{
 		final HuPackingInstructionsId packToInstructionsId = pickingCandidate.getPackToInstructionsId();
 		if (packToInstructionsId == null)
 		{
-			return null;
+			throw new AdempiereException("Pack To Instructions shall be specified for " + pickingCandidate);
 		}
 
-		I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
 		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
@@ -147,21 +147,14 @@ public class ProcessPickingCandidatesCommand
 				.setLocatorId(locatorId);
 	}
 
-	private IPackingItem createPackingItem(final PickingCandidate pc)
-	{
-		final ShipmentScheduleId shipmentScheduleId = pc.getShipmentScheduleId();
-		final I_M_ShipmentSchedule sched = getShipmentScheduleById(shipmentScheduleId);
-
-		PackingItemPart part = PackingItems.newPackingItemPart(sched)
-				.id(PackingItemPartId.of(shipmentScheduleId)) // TODO: include some picking candidate ID in partId
-				.qty(pc.getQtyPicked())
-				.build();
-
-		return PackingItems.newPackingItem(part);
-	}
-
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return shipmentSchedulesCache.computeIfAbsent(shipmentScheduleId, shipmentSchedulesRepo::getById);
+	}
+
+	private ProductId getProductId(final PickingCandidate pc)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 	}
 }
