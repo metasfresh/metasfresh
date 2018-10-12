@@ -170,7 +170,8 @@ public class PickingCandidateService
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidates(pickingCandidates)
-				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
+				// .allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
+				.allowOverDelivery(true) // we have to deliver exactly what we planned in picking candidates
 				.build()
 				.perform();
 	}
