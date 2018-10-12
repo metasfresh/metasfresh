@@ -31,7 +31,7 @@
 								<arg>-XautoNameResolution</arg>
 							</args>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/response</schemaDirectory>
-							<generatePackage>de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.response</generatePackage>
+							<generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response</generatePackage>
 						</configuration>
 					</execution>
 				</executions>
