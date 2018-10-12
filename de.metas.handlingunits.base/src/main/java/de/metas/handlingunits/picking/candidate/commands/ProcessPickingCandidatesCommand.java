@@ -98,6 +98,8 @@ public class ProcessPickingCandidatesCommand
 
 	private void processInTrx(final PickingCandidate pickingCandidate)
 	{
+		pickingCandidate.assertDraft();
+		
 		final IPackingItem itemToPack = createPackingItem(pickingCandidate);
 
 		final HuId pickFromHuId = pickingCandidate.getPickFromHuId();
