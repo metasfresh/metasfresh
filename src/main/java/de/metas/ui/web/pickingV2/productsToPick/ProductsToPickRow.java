@@ -83,11 +83,11 @@ public class ProductsToPickRow implements IViewRow
 	private final Quantity qty;
 
 	static final String FIELD_PickStatus = "pickStatus";
-	@ViewColumn(fieldName = FIELD_PickStatus, widgetType = DocumentFieldWidgetType.Text, captionKey = "PickStatus")
+	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID)
 	private final PickingCandidatePickStatus pickStatus;
 
 	static final String FIELD_ApprovalStatus = "approvalStatus";
-	@ViewColumn(fieldName = FIELD_ApprovalStatus, widgetType = DocumentFieldWidgetType.Text, captionKey = "ApprovalStatus")
+	@ViewColumn(fieldName = FIELD_ApprovalStatus, captionKey = "ApprovalStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidateApprovalStatus.AD_REFERENCE_ID)
 	private final PickingCandidateApprovalStatus approvalStatus;
 
 	//
