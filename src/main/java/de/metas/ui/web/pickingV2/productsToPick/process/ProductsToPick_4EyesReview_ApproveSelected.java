@@ -1,8 +1,14 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -28,29 +34,44 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class ProductsToPick_4EyesReview_ApproveSelected extends ProductsToPickViewBasedProcess
 {
+	@Autowired
+	PickingCandidateService pickingCandidateService;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		if (selectedRowIds.isEmpty())
+		final List<ProductsToPickRow> selectedRows = getSelectedRows();
+		if (selectedRows.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isWaitingApproval))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be approved");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		getSelectedRows().forEach(this::approve);
+		getSelectedRows()
+				.stream()
+				.filter(ProductsToPickRow::isWaitingApproval)
+				.forEach(this::approveRow);
+
+		invalidateView();
+
 		return MSG_OK;
 	}
 
-	private void approve(final ProductsToPickRow row)
+	private void approveRow(final ProductsToPickRow row)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("not implemented");
-	}
+		final PickingCandidate pickingCandidate = pickingCandidateService.approvePickingCandidate(row.getPickingCandidateId());
 
+		updateViewRowFromPickingCandidate(row.getId(), pickingCandidate);
+	}
 }

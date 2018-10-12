@@ -63,6 +63,14 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 	}
 
 	@Override
+	public boolean isAllowClosingPerUserRequest()
+	{
+		// don't allow closing per user request because the same view is used the the Picker and the Reviewer.
+		// So the first one which is closing the view would delete it.
+		return false;
+	}
+
+	@Override
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
 		// TODO Auto-generated method stub
@@ -82,14 +90,23 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 			return false;
 		}
 
-		final boolean hasNotEligibleRows = streamByIds(DocumentIdsSelection.ALL)
-				.anyMatch(row -> !row.isEligibleForApproval());
-
-		return !hasNotEligibleRows;
+		return streamByIds(DocumentIdsSelection.ALL)
+				.allMatch(ProductsToPickRow::isEligibleForApproval);
 	}
 
 	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
 	{
 		rowsData.changeRow(rowId, mapper);
+	}
+
+	public boolean isApproved()
+	{
+		if (size() == 0)
+		{
+			return false;
+		}
+
+		return streamByIds(DocumentIdsSelection.ALL)
+				.allMatch(ProductsToPickRow::isApproved);
 	}
 }

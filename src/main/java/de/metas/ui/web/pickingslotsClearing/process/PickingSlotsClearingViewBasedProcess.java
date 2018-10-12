@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableList;
@@ -208,8 +210,8 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final I_C_BPartner bpartner = bpartnerId > 0 ? load(bpartnerId, I_C_BPartner.class) : null;
 		final int bpartnerLocationId = pickingRow.getBPartnerLocationId();
 
-		final int locatorId = pickingRow.getPickingSlotLocatorId();
-		final I_M_Locator locator = load(locatorId, I_M_Locator.class);
+		final LocatorId locatorId = pickingRow.getPickingSlotLocatorId();
+		final I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorById(locatorId, I_M_Locator.class);
 		if (!locator.isAfterPickingLocator())
 		{
 			throw new AdempiereException("Picking slot's locator is not an after picking locator: " + locator.getValue());
@@ -218,7 +220,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setC_BPartner(bpartner)
 				.setC_BPartner_Location_ID(bpartnerLocationId)
-				.setM_Locator(locator)
+				.setLocatorId(locatorId)
 				.setHUStatus(X_M_HU.HUSTATUS_Picked);
 
 		final String targetHuType = Services.get(IHandlingUnitsBL.class).getHU_UnitType(targetHUPI);

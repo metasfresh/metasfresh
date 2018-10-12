@@ -68,6 +68,14 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 	@Override
 	public void removeById(@NonNull final ViewId viewId)
 	{
+		// Don't remove the view if not allowed.
+		// Will be removed when it will expire.
+		final IView view = views.getIfPresent(viewId);
+		if (view != null && !view.isAllowClosingPerUserRequest())
+		{
+			return;
+		}
+
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}

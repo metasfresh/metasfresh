@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
@@ -85,7 +86,9 @@ class ProductsToPickRowsData implements IRowsData<ProductsToPickRow>
 			}
 			else
 			{
-				return mapper.apply(row);
+				final ProductsToPickRow newRow = mapper.apply(row);
+				Check.assumeNotNull(newRow, "newRow shall not be null");
+				return newRow;
 			}
 		});
 	}

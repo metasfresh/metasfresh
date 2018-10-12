@@ -2,6 +2,11 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
+import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 
@@ -29,6 +34,8 @@ import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 
 public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBasedProcess
 {
+	@Autowired
+	private PickingCandidateService pickingCandidatesService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -62,8 +69,12 @@ public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBa
 
 	private void markAsWillNotPick(final ProductsToPickRow row)
 	{
-		// TODO: update/persist picking candidate
+		final RejectPickingResult result = pickingCandidatesService.rejectPicking(RejectPickingRequest.builder()
+				.shipmentScheduleId(row.getShipmentScheduleId())
+				.qtyToReject(row.getQty())
+				.existingPickingCandidateId(row.getPickingCandidateId())
+				.build());
 
-		getView().changeRow(row.getId(), ProductsToPickRow::withPickStatus_WillNotBePicked);
+		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());
 	}
 }

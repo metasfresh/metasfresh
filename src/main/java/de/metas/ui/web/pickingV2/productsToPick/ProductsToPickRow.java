@@ -9,7 +9,10 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
@@ -80,12 +83,12 @@ public class ProductsToPickRow implements IViewRow
 	private final Quantity qty;
 
 	static final String FIELD_PickStatus = "pickStatus";
-	@ViewColumn(fieldName = FIELD_PickStatus, widgetType = DocumentFieldWidgetType.Text, captionKey = "PickStatus")
-	private final ProductsToPickRow_PickStatus pickStatus;
+	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID)
+	private final PickingCandidatePickStatus pickStatus;
 
 	static final String FIELD_ApprovalStatus = "approvalStatus";
-	@ViewColumn(fieldName = FIELD_ApprovalStatus, widgetType = DocumentFieldWidgetType.Text, captionKey = "ApprovalStatus")
-	private final ProductsToPickRow_ApprovalStatus approvalStatus;
+	@ViewColumn(fieldName = FIELD_ApprovalStatus, captionKey = "ApprovalStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidateApprovalStatus.AD_REFERENCE_ID)
+	private final PickingCandidateApprovalStatus approvalStatus;
 
 	//
 	private final ProductsToPickRowId rowId;
@@ -111,8 +114,8 @@ public class ProductsToPickRow implements IViewRow
 			//
 			@NonNull final Quantity qty,
 			//
-			@NonNull final ProductsToPickRow_PickStatus pickStatus,
-			@NonNull final ProductsToPickRow_ApprovalStatus approvalStatus,
+			final PickingCandidatePickStatus pickStatus,
+			final PickingCandidateApprovalStatus approvalStatus,
 			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			final PickingCandidateId pickingCandidateId)
@@ -127,12 +130,11 @@ public class ProductsToPickRow implements IViewRow
 
 		this.qty = qty;
 
-		this.pickStatus = pickStatus;
-		this.approvalStatus = approvalStatus;
+		this.pickStatus = pickStatus != null ? pickStatus : PickingCandidatePickStatus.TO_BE_PICKED;
+		this.approvalStatus = approvalStatus != null ? approvalStatus : PickingCandidateApprovalStatus.TO_BE_APPROVED;
 
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
-		// this.processed = pickingCandidateId != null;
 	}
 
 	@Override
@@ -144,8 +146,7 @@ public class ProductsToPickRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return false;
-		// return processed;
+		return false; // not relevant
 	}
 
 	@Override
@@ -170,6 +171,20 @@ public class ProductsToPickRow implements IViewRow
 		return rowId.getHuId();
 	}
 
+	public ProductsToPickRow withUpdatesFromPickingCandidateIfNotNull(final PickingCandidate pickingCandidate)
+	{
+		if (pickingCandidate == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.pickStatus(pickingCandidate.getPickStatus())
+				.approvalStatus(pickingCandidate.getApprovalStatus())
+				.pickingCandidateId(pickingCandidate.getId())
+				.build();
+	}
+
 	public ProductsToPickRow withQty(@NonNull final Quantity qty)
 	{
 		if (Objects.equals(this.qty, qty))
@@ -180,69 +195,24 @@ public class ProductsToPickRow implements IViewRow
 		return toBuilder().qty(qty).build();
 	}
 
-	public ProductsToPickRow withPickingCandidateIdAndStatus(@NonNull final PickingCandidateId pickingCandidateId, @NonNull final ProductsToPickRow_PickStatus pickStatus)
-	{
-		if (PickingCandidateId.equals(this.pickingCandidateId, pickingCandidateId)
-				&& this.pickStatus == pickStatus)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.pickingCandidateId(pickingCandidateId)
-				.pickStatus(pickStatus)
-				.build();
-	}
-
-	public ProductsToPickRow withPickStatus_WillNotBePicked()
-	{
-		return withPickStatus(ProductsToPickRow_PickStatus.WILL_NOT_BE_PICKED);
-	}
-
-	private ProductsToPickRow withPickStatus(@NonNull final ProductsToPickRow_PickStatus pickStatus)
-	{
-		if (this.pickStatus == pickStatus)
-		{
-			return this;
-		}
-
-		return toBuilder().pickStatus(pickStatus).build();
-	}
-
-	public ProductsToPickRow withApprovalStatusApproved()
-	{
-		return withApprovalStatus(ProductsToPickRow_ApprovalStatus.APPROVED);
-	}
-
-	public ProductsToPickRow withApprovalStatusRejected()
-	{
-		return withApprovalStatus(ProductsToPickRow_ApprovalStatus.REJECTED);
-	}
-
-	private ProductsToPickRow withApprovalStatus(@NonNull final ProductsToPickRow_ApprovalStatus approvalStatus)
-	{
-		if (this.approvalStatus.equals(approvalStatus))
-		{
-			return this;
-		}
-
-		return toBuilder().approvalStatus(approvalStatus).build();
-	}
-
 	public boolean isToBePicked()
 	{
-		return pickStatus == ProductsToPickRow_PickStatus.TO_BE_PICKED;
+		return pickStatus.isToBePicked();
 	}
 
 	public boolean isEligibleForApproval()
 	{
-		return pickStatus == ProductsToPickRow_PickStatus.PICKED
-				|| pickStatus == ProductsToPickRow_PickStatus.WILL_NOT_BE_PICKED;
+		return !pickStatus.isToBePicked();
 	}
 
 	public boolean isWaitingApproval()
 	{
 		return isEligibleForApproval()
-				&& approvalStatus == ProductsToPickRow_ApprovalStatus.TO_BE_APPROVED;
+				&& approvalStatus.isToBeApproved();
+	}
+
+	public boolean isApproved()
+	{
+		return approvalStatus.isApproved();
 	}
 }

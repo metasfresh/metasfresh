@@ -48,6 +48,9 @@ public @interface ViewColumn
 
 	DocumentFieldWidgetType widgetType();
 
+	/** List AD_Reference_ID; to be used when {@link #widgetType()} is lookup */
+	int listReferenceId() default -1;
+
 	/**
 	 * Column's caption identified by AD_Message/AD_Element.
 	 */
@@ -72,7 +75,6 @@ public @interface ViewColumn
 	MediaType[] restrictToMediaTypes() default {};
 
 	WidgetSize widgetSize() default WidgetSize.Default;
-
 
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)
@@ -108,9 +110,6 @@ public @interface ViewColumn
 
 		/** Display sequence number */
 		int seqNo();
-
-
-
 
 	}
 }

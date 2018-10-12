@@ -92,6 +92,11 @@ public interface IView
 	}
 
 	long size();
+	
+	default boolean isAllowClosingPerUserRequest()
+	{
+		return true;
+	}
 
 	default void close(final ViewCloseReason reason)
 	{

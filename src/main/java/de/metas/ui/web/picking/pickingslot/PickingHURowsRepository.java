@@ -183,7 +183,7 @@ public class PickingHURowsRepository
 
 		for (final PickingCandidate pickingCandidate : pickingCandidates)
 		{
-			final HuId huId = pickingCandidate.getHuId();
+			final HuId huId = pickingCandidate.getPickFromHuId();
 			if (huId2huRow.containsKey(huId))
 			{
 				continue;
