@@ -1,9 +1,10 @@
 package de.metas.invoice_gateway.spi.model;
 
-import java.io.InputStream;
-
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import java.io.InputStream;
 
 /*
  * #%L
@@ -31,7 +32,12 @@ import lombok.Value;
 @Builder
 public class InvoiceAttachment
 {
-	String name;
+	@NonNull
+	String fileName;
 
+	@NonNull
+	String typeName;
+
+	@NonNull
 	InputStream data;
 }

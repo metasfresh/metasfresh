@@ -1,14 +1,15 @@
 package de.metas.invoice_gateway.spi.model;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-
-import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.time.Instant;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 
 /*
  * #%L
@@ -36,8 +37,13 @@ import lombok.Value;
 @Builder
 public class Invoice
 {
+	public static final String CURRENCY_CHF = "CHF";
+
 	@NonNull
-	LocalDate invoiceDate;
+	MetasfreshVersion metasfreshVersion;
+
+	@NonNull
+	GregorianCalendar invoiceDate;
 
 	@NonNull
 	Instant invoiceTimestamp;
@@ -64,6 +70,9 @@ public class Invoice
 
 	@NonNull
 	Money alreadyPaidAmount;
+
+	@NonNull
+	ESRPaymentInfo paymentInfo;
 
 	@Singular
 	List<InvoiceTax> invoiceTaxes;

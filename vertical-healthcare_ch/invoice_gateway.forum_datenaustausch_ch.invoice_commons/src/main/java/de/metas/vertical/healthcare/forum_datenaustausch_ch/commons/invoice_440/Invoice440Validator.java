@@ -1,5 +1,11 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
 
+import lombok.NonNull;
+
+import de.metas.invoice_gateway.spi.model.Invoice;
+import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.util.Check;
+
 /*
  * #%L
  * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
@@ -24,8 +30,12 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440
 
 public class Invoice440Validator
 {
-	public void validate(ForumDatenaustauschInvoice invoice)
+	public void validateInvoice(@NonNull final Invoice invoice)
 	{
-		// todo: assert that the language is OK
+		final Money amount = invoice.getAmount();
+		Check.assume(Invoice.CURRENCY_CHF.equals(amount.getCurrency()), "The given invoice.amount's currency needs to be CHF; invoice={}", invoice);
+
+		final Money alreadyPaidAmount = invoice.getAlreadyPaidAmount();
+		Check.assume(Invoice.CURRENCY_CHF.equals(alreadyPaidAmount.getCurrency()), "The given invoice.alreadyPaidAmount's currency needs to be CHF; invoice={}", invoice);
 	}
 }

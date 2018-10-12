@@ -26,6 +26,12 @@
 
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_xversion</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
 			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request</artifactId>
 			<version>${project.version}</version>
 		</dependency>

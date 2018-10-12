@@ -1,10 +1,12 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers;
 
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
+import lombok.Builder;
+import lombok.Value;
 
-import de.metas.invoice_gateway.spi.model.Invoice;
-import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
+import javax.annotation.Nullable;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson;
 
 /*
  * #%L
@@ -28,14 +30,13 @@ import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
  * #L%
  */
 
-public class ForumDatenaustauschInvoiceFactory
+@Value
+@Builder
+public class XmlGuarantor
 {
-	public static final String INVOICE_440_ATTACHMENT_ENTRY_NAME = "INVOICE_440_ATTACHMENT_ENTRY_NAME";
+	@Nullable
+	XmlCompany company;
 
-	public ForumDatenaustauschInvoice create(Invoice invoice)
-	{
-		final ImmutableListMultimap<String, InvoiceAttachment> //
-		name2attachment = Multimaps.index(invoice.getInvoiceAttachments(), InvoiceAttachment::getName);
-		return null;
-	}
+	@Nullable
+	XmlPerson person;
 }

@@ -1,14 +1,10 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.invoice_440;
+package de.metas.invoice.export.process;
 
-import org.springframework.stereotype.Service;
-
-import de.metas.invoice_gateway.spi.InvoiceExportClient;
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
-import de.metas.invoice_gateway.spi.model.BPartnerId;
+import de.metas.process.JavaProcess;
 
 /*
  * #%L
- * metasfresh-healthcare.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * de.metas.business
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -28,20 +24,16 @@ import de.metas.invoice_gateway.spi.model.BPartnerId;
  * #L%
  */
 
-@Service
-public class Invoice440ExportClientFactory implements InvoiceExportClientFactory
+public class C_Invoice_Export extends JavaProcess
 {
 
 	@Override
-	public String getInvoiceExportGatewayId()
+	protected String doIt() throws Exception
 	{
-		return "forum_datenaustausch_ch.invoice_440";
-	}
 
-	@Override
-	public InvoiceExportClient newClientForRecipient(BPartnerId invoiceRecipientId)
-	{
-		return new Invoice440ExportClient();
+
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

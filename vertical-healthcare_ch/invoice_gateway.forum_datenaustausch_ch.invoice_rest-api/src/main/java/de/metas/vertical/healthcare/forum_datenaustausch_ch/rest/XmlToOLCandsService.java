@@ -11,11 +11,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.StringJoiner;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.http.HttpStatus;
@@ -44,6 +39,7 @@ import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.JaxbUtil;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.CompanyType;
 import de.metas.vertical.healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_440.request.GarantType;
@@ -114,6 +110,28 @@ public class XmlToOLCandsService
 		return result;
 	}
 
+	private static RequestType unmarshal(@NonNull final MultipartFile file)
+	{
+		final InputStream xmlInput;
+		try
+		{
+			xmlInput = file.getInputStream();
+		}
+		catch (IOException e)
+		{
+			throw new XmlInvoiceInputStreamException();
+		}
+
+		try
+		{
+			return JaxbUtil.unmarshal(xmlInput, RequestType.class);
+		}
+		catch (RuntimeException e)
+		{
+			throw new XmlInvoiceUnmarshalException();
+		}
+	}
+
 	private JsonAttachment attachXmlToOLCandidates(
 			@NonNull final MultipartFile xmlInvoiceFile,
 			@NonNull final String externalReference)
@@ -126,36 +144,6 @@ public class XmlToOLCandsService
 		{
 			throw new XmlInvoiceAttachException();
 		}
-	}
-
-	private static RequestType unmarshal(@NonNull final MultipartFile file)
-	{
-		try
-		{
-			final InputStream xmlInput = file.getInputStream();
-			final JAXBContext jaxbContext = JAXBContext.newInstance(RequestType.class.getPackage().getName());
-			return unmarshal(jaxbContext, xmlInput);
-		}
-		catch (JAXBException e)
-		{
-			throw new XmlInvoiceUnmarshalException();
-		}
-		catch (IOException e)
-		{
-			throw new XmlInvoiceInputStreamException();
-		}
-	}
-
-	private static RequestType unmarshal(
-			@NonNull final JAXBContext jaxbContext,
-			@NonNull final InputStream xmlInput) throws JAXBException
-	{
-		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-		@SuppressWarnings("unchecked")
-		final JAXBElement<RequestType> jaxbElement = (JAXBElement<RequestType>)unmarshaller.unmarshal(xmlInput);
-
-		return jaxbElement.getValue();
 	}
 
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "An error occurred while trying access the XML invoice inout stream")

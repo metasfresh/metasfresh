@@ -10,18 +10,17 @@ package org.compiere.report.email.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 
@@ -42,17 +41,17 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
-import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 
 /**
- * 
+ *
  * @author ts
- * 
+ *
  */
-public final class DocumentEmailParams implements IEmailParameters {
+public final class DocumentEmailParams implements IEmailParameters
+{
 
 	public static final String MSG_SEND_MAIL = "SendMail";
 	public static final String MSG_ATTACHMENT_INVOICE_DOC_NO = "AttachmentInvoiceDocNo";
@@ -71,14 +70,16 @@ public final class DocumentEmailParams implements IEmailParameters {
 
 	private Integer defaultBoilerPlateId;
 
-	public DocumentEmailParams(final ProcessInfo pi) {
+	public DocumentEmailParams(final ProcessInfo pi)
+	{
 
 		final int tableId = pi.getTable_ID();
 		final boolean isOrder = I_C_Order.Table_ID == tableId;
 		final boolean isInOut = I_M_InOut.Table_ID == tableId;
 		final boolean isInvoice = InterfaceWrapperHelper.getTableId(I_C_Invoice.class) == tableId;
 
-		if (!isOrder && !isInOut && !isInvoice) {
+		if (!isOrder && !isInOut && !isInvoice)
+		{
 			throw new IllegalArgumentException(
 					"Process must belong to an order, a shipment or and invoice");
 		}
@@ -89,10 +90,11 @@ public final class DocumentEmailParams implements IEmailParameters {
 		String documentNo = null;
 		String subjectKey = null;
 		String attachmentKey = null;
-		ArrayList<Integer> userIds = new ArrayList<Integer>();
+		ArrayList<Integer> userIds = new ArrayList<>();
 		int targetDocTypeId = 0;
 
-		if (isOrder) {
+		if (isOrder)
+		{
 
 			MOrder order = new MOrder(Env.getCtx(), pi.getRecord_ID(), null);
 			documentNo = order.getDocumentNo();
@@ -101,7 +103,8 @@ public final class DocumentEmailParams implements IEmailParameters {
 			targetDocTypeId = order.getC_DocTypeTarget_ID();
 
 			final int billUserId = order.getBill_User_ID();
-			if (billUserId != 0) {
+			if (billUserId != 0)
+			{
 				userIds.add(billUserId);
 			}
 			final int billBPartnerId = order.getBill_BPartner_ID();
@@ -120,7 +123,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 			{
 				userIds.add(userId);
 			}
-			
+
 			final int bPartnerId = order.getC_BPartner_ID();
 			if (bPartnerId != 0)
 			{
@@ -132,7 +135,9 @@ public final class DocumentEmailParams implements IEmailParameters {
 					}
 				}
 			}
-		} else if (isInOut) {
+		}
+		else if (isInOut)
+		{
 
 			MInOut inOut = new MInOut(Env.getCtx(), pi.getRecord_ID(), null);
 			documentNo = inOut.getDocumentNo();
@@ -141,14 +146,18 @@ public final class DocumentEmailParams implements IEmailParameters {
 			targetDocTypeId = inOut.getC_DocType_ID();
 
 			final int userId = inOut.getAD_User_ID();
-			if (userId != 0) {
+			if (userId != 0)
+			{
 				userIds.add(userId);
 			}
 			final int bPartnerId = inOut.getC_BPartner_ID();
-			if (bPartnerId != 0) {
+			if (bPartnerId != 0)
+			{
 				userIds.add(MBPartner.getDefaultContactId(bPartnerId));
 			}
-		} else if (isInvoice) {
+		}
+		else if (isInvoice)
+		{
 
 			MInvoice invoice = new MInvoice(Env.getCtx(), pi.getRecord_ID(),
 					null);
@@ -158,11 +167,13 @@ public final class DocumentEmailParams implements IEmailParameters {
 			targetDocTypeId = invoice.getC_DocTypeTarget_ID();
 
 			final int userId = invoice.getAD_User_ID();
-			if (userId != 0) {
+			if (userId != 0)
+			{
 				userIds.add(userId);
 			}
 			final int bPartnerId = invoice.getC_BPartner_ID();
-			if (bPartnerId != 0) {
+			if (bPartnerId != 0)
+			{
 				userIds.add(MBPartner.getDefaultContactId(bPartnerId));
 			}
 		}
@@ -174,69 +185,81 @@ public final class DocumentEmailParams implements IEmailParameters {
 
 		// attempt to figure out an email-address for the customer
 		String toFound = "";
-		for (int userId : userIds) {
-			if (userId < 1) {
+		for (int userId : userIds)
+		{
+			if (userId < 1)
+			{
 				continue;
 			}
 			I_AD_User contanct = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), userId);
-			if (contanct.getEMail() != null && !"".equals(contanct.getEMail())) {
+			if (contanct.getEMail() != null && !"".equals(contanct.getEMail()))
+			{
 				toFound = contanct.getEMail();
 				break;
 			}
 		}
 		to = toFound;
 
-		if (targetDocTypeId != 0) {
+		if (targetDocTypeId != 0)
+		{
 			MDocType docType = MDocType.get(Env.getCtx(), targetDocTypeId);
-			defaultBoilerPlateId = (Integer) docType
-					.get_Value(I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID);
-
+			defaultBoilerPlateId = docType.getAD_BoilerPlate_ID();
 		}
 
 		from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 	}
 
 	@Override
-	public String getAttachmentPrefix(final String defaultValue) {
-		if (attachmentPrefix == null) {
+	public String getAttachmentPrefix(final String defaultValue)
+	{
+		if (attachmentPrefix == null)
+		{
 			return defaultValue;
 		}
 		return attachmentPrefix;
 	}
 
 	@Override
-	public I_AD_User getFrom() {
+	public I_AD_User getFrom()
+	{
 		return from;
 	}
 
 	@Override
-	public String getMessage() {
+	public String getMessage()
+	{
 		return "";
 	}
 
 	@Override
-	public String getSubject() {
+	public String getSubject()
+	{
 		return subject;
 	}
 
 	@Override
-	public String getTitle() {
+	public String getTitle()
+	{
 		return Msg.getMsg(Env.getCtx(), MSG_SEND_MAIL);
 	}
 
 	@Override
-	public String getTo() {
+	public String getTo()
+	{
 		return to;
 	}
 
 	@Override
-	public String getExportFilePrefix() {
+	public String getExportFilePrefix()
+	{
 		return EXPORT_FILE_PREFIX;
 	}
 
 	@Override
-	public MADBoilerPlate getDefaultTextPreset() {
-		if (defaultBoilerPlateId != null && defaultBoilerPlateId > 0) {
+	public MADBoilerPlate getDefaultTextPreset()
+	{
+		if (defaultBoilerPlateId != null && defaultBoilerPlateId > 0)
+		{
 			return new MADBoilerPlate(Env.getCtx(), defaultBoilerPlateId, null);
 		}
 		return null;

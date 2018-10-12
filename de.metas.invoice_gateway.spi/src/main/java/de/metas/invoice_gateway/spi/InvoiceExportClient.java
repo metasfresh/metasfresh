@@ -1,7 +1,11 @@
 package de.metas.invoice_gateway.spi;
 
-import de.metas.invoice_gateway.spi.model.Invoice;
 import lombok.NonNull;
+
+import java.util.List;
+
+import de.metas.invoice_gateway.spi.model.Invoice;
+import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
 
 /*
  * #%L
@@ -28,5 +32,7 @@ import lombok.NonNull;
 /** SPI to extend for different formats and protocols. */
 public interface InvoiceExportClient
 {
-	public void export(@NonNull final Invoice invoice);
+	public boolean canExport(@NonNull final Invoice invoice);
+
+	public List<InvoiceExportResult> export(@NonNull final Invoice invoice);
 }
