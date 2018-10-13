@@ -9,7 +9,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_rest-api</artifactId>
+	<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api</artifactId>
 	<version>10.0.0</version>
 
 	<properties>
@@ -44,7 +44,7 @@
 
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons</artifactId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
