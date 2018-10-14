@@ -15,12 +15,13 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>invoice_gateway.forum_datenaustausch_ch.invoice_440_request</module>
-		<module>invoice_gateway.forum_datenaustausch_ch.invoice_440_response</module>
-		<module>invoice_gateway.forum_datenaustausch_ch.invoice_450_request</module>
-		<module>invoice_gateway.forum_datenaustausch_ch.invoice_450_response</module>
-		<module>invoice_gateway.forum_datenaustausch_ch.invoice_commons</module>
-		<module>invoice_gateway.forum_datenaustausch_ch.invoice_rest-api</module>
+		<module>forum_datenaustausch_ch.invoice_440_request</module>
+		<module>forum_datenaustausch_ch.invoice_440_response</module>
+		<module>forum_datenaustausch_ch.invoice_450_request</module>
+		<module>forum_datenaustausch_ch.invoice_450_response</module>
+		<module>forum_datenaustausch_ch.invoice_commons</module>
+		<module>forum_datenaustausch_ch.invoice_xversion</module>
+		<module>forum_datenaustausch_ch.invoice_rest-api</module>
 	</modules>
 
 </project>
