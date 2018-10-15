@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.subscription.model.I_C_Order;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
@@ -48,17 +47,6 @@ import lombok.NonNull;
 @Service
 public class ContractOrderService
 {
-	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addNotNull(I_C_OrderLine.COLUMN_C_Flatrate_Conditions_ID)
-				.create()
-				.match();
-	}
-
 	/**
 	 * retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
 	 * @param orderId
@@ -77,11 +65,6 @@ public class ContractOrderService
 		return OrderId.ofRepoIdOrNull(oroginalOrderId);
 	}
 
-	/**
-	 * retrieves recursively all orders related to a contract, inclusive the one given as parameter
-	 * @param orderId
-	 * @return
-	 */
 	public Set<OrderId> retrieveAllContractOrderList(@NonNull final OrderId orderId)
 	{
 		final Set<OrderId> orderIds = new HashSet<>();

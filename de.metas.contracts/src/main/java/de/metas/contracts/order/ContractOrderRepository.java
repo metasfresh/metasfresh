@@ -47,6 +47,18 @@ import lombok.NonNull;
 public class ContractOrderRepository
 {
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
+	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addNotNull(I_C_OrderLine.COLUMN_C_Flatrate_Conditions_ID)
+				.create()
+				.match();
+	}
+	
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	public List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
