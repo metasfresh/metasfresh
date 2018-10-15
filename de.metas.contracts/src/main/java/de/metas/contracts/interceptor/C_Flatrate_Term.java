@@ -671,9 +671,10 @@ public class C_Flatrate_Term
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
 			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+			final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
 			// set status for the current order
-			final List<I_C_Flatrate_Term> terms = contractOrderRepository.retrieveFlatrateTerms(orderId);
+			final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
 			final boolean anyActiveTerms = terms
 					.stream()
 					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()

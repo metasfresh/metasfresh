@@ -61,6 +61,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
+import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
@@ -933,17 +934,13 @@ public class SubscriptionBL implements ISubscriptionBL
 		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
 		final OrderId orderId = contractOrderService.retrieveLinkedFollowUpContractOrder(currentOrderId);
 		
-//		final UserRepository userRepository = new UserRepository();
-//		final BPartnerBL bPartnerBL = new BPartnerBL(userRepository);
-//		Service.registerService(IBPartnerBL.class, bPartnerBL);
-		
 		if (orderId == null)
 		{
 			return null;
 		}
 
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
-		final List<I_C_Flatrate_Term> orderTerms = contractOrderRepository.retrieveFlatrateTerms(orderId);
+		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+		final List<I_C_Flatrate_Term> orderTerms = contractsDAO.retrieveFlatrateTerms(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()
 				.filter(oldTerm -> oldTerm.getM_Product_ID() == newTerm.getM_Product_ID()
