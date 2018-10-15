@@ -53,6 +53,8 @@ import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
@@ -672,7 +674,8 @@ public class C_Flatrate_Term
 		{
 			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 			final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-
+			final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+			
 			// set status for the current order
 			final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
 			final boolean anyActiveTerms = terms
@@ -680,14 +683,15 @@ public class C_Flatrate_Term
 					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
 							&& subscriptionBL.isActiveTerm(currentTerm));
 
-			final I_C_Order contractOrder = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
+			final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
+			final List<I_C_Order> orders = orderDAO.getByIds(ImmutableSet.of(orderId, parentOrderId), I_C_Order.class);
+			
+			final I_C_Order contractOrder = orders.get(0);
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
 
-			// if the list is bigger then 1, means that we have multiple sales order and the contract COULD BE still active
-			final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
 			if (parentOrderId != null)
 			{
-				final I_C_Order order = InterfaceWrapperHelper.load(parentOrderId, I_C_Order.class);
+				final I_C_Order order = orders.get(1); 
 				if (parentOrderId.getRepoId() != contractOrder.getC_Order_ID()  // different order from the current one
 						&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()) // current order wasn't previously cancelled, although shall not be possible this
 						&& I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order was cancelled
