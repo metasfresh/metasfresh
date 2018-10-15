@@ -1,23 +1,27 @@
 package de.metas.attachments;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 import java.io.File;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.MimeType;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-import lombok.Value;
+import de.metas.util.Check;
 
 /**
  * Attachment entry
@@ -40,6 +44,8 @@ public final class AttachmentEntry
 	private final String contentType;
 	private final URI url;
 
+	private final ImmutableMap<String, String> labels;
+
 	/** The records to which this instance is attached. */
 	private final Set<ITableRecordReference> linkedRecords;
 
@@ -51,12 +57,15 @@ public final class AttachmentEntry
 			@Nullable final String filename,
 			@Nullable final String contentType,
 			@Nullable final URI url,
+			@Singular final Map<String, String> labels,
 			@Singular final Set<ITableRecordReference> linkedRecords)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
 		this.type = type;
 		this.filename = filename != null ? filename : new File(this.name).getName();
+		this.labels = ImmutableMap.copyOf(labels);
+
 		this.linkedRecords = linkedRecords;
 
 		if (type == Type.Data)
@@ -119,5 +128,18 @@ public final class AttachmentEntry
 	public AttachmentEntry withoutLinkedRecords()
 	{
 		return toBuilder().clearLinkedRecords().build();
+	}
+
+	/** @return {@code true} if this attachment has a label with the given name; the label doesn't need to have a value though. */
+	public boolean hasLabel(@NonNull final String label)
+	{
+		return labels.containsKey(label);
+	}
+
+	public String getLabelValue(@NonNull final String labelName)
+	{
+		return Check.assumeNotEmpty(
+				labels.get(labelName),
+				"This attachmentEntry needs to have a label with name={} and a value; this={}", labelName, this);
 	}
 }

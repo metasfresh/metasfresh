@@ -2,6 +2,10 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import static java.math.BigDecimal.ZERO;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.payment.sepa
@@ -37,7 +41,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -108,7 +111,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -266,10 +268,13 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 
 			final ContactDetails2CH ctctDtls = objectFactory.createContactDetails2CH();
 			ctctDtls.setNm("metasfresh");
-			// if we must truncate, then leave the beginning
+
+			// if we must truncate, then leave the beginning and discard the end
 			// rationale: when we are depending on this, the resp file is probably a bit only and then the "year" is more important to know that the build#
-			String versionString = StringUtils.trunc(Adempiere.getMainVersion().trim(), 35, TruncateAt.STRING_START);
-			ctctDtls.setOthr(versionString); // 35 is the max allowed length: https://validation.iso-payments.ch/html/en/CustomerBank/pain.001/0221.htm
+			final String versionString = Adempiere.getBuildVersion().getFullVersion();
+			String truncatedVersionString = StringUtils.trunc(versionString.trim(), 35, TruncateAt.STRING_START);
+
+			ctctDtls.setOthr(truncatedVersionString); // 35 is the max allowed length: https://validation.iso-payments.ch/html/en/CustomerBank/pain.001/0221.htm
 			initgPty.setCtctDtls(ctctDtls);
 
 			groupHeaderSCT.setInitgPty(initgPty);
@@ -947,9 +952,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		}
 		return Services.get(IMsgBL.class).parseTranslation(InterfaceWrapperHelper.getCtx(line), sb.toString());
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param input
 	 * @return
 	 */

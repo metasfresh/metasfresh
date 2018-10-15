@@ -904,22 +904,7 @@
 				<BUILD_NUMBER_NUMERIC>${env.BUILD_NUMBER}</BUILD_NUMBER_NUMERIC>
 			</properties>
 		</profile>
-
-		<!-- This profile is analog to "build-number-env-missing" Note that unlike 
-			"BUILD_NUMBER", this "MF_BUILD_VERSION" is not a jenkins standard, but provided 
-			by our particular jenkins files. That's why we use the "MF_" prefix. -->
-		<profile>
-			<id>build-version-env-missing</id>
-			<activation>
-				<property>
-					<name>!env.MF_BUILD_VERSION</name>
-				</property>
-			</activation>
-			<properties>
-				<env.MF_BUILD_VERSION>1.0.0</env.MF_BUILD_VERSION>
-			</properties>
-		</profile>
-
+ 
 		<!--this profile is analog to "build-number-env-missing" -->
 		<profile>
 			<id>MF_UPSTREAM_BRANCH-env-missing</id>

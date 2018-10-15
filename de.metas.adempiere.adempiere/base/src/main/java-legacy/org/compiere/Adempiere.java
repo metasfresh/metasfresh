@@ -18,6 +18,8 @@ package org.compiere;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -47,22 +49,24 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Login;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import com.github.zafarkhaja.semver.ParseException;
+import com.github.zafarkhaja.semver.Version;
+
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.lang.SoftwareVersion;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.DefaultServiceNamePolicy;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -84,7 +88,7 @@ public class Adempiere
 	 * The <code>env.MF_VERSION</code> value set by maven if run locally (as opposed to the CI system).<br>
 	 * Please keep it in sync with the <code>build-version-env-missing</code> profile of the <a href="https://github.com/metasfresh/metasfresh-parent">metasfresh-parent</a> <code>pom.xml</code>.
 	 */
-	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-NO-RELEASE";
+	public static final String CLIENT_VERSION_LOCAL_BUILD = "10.0.0-LOCAL-NO-RELEASE";
 
 	public static final transient Adempiere instance = new Adempiere();
 
@@ -94,7 +98,12 @@ public class Adempiere
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
 
 	/** Main Version String */
-	private static String _mainVersion = "";
+	private static SoftwareVersion _mainVersion = SoftwareVersion.builder()
+			.major(10)
+			.minor(0)
+			.fullVersion("Version info not loaded")
+			.build();
+
 	/** Detail Version as date Used for Client/Server */
 	private static String _dateVersion = "";
 	/** Database Version as date Compared with AD_System */
@@ -265,7 +274,10 @@ public class Adempiere
 			try
 			{
 				properties.load(inputStream);
-				_mainVersion = properties.getProperty("MAIN_VERSION", _mainVersion);
+
+				final String mainVersionString = properties.getProperty("MAIN_VERSION", CLIENT_VERSION_LOCAL_BUILD);
+				_mainVersion = extractVersion(mainVersionString);
+
 				_dateVersion = properties.getProperty("DATE_VERSION", _dateVersion);
 				_databaseVersion = properties.getProperty("DB_VERSION", _databaseVersion);
 				//
@@ -303,13 +315,34 @@ public class Adempiere
 		}
 	}
 
+	private static SoftwareVersion extractVersion(@NonNull final String versionString)
+	{
+		Version parsedVersion;
+		try
+		{
+			parsedVersion = Version.valueOf(versionString);
+		}
+		catch (final ParseException e)
+		{
+			// NOTE: logger might not be not available yet, if we are called by the static initializer
+			System.err.println("Unable to parse version string = '" + versionString + "'; will go with CLIENT_VERSION_LOCAL_BUILD instead");
+			parsedVersion = Version.valueOf(CLIENT_VERSION_LOCAL_BUILD);
+		}
+
+		return SoftwareVersion.builder()
+				.major(parsedVersion.getMajorVersion())
+				.minor(parsedVersion.getMinorVersion())
+				.fullVersion(parsedVersion.toString())
+				.build();
+	}
+
 	private Adempiere()
 	{
 	};
 
-	public static String getMainVersion()
+	public static SoftwareVersion getBuildVersion()
 	{
-		return _mainVersion;
+		return Check.assumeNotNull(_mainVersion, "_mainVersion shall not be null");
 	}
 
 	public static String getDateVersion()
@@ -367,9 +400,9 @@ public class Adempiere
 	 *
 	 * @return Application Version
 	 */
-	public static String getVersion()
+	public static String getBuildAndDateVersion()
 	{
-		return getMainVersion() + " @ " + getDateVersion();
+		return getBuildVersion() + " @ " + getDateVersion();
 	}   // getVersion
 
 	/**
@@ -382,7 +415,7 @@ public class Adempiere
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append(getName()).append(" ")
-				.append(getMainVersion()).append("_").append(getDateVersion())
+				.append(getBuildVersion()).append("_").append(getDateVersion())
 				.append(" -").append(getSubtitle())
 				.append("- ").append(getCopyright())
 				.append("; Implementation: ").append(getImplementationVersion())
@@ -440,7 +473,7 @@ public class Adempiere
 	public static int getCheckSum()
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append(getName()).append(" ").append(getMainVersion()).append(getSubtitle());
+		sb.append(getName()).append(" ").append(getBuildVersion()).append(getSubtitle());
 		return sb.toString().hashCode();
 	}   // getCheckSum
 
@@ -700,11 +733,6 @@ public class Adempiere
 
 		final boolean runmodeClient = runMode == RunMode.SWING_CLIENT;
 
-		// Check Version
-		if (!Login.isJavaOK(runmodeClient) && runmodeClient)
-		{
-			System.exit(1);
-		}
 		LogManager.initialize(runmodeClient);
 		Ini.setRunMode(runMode);
 

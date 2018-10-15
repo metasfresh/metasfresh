@@ -58,7 +58,7 @@ public class MetasfreshRestAPIConstants
 		return new ApiInfoBuilder()
 				.title(title)
 				.description(description)
-				.version(Adempiere.getVersion())
+				.version(Adempiere.getBuildAndDateVersion())
 				.license("GNU General Public License, version 2")
 				.licenseUrl("http://www.gnu.org/licenses/gpl-2.0.html")
 				.build();

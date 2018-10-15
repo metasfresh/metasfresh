@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 761284749L;
+	private static final long serialVersionUID = 1855769943L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -237,6 +237,22 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getFax () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Fax);
+	}
+
+	/** Set GLN.
+		@param GLN GLN	  */
+	@Override
+	public void setGLN (java.lang.String GLN)
+	{
+		set_Value (COLUMNNAME_GLN, GLN);
+	}
+
+	/** Get GLN.
+		@return GLN	  */
+	@Override
+	public java.lang.String getGLN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GLN);
 	}
 
 	/** Set Vorbelegung Rechnung.

@@ -219,7 +219,7 @@ public final class ALogin extends CDialog
 		//
 		final CLabel versionLabel = new CLabel();
 		versionLabel.setName("Login.versionLabel");
-		versionLabel.setText(Adempiere.getMainVersion());
+		versionLabel.setText(Adempiere.getBuildVersion().getFullVersion());
 		versionLabel.setToolTipText(Adempiere.getImplementationVersion());
 		versionLabel.setRequestFocusEnabled(false);
 		versionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
