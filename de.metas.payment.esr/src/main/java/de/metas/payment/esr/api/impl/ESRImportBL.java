@@ -62,7 +62,6 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
@@ -84,6 +83,8 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 @Service

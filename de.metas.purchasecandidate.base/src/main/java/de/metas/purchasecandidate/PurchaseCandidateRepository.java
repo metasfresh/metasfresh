@@ -36,9 +36,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarId;
-import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.NullBusinessDayMatcher;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -57,6 +55,9 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.calendar.IBusinessDayMatcher;
+import de.metas.util.calendar.NullBusinessDayMatcher;
+
 import lombok.NonNull;
 
 /*

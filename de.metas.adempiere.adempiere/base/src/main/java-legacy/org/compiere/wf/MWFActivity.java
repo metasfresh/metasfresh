@@ -69,7 +69,6 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -78,6 +77,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Workflow Activity Model.

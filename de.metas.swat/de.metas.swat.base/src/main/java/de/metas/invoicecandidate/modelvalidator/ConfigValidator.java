@@ -51,7 +51,6 @@ import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.event.IEventBusFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
@@ -64,6 +63,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.ui.spi.impl.C_Invoice_Candidate_GridTabSummaryInfoProvider;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Main Invoice Candidates validator

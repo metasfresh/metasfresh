@@ -11,11 +11,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

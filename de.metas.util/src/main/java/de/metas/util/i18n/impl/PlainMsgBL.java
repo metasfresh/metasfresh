@@ -1,4 +1,4 @@
-package de.metas.i18n.impl;
+package de.metas.util.i18n.impl;
 
 /*
  * #%L
@@ -29,9 +29,9 @@ import java.util.Properties;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
 
 public class PlainMsgBL implements IMsgBL
 {

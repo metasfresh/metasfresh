@@ -7,12 +7,13 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.util.RelatedRecordsProvider;
 import de.metas.util.Services;
 import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 import lombok.Value;
 

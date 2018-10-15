@@ -5,11 +5,11 @@ import org.compiere.model.GridTab;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.async.PMM_GenerateOrders;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

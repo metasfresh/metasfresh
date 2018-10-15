@@ -32,8 +32,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_R_MailText;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Mail configuration

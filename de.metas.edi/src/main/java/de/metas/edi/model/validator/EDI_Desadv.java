@@ -36,8 +36,8 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 @Validator(I_EDI_Desadv.class)
 public class EDI_Desadv

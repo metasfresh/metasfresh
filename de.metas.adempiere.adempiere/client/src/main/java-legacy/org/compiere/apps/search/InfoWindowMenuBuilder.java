@@ -25,9 +25,9 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Helper class used to create, add and handle the Info windows menu items.

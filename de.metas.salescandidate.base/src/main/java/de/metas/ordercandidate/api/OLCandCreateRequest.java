@@ -9,11 +9,12 @@ import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
 
 import de.metas.document.DocTypeId;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

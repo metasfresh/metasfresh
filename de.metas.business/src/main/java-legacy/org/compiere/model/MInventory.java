@@ -35,13 +35,13 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

@@ -29,10 +29,11 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
+
 import lombok.Builder;
 
 /**

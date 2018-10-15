@@ -10,13 +10,14 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

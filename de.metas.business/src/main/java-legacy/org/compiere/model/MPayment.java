@@ -48,12 +48,12 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Payment Model. - retrieve and create payments for invoice

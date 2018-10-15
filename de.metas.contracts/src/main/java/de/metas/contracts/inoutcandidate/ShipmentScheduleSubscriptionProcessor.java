@@ -32,11 +32,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * 

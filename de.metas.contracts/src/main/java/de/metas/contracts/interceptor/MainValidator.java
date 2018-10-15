@@ -43,7 +43,6 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionInOutLines;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
-import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
@@ -51,6 +50,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class MainValidator extends AbstractModuleInterceptor
 {

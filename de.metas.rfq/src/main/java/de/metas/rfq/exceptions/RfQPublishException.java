@@ -1,8 +1,8 @@
 package de.metas.rfq.exceptions;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.rfq.RfQResponsePublisherRequest;
+import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

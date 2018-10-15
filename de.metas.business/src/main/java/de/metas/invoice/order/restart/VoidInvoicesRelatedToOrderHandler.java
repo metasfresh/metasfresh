@@ -13,10 +13,11 @@ import org.springframework.stereotype.Component;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 
 /*

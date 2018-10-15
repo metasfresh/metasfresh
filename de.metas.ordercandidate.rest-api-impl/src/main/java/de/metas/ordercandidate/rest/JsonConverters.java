@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
@@ -22,6 +21,8 @@ import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilde
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

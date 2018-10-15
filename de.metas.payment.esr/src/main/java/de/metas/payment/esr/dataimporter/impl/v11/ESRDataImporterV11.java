@@ -12,7 +12,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
@@ -22,6 +21,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import lombok.NonNull;
 

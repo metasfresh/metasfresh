@@ -7,9 +7,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

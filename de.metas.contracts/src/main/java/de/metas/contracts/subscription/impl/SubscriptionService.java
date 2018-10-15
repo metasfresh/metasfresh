@@ -15,9 +15,10 @@ import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuer
 import de.metas.contracts.subscription.impl.subscriptioncommands.ChangeRecipient;
 import de.metas.contracts.subscription.impl.subscriptioncommands.InsertPause;
 import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.Builder;
 import lombok.NonNull;
 

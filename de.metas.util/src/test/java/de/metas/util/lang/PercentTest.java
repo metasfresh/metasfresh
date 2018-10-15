@@ -1,4 +1,4 @@
-package de.metas.lang;
+package de.metas.util.lang;
 
 import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.junit.Test;
+
+import de.metas.util.lang.Percent;
 
 /*
  * #%L

@@ -127,7 +127,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IProcessExecutionListener;
@@ -138,6 +137,7 @@ import de.metas.process.ui.AProcess;
 import de.metas.process.ui.ProcessDialog;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Main Panel of application window.

@@ -2,7 +2,7 @@ package org.compiere.apps.search;
 
 import java.util.Objects;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

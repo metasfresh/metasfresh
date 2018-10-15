@@ -1,8 +1,10 @@
-package de.metas.hash;
+package de.metas.util.hash;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
+import de.metas.util.hash.HashableString;
 
 /*
  * #%L

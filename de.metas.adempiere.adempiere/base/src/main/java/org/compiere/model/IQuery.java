@@ -52,7 +52,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Getter;
 import lombok.NonNull;
 

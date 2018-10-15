@@ -29,12 +29,13 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

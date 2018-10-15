@@ -1,4 +1,4 @@
-package de.metas.hash;
+package de.metas.util.hash;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;

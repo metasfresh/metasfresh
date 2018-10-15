@@ -39,8 +39,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 @Validator(I_C_Flatrate_Transition.class)
 public class C_Flatrate_Transition

@@ -11,8 +11,8 @@ import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Advanced search table model.

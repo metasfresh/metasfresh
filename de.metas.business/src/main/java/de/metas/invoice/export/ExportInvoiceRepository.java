@@ -29,8 +29,8 @@ import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.ProductId;
-import de.metas.lang.SoftwareVersion;
 import de.metas.util.Services;
+import de.metas.util.lang.SoftwareVersion;
 
 /*
  * #%L
@@ -75,15 +75,16 @@ public class ExportInvoiceRepository
 		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceRecord);
 		final Money allocatedMoney = Money.of(allocatedAmt, currentyStr);
 
-		ImmutableList.Builder<InvoiceLine> invoiceLines = ImmutableList.builder();
-		final List<I_C_InvoiceLine> invoiceLineRecords = Services.get(IInvoiceDAO.class).retrieveLines(invoiceRecord);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final ImmutableList.Builder<InvoiceLine> invoiceLines = ImmutableList.builder();
+		final List<I_C_InvoiceLine> invoiceLineRecords = invoiceDAO.retrieveLines(invoiceRecord);
 		for (final I_C_InvoiceLine lineRecord : invoiceLineRecords)
 		{
 			final InvoiceLine invoiceLine = InvoiceLine
 					.builder()
-					.lineAmount(Money.of(lineRecord.getLineNetAmt(),currentyStr))
+					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyStr))
 					.productId(ProductId.ofId(lineRecord.getM_Product_ID()))
-					//.externalId(lineRecord.gete)
+					// .externalId(lineRecord.gete)
 					.build();
 			invoiceLines.add(invoiceLine);
 		}
@@ -119,10 +120,13 @@ public class ExportInvoiceRepository
 			{
 				continue;
 			}
+
+			final byte[] attachmentData = attachmentEntryservice.retrieveData(attachment.getId());
+
 			final InvoiceAttachment invoiceAttachment = InvoiceAttachment.builder()
 					.fileName(attachment.getFilename())
-					.data(new ByteArrayInputStream(attachmentEntryservice.retrieveData(attachment.getId())))
-					.typeName(attachment.getLabelValue("InvoiceAttachmentType"))
+					.mimeType(attachment.getContentType())
+					.data(new ByteArrayInputStream(attachmentData))
 					.build();
 			invoiceAttachments.add(invoiceAttachment);
 		}

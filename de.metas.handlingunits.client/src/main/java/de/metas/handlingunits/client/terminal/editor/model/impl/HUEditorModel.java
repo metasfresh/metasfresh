@@ -86,11 +86,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class HUEditorModel implements IDisposable
 {

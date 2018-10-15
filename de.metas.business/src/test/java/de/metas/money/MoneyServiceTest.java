@@ -9,7 +9,7 @@ import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.lang.Percent;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L

@@ -20,7 +20,6 @@ import org.eevolution.model.I_DD_OrderLine;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
@@ -29,6 +28,8 @@ import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

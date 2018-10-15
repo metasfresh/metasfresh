@@ -6,9 +6,10 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import de.metas.lang.Percent;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

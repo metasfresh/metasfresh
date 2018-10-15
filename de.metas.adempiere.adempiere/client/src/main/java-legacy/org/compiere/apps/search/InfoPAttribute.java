@@ -28,9 +28,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 import javax.swing.Box;
 

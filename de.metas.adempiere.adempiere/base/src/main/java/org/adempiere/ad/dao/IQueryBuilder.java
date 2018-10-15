@@ -30,7 +30,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  *

@@ -30,12 +30,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

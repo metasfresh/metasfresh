@@ -42,11 +42,12 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
+
 import lombok.Getter;
 import lombok.NonNull;
 

@@ -1,4 +1,4 @@
-package org.adempiere.util.jaxb;
+package de.metas.util.xml;
 
 /*
  * #%L
@@ -10,12 +10,12 @@ package org.adempiere.util.jaxb;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,19 +34,18 @@ import de.metas.util.Check;
 
 /**
  * Used to dynamically create elements based on given generated <code>objectFactory</code>.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class DynamicObjectFactory
 {
 	private final Object objectFactory;
 
-	private final Map<Class<?>, Method> factoryMethods = new HashMap<Class<?>, Method>();
+	private final Map<Class<?>, Method> factoryMethods = new HashMap<>();
 
 	public DynamicObjectFactory(final Object objectFactory)
 	{
-		super();
 		Check.assumeNotNull(objectFactory, "objectFactory not null");
 		this.objectFactory = objectFactory;
 	}

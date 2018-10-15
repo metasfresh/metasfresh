@@ -35,8 +35,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Note;
 import org.eevolution.mrp.api.IMutableMRPResult;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /* package */class MRPResult implements IMutableMRPResult
 {

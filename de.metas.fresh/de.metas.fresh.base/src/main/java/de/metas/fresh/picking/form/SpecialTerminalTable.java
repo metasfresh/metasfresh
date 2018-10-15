@@ -42,9 +42,9 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.TerminalTable;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 @SuppressWarnings("serial")
 final class SpecialTerminalTable extends TerminalTable

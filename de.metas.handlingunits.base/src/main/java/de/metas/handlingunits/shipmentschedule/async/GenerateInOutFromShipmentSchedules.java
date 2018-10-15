@@ -71,7 +71,6 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
@@ -81,6 +80,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

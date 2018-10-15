@@ -1,4 +1,12 @@
-package de.metas.lang;
+package de.metas.util.lang;
+
+import java.util.Collection;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -22,13 +30,22 @@ package de.metas.lang;
  * #L%
  */
 
-public interface RepoIdAware extends Comparable<RepoIdAware>
+@UtilityClass
+public class RepoIdAwares
 {
-	int getRepoId();
-
-	@Override
-	default int compareTo(final RepoIdAware other)
+	public static ImmutableList<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
-		return getRepoId() - other.getRepoId();
+		return ids
+				.stream()
+				.map(RepoIdAware::getRepoId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static ImmutableSet<Integer> asRepoIdsSet(@NonNull final Collection<? extends RepoIdAware> ids)
+	{
+		return ids
+				.stream()
+				.map(RepoIdAware::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

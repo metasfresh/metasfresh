@@ -36,7 +36,6 @@ import org.compiere.model.ModelValidator;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
@@ -55,6 +54,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderReportWriter;
 import de.metas.materialtracking.spi.impl.listeners.PPOrderMaterialTrackingListener;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 @Interceptor(I_PP_Order.class)
 public class PP_Order

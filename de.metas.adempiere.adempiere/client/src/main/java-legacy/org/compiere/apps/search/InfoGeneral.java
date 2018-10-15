@@ -45,10 +45,10 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  *	Generic Table Search

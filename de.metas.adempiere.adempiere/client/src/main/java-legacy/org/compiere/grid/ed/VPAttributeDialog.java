@@ -98,13 +98,13 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.

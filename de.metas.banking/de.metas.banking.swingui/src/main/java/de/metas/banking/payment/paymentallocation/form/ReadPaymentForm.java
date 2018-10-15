@@ -84,7 +84,6 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceCandidatesTableMo
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -94,6 +93,7 @@ import de.metas.invoicecandidate.form.CreateInvoiceCandidateDialog;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

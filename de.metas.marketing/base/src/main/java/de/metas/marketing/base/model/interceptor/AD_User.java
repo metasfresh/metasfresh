@@ -11,8 +11,6 @@ import org.adempiere.user.UserRepository;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
@@ -20,6 +18,9 @@ import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_AD_User;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 
 /*

@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -49,7 +50,6 @@ import org.compiere.model.X_AD_User_SortPref_Hdr;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
-import de.metas.i18n.IMsgBL;
 
 /**
  * @task http://dewiki908/mediawiki/index.php/08924_Sortierung_Zählliste-Sortierbegriffe_(101643853730)

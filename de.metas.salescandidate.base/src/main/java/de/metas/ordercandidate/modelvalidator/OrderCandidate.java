@@ -34,7 +34,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.ordercandidate.OrderCandidate_Constants;
@@ -42,6 +41,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
 import de.metas.ordercandidate.spi.impl.OLCandPricingASIListener;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Main model interceptor of <code>de.metas.ordercandidate</code> module.

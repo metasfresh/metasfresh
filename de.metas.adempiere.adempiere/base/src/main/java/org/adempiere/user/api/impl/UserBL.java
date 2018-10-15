@@ -29,13 +29,14 @@ import org.slf4j.Logger;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.hash.HashableString;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 
 public class UserBL implements IUserBL

@@ -12,8 +12,9 @@ import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Service;
 
-import de.metas.lang.Percent;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

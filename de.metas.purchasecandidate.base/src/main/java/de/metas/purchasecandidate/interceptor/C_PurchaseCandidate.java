@@ -13,7 +13,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.lang.Percent;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.model.I_C_OrderLine;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -21,6 +20,8 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /*

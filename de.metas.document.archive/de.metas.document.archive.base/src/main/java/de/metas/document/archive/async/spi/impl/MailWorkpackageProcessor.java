@@ -31,7 +31,6 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
@@ -40,6 +39,8 @@ import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

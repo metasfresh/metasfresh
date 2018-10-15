@@ -30,8 +30,8 @@ import org.adempiere.util.lang.IContextAware;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
-import de.metas.lang.Percent;
 import de.metas.lock.api.ILock;
+import de.metas.util.lang.Percent;
 
 /**
  * Updates {@link I_C_Invoice_Candidate}s which are scheduled to be recomputed.

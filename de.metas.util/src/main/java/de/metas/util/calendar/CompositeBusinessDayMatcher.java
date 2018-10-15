@@ -1,4 +1,4 @@
-package de.metas.calendar;
+package de.metas.util.calendar;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -68,11 +68,12 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_Term.class)

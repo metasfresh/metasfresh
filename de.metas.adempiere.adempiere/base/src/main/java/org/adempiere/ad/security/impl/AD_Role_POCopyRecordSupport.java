@@ -10,8 +10,8 @@ import org.compiere.model.GridField;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

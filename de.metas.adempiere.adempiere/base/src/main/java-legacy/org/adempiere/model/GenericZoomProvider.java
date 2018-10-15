@@ -43,11 +43,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
+
 import lombok.NonNull;
 
 /**

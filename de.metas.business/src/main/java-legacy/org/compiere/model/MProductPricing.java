@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 
 import org.slf4j.Logger;
 
-import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -31,6 +30,7 @@ import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 
 /**
  * Product Price Calculations

@@ -36,7 +36,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
 
 public class AdempiereExceptionTests
 {

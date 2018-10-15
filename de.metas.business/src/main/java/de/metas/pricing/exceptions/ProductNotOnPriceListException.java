@@ -7,7 +7,6 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.PriceListId;
@@ -16,6 +15,8 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.Builder;
 
 @SuppressWarnings("serial")

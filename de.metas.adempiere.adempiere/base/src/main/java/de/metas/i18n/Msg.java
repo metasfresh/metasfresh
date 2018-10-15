@@ -34,6 +34,10 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
+
 import lombok.NonNull;
 import lombok.Singular;
 

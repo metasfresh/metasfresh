@@ -75,7 +75,6 @@ import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -85,6 +84,7 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

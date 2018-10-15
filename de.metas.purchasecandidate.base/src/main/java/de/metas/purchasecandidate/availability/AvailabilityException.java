@@ -6,7 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import groovy.transform.EqualsAndHashCode;
 import lombok.Getter;

@@ -38,10 +38,11 @@ import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 
 /**

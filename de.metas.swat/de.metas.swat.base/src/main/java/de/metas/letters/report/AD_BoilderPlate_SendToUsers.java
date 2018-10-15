@@ -45,7 +45,6 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
 import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -53,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Send BoilerPlate to selected contacts

@@ -36,7 +36,7 @@ public class InvoiceAttachment
 	String fileName;
 
 	@NonNull
-	String typeName;
+	String mimeType;
 
 	@NonNull
 	InputStream data;

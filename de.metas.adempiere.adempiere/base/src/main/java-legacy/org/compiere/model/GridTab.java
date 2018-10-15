@@ -92,12 +92,13 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 /**

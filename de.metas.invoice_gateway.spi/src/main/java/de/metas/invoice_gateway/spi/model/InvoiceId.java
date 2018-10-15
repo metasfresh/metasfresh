@@ -2,8 +2,8 @@ package de.metas.invoice_gateway.spi.model;
 
 import lombok.Value;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 /*
  * #%L

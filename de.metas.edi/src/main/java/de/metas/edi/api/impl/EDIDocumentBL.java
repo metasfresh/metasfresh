@@ -63,7 +63,6 @@ import de.metas.edi.process.export.impl.EDI_DESADVExport;
 import de.metas.edi.process.export.impl.M_InOutExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -71,6 +70,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class EDIDocumentBL implements IEDIDocumentBL
 {

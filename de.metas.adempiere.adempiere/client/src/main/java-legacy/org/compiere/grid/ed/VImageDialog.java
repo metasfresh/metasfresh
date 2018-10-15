@@ -42,8 +42,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Image Dialog

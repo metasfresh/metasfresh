@@ -16,12 +16,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

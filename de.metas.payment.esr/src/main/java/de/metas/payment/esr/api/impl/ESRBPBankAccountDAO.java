@@ -35,10 +35,10 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class ESRBPBankAccountDAO extends AbstractBPBankAccountDAO
 {

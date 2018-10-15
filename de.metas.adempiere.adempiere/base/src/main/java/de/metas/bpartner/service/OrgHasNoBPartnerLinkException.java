@@ -29,9 +29,9 @@ import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public final class OrgHasNoBPartnerLinkException extends AdempiereException
 {

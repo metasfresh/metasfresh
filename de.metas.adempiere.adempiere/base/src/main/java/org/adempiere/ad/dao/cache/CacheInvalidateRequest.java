@@ -11,8 +11,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 import lombok.Value;
 

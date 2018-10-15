@@ -28,7 +28,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.interfaces.I_C_PaySelection;
@@ -40,6 +39,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

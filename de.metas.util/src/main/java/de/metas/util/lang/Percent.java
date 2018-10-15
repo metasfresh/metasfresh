@@ -1,4 +1,4 @@
-package de.metas.lang;
+package de.metas.util.lang;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

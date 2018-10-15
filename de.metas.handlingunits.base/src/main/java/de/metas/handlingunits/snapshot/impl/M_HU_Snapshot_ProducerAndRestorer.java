@@ -41,9 +41,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Snapshot;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.handlingunits.snapshot.ISnapshotRestorer;
-import de.metas.lang.RepoIdAwares;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
+
 import lombok.NonNull;
 
 /**

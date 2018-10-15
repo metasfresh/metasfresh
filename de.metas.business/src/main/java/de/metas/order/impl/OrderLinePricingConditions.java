@@ -6,14 +6,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.util.Check;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

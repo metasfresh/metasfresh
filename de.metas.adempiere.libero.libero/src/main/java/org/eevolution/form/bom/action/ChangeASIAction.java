@@ -51,9 +51,9 @@ import org.eevolution.form.action.ProcessPopupAction;
 import org.eevolution.model.wrapper.BOMLineWrapper;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * @author Victor Perez, e-Evolution, S.C.

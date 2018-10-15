@@ -19,8 +19,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.dlm.connection.DLMPermanentIniCustomizer;
 import de.metas.dlm.migrator.IMigratorService;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

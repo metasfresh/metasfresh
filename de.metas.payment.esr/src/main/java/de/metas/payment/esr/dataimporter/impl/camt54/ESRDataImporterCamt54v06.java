@@ -19,7 +19,6 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_06.AccountNotification12;
 import de.metas.payment.camt054_001_06.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
@@ -36,6 +35,8 @@ import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 /*

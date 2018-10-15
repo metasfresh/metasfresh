@@ -71,14 +71,15 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.lang.RepoIdAware;
-import de.metas.lang.RepoIdAwares;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

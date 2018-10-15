@@ -10,11 +10,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
+import de.metas.util.i18n.impl.PlainMsgBL;
 
 /*
  * #%L

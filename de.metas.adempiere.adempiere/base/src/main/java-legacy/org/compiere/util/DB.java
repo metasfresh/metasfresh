@@ -70,14 +70,15 @@ import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ILanguageDAO;
-import de.metas.lang.ReferenceListAwareEnum;
-import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /**

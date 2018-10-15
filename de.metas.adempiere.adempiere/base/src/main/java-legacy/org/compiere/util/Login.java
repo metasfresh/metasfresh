@@ -59,11 +59,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.hash.HashableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 import de.metas.util.time.SystemTime;
 
 /**

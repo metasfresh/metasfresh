@@ -14,8 +14,8 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

@@ -40,13 +40,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * 	Create PO from Requisition 

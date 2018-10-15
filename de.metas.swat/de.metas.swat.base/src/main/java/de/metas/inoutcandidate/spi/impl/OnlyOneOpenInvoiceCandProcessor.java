@@ -32,10 +32,10 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * 

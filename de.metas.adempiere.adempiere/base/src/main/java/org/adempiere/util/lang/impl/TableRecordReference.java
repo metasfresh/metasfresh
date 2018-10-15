@@ -51,10 +51,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /**

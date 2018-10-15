@@ -29,8 +29,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class AttributeRestrictedException extends AdempiereException
 {

@@ -36,10 +36,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 
 /**

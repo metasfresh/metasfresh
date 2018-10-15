@@ -30,8 +30,8 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.i18n.ITranslatableString;
 
 /**
  * General exception thrown on any locking/unlocking error.

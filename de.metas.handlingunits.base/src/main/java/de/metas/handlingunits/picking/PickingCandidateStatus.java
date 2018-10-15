@@ -5,8 +5,9 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.lang.ReferenceListAwareEnum;
-import de.metas.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+
 import lombok.Getter;
 import lombok.NonNull;
 

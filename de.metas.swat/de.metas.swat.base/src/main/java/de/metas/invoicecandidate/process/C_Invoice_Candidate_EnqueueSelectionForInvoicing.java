@@ -38,7 +38,6 @@ import org.adempiere.util.api.IParams;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
@@ -49,6 +48,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.process.RunOutOfTrx;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess

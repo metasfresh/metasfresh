@@ -40,10 +40,10 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * This model validator starts a thread which check if the Client Application is up2date.

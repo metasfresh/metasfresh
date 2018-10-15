@@ -19,10 +19,11 @@ import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)

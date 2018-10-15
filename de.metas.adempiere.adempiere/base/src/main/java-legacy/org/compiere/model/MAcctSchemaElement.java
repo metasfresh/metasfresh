@@ -26,8 +26,8 @@ import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  *  Account Schema Element Object

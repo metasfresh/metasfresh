@@ -1,4 +1,4 @@
-package de.metas.i18n;
+package de.metas.util.i18n;
 
 import java.util.Set;
 

@@ -49,9 +49,9 @@ import org.compiere.util.Env;
 import de.metas.adempiere.form.terminal.ITerminalCheckboxField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.table.annotation.TableInfo;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  *

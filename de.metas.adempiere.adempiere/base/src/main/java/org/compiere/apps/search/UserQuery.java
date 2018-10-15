@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
 
 /*
  * #%L

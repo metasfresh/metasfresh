@@ -34,11 +34,12 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;

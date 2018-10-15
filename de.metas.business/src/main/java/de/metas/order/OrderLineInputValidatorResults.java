@@ -1,8 +1,9 @@
 package de.metas.order;
 
-import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.Value;
+
+import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

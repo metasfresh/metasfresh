@@ -46,9 +46,9 @@ import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
-import de.metas.i18n.IMsgBL;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 
 /**

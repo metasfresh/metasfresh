@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.Adempiere;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -14,6 +13,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

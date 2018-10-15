@@ -25,7 +25,8 @@ package de.metas.document;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 
 /**

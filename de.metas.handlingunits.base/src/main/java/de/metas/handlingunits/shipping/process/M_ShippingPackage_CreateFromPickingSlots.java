@@ -39,7 +39,6 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.process.IProcessPrecondition;
@@ -55,6 +54,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Moved from branch gastro_, /de.metas.handlingunits.base/src/main/java/de/metas/shipping/process/M_ShippingPackage_CreateFromPickingSlots.java.

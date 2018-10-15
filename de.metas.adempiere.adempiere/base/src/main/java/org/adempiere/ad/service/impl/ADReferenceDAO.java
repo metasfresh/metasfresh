@@ -18,11 +18,11 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.ForwardingTranslatableString;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.ForwardingTranslatableString;
+import de.metas.util.i18n.ITranslatableString;
 
 public class ADReferenceDAO implements IADReferenceDAO
 {

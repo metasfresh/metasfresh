@@ -19,7 +19,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -31,6 +30,8 @@ import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

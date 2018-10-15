@@ -48,7 +48,6 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -74,6 +73,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 

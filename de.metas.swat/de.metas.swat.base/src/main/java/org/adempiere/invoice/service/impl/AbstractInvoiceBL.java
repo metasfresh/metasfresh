@@ -81,7 +81,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
@@ -99,6 +98,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

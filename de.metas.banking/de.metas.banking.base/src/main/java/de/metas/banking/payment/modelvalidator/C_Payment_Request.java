@@ -34,9 +34,9 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 @Interceptor(I_C_Payment_Request.class)
 public class C_Payment_Request

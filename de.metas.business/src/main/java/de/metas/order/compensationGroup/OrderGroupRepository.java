@@ -36,7 +36,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -48,6 +47,8 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

@@ -33,10 +33,10 @@ import org.adempiere.facet.impl.FacetCategory;
 import org.adempiere.facet.impl.SingleFacetCategoryCollectorTemplate;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Miscellaneous {@link I_C_Invoice_Candidate} facets.

@@ -29,8 +29,9 @@ import java.util.Set;
 
 import org.compiere.util.Env;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.Builder;
 import lombok.Value;
 

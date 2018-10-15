@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
@@ -73,7 +74,6 @@ import com.akunagroup.uk.postcode.AddressInterface;
 import com.akunagroup.uk.postcode.AddressLookupInterface;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
 
 /**
  * Dialog to enter Location Info (Address)

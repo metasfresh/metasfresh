@@ -18,11 +18,11 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
+import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

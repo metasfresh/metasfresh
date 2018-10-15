@@ -52,7 +52,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.jaxb.DynamicObjectFactory;
 import org.adempiere.util.lang.IPair;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -66,7 +65,6 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SepaMarshallerException;
@@ -110,7 +108,9 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
+import de.metas.util.xml.DynamicObjectFactory;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is

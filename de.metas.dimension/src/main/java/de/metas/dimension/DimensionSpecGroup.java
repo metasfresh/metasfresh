@@ -4,10 +4,11 @@ import java.util.Optional;
 
 import org.adempiere.mm.attributes.AttributeId;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 import lombok.Value;
 

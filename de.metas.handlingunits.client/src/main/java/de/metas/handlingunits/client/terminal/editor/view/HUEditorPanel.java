@@ -77,9 +77,9 @@ import de.metas.handlingunits.client.terminal.report.view.HUReportPanel;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class HUEditorPanel
 		extends TerminalDialogListenerAdapter

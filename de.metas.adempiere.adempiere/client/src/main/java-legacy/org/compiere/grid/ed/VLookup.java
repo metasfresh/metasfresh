@@ -91,10 +91,10 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Lookup Visual Field.

@@ -62,11 +62,11 @@ import ch.qos.logback.classic.Level;
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
-import de.metas.lang.SoftwareVersion;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.DefaultServiceNamePolicy;
 import de.metas.util.Services;
+import de.metas.util.lang.SoftwareVersion;
 
 /**
  * Adempiere Control Class

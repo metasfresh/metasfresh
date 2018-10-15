@@ -58,12 +58,13 @@ import de.metas.fresh.picking.PackingMaterialKey;
 import de.metas.fresh.picking.PackingMaterialLayout;
 import de.metas.fresh.picking.PickingSlotKey;
 import de.metas.fresh.picking.ProductKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 import net.miginfocom.swing.MigLayout;
 

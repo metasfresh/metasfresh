@@ -47,7 +47,6 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
@@ -71,6 +70,8 @@ import de.metas.util.collections.IteratorChain;
 import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PeekIterator;
 import de.metas.util.collections.SingletonIterator;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

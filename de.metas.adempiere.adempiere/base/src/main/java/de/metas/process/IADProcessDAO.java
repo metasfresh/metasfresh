@@ -33,8 +33,8 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import de.metas.util.i18n.ITranslatableString;
 
 public interface IADProcessDAO extends ISingletonService
 {

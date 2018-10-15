@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * (Numeric) Key Name Pair

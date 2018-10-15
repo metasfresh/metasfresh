@@ -34,8 +34,8 @@ import org.compiere.model.I_C_Country_Sequence;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import de.metas.util.i18n.ITranslatableString;
 
 /**
  * @author cg

@@ -90,10 +90,10 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.jmx.JMXSwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.adempiere.form.terminal.table.swing.SwingTerminalTable2;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * @author tsa

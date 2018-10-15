@@ -19,12 +19,13 @@ import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.MailWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.i18n.ITranslatableString;
+
 import lombok.NonNull;
 
 /**

@@ -37,11 +37,11 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
-import de.metas.hash.HashableString;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.printing.model.I_AD_User_Login;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 @Interceptor(I_AD_User_Login.class)
 public class AD_User_Login

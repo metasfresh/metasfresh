@@ -78,9 +78,9 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import net.miginfocom.swing.MigLayout;
 
 /**

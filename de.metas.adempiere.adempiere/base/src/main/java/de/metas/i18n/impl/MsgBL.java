@@ -33,13 +33,13 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ILanguageBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
 
 /**
  *

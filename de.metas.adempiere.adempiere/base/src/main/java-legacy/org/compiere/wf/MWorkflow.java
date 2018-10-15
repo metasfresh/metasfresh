@@ -41,11 +41,11 @@ import org.compiere.util.Env;
 import org.compiere.wf.api.IADWorkflowDAO;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  *	WorkFlow Model

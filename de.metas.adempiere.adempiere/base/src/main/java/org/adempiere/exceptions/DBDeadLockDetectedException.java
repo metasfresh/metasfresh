@@ -29,8 +29,8 @@ import java.sql.Connection;
 
 import org.compiere.util.DB;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Dedicated exception to handle the case that the DB detected a deadlock and killed one of the participants.

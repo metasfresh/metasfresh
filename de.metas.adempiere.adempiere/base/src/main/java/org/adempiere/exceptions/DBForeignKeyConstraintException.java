@@ -1,7 +1,7 @@
 package org.adempiere.exceptions;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Exception thrown on database foreign key violation.

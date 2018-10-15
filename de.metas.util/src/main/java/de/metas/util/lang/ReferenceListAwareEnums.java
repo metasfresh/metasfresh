@@ -1,16 +1,15 @@
-package de.metas.lang;
+package de.metas.util.lang;
 
-import java.util.Collection;
+import java.util.Arrays;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.util
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -18,12 +17,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,21 +30,10 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class RepoIdAwares
+public class ReferenceListAwareEnums
 {
-	public static ImmutableList<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
+	public static <T extends ReferenceListAwareEnum> ImmutableMap<String, T> indexByCode(final T[] values)
 	{
-		return ids
-				.stream()
-				.map(RepoIdAware::getRepoId)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public static ImmutableSet<Integer> asRepoIdsSet(@NonNull final Collection<? extends RepoIdAware> ids)
-	{
-		return ids
-				.stream()
-				.map(RepoIdAware::getRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		return Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
 	}
 }

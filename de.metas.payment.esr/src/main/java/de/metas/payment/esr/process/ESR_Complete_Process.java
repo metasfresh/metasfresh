@@ -26,13 +26,13 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class ESR_Complete_Process extends JavaProcess
 {

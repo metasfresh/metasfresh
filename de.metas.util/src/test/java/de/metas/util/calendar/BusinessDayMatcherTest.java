@@ -1,10 +1,12 @@
-package de.metas.calendar;
+package de.metas.util.calendar;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
 import org.junit.Test;
+
+import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
 
 /*
  * #%L

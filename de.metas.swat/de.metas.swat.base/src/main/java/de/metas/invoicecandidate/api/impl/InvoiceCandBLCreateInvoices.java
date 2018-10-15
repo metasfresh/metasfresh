@@ -65,7 +65,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;
@@ -89,6 +88,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
+import de.metas.util.i18n.IMsgBL;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator

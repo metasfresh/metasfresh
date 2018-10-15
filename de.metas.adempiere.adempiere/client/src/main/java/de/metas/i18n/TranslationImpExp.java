@@ -35,6 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Translation Table Import + Export

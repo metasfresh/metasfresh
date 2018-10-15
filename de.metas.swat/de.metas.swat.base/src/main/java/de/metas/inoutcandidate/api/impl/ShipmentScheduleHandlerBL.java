@@ -45,7 +45,6 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
@@ -57,6 +56,8 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 /**

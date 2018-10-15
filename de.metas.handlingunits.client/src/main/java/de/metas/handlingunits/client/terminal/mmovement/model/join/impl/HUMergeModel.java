@@ -50,10 +50,10 @@ import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinOrMergeBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public final class HUMergeModel extends AbstractMaterialMovementModel
 {

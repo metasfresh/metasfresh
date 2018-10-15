@@ -53,11 +53,11 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
-import de.metas.i18n.IMsgBL;
 import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 import net.miginfocom.swing.MigLayout;
 
 /**

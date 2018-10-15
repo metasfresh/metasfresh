@@ -33,12 +33,12 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.modelvalidator.SwatValidator;
 import de.metas.order.model.interceptor.C_OrderLine;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Makes sure that there are no negative QtyReserved values.

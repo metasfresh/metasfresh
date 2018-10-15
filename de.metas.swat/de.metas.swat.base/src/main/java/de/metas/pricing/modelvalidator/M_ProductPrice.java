@@ -36,10 +36,10 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 @Validator(I_M_ProductPrice.class)
 public class M_ProductPrice

@@ -86,7 +86,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -131,6 +130,8 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 /**

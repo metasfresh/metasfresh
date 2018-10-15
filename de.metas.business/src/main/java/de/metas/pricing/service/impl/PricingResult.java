@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
 
 import org.compiere.util.Util;
 
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
@@ -46,6 +45,8 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

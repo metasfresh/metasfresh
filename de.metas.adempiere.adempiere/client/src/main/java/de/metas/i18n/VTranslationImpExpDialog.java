@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Translation Dialog Import + Export.

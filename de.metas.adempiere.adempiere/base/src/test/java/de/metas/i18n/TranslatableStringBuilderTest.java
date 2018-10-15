@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.util.i18n.ITranslatableString;
+import de.metas.util.i18n.ImmutableTranslatableString;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

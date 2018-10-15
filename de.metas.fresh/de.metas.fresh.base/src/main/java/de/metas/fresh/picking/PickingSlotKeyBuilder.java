@@ -44,12 +44,13 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
+import de.metas.util.i18n.IMsgBL;
+
 import lombok.NonNull;
 
 public class PickingSlotKeyBuilder

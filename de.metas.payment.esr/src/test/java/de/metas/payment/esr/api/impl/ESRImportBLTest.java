@@ -59,7 +59,6 @@ import de.metas.allocation.api.impl.PlainAllocationDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.esr.ESRTestBase;
@@ -70,6 +69,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 public class ESRImportBLTest extends ESRTestBase
 {

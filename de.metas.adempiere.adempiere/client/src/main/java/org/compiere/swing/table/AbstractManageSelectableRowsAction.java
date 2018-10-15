@@ -31,8 +31,8 @@ import javax.swing.ListSelectionModel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.i18n.IMsgBL;
 
 /**
  * Base class for implementing actions which:
