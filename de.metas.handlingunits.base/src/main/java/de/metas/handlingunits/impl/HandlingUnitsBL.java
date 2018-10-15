@@ -566,13 +566,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return LUTUCUPair.ofLU(hu);
 		}
-		else if (isTransportUnitOrAggregate(hu))
+		else if(isTransportUnit(hu))
 		{
 			final I_M_HU tuHU = hu;
 			final I_M_HU luHU = getLoadingUnitHU(tuHU);
 			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
-		else // if (isVirtual(hu))
+		else // virtual or aggregate
 		{
 			final I_M_HU vhu = hu;
 			final I_M_HU tuHU = getTransportUnitHU(vhu);
