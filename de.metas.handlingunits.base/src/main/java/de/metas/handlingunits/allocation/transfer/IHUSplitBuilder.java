@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.compiere.model.I_C_UOM;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.model.I_M_HU;
@@ -125,7 +124,7 @@ public interface IHUSplitBuilder
 	/**
 	 *
 	 *
-	 * @param splitOnNoPI not 100% sure but i think this needs to be <code>true</code> if we split individual CUs. See {@link IHandlingUnitsDAO#getPackingItemTemplate_HU_PI_ID()}.
+	 * @param splitOnNoPI not 100% sure but i think this needs to be <code>true</code> if we split individual CUs.
 	 * @return
 	 */
 	IHUSplitBuilder setSplitOnNoPI(boolean splitOnNoPI);

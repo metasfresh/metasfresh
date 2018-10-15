@@ -661,7 +661,7 @@ public class HUTestHelper
 	{
 		final I_M_HU_PI huDefNone = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefNone.setName("NoPI");
-		huDefNone.setM_HU_PI_ID(HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_ID);
+		huDefNone.setM_HU_PI_ID(HuPackingInstructionsId.TEMPLATE.getRepoId());
 		InterfaceWrapperHelper.save(huDefNone);
 
 		final String huUnitType = null; // any
@@ -677,7 +677,7 @@ public class HUTestHelper
 	{
 		final I_M_HU_PI huDefVirtual = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		huDefVirtual.setName("VirtualPI");
-		huDefVirtual.setM_HU_PI_ID(HandlingUnitsDAO.VIRTUAL_HU_PI_ID);
+		huDefVirtual.setM_HU_PI_ID(HuPackingInstructionsId.VIRTUAL.getRepoId());
 		InterfaceWrapperHelper.save(huDefVirtual);
 
 		createVersion(huDefVirtual,
@@ -1775,12 +1775,12 @@ public class HUTestHelper
 
 	public boolean isNoPI(final I_M_HU_PI pi)
 	{
-		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_ID();
+		return HuPackingInstructionsId.isTemplateRepoId(pi.getM_HU_PI_ID());
 	}
 
 	public boolean isVirtualPI(final I_M_HU_PI pi)
 	{
-		return pi.getM_HU_PI_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_ID();
+		return HuPackingInstructionsId.isVirtualRepoId(pi.getM_HU_PI_ID());
 	}
 
 	public boolean isVirtualPIItem(final I_M_HU_PI_Item piItem)

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -172,10 +173,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			return;
 		}
 
-		final ImmutableList<Integer> huIdsToPick = huOnHandQtyChangeDescriptors.stream()
+		final ImmutableSet<Integer> huIdsToPick = huOnHandQtyChangeDescriptors.stream()
 				.filter(huDescriptor -> huDescriptor.getQuantity().signum() > 0)
 				.map(HUDescriptor::getHuId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
 		final PickingRequestedEvent pickingRequestedEvent = PickingRequestedEvent.builder()
 				.eventDescriptor(transactionEvent.getEventDescriptor())

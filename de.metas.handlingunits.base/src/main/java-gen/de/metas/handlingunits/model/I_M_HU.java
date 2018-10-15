@@ -305,6 +305,35 @@ public interface I_M_HU
     public static final String COLUMNNAME_Locked = "Locked";
 
 	/**
+	 * Set Los-Nr..
+	 * Los-Nummer (alphanumerisch)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setLot (java.lang.String Lot);
+
+	/**
+	 * Get Los-Nr..
+	 * Los-Nummer (alphanumerisch)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getLot();
+
+    /** Column definition for Lot */
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Lot = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Lot", null);
+    /** Column name Lot */
+    public static final String COLUMNNAME_Lot = "Lot";
+
+	/**
 	 * Set Handling Units.
 	 *
 	 * <br>Type: ID

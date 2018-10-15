@@ -57,10 +57,14 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1975](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1975) GitHub report about security vulnerability in twbs / bootstrap
     * Fixes a Vulnerability Report about bootstrap.
+  * [#1990](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1990) QR code support
+    * New Feature that allows to scan QR Codes now.
   * [#1992](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1992) Ugly double border when editing in Date Fields
     * Adjustment of the Border Layout for mandatory Date Fields.
   * [#1993](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1993) Date Icon moved few pixels to left for mandatory
     * Alignment improvement for Calendar Icons in mandatory Date Fields.
+  * [#1995](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1995) Cypress Test: Manufacturing Order Test fails
+    * Bugfix for failing Manufacturing Order Test with Cypress.
 
 # metasfresh 5.76
 ## Features

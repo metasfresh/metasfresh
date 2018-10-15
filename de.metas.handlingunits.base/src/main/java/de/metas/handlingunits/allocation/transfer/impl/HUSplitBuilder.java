@@ -74,8 +74,6 @@ public class HUSplitBuilder implements IHUSplitBuilder
 
 	public HUSplitBuilder(final IHUContext huContextInitial)
 	{
-		super();
-
 		this.huContextInitial = huContextInitial;
 	}
 

@@ -14,7 +14,7 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -715930090L;
+	private static final long serialVersionUID = 1513257319L;
 
     /** Standard Constructor */
     public X_M_HU_Snapshot (Properties ctx, int M_HU_Snapshot_ID, String trxName)
@@ -165,8 +165,6 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Reserved = R */
-	public static final String HUSTATUS_Reserved = "R";
 	/** Set Gebinde Status.
 		@param HUStatus Gebinde Status	  */
 	@Override

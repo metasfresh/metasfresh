@@ -34,6 +34,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -137,7 +138,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		luProducerDestination.setC_BPartner(lutuConfiguration.getC_BPartner());
 		luProducerDestination.setC_BPartner_Location_ID(lutuConfiguration.getC_BPartner_Location_ID());
 		luProducerDestination.setHUStatus(lutuConfiguration.getHUStatus());
-		luProducerDestination.setM_Locator(lutuConfiguration.getM_Locator());
+
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		luProducerDestination.setLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(lutuConfiguration.getM_Locator_ID()));
 
 		//
 		// Return it
@@ -196,7 +199,6 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setIsInfiniteQtyCU(false);
 			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
 		}
-
 
 		//
 		// LU Configuration
@@ -537,7 +539,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public Quantity convertQtyToLUTUConfigurationUOM(final BigDecimal qtyValue, final I_C_UOM qtyUOM, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		
+
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(lutuConfiguration.getM_Product_ID());
 
 		final Quantity qty = new Quantity(qtyValue, qtyUOM);

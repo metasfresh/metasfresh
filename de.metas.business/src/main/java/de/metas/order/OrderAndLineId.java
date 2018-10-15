@@ -1,6 +1,7 @@
 package de.metas.order;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +58,11 @@ public class OrderAndLineId
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;
 	}
 
+	public static int toOrderLineRepoId(final OrderAndLineId orderAndLineId)
+	{
+		return getOrderLineRepoIdOr(orderAndLineId, -1);
+	}
+
 	public static int getOrderLineRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderLineRepoId() : defaultValue;
@@ -84,6 +90,11 @@ public class OrderAndLineId
 	public int getOrderLineRepoId()
 	{
 		return orderLineId.getRepoId();
+	}
+
+	public static boolean equals(final OrderAndLineId o1, final OrderAndLineId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 }

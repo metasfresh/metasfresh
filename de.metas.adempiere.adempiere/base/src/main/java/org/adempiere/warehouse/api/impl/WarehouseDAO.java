@@ -236,6 +236,17 @@ public class WarehouseDAO implements IWarehouseDAO
 		return loadOutOfTrx(locatorId, I_M_Locator.class);
 	}
 
+	@Override
+	public LocatorId getLocatorIdByRepoIdOrNull(final int locatorId)
+	{
+		if (locatorId <= 0)
+		{
+			return null;
+		}
+		final I_M_Locator locator = getLocatorByRepoId(locatorId);
+		return LocatorId.ofRecord(locator);
+	}
+
 	private List<I_M_Locator> getLocatorsByRepoIds(final Set<Integer> locatorIds)
 	{
 		return loadByIdsOutOfTrx(locatorIds, I_M_Locator.class);
@@ -244,7 +255,13 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public I_M_Locator getLocatorById(@NonNull final LocatorId locatorId)
 	{
-		return loadOutOfTrx(locatorId, I_M_Locator.class);
+		return getLocatorById(locatorId, I_M_Locator.class);
+	}
+
+	@Override
+	public <T extends I_M_Locator> T getLocatorById(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
+	{
+		return loadOutOfTrx(locatorId, modelClass);
 	}
 
 	@Override

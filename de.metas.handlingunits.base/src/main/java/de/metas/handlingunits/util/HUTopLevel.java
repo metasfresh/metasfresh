@@ -3,8 +3,10 @@ package de.metas.handlingunits.util;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -18,17 +20,17 @@ import lombok.ToString;
 public final class HUTopLevel implements Comparable<HUTopLevel>
 {
 	private final I_M_HU topLevelHU;
-
 	private final I_M_HU luHU;
 	private final I_M_HU tuHU;
 	private final I_M_HU vhu;
 
 	// pre-built:
 	private final ArrayKey hashKey;
-	private final int topLevelHUId;
-	private final int luHUId;
-	private final int tuHUId;
-	private final int vhuId;
+	private final HuId topLevelHUId;
+	private final HuId luHUId;
+	@Getter
+	private final HuId tuHUId;
+	private final HuId vhuId;
 
 	public HUTopLevel(
 			@NonNull final I_M_HU topLevelHU,
@@ -42,15 +44,17 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 		this.tuHU = tuHU;
 		this.vhu = vhu;
 
-		topLevelHUId = topLevelHU == null || topLevelHU.getM_HU_ID() <= 0 ? -1 : topLevelHU.getM_HU_ID();
-
-		luHUId = luHU == null || luHU.getM_HU_ID() <= 0 ? -1 : luHU.getM_HU_ID();
-
-		tuHUId = tuHU == null || tuHU.getM_HU_ID() <= 0 ? -1 : tuHU.getM_HU_ID();
-
-		vhuId = vhu == null || vhu.getM_HU_ID() <= 0 ? -1 : vhu.getM_HU_ID();
+		topLevelHUId = extractHuId(topLevelHU);
+		luHUId = extractHuId(luHU);
+		tuHUId = extractHuId(tuHU);
+		vhuId = extractHuId(vhu);
 
 		hashKey = Util.mkKey(topLevelHUId, luHUId, tuHUId, vhuId);
+	}
+
+	private static final HuId extractHuId(final I_M_HU hu)
+	{
+		return hu != null ? HuId.ofRepoIdOrNull(hu.getM_HU_ID()) : null;
 	}
 
 	@Override
@@ -65,24 +69,7 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 			return +1; // nulls last
 		}
 
-		if (topLevelHUId != other.topLevelHUId)
-		{
-			return topLevelHUId - other.topLevelHUId;
-		}
-		if (luHUId != other.luHUId)
-		{
-			return luHUId - other.luHUId;
-		}
-		if (tuHUId != other.tuHUId)
-		{
-			return tuHUId - other.tuHUId;
-		}
-		if (vhuId != other.vhuId)
-		{
-			return vhuId - other.vhuId;
-		}
-
-		return 0;
+		return hashKey.compareTo(other.hashKey);
 	}
 
 	/**
@@ -101,11 +88,6 @@ public final class HUTopLevel implements Comparable<HUTopLevel>
 	public I_M_HU getM_TU_HU()
 	{
 		return tuHU;
-	}
-
-	public int getM_TU_HU_ID()
-	{
-		return tuHUId;
 	}
 
 	public I_M_HU getVHU()

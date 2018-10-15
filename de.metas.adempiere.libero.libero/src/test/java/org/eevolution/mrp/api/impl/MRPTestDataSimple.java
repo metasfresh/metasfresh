@@ -1,11 +1,12 @@
 package org.eevolution.mrp.api.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
@@ -41,11 +42,11 @@ public class MRPTestDataSimple
 	public I_S_Resource plant01;
 	public I_S_Resource plant02;
 	public I_M_Warehouse warehouse_plant01;
-	public I_M_Locator warehouse_plant01_locator;
+	public LocatorId warehouse_plant01_locatorId;
 	public I_M_Warehouse warehouse_plant02;
 	public I_M_Warehouse warehouse_picking01;
 	public I_M_Warehouse warehouse_rawMaterials01;
-	public I_M_Locator warehouse_rawMaterials01_locator;
+	public LocatorId warehouse_rawMaterials01_locatorId;
 
 	//
 	// Products and BOMs
@@ -103,7 +104,7 @@ public class MRPTestDataSimple
 
 		this.plant01 = helper.createResource("Plant01", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, helper.resourceType_Plants);
 		this.warehouse_plant01 = helper.createWarehouse("Plant01_Warehouse01", adOrg01);
-		this.warehouse_plant01_locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse_plant01);
+		this.warehouse_plant01_locatorId = getDefaultLocatorId(warehouse_plant01);
 
 		this.plant02 = helper.createResource("Plant02", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, helper.resourceType_Plants);
 		this.warehouse_plant02 = helper.createWarehouse("Plant02_Warehouse01", adOrg01);
@@ -113,7 +114,12 @@ public class MRPTestDataSimple
 		// Raw Materials Warehouses
 		// NOTE: we are adding them last because of MRP bug regarding how warehouses are iterated and DRP
 		this.warehouse_rawMaterials01 = helper.createWarehouse("RawMaterials_Warehouse01", adOrg01);
-		this.warehouse_rawMaterials01_locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse_rawMaterials01);
+		this.warehouse_rawMaterials01_locatorId = getDefaultLocatorId(warehouse_rawMaterials01);
+	}
+
+	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
+	{
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	private final void createProductsAndBOMs()

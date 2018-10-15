@@ -22,6 +22,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocation;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import de.metas.util.Check;
@@ -89,6 +90,8 @@ public class ContactPersonRepository
 		}
 
 		contactPersonRecord.setName(contactPerson.getName());
+		contactPersonRecord.setAD_Language(Language.asLanguageString(contactPerson.getLanguage()));
+
 		contactPersonRecord.setMKTG_Platform_ID(contactPerson.getPlatformId().getRepoId());
 		contactPersonRecord.setRemoteRecordId(contactPerson.getRemoteId());
 
@@ -96,14 +99,15 @@ public class ContactPersonRepository
 		final Optional<EmailAddress> email = EmailAddress.cast(contactPerson.getAddress());
 
 		final String emailString = email.map(EmailAddress::getValue).orElse(null);
+		contactPersonRecord.setEMail(emailString);
 
+		// set deactivated stuff
 		final Boolean deactivatedBool = email.map(EmailAddress::getActiveOnRemotePlatformOrNull).orElse(null);
 		final String deactivatedString = StringUtils.ofBoolean(
 				deactivatedBool,
 				X_MKTG_ContactPerson.DEACTIVATEDONREMOTEPLATFORM_UNKNOWN);
-
-		contactPersonRecord.setEMail(emailString);
 		contactPersonRecord.setDeactivatedOnRemotePlatform(deactivatedString);
+
 
 		return contactPersonRecord;
 	}
@@ -252,8 +256,8 @@ public class ContactPersonRepository
 			final EmailAddress emailAddress = EmailAddress.of(
 					contactPersonRecord.getEMail(),
 					StringUtils.toBoolean(emailDeactivated, null));
-			builder
-					.address(emailAddress);
+
+			builder.address(emailAddress);
 		}
 
 		BPartnerId bpartnerId = null;
@@ -272,6 +276,7 @@ public class ContactPersonRepository
 				.remoteId(contactPersonRecord.getRemoteRecordId())
 				.contactPersonId(ContactPersonId.ofRepoId(contactPersonRecord.getMKTG_ContactPerson_ID()))
 				.bpLocationId(bpartnerlocationId)
+				.language(Language.getLanguage(contactPersonRecord.getAD_Language()))
 				.build();
 	}
 

@@ -687,8 +687,8 @@ public class SwingPickingSlotsPanel
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.packedItemsSlot(getSelectedPackingSlot())
-				.fromHUs(availableHUsToPickFrom)
-				.targetHU(targetHU)
+				.pickFromHUs(availableHUsToPickFrom)
+				.packToHU(targetHU)
 				.qtyToPack(qtyToPack)
 				.allocate();
 
@@ -1088,7 +1088,7 @@ public class SwingPickingSlotsPanel
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.packedItemsSlot(getSelectedPackingSlot())
-				.fromHUs(hus)
+				.pickFromHUs(hus)
 				.allocate();
 
 		//

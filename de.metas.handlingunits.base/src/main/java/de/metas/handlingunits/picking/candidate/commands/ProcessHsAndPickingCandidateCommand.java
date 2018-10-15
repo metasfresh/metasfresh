@@ -2,25 +2,21 @@ package de.metas.handlingunits.picking.candidate.commands;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
 import org.slf4j.Logger;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -28,7 +24,6 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
-import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemPartId;
@@ -36,7 +31,6 @@ import de.metas.picking.service.PackingItemParts;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -72,74 +66,73 @@ import lombok.Singular;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ProcessPickingCandidateCommand
+public class ProcessHsAndPickingCandidateCommand
 {
 
-	private static final Logger logger = LogManager.getLogger(ProcessPickingCandidateCommand.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private static final Logger logger = LogManager.getLogger(ProcessHsAndPickingCandidateCommand.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final transient IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
-	private final PickingConfigRepository pickingConfigRepository;
 
-	private final Set<HuId> huIds;
-	private final ShipmentScheduleId shipmentScheduleId;
-
-	private ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByHUId = null; // lazy
-	private ImmutableList<PickingCandidate> processedPickingCandidates = null;
+	private final ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByPickFromHUId;
+	private final ImmutableSet<HuId> pickFromHuIds;
+	private final boolean allowOverDelivery;
 
 	@Builder
-	private ProcessPickingCandidateCommand(
+	private ProcessHsAndPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickingConfigRepository pickingConfigRepository,
-			@NonNull @Singular final List<HuId> huIds,
-			@Nullable final ShipmentScheduleId shipmentScheduleId)
+			//
+			@NonNull final List<PickingCandidate> pickingCandidates,
+			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
+			final boolean allowOverDelivery)
 	{
-		Preconditions.checkArgument(!huIds.isEmpty(), "huIds not empty");
+		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
+		pickingCandidates.forEach(PickingCandidate::assertDraft);
 
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
-		this.pickingConfigRepository = pickingConfigRepository;
-
-		this.huIds = ImmutableSet.copyOf(huIds);
-		this.shipmentScheduleId = shipmentScheduleId; // might not be set
+		this.pickingCandidatesByPickFromHUId = Multimaps.index(pickingCandidates, PickingCandidate::getPickFromHuId);
+		this.pickFromHuIds = ImmutableSet.<HuId> builder()
+				.addAll(pickingCandidatesByPickFromHUId.keySet())
+				.addAll(additionalPickFromHuIds)
+				.build();
+		
+		this.allowOverDelivery = allowOverDelivery;
 	}
 
-	public void perform()
+	public ImmutableList<PickingCandidate> perform()
 	{
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
-		changeStatusToProcessedAndSave();
+
+		final ImmutableList<PickingCandidate> processedPickingCandidates = changeStatusToProcessedAndSave();
+
+		return processedPickingCandidates;
 	}
 
 	private void allocateHUsToShipmentSchedule()
 	{
-		final List<I_M_HU> hus = retrieveHUsOutOfTrx(); // HU2PackingItemsAllocator wants them to be out of trx
-		hus.forEach(this::allocateHUToShipmentSchedule);
+		final List<I_M_HU> pickFromHUs = retrievePickFromHUsOutOfTrx(); // HU2PackingItemsAllocator wants them to be out of trx
+		pickFromHUs.forEach(this::allocateHUToShipmentSchedule);
 	}
 
-	private List<I_M_HU> retrieveHUsOutOfTrx()
+	private List<I_M_HU> retrievePickFromHUsOutOfTrx()
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_M_HU.class)
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
-				.create()
-				.list(I_M_HU.class);
+		return handlingUnitsRepo.getByIds(pickFromHuIds);
 	}
 
 	private void allocateHUToShipmentSchedule(@NonNull final I_M_HU hu)
 	{
 		final IPackingItem itemToPack = createItemToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
-		final boolean allowOverDelivery = pickingConfigRepository.getPickingConfig().isAllowOverDelivery();
-
 		HU2PackingItemsAllocator.builder()
 				.itemToPack(itemToPack)
 				.allowOverDelivery(allowOverDelivery)
-				.fromHU(hu)
+				.pickFromHU(hu)
 				.allocate();
 	}
 
@@ -171,19 +164,12 @@ public class ProcessPickingCandidateCommand
 
 	private ImmutableListMultimap<HuId, PickingCandidate> getPickingCandidatesIndexedByHUId()
 	{
-		if (pickingCandidatesByHUId == null)
-		{
-			pickingCandidatesByHUId = pickingCandidateRepository.getByHUIds(huIds)
-					.stream()
-					.filter(pc -> shipmentScheduleId == null || Objects.equals(shipmentScheduleId, pc.getShipmentScheduleId()))
-					.collect(GuavaCollectors.toImmutableListMultimap(PickingCandidate::getHuId));
-		}
-		return pickingCandidatesByHUId;
+		return pickingCandidatesByPickFromHUId;
 	}
 
 	private void destroyEmptySourceHUs()
 	{
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(huIds);
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveActualSourceHUs(pickFromHuIds);
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 
@@ -209,25 +195,13 @@ public class ProcessPickingCandidateCommand
 		logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHU.getM_HU_ID());
 	}
 
-	private void changeStatusToProcessedAndSave()
+	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
-		this.processedPickingCandidates = getPickingCandidatesIndexedByHUId()
-				.values()
-				.stream()
-				.peek(this::changeStatusToProcessed)
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<PickingCandidate> pickingCandidates = ImmutableList.copyOf(getPickingCandidatesIndexedByHUId().values());
 
-		pickingCandidateRepository.saveAll(processedPickingCandidates);
-	}
+		pickingCandidates.forEach(pickingCandidate -> pickingCandidate.changeStatusToProcessed(pickingCandidate.getPickFromHuId()));
+		pickingCandidateRepository.saveAll(pickingCandidates);
 
-	private void changeStatusToProcessed(final PickingCandidate pickingCandidate)
-	{
-		pickingCandidate.setStatus(PickingCandidateStatus.Processed);
-	}
-
-	public Collection<PickingCandidate> getProcessedPickingCandidates()
-	{
-		Check.assumeNotEmpty(processedPickingCandidates, "processedPickingCandidates is not empty");
-		return processedPickingCandidates;
+		return pickingCandidates;
 	}
 }

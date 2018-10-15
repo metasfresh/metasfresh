@@ -69,6 +69,29 @@ public interface I_M_Picking_Candidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Approval Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setApprovalStatus (java.lang.String ApprovalStatus);
+
+	/**
+	 * Get Approval Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getApprovalStatus();
+
+    /** Column definition for ApprovalStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_ApprovalStatus = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "ApprovalStatus", null);
+    /** Column name ApprovalStatus */
+    public static final String COLUMNNAME_ApprovalStatus = "ApprovalStatus";
+
+	/**
 	 * Set Maßeinheit.
 	 * Maßeinheit
 	 *
@@ -206,7 +229,7 @@ public interface I_M_Picking_Candidate
 	 * Set Picking Slot.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_PickingSlot_ID (int M_PickingSlot_ID);
@@ -215,7 +238,7 @@ public interface I_M_Picking_Candidate
 	 * Get Picking Slot.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_PickingSlot_ID();
@@ -247,6 +270,83 @@ public interface I_M_Picking_Candidate
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "M_ShipmentSchedule_ID", null);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Pack To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackTo_HU_PI_ID (int PackTo_HU_PI_ID);
+
+	/**
+	 * Get Pack To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPackTo_HU_PI_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PI getPackTo_HU_PI();
+
+	public void setPackTo_HU_PI(de.metas.handlingunits.model.I_M_HU_PI PackTo_HU_PI);
+
+    /** Column definition for PackTo_HU_PI_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_PackTo_HU_PI_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU_PI>(I_M_Picking_Candidate.class, "PackTo_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+    /** Column name PackTo_HU_PI_ID */
+    public static final String COLUMNNAME_PackTo_HU_PI_ID = "PackTo_HU_PI_ID";
+
+	/**
+	 * Set Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPickFrom_HU_ID (int PickFrom_HU_ID);
+
+	/**
+	 * Get Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPickFrom_HU_ID();
+
+	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
+
+	public void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU);
+
+    /** Column definition for PickFrom_HU_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU>(I_M_Picking_Candidate.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+    /** Column name PickFrom_HU_ID */
+    public static final String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPickStatus (java.lang.String PickStatus);
+
+	/**
+	 * Get Pick Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPickStatus();
+
+    /** Column definition for PickStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_PickStatus = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "PickStatus", null);
+    /** Column name PickStatus */
+    public static final String COLUMNNAME_PickStatus = "PickStatus";
 
 	/**
 	 * Set Qty Picked.
