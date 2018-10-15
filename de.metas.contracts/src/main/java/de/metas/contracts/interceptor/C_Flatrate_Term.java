@@ -51,6 +51,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -84,6 +85,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_Term.class)
+@Component("de.metas.contracts.interceptor")
 public class C_Flatrate_Term
 {
 	public static C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
@@ -647,12 +649,12 @@ public class C_Flatrate_Term
 				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
 		{
 			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
-			
+			final List<I_C_Order> orders = Services.get(IOrderDAO.class).getByIds(orderIds, I_C_Order.class);
 			// update order contract status to cancelled
-			orderIds.forEach(id -> {
-				final I_C_Order order = Services.get(IOrderDAO.class).getById(id, I_C_Order.class);
+			for (final I_C_Order order : orders)
+			{
 				contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
-			});
+			};
 		}
 	}
 
