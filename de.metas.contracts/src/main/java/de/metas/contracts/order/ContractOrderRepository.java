@@ -3,8 +3,6 @@
  */
 package de.metas.contracts.order;
 
-import java.util.List;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
