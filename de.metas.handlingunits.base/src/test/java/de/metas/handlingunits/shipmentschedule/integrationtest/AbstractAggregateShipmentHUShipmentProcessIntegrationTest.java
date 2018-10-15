@@ -54,7 +54,7 @@ import de.metas.product.ProductId;
 		shipmentSchedules = Arrays.asList(
 				createShipmentSchedule(true, // on new order
 						pTomato, productUOM, BigDecimal.valueOf(30)), // shipment schedule 0
-				createShipmentSchedule(true, // on new order
+				createShipmentSchedule(false, // on new order
 						pSalad, productUOM, BigDecimal.valueOf(50)) // shipment schedule 1
 		);
 	}

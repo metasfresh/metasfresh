@@ -34,6 +34,7 @@ import java.util.List;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
 
@@ -121,9 +122,12 @@ public class ShipmentScheduleHelper
 			final BigDecimal qtyPickedInitial)
 	{
 		//
-		// Create Order Line
-		// NOTE: they only reason why we are creating the order line is because at the moment, C_UOM_ID is fetched from there
+		// Create Order and Order Line
+		final I_C_Order order = newInstance(I_C_Order.class);
+		saveRecord(order);
+
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
+		orderLine.setC_Order_ID(order.getC_Order_ID());
 		orderLine.setC_UOM(uom);
 		saveRecord(orderLine);
 
@@ -139,10 +143,11 @@ public class ShipmentScheduleHelper
 		shipmentSchedule.setQtyOrdered_Calculated(qtyToDeliver);
 		shipmentSchedule.setQtyToDeliver(qtyToDeliver);
 
+		shipmentSchedule.setC_Order_ID(order.getC_Order_ID());
 		shipmentSchedule.setC_OrderLine(orderLine);
 		shipmentSchedule.setAD_Table_ID(getModelTableId(orderLine));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
-		
+
 		shipmentSchedule.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
 
 		saveRecord(shipmentSchedule);
