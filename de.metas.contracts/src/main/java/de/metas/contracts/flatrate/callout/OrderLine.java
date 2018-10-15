@@ -10,7 +10,7 @@ import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;

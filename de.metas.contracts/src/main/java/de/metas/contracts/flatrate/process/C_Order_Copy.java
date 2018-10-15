@@ -5,8 +5,8 @@ import org.compiere.Adempiere;
 import org.compiere.util.Ini;
 
 import de.metas.contracts.order.ContractOrderRepository;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder;
-import de.metas.contracts.subscription.model.I_C_Order;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;

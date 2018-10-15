@@ -6,7 +6,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 
-import de.metas.contracts.subscription.model.I_C_Order;
+import de.metas.contracts.order.model.I_C_Order;
 import lombok.NonNull;
 
 /*

@@ -75,10 +75,10 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -930,14 +930,19 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final OrderId currentOrderId = OrderId.ofRepoId(newTerm.getC_OrderLine_Term().getC_Order_ID());
 
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
 		final OrderId orderId = contractOrderService.retrieveLinkedFollowUpContractOrder(currentOrderId);
+		
+//		final UserRepository userRepository = new UserRepository();
+//		final BPartnerBL bPartnerBL = new BPartnerBL(userRepository);
+//		Service.registerService(IBPartnerBL.class, bPartnerBL);
+		
 		if (orderId == null)
 		{
 			return null;
 		}
 
+		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 		final List<I_C_Flatrate_Term> orderTerms = contractOrderRepository.retrieveFlatrateTerms(orderId);
 		final I_C_Flatrate_Term suitableTerm = orderTerms
 				.stream()

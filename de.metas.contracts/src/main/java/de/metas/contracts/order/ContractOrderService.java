@@ -12,7 +12,7 @@ import org.adempiere.util.proxy.Cached;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.subscription.model.I_C_Order;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;

@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.model;
+package de.metas.contracts.order.model;
 
 import org.adempiere.model.ModelColumn;
 

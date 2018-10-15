@@ -1,4 +1,4 @@
-package de.metas.contracts.subscription.model;
+package de.metas.contracts.order.model;
 
 public interface I_C_Order extends org.compiere.model.I_C_Order
 {
