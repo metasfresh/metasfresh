@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,10 +37,17 @@ import lombok.Value;
 @Value
 public class OrderAndLineId
 {
+	private static final Logger logger = LogManager.getLogger(OrderAndLineId.class);
+
 	public static OrderAndLineId ofRepoIdsOrNull(final int orderRepoId, final int orderLineRepoId)
 	{
-		if (orderRepoId <= 0 || orderLineRepoId <= 0)
+		if (orderLineRepoId <= 0)
 		{
+			return null;
+		}
+		if (orderRepoId <= 0)
+		{
+			logger.warn("ofRepoIdsOrNull: Possible development error: orderLineRepoId={} while orderRepoId={}. Returning null", orderLineRepoId, orderRepoId);
 			return null;
 		}
 		return ofRepoIds(orderRepoId, orderLineRepoId);
