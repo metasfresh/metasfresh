@@ -70,6 +70,7 @@ import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ILanguageDAO;
+import de.metas.lang.ReferenceListAwareEnum;
 import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -799,6 +800,8 @@ public final class DB
 		//
 		else if(param instanceof RepoIdAware)
 			pstmt.setInt(index, ((RepoIdAware)param).getRepoId());
+		else if(param instanceof ReferenceListAwareEnum)
+			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		//
 		else
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");

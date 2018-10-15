@@ -3,10 +3,13 @@ package de.metas.handlingunits.picking;
 import java.util.Collection;
 import java.util.Objects;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -75,5 +78,10 @@ public class PickingCandidateId implements RepoIdAware
 	public static boolean equals(final PickingCandidateId o1, final PickingCandidateId o2)
 	{
 		return Objects.equals(o1, o2);
+	}
+
+	public TableRecordReference toTableRecordReference()
+	{
+		return TableRecordReference.of(I_M_Picking_Candidate.Table_Name, getRepoId());
 	}
 }

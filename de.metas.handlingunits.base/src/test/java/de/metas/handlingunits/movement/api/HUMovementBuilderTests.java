@@ -15,6 +15,7 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Locator;
@@ -131,7 +132,7 @@ public class HUMovementBuilderTests
 		assertThat(warehouseTo.getAD_Org_ID(), is(org.getAD_Org_ID()));
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setM_Locator(locatorFrom);
+		lutuProducer.setLocatorId(LocatorId.ofRecord(locatorFrom));
 		lutuProducer.setLUPI(testsupport.piLU);
 		lutuProducer.setLUItemPI(testsupport.piLU_Item_IFCO);
 		lutuProducer.setTUPI(testsupport.piTU_IFCO);

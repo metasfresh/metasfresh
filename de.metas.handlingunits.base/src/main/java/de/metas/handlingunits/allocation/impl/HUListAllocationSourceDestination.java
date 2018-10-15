@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -39,6 +38,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -69,15 +69,21 @@ import lombok.NonNull;
 public class HUListAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {
 	/** @return single HU allocation source/destination */
-	public static HUListAllocationSourceDestination of(@NonNull final I_M_HU sourceHU)
+	public static HUListAllocationSourceDestination of(@NonNull final I_M_HU hu)
 	{
-		return new HUListAllocationSourceDestination(ImmutableList.of(sourceHU));
+		return new HUListAllocationSourceDestination(ImmutableList.of(hu));
 	}
 
-	public static HUListAllocationSourceDestination ofHUId(final int huId)
+	public static HUListAllocationSourceDestination ofHUId(final int huRepoId)
 	{
-		Check.assume(huId > 0, "huId > 0");
-		return of(InterfaceWrapperHelper.load(huId, I_M_HU.class));
+		return ofHUId(HuId.ofRepoId(huRepoId));
+	}
+
+	public static HUListAllocationSourceDestination ofHUId(@NonNull final HuId huId)
+	{
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		return of(hu);
 	}
 
 	/** @return multi-HUs allocation source/destination */

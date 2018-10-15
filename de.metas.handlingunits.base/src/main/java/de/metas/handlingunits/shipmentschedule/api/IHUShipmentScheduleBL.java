@@ -6,11 +6,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
@@ -18,17 +20,19 @@ import de.metas.util.ISingletonService;
 public interface IHUShipmentScheduleBL extends ISingletonService
 {
 	/**
-	 * Add QtyPickedDiff to current QtyPicked of given shipment schedule.
+	 * Add QtyPicked to current QtyPicked of given shipment schedule.
 	 *
 	 * Also update the given <code>hu</code>'s (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to the given <code>sched</code>'s effective values.<br>
 	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
 	 *
 	 * @param sched
-	 * @param qtyPickedDiff
+	 * @param qtyPicked
 	 * @param tuOrVHU TU or VirtualHU to link on
 	 * @return qtyPicked record for this addition
 	 */
-	I_M_ShipmentSchedule_QtyPicked addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPickedDiff, I_M_HU tuOrVHU);
+	void addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPicked, I_M_HU tuOrVHU);
+
+	void addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, Quantity qtyPicked, HuId tuOrVHUId);
 
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link IShipmentScheduleWithHU}s.

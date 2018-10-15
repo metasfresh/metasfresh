@@ -35,10 +35,10 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
@@ -284,7 +284,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 	//
 	//
 
-	protected List<I_M_HU> generateLUs(final I_M_HU_PI_Item_Product tuPIItemProduct, final I_M_Locator locator, final int totalQtyCU)
+	protected List<I_M_HU> generateLUs(final I_M_HU_PI_Item_Product tuPIItemProduct, final LocatorId locatorId, final int totalQtyCU)
 	{
 		final I_C_BPartner bpartner = null;
 		final int bpartnerLocationId = 1;
@@ -306,7 +306,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		luProducerDestination.setLUPI(piLU);
 		luProducerDestination.setLUItemPI(piLU_Item);
 		luProducerDestination.setMaxLUsInfinite(); // allow creating as much LUs as needed
-		luProducerDestination.setM_Locator(locator);
+		luProducerDestination.setLocatorId(locatorId);
 		luProducerDestination.setHUStatus(X_M_HU.HUSTATUS_Active);
 
 		//

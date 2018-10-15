@@ -67,9 +67,11 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 	@Override
 	protected void step10_createShipmentSchedules()
 	{
+		final BigDecimal qtyOrdered = new BigDecimal("100");
+
 		shipmentSchedules = Arrays.asList(
-				createShipmentSchedule(), // shipment schedule 0
-				createShipmentSchedule() // shipment schedule 1
+				createShipmentSchedule(/* newOrder */true, product, productUOM, qtyOrdered), // shipment schedule 0
+				createShipmentSchedule(/* newOrder */false, product, productUOM, qtyOrdered) // shipment schedule 1
 		);
 	}
 

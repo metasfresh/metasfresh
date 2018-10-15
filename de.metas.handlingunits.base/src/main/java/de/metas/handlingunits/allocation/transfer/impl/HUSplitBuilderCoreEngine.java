@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -49,6 +50,7 @@ public class HUSplitBuilderCoreEngine
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	private final IHUContext huContextInitital;
 	private final I_M_HU huToSplit;
@@ -100,7 +102,7 @@ public class HUSplitBuilderCoreEngine
 			huAllocationDestination.setHUStatus(huToSplit.getHUStatus());
 			huAllocationDestination.setC_BPartner(huToSplit.getC_BPartner());
 			huAllocationDestination.setC_BPartner_Location_ID(huToSplit.getC_BPartner_Location_ID());
-			huAllocationDestination.setM_Locator(huToSplit.getM_Locator());
+			huAllocationDestination.setLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(huToSplit.getM_Locator_ID()));
 		}
 
 		return this;

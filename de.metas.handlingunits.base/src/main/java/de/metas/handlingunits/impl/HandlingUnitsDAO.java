@@ -177,6 +177,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return virtualPIItem;
 	}
 
+	@Override
+	public I_M_HU_PI getPackingInstructionById(@NonNull final HuPackingInstructionsId id)
+	{
+		return retrievePI(Env.getCtx(), id);
+	}
+
 	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
 	// NOTE: for caching to work, don't make it final
 	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
@@ -643,7 +649,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final HuPackingInstructionsId packingInstructionsId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
-		final BPartnerId bpartnerId = bpartner != null ?  BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
 
 		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, trxName);
 	}
@@ -664,7 +670,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have our given huPI included
 		// 08254: if Template-PI, don't add included HU filter
-		if(!packingInstructionsId.isTemplate())
+		if (!packingInstructionsId.isTemplate())
 		{
 			piItemsQueryBuilder.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, packingInstructionsId);
 		}

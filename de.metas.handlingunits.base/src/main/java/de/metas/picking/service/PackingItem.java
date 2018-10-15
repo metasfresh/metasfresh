@@ -35,9 +35,10 @@ import lombok.NonNull;
  */
 final class PackingItem implements IPackingItem
 {
-	private final PackingItemGroupingKey groupingKey;
-	private final I_C_UOM uom;
 	private final PackingItemParts parts;
+	private final PackingItemGroupingKey groupingKey;
+	private final ProductId productId;
+	private final I_C_UOM uom;
 
 	PackingItem(final PackingItemParts parts)
 	{
@@ -45,6 +46,7 @@ final class PackingItem implements IPackingItem
 
 		this.parts = parts.copy();
 		this.groupingKey = parts.mapReduce(PackingItem::computeGroupingKey).get();
+		productId = parts.mapReduce(PackingItemPart::getProductId).get();
 		uom = parts.mapReduce(part -> part.getQty().getUOM()).get();
 	}
 
@@ -52,6 +54,7 @@ final class PackingItem implements IPackingItem
 	{
 		parts = copyFromItem.parts.copy();
 		groupingKey = copyFromItem.groupingKey;
+		productId = copyFromItem.productId;
 		uom = copyFromItem.uom;
 	}
 
@@ -94,12 +97,6 @@ final class PackingItem implements IPackingItem
 	{
 		return parts.getQtySum()
 				.orElseGet(() -> Quantity.zero(getC_UOM()));
-	}
-
-	@Override
-	public final ProductId getProductId()
-	{
-		return parts.mapReduce(PackingItemPart::getProductId).get();
 	}
 
 	@Override
@@ -260,6 +257,12 @@ final class PackingItem implements IPackingItem
 	public final PackingItemGroupingKey getGroupingKey()
 	{
 		return groupingKey;
+	}
+
+	@Override
+	public final ProductId getProductId()
+	{
+		return productId;
 	}
 
 	@Override

@@ -37,10 +37,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
-import org.compiere.model.I_M_Locator;
 import org.compiere.util.TrxRunnable;
 
 import com.google.common.collect.ImmutableList;
@@ -151,7 +151,7 @@ public class HUPickingSlotBL
 						huBuilder.setM_HU_Item_Parent(null); // no parent
 						huBuilder.setM_HU_PI_Item_Product(itemProduct);
 
-						huBuilder.setM_Locator(getLocator(pickingSlot));
+						huBuilder.setLocatorId(getLocatorId(pickingSlot));
 
 						// We are creating the new HUs on picking slot as picked, to avoid some allocation business logic to consider them
 						huBuilder.setHUStatus(X_M_HU.HUSTATUS_Picked);
@@ -172,10 +172,10 @@ public class HUPickingSlotBL
 		return new QueueActionResult(pickingSlotTrx, null);
 	}
 
-	private I_M_Locator getLocator(final I_M_PickingSlot pickingSlot)
+	private LocatorId getLocatorId(final I_M_PickingSlot pickingSlot)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
-		return Services.get(IWarehouseBL.class).getDefaultLocator(warehouseId);
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 	}
 
 	@Override

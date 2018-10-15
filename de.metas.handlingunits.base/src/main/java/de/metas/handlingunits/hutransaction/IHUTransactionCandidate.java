@@ -25,7 +25,7 @@ package de.metas.handlingunits.hutransaction;
 
 import java.util.Date;
 
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
@@ -148,7 +148,7 @@ public interface IHUTransactionCandidate
 	/**
 	 * @return locator which shall be used in the HU Trx
 	 */
-	I_M_Locator getM_Locator();
+	LocatorId getLocatorId();
 
 	/**
 	 * @return HU status used in the HU Trx

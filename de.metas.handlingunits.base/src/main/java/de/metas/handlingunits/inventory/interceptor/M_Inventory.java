@@ -8,6 +8,8 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 
@@ -211,9 +213,12 @@ public class M_Inventory
 		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
 		else
 		{
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLine.getM_Locator_ID());
+
 			return HUProducerDestination.ofVirtualPI()
 					.setHUStatus(X_M_HU.HUSTATUS_Active)
-					.setM_Locator(inventoryLine.getM_Locator());
+					.setLocatorId(locatorId);
 		}
 	}
 

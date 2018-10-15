@@ -39,7 +39,7 @@ public class AddQtyToHURequest
 	@NonNull
 	BigDecimal qtyCU;
 	@NonNull
-	HuId targetHUId;
+	HuId packToHuId;
 	@NonNull
 	PickingSlotId pickingSlotId;
 	@NonNull
@@ -50,7 +50,7 @@ public class AddQtyToHURequest
 	@Builder
 	private AddQtyToHURequest(
 			@NonNull BigDecimal qtyCU,
-			@NonNull HuId targetHUId,
+			@NonNull HuId packToHuId,
 			@NonNull PickingSlotId pickingSlotId,
 			@NonNull ShipmentScheduleId shipmentScheduleId,
 			boolean allowOverDelivery)
@@ -61,7 +61,7 @@ public class AddQtyToHURequest
 		}
 
 		this.qtyCU = qtyCU;
-		this.targetHUId = targetHUId;
+		this.packToHuId = packToHuId;
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.allowOverDelivery = allowOverDelivery;

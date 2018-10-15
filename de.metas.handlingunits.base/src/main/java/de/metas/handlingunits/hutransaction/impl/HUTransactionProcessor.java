@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.LazyInitializer;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.HUConstants;
@@ -128,7 +129,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		//
 		// 07827: Track HU movement locator and status
-		trxLine.setM_Locator(trxLineCandidate.getM_Locator());
+		trxLine.setM_Locator_ID(LocatorId.toRepoId(trxLineCandidate.getLocatorId()));
 		trxLine.setHUStatus(trxLineCandidate.getHUStatus());
 
 		huTrxBL.setReferencedObject(trxLine, trxLineCandidate.getReferencedModel());
