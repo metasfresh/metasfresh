@@ -684,7 +684,8 @@ public class C_Flatrate_Term
 							&& subscriptionBL.isActiveTerm(currentTerm));
 
 			final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
-			final List<I_C_Order> orders = orderDAO.getByIds(ImmutableSet.of(orderId, parentOrderId), I_C_Order.class);
+			final ImmutableSet<OrderId> orderIds = parentOrderId == null ? ImmutableSet.of(orderId) : ImmutableSet.of(orderId, parentOrderId);
+			final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
 			
 			final I_C_Order contractOrder = orders.get(0);
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
