@@ -47,7 +47,7 @@ export function resetPasswordRequest(form) {
 }
 
 export function getResetPasswordInfo(token) {
-  return axios.get(`${config.API_URL}/login/resetPassword/${token}`);
+  return axios.post(`${config.API_URL}/login/resetPassword/${token}/init`);
 }
 
 export function resetPasswordComplete(token, form) {

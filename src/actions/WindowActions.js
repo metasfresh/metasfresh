@@ -31,6 +31,7 @@ import {
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
+  TOGGLE_OVERLAY,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -82,11 +83,19 @@ export function hideSpinner(id) {
   };
 }
 
-export function openRawModal(windowType, viewId) {
+export function toggleOverlay(data) {
+  return {
+    type: TOGGLE_OVERLAY,
+    data: data,
+  };
+}
+
+export function openRawModal(windowId, viewId, profileId) {
   return {
     type: OPEN_RAW_MODAL,
-    windowType: windowType,
+    windowId: windowId,
     viewId: viewId,
+    profileId: profileId,
   };
 }
 
@@ -1013,10 +1022,15 @@ export function handleProcessResponse(response, type, id) {
 
       if (action) {
         switch (action.type) {
+          case 'displayQRCode':
+            dispatch(toggleOverlay({ type: 'qr', data: action.code }));
+            break;
           case 'openView':
             await dispatch(closeModal());
 
-            await dispatch(openRawModal(action.windowId, action.viewId));
+            await dispatch(
+              openRawModal(action.windowId, action.viewId, action.profileId)
+            );
 
             break;
           case 'openReport':
@@ -1224,12 +1238,12 @@ function getProcessData({
     }
   }
 
-  return axios.post(config.API_URL + '/process/' + processId, payload);
+  return axios.post(`${config.API_URL}/process/${processId}`, payload);
 }
 
 export function startProcess(processType, pinstanceId) {
   return axios.get(
-    config.API_URL + '/process/' + processType + '/' + pinstanceId + '/start'
+    `${config.API_URL}/process/${processType}/${pinstanceId}/start`
   );
 }
 

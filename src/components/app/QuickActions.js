@@ -65,7 +65,7 @@ class QuickActions extends Component {
     const { selected, viewId, windowType } = this.props;
 
     if (
-      (nextProps.selected &&
+      ((selected || nextProps.selected) &&
         JSON.stringify(nextProps.selected) !== JSON.stringify(selected)) ||
       (nextProps.viewId && nextProps.viewId !== viewId) ||
       (nextProps.windowType && nextProps.windowType !== windowType)
@@ -272,7 +272,7 @@ class QuickActions extends Component {
         </div>
       );
     } else {
-      return false;
+      return null;
     }
   }
 }

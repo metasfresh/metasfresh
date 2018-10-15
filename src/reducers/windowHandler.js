@@ -32,6 +32,7 @@ import {
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
+  TOGGLE_OVERLAY,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -70,6 +71,10 @@ const initialState = {
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
+  },
+  overlay: {
+    visible: false,
+    data: null,
   },
   rawModal: {
     visible: false,
@@ -197,6 +202,14 @@ export default function windowHandler(state = initialState, action) {
           visible: false,
           type: '',
           id: null,
+        },
+      };
+    case TOGGLE_OVERLAY:
+      return {
+        ...state,
+        overlay: {
+          visible: action.data === false ? false : !state.overlay.visible,
+          data: action.data ? { ...action.data } : null,
         },
       };
 
@@ -521,8 +534,9 @@ export default function windowHandler(state = initialState, action) {
         rawModal: {
           ...state.rawModal,
           visible: false,
-          type: null,
+          windowId: null,
           viewId: null,
+          profileId: null,
         },
       };
     case OPEN_RAW_MODAL:
@@ -531,8 +545,9 @@ export default function windowHandler(state = initialState, action) {
         rawModal: {
           ...state.rawModal,
           visible: true,
-          type: action.windowType,
+          windowId: action.windowId,
           viewId: action.viewId,
+          profileId: action.profileId,
         },
       };
     case OPEN_FILTER_BOX:

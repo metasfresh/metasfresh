@@ -3,10 +3,11 @@ import { IndexRoute, NoMatch, Route } from 'react-router';
 import { push } from 'react-router-redux';
 
 import { loginSuccess, logoutSuccess } from './actions/AppActions';
-import { localLoginRequest, logoutRequest } from './api';
+import { localLoginRequest, logoutRequest, getResetPasswordInfo } from './api';
 import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
+import Translation from './components/Translation';
 import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
 import DocList from './containers/DocList.js';
@@ -47,6 +48,20 @@ export const getRoutes = (store, auth, plugins) => {
 
       callback();
     }
+  };
+
+  const onResetEnter = (nextState, replace, callback) => {
+    const token = nextState.location.query.token;
+
+    if (!token) {
+      callback(null, nextState.location.pathname);
+    }
+
+    return getResetPasswordInfo(token).then(() => {
+      return Translation.getMessages().then(() => {
+        callback(null, nextState.location.pathname);
+      });
+    });
   };
 
   const logout = () => {
@@ -168,6 +183,7 @@ export const getRoutes = (store, auth, plugins) => {
       />
       <Route
         path="/resetPassword"
+        onEnter={onResetEnter}
         component={({ location }) => (
           <Login
             splat={location.pathname.replace('/', '')}

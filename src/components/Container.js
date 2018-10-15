@@ -154,15 +154,16 @@ class Container extends Component {
             <RawModal
               modalTitle={modalTitle}
               modalDescription={modalDescription}
-              windowType={rawModal.type}
+              windowType={rawModal.windowId}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}
             >
               <div className="document-lists-wrapper">
                 <DocumentList
                   type="grid"
-                  windowType={rawModal.type}
+                  windowType={rawModal.windowId}
                   defaultViewId={rawModal.viewId}
+                  viewProfileId={rawModal.profileId}
                   setModalTitle={setModalTitle}
                   setModalDescription={setModalDescription}
                   fetchQuickActionsOnInit={

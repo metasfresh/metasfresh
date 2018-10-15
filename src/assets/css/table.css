@@ -136,6 +136,7 @@
             align-items: end;
 
             .widget-tooltip {
+                text-align: right;
                 flex: 1 1 20px;
             }
         }

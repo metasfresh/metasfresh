@@ -5,24 +5,32 @@
     color: $brand-font-color-secondary;
     font-weight:500;
     cursor: pointer;
-}
-.rdt .form-control {
-    border-radius:0;
-    border:0;
-    border-color: $brand-light-color;
-    padding: 1px;
-    padding-top: 0;
-    padding-left: 0;
-    cursor: inherit;
-    line-height: 21px;
-}
-.rdt .form-control:focus {
-    background-color: transparent;
-}
 
-.rdt input[value='(none)']{
-    opacity: .7;
-    font-weight: normal;
+    .form-control {
+        height: calc(1.25rem + 2px);
+        border-radius:0;
+        border:0;
+        border-color: $brand-light-color;
+        padding: 1px;
+        padding-top: 0;
+        padding-left: 0;
+        cursor: inherit;
+        line-height: 21px;
+
+        &:focus {
+            background-color: transparent;
+            box-shadow: none;
+        }
+    }
+
+    input {
+        height: auto;
+    }
+
+    input[value='(none)']{
+        opacity: .7;
+        font-weight: normal;
+    }
 }
 
 .rdtPicker {
