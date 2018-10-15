@@ -22,6 +22,7 @@ import org.compiere.model.I_M_Attribute;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -475,6 +476,13 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			throw new AdempiereException("Expected only one created HU but found more: " + this);
 		}
+	}
+
+	@Override
+	public final HuId getSingleCreatedHuId()
+	{
+		I_M_HU hu = getSingleCreatedHU();
+		return hu != null ? HuId.ofRepoId(hu.getM_HU_ID()) : null;
 	}
 
 	@Override

@@ -508,7 +508,9 @@ public class HU2PackingItemsAllocator
 			final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
 			if (currentQtyToDeliver.compareTo(qtyPacked.getAsBigDecimal()) < 0)
 			{
-				throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@");
+				throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
+						.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
+						.setParameter("qtyPacked to be Delivered", qtyPacked);
 			}
 		}
 

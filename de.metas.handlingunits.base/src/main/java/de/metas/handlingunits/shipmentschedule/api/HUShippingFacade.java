@@ -13,10 +13,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -31,6 +33,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
@@ -77,6 +80,7 @@ import lombok.ToString;
 @ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager" })
 public class HUShippingFacade
 {
+	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
@@ -96,6 +100,7 @@ public class HUShippingFacade
 	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
 	private final ImmutableList<I_M_HU> hus;
 	private final ILoggable loggable;
+	private final boolean failIfNoShipmentCandidatesFound;
 
 	//
 	// State
@@ -110,7 +115,8 @@ public class HUShippingFacade
 			final boolean completeShipments,
 			@Nullable final BillAssociatedInvoiceCandidates invoiceMode,
 			final boolean createShipperDeliveryOrders,
-			@Nullable final ILoggable loggable)
+			@Nullable final ILoggable loggable,
+			final boolean failIfNoShipmentCandidatesFound)
 	{
 		Check.assumeNotEmpty(hus, "hus is not empty");
 
@@ -120,6 +126,7 @@ public class HUShippingFacade
 		this.invoiceMode = invoiceMode;
 		this.createShipperDeliveryOrders = createShipperDeliveryOrders;
 		this.loggable = loggable != null ? loggable : Loggables.getNullLoggable();
+		this.failIfNoShipmentCandidatesFound = failIfNoShipmentCandidatesFound;
 	}
 
 	@VisibleForTesting
@@ -166,6 +173,15 @@ public class HUShippingFacade
 	private void generateShipments()
 	{
 		final List<ShipmentScheduleWithHU> candidates = getCandidates();
+		if (candidates.isEmpty())
+		{
+			new AdempiereException("No shipment candidates found")
+					.appendParametersToMessage()
+					.setParameter("context", this)
+					.throwOrLogWarning(failIfNoShipmentCandidatesFound, logger);
+			return;
+		}
+
 		shipmentsGenerateResult = huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(completeShipments)

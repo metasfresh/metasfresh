@@ -121,6 +121,7 @@ public final class ProcessClassInfo
 	public static final void resetCache()
 	{
 		processClassInfoCache.invalidateAll();
+		processClassInfoCache.cleanUp();
 	}
 
 	/** "Process class" to {@link ProcessClassInfo} cache */
