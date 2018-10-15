@@ -12,7 +12,7 @@ public interface I_AD_Menu
     public static final String Table_Name = "AD_Menu";
 
     /** AD_Table_ID=116 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -63,6 +63,35 @@ public interface I_AD_Menu
     public static final org.adempiere.model.ModelColumn<I_AD_Menu, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Menu, org.compiere.model.I_AD_Client>(I_AD_Menu.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Element_ID (int AD_Element_ID);
+
+	/**
+	 * Get System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Element_ID();
+
+	public org.compiere.model.I_AD_Element getAD_Element();
+
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
+
+    /** Column definition for AD_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Menu, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Menu, org.compiere.model.I_AD_Element>(I_AD_Menu.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Element_ID */
+    public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
 	 * Set Special Form.
@@ -593,12 +622,8 @@ public interface I_AD_Menu
 	 */
 	public int getWEBUI_Board_ID();
 
-//	public de.metas.ui.web.base.model.I_WEBUI_Board getWEBUI_Board();
-//
-//	public void setWEBUI_Board(de.metas.ui.web.base.model.I_WEBUI_Board WEBUI_Board);
-//
-//    /** Column definition for WEBUI_Board_ID */
-//    public static final org.adempiere.model.ModelColumn<I_AD_Menu, de.metas.ui.web.base.model.I_WEBUI_Board> COLUMN_WEBUI_Board_ID = new org.adempiere.model.ModelColumn<I_AD_Menu, de.metas.ui.web.base.model.I_WEBUI_Board>(I_AD_Menu.class, "WEBUI_Board_ID", de.metas.ui.web.base.model.I_WEBUI_Board.class);
+    /** Column definition for WEBUI_Board_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Menu, Object> COLUMN_WEBUI_Board_ID = new org.adempiere.model.ModelColumn<I_AD_Menu, Object>(I_AD_Menu.class, "WEBUI_Board_ID", null);
     /** Column name WEBUI_Board_ID */
     public static final String COLUMNNAME_WEBUI_Board_ID = "WEBUI_Board_ID";
 
