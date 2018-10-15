@@ -53,8 +53,6 @@ import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
@@ -72,6 +70,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocTypeQuery;
@@ -600,108 +599,27 @@ public class C_Flatrate_Term
 	{
 		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-		
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+
 		final OrderId orderId = contractOrderService.getContractOrderId(term);
 		if (orderId == null)
 		{
 			return;
 		}
-		
-		if (InterfaceWrapperHelper.isNew(term) && !Services.get(IContractsDAO.class).termHasAPredecessor(term))
+
+		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
 		{
-			final I_C_Order contractOrder = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
+			final I_C_Order contractOrder = orderDAO.getById(orderId, I_C_Order.class);
 			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
 		}
 
 		final Set<OrderId> orderIds = contractOrderService.retrieveAllContractOrderList(orderId);
 
-		updateStatusIfNeededWhenExtendind(term, orderIds);
-
-		updateStatusIfNeededWhenCancelling(term, orderIds);
-
-		updateStausIfNeededWhenVoiding(term);
-	}
-
-	private void updateStatusIfNeededWhenExtendind(final I_C_Flatrate_Term term, final Set<OrderId> orderIds)
-	{
-		if (InterfaceWrapperHelper.isValueChanged(term, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID)
-				&& term.getC_FlatrateTerm_Next_ID() > 0
-				&& orderIds.size() > 1) // we set the Extended status only when an order was extended
-		{
-			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
-			final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-			
-			// update order contract status to extended
-			final OrderId currentContractOrderId = contractOrderService.getContractOrderId(term);
-			
-			orderIds.forEach(id -> {
-				if (id.getRepoId() != currentContractOrderId.getRepoId())  // different order from the current one
-				{
-					final I_C_Order order = Services.get(IOrderDAO.class).getById(id, I_C_Order.class);
-					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
-				}
-			});
-		}
-	}
-
-	private void updateStatusIfNeededWhenCancelling(final I_C_Flatrate_Term term, final Set<OrderId> orderIds)
-	{
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract.equals(term.getContractStatus())
-				|| X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(term.getContractStatus()))
-		{
-			final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
-			final List<I_C_Order> orders = Services.get(IOrderDAO.class).getByIds(orderIds, I_C_Order.class);
-			// update order contract status to cancelled
-			for (final I_C_Order order : orders)
-			{
-				contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
-			};
-		}
-	}
-
-	private void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term)
-	{
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
-		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-		final OrderId orderId = contractOrderService.getContractOrderId(term);
-		if (orderId == null)
-		{
-			return;
-		}
-
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
-		{
-			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-			final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-			final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-			
-			// set status for the current order
-			final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
-			final boolean anyActiveTerms = terms
-					.stream()
-					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
-							&& subscriptionBL.isActiveTerm(currentTerm));
-
-			final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
-			final ImmutableSet<OrderId> orderIds = parentOrderId == null ? ImmutableSet.of(orderId) : ImmutableSet.of(orderId, parentOrderId);
-			final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
-			
-			final I_C_Order contractOrder = orders.get(0);
-			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
-
-			if (parentOrderId != null)
-			{
-				final I_C_Order order = orders.get(1); 
-				if (parentOrderId.getRepoId() != contractOrder.getC_Order_ID()  // different order from the current one
-						&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()) // current order wasn't previously cancelled, although shall not be possible this
-						&& I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order was cancelled
-				{
-
-					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
-				}
-
-			}
-		}
+		final UpdateContractOrderStatus updateContractStatus = new UpdateContractOrderStatus(contractOrderRepository, contractOrderService, orderDAO, contractsDAO);
+		updateContractStatus.updateStatusIfNeededWhenExtendind(term, orderIds);
+		updateContractStatus.updateStatusIfNeededWhenCancelling(term, orderIds);
+		updateContractStatus.updateStausIfNeededWhenVoiding(term);
 	}
 }
