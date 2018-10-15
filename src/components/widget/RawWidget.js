@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import NumericInput from 'react-numeric-input'
 
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
@@ -274,6 +275,7 @@ class RawWidget extends Component {
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
       onChange: e => handleChange && handleChange(widgetField, e.target.value),
+      onQuantityChange: valAsNum => handleChange && handleChange(widgetField, valAsNum),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
@@ -599,11 +601,21 @@ class RawWidget extends Component {
               this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
-            <input
+            <NumericInput
               {...widgetProperties}
-              type="number"
-              min="0"
+              onChange={widgetProperties.onQuantityChange}
+              min={0}
               step={subentity === 'quickInput' ? 0.1 : 1}
+              format={ num => {
+                console.log('num:m ', num);
+
+                return num;
+              }}
+              parse={stringValue => {
+                console.log('STRINGVAL: ', stringValue);
+                // stringValue.replace(/^\$/, "")
+                return stringValue;
+              }}
             />
           </div>
         );
