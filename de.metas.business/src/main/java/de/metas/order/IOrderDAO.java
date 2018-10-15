@@ -46,13 +46,13 @@ public interface IOrderDAO extends ISingletonService
 	I_C_Order getById(final OrderId orderId);
 	
 	/**
-	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link org.compiere.model.I_C_Order} sub-type the result shall be in.
+	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 * 
 	 * @param orderId
 	 * @param clazz
 	 * @return order for given orderId
 	 */
-	<T extends org.compiere.model.I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
+	<T extends I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
 
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 
@@ -145,7 +145,7 @@ public interface IOrderDAO extends ISingletonService
 
 	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
 	
-	<T extends org.compiere.model.I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
+	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
 
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 }
