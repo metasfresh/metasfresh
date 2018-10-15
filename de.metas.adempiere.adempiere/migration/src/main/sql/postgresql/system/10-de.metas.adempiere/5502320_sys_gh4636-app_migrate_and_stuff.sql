@@ -311,34 +311,6 @@ UPDATE AD_Column SET AD_Reference_ID=19, IsUpdateable='N', Help=NULL, ColumnName
 UPDATE AD_Field SET Name='Attachment entry', Description=NULL, Help=NULL WHERE AD_Column_ID=563224
 ;
 
-DELETE FROM AD_Field_Trl WHERE AD_Field_ID IN (select AD_Field_ID from AD_Field where AD_Column_ID=557030);
-DELETE FROM ad_ui_element WHERE AD_Field_ID IN (select AD_Field_ID from AD_Field where AD_Column_ID=557030);
-DELETE FROM AD_Field WHERE AD_Column_ID=557030;
-
--- 2018-09-28T21:48:43.262
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=557030
-;
-
--- 2018-09-28T21:48:43.267
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Column WHERE AD_Column_ID=557030
-;
-
-DELETE FROM AD_Field_Trl WHERE AD_Field_ID IN (select AD_Field_ID from AD_Field where AD_Column_ID=557035);
-DELETE FROM ad_ui_element WHERE AD_Field_ID IN (select AD_Field_ID from AD_Field where AD_Column_ID=557035);
-DELETE FROM AD_Field WHERE AD_Column_ID=557035;
-
--- 2018-09-28T21:48:50.769
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=557035
-;
-
--- 2018-09-28T21:48:50.773
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Column WHERE AD_Column_ID=557035
-;
-
 -- 2018-09-28T21:59:43.245
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Tab SET WhereClause='AD_AttachmentEntry_ReferencedRecord_v.AD_Table_ID=291',Updated=TO_TIMESTAMP('2018-09-28 21:59:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540850
