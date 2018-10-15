@@ -1,6 +1,7 @@
 package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 
 import java.util.Collection;
 
@@ -219,5 +220,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
 		return ImmutableSet.copyOf(userIds);
+	}
+	
+	@Override
+	public List<I_C_Order> getByIds(final Collection<OrderId> orderIds)
+	{
+		return getByIds(orderIds, I_C_Order.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
+	{
+		return loadByRepoIdAwaresOutOfTrx(orderIds, clazz);
 	}
 }

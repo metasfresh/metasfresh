@@ -144,4 +144,8 @@ public interface IOrderDAO extends ISingletonService
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
 
 	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
+	
+	<T extends org.compiere.model.I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
+
+	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 }
