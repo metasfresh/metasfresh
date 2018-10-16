@@ -267,6 +267,8 @@ public final class POInfoColumn implements Serializable
 
 	/** Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case) */
 	private Optional<MLookupInfo> _lookupInfoForWindowNone = null;
+	
+	private Optional<String> _referencedTableName = null; // lazy, cached
 
 	/**
 	 * String representation
@@ -381,23 +383,33 @@ public final class POInfoColumn implements Serializable
 
 	public String getReferencedTableNameOrNull()
 	{
+		Optional<String> referencedTableName = _referencedTableName;
+		if(referencedTableName == null)
+		{
+			_referencedTableName = referencedTableName = computeReferencedTableName();
+		}
+		
+		return referencedTableName.orElse(null);
+	}
+
+	private Optional<String> computeReferencedTableName()
+	{
 		// Special lookups (Location, Locator etc)
 		final String refTableName = org.compiere.util.DisplayType.getTableName(DisplayType);
 		if(refTableName != null)
 		{
-			return refTableName;
+			return Optional.of(refTableName);
 		}
 
 		// Regular lookups
 		final MLookupInfo lookupInfo = getLookupInfo(Env.WINDOW_None);
 		if(lookupInfo != null)
 		{
-			return lookupInfo.getTableName();
+			return Optional.ofNullable(lookupInfo.getTableName());
 		}
 
-		return null;
+		return Optional.empty();
 	}
-
 
 	public MLookupInfo getLookupInfo(final int windowNo)
 	{
