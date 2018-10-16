@@ -42,6 +42,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangeLog;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
@@ -59,6 +60,7 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -113,6 +115,8 @@ public class WindowRestController
 
 	@Autowired
 	private DocumentCollection documentCollection;
+	@Autowired
+	private DocumentChangeLogService documentChangeLogService;
 	@Autowired
 	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
@@ -783,4 +787,34 @@ public class WindowRestController
 		discardChanges(windowIdStr, documentIdStr);
 	}
 
+	@GetMapping("/{windowId}/{documentId}/changeLog")
+	public JSONDocumentChangeLog getDocumentChangeLog(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+		return getDocumentChangeLog(documentPath);
+	}
+
+	@GetMapping("/{windowId}/{documentId}/{tabId}/changeLog")
+	public JSONDocumentChangeLog getDocumentChangeLog(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentId documentId = DocumentId.of(documentIdStr);
+		final DetailId tabId = DetailId.fromJson(tabIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId);
+		return getDocumentChangeLog(documentPath);
+	}
+
+	private JSONDocumentChangeLog getDocumentChangeLog(final DocumentPath documentPath)
+	{
+		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
+		final JSONDocumentChangeLog json = documentChangeLogService.getJSONDocumentChangeLog(recordRef, userSession.getAD_Language());
+		json.setPath(JSONDocumentPath.ofWindowDocumentPath(documentPath));
+		return json;
+	}
 }
