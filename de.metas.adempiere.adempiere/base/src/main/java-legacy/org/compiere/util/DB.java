@@ -2719,6 +2719,38 @@ public final class DB
 		T retrieveRow(ResultSet rs) throws SQLException;
 	}
 
+	public static <T> List<T> retrieveRowsOutOfTrx(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql, ITrx.TRXNAME_None);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			
+			final ArrayList<T> rows = new ArrayList<>();
+			while(rs.next())
+			{
+				T row = loader.retrieveRow(rs);
+				rows.add(row);
+			}
+			
+			return rows;
+		}
+		catch(SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
 	public static <T> T retrieveFirstRowOrNull(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
@@ -2742,7 +2774,7 @@ public final class DB
 		}
 		catch(SQLException ex)
 		{
-			throw new DBException(sql);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
