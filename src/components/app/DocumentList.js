@@ -320,8 +320,6 @@ class DocumentList extends Component {
     } = this.props;
     const { viewId } = this.state;
 
-    console.log('here: ');
-
     getViewLayout(windowType, type, viewProfileId)
       .then(response => {
         this.mounted &&
@@ -510,8 +508,6 @@ class DocumentList extends Component {
           pageColumnInfosByFieldName: pageColumnInfosByFieldName,
           triggerSpinner: false,
         };
-
-        console.log('here2')
 
         if (response.data.filters) {
           newState.filtersActive = filtersToMap(response.data.filters);
@@ -773,8 +769,6 @@ class DocumentList extends Component {
       );
     }
 
-    console.log('RENDER: ', !!layout, !!data, this.state.triggerSpinner, !!(layout && this.state.triggerSpinner));
-
     const showQuickActions = Boolean(
       !isModal || inBackground || selectionValid
     );
@@ -887,7 +881,7 @@ class DocumentList extends Component {
 
         <Spinner
           parent={this}
-          delay={3000}
+          delay={300}
           iconSize={50}
           displayCondition={!!(layout && this.state.triggerSpinner)}
           hideCondition={!!(data && !this.state.triggerSpinner)}

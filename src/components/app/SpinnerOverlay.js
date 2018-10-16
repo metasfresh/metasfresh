@@ -23,19 +23,11 @@ class SpinnerOverlay extends Component {
   componentDidMount() {
     const { showSpinner, spinnerDisplayed, delay, parent } = this.props;
 
-    console.log('componentDidMount: ', spinnerDisplayed, this.props.displayCondition)
-
     if (this.props.displayCondition && !spinnerDisplayed && !this.timeout) {
-      console.log('GO1')
-      console.time()
-      // this.props.forceRender();
       this.timeout = setTimeout(() => {
         this.setState({
           show: true,
         });
-
-        console.log('SHOW1: ', this.ID);
-        console.timeEnd();
 
         showSpinner(this.ID);
 
@@ -49,35 +41,30 @@ class SpinnerOverlay extends Component {
    * already finished but the parent component is not updating (because waiting
    * for data or doing some other operations).
    */
-  componentDidUpdate(prevProps) {
-    const prevCondition = prevProps.displayCondition;
-    const { displayCondition, spinnerDisplayed, hideSpinner, showSpinner, delay, parent } = this.props;
+  componentDidUpdate() {
+    const {
+      displayCondition,
+      spinnerDisplayed,
+      hideSpinner,
+      showSpinner,
+      delay,
+      parent,
+    } = this.props;
 
-    // console.log('componentDidUpdate: ', prevCondition, displayCondition, spinnerDisplayed)
-
-    // if (prevCondition && !displayCondition) {
     if (!displayCondition && spinnerDisplayed) {
-      // const { hideSpinner, spinnerDisplayed } = this.props;
-
       if (spinnerDisplayed === this.ID) {
         this.setState({
           show: false,
         });
         this.timeout = null;
 
-        console.log('HIDE')
         hideSpinner();
       }
-    } else
-    if (displayCondition && !spinnerDisplayed && !this.timeout) {
-      console.log('SHOW1')
-      // this.props.forceRender();
+    } else if (displayCondition && !spinnerDisplayed && !this.timeout) {
       this.timeout = setTimeout(() => {
         this.setState({
           show: true,
         });
-
-        console.log('SHOW2: ', this.ID);
 
         showSpinner(this.ID);
 
@@ -89,6 +76,7 @@ class SpinnerOverlay extends Component {
   render() {
     const { iconSize } = this.props;
     const { show } = this.state;
+    let style = {};
 
     if (!show) {
       return null;
@@ -101,30 +89,17 @@ class SpinnerOverlay extends Component {
       };
     }
 
-    // return (
-    //   <div className="screen-freeze screen-prompt-freeze spinner">
-    //     <i style={style} className="icon hourglass" />
-    //   </div>
-    // );
-
     return (
-      <div className="screen-freeze screen-prompt-freeze spinner-wrapper">
-        <div className="spinner">
-          <div className="bulletouter">
-            <div className="bulletinner" />
-            <div className="mask" />
-            <div className="dot" />
-          </div>
-        </div>
+      <div className="screen-freeze screen-prompt-freeze spinner">
+        <i style={style} className="icon spinner" />
       </div>
     );
   }
 }
 
 SpinnerOverlay.defaultProps = {
-  delay: 1000,
+  delay: 200,
   iconSize: 32,
-  // displayCondition: false,
 };
 
 SpinnerOverlay.propTypes = {
