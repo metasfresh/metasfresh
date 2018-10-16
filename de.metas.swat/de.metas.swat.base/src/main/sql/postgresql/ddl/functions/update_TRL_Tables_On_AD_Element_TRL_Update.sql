@@ -141,19 +141,19 @@ WHERE tabtrl.AD_Tab_ID = x.AD_Tab_ID and tabtrl.ad_language = x.ad_language;
 			and wt.ad_language = etrl.ad_language 
 			and ((update_TRL_Tables_On_AD_Element_TRL_Update.AD_Language is null) OR (etrl.ad_language =  update_TRL_Tables_On_AD_Element_TRL_Update.AD_Language ))
 	) x
-WHERE wtrl.AD_Window_ID = x.AD_Tab_ID and wtrl.ad_language = x.ad_language;
+WHERE wtrl.AD_Window_ID = x.AD_WINDOW_ID and wtrl.ad_language = x.ad_language;
 
 
 -- AD_Menu_TRL
 
 	UPDATE  AD_Menu_TRL mtrl
-	SET name = x.name, isTranslated = x.isTranslated, description = x.description, help = x.help, 
+	SET name = x.name, isTranslated = x.isTranslated, description = x.description,
 	webui_namebrowse = x.webui_namebrowse , 
 	webui_namenew = x.webui_namenew,
 	webui_namenewbreadcrumb = x.webui_namenewbreadcrumb
 	FROM
 	(
-		select e.AD_Element_ID, m.AD_Menu_ID,   mt.ad_language, etrl.Name, etrl.IsTranslated, etrl.description, etrl.help, 
+		select e.AD_Element_ID, m.AD_Menu_ID,   mt.ad_language, etrl.Name, etrl.IsTranslated, etrl.description,
 		etrl.commitwarning,  
 		etrl.webui_namebrowse, 
 		etrl.webui_namenew, 
