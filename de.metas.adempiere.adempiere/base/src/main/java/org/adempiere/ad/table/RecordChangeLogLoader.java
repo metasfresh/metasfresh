@@ -88,6 +88,17 @@ final class RecordChangeLogLoader
 		return changeLogsBuilder.build();
 	}
 
+	public RecordChangeLog getSummaryByRecordId(@NonNull final ComposedRecordId recordId)
+	{
+		final RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
+				.tableName(poInfo.getTableName())
+				.recordId(recordId);
+
+		loadRecordSummary(changeLogsBuilder, recordId);
+
+		return changeLogsBuilder.build();
+	}
+
 	private void loadRecordSummary(final RecordChangeLogBuilder changeLogsBuilder, final ComposedRecordId recordId)
 	{
 		final String sql = new StringBuilder()

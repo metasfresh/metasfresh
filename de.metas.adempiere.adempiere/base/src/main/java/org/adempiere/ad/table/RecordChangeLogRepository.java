@@ -33,10 +33,12 @@ public class RecordChangeLogRepository
 {
 	public RecordChangeLog getByRecord(final int adTableId, final ComposedRecordId recordId)
 	{
-		return RecordChangeLogLoader.ofAdTableId(adTableId).getByRecordId(recordId);
+		return RecordChangeLogLoader
+				.ofAdTableId(adTableId)
+				.getByRecordId(recordId);
 	}
 
-	public RecordChangeLog getByRecord(@NonNull final TableRecordReference recordRef)
+	public RecordChangeLog getSummaryByRecord(@NonNull final TableRecordReference recordRef)
 	{
 		final int adTableId = recordRef.getAD_Table_ID();
 		final int recordId = recordRef.getRecord_ID();
@@ -45,7 +47,7 @@ public class RecordChangeLogRepository
 		final String singleKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 
 		return RecordChangeLogLoader.ofAdTableId(adTableId)
-				.getByRecordId(ComposedRecordId.singleKey(singleKeyColumnName, recordId));
+				.getSummaryByRecordId(ComposedRecordId.singleKey(singleKeyColumnName, recordId));
 	}
 
 }
