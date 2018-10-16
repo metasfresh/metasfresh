@@ -47,7 +47,7 @@ public class UserId implements RepoIdAware
 
 	public static UserId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new UserId(repoId) : null;
+		return repoId >= 0 ? new UserId(repoId) : null;
 	}
 
 	public static int toRepoIdOr(
