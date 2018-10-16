@@ -3,8 +3,8 @@ import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import NumericInput from 'react-numeric-input'
 
+import NumericInput from './NumericQuickInput';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
@@ -601,22 +601,17 @@ class RawWidget extends Component {
               this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
-            <NumericInput
-              {...widgetProperties}
-              onChange={widgetProperties.onQuantityChange}
-              min={0}
-              step={subentity === 'quickInput' ? 0.1 : 1}
-              format={ num => {
-                console.log('num:m ', num);
-
-                return num;
-              }}
-              parse={stringValue => {
-                console.log('STRINGVAL: ', stringValue);
-                // stringValue.replace(/^\$/, "")
-                return stringValue;
-              }}
-            />
+            {subentity === 'quickInput' ? (
+              <NumericInput
+                {...widgetProperties}
+                onChange={widgetProperties.onQuantityChange}
+                min={0}
+                precision={1}
+                step={subentity === 'quickInput' ? 0.1 : 1}
+              />
+            ) : (
+              <input {...widgetProperties} type="number" min="0" step={1} />
+            )}
           </div>
         );
       case 'Number':
