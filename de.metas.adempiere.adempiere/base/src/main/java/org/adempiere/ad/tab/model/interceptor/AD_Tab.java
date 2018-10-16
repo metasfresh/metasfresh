@@ -80,6 +80,6 @@ public class AD_Tab
 			}
 		}
 
-		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(tabElementId);
+		Services.get(IElementTranslationBL.class).updateTabTranslationsFromElement(tabElementId);
 	}
 }

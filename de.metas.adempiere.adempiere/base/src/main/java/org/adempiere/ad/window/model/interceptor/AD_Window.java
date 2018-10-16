@@ -76,6 +76,6 @@ public class AD_Window
 			return;
 		}
 
-		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(windowElementId);
+		Services.get(IElementTranslationBL.class).updateWindowTranslationsFromElement(windowElementId);
 	}
 }

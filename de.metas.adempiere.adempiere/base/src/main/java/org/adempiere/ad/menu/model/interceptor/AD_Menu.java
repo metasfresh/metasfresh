@@ -81,7 +81,7 @@ public class AD_Menu
 			return;
 		}
 
-		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(menuElementId);
+		Services.get(IElementTranslationBL.class).updateMenuTranslationsFromElement(menuElementId);
 	}
 
 }
