@@ -15,7 +15,7 @@ BEGIN
 	SET name = x.name, isTranslated = x.isTranslated, description = x.description, help = x.help
 	FROM
 	(
-		select w.AD_Element_ID, w.AD_Window_ID,   ft.ad_language, etrl.Name, etrl.IsTranslated, etrl.description, etrl.help
+		select w.AD_Element_ID, w.AD_Window_ID,   wt.ad_language, etrl.Name, etrl.IsTranslated, etrl.description, etrl.help
 	
 		from AD_Element_Trl etrl 
 		join AD_Window w on etrl.AD_Element_ID = w.AD_Element_ID

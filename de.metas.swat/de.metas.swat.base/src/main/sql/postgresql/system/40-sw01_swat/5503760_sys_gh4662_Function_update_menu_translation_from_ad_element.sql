@@ -22,7 +22,7 @@ BEGIN
 		
 	FROM
 	(
-		select m.AD_Element_ID, m.AD_Menu_ID,   mt.ad_language, etrl.Name, etrl.IsTranslated, etrl.description, WEBUI_NameBrowse, WEBUI_NameNew, WEBUI_NameNewBreadcrumb
+		select m.AD_Element_ID, m.AD_Menu_ID,   mt.ad_language, etrl.Name, etrl.IsTranslated, etrl.description, etrl.WEBUI_NameBrowse, etrl.WEBUI_NameNew, etrl.WEBUI_NameNewBreadcrumb
 	
 		from AD_Element_Trl etrl 
 		join AD_Menu m on etrl.AD_Element_ID = m.AD_Element_ID
