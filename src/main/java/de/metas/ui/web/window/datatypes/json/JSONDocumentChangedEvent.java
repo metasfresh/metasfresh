@@ -86,6 +86,14 @@ public class JSONDocumentChangedEvent
 		return operation == JSONOperation.replace;
 	}
 
+	public void assertReplaceOperation()
+	{
+		if (!isReplace())
+		{
+			throw new AdempiereException("Replace operation was expected for " + this);
+		}
+	}
+
 	public String getValueAsString(final String defaultValueIfNull)
 	{
 		return value != null ? value.toString() : defaultValueIfNull;
