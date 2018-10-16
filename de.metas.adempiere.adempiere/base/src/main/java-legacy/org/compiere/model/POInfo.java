@@ -1405,7 +1405,7 @@ public final class POInfo implements Serializable
 	 * 
 	 * @return SQL where clause (e.g. KeyColumn_ID=?)
 	 */
-	/* package */String getSqlWhereClauseByKeys()
+	public String getSqlWhereClauseByKeys()
 	{
 		return sqlWhereClauseByKeys;
 	}
