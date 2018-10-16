@@ -275,7 +275,8 @@ class RawWidget extends Component {
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
       onChange: e => handleChange && handleChange(widgetField, e.target.value),
-      onQuantityChange: valAsNum => handleChange && handleChange(widgetField, valAsNum),
+      onQuantityChange: valAsNum =>
+        handleChange && handleChange(widgetField, valAsNum),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),

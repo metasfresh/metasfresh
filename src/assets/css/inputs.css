@@ -456,6 +456,12 @@ input:checked + .input-slider:before {
     }
 }
 
+.react-numeric-input input {
+    padding-bottom: 4px;
+    padding-left: 0 !important;
+    border-color: white !important;
+}
+
 @media (max-width: $breakpoint){
     .input-dropdown-container .input-dropdown{
         flex-direction: column;
