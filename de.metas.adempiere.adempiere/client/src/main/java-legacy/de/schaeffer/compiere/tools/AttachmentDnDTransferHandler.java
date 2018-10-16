@@ -149,12 +149,18 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 		// inform APanel/.. -> dataStatus with row updated
 		gridTab.loadAttachments();
 
-		DataStatusEvent m_DataStatusEvent = new DataStatusEvent(gridTab, gridTab.getRowCount(), false, true, false);
-		m_DataStatusEvent.setCurrentRow(gridTab.getCurrentRow());
-		String status = m_DataStatusEvent.getAD_Message();
+		final DataStatusEvent dataStatusEvent = DataStatusEvent.builder()
+				.source(gridTab)
+				.totalRows(gridTab.getRowCount())
+				.changed(false)
+				.autoSave(true)
+				.inserting(false)
+				.build();
+		dataStatusEvent.setCurrentRow(gridTab.getCurrentRow());
+		final String status = dataStatusEvent.getAD_Message();
 		if (status == null || status.length() == 0)
-			m_DataStatusEvent.setInfo("NavigateOrUpdate", null, false, false);
-		gridTab.fireDataStatusChanged(m_DataStatusEvent);
+			dataStatusEvent.setInfo("NavigateOrUpdate", null, false, false);
+		gridTab.fireDataStatusChanged(dataStatusEvent);
 		return true;
 	}
 }

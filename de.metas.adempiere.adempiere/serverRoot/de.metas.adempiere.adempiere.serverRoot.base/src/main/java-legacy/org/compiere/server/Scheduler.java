@@ -33,7 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -499,7 +499,7 @@ public class Scheduler extends AdempiereServer
 		}
 		else
 		{
-			AD_User_ID = IUserDAO.SUPERUSER_USER_ID; // fall back to SuperUser
+			AD_User_ID = UserId.METASFRESH.getRepoId(); // fall back to SuperUser
 		}
 		return AD_User_ID;
 	}
