@@ -53,24 +53,24 @@ class SpinnerOverlay extends Component {
     const prevCondition = prevProps.displayCondition;
     const { displayCondition, spinnerDisplayed, hideSpinner, showSpinner, delay, parent } = this.props;
 
-    console.log('componentDidUpdate: ', prevCondition, displayCondition, spinnerDisplayed)
+    // console.log('componentDidUpdate: ', prevCondition, displayCondition, spinnerDisplayed)
 
     // if (prevCondition && !displayCondition) {
-    //   // const { hideSpinner, spinnerDisplayed } = this.props;
+    if (!displayCondition && spinnerDisplayed) {
+      // const { hideSpinner, spinnerDisplayed } = this.props;
 
-    //   if (spinnerDisplayed === this.ID) {
-    //     this.setState({
-    //       show: false,
-    //     });
-    //     this.timeout = null;
+      if (spinnerDisplayed === this.ID) {
+        this.setState({
+          show: false,
+        });
+        this.timeout = null;
 
-    //     console.log('HIDE')
-    //     hideSpinner();
-    //   }
-    // } else 
-
+        console.log('HIDE')
+        hideSpinner();
+      }
+    } else
     if (displayCondition && !spinnerDisplayed && !this.timeout) {
-      console.log('GO2')
+      console.log('SHOW1')
       // this.props.forceRender();
       this.timeout = setTimeout(() => {
         this.setState({
@@ -89,7 +89,6 @@ class SpinnerOverlay extends Component {
   render() {
     const { iconSize } = this.props;
     const { show } = this.state;
-    let style = {};
 
     if (!show) {
       return null;
@@ -102,9 +101,21 @@ class SpinnerOverlay extends Component {
       };
     }
 
+    // return (
+    //   <div className="screen-freeze screen-prompt-freeze spinner">
+    //     <i style={style} className="icon hourglass" />
+    //   </div>
+    // );
+
     return (
-      <div className="screen-freeze screen-prompt-freeze spinner">
-        <i style={style} className="icon hourglass" />
+      <div className="screen-freeze screen-prompt-freeze spinner-wrapper">
+        <div className="spinner">
+          <div className="bulletouter">
+            <div className="bulletinner" />
+            <div className="mask" />
+            <div className="dot" />
+          </div>
+        </div>
       </div>
     );
   }

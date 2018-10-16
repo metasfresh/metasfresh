@@ -1471,7 +1471,7 @@ td.pulse-off input {
     border-radius: 15px;
 }
 
-@keyframes spin {
+@keyframes _spin {
     0% { transform:rotate(0deg); }
     45% { transform:rotate(0deg); }
     50% { transform:rotate(180deg); }
@@ -1479,7 +1479,7 @@ td.pulse-off input {
     100% { transform:rotate(360deg); }
 }
 
-.spinner {
+._spinner {
     position: absolute;
     background-color: rgba(255,255,255,0.8);
 
@@ -1490,6 +1490,75 @@ td.pulse-off input {
         
         &.hourglass {
             background: url('../images/hourglass-solid.svg') no-repeat scroll center 0;
+        }
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/*.spinner {
+  background: #334;
+  min-height: 300px;
+  color: white;
+  text-align: center;
+  display: table;
+  width: 100%;*/
+.spinner-wrapper {
+    position: absolute;
+    background-color: rgba(255,255,255,0.8);
+}
+
+.spinner{
+    display: table-cell;
+    width: 100%;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    vertical-align: middle;
+    font-family: helvetica, sans-serif;
+    
+    .bulletouter{
+        animation: spin 1s infinite; 
+        animation-timing-function: linear;
+        animation-direction: reverse;
+        width: 50px;
+        height: 50px;
+        background: #9aafbd;
+        border-radius: 50%;
+        margin: 0 auto;
+
+        .bulletinner{
+            position: relative;
+            left: -5px;
+            width: 45px;
+            height: 45px;
+            background-color: rgba(255,255,255,1);
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+
+        .mask{
+            position: relative;
+            left: -5px;
+            top: -15px;
+            width: 50px;
+            height: 25px;
+            background-color: rgba(255,255,255,1);
+            transform: rotate(45deg);
+        }
+
+        .dot{
+            position: relative;
+            left: 33px;
+            top: -32px;
+            width: 8px;
+            height: 8px;
+            background: #9aafbd;
+            border-radius: 50%;
         }
     }
 }
