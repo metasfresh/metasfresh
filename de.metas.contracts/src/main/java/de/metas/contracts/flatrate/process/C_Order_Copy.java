@@ -4,7 +4,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Ini;
 
-import de.metas.contracts.order.ContractOrderRepository;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder;
 import de.metas.order.OrderId;
@@ -16,6 +16,9 @@ import de.metas.process.ProcessPreconditionsResolution;
 
 public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 {
+	private final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+
+
 	@Override
 	protected String doIt()
 	{
@@ -52,8 +55,7 @@ public class C_Order_Copy extends JavaProcess implements IProcessPrecondition
 			return ProcessPreconditionsResolution.rejectWithInternalReason("The process only runs with C_Order table");
 		}
 
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
-		if (!contractOrderRepository.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
+		if (!contractOrderService.isContractSalesOrder( OrderId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("The process only runs with a contract order");
 		}

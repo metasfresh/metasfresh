@@ -2,6 +2,8 @@ package de.metas.contracts.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.contracts
@@ -54,7 +56,6 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -110,12 +111,12 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
-		
+
 		final I_C_Order order = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 
 		contractChangeBL.cancelContract(contract, contractChangeParameters);
-		
+
 		InterfaceWrapperHelper.refresh(order);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 		assertFlatrateTerm(contract, cancelDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
@@ -145,7 +146,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 
 		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
-		
+
 		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
 				.changeDate(cancellingDate)
@@ -159,7 +160,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		InterfaceWrapperHelper.refresh(contract);
 		InterfaceWrapperHelper.refresh(extendedContract);
 		InterfaceWrapperHelper.refresh(order);
-		
+
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 
 		assertFlatrateTerm(contract, cancellingDate, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);

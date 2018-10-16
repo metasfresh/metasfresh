@@ -5,6 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,6 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -240,7 +241,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			assertThat(currentflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 			assertThat(nextflatrateTerm.getMasterEndDate()).isEqualTo(expectedMasterEndDate);
 		}
-		
+
 		final I_C_Order order = InterfaceWrapperHelper.create(currentflatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}

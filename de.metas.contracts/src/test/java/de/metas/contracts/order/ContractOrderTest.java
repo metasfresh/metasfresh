@@ -55,7 +55,7 @@ import de.metas.util.time.SystemTime;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractLibraryConfiguration.class 
+		ContractLibraryConfiguration.class
 		})
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
@@ -117,7 +117,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		final I_C_Order extendedtOrder = InterfaceWrapperHelper.create(orderLineExtended.getC_Order(), I_C_Order.class);
 		assertThat(extendedtOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
-	
+
 	@Test
 	public void void_a_Term_of_a_ContractOrder()
 	{
@@ -164,7 +164,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		final I_C_Order extendedtOrder = InterfaceWrapperHelper.create(orderLineExtended.getC_Order(), I_C_Order.class);
 		assertThat(extendedtOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
-	
+
 	@Test
 	public void void_a_term_of_a_ContractOrder_with_more_the_one_term()
 	{
@@ -176,7 +176,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 
 		// simulate extending order
 		final I_C_OrderLine orderLineExtended = extendContractOrder(contract);
-		
+
 		InterfaceWrapperHelper.refresh(order);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
@@ -184,7 +184,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		newContract.setC_OrderLine_Term(orderLineExtended);
 		InterfaceWrapperHelper.save(newContract);
 
-		
+
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
 				.AD_PInstance_ID(1)
 				.contract(newContract)
@@ -197,8 +197,8 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term extendedContract = newContract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
-		
-		
+
+
 		final Timestamp cancellingDate = TimeUtil.parseTimestamp("2018-12-10");
 		final ContractChangeParameters changeParameters = ContractChangeParameters.builder()
 				.changeDate(cancellingDate)

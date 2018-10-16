@@ -1,7 +1,10 @@
 /**
- * 
+ *
  */
 package de.metas.contracts.order;
+
+import lombok.Builder;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Set;
@@ -17,8 +20,6 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -30,12 +31,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +49,6 @@ import lombok.NonNull;
  */
 public class UpdateContractOrderStatus
 {
-	private final ContractOrderRepository contractOrderRepository;
 	private final ContractOrderService contractOrderService;
 	private final IOrderDAO orderDAO;
 	private final IContractsDAO contractsDAO;
@@ -56,13 +56,11 @@ public class UpdateContractOrderStatus
 
 	@Builder
 	public UpdateContractOrderStatus(
-			@NonNull final ContractOrderRepository contractOrderRepository,
 			@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IOrderDAO orderDAO,
 			@NonNull final IContractsDAO contractsDAO,
 			@NonNull final ISubscriptionBL subscriptionBL)
 	{
-		this.contractOrderRepository = contractOrderRepository;
 		this.contractOrderService = contractOrderService;
 		this.orderDAO = orderDAO;
 		this.contractsDAO = contractsDAO;
@@ -82,7 +80,7 @@ public class UpdateContractOrderStatus
 				if (id.getRepoId() != currentContractOrderId.getRepoId())  // different order from the current one
 				{
 					final I_C_Order order = orderDAO.getById(id, I_C_Order.class);
-					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
+					contractOrderService.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Extended);
 				}
 			});
 		}
@@ -97,7 +95,7 @@ public class UpdateContractOrderStatus
 			final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
 			for (final I_C_Order order : orders)
 			{
-				contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
+				contractOrderService.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
 			}
 		}
 	}
@@ -129,22 +127,22 @@ public class UpdateContractOrderStatus
 				.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
 						&& subscriptionBL.isActiveTerm(currentTerm));
 
-		contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
+		contractOrderService.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
-	
+
 	private void setContractStatusForParentOrderIfNeeded(final List<I_C_Order> orders)
 	{
 		if (orders.size() == 1) // means that the order does not have parent
 		{
 			return;
 		}
-		
+
 		final I_C_Order contractOrder = orders.get(0);
 		final I_C_Order parentOrder = orders.get(1);
-		
+
 		if (isActiveParentContractOrder(parentOrder, contractOrder))
 		{
-			contractOrderRepository.setOrderContractStatusAndSave(parentOrder, I_C_Order.CONTRACTSTATUS_Active);
+			contractOrderService.setOrderContractStatusAndSave(parentOrder, I_C_Order.CONTRACTSTATUS_Active);
 		}
 	}
 

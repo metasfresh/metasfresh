@@ -1,5 +1,7 @@
 package de.metas.contracts.interceptor;
 
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 
 /*
@@ -51,7 +53,6 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -68,7 +69,6 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.order.ContractOrderRepository;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
@@ -83,13 +83,11 @@ import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_Term.class)
-@Component("de.metas.contracts.interceptor")
 public class C_Flatrate_Term
 {
-	public static C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
+	public static final C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
 
 	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
@@ -588,8 +586,7 @@ public class C_Flatrate_Term
 			}
 		}
 	}
-	
-	
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE
 	}, ifColumnsChanged = {
@@ -597,8 +594,8 @@ public class C_Flatrate_Term
 	})
 	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
 	{
-		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
@@ -612,14 +609,13 @@ public class C_Flatrate_Term
 		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
 		{
 			final I_C_Order contractOrder = orderDAO.getById(orderId, I_C_Order.class);
-			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+			contractOrderService.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
 			return;
 		}
 
 		final Set<OrderId> orderIds = contractOrderService.retrieveAllContractOrderList(orderId);
 
 		final UpdateContractOrderStatus updateContractStatus = UpdateContractOrderStatus.builder()
-				.contractOrderRepository(contractOrderRepository)
 				.contractOrderService(contractOrderService)
 				.orderDAO(orderDAO)
 				.contractsDAO(contractsDAO)

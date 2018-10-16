@@ -1,7 +1,9 @@
 /**
- * 
+ *
  */
 package de.metas.contracts.order;
+
+import lombok.NonNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,10 +15,10 @@ import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_Order;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -28,14 +30,14 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,9 +50,7 @@ import lombok.NonNull;
 public class ContractOrderService
 {
 	/**
-	 * retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
-	 * @param orderId
-	 * @return
+	 * Retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>.
 	 */
 	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
 	public OrderId retrieveLinkedFollowUpContractOrder(@NonNull final OrderId orderId)
@@ -65,6 +65,9 @@ public class ContractOrderService
 		return OrderId.ofRepoIdOrNull(oroginalOrderId);
 	}
 
+	/**
+	 * Retrieves recursively all orders related to a contract, inclusive the one given as parameter.
+	 */
 	public Set<OrderId> retrieveAllContractOrderList(@NonNull final OrderId orderId)
 	{
 		final Set<OrderId> orderIds = new HashSet<>();
@@ -78,17 +81,12 @@ public class ContractOrderService
 		{	// add itself
 			orderIds.add(orderId);
 		}
-			
-
 		return orderIds;
 	}
 
 	/**
 	 * retrieves original order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>,
 	 * going recursively until the original one
-	 * 
-	 * @param orderId
-	 * @return OrderId
 	 */
 	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
 	public OrderId retrieveOriginalContractOrder(@NonNull final OrderId orderId)
@@ -108,11 +106,7 @@ public class ContractOrderService
 	}
 
 	/**
-	 * builds up a list of contract orders based on column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>
-	 * 
-	 * @param orderId
-	 * @param contractOrderIds
-	 * @return
+	 * Builds up a list of contract orders based on column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>.
 	 */
 	private void buildAllContractOrderList(@NonNull final OrderId orderId, @NonNull Set<OrderId> contractOrderIds)
 	{
@@ -124,7 +118,7 @@ public class ContractOrderService
 			buildAllContractOrderList(nextAncestorId, contractOrderIds);
 		}
 	}
-	
+
 	public I_C_Flatrate_Term retrieveTopExtendedTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		I_C_Flatrate_Term nextTerm = term.getC_FlatrateTerm_Next();
@@ -136,14 +130,14 @@ public class ContractOrderService
 
 		return nextTerm == null ? term : nextTerm;
 	}
-	
+
 	public OrderId getContractOrderId(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (term.getC_OrderLine_Term_ID() <= 0)
 		{
 			return null;
 		}
-		
+
 		final IOrderDAO orderRepo = Services.get(IOrderDAO.class);
 		final de.metas.interfaces.I_C_OrderLine ol = orderRepo.getOrderLineById(term.getC_OrderLine_Term_ID());
 		if (ol == null)
@@ -152,5 +146,28 @@ public class ContractOrderService
 		}
 
 		return OrderId.ofRepoId(ol.getC_Order_ID());
+	}
+
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
+	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addNotNull(I_C_OrderLine.COLUMN_C_Flatrate_Conditions_ID)
+				.create()
+				.match();
+	}
+
+	public void save(@NonNull final I_C_Order order)
+	{
+		InterfaceWrapperHelper.save(order);
+	}
+
+	public void setOrderContractStatusAndSave(@NonNull final I_C_Order order, @NonNull final String contractStatus)
+	{
+		order.setContractStatus(contractStatus);
+		save(order);
 	}
 }

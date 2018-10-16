@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 
 /*
@@ -76,7 +78,6 @@ import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -169,7 +170,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
-		
+
 		final I_C_Order order = InterfaceWrapperHelper.create(extendedContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 
@@ -188,7 +189,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.build();
 
 		contractChangeBL.cancelContract(extendedContract, contractChangeParameters);
-		
+
 		// update invalids
 		Services.get(IInvoiceCandBL.class).updateInvalid()
 				.setContext(helper.getCtx(), helper.getTrxName())
@@ -198,7 +199,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertVoidedFlatrateTerm(extendedContract);
 		assertInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
-		
+
 		InterfaceWrapperHelper.refresh(order);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
@@ -267,7 +268,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 		final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(flatrateTerm);
 		assertThat(ancestor).isNull();
-		
+
 		final I_C_Order order = InterfaceWrapperHelper.create(flatrateTerm.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		InterfaceWrapperHelper.refresh(order);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);

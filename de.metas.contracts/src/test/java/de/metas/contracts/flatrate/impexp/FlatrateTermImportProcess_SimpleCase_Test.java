@@ -79,7 +79,7 @@ import de.metas.util.Services;
 		GroupCompensationLineCreateRequestFactory.class,
 		BPartnerBL.class,
 		UserRepository.class,
-		ContractLibraryConfiguration.class})
+		ContractLibraryConfiguration.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);

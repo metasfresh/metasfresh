@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 
 /*
@@ -54,7 +56,6 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyService.class, ContractLibraryConfiguration.class })

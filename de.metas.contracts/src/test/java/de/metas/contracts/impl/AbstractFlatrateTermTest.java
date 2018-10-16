@@ -7,6 +7,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.Getter;
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -46,8 +49,6 @@ import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -316,7 +317,7 @@ public abstract class AbstractFlatrateTermTest
 	protected I_C_Flatrate_Term createFlatrateTerm(@NonNull final I_C_Flatrate_Conditions conditions, @NonNull final I_M_Product product, @NonNull final Timestamp startDate)
 	{
 		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, product);
-		
+
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
 				helper.getContextProvider(),
@@ -358,7 +359,7 @@ public abstract class AbstractFlatrateTermTest
 		orderLineRecord.setC_Flatrate_Conditions(conditions);
 		orderLineRecord.setM_Product(product);
 		saveRecord(orderLineRecord);
-		
+
 		return orderLineRecord;
 	}
 
