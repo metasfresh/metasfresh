@@ -64,7 +64,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 	
 	@Override
-	public <T extends org.compiere.model.I_C_Order> T getById(
+	public <T extends I_C_Order> T getById(
 			@NonNull final OrderId orderId,
 			@NonNull final Class<T> clazz)
 	{
@@ -103,7 +103,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final org.compiere.model.I_C_Order order)
+	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order)
 	{
 		return retrieveOrderLines(order, I_C_OrderLine.class);
 	}

@@ -17,7 +17,6 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -106,40 +105,43 @@ public class UpdateContractOrderStatus
 	public void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term)
 	{
 		final OrderId orderId = contractOrderService.getContractOrderId(term);
-		if (orderId == null)
+		if (orderId == null
+				|| !X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
 			return;
 		}
 
-		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
+		// set status for the current order
+		final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
+		final boolean anyActiveTerms = terms
+				.stream()
+				.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
+						&& subscriptionBL.isActiveTerm(currentTerm));
+
+		final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
+		final ImmutableSet<OrderId> orderIds = parentOrderId == null ? ImmutableSet.of(orderId) : ImmutableSet.of(orderId, parentOrderId);
+		final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
+
+		final I_C_Order contractOrder = orders.get(0);
+		contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
+
+		if (parentOrderId == null)
 		{
-			// set status for the current order
-			final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
-			final boolean anyActiveTerms = terms
-					.stream()
-					.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
-							&& subscriptionBL.isActiveTerm(currentTerm));
-
-			final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
-			final ImmutableSet<OrderId> orderIds = parentOrderId == null ? ImmutableSet.of(orderId) : ImmutableSet.of(orderId, parentOrderId);
-			final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
-
-			final I_C_Order contractOrder = orders.get(0);
-			contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
-
-			if (parentOrderId != null)
-			{
-				final I_C_Order order = orders.get(1);
-				if (parentOrderId.getRepoId() != contractOrder.getC_Order_ID()  // different order from the current one
-						&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(order.getContractStatus()) // current order wasn't previously cancelled, although shall not be possible this
-						&& I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus())) // current order was cancelled
-				{
-
-					contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Active);
-				}
-
-			}
+			return;
 		}
+
+		final I_C_Order parentOrder = orders.get(1);
+		if (isActiveParentContractOrder(parentOrder, contractOrder))
+		{
+			contractOrderRepository.setOrderContractStatusAndSave(parentOrder, I_C_Order.CONTRACTSTATUS_Active);
+		}
+	}
+
+	private boolean isActiveParentContractOrder(@NonNull final I_C_Order parentOrder, @NonNull final I_C_Order contractOrder)
+	{
+		return parentOrder.getC_Order_ID() != contractOrder.getC_Order_ID()  // different order from the current one
+				&& !I_C_Order.CONTRACTSTATUS_Cancelled.equals(parentOrder.getContractStatus()) // current order wasn't previously cancelled, although shall not be possible this
+				&& I_C_Order.CONTRACTSTATUS_Cancelled.equals(contractOrder.getContractStatus()); // current order was cancelled
 	}
 
 }
