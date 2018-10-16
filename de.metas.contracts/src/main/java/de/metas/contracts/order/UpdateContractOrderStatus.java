@@ -51,7 +51,7 @@ public class UpdateContractOrderStatus
 	private final ContractOrderRepository contractOrderRepository;
 	private final ContractOrderService contractOrderService;
 	private final IOrderDAO orderDAO;
-	private final IContractsDAO contractsDAO; 
+	private final IContractsDAO contractsDAO;
 
 	public UpdateContractOrderStatus(
 			@NonNull final ContractOrderRepository contractOrderRepository,
@@ -94,7 +94,7 @@ public class UpdateContractOrderStatus
 			for (final I_C_Order order : orders)
 			{
 				contractOrderRepository.setOrderContractStatusAndSave(order, I_C_Order.CONTRACTSTATUS_Cancelled);
-			} ;
+			}
 		}
 	}
 

@@ -229,7 +229,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends org.compiere.model.I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
+	public <T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
 	{
 		return loadByRepoIdAwaresOutOfTrx(orderIds, clazz);
 	}
