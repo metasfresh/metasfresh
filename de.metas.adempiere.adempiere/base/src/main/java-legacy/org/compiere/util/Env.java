@@ -1413,6 +1413,11 @@ public final class Env
 		return null;
 	}	// getLanguage
 
+	public static Language getLanguage()
+	{
+		return getLanguage(getCtx());
+	}
+
 	/**
 	 * Get Login Language
 	 *
