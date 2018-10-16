@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -21,46 +21,40 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
-import org.adempiere.ad.session.ISessionDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.table.ComposedRecordId;
+import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.UserId;
 import org.adempiere.user.api.IUserDAO;
+import org.compiere.Adempiere;
 import org.compiere.grid.VTable;
-import org.compiere.model.DataStatusEvent;
-import org.compiere.model.I_AD_ChangeLog;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.MColumn;
-import org.compiere.model.MLookup;
-import org.compiere.model.MLookupFactory;
 import org.compiere.model.MTable;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTextArea;
-import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.NamePair;
-import org.slf4j.Logger;
-import org.slf4j.Logger;
+import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.util.Services;
-import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Record Info (Who) With Change History
@@ -69,367 +63,249 @@ import de.metas.logging.LogManager;
  * <ul>
  * <li>2007-02-26 - teo_sarca - [ 1666598 ] RecordInfo shows ColumnName instead of name
  * </ul>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: RecordInfo.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
+@SuppressWarnings("serial")
 public class RecordInfo extends CDialog
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8984246906639442417L;
-	
 	// services
-	private static final transient Logger log = LogManager.getLogger(RecordInfo.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final transient IUserDAO usersRepo = Services.get(IUserDAO.class);
 
+	private final Language language = Env.getLanguage();
+	private final SimpleDateFormat dateTimeFormat = DisplayType.getDateFormat(DisplayType.DateTime, language);
+	private final HashMap<UserId, String> userNamesById = new HashMap<>();
 
-	/**
-	 *	Record Info
-	 *	@param owner owner
-	 *	@param title title
-	 *	@param dse data status event
-	 */
-	public RecordInfo (Frame owner, String title, DataStatusEvent dse)
+	public RecordInfo(
+			final Frame owner,
+			final int adTableId,
+			@NonNull final ComposedRecordId recordId)
 	{
-		super (owner, title, true);
+		super(owner, "", /* modal */true);
+
 		try
 		{
-			final boolean showTable = dynInit(dse, title);
-			jbInit(showTable);
+			final RecordChangeLogRepository tableRecordChangeLogRepo = Adempiere.getBean(RecordChangeLogRepository.class);
+			final RecordChangeLog changeLog = tableRecordChangeLogRepo.getByRecord(adTableId, recordId);
+
+			final String summaryInfo = buildSummaryInfo(changeLog);
+			final DefaultTableModel logEntriesTableModel = createLogEntriesTableModel(changeLog);
+
+			setTitle(buildTitle(adTableId));
+			initLayout(summaryInfo, logEntriesTableModel);
+
+			AEnv.positionCenterWindow(owner, this);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			log.error("", e);
+			dispose();
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
-		AEnv.positionCenterWindow (owner, this);
-	}	//	RecordInfo
+	}	// RecordInfo
 
-
-	private CPanel	mainPanel	= new CPanel (new BorderLayout(0,0));
-	private VTable table = new VTable();
-	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
-
-	/** The Data		*/
-	private Vector<Vector<String>>	m_data = new Vector<Vector<String>>();
-	/** Info			*/
-	private StringBuffer	m_info = new StringBuffer();
-
-	
-	
-	/** Date Time Format		*/
-	private SimpleDateFormat	m_dateTimeFormat = DisplayType.getDateFormat(DisplayType.DateTime, Env.getLanguage(Env.getCtx()));
-	/** Date Format			*/
-	private SimpleDateFormat	m_dateFormat = DisplayType.getDateFormat(DisplayType.DateTime, Env.getLanguage(Env.getCtx()));
-	/** Number Format		*/
-	private DecimalFormat		m_numberFormat = DisplayType.getNumberFormat(DisplayType.Number, Env.getLanguage(Env.getCtx()));
-	/** Amount Format		*/
-	private DecimalFormat		m_amtFormat = DisplayType.getNumberFormat(DisplayType.Amount, Env.getLanguage(Env.getCtx()));
-	/** Number Format		*/
-	private DecimalFormat		m_intFormat = DisplayType.getNumberFormat(DisplayType.Integer, Env.getLanguage(Env.getCtx()));
-
-	/**
-	 * 	Static Layout
-	 *	@throws Exception
-	 */
-	private void jbInit (boolean showTable) throws Exception
+	private void initLayout(
+			final String summaryInfo,
+			final DefaultTableModel logEntriesTableModel)
 	{
+		final CPanel mainPanel = new CPanel(new BorderLayout(0, 0));
 		getContentPane().add(mainPanel);
-		CTextArea info = new CTextArea(m_info.toString());
+
+		final CTextArea info = new CTextArea(summaryInfo);
 		info.setReadWrite(false);
-		info.setOpaque(false);	//	transparent
+		info.setOpaque(false);	// transparent
 		info.setForeground(Color.blue);
 		info.setBorder(null);
+
 		//
-		if (showTable)
+		if (logEntriesTableModel != null)
 		{
+			final VTable table = new VTable();
+			table.setModel(logEntriesTableModel);
+			table.autoSize(false);
+
 			final CScrollPane scrollPane = new CScrollPane();
-			mainPanel.add (info, BorderLayout.NORTH);
-			mainPanel.add (scrollPane, BorderLayout.CENTER);
+			mainPanel.add(info, BorderLayout.NORTH);
+			mainPanel.add(scrollPane, BorderLayout.CENTER);
 			scrollPane.getViewport().add(table);
-			scrollPane.setPreferredSize(new Dimension(500,100));
+			scrollPane.setPreferredSize(new Dimension(500, 100));
 		}
 		else
 		{
-			info.setPreferredSize(new Dimension(400,75));
-			mainPanel.add (info, BorderLayout.CENTER);
-		}
-		//
-		mainPanel.add (confirmPanel, BorderLayout.SOUTH);
-		confirmPanel.setActionListener(this);
-	}	//	jbInit
-	
-	
-	/**
-	 * 	Dynamic Init
-	 *	@param dse data status event
-	 *	@param title title
-	 *	@return true if table initialized
-	 */
-	private boolean dynInit(DataStatusEvent dse, String title)
-	{
-		if (dse.CreatedBy == null)
-			return false;
-		
-		//  Info
-		final String createdByUserName = getUserName(dse.CreatedBy);
-		
-		m_info.append(" ")
-			.append(msgBL.translate(Env.getCtx(), "CreatedBy"))
-			.append(": ").append(createdByUserName)
-			.append(" - ").append(m_dateTimeFormat.format(dse.Created)).append("\n");
-		
-		if (!Check.equals(dse.Created, dse.Updated) || !Check.equals(dse.CreatedBy, dse.UpdatedBy))
-		{
-			final String updatedByUserName;
-			if (!Check.equals(dse.CreatedBy, dse.UpdatedBy))
-			{
-				updatedByUserName = getUserName(dse.UpdatedBy);
-			}
-			else
-			{
-				updatedByUserName = createdByUserName;
-			}
-			m_info.append(" ")
-				.append(msgBL.translate(Env.getCtx(), "UpdatedBy"))
-				.append(": ").append(updatedByUserName)
-				.append(" - ").append(m_dateTimeFormat.format(dse.Updated)).append("\n");
-		}
-		
-		if (!Check.isEmpty(dse.Info, true))
-		{
-			m_info.append("\n (").append(dse.Info).append(")");
-		}
-		
-		//	Title
-		if (dse.AD_Table_ID > 0)
-		{
-			final MTable table = MTable.get (Env.getCtx(), dse.AD_Table_ID);
-			setTitle(title + " - " + table.getName());
+			info.setPreferredSize(new Dimension(400, 75));
+			mainPanel.add(info, BorderLayout.CENTER);
 		}
 
+		//
+		final ConfirmPanel confirmPanel = ConfirmPanel.newWithOK();
+		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
+		confirmPanel.setActionListener(this);
+	}	// jbInit
+
+	private String buildTitle(final int adTableId)
+	{
+		final StringBuilder title = new StringBuilder();
+
+		title.append(msgBL.getMsg(Env.getCtx(), "Who"));
+
+		if (adTableId > 0)
+		{
+			final MTable table = MTable.get(Env.getCtx(), adTableId);
+			title.append(" - ").append(table.getName());
+		}
+
+		return title.toString();
+	}
+
+	private DefaultTableModel createLogEntriesTableModel(final RecordChangeLog changeLog)
+	{
 		// Check if we are allowed to view the record's change log
 		final UserPreferenceLevelConstraint preferenceLevel = Env.getUserRolePermissions().getPreferenceLevel();
 		if (!preferenceLevel.canViewRecordChangeLog())
 		{
-			return false;
+			return null;
 		}
 
-		//
-		// Record_ID
-		int Record_ID = 0;
-		if (dse.Record_ID instanceof Integer)
-		{
-			Record_ID = ((Integer)dse.Record_ID).intValue();
-		}
-		else
-		{
-			log.info("dynInit - Invalid Record_ID=" + dse.Record_ID);
-		}
-		if (Record_ID <= 0)
-		{
-			return false;
-		}
-		
-		//
-		//	Data
-		final String sql = "SELECT AD_Column_ID, Updated, UpdatedBy, OldValue, NewValue "
-			+ "FROM "+I_AD_ChangeLog.Table_Name
-			+ " WHERE AD_Table_ID=? AND Record_ID=? "
-			+ " ORDER BY Updated DESC";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement (sql, ITrx.TRXNAME_None);
-			pstmt.setInt (1, dse.AD_Table_ID);
-			pstmt.setInt (2, Record_ID);
-			rs = pstmt.executeQuery ();
-			while (rs.next())
-			{
-				addLine (rs.getInt(1), rs.getTimestamp(2), rs.getInt(3), rs.getString(4), rs.getString(5));
-			}
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-		
-		//
-		final Vector<String> columnNames = new Vector<String>();
+		final Vector<Vector<Object>> data = toTableRows(changeLog);
+
+		final Vector<Object> columnNames = new Vector<>();
 		columnNames.add(msgBL.translate(Env.getCtx(), "Name"));
 		columnNames.add(msgBL.translate(Env.getCtx(), "NewValue"));
 		columnNames.add(msgBL.translate(Env.getCtx(), "OldValue"));
 		columnNames.add(msgBL.translate(Env.getCtx(), "UpdatedBy"));
 		columnNames.add(msgBL.translate(Env.getCtx(), "Updated"));
-		columnNames.add(msgBL.translate(Env.getCtx(), "AD_Column_ID"));
-		DefaultTableModel model = new DefaultTableModel(m_data, columnNames);
-		table.setModel(model);
-		table.autoSize(false);
-		return true;
-	}	//	dynInit
-	
-	private final String getUserName(final Integer userId)
+		columnNames.add(msgBL.translate(Env.getCtx(), "ColumnName"));
+
+		return new DefaultTableModel(data, columnNames);
+	}
+
+	private Vector<Vector<Object>> toTableRows(final RecordChangeLog log)
+	{
+		return log.getEntries()
+				.stream()
+				.sorted(Comparator.comparing(RecordChangeLogEntry::getChangedTimestamp).reversed())
+				.map(this::toTableRow)
+				.collect(Collectors.toCollection(Vector::new));
+	}
+
+	private Vector<Object> toTableRow(final RecordChangeLogEntry logEntry)
+	{
+		final String adLanguage = language.getAD_Language();
+
+		final Vector<Object> row = new Vector<>();
+		row.add(logEntry.getColumnDisplayName().translate(adLanguage)); // Name
+		row.add(convertToDisplayValue(logEntry.getValueNew(), logEntry.getDisplayType())); // NewValue
+		row.add(convertToDisplayValue(logEntry.getValueOld(), logEntry.getDisplayType())); // OldValue
+		row.add(getUserName(logEntry.getChangedByUserId())); // UpdatedBy
+		row.add(convertToDateTimeString(logEntry.getChangedTimestamp())); // Updated
+		row.add(logEntry.getColumnName()); // ColumnName
+		return row;
+	}
+
+	private String convertToDisplayValue(final Object value, final int displayType)
+	{
+		if (value == null)
+		{
+			return "";
+		}
+		else if (value instanceof String)
+		{
+			return value.toString();
+		}
+		else if (value instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)value).translate(language.getAD_Language());
+		}
+		else if (value instanceof Number)
+		{
+			final int numberDisplayType = DisplayType.isNumeric(displayType) ? displayType : DisplayType.Number;
+			final DecimalFormat formatter = DisplayType.getNumberFormat(numberDisplayType, language);
+			return formatter.format(value);
+		}
+		else if (DisplayType.isDate(displayType))
+		{
+			final SimpleDateFormat formatter = DisplayType.getDateFormat(displayType, language);
+			return formatter.format(TimeUtil.asDate(value));
+		}
+		else if (value instanceof Boolean)
+		{
+			Boolean valueBool = (Boolean)value;
+			return msgBL.getTranslatableMsgText(valueBool).translate(language.getAD_Language());
+		}
+		else if (value instanceof byte[])
+		{
+			return ""; // don't show LOBs
+		}
+		else
+		{
+			return value.toString();
+		}
+	}
+
+	private String convertToDateTimeString(final ZonedDateTime dateTime)
+	{
+		if (dateTime == null)
+		{
+			return "";
+		}
+
+		return dateTimeFormat.format(TimeUtil.asDate(dateTime));
+	}
+
+	private String buildSummaryInfo(final RecordChangeLog changeLog)
+	{
+		final StringBuilder info = new StringBuilder();
+
+		//
+		// Created / Created By
+		final UserId createdBy = changeLog.getCreatedByUserId();
+		final ZonedDateTime createdTS = changeLog.getCreatedTimestamp();
+		info.append(" ")
+				.append(msgBL.translate(Env.getCtx(), "CreatedBy"))
+				.append(": ").append(getUserName(createdBy))
+				.append(" - ").append(convertToDateTimeString(createdTS)).append("\n");
+
+		//
+		// Last Changed / Last Changed By
+		if (changeLog.hasChanges())
+		{
+			final UserId lastChangedBy = changeLog.getLastChangedByUserId();
+			final ZonedDateTime lastChangedTS = changeLog.getLastChangedTimestamp();
+			info.append(" ")
+					.append(msgBL.translate(Env.getCtx(), "UpdatedBy"))
+					.append(": ").append(getUserName(lastChangedBy))
+					.append(" - ").append(convertToDateTimeString(lastChangedTS)).append("\n");
+		}
+
+		//
+		// TableName / RecordId(s)
+		info.append(changeLog.getTableName())
+				.append(" (").append(changeLog.getRecordId().toInfoString()).append(")");
+
+		return info.toString();
+	}
+
+	private final String getUserName(final UserId userId)
 	{
 		if (userId == null)
 		{
 			return "?";
 		}
 
-		final Properties ctx = Env.getCtx();
-		final I_AD_User user = userDAO.retrieveUserOrNull(ctx, userId);
-		if (user == null)
-		{
-			return "<" + userId + ">";
-		}
-		return user.getName();
+		return userNamesById.computeIfAbsent(userId, this::retrieveUserName);
 	}
-	
-	/**
-	 * 	Add Line
-	 *	@param AD_Column_ID column
-	 *	@param Updated updated
-	 *	@param UpdatedBy user
-	 *	@param OldValue old
-	 *	@param NewValue new
-	 */
-	private void addLine (int AD_Column_ID, Timestamp Updated, int UpdatedBy, String OldValue, String NewValue)
-	{
-		final Vector<String> line = new Vector<String>();
-		
-		//	Column
-		MColumn column = MColumn.get(Env.getCtx(), AD_Column_ID);
-		if (column != null)
-		{
-			line.add(msgBL.translate(Env.getCtx(), column.getColumnName()));
-		}
-		else
-		{
-			line.add("-");
-		}
-		
-		//
-		if (OldValue != null && OldValue.equals(ISessionDAO.CHANGELOG_NullValue))
-			OldValue = null;
-		String showOldValue = OldValue;
-		if (NewValue != null && NewValue.equals(ISessionDAO.CHANGELOG_NullValue))
-			NewValue = null;
-		String showNewValue = NewValue;
-		//
-		try
-		{
-			if (DisplayType.isText (column.getAD_Reference_ID ()))
-				;
-			else if (column.getAD_Reference_ID() == DisplayType.YesNo)
-			{
-				if (OldValue != null)
-				{
-					boolean yes = OldValue.equals("true") || OldValue.equals("Y");
-					showOldValue = msgBL.getMsg(Env.getCtx(), yes ? "Y" : "N");
-				}
-				if (NewValue != null)
-				{
-					boolean yes = NewValue.equals("true") || NewValue.equals("Y");
-					showNewValue = msgBL.getMsg(Env.getCtx(), yes ? "Y" : "N");
-				}
-			}
-			else if (column.getAD_Reference_ID() == DisplayType.Amount)
-			{
-				if (OldValue != null)
-					showOldValue = m_amtFormat.format (new BigDecimal (OldValue));
-				if (NewValue != null)
-					showNewValue = m_amtFormat.format (new BigDecimal (NewValue));
-			}
-			else if (column.getAD_Reference_ID() == DisplayType.Integer)
-			{
-				if (OldValue != null)
-					showOldValue = m_intFormat.format (new Integer (OldValue));
-				if (NewValue != null)
-					showNewValue = m_intFormat.format (new Integer (NewValue));
-			}
-			else if (DisplayType.isNumeric (column.getAD_Reference_ID ()))
-			{
-				if (OldValue != null)
-					showOldValue = m_numberFormat.format (new BigDecimal (OldValue));
-				if (NewValue != null)
-					showNewValue = m_numberFormat.format (new BigDecimal (NewValue));
-			}
-			else if (column.getAD_Reference_ID() == DisplayType.Date)
-			{
-				if (OldValue != null)
-					showOldValue = m_dateFormat.format (Timestamp.valueOf (OldValue));
-				if (NewValue != null)
-					showNewValue = m_dateFormat.format (Timestamp.valueOf (NewValue));
-			}
-			else if (column.getAD_Reference_ID() == DisplayType.DateTime)
-			{
-				if (OldValue != null)
-					showOldValue = m_dateTimeFormat.format (Timestamp.valueOf (OldValue));
-				if (NewValue != null)
-					showNewValue = m_dateTimeFormat.format (Timestamp.valueOf (NewValue));
-			}
-			else if (DisplayType.isLookup(column.getAD_Reference_ID()))
-			{
-				final int windowNo = Env.getWindowNo(getParent()); // metas: 03090: use WindowNo when creating the lookup 
-				MLookup lookup = MLookupFactory.get (Env.getCtx(), windowNo,
-					AD_Column_ID, column.getAD_Reference_ID(),
-					column.get_TableName(),
-					column.getColumnName(),
-					column.getAD_Reference_Value_ID(),
-					column.isParent(), IValidationRule.AD_Val_Rule_ID_Null);
-				if (OldValue != null)
-				{
-					Object key = OldValue; 
-					NamePair pp = lookup.get(key);
-					if (pp != null)
-						showOldValue = pp.getName();
-				}
-				if (NewValue != null)
-				{
-					Object key = NewValue; 
-					NamePair pp = lookup.get(key);
-					if (pp != null)
-						showNewValue = pp.getName();
-				}
-			}
-			else if (DisplayType.isLOB (column.getAD_Reference_ID ()))
-				;
-		}
-		catch (Exception e)
-		{
-			log.warn(OldValue + "->" + NewValue, e);
-		}
-		//
-		line.add(showNewValue);
-		line.add(showOldValue);
-		//	UpdatedBy
-		final String updatedByUserName = getUserName(UpdatedBy);
-		line.add(updatedByUserName);
-		//	Updated
-		line.add(m_dateFormat.format(Updated));
-		//	Column Name
-		line.add(column.getColumnName());
 
-		m_data.add(line);
-	}	//	addLine
-	
-	
-	/**
-	 *	ActionListener
-	 *  @param e event
-	 */
+	private String retrieveUserName(final UserId userId)
+	{
+		final String name = usersRepo.retrieveUserFullname(userId.getRepoId());
+		return name != null ? name : "<" + userId.getRepoId() + ">";
+	}
+
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		dispose();
-	}	//	actionPerformed
+	}	// actionPerformed
 
 }	// RecordInfo

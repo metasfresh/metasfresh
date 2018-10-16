@@ -918,7 +918,7 @@ public class GridTable extends AbstractTableModel
 		//	update UI
 		fireTableDataChanged();
 		//  Info detected by MTab.dataStatusChanged and current row set to 0
-		fireDataStatusIEvent("Sorted", "#" + m_sort.size());
+		fireDataStatusInfoEvent("Sorted", "#" + m_sort.size());
 	}	//	sort
 
 	/**
@@ -2000,7 +2000,7 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;
 		m_newRow = -1;
 		m_inserting = false;
-		fireDataStatusIEvent("Saved", "");
+		fireDataStatusInfoEvent("Saved", "");
 		
 		return SAVE_OK;
 	}	//	dataSave
@@ -2196,24 +2196,16 @@ public class GridTable extends AbstractTableModel
 		m_newRow = -1;
 		m_inserting = false;
 		//
-		ValueNamePair pp = MetasfreshLastError.retrieveWarning();
-		if (pp != null)
+		ValueNamePair lastWarning = MetasfreshLastError.retrieveWarning();
+		if (lastWarning != null)
 		{
-			String msg = pp.getValue();
-			String info = pp.getName();
+			String msg = lastWarning.getValue();
+			String info = lastWarning.getName();
 			fireDataStatusEEvent(msg, info, false);
 		}
 		else
 		{
-			pp = MetasfreshLastError.retrieveInfo();
-			String msg = "Saved";
-			String info = "";
-			if (pp != null)
-			{
-				msg = pp.getValue();
-				info = pp.getName();
-			}
-			fireDataStatusIEvent(msg, info);
+			fireDataStatusInfoEvent("Saved", "");
 		}
 		
 		return SAVE_OK;
@@ -2641,7 +2633,7 @@ public class GridTable extends AbstractTableModel
 		//	inform
 		log.debug("Current=" + currentRow + ", New=" + m_newRow);
 		fireTableRowsInserted(m_newRow, m_newRow);
-		fireDataStatusIEvent(isRecordCopyingMode() ? "UpdateCopied" : "Inserted", "");
+		fireDataStatusInfoEvent(isRecordCopyingMode() ? "UpdateCopied" : "Inserted", "");
 		log.debug("Current=" + currentRow + ", New=" + m_newRow + " - complete");
 		return true;
 	}	//	dataNew
@@ -2796,7 +2788,7 @@ public class GridTable extends AbstractTableModel
 		m_changed = false;
 		m_rowChanged = -1;
 		fireTableRowsDeleted(row, row);
-		fireDataStatusIEvent("Deleted", "");
+		fireDataStatusInfoEvent("Deleted", "");
 		log.debug("Row=" + row + " complete");
 		return true;
 	}	//	dataDelete
@@ -2859,7 +2851,7 @@ public class GridTable extends AbstractTableModel
 		// Copy-with-details: reset status on GridTab level
 		resetDataNewCopyMode();
 
-		fireDataStatusIEvent("Ignored", "");
+		fireDataStatusInfoEvent("Ignored", "");
 	}	//	dataIgnore
 
 
@@ -2917,7 +2909,7 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;
 		m_inserting = false;
 		fireTableRowsUpdated(row, row);
-		fireDataStatusIEvent("Refreshed", "");
+		fireDataStatusInfoEvent("Refreshed", "");
 	}	//	dataRefresh
 
 
@@ -2936,7 +2928,7 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;
 		m_inserting = false;
 		fireTableDataChanged();
-		fireDataStatusIEvent("Refreshed", "");
+		fireDataStatusInfoEvent("Refreshed", "");
 	}	//	dataRefreshAll
 
 
@@ -2967,7 +2959,7 @@ public class GridTable extends AbstractTableModel
 		m_rowChanged = -1;
 		m_inserting = false;
 		fireTableDataChanged();
-		fireDataStatusIEvent("Refreshed", "");
+		fireDataStatusInfoEvent("Refreshed", "");
 		return true;
 	}	//	dataRequery
 
@@ -3303,13 +3295,15 @@ public class GridTable extends AbstractTableModel
 	 */
 	private DataStatusEvent createDSE()
 	{
-		boolean changed = m_changed;
-		if (m_rowChanged != -1)
-			changed = true;
-		DataStatusEvent dse = new DataStatusEvent(this, m_rowCount, changed,
-			Env.isAutoCommit(m_ctx, m_WindowNo), m_inserting);
-		dse.AD_Table_ID = m_AD_Table_ID;
-		dse.Record_ID = null;
+		final boolean changed = m_changed || m_rowChanged != -1;
+		final DataStatusEvent dse = DataStatusEvent.builder()
+				.source(this)
+				.totalRows(m_rowCount)
+				.changed(changed)
+				.autoSave(Env.isAutoCommit(m_ctx, m_WindowNo))
+				.inserting(m_inserting)
+				.build();
+		dse.setAdTableId(m_AD_Table_ID);
 		return dse;
 	}   //  createDSE
 
@@ -3318,7 +3312,7 @@ public class GridTable extends AbstractTableModel
 	 *  @param AD_Message message
 	 *  @param info additional info
 	 */
-	protected void fireDataStatusIEvent (String AD_Message, String info)
+	protected void fireDataStatusInfoEvent (String AD_Message, String info)
 	{
 		DataStatusEvent e = createDSE();
 		e.setInfo(AD_Message, info, false,false);
@@ -3591,7 +3585,7 @@ public class GridTable extends AbstractTableModel
 			}
 			// metas end
 
-			fireDataStatusIEvent("", "");
+			fireDataStatusInfoEvent("", "");
 		}	//	run
 
 		/**
