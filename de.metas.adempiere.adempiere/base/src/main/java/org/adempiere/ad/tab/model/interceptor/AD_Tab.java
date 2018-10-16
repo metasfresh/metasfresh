@@ -67,7 +67,7 @@ public class AD_Tab
 		tab.setCommitWarning(tabElement.getCommitWarning());
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW,  ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Tab tab)
 	{
 		final int tabElementId = tab.getAD_Element_ID();

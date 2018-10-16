@@ -66,7 +66,7 @@ public class AD_Window
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Window window)
 	{
 		final int windowElementId = window.getAD_Element_ID();

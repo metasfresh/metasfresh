@@ -70,7 +70,7 @@ public class AD_Menu
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Menu.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Menu menu)
 	{
 		final int menuElementId = menu.getAD_Element_ID();
