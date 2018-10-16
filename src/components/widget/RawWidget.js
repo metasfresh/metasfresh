@@ -274,9 +274,12 @@ class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e => handleChange && handleChange(widgetField, e.target.value),
-      onQuantityChange: valAsNum =>
-        handleChange && handleChange(widgetField, valAsNum),
+      onChange: e => {
+        if (subentity === 'quickInput') {
+          return handleChange && handleChange(widgetField, e);
+        }
+        return handleChange && handleChange(widgetField, e.target.value);
+      },
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
@@ -605,7 +608,6 @@ class RawWidget extends Component {
             {subentity === 'quickInput' ? (
               <NumericInput
                 {...widgetProperties}
-                onChange={widgetProperties.onQuantityChange}
                 min={0}
                 precision={1}
                 step={subentity === 'quickInput' ? 0.1 : 1}
