@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionReferenceProvider;
@@ -77,7 +78,8 @@ import de.metas.util.Services;
 		GroupTemplateRepository.class,
 		GroupCompensationLineCreateRequestFactory.class,
 		BPartnerBL.class,
-		UserRepository.class })
+		UserRepository.class,
+		ContractLibraryConfiguration.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
