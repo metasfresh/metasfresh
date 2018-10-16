@@ -102,7 +102,7 @@ public class UpdateContractOrderStatus
 		}
 	}
 
-	public void updateStausIfNeededWhenVoiding(final I_C_Flatrate_Term term)
+	public void updateStausIfNeededWhenVoiding(@NonNull final I_C_Flatrate_Term term)
 	{
 		final OrderId orderId = contractOrderService.getContractOrderId(term);
 		if (orderId == null
@@ -111,26 +111,37 @@ public class UpdateContractOrderStatus
 			return;
 		}
 
-		// set status for the current order
-		final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
-		final boolean anyActiveTerms = terms
-				.stream()
-				.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
-						&& subscriptionBL.isActiveTerm(currentTerm));
-
 		final OrderId parentOrderId = contractOrderService.retrieveLinkedFollowUpContractOrder(orderId);
 		final ImmutableSet<OrderId> orderIds = parentOrderId == null ? ImmutableSet.of(orderId) : ImmutableSet.of(orderId, parentOrderId);
 		final List<I_C_Order> orders = orderDAO.getByIds(orderIds, I_C_Order.class);
 
 		final I_C_Order contractOrder = orders.get(0);
-		contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
+		setContractStatusForCurrentOrder(contractOrder, term);
+		setContractStatusForParentOrderIfNeeded(orders);
+	}
 
-		if (parentOrderId == null)
+	private void setContractStatusForCurrentOrder(@NonNull final I_C_Order contractOrder, @NonNull final I_C_Flatrate_Term term)
+	{
+		// set status for the current order
+		final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(OrderId.ofRepoId(contractOrder.getC_Order_ID()));
+		final boolean anyActiveTerms = terms
+				.stream()
+				.anyMatch(currentTerm -> term.getC_Flatrate_Term_ID() != currentTerm.getC_Flatrate_Term_ID()
+						&& subscriptionBL.isActiveTerm(currentTerm));
+
+		contractOrderRepository.setOrderContractStatusAndSave(contractOrder, anyActiveTerms ? I_C_Order.CONTRACTSTATUS_Active : I_C_Order.CONTRACTSTATUS_Cancelled);
+	}
+	
+	private void setContractStatusForParentOrderIfNeeded(final List<I_C_Order> orders)
+	{
+		if (orders.size() == 1) // means that the order does not have parent
 		{
 			return;
 		}
-
+		
+		final I_C_Order contractOrder = orders.get(0);
 		final I_C_Order parentOrder = orders.get(1);
+		
 		if (isActiveParentContractOrder(parentOrder, contractOrder))
 		{
 			contractOrderRepository.setOrderContractStatusAndSave(parentOrder, I_C_Order.CONTRACTSTATUS_Active);
