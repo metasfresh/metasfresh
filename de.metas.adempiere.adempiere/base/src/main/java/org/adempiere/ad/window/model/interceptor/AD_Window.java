@@ -2,6 +2,10 @@ package org.adempiere.ad.window.model.interceptor;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Element;
@@ -10,7 +14,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -35,15 +38,27 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_AD_Window.class)
+@Callout(I_AD_Window.class)
 @Component("org.adempiere.ad.window.model.interceptor.AD_Window")
 public class AD_Window
 {
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Window.COLUMNNAME_AD_Element_ID)
+	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
 		final I_AD_Element windowElement = window.getAD_Element();
 
-		Check.assumeNotNull(windowElement, "AD_Window.AD_Element_ID is a mandatory column");
+		if (windowElement == null)
+		{
+			// nothing to do. It was not yet set
+			return;
+		}
 
 		window.setName(windowElement.getName());
 		window.setDescription(windowElement.getDescription());
@@ -55,7 +70,11 @@ public class AD_Window
 	public void updateTranslationsForElement(final I_AD_Window window)
 	{
 		final int windowElementId = window.getAD_Element_ID();
-		Check.assumeGreaterThanZero(windowElementId, I_AD_Window.COLUMNNAME_AD_Element_ID);
+		if(windowElementId <= 0)
+		{
+			// nothing to do. It was not yet set
+			return;
+		}
 
 		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(windowElementId);
 	}

@@ -2,6 +2,10 @@ package org.adempiere.ad.menu.model.interceptor;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Element;
@@ -11,7 +15,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -37,15 +40,27 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_AD_Menu.class)
-@Component
+@Callout(I_AD_Menu.class)
+@Component("org.adempiere.ad.menu.model.interceptor.AD_Menu")
 public class AD_Menu
 {
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
 		final I_AD_Element menuElement = menu.getAD_Element();
 
-		Check.assumeNotNull(menuElement, "AD_Menu.AD_Element_ID is a mandatory column");
+		if (menuElement == null)
+		{
+			// nothing to do. It was not yet set
+			return;
+		}
 
 		menu.setName(menuElement.getName());
 		menu.setDescription(menuElement.getDescription());
@@ -59,7 +74,12 @@ public class AD_Menu
 	public void updateTranslationsForElement(final I_AD_Menu menu)
 	{
 		final int menuElementId = menu.getAD_Element_ID();
-		Check.assumeGreaterThanZero(menuElementId, I_AD_Menu.COLUMNNAME_AD_Element_ID);
+
+		if (menuElementId <= 0)
+		{
+			// nothing to do. It was not yet set
+			return;
+		}
 
 		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(menuElementId);
 	}

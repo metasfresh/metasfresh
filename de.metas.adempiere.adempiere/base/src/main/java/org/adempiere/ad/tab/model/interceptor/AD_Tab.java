@@ -2,6 +2,10 @@ package org.adempiere.ad.tab.model.interceptor;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_AD_Element;
@@ -10,7 +14,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -36,15 +39,27 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_AD_Tab.class)
-@Component
+@Callout(I_AD_Tab.class)
+@Component("org.adempiere.ad.tab.model.interceptor.AD_Tab")
 public class AD_Tab
 {
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@CalloutMethod(columnNames = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Tab tab) throws SQLException
 	{
 		final I_AD_Element tabElement = tab.getAD_Element();
 
-		Check.assumeNotNull(tabElement, "AD_Tab.AD_Element_ID is a mandatory column");
+		if (tabElement == null)
+		{
+			// nothing to do. It was not yet set
+			return;
+		}
 
 		tab.setName(tabElement.getName());
 		tab.setDescription(tabElement.getDescription());
@@ -56,7 +71,14 @@ public class AD_Tab
 	public void updateTranslationsForElement(final I_AD_Tab tab)
 	{
 		final int tabElementId = tab.getAD_Element_ID();
-		Check.assumeGreaterThanZero(tabElementId, I_AD_Tab.COLUMNNAME_AD_Element_ID);
+
+		if (tabElementId <= 0)
+		{
+			{
+				// nothing to do. It was not yet set
+				return;
+			}
+		}
 
 		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(tabElementId);
 	}
