@@ -18,6 +18,7 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -52,17 +53,21 @@ public class UpdateContractOrderStatus
 	private final ContractOrderService contractOrderService;
 	private final IOrderDAO orderDAO;
 	private final IContractsDAO contractsDAO;
+	private final ISubscriptionBL subscriptionBL;
 
+	@Builder
 	public UpdateContractOrderStatus(
 			@NonNull final ContractOrderRepository contractOrderRepository,
 			@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IOrderDAO orderDAO,
-			@NonNull final IContractsDAO contractsDAO)
+			@NonNull final IContractsDAO contractsDAO,
+			@NonNull final ISubscriptionBL subscriptionBL)
 	{
 		this.contractOrderRepository = contractOrderRepository;
 		this.contractOrderService = contractOrderService;
 		this.orderDAO = orderDAO;
 		this.contractsDAO = contractsDAO;
+		this.subscriptionBL = subscriptionBL;
 	}
 
 	public void updateStatusIfNeededWhenExtendind(final I_C_Flatrate_Term term, final Set<OrderId> orderIds)
@@ -108,8 +113,6 @@ public class UpdateContractOrderStatus
 
 		if (X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(term.getContractStatus()))
 		{
-			final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-
 			// set status for the current order
 			final List<I_C_Flatrate_Term> terms = contractsDAO.retrieveFlatrateTerms(orderId);
 			final boolean anyActiveTerms = terms

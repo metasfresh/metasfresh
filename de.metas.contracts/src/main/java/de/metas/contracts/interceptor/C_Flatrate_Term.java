@@ -600,7 +600,8 @@ public class C_Flatrate_Term
 		final ContractOrderRepository contractOrderRepository = Adempiere.getBean(ContractOrderRepository.class);
 		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 
 		final OrderId orderId = contractOrderService.getContractOrderId(term);
 		if (orderId == null)
@@ -617,7 +618,13 @@ public class C_Flatrate_Term
 
 		final Set<OrderId> orderIds = contractOrderService.retrieveAllContractOrderList(orderId);
 
-		final UpdateContractOrderStatus updateContractStatus = new UpdateContractOrderStatus(contractOrderRepository, contractOrderService, orderDAO, contractsDAO);
+		final UpdateContractOrderStatus updateContractStatus = UpdateContractOrderStatus.builder()
+				.contractOrderRepository(contractOrderRepository)
+				.contractOrderService(contractOrderService)
+				.orderDAO(orderDAO)
+				.contractsDAO(contractsDAO)
+				.subscriptionBL(subscriptionBL)
+				.build();
 		updateContractStatus.updateStatusIfNeededWhenExtendind(term, orderIds);
 		updateContractStatus.updateStatusIfNeededWhenCancelling(term, orderIds);
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
