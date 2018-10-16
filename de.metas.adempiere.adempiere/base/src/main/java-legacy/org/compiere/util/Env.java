@@ -256,7 +256,7 @@ public final class Env
 	public static final String CTXNAME_AD_User_ID = "#AD_User_ID";
 	public static final String CTXNAME_AD_User_Name = "#AD_User_Name";
 	public static final String CTXNAME_SalesRep_ID = "#SalesRep_ID";
-	public static final int CTXVALUE_AD_User_ID_System = 0;
+	public static final int CTXVALUE_AD_User_ID_System = UserId.SYSTEM.getRepoId();
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;

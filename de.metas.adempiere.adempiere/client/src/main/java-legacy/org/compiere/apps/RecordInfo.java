@@ -293,13 +293,7 @@ public class RecordInfo extends CDialog
 			return "?";
 		}
 
-		return userNamesById.computeIfAbsent(userId, this::retrieveUserName);
-	}
-
-	private String retrieveUserName(final UserId userId)
-	{
-		final String name = usersRepo.retrieveUserFullname(userId.getRepoId());
-		return name != null ? name : "<" + userId.getRepoId() + ">";
+		return userNamesById.computeIfAbsent(userId, usersRepo::retrieveUserFullname);
 	}
 
 	@Override
