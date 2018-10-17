@@ -1,9 +1,10 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import java.math.BigDecimal;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.util.Services;
@@ -20,32 +21,35 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ApprovePickingCandidateCommand
+public class ReviewQtyPickedCommand
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
-	private final PickingCandidateId pickingCandidateId;
+	private PickingCandidateId pickingCandidateId;
+	private BigDecimal qtyReviewed;
 
 	@Builder
-	private ApprovePickingCandidateCommand(
+	private ReviewQtyPickedCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickingCandidateId pickingCandidateId)
+			@NonNull PickingCandidateId pickingCandidateId,
+			@NonNull BigDecimal qtyReviewed)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.pickingCandidateId = pickingCandidateId;
+		this.qtyReviewed = qtyReviewed;
 	}
 
 	public PickingCandidate perform()
@@ -55,13 +59,11 @@ public class ApprovePickingCandidateCommand
 
 	private PickingCandidate performInTrx()
 	{
-		PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
-		pickingCandidate.assertApprovable();
+		final PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
+		pickingCandidate.assertDraft();
 
-		pickingCandidate.setApprovalStatus(PickingCandidateApprovalStatus.APPROVED);
-
+		pickingCandidate.reviewPicking(qtyReviewed);
 		pickingCandidateRepository.save(pickingCandidate);
 		return pickingCandidate;
 	}
-
 }

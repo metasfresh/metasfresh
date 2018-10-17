@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -13,18 +14,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
-import de.metas.handlingunits.picking.candidate.commands.ApprovePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessHsAndPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
-import de.metas.handlingunits.picking.candidate.commands.RejectApprovalPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingCommand;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
 import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlotCommand;
 import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
+import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
+import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
@@ -220,22 +222,24 @@ public class PickingCandidateService
 		return pickingCandidateRepository.isHuIdPicked(huId);
 	}
 
-	public PickingCandidate approvePickingCandidate(@NonNull final PickingCandidateId pickingCandidateId)
+	public PickingCandidate setQtyReviewed(@NonNull final PickingCandidateId pickingCandidateId, @NonNull final BigDecimal qtyReviewed)
 	{
-		return ApprovePickingCandidateCommand.builder()
+		return ReviewQtyPickedCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.pickingCandidateId(pickingCandidateId)
+				.qtyReviewed(qtyReviewed)
 				.build()
 				.perform();
 	}
 
-	public PickingCandidate rejectPickingCandidate(@NonNull final PickingCandidateId pickingCandidateId)
+	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final HuPackingInstructionsId huPackingInstructionsId)
 	{
-		return RejectApprovalPickingCandidateCommand.builder()
+		return SetHuPackingInstructionIdCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidateId(pickingCandidateId)
+				.pickingCandidateIds(pickingCandidateIds)
+				.huPackingInstructionsId(huPackingInstructionsId)
 				.build()
 				.perform();
-	}
 
+	}
 }

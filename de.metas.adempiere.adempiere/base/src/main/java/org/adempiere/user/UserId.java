@@ -40,15 +40,40 @@ import lombok.Value;
 @Value
 public class UserId implements RepoIdAware
 {
+	public static final UserId SYSTEM = new UserId(0);
+	public static final UserId METASFRESH = new UserId(100);
+
 	@JsonCreator
 	public static UserId ofRepoId(final int repoId)
 	{
-		return new UserId(repoId);
+		if (repoId == SYSTEM.getRepoId())
+		{
+			return SYSTEM;
+		}
+		else if (repoId == METASFRESH.getRepoId())
+		{
+			return METASFRESH;
+		}
+		else
+		{
+			return new UserId(repoId);
+		}
 	}
 
 	public static UserId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new UserId(repoId) : null;
+		if (repoId == SYSTEM.getRepoId())
+		{
+			return SYSTEM;
+		}
+		else if (repoId == METASFRESH.getRepoId())
+		{
+			return METASFRESH;
+		}
+		else
+		{
+			return repoId >= 0 ? new UserId(repoId) : null;
+		}
 	}
 
 	public static int toRepoIdOr(
@@ -65,9 +90,9 @@ public class UserId implements RepoIdAware
 
 	int repoId;
 
-	private UserId(final int repoId)
+	private UserId(final int userRepoId)
 	{
-		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterOrEqualToZero(userRepoId, "userRepoId");
 	}
 
 	@Override

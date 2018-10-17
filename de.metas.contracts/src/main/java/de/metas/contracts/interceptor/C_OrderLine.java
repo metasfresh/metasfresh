@@ -9,7 +9,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;

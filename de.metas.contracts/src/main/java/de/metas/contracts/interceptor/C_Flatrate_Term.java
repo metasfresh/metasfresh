@@ -1,5 +1,7 @@
 package de.metas.contracts.interceptor;
 
+import lombok.NonNull;
+
 import java.sql.Timestamp;
 
 /*
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -40,18 +43,20 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.POInfo;
-import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
+import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
@@ -64,12 +69,17 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.order.ContractOrderService;
+import de.metas.contracts.order.UpdateContractOrderStatus;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -79,7 +89,7 @@ import lombok.NonNull;
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
-	public static C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
+	public static final C_Flatrate_Term INSTANCE = new C_Flatrate_Term();
 
 	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
@@ -108,9 +118,13 @@ public class C_Flatrate_Term
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final List<I_AD_Org> orgs = new Query(Env.getCtx(), I_AD_Org.Table_Name, I_AD_Org.COLUMNNAME_AD_Org_ID + "!=0", null)
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
+		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, OrgId.ANY)
+				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
+				.create()
 				.list(I_AD_Org.class);
 
 		for (final I_AD_Org org : orgs)
@@ -267,12 +281,14 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void unsetNextIdReference(final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
-		final List<I_C_Flatrate_Term> predecessorTerms = new Query(ctx, I_C_Flatrate_Term.Table_Name, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID + "=?", trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+		final List<I_C_Flatrate_Term> predecessorTerms = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Flatrate_Term.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, term.getC_Flatrate_Term_ID())
+				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
+				.create()
 				.list(I_C_Flatrate_Term.class);
 
 		Check.assume(predecessorTerms.size() <= 1, term + " has max 1 predecessor");
@@ -291,13 +307,15 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateOLCandReference(final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
-		final List<I_C_Contract_Term_Alloc> ctas = new Query(ctx, I_C_Contract_Term_Alloc.Table_Name, I_C_Contract_Term_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=?", trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setOrderBy(I_C_Contract_Term_Alloc.COLUMNNAME_C_Contract_Term_Alloc_ID)
+		final List<I_C_Contract_Term_Alloc> ctas = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Contract_Term_Alloc.class, term)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Contract_Term_Alloc.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.orderBy(I_C_Contract_Term_Alloc.COLUMNNAME_C_Contract_Term_Alloc_ID)
+				.create()
 				.list(I_C_Contract_Term_Alloc.class);
+
 		for (final I_C_Contract_Term_Alloc cta : ctas)
 		{
 			final I_C_OLCand olCand = InterfaceWrapperHelper.create(cta.getC_OLCand(), I_C_OLCand.class);
@@ -569,5 +587,44 @@ public class C_Flatrate_Term
 				term.setMasterDocumentNo(ancestor.getMasterDocumentNo());
 			}
 		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_ContractStatus, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID
+	})
+	public void updateContractStatusInOrder(final I_C_Flatrate_Term term)
+	{
+		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
+
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+
+		final OrderId orderId = contractOrderService.getContractOrderId(term);
+		if (orderId == null)
+		{
+			return;
+}
+
+		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
+		{
+			final I_C_Order contractOrder = orderDAO.getById(orderId, I_C_Order.class);
+			contractOrderService.setOrderContractStatusAndSave(contractOrder, I_C_Order.CONTRACTSTATUS_Active);
+			return;
+		}
+
+		final Set<OrderId> orderIds = contractOrderService.retrieveAllContractOrderList(orderId);
+
+		final UpdateContractOrderStatus updateContractStatus = UpdateContractOrderStatus.builder()
+				.contractOrderService(contractOrderService)
+				.orderDAO(orderDAO)
+				.contractsDAO(contractsDAO)
+				.subscriptionBL(subscriptionBL)
+				.build();
+		updateContractStatus.updateStatusIfNeededWhenExtendind(term, orderIds);
+		updateContractStatus.updateStatusIfNeededWhenCancelling(term, orderIds);
+		updateContractStatus.updateStausIfNeededWhenVoiding(term);
 	}
 }

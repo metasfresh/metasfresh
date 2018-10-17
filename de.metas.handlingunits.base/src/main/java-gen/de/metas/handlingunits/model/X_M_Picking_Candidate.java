@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1858961420L;
+	private static final long serialVersionUID = 1975427925L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -292,6 +292,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String PICKSTATUS_Picked = "P";
 	/** WillNotBePicked = N */
 	public static final String PICKSTATUS_WillNotBePicked = "N";
+	/** Packed = A */
+	public static final String PICKSTATUS_Packed = "A";
 	/** Set Pick Status.
 		@param PickStatus Pick Status	  */
 	@Override
@@ -323,6 +325,25 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public java.math.BigDecimal getQtyPicked () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Qty Review.
+		@param QtyReview Qty Review	  */
+	@Override
+	public void setQtyReview (java.math.BigDecimal QtyReview)
+	{
+		set_Value (COLUMNNAME_QtyReview, QtyReview);
+	}
+
+	/** Get Qty Review.
+		@return Qty Review	  */
+	@Override
+	public java.math.BigDecimal getQtyReview () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReview);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

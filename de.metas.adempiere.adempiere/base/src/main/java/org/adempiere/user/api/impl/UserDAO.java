@@ -197,14 +197,30 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public String retrieveUserFullname(final int adUserId)
+	public String retrieveUserFullname(final int userRepoId)
 	{
+		final UserId userId = UserId.ofRepoIdOrNull(userRepoId);
+		if (userId == null)
+		{
+			return "?";
+		}
+		return retrieveUserFullname(userId);
+	}
+
+	@Override
+	public String retrieveUserFullname(final UserId userId)
+	{
+		if (userId == null)
+		{
+			return "?";
+		}
 		final String fullname = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.first(I_AD_User.COLUMNNAME_Name, String.class);
-		return !Check.isEmpty(fullname) ? fullname : "?";
+
+		return !Check.isEmpty(fullname) ? fullname : "<" + userId.getRepoId() + ">";
 	}
 
 	@Override

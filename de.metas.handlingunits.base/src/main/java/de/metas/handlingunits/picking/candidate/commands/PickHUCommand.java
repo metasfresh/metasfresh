@@ -14,8 +14,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
-import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.requests.PickHURequest;
@@ -102,10 +100,8 @@ public class PickHUCommand
 		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
 		pickingCandidate.assertDraft();
 
-		pickingCandidate.setQtyPicked(qtyToPick);
-		pickingCandidate.setPackToInstructionsId(packToId);
-		pickingCandidate.setPickStatus(PickingCandidatePickStatus.PICKED);
-		pickingCandidate.setApprovalStatus(PickingCandidateApprovalStatus.TO_BE_APPROVED);
+		pickingCandidate.pick(qtyToPick);
+		pickingCandidate.changePackToInstructionsId(packToId);
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();
@@ -131,7 +127,7 @@ public class PickHUCommand
 		{
 			return PickingCandidate.builder()
 					.status(PickingCandidateStatus.Draft)
-					.qtyPicked(qtyToPick)
+					.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
 					.shipmentScheduleId(shipmentScheduleId)
 					.pickFromHuId(pickFromHuId)
 					.pickingSlotId(pickingSlotId)
@@ -167,7 +163,7 @@ public class PickHUCommand
 		// Allow empty storage. That's the case when we are adding a newly created HU
 		if (productStorage == null)
 		{
-			final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
+			final I_C_UOM uom = getShipmentScheduleUOM();
 			return Quantity.zero(uom);
 		}
 
@@ -181,6 +177,11 @@ public class PickHUCommand
 			_shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		}
 		return _shipmentSchedule;
+	}
+
+	private I_C_UOM getShipmentScheduleUOM()
+	{
+		return shipmentScheduleBL.getUomOfProduct(getShipmentSchedule());
 	}
 
 	private void allocatePickingSlotIfPossible()

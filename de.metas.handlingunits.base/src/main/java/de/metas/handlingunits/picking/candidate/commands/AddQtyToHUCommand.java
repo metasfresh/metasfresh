@@ -219,7 +219,7 @@ public class AddQtyToHUCommand
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
-		candidate.setQtyPicked(qtyNew);
+		candidate.pick(qtyNew);
 		pickingCandidateRepository.save(candidate);
 	}
 

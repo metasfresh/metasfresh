@@ -1,11 +1,15 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import java.util.List;
+import java.util.Set;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,48 +24,57 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class RejectApprovalPickingCandidateCommand
+public class SetHuPackingInstructionIdCommand
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
-	private final PickingCandidateId pickingCandidateId;
+	private final Set<PickingCandidateId> pickingCandidateIds;
+	private final HuPackingInstructionsId huPackingInstructionsId;
 
 	@Builder
-	private RejectApprovalPickingCandidateCommand(
+	private SetHuPackingInstructionIdCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickingCandidateId pickingCandidateId)
+			@NonNull final Set<PickingCandidateId> pickingCandidateIds,
+			@NonNull final HuPackingInstructionsId huPackingInstructionsId)
 	{
+		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
+
 		this.pickingCandidateRepository = pickingCandidateRepository;
-		this.pickingCandidateId = pickingCandidateId;
+		this.pickingCandidateIds = pickingCandidateIds;
+		this.huPackingInstructionsId = huPackingInstructionsId;
 	}
 
-	public PickingCandidate perform()
+	public List<PickingCandidate> perform()
 	{
 		return trxManager.callInThreadInheritedTrx(this::performInTrx);
 	}
 
-	private PickingCandidate performInTrx()
+	private List<PickingCandidate> performInTrx()
 	{
-		PickingCandidate pickingCandidate = pickingCandidateRepository.getById(pickingCandidateId);
-		pickingCandidate.assertApprovable();
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByIds(pickingCandidateIds);
+		pickingCandidates.forEach(PickingCandidate::assertDraft);
 
-		pickingCandidate.setApprovalStatus(PickingCandidateApprovalStatus.REJECTED);
+		pickingCandidates.forEach(this::processPickingCandidate);
 
-		pickingCandidateRepository.save(pickingCandidate);
-		return pickingCandidate;
+		return pickingCandidates;
 	}
 
+	private void processPickingCandidate(final PickingCandidate pickingCandidate)
+	{
+		pickingCandidate.changePackToInstructionsId(huPackingInstructionsId);
+		pickingCandidateRepository.save(pickingCandidate);
+	}
 }

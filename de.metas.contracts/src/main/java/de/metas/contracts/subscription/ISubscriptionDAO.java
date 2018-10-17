@@ -30,7 +30,7 @@ import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.util.ISingletonService;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -131,5 +131,4 @@ public interface ISubscriptionDAO extends ISingletonService
 	I_C_SubscriptionProgress insertNewDelivery(I_C_SubscriptionProgress predecessor);
 
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_Flatrate_Term term, Class<T> clazz);
-
 }

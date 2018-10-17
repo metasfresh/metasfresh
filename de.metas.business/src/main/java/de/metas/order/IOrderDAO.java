@@ -44,6 +44,15 @@ import lombok.NonNull;
 public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
+	
+	/**
+	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
+	 * 
+	 * @param orderId
+	 * @param clazz
+	 * @return order for given orderId
+	 */
+	<T extends I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
 
 	I_C_OrderLine getOrderLineById(final int orderLineId);
 
@@ -135,4 +144,8 @@ public interface IOrderDAO extends ISingletonService
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
 
 	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
+	
+	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
+
+	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 }

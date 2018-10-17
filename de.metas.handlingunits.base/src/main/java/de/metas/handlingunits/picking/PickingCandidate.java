@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 import javax.annotation.Nullable;
@@ -17,10 +18,11 @@ import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -44,9 +46,10 @@ import lombok.Setter;
  * #L%
  */
 
-@Data
-@EqualsAndHashCode(of = "id")
 @Builder(toBuilder = true)
+@EqualsAndHashCode(of = "id")
+@ToString
+@Getter
 public class PickingCandidate
 {
 	@Nullable
@@ -72,6 +75,9 @@ public class PickingCandidate
 	private Quantity qtyPicked;
 
 	@Nullable
+	private BigDecimal qtyReview;
+
+	@Nullable
 	private HuPackingInstructionsId packToInstructionsId;
 	@Nullable
 	@Setter(AccessLevel.PRIVATE)
@@ -93,6 +99,18 @@ public class PickingCandidate
 				.map(PickingCandidate::getPickingSlotId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void markSaved(@NonNull final PickingCandidateId id)
+	{
+		if (this.id == null)
+		{
+			this.id = id;
+		}
+		else if (!this.id.equals(id))
+		{
+			throw new AdempiereException("Changing picking candidate's ID from " + this.id + " to " + id + " is not allowed");
+		}
 	}
 
 	public void assertDraft()
@@ -148,5 +166,84 @@ public class PickingCandidate
 	public void changeStatusToClosed()
 	{
 		setStatus(PickingCandidateStatus.Closed);
+	}
+
+	public void pick(@NonNull final Quantity qtyPicked)
+	{
+		assertDraft();
+
+		this.qtyPicked = qtyPicked;
+		this.qtyReview = null;
+		this.pickStatus = computePickOrPackStatus();
+		updateApprovalStatus();
+	}
+
+	public void rejectPicking(@NonNull final Quantity qtyRejected)
+	{
+		assertDraft();
+
+		this.qtyPicked = qtyRejected;
+		this.qtyReview = null;
+		this.pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
+		updateApprovalStatus();
+	}
+
+	public void reviewPicking(final BigDecimal qtyReview)
+	{
+		assertDraft();
+
+		this.qtyReview = qtyReview;
+		updateApprovalStatus();
+	}
+
+	private void updateApprovalStatus()
+	{
+		this.approvalStatus = computeApprovalStatus();
+	}
+
+	private PickingCandidateApprovalStatus computeApprovalStatus()
+	{
+		if (qtyReview == null)
+		{
+			return PickingCandidateApprovalStatus.TO_BE_APPROVED;
+		}
+
+		//
+		final BigDecimal qtyReviewToMatch;
+		if (pickStatus.isPickRejected())
+		{
+			qtyReviewToMatch = BigDecimal.ZERO;
+		}
+		else
+		{
+			qtyReviewToMatch = qtyPicked.getAsBigDecimal();
+		}
+
+		//
+		if (qtyReview.compareTo(qtyReviewToMatch) == 0)
+		{
+			return PickingCandidateApprovalStatus.APPROVED;
+		}
+		else
+		{
+			return PickingCandidateApprovalStatus.REJECTED;
+		}
+	}
+
+	public void changePackToInstructionsId(final HuPackingInstructionsId packToInstructionsId)
+	{
+		assertDraft();
+		if (!pickStatus.isPickedOrPacked())
+		{
+			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
+		}
+
+		this.packToInstructionsId = packToInstructionsId;
+		this.pickStatus = computePickOrPackStatus();
+	}
+
+	private PickingCandidatePickStatus computePickOrPackStatus()
+	{
+		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
 	}
 }

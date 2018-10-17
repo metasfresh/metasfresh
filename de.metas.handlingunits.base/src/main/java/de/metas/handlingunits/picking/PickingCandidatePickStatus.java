@@ -37,6 +37,7 @@ public enum PickingCandidatePickStatus implements ReferenceListAwareEnum
 {
 	TO_BE_PICKED(X_M_Picking_Candidate.PICKSTATUS_ToBePicked), //
 	PICKED(X_M_Picking_Candidate.PICKSTATUS_Picked), //
+	PACKED(X_M_Picking_Candidate.PICKSTATUS_Packed), //
 	WILL_NOT_BE_PICKED(X_M_Picking_Candidate.PICKSTATUS_WillNotBePicked) //
 	;
 
@@ -62,8 +63,28 @@ public enum PickingCandidatePickStatus implements ReferenceListAwareEnum
 		return type;
 	}
 
+	public boolean isPicked()
+	{
+		return PICKED.equals(this);
+	}
+
 	public boolean isToBePicked()
 	{
 		return TO_BE_PICKED.equals(this);
+	}
+
+	public boolean isPickRejected()
+	{
+		return WILL_NOT_BE_PICKED.equals(this);
+	}
+
+	public boolean isPacked()
+	{
+		return PACKED.equals(this);
+	}
+
+	public boolean isPickedOrPacked()
+	{
+		return isPicked() || isPacked();
 	}
 }
