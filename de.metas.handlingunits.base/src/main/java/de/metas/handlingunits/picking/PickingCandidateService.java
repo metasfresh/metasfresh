@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
@@ -25,6 +26,7 @@ import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
 import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlotCommand;
 import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
+import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
@@ -228,5 +230,16 @@ public class PickingCandidateService
 				.qtyReviewed(qtyReviewed)
 				.build()
 				.perform();
+	}
+
+	public List<PickingCandidate> setHuPackingInstructionId(final Set<PickingCandidateId> pickingCandidateIds, final HuPackingInstructionsId huPackingInstructionsId)
+	{
+		return SetHuPackingInstructionIdCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateIds(pickingCandidateIds)
+				.huPackingInstructionsId(huPackingInstructionsId)
+				.build()
+				.perform();
+
 	}
 }
