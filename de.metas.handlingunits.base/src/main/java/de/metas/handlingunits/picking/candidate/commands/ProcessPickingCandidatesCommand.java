@@ -3,14 +3,17 @@ package de.metas.handlingunits.picking.candidate.commands;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
@@ -30,7 +33,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -61,6 +63,7 @@ import lombok.NonNull;
 
 public class ProcessPickingCandidatesCommand
 {
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
@@ -68,6 +71,10 @@ public class ProcessPickingCandidatesCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ImmutableList<PickingCandidate> pickingCandidates;
+
+	private static final int PACKAGE_NO_ZERO = 0;
+	private final AtomicInteger PACKAGE_NO_SEQUENCE = new AtomicInteger(100);
+	private final Map<PackToDestinationKey, IHUProducerAllocationDestination> packToDestinations = new HashMap<>();
 
 	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedulesCache = new HashMap<>();
 
@@ -96,7 +103,7 @@ public class ProcessPickingCandidatesCommand
 		shipmentSchedulesCache.clear(); // because we want to get the fresh QtyToDeliver each time!
 
 		final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId());
-		final IHUProducerAllocationDestination packToDestination = createPackToDestination(pc);
+		final IHUProducerAllocationDestination packToDestination = getPackToDestination(pc);
 
 		HULoader.of(pickFromSource, packToDestination)
 				.load(createPackToAllocationRequest(pc));
@@ -125,7 +132,13 @@ public class ProcessPickingCandidatesCommand
 				.create();
 	}
 
-	private IHUProducerAllocationDestination createPackToDestination(final PickingCandidate pickingCandidate)
+	private IHUProducerAllocationDestination getPackToDestination(final PickingCandidate pickingCandidate)
+	{
+		final PackToDestinationKey key = createPackToDestinationKey(pickingCandidate);
+		return packToDestinations.computeIfAbsent(key, this::createPackToDestination);
+	}
+
+	private PackToDestinationKey createPackToDestinationKey(final PickingCandidate pickingCandidate)
 	{
 		final HuPackingInstructionsId packToInstructionsId = pickingCandidate.getPackToInstructionsId();
 		if (packToInstructionsId == null)
@@ -133,11 +146,29 @@ public class ProcessPickingCandidatesCommand
 			throw new AdempiereException("Pack To Instructions shall be specified for " + pickingCandidate);
 		}
 
+		// PackageNo: if we deal with virtual handling units, pack each candidate individually (in a new VHU).
+		// If we deal with some real packing instructions then we pack all candidates with same instructions in same HU.
+		final int packageNo = packToInstructionsId.isVirtual() ? PACKAGE_NO_SEQUENCE.getAndIncrement() : PACKAGE_NO_ZERO;
+
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(shipmentSchedule);
 		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
 		final LocatorId locatorId = shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule);
+
+		return PackToDestinationKey.builder()
+				.packToInstructionsId(packToInstructionsId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.locatorId(locatorId)
+				.packageNo(packageNo)
+				.build();
+	}
+
+	private IHUProducerAllocationDestination createPackToDestination(final PackToDestinationKey key)
+	{
+		final HuPackingInstructionsId packToInstructionsId = key.getPackToInstructionsId();
+		final BPartnerLocationId bpartnerLocationId = key.getBpartnerLocationId();
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerLocationId.getBpartnerId());
+		final LocatorId locatorId = key.getLocatorId();
 
 		return HUProducerDestination.of(packToInstructionsId)
 				.setMaxHUsToCreate(1)
@@ -156,5 +187,19 @@ public class ProcessPickingCandidatesCommand
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
 		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	private static class PackToDestinationKey
+	{
+		@NonNull
+		final HuPackingInstructionsId packToInstructionsId;
+		@NonNull
+		final BPartnerLocationId bpartnerLocationId;
+		@NonNull
+		final LocatorId locatorId;
+
+		final int packageNo;
 	}
 }
