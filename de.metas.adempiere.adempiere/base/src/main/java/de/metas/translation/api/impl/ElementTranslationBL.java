@@ -35,6 +35,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final String FUNCTION_Update_Window_Translation_From_AD_Element = "update_window_translation_from_ad_element";
 	private static final String FUNCTION_Update_Tab_Translation_From_AD_Element = "update_tab_translation_from_ad_element";
 	private static final String FUNCTION_Update_Menu_Translation_From_AD_Element = "update_menu_translation_from_ad_element";
+	private static final String FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update = "update_ad_element_on_ad_element_trl_update";
 
 
 	@Override
@@ -96,5 +97,14 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private String addUpdateFunctionCallForFieldTRL(final String functionCall, int elementId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId +") ";
+	}
+
+	@Override
+	public void updateElementFromElementTrl(int adElementId, String adLanguage)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		{
+			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
+		}
 	}
 }
