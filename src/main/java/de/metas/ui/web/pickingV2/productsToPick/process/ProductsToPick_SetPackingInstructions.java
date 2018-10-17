@@ -14,6 +14,7 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
@@ -65,6 +66,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = getSelectedRows()
@@ -80,6 +82,8 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 			final DocumentId rowId = rowIdsByPickingCandidateId.get(pickingCandidate.getId());
 			updateViewRowFromPickingCandidate(rowId, pickingCandidate);
 		});
+		
+		invalidateView();
 
 		return MSG_OK;
 	}

@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick.process;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
@@ -70,6 +71,11 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	@Override
 	protected String doIt()
 	{
+		if (!getView().isApproved())
+		{
+			throw new AdempiereException("Not all rows were approved");
+		}
+
 		processAllPickingCandidates();
 		deliverAndInvoice();
 		return MSG_OK;
