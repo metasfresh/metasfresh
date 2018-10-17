@@ -3,6 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick;
 import org.springframework.stereotype.Repository;
 
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import lombok.NonNull;
@@ -34,13 +35,16 @@ public class ProductsToPickRowsRepository
 {
 	private final HUReservationDocumentFilterService huReservationService;
 	private final PickingCandidateRepository pickingCandidateRepo;
+	private final PickingCandidateService pickingCandidateService;
 
 	public ProductsToPickRowsRepository(
 			@NonNull final HUReservationDocumentFilterService huReservationService,
-			@NonNull final PickingCandidateRepository pickingCandidateRepo)
+			@NonNull final PickingCandidateRepository pickingCandidateRepo,
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.huReservationService = huReservationService;
 		this.pickingCandidateRepo = pickingCandidateRepo;
+		this.pickingCandidateService = pickingCandidateService;
 	}
 
 	public ProductsToPickRowsData createProductsToPickRowsData(final PackageableRow packageableRow)
@@ -54,6 +58,7 @@ public class ProductsToPickRowsRepository
 		final ProductsToPickRowsDataFactory factory = ProductsToPickRowsDataFactory.builder()
 				.huReservationService(huReservationService)
 				.pickingCandidateRepo(pickingCandidateRepo)
+				.pickingCandidateService(pickingCandidateService)
 				.build();
 		return factory;
 	}

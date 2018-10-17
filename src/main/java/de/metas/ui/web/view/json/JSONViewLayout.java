@@ -122,6 +122,12 @@ public final class JSONViewLayout
 	@JsonProperty("newRecordCaption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String newRecordCaption = null;
+	
+	//
+	//
+	@JsonProperty("supportOpenRecord")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean supportOpenRecord;
 
 	private JSONViewLayout(final ViewLayout layout, final JSONOptions jsonOpts)
 	{
@@ -187,6 +193,8 @@ public final class JSONViewLayout
 			collapsible = null;
 			expandedDepth = null;
 		}
+		
+		supportOpenRecord = layout.isAllowOpeningRowDetails();
 	}
 
 	@Override

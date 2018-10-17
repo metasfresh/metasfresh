@@ -40,9 +40,8 @@ public class ViewChanges
 	private boolean fullyChanged;
 	private Set<DocumentId> changedRowIds = null;
 
-	/* package */ ViewChanges(final ViewId viewId)
+	public ViewChanges(@NonNull final ViewId viewId)
 	{
-		super();
 		this.viewId = viewId;
 	}
 

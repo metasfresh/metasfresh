@@ -34,6 +34,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.Packageable;
@@ -84,6 +85,7 @@ class ProductsToPickRowsDataFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final HUReservationDocumentFilterService huReservationService;
 	private final PickingCandidateRepository pickingCandidateRepo;
+	private final PickingCandidateService pickingCandidateService;
 
 	private final LookupDataSource productLookup;
 	private final LookupDataSource locatorLookup;
@@ -108,10 +110,12 @@ class ProductsToPickRowsDataFactory
 	@Builder
 	private ProductsToPickRowsDataFactory(
 			@NonNull final HUReservationDocumentFilterService huReservationService,
-			@NonNull final PickingCandidateRepository pickingCandidateRepo)
+			@NonNull final PickingCandidateRepository pickingCandidateRepo,
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.huReservationService = huReservationService;
 		this.pickingCandidateRepo = pickingCandidateRepo;
+		this.pickingCandidateService = pickingCandidateService;
 
 		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(org.compiere.model.I_M_Product.Table_Name);
 		locatorLookup = LookupDataSourceFactory.instance.searchInTableLookup(org.compiere.model.I_M_Locator.Table_Name);
@@ -127,7 +131,10 @@ class ProductsToPickRowsDataFactory
 				.flatMap(this::createRowsAndStream)
 				.collect(ImmutableList.toImmutableList());
 
-		return ProductsToPickRowsData.ofRows(rows);
+		return ProductsToPickRowsData.builder()
+				.pickingCandidateService(pickingCandidateService)
+				.rows(rows)
+				.build();
 	}
 
 	private Stream<ProductsToPickRow> createRowsAndStream(final Packageable packageable)
