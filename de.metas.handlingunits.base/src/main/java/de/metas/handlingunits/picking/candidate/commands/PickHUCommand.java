@@ -14,8 +14,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
-import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.requests.PickHURequest;
@@ -102,10 +100,8 @@ public class PickHUCommand
 		final PickingCandidate pickingCandidate = getOrCreatePickingCandidate();
 		pickingCandidate.assertDraft();
 
-		pickingCandidate.setQtyPicked(qtyToPick);
-		pickingCandidate.setPackToInstructionsId(packToId);
-		pickingCandidate.setPickStatus(PickingCandidatePickStatus.PICKED);
-		pickingCandidate.setApprovalStatus(PickingCandidateApprovalStatus.TO_BE_APPROVED);
+		pickingCandidate.pick(qtyToPick);
+		pickingCandidate.changePackToInstructionsId(packToId);
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();
