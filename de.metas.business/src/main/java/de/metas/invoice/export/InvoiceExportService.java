@@ -50,18 +50,18 @@ import de.metas.util.StringUtils;
 @Service
 public class InvoiceExportService
 {
-	private final InvoiceToExportFactory exportInvoiceRepository;
+	private final InvoiceToExportFactory exportInvoiceFactory;
 
 	private final InvoiceExportServiceRegistry invoiceExportServiceRegistry;
 
 	private final AttachmentEntryService attachmentEntryService;
 
 	private InvoiceExportService(
-			@NonNull final InvoiceToExportFactory exportInvoiceRepository,
+			@NonNull final InvoiceToExportFactory exportInvoiceFactory,
 			@NonNull final InvoiceExportServiceRegistry invoiceExportServiceRegistry,
 			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
-		this.exportInvoiceRepository = exportInvoiceRepository;
+		this.exportInvoiceFactory = exportInvoiceFactory;
 		this.invoiceExportServiceRegistry = invoiceExportServiceRegistry;
 		this.attachmentEntryService = attachmentEntryService;
 	}
@@ -70,7 +70,7 @@ public class InvoiceExportService
 	{
 		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
 		{
-			final InvoiceToExport invoiceToExport = exportInvoiceRepository.getById(invoiceIdToExport);
+			final InvoiceToExport invoiceToExport = exportInvoiceFactory.getById(invoiceIdToExport);
 			exportInvoice(invoiceToExport);
 		}
 	}

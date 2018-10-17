@@ -31,4 +31,7 @@ public class ForumDatenaustauschChConstants
 	 * There is a template AD_Sysconfig record for further info.
 	 */
 	public static final String PROFILE = "de.metas.vertical.healthcare.forum_datenaustausch_ch";
+
+
+	public static final String INVOICE_EXPORT_PROVIDER_ID = "forum-datenaustausch.ch";
 }

@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.JsonBPartner;
@@ -44,6 +45,7 @@ import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GarantType;
@@ -93,6 +95,8 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 public class XmlToOLCandsService
 {
 	public static final String INPUT_SOURCE_INTERAL_NAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
+
+	public static final ImmutableList<String> ATTACHMENT_TAG_NAME_AND_VALUE = ImmutableList.of(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
 
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
@@ -144,7 +148,11 @@ public class XmlToOLCandsService
 	{
 		try
 		{
-			return orderCandidatesRestEndpoint.attachFile(INPUT_SOURCE_INTERAL_NAME, externalReference, xmlInvoiceFile);
+			return orderCandidatesRestEndpoint.attachFile(
+					INPUT_SOURCE_INTERAL_NAME,
+					externalReference,
+					ATTACHMENT_TAG_NAME_AND_VALUE,
+					xmlInvoiceFile);
 		}
 		catch (IOException e)
 		{
@@ -251,13 +259,15 @@ public class XmlToOLCandsService
 		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getInsurance()));
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getInsurance()));
 
-		final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
-		patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getPatient()));
-		patientBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getPatient()));
+		// despite having patient mater data in the XML, there is no point creating the master data in metasfresh;
+		// we can't invoice patients with the given XML
+		// final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
+		// patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getPatient()));
+		// patientBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getPatient()));
 
 		// todo: what about "Gemeinde"?
 
-		return ImmutableList.of(insuranceBuilder, patientBuilder);
+		return ImmutableList.of(insuranceBuilder/* , patientBuilder */);
 	}
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertTiersPayantIntoBuilders(
@@ -268,13 +278,15 @@ public class XmlToOLCandsService
 		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getInsurance()));
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getInsurance()));
 
-		final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
-		patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getPatient()));
-		patientBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getPatient()));
+		// despite having patient mater data in the XML, there is no point creating the master data in metasfresh;
+		// we can't invoice patients with the given XML
+		// final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
+		// patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getPatient()));
+		// patientBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getPatient()));
 
 		// todo: what about "Gemeinde"?
 
-		return ImmutableList.of(insuranceBuilder, patientBuilder);
+		return ImmutableList.of(insuranceBuilder /* , patientBuilder */);
 	}
 
 	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final InsuranceAddressType insurance)

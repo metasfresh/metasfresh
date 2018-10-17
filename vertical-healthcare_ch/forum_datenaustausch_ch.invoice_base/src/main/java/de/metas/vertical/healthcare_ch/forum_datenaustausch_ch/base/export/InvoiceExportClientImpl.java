@@ -43,6 +43,7 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.Types.RequestType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
@@ -139,7 +140,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 						.data(inputStream)
 						.fileName("Export_" + attachment.getFileName())
 						.mimeType(attachment.getMimeType())
-						.invoiceExportProviderId(InvoiceExportClientFactoryImpl.INVOICE_EXPORT_PROVIDER_ID)
+						.invoiceExportProviderId(ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID)
 						.recipientId(invoice.getRecipient().getId())
 						.build();
 

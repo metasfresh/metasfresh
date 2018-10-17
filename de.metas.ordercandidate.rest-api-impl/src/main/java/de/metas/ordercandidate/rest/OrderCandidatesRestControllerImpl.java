@@ -1,5 +1,9 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
@@ -27,7 +32,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.util.Services;
-import lombok.NonNull;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -72,6 +77,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 	@PostMapping(PATH_BULK)
 	@Override
+
 	public JsonOLCandCreateBulkResponse createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
 		bulkRequest.validate();
@@ -147,7 +153,12 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	public JsonAttachment attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 			@PathVariable("externalReference") final String externalReference,
-			@RequestParam("file") @NonNull final MultipartFile file)
+
+			@ApiParam(value = "List with an even number of values; transformed to a map of key-value pairs and added to the new attachment as tags", allowEmptyValue = true) //
+			@RequestParam("tags") //
+			@Nullable final List<String> tagKeyValuePairs,
+
+			@RequestBody @NonNull final MultipartFile file)
 			throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);
@@ -160,7 +171,11 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 		final String fileName = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
-		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromByteArray(fileName, data);
+
+		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest
+				.builderFromByteArray(fileName, data)
+				.tags(extractTags(tagKeyValuePairs))
+				.build();
 
 		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);
 
@@ -168,6 +183,21 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				externalReference,
 				dataSourceName,
 				attachmentEntry);
+	}
+
+	private ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
+	{
+		if (tagKeyValuePairs == null)
+		{
+			return ImmutableMap.of();
+		}
+		final ImmutableMap.Builder<String, String> tags = ImmutableMap.builder();
+		final int maxIndex = tagKeyValuePairs.size() / 2;
+		for (int i = 0; i < maxIndex; i += 2)
+		{
+			tags.put(tagKeyValuePairs.get(i), tagKeyValuePairs.get(i + 1));
+		}
+		return tags.build();
 	}
 
 	private JsonAttachment toJsonAttachment(

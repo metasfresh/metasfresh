@@ -29,7 +29,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersion
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfigRepository;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.InvoiceExportClientFactoryImpl;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
@@ -116,7 +115,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 		final boolean isForumDatenaustausch = attachmentEntry.hasTagSetToString(
 				InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
-				InvoiceExportClientFactoryImpl.INVOICE_EXPORT_PROVIDER_ID);
+				ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
 		if (!isForumDatenaustausch)
 		{
 			return Optional.empty();

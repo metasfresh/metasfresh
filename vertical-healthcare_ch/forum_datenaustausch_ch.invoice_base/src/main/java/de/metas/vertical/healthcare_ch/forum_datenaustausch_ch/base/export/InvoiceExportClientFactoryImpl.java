@@ -11,8 +11,8 @@ import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
 import de.metas.invoice_gateway.spi.model.InvoiceToExport;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
@@ -43,8 +43,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDate
 @Profile(ForumDatenaustauschChConstants.PROFILE)
 public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactory
 {
-	public static final String INVOICE_EXPORT_PROVIDER_ID = "forum-datenaustausch.ch";
-
 	private final ExportConfigRepository configRepository;
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 
@@ -59,7 +57,7 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 	@Override
 	public String getInvoiceExportProviderId()
 	{
-		return INVOICE_EXPORT_PROVIDER_ID;
+		return ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID;
 	}
 
 	@Override
@@ -68,7 +66,7 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 		final boolean supported = invoice.getInvoiceAttachments()
 				.stream()
 				.map(InvoiceAttachment::getInvoiceExportProviderId)
-				.anyMatch(id -> INVOICE_EXPORT_PROVIDER_ID.equals(id));
+				.anyMatch(id -> ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID.equals(id));
 		if (!supported)
 		{
 			return Optional.empty();

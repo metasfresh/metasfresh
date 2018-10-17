@@ -71,6 +71,7 @@ public class HealthcareChPdfAttachmentController
 				.attachFile(
 						XmlToOLCandsService.INPUT_SOURCE_INTERAL_NAME,
 						externalReference,
+						XmlToOLCandsService.ATTACHMENT_TAG_NAME_AND_VALUE,
 						file);
 	}
 

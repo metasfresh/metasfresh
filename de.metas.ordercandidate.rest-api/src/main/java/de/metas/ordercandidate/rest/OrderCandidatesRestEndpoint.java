@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.rest;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,5 +39,9 @@ public interface OrderCandidatesRestEndpoint
 
 	JsonOLCandCreateBulkResponse createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);
 
-	JsonAttachment attachFile(String dataSourceName, String externalReference, MultipartFile file) throws IOException;
+	JsonAttachment attachFile(
+			String dataSourceName,
+			String externalReference,
+			List<String> tagKeyValuePairs,
+			MultipartFile file) throws IOException;
 }
