@@ -2,6 +2,8 @@ package de.metas.bpartner.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -79,7 +81,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
@@ -810,5 +811,87 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstIdOnly();
 
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+	}
+
+	@Override
+	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
+	{
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class);
+
+		final ICompositeQueryFilter<I_C_BPartner_Location> filters = queryBuilder.getCompositeFilter();
+		filters.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		filters.addEqualsFilter(getFilterColumnNameForType(query.getType()), true);
+		filters.addOnlyActiveRecordsFilter();
+
+		final String orderByColumnName = getOrderByColumnNameForType(query.getType());
+		if (orderByColumnName != null)
+		{
+			queryBuilder.orderBy()
+					.addColumn(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, Direction.Descending, Nulls.Last);
+		}
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+
+		final I_C_BPartner_Location ownToLocation = queryBuilder
+				.create()
+				.first();
+		if (!query.isAlsoTryRelation() || ownToLocation != null)
+		{
+			// !alsoTryRelation => we return whatever we got here (null or not)
+			// ownBillToLocation != null => we return the not-null location we found
+			return ownToLocation;
+		}
+
+		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BP_Relation.class)
+				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, query.getBpartnerId())
+				.addEqualsFilter(getFilterColumnNameForType(query.getType()), true)
+				.addOnlyActiveRecordsFilter();
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID);
+
+		final I_C_BP_Relation billtoRelation = bpRelationQueryBuilder
+				.create()
+				.firstOnly(I_C_BP_Relation.class); // just added an UC
+
+		if (billtoRelation != null)
+		{
+			return InterfaceWrapperHelper.create(billtoRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+		}
+		return null;
+
+	}
+
+	private String getFilterColumnNameForType(BPartnerLocationQuery.Type type)
+	{
+		switch (type)
+		{
+			case BILL_TO:
+				return I_C_BP_Relation.COLUMNNAME_IsBillTo;
+			case SHIP_TO:
+				return I_C_BP_Relation.COLUMNNAME_IsShipTo;
+			case REMIT_TO:
+				return I_C_BP_Relation.COLUMNNAME_IsRemitTo;
+			default:
+				Check.fail("Unexpected type={}", type);
+				return null;
+		}
+	}
+
+	private String getOrderByColumnNameForType(BPartnerLocationQuery.Type type)
+	{
+		switch (type)
+		{
+			case BILL_TO:
+				return I_C_BPartner_Location.COLUMNNAME_IsBillToDefault;
+			case SHIP_TO:
+				return I_C_BPartner_Location.COLUMNNAME_IsShipToDefault;
+			default:
+				// not every type has one
+				return null;
+		}
 	}
 }

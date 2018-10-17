@@ -25,9 +25,9 @@ package org.adempiere.ad.trx.exceptions;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
 
 /**
  * Exception thrown when {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} methods are encounting an invalid state.

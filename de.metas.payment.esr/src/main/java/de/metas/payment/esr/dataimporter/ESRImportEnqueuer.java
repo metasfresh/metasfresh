@@ -18,6 +18,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -27,7 +28,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

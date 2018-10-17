@@ -15,9 +15,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.AccessLevel;
 import lombok.Builder;

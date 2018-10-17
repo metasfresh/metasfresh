@@ -1,5 +1,8 @@
 package de.metas.attachments;
 
+import lombok.NonNull;
+import lombok.ToString;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -16,8 +19,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
 import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -43,7 +44,7 @@ import lombok.ToString;
 
 /**
  * Generic base class to expand using {@code AD_Table_ID} and {@code Record_ID}; can be extended for specific tables.
- * If is assumed that those tables have these two columns.
+ * It is assumed that those tables have these two columns.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -39,10 +39,10 @@ import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentsTableModel;
 import de.metas.banking.payment.paymentallocation.service.DifferenceRowBalancer;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /* package */abstract class AbstractPaymentAllocationForm extends AbstractPaymentForm
 {

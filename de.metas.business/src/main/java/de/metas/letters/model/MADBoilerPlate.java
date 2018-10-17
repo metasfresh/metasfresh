@@ -95,11 +95,11 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;

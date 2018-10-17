@@ -3,7 +3,7 @@ package de.metas.order;
 import lombok.Builder;
 import lombok.Value;
 
-import de.metas.util.i18n.ITranslatableString;
+import de.metas.i18n.ITranslatableString;
 
 /*
  * #%L

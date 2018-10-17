@@ -6,8 +6,8 @@ import org.compiere.swing.CLabel;
 
 import de.metas.adempiere.form.terminal.ITerminalLabel;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /* package */class SwingTerminalLabel implements ITerminalLabel, IComponentSwing
 {

@@ -33,11 +33,11 @@ import com.google.common.collect.Multimap;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
-import de.metas.util.i18n.ITranslatableString;
 
 import lombok.NonNull;
 

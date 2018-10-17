@@ -36,8 +36,8 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
-import de.metas.util.i18n.ITranslatableString;
 
 public interface IADWindowDAO extends ISingletonService
 {

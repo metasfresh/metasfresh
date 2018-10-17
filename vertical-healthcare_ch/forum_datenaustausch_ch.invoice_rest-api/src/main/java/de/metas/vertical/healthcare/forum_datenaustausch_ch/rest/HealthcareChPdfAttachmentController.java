@@ -1,8 +1,10 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 
-import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,14 +14,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.Profiles;
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ import lombok.NonNull;
 
 @RestController
 @RequestMapping(HealthcareChPdfAttachmentController.ENDPOINT)
-@Profile(Profiles.PROFILE_App)
+@Conditional(RestApiStartupCondition.class)
 @Api(value = "forum-datenaustausch.ch XML endpoint")
 public class HealthcareChPdfAttachmentController
 {

@@ -46,9 +46,9 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Defines the meta informations of an {@link AnnotatedTableModel}.

@@ -46,12 +46,12 @@ import org.compiere.util.TimeUtil;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Order Distribution Model. Please do not set DocStatus and C_DocType_ID directly. They are set in the process() method. Use DocAction and C_DocTypeTarget_ID instead.

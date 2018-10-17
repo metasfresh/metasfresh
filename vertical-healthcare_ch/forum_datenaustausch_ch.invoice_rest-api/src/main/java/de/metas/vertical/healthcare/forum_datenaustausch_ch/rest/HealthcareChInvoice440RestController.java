@@ -1,18 +1,18 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import org.springframework.context.annotation.Profile;
+import lombok.NonNull;
+
+import org.springframework.context.annotation.Conditional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.Profiles;
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import lombok.NonNull;
 
 @RestController
 @RequestMapping(HealthcareChInvoice440RestController.ENDPOINT)
-@Profile(Profiles.PROFILE_App)
+@Conditional(RestApiStartupCondition.class)
 @Api(value = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 public class HealthcareChInvoice440RestController
 {

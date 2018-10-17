@@ -26,8 +26,8 @@ import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when are too many documents assigned on vendor side

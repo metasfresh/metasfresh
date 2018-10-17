@@ -7,8 +7,11 @@ import java.io.OutputStream;
 
 import javax.xml.bind.JAXBElement;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
@@ -37,10 +40,10 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
  */
 
 @Service
+@Profile(ForumDatenaustauschChConstants.PROFILE)
 public class Invoice440RequestConversionService implements CrossVersionRequestConverter<RequestType>
 {
-
-	public static final String INVOICE_440_REQUEST_TYPE_NAME = "forum-datenaustausch.ch-Invoice_440_Request";
+	public static final String INVOICE_440_REQUEST_XSD = "http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd";
 
 	@Override
 	public void fromCrossVersionRequest(@NonNull final XmlRequest xRequest, @NonNull final OutputStream outputStream)
@@ -59,9 +62,14 @@ public class Invoice440RequestConversionService implements CrossVersionRequestCo
 	}
 
 	@Override
-	public String getSupportedType()
+	public String getXsdName()
 	{
-		return INVOICE_440_REQUEST_TYPE_NAME;
+		return INVOICE_440_REQUEST_XSD;
 	}
 
+	@Override
+	public XmlVersion getVersion()
+	{
+		return XmlVersion.v440;
+	}
 }

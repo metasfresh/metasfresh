@@ -7,10 +7,10 @@ import org.adempiere.warehouse.LocatorId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.i18n.ITranslatableString;
 
 import lombok.Builder;
 import lombok.NonNull;

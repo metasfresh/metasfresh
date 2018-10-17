@@ -31,6 +31,7 @@ import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -48,7 +49,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Links a given purchase order line and its inOut lines to a given <code>M_Material_Tracking_ID</code>. <br>

@@ -71,10 +71,10 @@ import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Windows Application Environment and utilities

@@ -48,10 +48,10 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to edit some HU fields.

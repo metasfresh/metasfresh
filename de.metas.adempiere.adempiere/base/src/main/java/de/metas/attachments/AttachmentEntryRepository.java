@@ -6,12 +6,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -25,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -150,6 +151,7 @@ public class AttachmentEntryRepository
 		saveRecord(attachmentEntryRecord);
 
 		syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
+
 
 		return attachmentEntry
 				.toBuilder()

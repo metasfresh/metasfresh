@@ -58,7 +58,7 @@ public interface IAllocationDAO extends ISingletonService
 	/**
 	 * Retrieves that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has not yet been allocated.
 	 *
-	 * @param invoice the invoice for which we retrive the open amount
+	 * @param invoice the invoice for which we retrieve the open amount
 	 * @param creditMemoAdjusted if <code>true</code> and <code>invoice</code> is a credit memo, then the open amount is negated.
 	 * @return
 	 */
@@ -74,7 +74,7 @@ public interface IAllocationDAO extends ISingletonService
 
 	/**
 	 * Retrieves the written off amount of an <code>invoice</code>.
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -100,7 +100,7 @@ public interface IAllocationDAO extends ISingletonService
 	/**
 	 * Retrieve all the AllocationHdr documents that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either Amount, DiscountAmt, WriteOffAmt or OverUnderAmt. These entries will produce 0 in posting.
-	 * 
+	 *
 	 * @param ctx
 	 * @param startTime
 	 * @return

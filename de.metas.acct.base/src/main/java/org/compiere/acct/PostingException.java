@@ -5,10 +5,10 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Check;
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
 
 /**
  * Exception thrown by accounting engine on any document posting error.

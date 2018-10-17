@@ -23,35 +23,6 @@ public interface I_AD_AttachmentEntry
     /** Load Meta Data */
 
 	/**
-	 * Set Anlage.
-	 * Anlage zum Eintrag
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Attachment_ID (int AD_Attachment_ID);
-
-	/**
-	 * Get Anlage.
-	 * Anlage zum Eintrag
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Attachment_ID();
-
-	public org.compiere.model.I_AD_Attachment getAD_Attachment();
-
-	public void setAD_Attachment(org.compiere.model.I_AD_Attachment AD_Attachment);
-
-    /** Column definition for AD_Attachment_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_Attachment> COLUMN_AD_Attachment_ID = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_Attachment>(I_AD_AttachmentEntry.class, "AD_Attachment_ID", org.compiere.model.I_AD_Attachment.class);
-    /** Column name AD_Attachment_ID */
-    public static final String COLUMNNAME_AD_Attachment_ID = "AD_Attachment_ID";
-
-	/**
 	 * Set Attachment entry.
 	 *
 	 * <br>Type: ID
@@ -73,6 +44,35 @@ public interface I_AD_AttachmentEntry
     public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object> COLUMN_AD_AttachmentEntry_ID = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object>(I_AD_AttachmentEntry.class, "AD_AttachmentEntry_ID", null);
     /** Column name AD_AttachmentEntry_ID */
     public static final String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
+
+	/**
+	 * Set Anlage.
+	 * Anlage zum Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Attachment_ID (int AD_Attachment_ID);
+
+	/**
+	 * Get Anlage.
+	 * Anlage zum Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Attachment_ID();
+
+	public org.compiere.model.I_AD_Attachment getAD_Attachment();
+
+	public void setAD_Attachment(org.compiere.model.I_AD_Attachment AD_Attachment);
+
+    /** Column definition for AD_Attachment_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_Attachment> COLUMN_AD_Attachment_ID = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_Attachment>(I_AD_AttachmentEntry.class, "AD_Attachment_ID", org.compiere.model.I_AD_Attachment.class);
+    /** Column name AD_Attachment_ID */
+    public static final String COLUMNNAME_AD_Attachment_ID = "AD_Attachment_ID";
 
 	/**
 	 * Get Mandant.
@@ -121,35 +121,6 @@ public interface I_AD_AttachmentEntry
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Table_ID (int AD_Table_ID);
-
-	/**
-	 * Get DB-Tabelle.
-	 * Database Table information
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Table_ID();
-
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, org.compiere.model.I_AD_Table>(I_AD_AttachmentEntry.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-	/**
 	 * Set Binärwert.
 	 * Binärer Wert
 	 *
@@ -178,7 +149,7 @@ public interface I_AD_AttachmentEntry
 	 * Set Content type.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setContentType (java.lang.String ContentType);
@@ -187,7 +158,7 @@ public interface I_AD_AttachmentEntry
 	 * Get Content type.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getContentType();
@@ -301,46 +272,42 @@ public interface I_AD_AttachmentEntry
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Datensatz-ID.
-	 * Direct internal record ID
+	 * Set Tags.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	public void setTags (java.lang.String Tags);
 
 	/**
-	 * Get Datensatz-ID.
-	 * Direct internal record ID
+	 * Get Tags.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getRecord_ID();
+	public java.lang.String getTags();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object>(I_AD_AttachmentEntry.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+    /** Column definition for Tags */
+    public static final org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object> COLUMN_Tags = new org.adempiere.model.ModelColumn<I_AD_AttachmentEntry, Object>(I_AD_AttachmentEntry.class, "Tags", null);
+    /** Column name Tags */
+    public static final String COLUMNNAME_Tags = "Tags";
 
 	/**
 	 * Set Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setType (java.lang.String Type);
 
 	/**
 	 * Get Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getType();

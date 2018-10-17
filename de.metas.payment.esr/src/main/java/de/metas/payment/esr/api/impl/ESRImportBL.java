@@ -7,6 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -62,6 +64,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
@@ -83,9 +86,6 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
-
-import lombok.NonNull;
 
 @Service
 public class ESRImportBL implements IESRImportBL
@@ -1222,9 +1222,9 @@ public class ESRImportBL implements IESRImportBL
 	{
 		String result = "";
 
-		for (int i = 0; i < md5.length; i++)
+		for (byte element : md5)
 		{
-			result += Integer.toString((md5[i] & 0xff) + 0x100, 16).substring(1);
+			result += Integer.toString((element & 0xff) + 0x100, 16).substring(1);
 		}
 		return result;
 	}

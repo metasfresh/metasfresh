@@ -31,8 +31,8 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.compiere.util.SwingUtils;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  *  Status Bar

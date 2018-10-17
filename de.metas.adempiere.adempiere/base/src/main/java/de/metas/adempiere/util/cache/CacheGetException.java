@@ -28,9 +28,9 @@ import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
 
 /**
  * Exception thrown when a value could not be retrieved from cache because of inconsistencies or because some parameters were not valid.

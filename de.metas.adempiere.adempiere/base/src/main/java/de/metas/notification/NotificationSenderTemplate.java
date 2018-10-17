@@ -34,6 +34,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -43,7 +44,6 @@ import de.metas.notification.spi.impl.NullRecordTextProvider;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

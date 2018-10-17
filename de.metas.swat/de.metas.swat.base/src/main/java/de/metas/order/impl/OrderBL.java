@@ -64,6 +64,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -78,7 +79,6 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.i18n.ITranslatableString;
 
 import lombok.NonNull;
 

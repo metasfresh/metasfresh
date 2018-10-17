@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import com.google.common.base.Strings;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.impl.NullModelTranslation;
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
 
 /*
  * #%L

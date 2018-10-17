@@ -8,7 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.util.i18n.ImmutableTranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vertical.pharma.msv3.protocol.types.FaultInfo;

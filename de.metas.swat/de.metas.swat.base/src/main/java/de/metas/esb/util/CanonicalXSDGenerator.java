@@ -77,10 +77,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Helper tool that generates XSD Schema for Canonical Messages

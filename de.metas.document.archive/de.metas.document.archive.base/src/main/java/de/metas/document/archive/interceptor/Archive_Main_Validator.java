@@ -10,18 +10,17 @@ package de.metas.document.archive.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -33,6 +32,7 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -100,14 +100,15 @@ public class Archive_Main_Validator implements ModelValidator
 			archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.STORAGETYPE_Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
 		}
 
-		archiveEventManager.registerArchiveEventListener(new DocOutboundArchiveEventListener());
+		final DocOutboundArchiveEventListener docOutboundArchiveEventListener = Adempiere.getBean(DocOutboundArchiveEventListener.class);
+		archiveEventManager.registerArchiveEventListener(docOutboundArchiveEventListener);
 
 		engine.addModelValidator(new C_Doc_Outbound_Config(this), client);
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new C_BPartner(), client);
 
 		registerArchiveAwareTables();
-		
+
 		// task 09417: while we are at it, also make sure that config changes are propagated
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Doc_Outbound_Config.Table_Name);

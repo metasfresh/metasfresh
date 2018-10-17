@@ -32,12 +32,12 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class Match
 {

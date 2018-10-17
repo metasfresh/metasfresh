@@ -47,9 +47,9 @@ import de.metas.handlingunits.client.terminal.misc.model.WebCamReceiptScheduleMo
 import de.metas.handlingunits.client.terminal.misc.view.swing.WebCamReceiptSchedulePanel;
 import de.metas.handlingunits.client.terminal.select.api.IPOSTableRow;
 import de.metas.handlingunits.client.terminal.select.model.AbstractHUSelectModel;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public abstract class AbstractHUSelectPanel<MT extends AbstractHUSelectModel> implements IHUSelectPanel
 {

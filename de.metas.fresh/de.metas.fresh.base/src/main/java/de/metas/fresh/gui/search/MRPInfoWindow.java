@@ -58,8 +58,8 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * This is about the MRP <b>Product</b> Info window.

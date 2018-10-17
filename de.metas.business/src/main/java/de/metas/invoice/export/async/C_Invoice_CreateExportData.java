@@ -1,0 +1,48 @@
+package de.metas.invoice.export.async;
+
+import lombok.NonNull;
+
+import java.util.List;
+
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_Invoice;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.invoice.export.InvoiceExportService;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.util.Services;
+
+public class C_Invoice_CreateExportData implements IWorkpackageProcessor
+{
+	public static final void scheduleOnTrxCommit(final I_C_Invoice invoiceRecord)
+	{
+		SCHEDULER.schedule(invoiceRecord);
+	}
+
+	private static final WorkpackagesOnCommitSchedulerTemplate<I_C_Invoice> //
+	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate
+			.newModelScheduler(C_Invoice_CreateExportData.class, I_C_Invoice.class)
+			.setCreateOneWorkpackagePerModel(true);
+
+	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final transient InvoiceExportService invoiceExportService = Adempiere.getBean(InvoiceExportService.class);
+
+	@Override
+	public Result processWorkPackage(
+			@NonNull final I_C_Queue_WorkPackage workpackage,
+			@NonNull final String localTrxName)
+	{
+		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
+		for (final I_C_Invoice invoiceRecord : invoiceRecords)
+		{
+			final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
+			invoiceExportService.exportInvoices(ImmutableList.of(invoiceId));
+		}
+		return Result.SUCCESS;
+	}
+}

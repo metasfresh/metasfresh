@@ -1,5 +1,9 @@
 package de.metas.bpartner.service;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -44,7 +48,6 @@ import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -201,11 +204,10 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Retrieve default/first ship to location.
 	 *
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param trxName
 	 * @return ship to location or null
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
+	@Deprecated
 	I_C_BPartner_Location retrieveShipToLocation(Properties ctx, int bPartnerId, String trxName);
 
 	/**
@@ -236,7 +238,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 *            that relation's bPartner location.
 	 * @param trxName
 	 * @return bill to location or null
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
+	@Deprecated
 	I_C_BPartner_Location retrieveBillToLocation(Properties ctx,
 			int bPartnerId,
 			boolean alsoTryBilltoRelation,
@@ -265,4 +269,24 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
 
 	Optional<BPartnerId> getBPartnerIdByValueIfExists(final String bpartnerValue);
+
+	public I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+
+	@Value
+	@Builder
+	public static class BPartnerLocationQuery
+	{
+		public enum Type
+		{
+			BILL_TO, SHIP_TO, REMIT_TO;
+		}
+
+		@NonNull
+		BPartnerId bpartnerId;
+
+		@NonNull
+		Type type;
+
+		boolean alsoTryRelation;
+	}
 }

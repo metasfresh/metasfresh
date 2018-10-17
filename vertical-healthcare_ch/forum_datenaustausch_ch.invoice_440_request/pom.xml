@@ -14,6 +14,13 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
 			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>

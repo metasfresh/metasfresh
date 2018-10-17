@@ -6,11 +6,11 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

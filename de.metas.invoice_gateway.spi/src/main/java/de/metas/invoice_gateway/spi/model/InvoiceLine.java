@@ -2,9 +2,10 @@ package de.metas.invoice_gateway.spi.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -35,8 +36,8 @@ public class InvoiceLine
 	@NonNull
 	ProductId productId;
 
-	@Nullable
-	String externalId;
+	@Singular
+	List<String> externalIds;
 
 	@NonNull
 	Money lineAmount;

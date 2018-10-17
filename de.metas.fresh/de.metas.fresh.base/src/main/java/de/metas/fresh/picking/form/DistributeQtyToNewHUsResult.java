@@ -39,9 +39,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Immutable distribution result.

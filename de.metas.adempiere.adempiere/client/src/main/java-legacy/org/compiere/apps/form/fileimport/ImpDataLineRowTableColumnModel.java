@@ -7,9 +7,9 @@ import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 class ImpDataLineRowTableColumnModel extends TableColumnModel
 {

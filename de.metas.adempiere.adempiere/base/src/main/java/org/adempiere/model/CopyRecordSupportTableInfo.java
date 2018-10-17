@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.i18n.ITranslatableString;
+import de.metas.i18n.ITranslatableString;
 
 import lombok.Builder;
 import lombok.NonNull;

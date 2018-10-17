@@ -29,10 +29,10 @@ import java.util.Properties;
 import org.compiere.model.I_AD_Note;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.util.Accessor;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /* package */class InvoiceGenerateResult implements IInvoiceGenerateResult
 {

@@ -11,7 +11,10 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -22,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Attachment entry
@@ -44,7 +48,7 @@ public final class AttachmentEntry
 	private final String contentType;
 	private final URI url;
 
-	private final ImmutableMap<String, String> labels;
+	private final ImmutableMap<String, String> tags;
 
 	/** The records to which this instance is attached. */
 	private final Set<ITableRecordReference> linkedRecords;
@@ -57,14 +61,15 @@ public final class AttachmentEntry
 			@Nullable final String filename,
 			@Nullable final String contentType,
 			@Nullable final URI url,
-			@Singular final Map<String, String> labels,
+			@Singular final Map<String, String> tags,
 			@Singular final Set<ITableRecordReference> linkedRecords)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
 		this.type = type;
 		this.filename = filename != null ? filename : new File(this.name).getName();
-		this.labels = ImmutableMap.copyOf(labels);
+
+		this.tags = ImmutableMap.copyOf(validateTags(tags));
 
 		this.linkedRecords = linkedRecords;
 
@@ -82,6 +87,27 @@ public final class AttachmentEntry
 		{
 			throw new AdempiereException("Attachment entry type not supported: " + type);
 		}
+	}
+
+	private Map<String, String> validateTags(@NonNull final Map<String, String> tags)
+	{
+		for (final Entry<String, String> tag : tags.entrySet())
+		{
+			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
+					"Tags may not contain {}; illegal entry: name={}; value={}",
+					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
+			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
+					"Tags may not contain {}; illegal entry: name={}; value={}",
+					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
+
+			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
+					"Tags may not contain {}; illegal entry: name={}; value={}",
+					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
+			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
+					"Tags may not contain {}; illegal entry: name={}; value={}",
+					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
+		}
+		return tags;
 	}
 
 	public String toStringX()
@@ -130,16 +156,55 @@ public final class AttachmentEntry
 		return toBuilder().clearLinkedRecords().build();
 	}
 
-	/** @return {@code true} if this attachment has a label with the given name; the label doesn't need to have a value though. */
-	public boolean hasLabel(@NonNull final String label)
+	/** @return {@code true} if this attachment has a tag with the given name; the label doesn't need to have a value though. */
+	public boolean hasTag(@NonNull final String tag)
 	{
-		return labels.containsKey(label);
+		return tags.containsKey(tag);
 	}
 
-	public String getLabelValue(@NonNull final String labelName)
+	public boolean hasAllTagsSetToTrue(@NonNull final List<String> tagNames)
+	{
+		for (final String tagName : tagNames)
+		{
+			if (!hasTagSetToTrue(tagName))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean hasTagSetToTrue(@NonNull final String tagName)
+	{
+		return StringUtils.toBoolean(tags.get(tagName), false);
+	}
+
+	public boolean hasTagSetToString(@NonNull final String tagName, @NonNull final String tagValue)
+	{
+		return Objects.equals(tags.get(tagName), tagValue);
+	}
+
+	public String getTagValue(@NonNull final String tagName)
 	{
 		return Check.assumeNotEmpty(
-				labels.get(labelName),
-				"This attachmentEntry needs to have a label with name={} and a value; this={}", labelName, this);
+				getTagValueOrNull(tagName),
+				"This attachmentEntry needs to have a tag with name={} and a value; this={}", tagName, this);
+	}
+
+	public String getTagValueOrNull(String tagName)
+	{
+		return tags.get(tagName);
+	}
+
+	public boolean hasAllTagsSetToAnyValue(@NonNull final List<String> tagNames)
+	{
+		for (final String tagName : tagNames)
+		{
+			if (getTagValueOrNull(tagName) == null)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }

@@ -37,13 +37,13 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
 import de.metas.email.EMail;
+import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class AEMailLetter implements ActionListener
 {

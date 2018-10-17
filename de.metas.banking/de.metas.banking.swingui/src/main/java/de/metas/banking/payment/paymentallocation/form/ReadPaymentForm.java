@@ -76,6 +76,7 @@ import com.jgoodies.looks.Options;
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.paymentallocation.model.IInvoiceCandidateRow;
@@ -84,6 +85,7 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceCandidatesTableMo
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -91,9 +93,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.form.CreateInvoiceCandidateDialog;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

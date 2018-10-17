@@ -60,13 +60,17 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.invoice.InvoiceUtil;
 import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -88,7 +92,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.workflow.api.IWFExecutionFactory;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
@@ -325,7 +328,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getC_Currency_ID()); // 03805
-
 
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
@@ -606,6 +608,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceBL.setTaxAmt(invoiceLine);
 
 				final List<I_C_Invoice_Candidate> candsForIlVO = aggregate.getCandsFor(ilVO);
+
+				final List<String> externalIds = candsForIlVO
+						.stream()
+						.map(I_C_Invoice_Candidate::getExternalId)
+						.collect(ImmutableList.toImmutableList());
+				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it

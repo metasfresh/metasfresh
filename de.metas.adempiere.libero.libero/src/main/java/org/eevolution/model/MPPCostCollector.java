@@ -83,6 +83,7 @@ import org.eevolution.exceptions.ActivityProcessedException;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.order.IOrderBL;
@@ -90,7 +91,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * PP Cost Collector Model

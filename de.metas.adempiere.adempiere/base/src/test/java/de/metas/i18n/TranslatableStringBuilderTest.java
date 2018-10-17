@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 /*
  * #%L

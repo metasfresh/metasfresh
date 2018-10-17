@@ -4,6 +4,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.compiere.util.Util.coalesce;
 
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -11,8 +13,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.StringJoiner;
 
+import javax.xml.bind.JAXBElement;
+
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -39,7 +44,6 @@ import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.JaxbUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GarantType;
@@ -60,8 +64,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ServicesType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
-
-import lombok.NonNull;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 
 /*
  * #%L
@@ -86,6 +89,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Conditional(RestApiStartupCondition.class)
 public class XmlToOLCandsService
 {
 	public static final String INPUT_SOURCE_INTERAL_NAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
@@ -125,7 +129,8 @@ public class XmlToOLCandsService
 
 		try
 		{
-			return JaxbUtil.unmarshal(xmlInput, RequestType.class);
+			final JAXBElement<RequestType> request = JaxbUtil.unmarshalToJaxbElement(xmlInput, RequestType.class);
+			return request.getValue();
 		}
 		catch (RuntimeException e)
 		{

@@ -34,6 +34,7 @@ import org.compiere.model.MUOM;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -42,7 +43,6 @@ import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

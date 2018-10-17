@@ -38,9 +38,9 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import de.metas.banking.payment.spi.IPaymentStringParser;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public abstract class AbstractESRPaymentStringParser implements IPaymentStringParser
 {

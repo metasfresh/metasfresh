@@ -3,19 +3,23 @@ package de.metas.attachments;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.NonNull;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
 import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -42,6 +46,9 @@ import lombok.NonNull;
 @Service
 public class AttachmentEntryFactory
 {
+	public static final String TAGS_SEPARATOR = "\n";
+	public static final String TAGS_KEY_VALUE_SEPARATOR = "=";
+
 	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type> builder()
 			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntry.Type.Data)
 			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntry.Type.URL)
@@ -90,6 +97,12 @@ public class AttachmentEntryFactory
 
 	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
+		final String tagsAsString = entryRecord.getTags();
+		final Map<String, String> tags = Splitter
+				.on(TAGS_SEPARATOR)
+				.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
+				.split(tagsAsString);
+
 		return AttachmentEntry.builder()
 				.id(AttachmentEntryId.ofRepoIdOrNull(entryRecord.getAD_AttachmentEntry_ID()))
 				.name(entryRecord.getFileName())
@@ -97,6 +110,7 @@ public class AttachmentEntryFactory
 				.filename(entryRecord.getFileName())
 				.contentType(entryRecord.getContentType())
 				.url(extractUriOrNull(entryRecord))
+				.tags(tags)
 				.build();
 	}
 
@@ -149,6 +163,11 @@ public class AttachmentEntryFactory
 		{
 			attachmentEntryRecord.setURL(null);
 		}
-	}
 
+		final String tagsAsString = Joiner
+				.on(TAGS_SEPARATOR)
+				.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
+				.join(attachmentEntry.getTags());
+		attachmentEntryRecord.setTags(tagsAsString);
+	}
 }

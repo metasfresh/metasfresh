@@ -72,11 +72,11 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Calendar Date & Time picker.

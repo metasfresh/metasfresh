@@ -89,6 +89,7 @@ import de.metas.bpartner.interceptor.C_BPartner_Location;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
 import de.metas.inout.model.validator.M_QualityNote;
@@ -108,7 +109,6 @@ import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Model Validator for SWAT general features

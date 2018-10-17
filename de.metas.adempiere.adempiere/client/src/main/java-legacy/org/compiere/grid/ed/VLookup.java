@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -70,11 +72,11 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.Lookup;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -91,10 +93,10 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Lookup Visual Field.
@@ -1175,7 +1177,8 @@ public class VLookup extends JComponent
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
 				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
-						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (InterfaceWrapperHelper.getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
+						|| (getTableId(I_C_InvoiceLine.class) == AD_Table_ID)
+						|| (getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 

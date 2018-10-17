@@ -26,8 +26,8 @@ package de.metas.banking.exception;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BP_BankAccount;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.util.i18n.ITranslatableString;
 
 public class BankingException extends AdempiereException
 {

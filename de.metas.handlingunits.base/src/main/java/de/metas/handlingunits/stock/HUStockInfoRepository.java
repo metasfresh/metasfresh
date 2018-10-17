@@ -16,10 +16,10 @@ import de.metas.handlingunits.model.I_M_HU_Stock_Detail_V;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.stock.HUStockInfoQuery.HUStockInfoSingleQuery;
 import de.metas.handlingunits.stock.HUStockInfoQuery.HUStockInfoSingleQuery.AttributeValue;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.i18n.ITranslatableString;
 
 import lombok.NonNull;
 

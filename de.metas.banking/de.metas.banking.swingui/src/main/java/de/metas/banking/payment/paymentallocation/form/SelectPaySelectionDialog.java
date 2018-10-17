@@ -69,11 +69,11 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 import net.miginfocom.swing.MigLayout;
 

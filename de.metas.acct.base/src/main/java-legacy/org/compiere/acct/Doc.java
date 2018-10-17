@@ -60,10 +60,10 @@ import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Posting Document Root.

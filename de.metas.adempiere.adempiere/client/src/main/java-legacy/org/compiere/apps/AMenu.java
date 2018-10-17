@@ -82,10 +82,10 @@ import org.compiere.wf.api.IADWorkflowBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Form;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Application Menu Controller

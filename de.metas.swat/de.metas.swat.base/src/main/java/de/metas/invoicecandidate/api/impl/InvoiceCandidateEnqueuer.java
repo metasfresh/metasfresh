@@ -48,6 +48,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -63,7 +64,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

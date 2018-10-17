@@ -65,6 +65,7 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SepaMarshallerException;
@@ -108,7 +109,6 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 import de.metas.util.xml.DynamicObjectFactory;
 

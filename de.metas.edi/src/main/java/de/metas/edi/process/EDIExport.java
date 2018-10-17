@@ -29,9 +29,9 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * EDI-Exports a single document.

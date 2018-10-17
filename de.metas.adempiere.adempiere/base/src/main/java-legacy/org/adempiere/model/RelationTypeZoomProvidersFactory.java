@@ -32,10 +32,10 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

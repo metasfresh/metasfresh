@@ -52,11 +52,11 @@ import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
-import de.metas.util.i18n.ITranslatableString;
 import de.metas.util.time.SimpleDateFormatThreadLocal;
 import lombok.NonNull;
 

@@ -3,26 +3,36 @@ package de.metas.document.archive.spi.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
+import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.archive.DocOutBoundRecipient;
-import de.metas.document.archive.DocOutboundLogMailRecipientRegistry;
+import de.metas.attachments.AttachmentConstants;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
@@ -30,10 +40,17 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import lombok.NonNull;
 
+@Component
 public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 {
+	private AttachmentEntryService attachmentEntryService;
+
+	public DocOutboundArchiveEventListener(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
+
 	@Override
 	public void onPdfUpdate(@NonNull final I_AD_Archive archive, final I_AD_User user, final String action)
 	{
@@ -177,24 +194,24 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 	/**
 	 * Creates and saves {@link I_C_Doc_Outbound_Log}
 	 *
-	 * @param archive
+	 * @param archiveRecord
 	 * @return {@link I_C_Doc_Outbound_Log}
 	 */
-	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archive)
+	private I_C_Doc_Outbound_Log createLog(final I_AD_Archive archiveRecord)
 	{
 		// Services
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-		final int adTableId = archive.getAD_Table_ID();
-		final int recordId = archive.getRecord_ID();
+		final int adTableId = archiveRecord.getAD_Table_ID();
+		final int recordId = archiveRecord.getRecord_ID();
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(archiveRecord);
 
 		final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
-		docOutboundLogRecord.setAD_Org_ID(archive.getAD_Org_ID());
+		docOutboundLogRecord.setAD_Org_ID(archiveRecord.getAD_Org_ID());
 		docOutboundLogRecord.setAD_Table_ID(adTableId);
 		docOutboundLogRecord.setRecord_ID(recordId);
-		docOutboundLogRecord.setC_BPartner_ID(archive.getC_BPartner_ID());
+		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
 
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docOutboundLogRecord.setC_DocType_ID(doctypeID);
@@ -205,7 +222,7 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		final String docStatus = docActionBL.getDocStatusOrNull(ctx, adTableId, recordId);
 		docOutboundLogRecord.setDocStatus(docStatus);
 
-		docOutboundLogRecord.setDocumentNo(archive.getName());
+		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
 
 		final LocalDate documentDate = Util.coalesce(
 				docActionBL.getDocumentDate(ctx, adTableId, recordId),
@@ -216,6 +233,8 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 		setMailRecipient(docOutboundLogRecord);
 
 		save(docOutboundLogRecord);
+
+		shareDocumentAttachmentsWithDocoutBoundLog(archiveRecord, docOutboundLogRecord);
 
 		return docOutboundLogRecord;
 	}
@@ -243,5 +262,25 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 
 		docOutboundLogRecord.setCurrentEMailRecipient_ID(recipient.getId().getRepoId());
 		docOutboundLogRecord.setCurrentEMailAddress(recipient.getEmailAddress());
+	}
+
+	private void shareDocumentAttachmentsWithDocoutBoundLog(
+			@NonNull final I_AD_Archive archiveRecord,
+			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final ITableRecordReference from = TableRecordReference.ofReferencedOrNull(archiveRecord);
+		if (from == null)
+		{
+			return;
+		}
+
+		final AttachmentEntryQuery query = AttachmentEntryQuery
+				.builder()
+				.referencedRecord(from)
+				.tagSetToTrue(AttachmentConstants.TAGNAME_IS_DOCUMENT)
+				.build();
+		final List<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
+
+		attachmentEntryService.createAttachmentLinks(attachmentsToShare, ImmutableList.of(docOutboundLogRecord));
 	}
 }

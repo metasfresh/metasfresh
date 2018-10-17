@@ -50,10 +50,10 @@ import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.IDocumentBL.IDocActionItem;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Displays valid Document Action Options based on context

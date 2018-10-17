@@ -30,7 +30,7 @@ import de.metas.util.lang.RepoIdAware;
 @Value
 public class InvoiceId implements RepoIdAware
 {
-	public InvoiceId ofRepoId(final int repoId)
+	public static InvoiceId ofRepoId(final int repoId)
 	{
 		return new InvoiceId(repoId);
 	}

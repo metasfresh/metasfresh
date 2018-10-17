@@ -52,11 +52,16 @@ public class XmlVat
 			return this;
 		}
 
-		// When it comes to the vat data, we don't just "patch", but replace the whole thing.
-		return XmlVat.builder()
-				.clearVatRates()
-				.vatNumber(vatMod.getVatNumber())
+		final XmlVatBuilder builder = XmlVat.builder();
+		if (vatMod.getVatNumber() != null)
+		{
+			builder.vatNumber(vatMod.getVatNumber());
+		}
+
+		// When it comes to the vat amount and rates, we don't just "patch", but replace the whole thing.
+		return builder
 				.vat(vatMod.getVat())
+				.clearVatRates()
 				.vatRates(vatMod.getVatRates())
 				.build();
 	}

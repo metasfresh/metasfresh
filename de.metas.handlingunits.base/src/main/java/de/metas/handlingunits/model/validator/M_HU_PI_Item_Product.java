@@ -15,8 +15,8 @@ import org.compiere.model.ModelValidator;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 @Callout(I_M_HU_PI_Item_Product.class)
 @Validator(I_M_HU_PI_Item_Product.class)

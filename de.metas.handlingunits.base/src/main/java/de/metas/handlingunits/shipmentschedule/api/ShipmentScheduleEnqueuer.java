@@ -47,6 +47,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -55,7 +56,6 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.Builder;
 import lombok.NonNull;

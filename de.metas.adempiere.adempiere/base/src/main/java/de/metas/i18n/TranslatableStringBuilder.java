@@ -9,12 +9,12 @@ import java.util.List;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.CompositeTranslatableString;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.CompositeTranslatableString;
-import de.metas.util.i18n.IMsgBL;
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
 
 /*
  * #%L

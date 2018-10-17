@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_Product;
@@ -45,7 +46,6 @@ import de.metas.procurement.sync.protocol.SyncWeeklySupply;
 import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

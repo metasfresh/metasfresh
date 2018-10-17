@@ -40,11 +40,11 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.modelvalidator.SwatValidator;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Makes sure that the IsDropShip checkbox in various tables is consistent with the selected warehouse and other dropship related settings.

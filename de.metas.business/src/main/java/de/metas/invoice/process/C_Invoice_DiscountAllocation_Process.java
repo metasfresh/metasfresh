@@ -40,10 +40,10 @@ import org.compiere.util.TrxRunnableAdapter;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  *

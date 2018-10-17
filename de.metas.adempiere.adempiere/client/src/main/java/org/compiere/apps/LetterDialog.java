@@ -51,11 +51,11 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class LetterDialog
 		extends CDialog

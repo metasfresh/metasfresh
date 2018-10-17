@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -45,7 +46,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.i18n.ITranslatableString;
 
 import lombok.ToString;
 

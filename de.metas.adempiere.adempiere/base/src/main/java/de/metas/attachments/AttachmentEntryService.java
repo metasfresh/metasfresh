@@ -3,6 +3,11 @@ package de.metas.attachments;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
@@ -23,7 +28,6 @@ import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
 import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -213,7 +217,7 @@ public class AttachmentEntryService
 			@NonNull final Collection<? extends Object> originalReferencedRecords,
 			@NonNull final ImmutableList<AttachmentEntry> attachmentEntriesToSave)
 	{
-		if(attachmentEntriesToSave.isEmpty())
+		if (attachmentEntriesToSave.isEmpty())
 		{
 			return ImmutableList.of(); // no need to fire up the handler(s)
 		}
@@ -260,6 +264,20 @@ public class AttachmentEntryService
 	}
 
 	public List<AttachmentEntry> getByReferencedRecord(@NonNull final Object referencedRecord)
+	{
+		return getByQuery(AttachmentEntryQuery.builder().referencedRecord(referencedRecord).build());
+	}
+
+	public List<AttachmentEntry> getByQuery(@NonNull final AttachmentEntryQuery query)
+	{
+		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
+				.stream()
+				.filter(e -> e.hasAllTagsSetToTrue(query.getTagsSetToTrue()))
+				.filter(e -> e.hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<AttachmentEntry> getByReferencedRecordMigrateIfNeeded(@NonNull final Object referencedRecord)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
@@ -313,5 +331,28 @@ public class AttachmentEntryService
 
 		entryRecord.setBinaryData(data);
 		save(entryRecord);
+	}
+
+	@Value
+	public static class AttachmentEntryQuery
+	{
+		List<String> tagsSetToTrue;
+
+		List<String> tagsSetToAnyValue;
+
+		Object referencedRecord;
+
+		@Builder
+		private AttachmentEntryQuery(
+				@Singular("tagSetToTrue") final List<String> tagsSetToTrue,
+				@Singular("tagSetToAnyValue") final List<String> tagsSetToAnyValue,
+				@NonNull final Object referencedRecord)
+		{
+			this.referencedRecord = referencedRecord;
+
+			this.tagsSetToTrue = tagsSetToTrue;
+			this.tagsSetToAnyValue = tagsSetToAnyValue;
+		}
+
 	}
 }

@@ -1,20 +1,24 @@
 package de.metas.invoice_gateway.api;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
+import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -48,20 +52,28 @@ public class InvoiceExportServiceRegistry
 		invoiceExportClientFactoriesByGatewayId = invoiceExportClientFactories.orElse(ImmutableList.of())
 				.stream()
 				.filter(Predicates.notNull())
-				.collect(GuavaCollectors.toImmutableMapByKey(InvoiceExportClientFactory::getInvoiceExportGatewayId));
+				.collect(GuavaCollectors.toImmutableMapByKey(InvoiceExportClientFactory::getInvoiceExportProviderId));
 	}
 
-	public boolean hasServiceSupport(@Nullable final String shipperGatewayId)
+	public boolean hasServiceSupport(@Nullable final String invoiceExportGatewayId)
 	{
-		if(Check.isEmpty(shipperGatewayId,true))
+		if (Check.isEmpty(invoiceExportGatewayId, true))
 		{
 			return false;
 		}
-		return invoiceExportClientFactoriesByGatewayId.containsKey(shipperGatewayId);
+		return invoiceExportClientFactoriesByGatewayId.containsKey(invoiceExportGatewayId);
 	}
 
-	public InvoiceExportClientFactory getFactory(@NonNull final String invoiceExportGatewayId)
+	public List<InvoiceExportClient> createExportClients(@NonNull final InvoiceToExport invoice)
 	{
-		return invoiceExportClientFactoriesByGatewayId.get(invoiceExportGatewayId);
+		final Collection<InvoiceExportClientFactory> factories = invoiceExportClientFactoriesByGatewayId.values();
+
+		final ImmutableList.Builder<InvoiceExportClient> result = ImmutableList.builder();
+		for (final InvoiceExportClientFactory factory : factories)
+		{
+			final Optional<InvoiceExportClient> newClientForInvoice = factory.newClientForInvoice(invoice);
+			newClientForInvoice.ifPresent(result::add);
+		}
+		return result.build();
 	}
 }

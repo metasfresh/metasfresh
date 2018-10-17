@@ -25,6 +25,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.printing.MergePdfByteArrays;
 import de.metas.printing.PrintPackagePDFBuilder;
@@ -42,7 +43,6 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

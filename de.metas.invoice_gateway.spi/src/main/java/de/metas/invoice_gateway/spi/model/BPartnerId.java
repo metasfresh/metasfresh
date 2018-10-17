@@ -2,8 +2,10 @@ package de.metas.invoice_gateway.spi.model;
 
 
 
-import de.metas.util.Check;
 import lombok.Value;
+
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 
 /*
  * #%L
@@ -27,17 +29,17 @@ import lombok.Value;
  * #L%
  */
 @Value
-public class BPartnerId
+public class BPartnerId implements RepoIdAware
 {
-	public static BPartnerId ofId(final int id)
+	public static BPartnerId ofRepoId(final int repoId)
 	{
-		return new BPartnerId(id);
+		return new BPartnerId(repoId);
 	}
 
-	int id;
+	int repoId;
 
-	private BPartnerId(final int id)
+	private BPartnerId(final int repoId)
 	{
-		this.id = Check.assumeGreaterThanZero(id, "id");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 }

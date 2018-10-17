@@ -25,10 +25,10 @@ import java.util.Objects;
 import org.adempiere.util.exceptions.IExceptionWrapper;
 import org.compiere.util.DB;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.i18n.ITranslatableString;
 
 /**
  * This RuntimeException is used to pass SQLException up the chain of calling methods to determine what to do where needed.

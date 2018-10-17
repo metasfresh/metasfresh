@@ -54,6 +54,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -66,7 +67,6 @@ import de.metas.product.IStorageBL;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 /**

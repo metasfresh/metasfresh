@@ -15,7 +15,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 912484734L;
+	private static final long serialVersionUID = -782487202L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (Properties ctx, int C_Invoice_Line_Alloc_ID, String trxName)
@@ -95,9 +95,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID 
-		Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+		@param C_Invoice_Candidate_ID Rechnungskandidat	  */
 	@Override
 	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
 	{
@@ -108,8 +106,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	/** Get Rechnungskandidat.
-		@return Eindeutige Identifikationsnummer eines Rechnungskandidaten
-	  */
+		@return Rechnungskandidat	  */
 	@Override
 	public int getC_Invoice_Candidate_ID () 
 	{
@@ -228,7 +225,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 
 	/** Set Notiz.
 		@param Note 
-		Optional weitere Information für ein Dokument
+		Optional weitere Information
 	  */
 	@Override
 	public void setNote (java.lang.String Note)
@@ -237,7 +234,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	/** Get Notiz.
-		@return Optional weitere Information für ein Dokument
+		@return Optional weitere Information
 	  */
 	@Override
 	public java.lang.String getNote () 

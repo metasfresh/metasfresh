@@ -3,6 +3,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
 
 /*
@@ -33,5 +34,7 @@ public interface CrossVersionRequestConverter<T>
 
 	public XmlRequest toCrossVersionRequest(InputStream xmlInput);
 
-	public String getSupportedType();
+	public String getXsdName();
+
+	public XmlVersion getVersion();
 }

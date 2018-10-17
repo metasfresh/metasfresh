@@ -29,9 +29,9 @@ import java.util.Properties;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.api.StringGridTabSummaryInfo;

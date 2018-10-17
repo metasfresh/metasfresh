@@ -7,6 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -61,7 +63,6 @@ import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_OLCand}.
@@ -222,6 +223,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(olc),
 				true /*isSOTrx*/);
 		ic.setC_Tax_ID(taxId);
+
+		ic.setExternalId(olc.getExternalId());
 
 		olc.setProcessed(true);
 		saveRecord(olc);

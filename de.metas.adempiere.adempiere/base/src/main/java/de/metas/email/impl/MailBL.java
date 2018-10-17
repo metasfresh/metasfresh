@@ -31,12 +31,12 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailDAO;
 import de.metas.email.IMailTextBuilder;
 import de.metas.email.Mailbox;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.i18n.ImmutableTranslatableString;
 
 import lombok.NonNull;
 

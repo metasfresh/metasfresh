@@ -17,11 +17,11 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

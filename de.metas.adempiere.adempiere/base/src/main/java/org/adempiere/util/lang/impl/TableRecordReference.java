@@ -1,5 +1,9 @@
 package org.adempiere.util.lang.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +35,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,8 +57,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
-
-import lombok.NonNull;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -165,11 +165,8 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Creates an {@link TableRecordReference} from the given {@code model}'s {@code AD_Table_ID} and {@code Record_ID}.
-	 *
-	 * @param model
-	 * @return
 	 */
-	public static TableRecordReference ofReferenced(final Object model)
+	public static TableRecordReference ofReferenced(@NonNull final Object model)
 	{
 		final Optional<Integer> adTableId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_AD_Table_ID);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(model, ITableRecordReference.COLUMNNAME_Record_ID);
@@ -177,13 +174,7 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId.orElse(-1), recordId.orElse(-1)); // the -1 shall cause an exception to be thrown
 	}
 
-	/**
-	 * See {@link ITableRecordReference#FromReferencedModelConverter}.
-	 *
-	 * @param model
-	 * @return
-	 */
-	public static ITableRecordReference ofReferencedOrNull(final Object model)
+	public static ITableRecordReference ofReferencedOrNull(@Nullable final Object model)
 	{
 		if (model == null)
 		{

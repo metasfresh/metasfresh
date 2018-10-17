@@ -5,12 +5,12 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.product.ProductId;
 import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.purchasing.api.ProductExclude;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

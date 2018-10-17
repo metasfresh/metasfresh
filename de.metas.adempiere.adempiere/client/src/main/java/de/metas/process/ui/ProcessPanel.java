@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessExecutionListener;
 import de.metas.process.ProcessExecutionResult;
@@ -39,7 +40,6 @@ import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

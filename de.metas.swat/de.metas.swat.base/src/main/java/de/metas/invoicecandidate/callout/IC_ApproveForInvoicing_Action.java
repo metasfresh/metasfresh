@@ -32,10 +32,10 @@ import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Side Action: set {@link I_C_Invoice_Candidate#COLUMN_ApprovalForInvoicing} to current selected invoice candidates.

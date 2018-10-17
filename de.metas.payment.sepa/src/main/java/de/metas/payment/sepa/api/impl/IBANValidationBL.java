@@ -29,13 +29,13 @@ package de.metas.payment.sepa.api.impl;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.IBBANStructureBL;
 import de.metas.payment.sepa.api.IIBANValidationBL;
 import de.metas.payment.sepa.wrapper.BBANStructure;
 import de.metas.payment.sepa.wrapper.BBANStructureEntry;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * @author cg

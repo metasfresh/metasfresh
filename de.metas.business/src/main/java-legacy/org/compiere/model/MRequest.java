@@ -43,6 +43,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.event.Topic;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -50,8 +52,6 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.UserNotificationRequestBuilder;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
-import de.metas.util.i18n.ITranslatableString;
 import de.metas.notification.UserNotificationsConfig;
 
 /**

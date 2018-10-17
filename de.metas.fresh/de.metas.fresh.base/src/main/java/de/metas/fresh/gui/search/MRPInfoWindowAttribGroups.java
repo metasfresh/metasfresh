@@ -23,10 +23,10 @@ import org.slf4j.Logger;
 
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * NOTE: consider moving this to either de.metas.handlingunits or org.adempiere.libero if and when one starts to depend on the other.

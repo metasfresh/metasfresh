@@ -40,8 +40,8 @@ import org.compiere.model.GridTab.DataNewCopyMode;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;

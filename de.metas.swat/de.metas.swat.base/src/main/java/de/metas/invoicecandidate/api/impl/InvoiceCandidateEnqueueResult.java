@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.util.lang.ObjectUtils;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.lock.api.ILock;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * @author al

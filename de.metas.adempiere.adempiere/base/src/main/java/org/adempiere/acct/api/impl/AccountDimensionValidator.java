@@ -39,9 +39,9 @@ import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /* package */class AccountDimensionValidator implements IAccountDimensionValidator
 {

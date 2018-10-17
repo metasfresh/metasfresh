@@ -36,8 +36,8 @@ import org.compiere.model.ModelValidator;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 @Interceptor(I_C_Flatrate_Matching.class)
 public class C_Flatrate_Matching

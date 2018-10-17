@@ -7,8 +7,8 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.util.i18n.ITranslatableString;
-import de.metas.util.i18n.ImmutableTranslatableString;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 
 /*
  * #%L

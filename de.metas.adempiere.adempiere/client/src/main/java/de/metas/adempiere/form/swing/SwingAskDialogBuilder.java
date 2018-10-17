@@ -37,9 +37,9 @@ import org.compiere.util.SwingUtils;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IAskDialogBuilder;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class SwingAskDialogBuilder implements IAskDialogBuilder
 {

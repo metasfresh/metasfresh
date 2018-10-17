@@ -12,9 +12,9 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.archive.DocOutBoundRecipient;
-import de.metas.document.archive.DocOutBoundRecipientId;
-import de.metas.document.archive.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.util.Services;

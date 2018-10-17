@@ -35,9 +35,9 @@ import org.compiere.util.NamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * A generic {@link IPropertiesPanelModel} which allows developer to define and customize the properties that are supported.

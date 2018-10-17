@@ -42,6 +42,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -50,7 +51,6 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Send EDI documents for selected entries.

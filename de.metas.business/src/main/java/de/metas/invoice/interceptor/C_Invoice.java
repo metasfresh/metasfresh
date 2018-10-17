@@ -46,6 +46,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
@@ -257,7 +258,7 @@ public class C_Invoice // 03771
 	public void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null && Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType()) &&  order.getC_Payment_ID() > 0)
+		if (order != null && Services.get(IDocTypeBL.class).isPrepay(order.getC_DocType()) && order.getC_Payment_ID() > 0)
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
@@ -276,5 +277,11 @@ public class C_Invoice // 03771
 			final I_C_Payment payment = order.getC_Payment();
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
 		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void scheduleDataExport(final I_C_Invoice invoice)
+	{
+		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
 	}
 }

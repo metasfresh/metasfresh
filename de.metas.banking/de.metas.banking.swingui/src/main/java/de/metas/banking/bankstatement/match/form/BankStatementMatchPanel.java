@@ -43,8 +43,8 @@ import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.banking.bankstatement.match.service.impl.BankStatementPaymentMatchingProcessor;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /*
  * #%L

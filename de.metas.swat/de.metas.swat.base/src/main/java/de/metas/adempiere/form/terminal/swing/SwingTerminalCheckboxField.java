@@ -35,8 +35,8 @@ import de.metas.adempiere.form.terminal.AbstractTerminalCheckboxField;
 import de.metas.adempiere.form.terminal.ITerminalField;
 import de.metas.adempiere.form.terminal.WrongValueException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Swing terminal checkbox

@@ -48,9 +48,9 @@ import de.metas.handlingunits.client.terminal.editor.model.filter.IHUKeyFilter;
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pos.IPOSHUEditorFilterDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to filter available HUs.

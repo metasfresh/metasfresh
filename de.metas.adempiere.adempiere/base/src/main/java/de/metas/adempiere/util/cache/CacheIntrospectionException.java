@@ -31,9 +31,9 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Check;
-import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Exception thrown when an annotated cached method could not be introspected or it's not valid.

@@ -26,10 +26,10 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.ITranslatableString;
 
 /**
  * Exception thrown when document processing failed.

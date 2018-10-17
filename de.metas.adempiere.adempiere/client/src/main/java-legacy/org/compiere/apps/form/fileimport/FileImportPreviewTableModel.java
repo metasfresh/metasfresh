@@ -12,9 +12,9 @@ import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class FileImportPreviewTableModel extends AbstractTableModel
 {

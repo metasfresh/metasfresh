@@ -12,11 +12,11 @@ import org.compiere.model.X_C_DocType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.event.IEventBusFactory;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
-import de.metas.util.i18n.ITranslatableString;
 
 /*
  * #%L

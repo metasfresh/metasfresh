@@ -1,8 +1,10 @@
 package de.metas.invoice_gateway.spi.model;
 
-import java.math.BigDecimal;
-
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -27,11 +29,15 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class InvoiceTax
 {
+	@NonNull
 	BigDecimal baseAmount;
 
+	@NonNull
 	BigDecimal ratePercent;
 
+	@NonNull
 	BigDecimal vatAmount;
 }

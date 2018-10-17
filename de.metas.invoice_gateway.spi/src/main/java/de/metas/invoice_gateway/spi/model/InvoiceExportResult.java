@@ -4,7 +4,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.io.OutputStream;
+import java.io.InputStream;
+
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 
 /*
  * #%L
@@ -36,8 +38,18 @@ public class InvoiceExportResult
 	String fileName;
 
 	@NonNull
-	String typeName;
+	String mimeType;
 
 	@NonNull
-	OutputStream data;
+	InputStream data;
+
+	/**
+	 * String that identifies the export client factory which created this result.
+	 * See {@link InvoiceExportClientFactory#getInvoiceExportProviderId()}.
+	 */
+	@NonNull
+	String invoiceExportProviderId;
+
+	@NonNull
+	BPartnerId recipientId;
 }

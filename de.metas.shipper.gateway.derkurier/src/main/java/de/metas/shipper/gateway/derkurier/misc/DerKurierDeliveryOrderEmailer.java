@@ -13,12 +13,12 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
+import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.NonNull;
 

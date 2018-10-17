@@ -24,49 +24,7 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.response</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.request</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.response</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- 
-			we can and need to depend on the SPI, 
-			but not on metasfresh-invoice_gateway.api, because invoice_gateway.api depends on us.
-			Likewise, de.metas.business depends on us
-		-->
-		<dependency>
-			<groupId>de.metas.invoice_gateway</groupId>
-			<artifactId>metasfresh-invoice_gateway.spi</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
+		
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>

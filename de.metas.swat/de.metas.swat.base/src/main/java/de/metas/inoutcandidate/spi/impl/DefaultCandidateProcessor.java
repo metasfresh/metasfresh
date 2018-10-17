@@ -33,11 +33,11 @@ import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class DefaultCandidateProcessor implements IShipmentSchedulesAfterFirstPassUpdater
 {

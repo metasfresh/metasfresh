@@ -4,7 +4,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 
 /*
  * #%L
@@ -39,5 +44,20 @@ public class InvoiceAttachment
 	String mimeType;
 
 	@NonNull
-	InputStream data;
+	byte[] data;
+
+	/**
+	 * String that identifies the export client factory in charge for this attachment.
+	 * See {@link InvoiceExportClientFactory#getInvoiceExportProviderId()}.
+	 *
+	 * Note: *currently*, only invoices with an attachment that has a providerId can be exported,
+	 * but that's just due to the very first ExportClient implementation.
+	 */
+	@Nullable
+	String invoiceExportProviderId;
+
+	public InputStream getDataAsInputStream()
+	{
+		return new ByteArrayInputStream(getData());
+	}
 }

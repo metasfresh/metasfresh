@@ -79,11 +79,11 @@ import de.metas.fresh.picking.BPartnerKey;
 import de.metas.fresh.picking.BPartnerKeyLayout;
 import de.metas.fresh.picking.DeliveryDateKey;
 import de.metas.fresh.picking.DeliveryDateKeyLayout;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.form.swing.IPickingTerminalPanel;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Picking First Window Panel.

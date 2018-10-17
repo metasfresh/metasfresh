@@ -38,9 +38,9 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CToggleButton;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 /**
  * Application Action.
@@ -67,7 +67,6 @@ public final class AppsAction extends AbstractAction
 
 	private AppsAction(final Builder builder)
 	{
-		super();
 		_actionCommand = builder.getAction();
 		_acceleratorDefault = builder.getAccelerator();
 		toggleButton = builder.isToggleButton();

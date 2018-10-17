@@ -8,9 +8,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import de.metas.vendor.gateway.api.availability.TrackingId;

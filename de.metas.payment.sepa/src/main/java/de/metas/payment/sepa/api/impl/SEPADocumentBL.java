@@ -43,6 +43,7 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Util;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.api.ISEPADocument;
@@ -55,7 +56,6 @@ import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerCTIMarshaler_Pain_0
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.util.time.SystemTime;
 
 public class SEPADocumentBL implements ISEPADocumentBL

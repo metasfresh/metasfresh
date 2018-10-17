@@ -46,9 +46,9 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.jdesktop.swingx.JXTaskPane;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 public class InfoProductDetails
 {

@@ -38,12 +38,12 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 
 /**

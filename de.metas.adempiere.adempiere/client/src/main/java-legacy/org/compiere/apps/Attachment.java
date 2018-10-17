@@ -60,10 +60,10 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.i18n.IMsgBL;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

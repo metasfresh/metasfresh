@@ -1,6 +1,8 @@
 package de.metas.invoice_gateway.spi;
 
-import de.metas.invoice_gateway.spi.model.BPartnerId;
+import java.util.Optional;
+
+import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 
 /*
  * #%L
@@ -27,7 +29,10 @@ import de.metas.invoice_gateway.spi.model.BPartnerId;
 /** SPI to extend for different formats and protocols. */
 public interface InvoiceExportClientFactory
 {
-	String getInvoiceExportGatewayId();
+	public static final String ATTATCHMENT_TAGNAME_EXPORT_PROVIDER = "InvoiceExportProviderId";
 
-	InvoiceExportClient newClientForRecipient(BPartnerId invoiceRecipientId);
+	String getInvoiceExportProviderId();
+
+	/** @return empty if the given factory can't provide an export client */
+	Optional<InvoiceExportClient> newClientForInvoice(InvoiceToExport invoice);
 }
