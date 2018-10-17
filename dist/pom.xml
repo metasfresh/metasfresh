@@ -540,7 +540,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api</artifactId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
