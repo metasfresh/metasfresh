@@ -67,6 +67,4 @@ public interface IElementTranslationBL extends ISingletonService
 
 	void updateElementFromElementTrl(int adElementId, String adLanguage);
 
-
-
 }

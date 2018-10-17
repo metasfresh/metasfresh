@@ -119,10 +119,12 @@ public class ElementTranslationBL implements IElementTranslationBL
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + ") ";
 	}
 
+
 	private String addUpdateFunctionCallForElementTRL(final String functionCall, int elementId, int applicationDictionaryEntryId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + ", " + applicationDictionaryEntryId + ") ";
 	}
+
 
 	@Override
 	public void updateElementFromElementTrl(int adElementId, String adLanguage)
