@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -718,7 +719,7 @@ public class FreshPackingMd
 
 		//
 		// Add our matched rows to selection
-		final Set<TableRowKey> selectionNew = getSelectedTableRowKeys();
+		final Set<TableRowKey> selectionNew = new HashSet<>(getSelectedTableRowKeys());
 		selectionNew.addAll(tableRowKeysFound);
 		setSelectedTableRowKeys(selectionNew);
 	}
