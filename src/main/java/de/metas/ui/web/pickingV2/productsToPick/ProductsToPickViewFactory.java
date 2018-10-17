@@ -11,6 +11,7 @@ import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_4EyesRevi
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillNotPickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
+import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -117,10 +118,13 @@ public class ProductsToPickViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rowsData(rowsData)
 				//
+				// Picker processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_PickSelected.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_MarkWillNotPickSelected.class))
+				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_SetPackingInstructions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_Request4EyesReview.class))
 				//
+				// Reviewer processes:
 				.relatedProcessDescriptor(createProcessDescriptor(ProductsToPick_4EyesReview_ProcessAll.class))
 				//
 				.build();

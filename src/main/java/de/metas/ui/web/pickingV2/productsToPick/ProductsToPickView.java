@@ -93,7 +93,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 		}
 
 		return streamByIds(DocumentIdsSelection.ALL)
-				.allMatch(ProductsToPickRow::isEligibleForApproval);
+				.allMatch(ProductsToPickRow::isEligibleForReview);
 	}
 
 	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
