@@ -131,7 +131,7 @@ public class PickHUCommand
 		{
 			return PickingCandidate.builder()
 					.status(PickingCandidateStatus.Draft)
-					.qtyPicked(qtyToPick)
+					.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
 					.shipmentScheduleId(shipmentScheduleId)
 					.pickFromHuId(pickFromHuId)
 					.pickingSlotId(pickingSlotId)
@@ -167,7 +167,7 @@ public class PickHUCommand
 		// Allow empty storage. That's the case when we are adding a newly created HU
 		if (productStorage == null)
 		{
-			final I_C_UOM uom = shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
+			final I_C_UOM uom = getShipmentScheduleUOM();
 			return Quantity.zero(uom);
 		}
 
@@ -181,6 +181,11 @@ public class PickHUCommand
 			_shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		}
 		return _shipmentSchedule;
+	}
+
+	private I_C_UOM getShipmentScheduleUOM()
+	{
+		return shipmentScheduleBL.getUomOfProduct(getShipmentSchedule());
 	}
 
 	private void allocatePickingSlotIfPossible()

@@ -20,8 +20,8 @@ import org.slf4j.Logger;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionDAO;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -91,27 +91,27 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 		{
 			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_SeqNo, Operator.LESS, query.getSeqNoLessThan());
 		}
-		
+
 		if (query.getEventDateNotBefore() != null)
 		{
 			queryBuilder.addCompareFilter(I_C_SubscriptionProgress.COLUMN_EventDate, Operator.GREATER_OR_EQUAL, query.getEventDateNotBefore());
 		}
 
-		if(!query.getIncludedContractStatuses().isEmpty())
+		if (!query.getIncludedContractStatuses().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_ContractStatus, query.getIncludedContractStatuses());
 		}
-		
-		if(!query.getExcludedStatuses().isEmpty())
+
+		if (!query.getExcludedStatuses().isEmpty())
 		{
 			queryBuilder.addNotInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, query.getExcludedStatuses());
 		}
 
-		if(!query.getIncludedStatuses().isEmpty())
+		if (!query.getIncludedStatuses().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_SubscriptionProgress.COLUMN_Status, query.getIncludedStatuses());
 		}
-		
+
 		return queryBuilder
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_SeqNo).endOrderBy()
 				.create();
@@ -176,7 +176,7 @@ public abstract class AbstractSubscriptionDAO implements ISubscriptionDAO
 				.create()
 				.first();
 	}
-	
+
 	@Override
 	public final List<I_C_SubscriptionProgress> retrievePlannedAndDelayedDeliveries(
 			@NonNull final Properties ctx,
