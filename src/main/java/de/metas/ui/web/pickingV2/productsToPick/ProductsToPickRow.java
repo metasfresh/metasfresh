@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -82,6 +84,11 @@ public class ProductsToPickRow implements IViewRow
 	@Getter
 	private final Quantity qty;
 
+	static final String FIELD_QtyReview = "qtyReview";
+	@ViewColumn(fieldName = FIELD_QtyReview, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
+	private final BigDecimal qtyReview;
+
 	static final String FIELD_PickStatus = "pickStatus";
 	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID)
 	private final PickingCandidatePickStatus pickStatus;
@@ -113,6 +120,7 @@ public class ProductsToPickRow implements IViewRow
 			final Boolean damaged,
 			//
 			@NonNull final Quantity qty,
+			@Nullable final BigDecimal qtyReview,
 			//
 			final PickingCandidatePickStatus pickStatus,
 			final PickingCandidateApprovalStatus approvalStatus,
@@ -129,6 +137,7 @@ public class ProductsToPickRow implements IViewRow
 		this.damaged = damaged;
 
 		this.qty = qty;
+		this.qtyReview = qtyReview;
 
 		this.pickStatus = pickStatus != null ? pickStatus : PickingCandidatePickStatus.TO_BE_PICKED;
 		this.approvalStatus = approvalStatus != null ? approvalStatus : PickingCandidateApprovalStatus.TO_BE_APPROVED;
@@ -179,6 +188,7 @@ public class ProductsToPickRow implements IViewRow
 		}
 
 		return toBuilder()
+				.qtyReview(pickingCandidate.getQtyReview())
 				.pickStatus(pickingCandidate.getPickStatus())
 				.approvalStatus(pickingCandidate.getApprovalStatus())
 				.pickingCandidateId(pickingCandidate.getId())
@@ -200,15 +210,14 @@ public class ProductsToPickRow implements IViewRow
 		return pickStatus.isToBePicked();
 	}
 
-	public boolean isEligibleForApproval()
+	public boolean isPickedOrPacked()
 	{
-		return !pickStatus.isToBePicked();
+		return pickStatus.isPickedOrPacked();
 	}
 
-	public boolean isWaitingApproval()
+	public boolean isEligibleForReview()
 	{
-		return isEligibleForApproval()
-				&& approvalStatus.isToBeApproved();
+		return pickStatus.isPacked() || pickStatus.isPickRejected();
 	}
 
 	public boolean isApproved()

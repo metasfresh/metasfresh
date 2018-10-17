@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.requests.PickHURequest;
@@ -76,7 +75,6 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 				.shipmentScheduleId(row.getShipmentScheduleId())
 				.qtyToPick(row.getQty())
 				.pickFromHuId(row.getHuId())
-				.packToId(HuPackingInstructionsId.VIRTUAL)
 				.build());
 
 		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());

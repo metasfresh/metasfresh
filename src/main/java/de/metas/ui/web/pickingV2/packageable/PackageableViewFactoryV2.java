@@ -61,6 +61,7 @@ public class PackageableViewFactoryV2 implements IViewFactory
 		return ViewLayout.builder()
 				.setWindowId(PickingConstantsV2.WINDOWID_PackageableView)
 				.setCaption("Picking") // TODO: trl
+				.setAllowOpeningRowDetails(false)
 				.addElementsFromViewRowClass(PackageableRow.class, viewDataType)
 				.build();
 	}
