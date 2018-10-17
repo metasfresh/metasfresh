@@ -100,6 +100,9 @@ public class ViewLayout implements ETagAware
 	public static final int TreeExpandedDepth_ExpandedFirstLevel = 1;
 	public static final int TreeExpandedDepth_AllExpanded = 100;
 
+	/** If false, frontend shall not allow double clicking on a row in order to open it as a document */
+	private final boolean allowOpeningRowDetails;
+
 	// ETag support
 	private static final AtomicInteger nextETagVersionSupplier = new AtomicInteger(1);
 	private final ETag eTag;
@@ -132,14 +135,13 @@ public class ViewLayout implements ETagAware
 
 		allowNewCaption = null;
 
+		allowOpeningRowDetails = builder.allowOpeningRowDetails;
+
 		eTag = ETag.of(nextETagVersionSupplier.getAndIncrement(), extractETagAttributes(filters, allowNewCaption));
 	}
 
 	/**
 	 * copy and override constructor
-	 *
-	 * @param elements
-	 * @param defaultOrderBys
 	 */
 	private ViewLayout(final ViewLayout from,
 			final WindowId windowId,
@@ -175,6 +177,8 @@ public class ViewLayout implements ETagAware
 		includedViewLayout = from.includedViewLayout;
 
 		this.allowNewCaption = allowNewCaption;
+
+		this.allowOpeningRowDetails = from.allowOpeningRowDetails;
 
 		eTag = from.eTag.overridingAttributes(extractETagAttributes(filters, allowNewCaption));
 	}
@@ -309,6 +313,11 @@ public class ViewLayout implements ETagAware
 	public String getAllowNewCaption()
 	{
 		return allowNewCaption;
+	}
+	
+	public boolean isAllowOpeningRowDetails()
+	{
+		return allowOpeningRowDetails;
 	}
 
 	@Override
@@ -485,6 +494,8 @@ public class ViewLayout implements ETagAware
 		private boolean hasTreeSupport = false;
 		private boolean treeCollapsible = false;
 		private int treeExpandedDepth = TreeExpandedDepth_AllExpanded;
+
+		private boolean allowOpeningRowDetails = true;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
@@ -703,6 +714,12 @@ public class ViewLayout implements ETagAware
 		public Builder setTreeExpandedDepth(final int treeExpandedDepth)
 		{
 			this.treeExpandedDepth = treeExpandedDepth;
+			return this;
+		}
+
+		public Builder setAllowOpeningRowDetails(boolean allowOpeningRowDetails)
+		{
+			this.allowOpeningRowDetails = allowOpeningRowDetails;
 			return this;
 		}
 
