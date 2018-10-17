@@ -9,10 +9,12 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.AbstractCustomView;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -39,7 +41,7 @@ import lombok.Singular;
  * #L%
  */
 
-public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
+public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> implements IEditableView
 {
 	public static ProductsToPickView cast(final IView view)
 	{
@@ -108,5 +110,17 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow>
 
 		return streamByIds(DocumentIdsSelection.ALL)
 				.allMatch(ProductsToPickRow::isApproved);
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +13,15 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -40,19 +46,20 @@ import lombok.NonNull;
  * #L%
  */
 
-class ProductsToPickRowsData implements IRowsData<ProductsToPickRow>
+class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 {
-
-	public static ProductsToPickRowsData ofRows(final List<ProductsToPickRow> rows)
-	{
-		return new ProductsToPickRowsData(rows);
-	}
+	private final PickingCandidateService pickingCandidateService;
 
 	private final ImmutableList<DocumentId> rowIdsOrdered;
 	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> rowsById;
 
-	private ProductsToPickRowsData(final List<ProductsToPickRow> rows)
+	@Builder
+	private ProductsToPickRowsData(
+			@NonNull final PickingCandidateService pickingCandidateService,
+			@NonNull final List<ProductsToPickRow> rows)
 	{
+		this.pickingCandidateService = pickingCandidateService;
+
 		rowIdsOrdered = rows.stream()
 				.map(ProductsToPickRow::getId)
 				.distinct()
@@ -77,7 +84,41 @@ class ProductsToPickRowsData implements IRowsData<ProductsToPickRow>
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void changeRow(@NonNull final DocumentId rowId, @NonNull UnaryOperator<ProductsToPickRow> mapper)
+	@Override
+	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		changeRow(ctx.getRowId(), row -> applyFieldChangeRequests(row, fieldChangeRequests));
+	}
+
+	private ProductsToPickRow applyFieldChangeRequests(@NonNull final ProductsToPickRow row, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		Check.assumeNotEmpty(fieldChangeRequests, "fieldChangeRequests is not empty");
+		fieldChangeRequests.forEach(JSONDocumentChangedEvent::assertReplaceOperation);
+
+		PickingCandidate pickingCandidate = null;
+		for (JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
+		{
+			final String fieldName = fieldChangeRequest.getPath();
+			if (ProductsToPickRow.FIELD_QtyReview.equals(fieldName))
+			{
+				final BigDecimal qtyReviewed = fieldChangeRequest.getValueAsBigDecimal();
+				pickingCandidate = pickingCandidateService.setQtyReviewed(row.getPickingCandidateId(), qtyReviewed);
+			}
+			else
+			{
+				throw new AdempiereException("Field " + fieldName + " is not editable");
+			}
+		}
+
+		if (pickingCandidate == null)
+		{
+			return row;
+		}
+
+		return row.withUpdatesFromPickingCandidateIfNotNull(pickingCandidate);
+	}
+
+	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
 	{
 		rowsById.compute(rowId, (k, row) -> {
 			if (row == null)
@@ -103,5 +144,4 @@ class ProductsToPickRowsData implements IRowsData<ProductsToPickRow>
 	public void invalidateAll()
 	{
 	}
-
 }
