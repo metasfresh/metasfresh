@@ -17,8 +17,6 @@
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-
-		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<packaging>jar</packaging>

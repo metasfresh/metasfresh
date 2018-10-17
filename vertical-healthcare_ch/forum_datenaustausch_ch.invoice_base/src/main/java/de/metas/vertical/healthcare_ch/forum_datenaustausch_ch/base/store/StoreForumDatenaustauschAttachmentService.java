@@ -1,7 +1,9 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.store;
 
 import lombok.NonNull;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,11 +23,18 @@ import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfigRepository;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.InvoiceExportClientFactoryImpl;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
 
 /*
  * #%L
@@ -55,6 +64,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 {
 	private final StoreConfigRepository configRepository;
 	private final AttachmentEntryService attachmentEntryService;
+	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 
 	private final CCache<AttachmentEntry, Optional<StoreConfig>> cache = CCache.newCache(
 			I_HC_Forum_Datenaustausch_Config.Table_Name + "#by#AttachmentEntry",
@@ -63,10 +73,12 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 	public StoreForumDatenaustauschAttachmentService(
 			@NonNull final StoreConfigRepository configRepository,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull CrossVersionServiceRegistry crossVersionServiceRegistry)
 	{
 		this.configRepository = configRepository;
 		this.attachmentEntryService = attachmentEntryService;
+		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
 	}
 
 	@Override
@@ -139,12 +151,28 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 	@Override
 	public URI storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
 	{
+		final boolean attachmentIsStoredForThefirstTime = !attachmentEntry
+				.getTags()
+				.keySet()
+				.stream()
+				.anyMatch(key -> key.startsWith(AttachmentConstants.TAGNAME_STORED_PREFIX));
+
+		byte[] attachmentDataToStore;
+		if (attachmentIsStoredForThefirstTime)
+		{
+			attachmentDataToStore = attachmentEntryService.retrieveData(attachmentEntry.getId());
+		}
+		else
+		{
+			attachmentDataToStore = computeDataWithCopyFlagSetToTrue(attachmentEntry);
+		}
+
 		final String directory = retrieveDirectoryOrNull(attachmentEntry);
 		final File file = new File(directory, attachmentEntry.getFilename());
 
 		try (final FileOutputStream fileOutputStream = new FileOutputStream(file))
 		{
-			fileOutputStream.write(attachmentEntryService.retrieveData(attachmentEntry.getId()));
+			fileOutputStream.write(attachmentDataToStore);
 			return file.toURI();
 		}
 		catch (final IOException e)
@@ -153,5 +181,39 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 					.setParameter("file", file)
 					.setParameter("attachmentEntry", attachmentEntry);
 		}
+	}
+
+	private byte[] computeDataWithCopyFlagSetToTrue(@NonNull final AttachmentEntry attachmentEntry)
+	{
+		byte[] attachmentData = attachmentEntryService.retrieveData(attachmentEntry.getId());
+
+		// get the converter to use
+		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(new ByteArrayInputStream(attachmentData));
+		final CrossVersionRequestConverter<?> converter = crossVersionServiceRegistry.getConverterForXsdName(xsdName);
+		Check.assumeNotNull(converter, "Missing CrossVersionRequestConverter for XSD={}; attachmentEntry={}", xsdName, attachmentEntry);
+
+		// convert to crossVersion data
+		final XmlRequest crossVersionRequest = converter.toCrossVersionRequest(new ByteArrayInputStream(attachmentData));
+
+		// patch
+		final XmlRequest updatedCrossVersionRequest = updateCrossVersionRequest(crossVersionRequest);
+
+		// convert back to byte[]
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		converter.fromCrossVersionRequest(updatedCrossVersionRequest, outputStream);
+
+		return outputStream.toByteArray();
+	}
+
+	private XmlRequest updateCrossVersionRequest(@NonNull final XmlRequest crossVersionRequest)
+	{
+		final RequestMod mod = RequestMod
+				.builder()
+				.payloadMod(PayloadMod
+						.builder()
+						.copy(true)
+						.build())
+				.build();
+		return crossVersionRequest.withMod(mod);
 	}
 }

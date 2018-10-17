@@ -27,4 +27,6 @@ public class AttachmentConstants
 	public static final String TAGNAME_IS_DOCUMENT = "IsDocument";
 
 	public static final String TAGNAME_BPARTNER_RECIPIENT_ID = "C_BPartner_Recipient_ID";
+
+	public static final String TAGNAME_STORED_PREFIX = "Stored_";
 }

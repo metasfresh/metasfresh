@@ -8,8 +8,11 @@ import java.util.GregorianCalendar;
 import org.junit.Test;
 
 import de.metas.invoice_gateway.spi.model.BPartner;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.invoice_gateway.spi.model.EAN;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 
 /*
@@ -40,10 +43,28 @@ public class Invoice440ExportClientTest
 	@Test
 	public void test()
 	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(10);
 
+		final BPartner recipient = BPartner.builder()
+				.id(BPartnerId.ofRepoId(20))
+				.ean(EAN.of("2234567890123"))
+				.build();
+
+		final BPartner biller = BPartner.builder()
+				.id(BPartnerId.ofRepoId(30))
+				.ean(EAN.of("3234567890123"))
+				.build();
+
+		final MetasfreshVersion matasfreshVersion = MetasfreshVersion.builder()
+				.major(10)
+				.minor(20)
+				.fullVersion("fullVersion").build();
 
 		final InvoiceToExport invoice = InvoiceToExport.builder()
-				.recipient(BPartner.builder().ean(EAN.of("2234567890123")).build())
+				.id(invoiceId)
+				.metasfreshVersion(matasfreshVersion)
+				.recipient(recipient)
+				.biller(biller)
 				.amount(Money.of(TEN, "CHF"))
 				.invoiceTimestamp(Instant.now())
 				.invoiceDate(new GregorianCalendar(2018, 10, 12))

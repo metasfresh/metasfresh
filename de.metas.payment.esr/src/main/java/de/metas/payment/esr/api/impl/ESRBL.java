@@ -46,6 +46,8 @@ import org.compiere.util.Util;
 
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -161,7 +163,8 @@ public class ESRBL implements IESRBL
 	 * @author tsa
 	 * @task http://dewiki908/mediawiki/index.php/02553:_ESR_Zahlschein_Verarbeitung_%282012030810000028%29#Suggestion_for_Invoice_reference_numbers
 	 */
-	private String createInvoiceReferenceString(
+	@VisibleForTesting
+	String createInvoiceReferenceString(
 			@NonNull final I_C_Invoice invoiceRecord,
 			final I_C_BP_BankAccount bankAccount)
 	{

@@ -7,6 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -60,6 +62,7 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -612,6 +615,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<String> externalIds = candsForIlVO
 						.stream()
 						.map(I_C_Invoice_Candidate::getExternalId)
+						.filter(Predicates.notNull())
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
 
@@ -910,12 +914,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	 * @return
 	 */
 	private List<I_AD_Note> createNoticesAndMarkICs(
-			final List<I_C_Invoice_Candidate> affectedCands,
-			final Throwable error)
+			@NonNull final List<I_C_Invoice_Candidate> affectedCands,
+			@NonNull final Throwable error)
 	{
-		Check.assumeNotNull(affectedCands, "Param 'affectedCands' is not empty");
-		Check.assumeNotNull(error, "Param 'error' is not empty");
-
 		Check.assume(!affectedCands.isEmpty(), "Given list of I_C_Invoice_Candidates is not empty");
 
 		final int USERINCHARGE_NA = -100; // placeholder for user in charge not available

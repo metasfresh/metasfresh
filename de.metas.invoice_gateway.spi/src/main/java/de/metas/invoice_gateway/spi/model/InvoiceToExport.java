@@ -5,6 +5,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import java.time.Instant;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -68,7 +70,7 @@ public class InvoiceToExport
 	@NonNull
 	Money alreadyPaidAmount;
 
-	@NonNull
+	@Nullable
 	CustomInvoicePayload customInvoicePayload;
 
 	@Singular("invoiceTax")

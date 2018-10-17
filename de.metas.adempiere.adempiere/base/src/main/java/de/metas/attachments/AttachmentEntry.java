@@ -13,7 +13,6 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
@@ -69,7 +68,7 @@ public final class AttachmentEntry
 		this.type = type;
 		this.filename = filename != null ? filename : new File(this.name).getName();
 
-		this.tags = ImmutableMap.copyOf(validateTags(tags));
+		this.tags = ImmutableMap.copyOf(tags);
 
 		this.linkedRecords = linkedRecords;
 
@@ -87,27 +86,6 @@ public final class AttachmentEntry
 		{
 			throw new AdempiereException("Attachment entry type not supported: " + type);
 		}
-	}
-
-	private Map<String, String> validateTags(@NonNull final Map<String, String> tags)
-	{
-		for (final Entry<String, String> tag : tags.entrySet())
-		{
-			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
-
-			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
-		}
-		return tags;
 	}
 
 	public String toStringX()

@@ -1,4 +1,4 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -41,6 +41,7 @@ import de.metas.invoice_gateway.spi.model.PersonInfo;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.Types.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
@@ -299,8 +300,12 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				.build();
 	}
 
-	private XmlEsr createXmlEsr(@NonNull final CustomInvoicePayload customInvoicePayload)
+	private XmlEsr createXmlEsr(@Nullable final CustomInvoicePayload customInvoicePayload)
 	{
+		if (customInvoicePayload == null)
+		{
+			return null;
+		}
 		if (!(customInvoicePayload instanceof ESRPaymentInfo))
 		{
 			return null;

@@ -1,7 +1,7 @@
 package de.metas.attachments;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,7 +24,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService;
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
 import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -57,7 +58,7 @@ public class AttachmentEntryService
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
-	private final AttachmentHandlerRegistry attachmentHandlerRegistry;
+	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
@@ -65,7 +66,7 @@ public class AttachmentEntryService
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
-		final AttachmentHandlerRegistry attachmentHandlerRegistry = new AttachmentHandlerRegistry(Optional.empty());
+		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
 		return new AttachmentEntryService(
 				attachmentEntryRepository,
@@ -83,7 +84,7 @@ public class AttachmentEntryService
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
-			@NonNull final AttachmentHandlerRegistry attachmentHandlerRegistry)
+			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
@@ -221,10 +222,14 @@ public class AttachmentEntryService
 		{
 			return ImmutableList.of(); // no need to fire up the handler(s)
 		}
-		final ExpandResult additionalReferences = attachmentHandlerRegistry.expand(originalReferencedRecords);
+		final ExpandResult additionalReferences = attachmentHandlerRegistry.expand(
+				attachmentEntriesToSave,
+				originalReferencedRecords);
 
 		final ImmutableList<AttachmentEntry> destAttachmentEntriesWithAdditionalRefs = //
-				createAttachmentLinksDontSave(attachmentEntriesToSave, additionalReferences.getAdditionalReferences());
+				createAttachmentLinksDontSave(
+						attachmentEntriesToSave,
+						additionalReferences.getAdditionalReferences());
 
 		final Collection<AttachmentEntry> result = attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
 		return result;
@@ -330,7 +335,16 @@ public class AttachmentEntryService
 		}
 
 		entryRecord.setBinaryData(data);
-		save(entryRecord);
+		saveRecord(entryRecord);
+	}
+
+	/**
+	 * Persist the given {@code attachmentEntry} as-is.
+	 * Warning: e.g. tags or referenced records that are persisted before this method is called, but are not part of the given {@code attachmentEntry} are dropped.
+	 */
+	public void save(@NonNull final AttachmentEntry attachmentEntry)
+	{
+		attachmentEntryRepository.save(attachmentEntry);
 	}
 
 	@Value

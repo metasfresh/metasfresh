@@ -1,4 +1,4 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export;
 
 import lombok.NonNull;
 
@@ -12,6 +12,7 @@ import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
 import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;

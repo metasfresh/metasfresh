@@ -45,7 +45,7 @@ import de.metas.util.time.SystemTime;
 @Component
 public class DocOutboundAttachmentStoredListener implements AttachmentStoredListener
 {
-	private AttachmentEntryService attachmentEntryService;
+	private final AttachmentEntryService attachmentEntryService;
 
 	public DocOutboundAttachmentStoredListener(@NonNull final AttachmentEntryService attachmentEntryService)
 	{

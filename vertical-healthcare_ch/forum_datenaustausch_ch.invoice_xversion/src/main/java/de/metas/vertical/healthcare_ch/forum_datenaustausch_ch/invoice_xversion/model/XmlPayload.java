@@ -7,11 +7,11 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlCredit;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice.InvoiceMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
 
 /*
  * #%L
@@ -80,6 +80,10 @@ public class XmlPayload
 		{
 			builder.storno(payloadMod.getStorno());
 		}
+		if (payloadMod.getCopy() != null)
+		{
+			builder.copy(payloadMod.getCopy());
+		}
 		if (payloadMod.getCreditAdvice() != null)
 		{
 			builder.creditAdvice(payloadMod.getCreditAdvice());
@@ -100,6 +104,9 @@ public class XmlPayload
 
 		@Nullable
 		Boolean storno;
+
+		@Nullable
+		Boolean copy;
 
 		@Nullable
 		Boolean creditAdvice;

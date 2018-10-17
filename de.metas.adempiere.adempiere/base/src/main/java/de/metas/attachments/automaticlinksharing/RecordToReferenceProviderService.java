@@ -1,4 +1,8 @@
-package de.metas.attachments;
+package de.metas.attachments.automaticlinksharing;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,9 +15,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.attachments.AttachmentEntry;
 
 /*
  * #%L
@@ -38,11 +40,11 @@ import lombok.Value;
  */
 
 @Service
-public class AttachmentHandlerRegistry
+public class RecordToReferenceProviderService
 {
-	private final List<AttachmentHandler> handlers;
+	private final List<ReferenceableRecordsProvider> handlers;
 
-	public AttachmentHandlerRegistry(@NonNull final Optional<List<AttachmentHandler>> handlers)
+	public RecordToReferenceProviderService(@NonNull final Optional<List<ReferenceableRecordsProvider>> handlers)
 	{
 		this.handlers = handlers.orElse(ImmutableList.of());
 	}
@@ -52,16 +54,21 @@ public class AttachmentHandlerRegistry
 	 *
 	 * @param newlyLinkedRecords may be a collection of model objects or {@link ITableRecordReference}s
 	 */
-	public ExpandResult expand(@NonNull final Collection<? extends Object> newlyLinkedRecords)
+	public ExpandResult expand(
+			@NonNull final ImmutableList<AttachmentEntry> attachmentEntries,
+			@NonNull final Collection<? extends Object> newlyLinkedRecords)
 	{
 		final List<TableRecordReference> tableRecordReferences = TableRecordReference.ofCollection(newlyLinkedRecords);
 
 		final ImmutableSet.Builder<ITableRecordReference> result = ImmutableSet.builder();
 
-		for (final AttachmentHandler handler : handlers)
+		for (final ReferenceableRecordsProvider handler : handlers)
 		{
-			final ExpandResult singleHandlerResult = handler.expand(tableRecordReferences);
-			result.addAll(singleHandlerResult.getAdditionalReferences());
+			for (final AttachmentEntry attachmentEntry : attachmentEntries)
+			{
+				final ExpandResult singleHandlerResult = handler.expand(attachmentEntry, tableRecordReferences);
+				result.addAll(singleHandlerResult.getAdditionalReferences());
+			}
 		}
 		return new ExpandResult(result.build());
 	}

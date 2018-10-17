@@ -1,12 +1,13 @@
-package de.metas.invoicecandidate.spi.impl;
+package de.metas.document.archive.spi.impl;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import lombok.NonNull;
+
 import org.springframework.stereotype.Component;
 
-import de.metas.attachments.TableRecordRefAttachmentHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Services;
+import de.metas.attachments.AttachmentConstants;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.automaticlinksharing.TableRecordRefProvider;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 
 /*
  * #%L
@@ -34,18 +35,16 @@ import de.metas.util.Services;
  * This implementation's {@link #expand(java.util.Collection)} method returns invoice candidates referencing the records to expand on.
  */
 @Component
-public class InvoiceCandidateAttachmentHandler extends TableRecordRefAttachmentHandler<I_C_Invoice_Candidate>
+public class ReferenceableDocOutboundLogsProvider extends TableRecordRefProvider<I_C_Doc_Outbound_Log>
 {
-	public InvoiceCandidateAttachmentHandler()
+	public ReferenceableDocOutboundLogsProvider()
 	{
-		super(I_C_Invoice_Candidate.class);
+		super(I_C_Doc_Outbound_Log.class);
 	}
 
 	@Override
-	protected IQueryFilter<I_C_Invoice_Candidate> getAdditionalFilter()
+	protected boolean isExpandOnAttachmentEntry(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		return Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+		return attachmentEntry.hasTagSetToTrue(AttachmentConstants.TAGNAME_IS_DOCUMENT);
 	}
 }

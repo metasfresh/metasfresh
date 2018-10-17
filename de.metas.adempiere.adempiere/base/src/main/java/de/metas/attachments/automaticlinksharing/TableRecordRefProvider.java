@@ -1,4 +1,4 @@
-package de.metas.attachments;
+package de.metas.attachments.automaticlinksharing;
 
 import lombok.NonNull;
 import lombok.ToString;
@@ -17,7 +17,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
 import de.metas.util.Services;
 
 /*
@@ -51,21 +52,30 @@ import de.metas.util.Services;
  * @param <T>
  */
 @ToString
-public abstract class TableRecordRefAttachmentHandler<T> implements AttachmentHandler
+public abstract class TableRecordRefProvider<T> implements ReferenceableRecordsProvider
 {
 	private final Class<T> modelClass;
 	private final String tableName;
 
-	public TableRecordRefAttachmentHandler(@NonNull final Class<T> modelClass)
+	public TableRecordRefProvider(@NonNull final Class<T> modelClass)
 	{
 		this.modelClass = modelClass;
 		this.tableName = InterfaceWrapperHelper.getTableName(modelClass);
 	}
 
+	/**
+	 * For the given {@code recordRefs}, this method returns other records that refer to those given references via their own {@code AD_Table_ID} and {@code Record_ID}
+	 */
 	@Override
-	public final ExpandResult expand(@NonNull final Collection<? extends ITableRecordReference> newlyLinkedRecordRefs)
+	public final ExpandResult expand(
+			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final Collection<? extends ITableRecordReference> recordRefs)
 	{
-		if (newlyLinkedRecordRefs.isEmpty())
+		if (recordRefs.isEmpty())
+		{
+			return ExpandResult.EMPTY;
+		}
+		if (!isExpandOnAttachmentEntry(attachmentEntry))
 		{
 			return ExpandResult.EMPTY;
 		}
@@ -77,7 +87,7 @@ public abstract class TableRecordRefAttachmentHandler<T> implements AttachmentHa
 				.setJoinOr()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
 
-		for (final ITableRecordReference recordRef : newlyLinkedRecordRefs)
+		for (final ITableRecordReference recordRef : recordRefs)
 		{
 			final ICompositeQueryFilter<T> referencingIcFilter = queryBL
 					.createCompositeQueryFilter(modelClass)
@@ -102,6 +112,11 @@ public abstract class TableRecordRefAttachmentHandler<T> implements AttachmentHa
 				.builder()
 				.additionalReferences(set)
 				.build();
+	}
+
+	protected boolean isExpandOnAttachmentEntry(@NonNull final AttachmentEntry attachmentEntry)
+	{
+		return true;
 	}
 
 	protected IQueryFilter<T> getAdditionalFilter()

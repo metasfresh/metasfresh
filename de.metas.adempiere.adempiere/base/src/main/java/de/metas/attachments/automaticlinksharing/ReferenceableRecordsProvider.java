@@ -1,10 +1,11 @@
-package de.metas.attachments;
+package de.metas.attachments.automaticlinksharing;
 
 import java.util.Collection;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
-import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
 
 /*
  * #%L
@@ -28,7 +29,7 @@ import de.metas.attachments.AttachmentHandlerRegistry.ExpandResult;
  * #L%
  */
 
-public interface AttachmentHandler
+public interface ReferenceableRecordsProvider
 {
 	/**
 	 * For the given records that shall be linked to an attachment entry, retrieve additional records that shall <b>also</b> be linked.
@@ -36,5 +37,7 @@ public interface AttachmentHandler
 	 *
 	 * @param newlyLinkedRecordRefs records that are to be just linked to an attachment entry.
 	 */
-	public ExpandResult expand(Collection<? extends ITableRecordReference> newlyLinkedRecordRefs);
+	public ExpandResult expand(
+			AttachmentEntry attachmentEntry,
+			Collection<? extends ITableRecordReference> newlyLinkedRecordRefs);
 }

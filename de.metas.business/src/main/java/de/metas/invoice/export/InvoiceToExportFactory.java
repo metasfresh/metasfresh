@@ -36,11 +36,11 @@ import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.invoice_gateway.spi.model.EAN;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
+import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.ProductId;
@@ -105,7 +105,6 @@ public class InvoiceToExportFactory
 				.alreadyPaidAmount(allocatedMoney)
 				.amount(grandTotal)
 				.biller(createBiller(invoiceRecord))
-				// .copy(copy) TODO when we have C_DocOutbound-stuff
 				.documentNumber(invoiceRecord.getDocumentNo())
 				.invoiceAttachments(createInvoiceAttachments(invoiceRecord))
 				.invoiceDate(createInvoiceDate(invoiceRecord))
