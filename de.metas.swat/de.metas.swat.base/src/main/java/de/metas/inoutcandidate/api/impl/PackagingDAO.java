@@ -10,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
@@ -166,7 +167,8 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.freightCostRule(record.getFreightCostRule());
 
-		packageable.lockedBy(UserId.ofRepoIdOrNull(record.getLockedBy_User_ID()));
+		final UserId lockedBy = !InterfaceWrapperHelper.isNull(record, I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID) ? UserId.ofRepoId(record.getLockedBy_User_ID()) : null;
+		packageable.lockedBy(lockedBy);
 
 		return packageable.build();
 	}
