@@ -1,7 +1,5 @@
 package de.metas.i18n;
 
-import java.util.Properties;
-
 import org.compiere.model.I_AD_Language;
 
 import de.metas.util.ISingletonService;
@@ -9,17 +7,17 @@ import de.metas.util.ISingletonService;
 public interface ILanguageDAO extends ISingletonService
 {
 	ADLanguageList retrieveAvailableLanguages();
-	
+
 	/**
 	 * Retrieve Base AD_Language right from database.
-	 * 
+	 *
 	 * NOTE: implementation of this method is directly querying the database
-	 * 
+	 *
 	 * @return Base AD_Language; never return null
 	 */
 	String retrieveBaseLanguage();
 
-	I_AD_Language retrieveByAD_Language(Properties ctx, String adLanguage);
+	I_AD_Language retrieveByAD_Language(String adLanguage);
 
 	/**
 	 * Add all missing translations for all active languages and for all tables.
