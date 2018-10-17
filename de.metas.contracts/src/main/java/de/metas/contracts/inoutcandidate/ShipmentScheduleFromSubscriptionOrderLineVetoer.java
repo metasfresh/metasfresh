@@ -31,7 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.util.Services;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;

@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
