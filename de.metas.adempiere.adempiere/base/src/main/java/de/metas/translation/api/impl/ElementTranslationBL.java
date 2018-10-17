@@ -132,4 +132,5 @@ public class ElementTranslationBL implements IElementTranslationBL
 			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_AD_Element_On_AD_Element_TRL_Update, adElementId, adLanguage), null);
 		}
 	}
+
 }
