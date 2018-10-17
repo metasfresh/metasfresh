@@ -38,6 +38,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

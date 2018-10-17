@@ -52,6 +52,7 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+
 import lombok.Getter;
 import lombok.NonNull;
 

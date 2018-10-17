@@ -18,7 +18,8 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
+
 import lombok.experimental.UtilityClass;
 
 /*

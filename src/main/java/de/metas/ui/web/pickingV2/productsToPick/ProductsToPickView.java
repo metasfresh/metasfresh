@@ -13,6 +13,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

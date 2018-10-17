@@ -23,6 +23,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.pricing.conditions.PriceOverride;
@@ -33,6 +32,8 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

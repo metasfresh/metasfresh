@@ -85,6 +85,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

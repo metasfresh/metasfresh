@@ -20,11 +20,12 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.lang.ReferenceListAwareEnum;
-import de.metas.lang.RepoIdAware;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

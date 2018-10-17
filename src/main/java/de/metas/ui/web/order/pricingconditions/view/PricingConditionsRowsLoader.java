@@ -28,7 +28,6 @@ import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.inout.IInOutDAO;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
@@ -46,6 +45,8 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 
