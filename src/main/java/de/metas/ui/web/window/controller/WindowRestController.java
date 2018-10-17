@@ -797,16 +797,18 @@ public class WindowRestController
 		return getDocumentChangeLog(documentPath);
 	}
 
-	@GetMapping("/{windowId}/{documentId}/{tabId}/changeLog")
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/changeLog")
 	public JSONDocumentChangeLog getDocumentChangeLog(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@PathVariable("tabId") final String tabIdStr)
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("rowId") final String rowIdStr)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
-		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId);
+		final DocumentId rowId = DocumentId.of(rowIdStr);
+		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentChangeLog(documentPath);
 	}
 
