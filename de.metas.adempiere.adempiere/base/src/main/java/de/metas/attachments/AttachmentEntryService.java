@@ -137,9 +137,7 @@ public class AttachmentEntryService
 	}
 
 	/**
-	 *
 	 * @param referencedRecords may be a single model object, a a single {@link ITableRecordReference} or a collection of both.
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
@@ -184,6 +182,7 @@ public class AttachmentEntryService
 		return CollectionUtils.singleElement(entryWithReferencedRecords);
 	}
 
+	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
 	public Collection<AttachmentEntry> createAttachmentLinks(
 			@NonNull final Collection<AttachmentEntry> entries,
 			@NonNull final Collection<? extends Object> referencedRecords)
@@ -193,6 +192,7 @@ public class AttachmentEntryService
 		return expandAndSave(referencedRecords, unsavedAttachmentsWithLinks);
 	}
 
+	/** Note: the given objects may be "record" models or {@link ITableRecordReference}s. */
 	public Collection<AttachmentEntry> shareAttachmentLinks(
 			@NonNull final Collection<? extends Object> referencedRecordsSource,
 			@NonNull final Collection<? extends Object> referencedRecordsDest)

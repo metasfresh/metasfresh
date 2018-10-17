@@ -1,4 +1,4 @@
-package de.metas.document.archive.process;
+package de.metas.document.archive.storage.attachments.process;
 
 import lombok.NonNull;
 

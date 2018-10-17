@@ -1,4 +1,6 @@
-package de.metas.document.archive.api;
+package de.metas.document.archive.spi;
+
+import de.metas.document.archive.api.IDocOutboundProducerService;
 
 /*
  * #%L

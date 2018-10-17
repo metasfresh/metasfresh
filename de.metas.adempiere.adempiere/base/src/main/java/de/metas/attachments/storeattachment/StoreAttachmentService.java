@@ -2,6 +2,7 @@ package de.metas.attachments.storeattachment;
 
 import lombok.NonNull;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,10 +35,14 @@ import de.metas.attachments.AttachmentEntry;
 public class StoreAttachmentService
 {
 	private final List<StoreAttachmentServiceImpl> storeAttachmentServices;
+	List<AttachmentStoredListener> attachmentStoredListeners;
 
-	public StoreAttachmentService(@NonNull final Optional<List<StoreAttachmentServiceImpl>> storeAttachmentServices)
+	public StoreAttachmentService(
+			@NonNull final Optional<List<StoreAttachmentServiceImpl>> storeAttachmentServices,
+			@NonNull final Optional<List<AttachmentStoredListener>> attachmentStoredListeners)
 	{
 		this.storeAttachmentServices = storeAttachmentServices.orElse(ImmutableList.of());
+		this.attachmentStoredListeners = attachmentStoredListeners.orElse(ImmutableList.of());
 	}
 
 	public boolean isAttachmentStorable(@NonNull final AttachmentEntry attachmentEntry)
@@ -61,7 +66,11 @@ public class StoreAttachmentService
 			return false;
 		}
 
-		service.storeAttachment(attachmentEntry);
+		final URI storageIdentifier = service.storeAttachment(attachmentEntry);
+		for (final AttachmentStoredListener attachmentStoredListener : attachmentStoredListeners)
+		{
+			attachmentStoredListener.attachmentWasStored(attachmentEntry, storageIdentifier);
+		}
 		return true;
 	}
 

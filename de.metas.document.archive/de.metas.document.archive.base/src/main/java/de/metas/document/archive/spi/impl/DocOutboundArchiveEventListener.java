@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
+import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -30,6 +30,7 @@ import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
@@ -42,7 +43,7 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 @Component
-public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
+public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
 	private AttachmentEntryService attachmentEntryService;
 
@@ -149,44 +150,27 @@ public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 	@VisibleForTesting
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
+		I_C_Doc_Outbound_Log docOutboundLogRecord = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
 
-		I_C_Doc_Outbound_Log docOutboundLog = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
-
-		if (docOutboundLog == null)
+		if (docOutboundLogRecord == null)
 		{
 			// no log found, create a new one
-			docOutboundLog = createLog(archive);
+			docOutboundLogRecord = createLog(archive);
 		}
 
-		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = newInstance(I_C_Doc_Outbound_Log_Line.class);
+		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = DocOutboundUtils.createOutboundLogLineRecord(docOutboundLogRecord);
 
-		docOutboundLogLineRecord.setC_Doc_Outbound_Log_ID(docOutboundLog.getC_Doc_Outbound_Log_ID());
-		docOutboundLogLineRecord.setAD_Archive_ID(archive.getAD_Archive_ID());
-		docOutboundLogLineRecord.setAD_Org_ID(archive.getAD_Org_ID());
-		docOutboundLogLineRecord.setAD_Table_ID(archive.getAD_Table_ID());
-		docOutboundLogLineRecord.setRecord_ID(archive.getRecord_ID());
-
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
-		// We need to use DocumentNo if possible, else fallback to archive's name
+		// We need to use DocumentNo if possible; else fallback to archive's name
 		// see http://dewiki908/mediawiki/index.php/03918_Massendruck_f%C3%BCr_Mahnungen_%282013021410000132%29#IT2_-_G01_-_Mass_Printing
-		String documentNo = documentBL.getDocumentNo(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
-		if (Check.isEmpty(documentNo, true))
+		if (Check.isEmpty(docOutboundLogLineRecord.getDocumentNo(), true))
 		{
-			documentNo = archive.getName();
+			docOutboundLogLineRecord.setDocumentNo(archive.getName());
 		}
-		docOutboundLogLineRecord.setDocumentNo(documentNo);
 
-		final String docStatus = documentBL.getDocStatusOrNull(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
-		docOutboundLogLineRecord.setDocStatus(docStatus);
+		docOutboundLogLineRecord.setAD_Archive_ID(archive.getAD_Archive_ID());
 
-		final int doctypeID = documentBL.getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
-		docOutboundLogLineRecord.setC_DocType_ID(doctypeID);
-
-		// docExchangeLine.setCopies(Copies);
-		// docExchangeLine.setAD_User_ID(AD_User_ID);
-		// docExchangeLine.setC_BPartner_ID(archive.getC_BPartner_ID());
+		// if the AD_Org_ID of the AD_Archive and the parent C_Doc_Outbound_Log differ, go with the AD_Archive's org id.
+		docOutboundLogLineRecord.setAD_Org_ID(archive.getAD_Org_ID());
 
 		return docOutboundLogLineRecord;
 	}

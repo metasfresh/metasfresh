@@ -1,13 +1,12 @@
 package de.metas.attachments.storeattachment;
 
-
 import java.net.URI;
 
 import de.metas.attachments.AttachmentEntry;
 
 /*
  * #%L
- * de.metas.document.archive.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,13 +26,7 @@ import de.metas.attachments.AttachmentEntry;
  * #L%
  */
 
-public interface StoreAttachmentServiceImpl
+public interface AttachmentStoredListener
 {
-	/** Important: please make sure that for any given attachment, just one service implementation applies to it */
-	boolean appliesTo(AttachmentEntry attachmentEntry);
-
-	boolean isAttachmentStorable(AttachmentEntry attachmentEntry);
-
-	/** @return URI to tell the invoker where the attachment was stored */
-	URI storeAttachment(AttachmentEntry attachmentEntry);
+	void attachmentWasStored(AttachmentEntry attachmentEntry, URI storageIdentifier);
 }

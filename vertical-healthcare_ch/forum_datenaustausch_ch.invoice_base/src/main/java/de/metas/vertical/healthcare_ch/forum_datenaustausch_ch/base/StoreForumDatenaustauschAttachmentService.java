@@ -5,6 +5,7 @@ import lombok.NonNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -136,7 +137,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 	}
 
 	@Override
-	public void storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
+	public URI storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
 	{
 		final String directory = retrieveDirectoryOrNull(attachmentEntry);
 		final File file = new File(directory, attachmentEntry.getFilename());
@@ -144,6 +145,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 		try (final FileOutputStream fileOutputStream = new FileOutputStream(file))
 		{
 			fileOutputStream.write(attachmentEntryService.retrieveData(attachmentEntry.getId()));
+			return file.toURI();
 		}
 		catch (final IOException e)
 		{
