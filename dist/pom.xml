@@ -875,7 +875,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${docker.build.directory}/external-lib</outputDirectory>
+							<outputDirectory>${docker.build.directory}/report/external-lib</outputDirectory>
 							<includeArtifactIds>jp.osdn.ocra,jp.osdn.ocrb</includeArtifactIds>
 							<excludeTransitive>true</excludeTransitive>
 							<overWriteReleases>true</overWriteReleases>
