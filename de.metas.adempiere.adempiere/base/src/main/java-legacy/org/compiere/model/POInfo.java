@@ -1240,7 +1240,7 @@ public final class POInfo implements Serializable
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ")
 				.append(getSqlSelectColumns())
-				.append(" FROM ").append(getTableName());
+				.append("\n FROM ").append(getTableName());
 		return sql.toString();
 	}
 
@@ -1392,8 +1392,7 @@ public final class POInfo implements Serializable
 	{
 		final StringBuilder sql = new StringBuilder();
 		sql.append(getSqlSelect());
-		sql.append(" WHERE ")
-				.append(getSqlWhereClauseByKeys());
+		sql.append("\n WHERE ").append(getSqlWhereClauseByKeys());
 
 		return sql.toString();
 	}
