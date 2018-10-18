@@ -22,10 +22,6 @@ import {
   setSorting,
 } from '../../actions/ListActions';
 import {
-  mergeColumnInfosIntoViewRows,
-  mergeRows,
-} from '../../actions/ViewActions';
-import {
   connectWS,
   disconnectWS,
   getRowsData,
@@ -46,6 +42,8 @@ import {
   redirectToNewDocument,
   doesSelectionExist,
   filtersToMap,
+  mergeColumnInfosIntoViewRows,
+  mergeRows,
 } from '../../utils/documentListHelper';
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
@@ -232,6 +230,8 @@ class DocumentList extends Component {
                 result: List(rows),
               },
             });
+
+            this.updateQuickActions();
           }
         );
       }
