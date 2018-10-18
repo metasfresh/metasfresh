@@ -133,44 +133,25 @@ public class POTrlRepository
 				.append("WHERE l."
 						+ I_AD_Language.COLUMNNAME_IsActive
 						+ "='Y'");
+
+		// This will change in #4672
 		if (I_AD_Element.Table_Name.equals(tableName))
 		{
-			sql.append(getElementLanguageConditions());
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y')");
 		}
 		else
 		{
-			sql.append(getGeneralLanguageConditions());
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' AND l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='N')");
 		}
 
 		sql.append(" AND t.")
 				.append(keyColumn).append("=").append(recordId)
 				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l."
 						+ I_AD_Language.COLUMNNAME_AD_Language
-						+ " AND tt.")
-				.append(keyColumn).append("=t.").append(keyColumn).append(")");
+						+ " AND tt.").append(keyColumn).append("=t.").append(keyColumn).append(")");
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Inserted {} translation records for {}", no, this);
 		return no > 0;
-	}
-
-	private String getElementLanguageConditions()
-	{
-		return "AND "
-				+ "("
-				+ "l."
-				+ I_AD_Language.COLUMNNAME_IsSystemLanguage
-				+ "='Y' OR l."
-				+ I_AD_Language.COLUMNNAME_IsBaseLanguage
-				+ "='Y')";
-	}
-
-	private String getGeneralLanguageConditions()
-	{
-		return " AND l."
-				+ I_AD_Language.COLUMNNAME_IsSystemLanguage
-				+ "='Y' AND l."
-				+ I_AD_Language.COLUMNNAME_IsBaseLanguage
-				+ "='N'";
 	}
 
 	/**

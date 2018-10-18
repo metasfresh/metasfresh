@@ -23,5 +23,8 @@ public interface IADElementDAO extends ISingletonService
 
 	I_AD_Element getADElement(String columnName);
 
+
 	void makeElementMandatoryInApplicationDictionaryTables();
+
+	I_AD_Element getById(int elementId);
 }

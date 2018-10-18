@@ -3,6 +3,7 @@
  */
 package org.adempiere.ad.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.ArrayList;
@@ -112,6 +113,13 @@ public class ADElementDAO implements IADElementDAO
 
 		final MColumn columnPO = LegacyAdapters.convertToPO(elementIdColumn);
 		columnPO.syncDatabase();
+	}
+
+	@Override
+	public I_AD_Element getById(final int elementId)
+	{
+		return loadOutOfTrx(elementId, I_AD_Element.class);
+
 	}
 
 }

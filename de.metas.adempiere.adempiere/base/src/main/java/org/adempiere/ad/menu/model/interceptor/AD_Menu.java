@@ -9,6 +9,7 @@ import org.adempiere.ad.menu.api.IADMenuDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IADElementDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
@@ -55,13 +56,14 @@ public class AD_Menu
 	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
+
 		if (!IADMenuDAO.DYNATTR_AD_Menu_UpdateTranslations.getValue(menu, true))
 		{
 			// do not copy translations from element to menu
 			return;
 		}
 
-		final I_AD_Element menuElement = menu.getAD_Element();
+		final I_AD_Element menuElement = Services.get(IADElementDAO.class).getById(menu.getAD_Element_ID());
 
 		if (menuElement == null)
 		{

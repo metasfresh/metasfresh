@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IADElementDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
@@ -60,7 +61,7 @@ public class AD_Window
 			return;
 		}
 
-		final I_AD_Element windowElement = window.getAD_Element();
+		final I_AD_Element windowElement = Services.get(IADElementDAO.class).getById(window.getAD_Element_ID());
 
 		if (windowElement == null)
 		{

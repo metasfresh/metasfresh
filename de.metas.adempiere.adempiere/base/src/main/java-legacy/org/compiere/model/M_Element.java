@@ -237,7 +237,7 @@ public class M_Element extends X_AD_Element
 		// Update Columns, Fields, Parameters, Print Info
 		if (!newRecord)
 		{
-			StringBuffer sql = new StringBuffer();
+			StringBuilder sql = new StringBuilder();
 			int no = 0;
 
 			if ((is_ValueChanged(M_Element.COLUMNNAME_Name)
@@ -247,17 +247,17 @@ public class M_Element extends X_AD_Element
 					&& getColumnName() != null)
 			{
 				// Column
-				sql = new StringBuffer("UPDATE AD_Column SET ColumnName=")
+				sql = new StringBuilder("UPDATE AD_Column SET ColumnName=")
 						.append(DB.TO_STRING(getColumnName()))
 						.append(", Name=").append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Element_ID=").append(get_ID());
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 				log.debug("afterSave - Columns updated #" + no);
 
 				// Parameter
-				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
+				sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
 						.append(DB.TO_STRING(getColumnName()))
 						.append(", Name=").append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
@@ -266,16 +266,16 @@ public class M_Element extends X_AD_Element
 						.append(" WHERE UPPER(ColumnName)=")
 						.append(DB.TO_STRING(getColumnName().toUpperCase()))
 						.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 
-				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
+				sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
 						.append(DB.TO_STRING(getColumnName()))
 						.append(", Name=").append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Element_ID=").append(get_ID())
 						.append(" AND IsCentrallyMaintained='Y'");
-				no += DB.executeUpdate(sql.toString(), get_TrxName());
+				no += DB.executeUpdateEx(sql.toString(), get_TrxName());
 				log.debug("Parameters updated #" + no);
 			}
 
@@ -284,7 +284,7 @@ public class M_Element extends X_AD_Element
 					|| is_ValueChanged(M_Element.COLUMNNAME_Help))
 			{
 				// Field
-				sql = new StringBuffer("UPDATE AD_Field SET Name=")
+				sql = new StringBuilder("UPDATE AD_Field SET Name=")
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
@@ -298,7 +298,7 @@ public class M_Element extends X_AD_Element
 						.append("(")
 						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
 						.append(")");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 				log.debug("Fields updated #" + no);
 
 				// Info Column - update Name, Description, Help - doesn't have IsCentrallyMaintained currently
@@ -310,14 +310,14 @@ public class M_Element extends X_AD_Element
 					|| is_ValueChanged(M_Element.COLUMNNAME_Name))
 			{
 				// Print Info
-				sql = new StringBuffer("UPDATE AD_PrintFormatItem pi SET PrintName=")
+				sql = new StringBuilder("UPDATE AD_PrintFormatItem pi SET PrintName=")
 						.append(DB.TO_STRING(getPrintName()))
 						.append(", Name=").append(DB.TO_STRING(getName()))
 						.append(" WHERE IsCentrallyMaintained='Y'")
 						.append(" AND EXISTS (SELECT * FROM AD_Column c ")
 						.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
 						.append(get_ID()).append(")");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
 				log.debug("PrintFormatItem updated #" + no);
 			}
 
@@ -328,15 +328,15 @@ public class M_Element extends X_AD_Element
 					|| is_ValueChanged(I_AD_Element.COLUMNNAME_CommitWarning))
 			{
 
-				sql = new StringBuffer("UPDATE AD_Tab SET Name=")
+				sql = new StringBuilder("UPDATE AD_Tab SET Name=")
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(getCommitWarning()))
 						.append(" WHERE AD_Element_ID = ").append(get_ID());
 
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Tabs updated #" + no);
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
+				log.debug("Tabs updated #{}", no);
 			}
 
 			// AD_Window
@@ -345,14 +345,14 @@ public class M_Element extends X_AD_Element
 					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Help))
 			{
 
-				sql = new StringBuffer("UPDATE AD_WINDOW SET Name=")
+				sql = new StringBuilder("UPDATE AD_WINDOW SET Name=")
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Element_ID = ").append(get_ID());
 
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Windows updated #" + no);
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
+				log.debug("Windows updated #{}", no);
 			}
 
 			// AD_Menu
@@ -362,8 +362,8 @@ public class M_Element extends X_AD_Element
 					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameNew)
 					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb))
 			{
-				sql = new StringBuffer("UPDATE AD_Menu SET Name=")
-						.append(DB.TO_STRING(getName()))
+
+				sql = new StringBuilder("UPDATE AD_Menu SET Name=").append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(getWEBUI_NameBrowse()))
 						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(getWEBUI_NameNew()))
@@ -371,11 +371,12 @@ public class M_Element extends X_AD_Element
 
 						.append(" WHERE AD_Element_ID = ").append(get_ID());
 
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Menus updated #" + no);
+				no = DB.executeUpdateEx(sql.toString(), get_TrxName());
+				log.debug("Menus updated #{}", no);
 			}
 
 		}
+
 		return success;
 	}	// afterSave
 
@@ -387,7 +388,7 @@ public class M_Element extends X_AD_Element
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("M_Element[");
+		StringBuilder sb = new StringBuilder("M_Element[");
 		sb.append(get_ID()).append("-").append(getColumnName()).append("]");
 		return sb.toString();
 	}	// toString

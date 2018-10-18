@@ -88,6 +88,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Window_Translation_From_AD_Element, elementId), null);
+
 	}
 
 	@Override
@@ -119,12 +120,10 @@ public class ElementTranslationBL implements IElementTranslationBL
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + ") ";
 	}
 
-
 	private String addUpdateFunctionCallForElementTRL(final String functionCall, int elementId, int applicationDictionaryEntryId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + ", " + applicationDictionaryEntryId + ") ";
 	}
-
 
 	@Override
 	public void updateElementFromElementTrl(int adElementId, String adLanguage)
