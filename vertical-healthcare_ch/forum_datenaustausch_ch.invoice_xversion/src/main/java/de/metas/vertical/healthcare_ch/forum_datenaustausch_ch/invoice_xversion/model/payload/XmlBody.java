@@ -13,16 +13,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlDocument;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlEsr;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlLaw;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService.ServiceModWithSelector;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTiers;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTreatment;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService.ServiceModWithSelector;
 
 /*
  * #%L
@@ -115,6 +115,14 @@ public class XmlBody
 				builder.service(xServiceToModify.withMod(serviceModWithSelector.getServiceMod()));
 			}
 		}
+
+		if (bodyMod.getDocuments() != null)
+		{
+			builder
+					.clearDocuments()
+					.documents(bodyMod.getDocuments());
+		}
+
 		return builder.build();
 	}
 
@@ -133,6 +141,9 @@ public class XmlBody
 
 		@Nullable
 		List<ServiceModWithSelector> serviceModsWithSelectors;
+
+		/** if not null, it will completely replace the body's former documents. */
+		List<XmlDocument> documents;
 	}
 
 }

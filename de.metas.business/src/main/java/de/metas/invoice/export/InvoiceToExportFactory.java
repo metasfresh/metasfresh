@@ -193,11 +193,14 @@ public class InvoiceToExportFactory
 		{
 			final byte[] attachmentData = attachmentEntryservice.retrieveData(attachment.getId());
 
+			final boolean isSecondaryAttachment = attachment.getTagValueOrNull(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) != null;
+
 			final InvoiceAttachment invoiceAttachment = InvoiceAttachment.builder()
 					.fileName(attachment.getFilename())
 					.mimeType(attachment.getContentType())
 					.data(attachmentData)
 					.invoiceExportProviderId(attachment.getTagValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER))
+					.primaryAttrachment(!isSecondaryAttachment)
 					.build();
 			invoiceAttachments.add(invoiceAttachment);
 		}

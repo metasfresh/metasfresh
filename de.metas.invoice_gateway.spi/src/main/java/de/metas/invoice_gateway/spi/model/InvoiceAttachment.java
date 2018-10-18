@@ -34,16 +34,12 @@ import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
  */
 
 @Value
-@Builder
 public class InvoiceAttachment
 {
-	@NonNull
 	String fileName;
 
-	@NonNull
 	String mimeType;
 
-	@NonNull
 	byte[] data;
 
 	/**
@@ -53,11 +49,28 @@ public class InvoiceAttachment
 	 * Note: *currently*, only invoices with an attachment that has a providerId can be exported,
 	 * but that's just due to the very first ExportClient implementation.
 	 */
-	@Nullable
 	String invoiceExportProviderId;
+
+	boolean primaryAttrachment;
 
 	public InputStream getDataAsInputStream()
 	{
 		return new ByteArrayInputStream(getData());
 	}
+
+	@Builder
+	private InvoiceAttachment(
+			@NonNull String fileName,
+			@NonNull String mimeType,
+			@NonNull byte[] data,
+			@Nullable String invoiceExportProviderId,
+			@NonNull Boolean primaryAttrachment)
+	{
+		this.fileName = fileName;
+		this.mimeType = mimeType;
+		this.data = data;
+		this.invoiceExportProviderId = invoiceExportProviderId;
+		this.primaryAttrachment = primaryAttrachment;
+	}
+
 }

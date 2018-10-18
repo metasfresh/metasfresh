@@ -1,5 +1,8 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
+
 import lombok.NonNull;
 
 import java.io.IOException;
@@ -14,9 +17,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
-import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -44,13 +49,11 @@ import io.swagger.annotations.ApiParam;
  */
 
 @RestController
-@RequestMapping(HealthcareChPdfAttachmentController.ENDPOINT)
+@RequestMapping(RestApiConstants.ENDPOINT_PDF_ATTACHMENT)
 @Conditional(RestApiStartupCondition.class)
 @Api(value = "forum-datenaustausch.ch XML endpoint")
 public class HealthcareChPdfAttachmentController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order";
-
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
 	public HealthcareChPdfAttachmentController(
@@ -67,11 +70,15 @@ public class HealthcareChPdfAttachmentController
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{
+		final ImmutableList<String> tags = ImmutableList.of(
+				ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/*name*/, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/*value*/,
+				ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE/*name*/, externalReference/*value*/);
+
 		return orderCandidatesRestEndpoint
 				.attachFile(
-						XmlToOLCandsService.INPUT_SOURCE_INTERAL_NAME,
+						RestApiConstants.INPUT_SOURCE_INTERAL_NAME,
 						externalReference,
-						XmlToOLCandsService.ATTACHMENT_TAG_NAME_AND_VALUE,
+						tags,
 						file);
 	}
 

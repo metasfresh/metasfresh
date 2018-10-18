@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -57,6 +58,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.BodyMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice.InvoiceMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.BalanceMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlDocument;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlEsr;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.PrologMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService;
@@ -238,6 +240,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				.balanceMod(createBalanceMod(invoice))
 				.esr(createXmlEsr(invoice.getCustomInvoicePayload()))
 				.serviceModsWithSelectors(createServiceModsWithSelectors(invoice, xBody))
+				.documents(createDocuments(invoice.getInvoiceAttachments())) // replaces possible existing documents
 				.build();
 	}
 
@@ -427,5 +430,28 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			serviceMods.add(serviceMod.build());
 		}
 		return serviceMods.build();
+	}
+
+	/** attach 2ndary attachments to our XML */
+	private List<XmlDocument> createDocuments(@NonNull final List<InvoiceAttachment> invoiceAttachments)
+	{
+		final ImmutableList.Builder<XmlDocument> xmldocuments = ImmutableList.builder();
+
+		for (final InvoiceAttachment invoiceAttachment : invoiceAttachments)
+		{
+			if(invoiceAttachment.isPrimaryAttrachment())
+			{
+				continue;
+			}
+			final byte[] base64Data = Base64.getEncoder().encode(invoiceAttachment.getData());
+			final XmlDocument xmlDocument = XmlDocument.builder()
+					.base64(base64Data)
+					.filename(invoiceAttachment.getFileName())
+					.mimeType(invoiceAttachment.getMimeType())
+					.build();
+			xmldocuments.add(xmlDocument);
+		}
+
+		return xmldocuments.build();
 	}
 }

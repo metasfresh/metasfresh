@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -37,13 +36,11 @@ import io.swagger.annotations.ApiOperation;
  */
 
 @RestController
-@RequestMapping(HealthcareChInvoice440RestController.ENDPOINT)
+@RequestMapping(RestApiConstants.ENDPOINT_INVOICE_440)
 @Conditional(RestApiStartupCondition.class)
 @Api(value = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 public class HealthcareChInvoice440RestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/forum-datenaustausch.ch";
-
 	private final XmlToOLCandsService xmlToOLCandsService;
 
 	public HealthcareChInvoice440RestController(@NonNull final XmlToOLCandsService xmlToOLCandsService)

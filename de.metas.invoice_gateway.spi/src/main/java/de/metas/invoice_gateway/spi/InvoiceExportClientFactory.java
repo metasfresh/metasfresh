@@ -31,6 +31,10 @@ public interface InvoiceExportClientFactory
 {
 	public static final String ATTATCHMENT_TAGNAME_EXPORT_PROVIDER = "InvoiceExportProviderId";
 
+	public static final String ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE = "ExternalReference";
+
+	public static final String ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE = "BelogsToExternalReference";
+
 	String getInvoiceExportProviderId();
 
 	/** @return empty if the given factory can't provide an export client */

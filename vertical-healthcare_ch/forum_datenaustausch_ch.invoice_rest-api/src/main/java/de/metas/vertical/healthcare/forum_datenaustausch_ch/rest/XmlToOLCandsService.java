@@ -1,5 +1,7 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.compiere.util.Util.coalesce;
@@ -25,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.JsonBPartner;
@@ -94,10 +95,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 @Conditional(RestApiStartupCondition.class)
 public class XmlToOLCandsService
 {
-	public static final String INPUT_SOURCE_INTERAL_NAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
-
-	public static final ImmutableList<String> ATTACHMENT_TAG_NAME_AND_VALUE = ImmutableList.of(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
-
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 
 	private XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
@@ -148,10 +145,14 @@ public class XmlToOLCandsService
 	{
 		try
 		{
+			final ImmutableList<String> tags = ImmutableList.of(
+					ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/*name*/, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/*value*/,
+					ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE/*name*/, externalReference/*value*/);
+
 			return orderCandidatesRestEndpoint.attachFile(
-					INPUT_SOURCE_INTERAL_NAME,
+					RestApiConstants.INPUT_SOURCE_INTERAL_NAME,
 					externalReference,
-					ATTACHMENT_TAG_NAME_AND_VALUE,
+					tags,
 					xmlInvoiceFile);
 		}
 		catch (IOException e)
@@ -182,7 +183,7 @@ public class XmlToOLCandsService
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
-				.dataSourceInternalName(INPUT_SOURCE_INTERAL_NAME)
+				.dataSourceInternalName(RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
 				.dataDestInternalName(InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		final List<JsonOLCandCreateRequestBuilder> requestBuilders = insertPayloadIntoBuilders(requestBuilder, xmlInvoice.getPayload());
