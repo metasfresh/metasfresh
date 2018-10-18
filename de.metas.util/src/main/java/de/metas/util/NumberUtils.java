@@ -25,6 +25,8 @@ package de.metas.util;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import de.metas.lang.RepoIdAware;
+
 /**
  * Number Utils
  *
@@ -181,7 +183,11 @@ public final class NumberUtils
 		{
 			return defaultValue;
 		}
-		if (value instanceof Number)
+		else if (value instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (value instanceof Number)
 		{
 			return ((Number)value).intValue();
 		}
