@@ -14,7 +14,7 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1711128537L;
+	private static final long serialVersionUID = -423169739L;
 
     /** Standard Constructor */
     public X_AD_Window (Properties ctx, int AD_Window_ID, String trxName)
@@ -414,8 +414,8 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public static final int WINDOWTYPE_AD_Reference_ID=108;
 	/** Single Record = S */
 	public static final String WINDOWTYPE_SingleRecord = "S";
-	/** Verwalten = M */
-	public static final String WINDOWTYPE_Verwalten = "M";
+	/** Maintain = M */
+	public static final String WINDOWTYPE_Maintain = "M";
 	/** Transaktion = T */
 	public static final String WINDOWTYPE_Transaktion = "T";
 	/** Query Only = Q */

@@ -54,7 +54,7 @@ public class MWindow extends X_AD_Window
 		super (ctx, AD_Window_ID, trxName);
 		if (AD_Window_ID == 0)
 		{
-			setWindowType (WINDOWTYPE_Verwalten);	// M
+			setWindowType (WINDOWTYPE_Maintain);	// M
 			setEntityType (ENTITYTYPE_UserMaintained);	// U
 			setIsBetaFunctionality (false);
 			setIsDefault (false);
