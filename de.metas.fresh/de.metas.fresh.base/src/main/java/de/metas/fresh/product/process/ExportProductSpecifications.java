@@ -5,13 +5,19 @@ package de.metas.fresh.product.process;
 
 import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
+import org.compiere.Adempiere.RunMode;
+import org.compiere.util.Ini;
+
+import de.metas.adempiere.form.IClientUI;
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.data.export.api.IExporter;
 import de.metas.data.export.api.IExporterFactory;
+import de.metas.data.export.api.impl.CSVWriter;
 import de.metas.data.export.api.impl.JdbcExporterBuilder;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
@@ -52,14 +58,27 @@ public class ExportProductSpecifications extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final IExportDataSource dataSource = createDataSource();
-		final IExporter csvExporter = Services.get(IExporterFactory.class).createExporter(IExporterFactory.MIMETYPE_CSV, dataSource, null);
+		final Properties config = new Properties();
+		config.setProperty(CSVWriter.CONFIG_Encoding, "Cp1252");
+		final IExporter csvExporter = Services.get(IExporterFactory.class).createExporter(IExporterFactory.MIMETYPE_CSV, dataSource, config);
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		csvExporter.export(out);
 
+		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
+
+		if (backEndOrSwing)
+		{
+			Services.get(IClientUI.class).download(out.toByteArray(), // data
+					"text/csv", // content type
+					buildFilename()); // filename
+		}
+		else
+		{
 		getResult().setReportData(
 				out.toByteArray(), // data
-				buildFilename("csv"), // filename
+					buildFilename(), // filename
 				"text/csv"); // content type
+		}
 
 		return MSG_OK;
 	}
@@ -71,7 +90,6 @@ public class ExportProductSpecifications extends JavaProcess
 		builder.addWhereClause("1=1", new Object[] {});
 		builder.addOrderBy("productValue");
 
-		
 		builder.addField(msgBL.translate(getCtx(), "ProductName"), "productName");
 		builder.addField(msgBL.translate(getCtx(), "CustomerLabelName"), "CustomerLabelName");
 		builder.addField(msgBL.translate(getCtx(), "Additional_produktinfos"), "additional_produktinfos");
@@ -94,7 +112,7 @@ public class ExportProductSpecifications extends JavaProcess
 		return builder.createDataSource();
 	}
 
-	private String buildFilename(final String fileExtension)
+	private String buildFilename()
 	{
 		final StringBuilder filename = new StringBuilder("ProductSpecificationd");
 		filename.append("_");
@@ -102,7 +120,7 @@ public class ExportProductSpecifications extends JavaProcess
 		final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 		filename.append(dateFormatter.format(SystemTime.asLocalDate()));
 
-		filename.append(".").append(fileExtension);
+		filename.append(".").append("csv");
 
 		return filename.toString();
 	}
