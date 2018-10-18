@@ -86,8 +86,7 @@ public class RejectPickingCommand
 					.status(PickingCandidateStatus.Draft)
 					.qtyPicked(request.getQtyToReject())
 					.shipmentScheduleId(request.getShipmentScheduleId())
-					// .huId(huId)
-					// .pickingSlotId(pickingSlotId)
+					.pickFromHuId(request.getRejectPickingFromHuId())
 					.build();
 		}
 	}

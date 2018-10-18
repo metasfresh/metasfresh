@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.Trace;
@@ -23,6 +26,7 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 @Service
@@ -227,6 +231,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final String threadName = thread.getName();
 		final StackTraceElement[] stacktrace = thread.getStackTrace();
 		final String durationStr = duration.getLastDurationAsString(TIMEUNIT_Display) + " (Avg. " + duration.getAverageDurationAsString(TIMEUNIT_Display) + ")";
+		final String trxNameInfo = extractTrxNameInfo(trxName);
 
 		final int count = traceSqlQueries_Count.incrementAndGet();
 		final String prefix = "-- SQL[" + count + "]-" + threadName + "-";
@@ -246,7 +251,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		//
 		// TrxName
-		message.append(nl + "-- TrxName: ").append(trxName);
+		message.append(nl + "-- TrxName: ").append(trxNameInfo);
 
 		//
 		// SQL query
@@ -279,6 +284,25 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 				.append("\n")
 				.toString());
 
+	}
+
+	private String extractTrxNameInfo(final String trxName)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		if (ITrx.TRXNAME_ThreadInherited.equals(trxName))
+		{
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			final String trxNameEffective = trxManager.isNull(trx) ? "out-of-transaction" : trx.getTrxName();
+			return "" + trxName + " (resolved as: " + trxNameEffective + ")";
+		}
+		else if (trxManager.isNull(trxName))
+		{
+			return "out-of-transaction";
+		}
+		else
+		{
+			return "" + trxName;
+		}
 	}
 
 	/**
