@@ -215,6 +215,7 @@ class DocumentList extends Component {
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
+
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
@@ -222,6 +223,7 @@ class DocumentList extends Component {
               toRows: this.state.data.result,
               fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
+              changedIds,
             });
 
             this.setState({

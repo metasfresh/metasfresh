@@ -198,9 +198,26 @@ function mapRows(rows, map, columnInfosByFieldName) {
   });
 }
 
-export function mergeRows({ toRows, fromRows, columnInfosByFieldName = {} }) {
+function removeRows(toRows, changedRows) {
+  changedRows.forEach(id => {
+    const idx = toRows.findIndex(row => row.id === id);
+
+    toRows = toRows.delete(idx);
+  });
+
+  return toRows;
+}
+
+export function mergeRows({
+  toRows,
+  fromRows,
+  columnInfosByFieldName = {},
+  changedIds,
+}) {
   if (!fromRows) {
     return toRows;
+  } else if (!fromRows.length) {
+    return removeRows(toRows, changedIds);
   }
 
   const fromRowsById = indexRows(fromRows, {});
