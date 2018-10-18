@@ -546,6 +546,15 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<dependency>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
+		</dependency>
 
 	</dependencies>
 
@@ -856,6 +865,24 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- copy external-lib
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-external-lib-for-docker-build</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/external-lib</outputDirectory>
+							<includeArtifactIds>jp.osdn.ocra,jp.osdn.ocrb</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					
 				</executions>
 			</plugin>
 
