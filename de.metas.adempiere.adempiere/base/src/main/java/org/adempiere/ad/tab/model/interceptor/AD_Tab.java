@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IADElementDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.ModelValidator;
@@ -53,7 +54,7 @@ public class AD_Tab
 	@CalloutMethod(columnNames = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Tab tab) throws SQLException
 	{
-		final I_AD_Element tabElement = tab.getAD_Element();
+		final I_AD_Element tabElement = Services.get(IADElementDAO.class).getById(tab.getAD_Element_ID());
 
 		if (tabElement == null)
 		{
@@ -67,17 +68,14 @@ public class AD_Tab
 		tab.setCommitWarning(tabElement.getCommitWarning());
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW,  ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
 	public void updateTranslationsForElement(final I_AD_Tab tab)
 	{
 		final int tabElementId = tab.getAD_Element_ID();
-
 		if (tabElementId <= 0)
 		{
-			{
-				// nothing to do. It was not yet set
-				return;
-			}
+			// nothing to do. It was not yet set
+			return;
 		}
 
 		Services.get(IElementTranslationBL.class).updateTabTranslationsFromElement(tabElementId);

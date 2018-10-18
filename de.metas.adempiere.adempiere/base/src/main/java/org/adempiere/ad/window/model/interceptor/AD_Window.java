@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IADElementDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
@@ -52,7 +53,7 @@ public class AD_Window
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Window window) throws SQLException
 	{
-		final I_AD_Element windowElement = window.getAD_Element();
+		final I_AD_Element windowElement = Services.get(IADElementDAO.class).getById(window.getAD_Element_ID());
 
 		if (windowElement == null)
 		{

@@ -3,6 +3,8 @@
  */
 package org.adempiere.ad.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +68,12 @@ public class ADElementDAO implements IADElementDAO
 			}
 		}
 		return fields;
+	}
+
+	@Override
+	public I_AD_Element getById(final int elementId)
+	{
+		return loadOutOfTrx(elementId, I_AD_Element.class);
 	}
 
 }

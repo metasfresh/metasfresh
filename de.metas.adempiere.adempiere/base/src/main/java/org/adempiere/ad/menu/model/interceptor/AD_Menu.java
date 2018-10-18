@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IADElementDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
@@ -54,7 +55,7 @@ public class AD_Menu
 	@CalloutMethod(columnNames = I_AD_Menu.COLUMNNAME_AD_Element_ID)
 	public void onElementIDChanged(final I_AD_Menu menu) throws SQLException
 	{
-		final I_AD_Element menuElement = menu.getAD_Element();
+		final I_AD_Element menuElement = Services.get(IADElementDAO.class).getById(menu.getAD_Element_ID());
 
 		if (menuElement == null)
 		{
