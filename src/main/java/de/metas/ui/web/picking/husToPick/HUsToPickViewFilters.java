@@ -66,8 +66,8 @@ class HUsToPickViewFilters
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
 		return ImmutableList.of(
-				createLocatorBarcodeFilters(),
-				createHUIdsFilter());
+				createLocatorBarcodeFilterDescriptor(),
+				createHUIdsFilterDescriptor());
 	}
 
 	public static Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
@@ -78,7 +78,7 @@ class HUsToPickViewFilters
 				.build();
 	}
 
-	private static final DocumentFilterDescriptor createLocatorBarcodeFilters()
+	private static final DocumentFilterDescriptor createLocatorBarcodeFilterDescriptor()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(LocatorBarcode_FilterId)
@@ -115,7 +115,7 @@ class HUsToPickViewFilters
 		return sql;
 	}
 
-	private static final DocumentFilterDescriptor createHUIdsFilter()
+	private static final DocumentFilterDescriptor createHUIdsFilterDescriptor()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(HU_IDS_FilterId)
