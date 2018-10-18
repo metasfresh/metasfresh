@@ -19,6 +19,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -66,8 +67,8 @@ class HUsToPickViewFilters
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
 		return ImmutableList.of(
-				createLocatorBarcodeFilters(),
-				createHUIdsFilter());
+				createLocatorBarcodeFilterDescriptor(),
+				createHUIdsFilterDescriptor());
 	}
 
 	public static Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
@@ -78,7 +79,7 @@ class HUsToPickViewFilters
 				.build();
 	}
 
-	private static final DocumentFilterDescriptor createLocatorBarcodeFilters()
+	private static final DocumentFilterDescriptor createLocatorBarcodeFilterDescriptor()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(LocatorBarcode_FilterId)
@@ -115,7 +116,7 @@ class HUsToPickViewFilters
 		return sql;
 	}
 
-	private static final DocumentFilterDescriptor createHUIdsFilter()
+	private static final DocumentFilterDescriptor createHUIdsFilterDescriptor()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(HU_IDS_FilterId)
@@ -127,6 +128,11 @@ class HUsToPickViewFilters
 						.setDefaultValue(true)
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				.build();
+	}
+
+	public static final DocumentFilter createHUIdsFilter(final boolean considerAttributes)
+	{
+		return DocumentFilter.singleParameterFilter(HU_IDS_FilterId, PARAM_ConsiderAttributes, Operator.EQUAL, considerAttributes);
 	}
 
 	public static String getHUIdsFilterSql(
