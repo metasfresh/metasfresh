@@ -8,17 +8,6 @@ class Indicator extends Component {
     super(props);
   }
 
-  renderIndicator = state => {
-    switch (state) {
-      case 'saved':
-        return 'indicator-success';
-      case 'pending':
-        return 'indicator-pending';
-      case 'error':
-        return 'indicator-error';
-    }
-  };
-
   render() {
     // TODO: We should be using indicator from the state instead of another variable
     const { indicator, isDocumentNotSaved } = this.props;
@@ -27,7 +16,7 @@ class Indicator extends Component {
         <div
           className={classnames('indicator-bar', {
             'indicator-error': isDocumentNotSaved,
-            [`${indicator}-indicator`]: !isDocumentNotSaved,
+            [`indicator-${indicator}`]: !isDocumentNotSaved,
           })}
         />
       </div>
