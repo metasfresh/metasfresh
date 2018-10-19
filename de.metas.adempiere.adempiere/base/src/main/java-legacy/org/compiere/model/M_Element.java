@@ -29,7 +29,7 @@ import de.metas.adempiere.util.CacheCtx;
 
 /**
  * System Element Model
- *
+ * 
  * @author Jorg Janke
  * @version $Id: M_Element.java,v 1.3 2006/07/30 00:58:37 jjanke Exp $
  *          FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
@@ -37,13 +37,13 @@ import de.metas.adempiere.util.CacheCtx;
 public class M_Element extends X_AD_Element
 {
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = -7426812810619889250L;
 
 	/**
 	 * Get case sensitive Column Name
-	 *
+	 * 
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
 	 */
@@ -54,7 +54,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get case sensitive Column Name
-	 *
+	 * 
 	 * @param columnName case insensitive column name
 	 * @param trxName optional transaction name
 	 * @return case sensitive column name
@@ -72,7 +72,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 *
+	 * 
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
@@ -85,7 +85,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 *
+	 * 
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @param trxName optional transaction name
@@ -106,7 +106,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 *
+	 * 
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @param trxName trx
@@ -126,7 +126,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 *
+	 * 
 	 * @param ctx context
 	 * @param columnName case insentitive column name
 	 * @return case sensitive column name
@@ -138,7 +138,7 @@ public class M_Element extends X_AD_Element
 
 	/**************************************************************************
 	 * Standard Constructor
-	 *
+	 * 
 	 * @param ctx context
 	 * @param AD_Element_ID element
 	 * @param trxName transaction
@@ -157,7 +157,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Load Constructor
-	 *
+	 * 
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -169,7 +169,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Minimum Constructor
-	 *
+	 * 
 	 * @param ctx context
 	 * @param columnName column
 	 * @param EntityType entity type
@@ -188,7 +188,7 @@ public class M_Element extends X_AD_Element
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.compiere.model.PO#beforeSave(boolean)
 	 */
 	@Override
@@ -226,7 +226,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * After Save
-	 *
+	 * 
 	 * @param newRecord new
 	 * @param success success
 	 * @return success
@@ -293,7 +293,7 @@ public class M_Element extends X_AD_Element
 						.append(")")
 						.append(" AND ")
 						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
-						.append(")")
+						.append( ")")
 						.append(" OR ")
 						.append("(")
 						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
@@ -321,67 +321,13 @@ public class M_Element extends X_AD_Element
 				log.debug("PrintFormatItem updated #" + no);
 			}
 
-			// AD_Tab
-			if (is_ValueChanged(I_AD_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Help)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_CommitWarning))
-			{
-
-				sql = new StringBuffer("UPDATE AD_Tab SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(getCommitWarning()))
-						.append(" WHERE AD_Element_ID = ").append(get_ID());
-
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Tabs updated #" + no);
-			}
-
-			// AD_Window
-			if (is_ValueChanged(I_AD_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Help))
-			{
-
-				sql = new StringBuffer("UPDATE AD_WINDOW SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID = ").append(get_ID());
-
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Windows updated #" + no);
-			}
-
-			// AD_Menu
-			if (is_ValueChanged(I_AD_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameNew)
-					|| is_ValueChanged(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb))
-			{
-				sql = new StringBuffer("UPDATE AD_Menu SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameBrowse).append(" = ").append(DB.TO_STRING(getWEBUI_NameBrowse()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNew).append(" = ").append(DB.TO_STRING(getWEBUI_NameNew()))
-						.append(", ").append(I_AD_Element.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(getWEBUI_NameNewBreadcrumb()))
-
-						.append(" WHERE AD_Element_ID = ").append(get_ID());
-
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Menus updated #" + no);
-			}
-
 		}
 		return success;
 	}	// afterSave
 
 	/**
 	 * String Representation
-	 *
+	 * 
 	 * @return info
 	 */
 	@Override
