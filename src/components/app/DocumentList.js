@@ -22,10 +22,6 @@ import {
   setSorting,
 } from '../../actions/ListActions';
 import {
-  mergeColumnInfosIntoViewRows,
-  mergeRows,
-} from '../../actions/ViewActions';
-import {
   connectWS,
   disconnectWS,
   getRowsData,
@@ -46,6 +42,8 @@ import {
   redirectToNewDocument,
   doesSelectionExist,
   filtersToMap,
+  mergeColumnInfosIntoViewRows,
+  mergeRows,
 } from '../../utils/documentListHelper';
 import Spinner from '../app/SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -220,6 +218,7 @@ class DocumentList extends Component {
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
+
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
@@ -227,6 +226,7 @@ class DocumentList extends Component {
               toRows: this.state.data.result,
               fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
+              changedIds,
             });
 
             this.setState({
@@ -235,6 +235,8 @@ class DocumentList extends Component {
                 result: List(rows),
               },
             });
+
+            this.updateQuickActions();
           }
         );
       }

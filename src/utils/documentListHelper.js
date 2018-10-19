@@ -115,3 +115,112 @@ export {
   filtersToMap,
   doesSelectionExist,
 };
+
+// ROWS UTILS
+
+export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
+  if (!columnInfosByFieldName) {
+    return rows;
+  }
+
+  return rows.map(row =>
+    mergeColumnInfosIntoViewRow(columnInfosByFieldName, row)
+  );
+}
+
+function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
+  const fieldsByName = Object.values(row.fieldsByName)
+    .map(viewRowField =>
+      mergeColumnInfoIntoViewRowField(
+        columnInfosByFieldName[viewRowField.field],
+        viewRowField
+      )
+    )
+    .reduce((acc, viewRowField) => {
+      acc[viewRowField.field] = viewRowField;
+      return acc;
+    }, {});
+
+  return Object.assign({}, row, { fieldsByName });
+}
+
+function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
+  if (!columnInfo) {
+    return viewRowField;
+  }
+
+  if (columnInfo.widgetType) {
+    viewRowField['widgetType'] = columnInfo.widgetType;
+  }
+
+  // NOTE: as discussed with @metas-mk, at the moment we cannot apply the maxPrecision per page,
+  // because it would puzzle the user.
+  // if (columnInfo.maxPrecision && columnInfo.maxPrecision > 0) {
+  //   viewRowField["precision"] = columnInfo.maxPrecision;
+  // }
+
+  return viewRowField;
+}
+
+function indexRows(rows, map) {
+  for (const row of rows) {
+    const { id, includedDocuments } = row;
+
+    map[id] = row;
+
+    if (includedDocuments) {
+      indexRows(includedDocuments, map);
+    }
+  }
+
+  return map;
+}
+
+function mapRows(rows, map, columnInfosByFieldName) {
+  return rows.map(row => {
+    const { id, includedDocuments } = row;
+
+    if (includedDocuments) {
+      row.includedDocuments = mapRows(
+        includedDocuments,
+        map,
+        columnInfosByFieldName
+      );
+    }
+
+    const entry = map[id];
+
+    if (entry) {
+      return mergeColumnInfosIntoViewRow(columnInfosByFieldName, entry);
+    } else {
+      return row;
+    }
+  });
+}
+
+function removeRows(toRows, changedRows) {
+  changedRows.forEach(id => {
+    const idx = toRows.findIndex(row => row.id === id);
+
+    toRows = toRows.delete(idx);
+  });
+
+  return toRows;
+}
+
+export function mergeRows({
+  toRows,
+  fromRows,
+  columnInfosByFieldName = {},
+  changedIds,
+}) {
+  if (!fromRows) {
+    return toRows;
+  } else if (!fromRows.length) {
+    return removeRows(toRows, changedIds);
+  }
+
+  const fromRowsById = indexRows(fromRows, {});
+
+  return mapRows(toRows, fromRowsById, columnInfosByFieldName);
+}
