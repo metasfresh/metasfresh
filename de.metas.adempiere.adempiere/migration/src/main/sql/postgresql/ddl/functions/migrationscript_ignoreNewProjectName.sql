@@ -28,7 +28,7 @@ $BODY$
 	NULL
  FROM public.ad_migrationscript
  WHERE projectname=oldProjectName
- ON CONFLICT DO NOTHING
+ ON CONFLICT DO NOTHING /*if the file is already recorded in AD_MigrationScript, then do nothing */;
  ;
 $BODY$
   LANGUAGE sql VOLATILE
