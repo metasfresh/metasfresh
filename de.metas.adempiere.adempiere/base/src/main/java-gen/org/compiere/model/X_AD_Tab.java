@@ -14,7 +14,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1018450953L;
+	private static final long serialVersionUID = 961683719L;
 
     /** Standard Constructor */
     public X_AD_Tab (Properties ctx, int AD_Tab_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
       super (ctx, AD_Tab_ID, trxName);
       /** if (AD_Tab_ID == 0)
         {
+			setAD_Element_ID (0);
 			setAD_Tab_ID (0);
 			setAD_Table_ID (0);
 			setAD_Window_ID (0);
@@ -164,6 +165,43 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public int getAD_ColumnSortYesNo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ColumnSortYesNo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
+	}
+
+	@Override
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
+	}
+
+	/** Set System-Element.
+		@param AD_Element_ID 
+		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public void setAD_Element_ID (int AD_Element_ID)
+	{
+		if (AD_Element_ID < 1) 
+			set_Value (COLUMNNAME_AD_Element_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+	}
+
+	/** Get System-Element.
+		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public int getAD_Element_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -576,6 +614,25 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Interner Name.
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public void setInternalName (java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	/** Get Interner Name.
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public java.lang.String getInternalName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
 	}
 
 	/** Set Advanced Tab.

@@ -127,6 +127,35 @@ public interface I_AD_Tab
     public static final String COLUMNNAME_AD_ColumnSortYesNo_ID = "AD_ColumnSortYesNo_ID";
 
 	/**
+	 * Set System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Element_ID (int AD_Element_ID);
+
+	/**
+	 * Get System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Element_ID();
+
+	public org.compiere.model.I_AD_Element getAD_Element();
+
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
+
+    /** Column definition for AD_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element>(I_AD_Tab.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Element_ID */
+    public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
+
+	/**
 	 * Set Bild.
 	 * Image or Icon
 	 *
@@ -583,6 +612,31 @@ public interface I_AD_Tab
     public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab> COLUMN_Included_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Tab>(I_AD_Tab.class, "Included_Tab_ID", org.compiere.model.I_AD_Tab.class);
     /** Column name Included_Tab_ID */
     public static final String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
+
+	/**
+	 * Set Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInternalName (java.lang.String InternalName);
+
+	/**
+	 * Get Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInternalName();
+
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Aktiv.

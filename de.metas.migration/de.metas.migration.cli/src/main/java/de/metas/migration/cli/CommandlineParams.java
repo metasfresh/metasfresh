@@ -96,7 +96,7 @@ public class CommandlineParams
 		// Settings
 		{
 			final Option option = new Option(OPTION_SettingsFile,
-					"Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*. If ommitted, then "
+					"Absolute name of the (s)ettings file (e.g. /home/metasfresh/rolloutdir/settings_<hostname>.properties). If ommitted, then "
 							+ System.getProperty("user.home") + "/" + Config.DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
 			option.setArgs(1);
 			option.setArgName("Settings file");
@@ -178,13 +178,13 @@ public class CommandlineParams
 		final ConfigBuilder configBuilder = Config.builder();
 
 		final String rolloutDir = cmd.getOptionValue(OPTION_RolloutDirectory, DEFAULT_RolloutDirectory);
-		configBuilder.rolloutDirName(rolloutDir);
+		configBuilder.rolloutDirName(stripQuotes(rolloutDir));
 
 		final String settingsFile = cmd.getOptionValue(OPTION_SettingsFile);
-		configBuilder.settingsFileName(settingsFile);
+		configBuilder.settingsFile(stripQuotes(settingsFile));
 
 		final String scriptFile = cmd.getOptionValue(OPTION_ScriptFile);
-		configBuilder.scriptFileName(scriptFile);
+		configBuilder.scriptFileName(stripQuotes(scriptFile));
 
 		final boolean justMarkScriptAsExecuted = cmd.hasOption(OPTION_JustMarkScriptAsExecuted);
 		configBuilder.justMarkScriptAsExecuted(justMarkScriptAsExecuted);
@@ -224,6 +224,17 @@ public class CommandlineParams
 		return config;
 	}
 
+	private String stripQuotes(final String rolloutDir)
+	{
+		if(rolloutDir==null)
+		{
+			return null;
+		}
+		return rolloutDir
+				.replaceAll("^\"|\"$", "")
+				.replaceAll("^'|'$", "");
+	}
+
 	public final void printHelp(final PrintStream out)
 	{
 		final PrintWriter writer = new PrintWriter(out);
@@ -239,12 +250,12 @@ public class CommandlineParams
 		formatter.printHelp(
 				writer,   // output
 				200,   // width,
-				commandName,   // cmdLineSyntax
-				header,   // header,
+				stripQuotes(commandName),   // cmdLineSyntax
+				stripQuotes(header),   // header,
 				options,   // options
 				4,   // leftPad,
 				4,   // descPad,
-				footer,   // footer,
+				stripQuotes(footer),   // footer,
 				true // autoUsage
 		);
 
@@ -258,6 +269,6 @@ public class CommandlineParams
 		printHelp(out);
 
 		final String content = baos.toString();
-		return content;
+		return stripQuotes(content);
 	}
 }

@@ -1,5 +1,8 @@
 package de.metas.migration.cli;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+
 import java.io.File;
 import java.util.Properties;
 
@@ -7,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.metas.migration.cli.PropertiesFileLoader.CantLoadPropertiesException;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -53,10 +54,10 @@ public class SettingsLoader
 	{
 		final File settingsDir;
 		final Settings settings;
-		if (config.getSettingsFileName() != null)
+		if (config.getSettingsFile() != null)
 		{
 			settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
-			settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFileName()));
+			settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
 		}
 		else
 		{
@@ -66,12 +67,19 @@ public class SettingsLoader
 		return settings;
 	}
 
-	private Properties setSettingsFile(@NonNull final File dir, @NonNull final String settingsFilename)
+	private Properties setSettingsFile(final File dir, @NonNull final String settingsFilename)
 	{
 		final Properties fileProperties;
 		try
 		{
-			fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
+			if (dir != null)
+			{
+				fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
+			}
+			else
+			{
+				fileProperties = propertiesFileLoader.loadFromFile(new File(settingsFilename));
+			}
 		}
 		catch (final CantLoadPropertiesException e)
 		{
