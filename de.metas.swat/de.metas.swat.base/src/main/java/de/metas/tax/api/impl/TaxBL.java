@@ -294,16 +294,17 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final I_C_BPartner_Location shipBPLocation = new MBPartnerLocation(ctx, shipC_BPartner_Location_ID, null);
 
-		final I_C_Location locationTo = shipBPLocation.getC_Location();
+		final I_C_Location shipToLocation = shipBPLocation.getC_Location();
 		final boolean isEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
-				locationTo.getC_Country().getCountryCode(),
+				shipToLocation.getC_Country().getCountryCode(),
 				billDate);
+		final int shipToCountryRepoId = shipToLocation.getC_Country_ID();
 
-		final CountryId countryFromId;
+		final CountryId shipFromCountryId;
 		if (warehouseId != null)
 		{
-			countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
+			shipFromCountryId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 		}
 		else
 		{
@@ -311,13 +312,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final CountryId orgCountryId = bPartnerOrgBL.getOrgCountryId(orgId);
 			if (orgCountryId != null)
 			{
-				countryFromId = orgCountryId;
+				shipFromCountryId = orgCountryId;
 			}
 			else
 			{
-				countryFromId = Services.get(ICountryDAO.class).getDefaultCountryId();
+				shipFromCountryId = Services.get(ICountryDAO.class).getDefaultCountryId();
 			}
 		}
+		final int shipFromCountryRepoId = CountryId.toRepoId(shipFromCountryId);
 
 		// bp has tax certificate?
 		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(shipBPLocation.getC_BPartner_ID());
@@ -335,20 +337,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				"LEFT JOIN M_Pricelist_Version plv on pp.M_Pricelist_Version_ID = plv.M_Pricelist_Version_ID " +
 				"LEFT JOIN M_Pricelist pl on plv.M_Pricelist_ID = pl.M_Pricelist_ID " +
 				"LEFT JOIN C_Charge c ON c.C_TaxCategory_ID = t.C_TaxCategory_ID " +
-				"WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = " + countryFromId + " ";
+				"WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = " + shipFromCountryRepoId + " ";
 
-		if (locationTo.getC_Country_ID() == CountryId.toRepoId(countryFromId))
+		if (shipToCountryRepoId == shipFromCountryRepoId)
 		{
-			sql += " AND t.To_Country_ID = " + locationTo.getC_Country_ID() + " ";
+			sql += " AND t.To_Country_ID = " + shipToCountryRepoId + " ";
 		}
 		else if (isEULocation)
 		{
 			// To_Country_ID should be null for all other taxes
-			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = ";
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
-			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = ";
+			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryRepoId + ") ";
 			// metas: Abweichungen zu EU finden wenn definiert
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
+			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = " + shipToCountryRepoId + ") ";
 			sql += " AND t.IsToEULocation = 'Y' ";
 			if (hasTaxCertificate)
 			{
@@ -362,23 +362,19 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		else
 		{
 			// rest of the world
-			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = ";
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
-			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =";
+			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryRepoId + ") ";
 			// Abweichungen zu Drittland finden finden wenn definiert
-			sql += locationTo.getC_Country().getC_Country_ID() + ") ";
+			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =" + shipToLocation.getC_Country().getC_Country_ID() + ") ";
 			sql += " AND t.IsToEULocation = 'N' ";
 		}
 		// product or charge
 		if (productId != 0)
 		{
-			sql += " AND t.C_TaxCategory_ID = pp.C_TaxCategory_ID " +
-					" AND pp.M_Product_ID = ? ";
+			sql += " AND t.C_TaxCategory_ID = pp.C_TaxCategory_ID AND pp.M_Product_ID = ? ";
 		}
 		else
 		{
-			sql += " AND t.C_TaxCategory_ID = c.C_TaxCategory_ID " +
-					" AND c.C_Charge_ID = ? ";
+			sql += " AND t.C_TaxCategory_ID = c.C_TaxCategory_ID AND c.C_Charge_ID = ? ";
 		}
 
 		if (orgId != null)
@@ -398,7 +394,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// metas end: rc: 03083
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setTimestamp(1, billDate);
 			if (productId != 0)
 			{

@@ -192,7 +192,7 @@ public final class MimeType
 			.put(".csh", "text/x-script.csh")
 			// .put( ".css", "application/x-pointplus")
 			.put(".css", "text/css")
-			.put(".cvs", "application/vnd.ms-excel")
+			.put(".csv", "text/csv")
 			.put(".cxx", TYPE_TextPlain)
 			//
 			.put(".dcr", "application/x-director")
