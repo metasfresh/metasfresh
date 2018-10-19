@@ -12,11 +12,19 @@ Here come the actual release notes:
 
 # metasfresh 5.78
 ## Features
+* metasfresh
+  * [#4653](https://github.com/metasfresh/metasfresh/issues/4653) WebUI: Add missing Translations for en_US in Businesspartner Window
+    * Switched Translations to ad_element for Business Partner Window.
+
 * metasfresh-webui-frontend
   * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
     * Now showing a Loading indicator for windows with a large amount of records, to indicate about waiting time.
   * [#2005](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2005) Allow decimal comma in Qty Fields
     * New Number component that allows to record numbers with decimal point or comma.
+  * [#2009](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2009) Views: Automatically remove view rows if GET /byIds it's not returning the row(s) frontend asked for
+    * Improvement in Frontend, removing rows automatically when API does not return them.
+  * [#2014](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2014) Views: refresh `quickActions` after `GET /byIds`
+    * Improvement in Frontend, now refreshing quickacions after row changes.
 
 ## Fixes
 * metasfresh-webui-frontend

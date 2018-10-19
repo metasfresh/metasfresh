@@ -22,27 +22,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 /**
  *	Window Model
- *
+ *	
  *  @author Jorg Janke
  *  @version $Id: MWindow.java,v 1.2 2006/07/30 00:58:05 jjanke Exp $
  */
 public class MWindow extends X_AD_Window
 {
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 6783399136841920556L;
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MWindow.class);
-
+	
 	/**
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -54,7 +53,7 @@ public class MWindow extends X_AD_Window
 		super (ctx, AD_Window_ID, trxName);
 		if (AD_Window_ID == 0)
 		{
-			setWindowType (WINDOWTYPE_Verwalten);	// M
+			setWindowType (WINDOWTYPE_Maintain);	// M
 			setEntityType (ENTITYTYPE_UserMaintained);	// U
 			setIsBetaFunctionality (false);
 			setIsDefault (false);
@@ -71,7 +70,7 @@ public class MWindow extends X_AD_Window
 	{
 		super(ctx, rs, trxName);
 	}	//	M_Window
-
+	
 	/**
 	 * 	Set Window Size
 	 *	@param size size
@@ -84,7 +83,7 @@ public class MWindow extends X_AD_Window
 			setWinHeight(size.height);
 		}
 	}	//	setWindowSize
-
+	
 	/**	The Lines						*/
 	private MTab[]		m_tabs	= null;
 
@@ -99,7 +98,7 @@ public class MWindow extends X_AD_Window
 		if (m_tabs != null && !reload)
 			return m_tabs;
 		String sql = "SELECT * FROM AD_Tab WHERE AD_Window_ID=? ORDER BY SeqNo";
-		ArrayList<MTab> list = new ArrayList<>();
+		ArrayList<MTab> list = new ArrayList<MTab>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -125,7 +124,7 @@ public class MWindow extends X_AD_Window
 		return m_tabs;
 	}	//	getFields
 
-
+	
 	/**
 	 * 	After Save
 	 *	@param newRecord new
@@ -140,7 +139,7 @@ public class MWindow extends X_AD_Window
 			// Add to all automatic roles ... handled elsewhere
 		}
 		// Menu/Workflow update
-		else if (is_ValueChanged("IsActive") || is_ValueChanged("Name")
+		else if (is_ValueChanged("IsActive") || is_ValueChanged("Name") 
 			|| is_ValueChanged("Description") || is_ValueChanged("Help"))
 		{
 			MMenu[] menues = MMenu.get(getCtx(), "AD_Window_ID=" + getAD_Window_ID(), get_TrxName());
@@ -175,7 +174,7 @@ public class MWindow extends X_AD_Window
 		return success;
 	}	//	afterSave
 
-
+	
 	/**
 	 * Get workflow nodes with where clause.
 	 * Is here as MWFNode is in base
@@ -189,7 +188,7 @@ public class MWindow extends X_AD_Window
 		String sql = "SELECT * FROM AD_WF_Node";
 		if (whereClause != null && whereClause.length() > 0)
 			sql += " WHERE " + whereClause;
-		ArrayList<X_AD_WF_Node> list = new ArrayList<>();
+		ArrayList<X_AD_WF_Node> list = new ArrayList<X_AD_WF_Node>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -211,7 +210,7 @@ public class MWindow extends X_AD_Window
 		list.toArray (retValue);
 		return retValue;
 	}	//	getWFNode
-
+	
 	//vpj-cd begin e-evolution
 	/**
 	 * 	get Window ID
@@ -243,5 +242,5 @@ public class MWindow extends X_AD_Window
 		return retValue;
 	}
 	//end vpj-cd e-evolution
-
+	
 }	//	M_Window
