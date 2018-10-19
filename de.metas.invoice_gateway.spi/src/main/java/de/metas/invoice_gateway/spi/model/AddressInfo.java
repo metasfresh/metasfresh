@@ -32,8 +32,11 @@ import javax.annotation.Nullable;
 @Builder
 public class AddressInfo
 {
-	@NonNull
+	@Nullable
 	String street;
+
+	@Nullable
+	String pobox;
 
 	@NonNull
 	String zip;

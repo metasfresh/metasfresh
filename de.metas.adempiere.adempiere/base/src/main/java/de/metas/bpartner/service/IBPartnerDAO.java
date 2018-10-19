@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -78,6 +79,8 @@ public interface IBPartnerDAO extends ISingletonService
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
+
+	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, String gln);
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
@@ -268,7 +271,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
 
-	Optional<BPartnerId> getBPartnerIdByValueIfExists(final String bpartnerValue);
+	Optional<BPartnerId> getBPartnerIdByValueIfExists(String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(String externalId, OrgId orgId);
 
 	public I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 

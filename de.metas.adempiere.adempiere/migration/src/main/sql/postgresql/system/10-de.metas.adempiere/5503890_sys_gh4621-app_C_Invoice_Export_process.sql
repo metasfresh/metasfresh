@@ -53,3 +53,15 @@ UPDATE AD_Process SET AllowProcessReRun='N',Updated=TO_TIMESTAMP('2018-10-17 14:
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Table_Process (Created,CreatedBy,IsActive,AD_Table_ID,EntityType,Updated,UpdatedBy,AD_Client_ID,WEBUI_QuickAction,WEBUI_QuickAction_Default,AD_Process_ID,AD_Org_ID) VALUES (TO_TIMESTAMP('2018-10-17 14:10:21','YYYY-MM-DD HH24:MI:SS'),100,'Y',540453,'de.metas.document.archive',TO_TIMESTAMP('2018-10-17 14:10:21','YYYY-MM-DD HH24:MI:SS'),100,0,'N','N',541025,0)
 ;
+
+-- 2018-10-19T07:37:41.437
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-19 07:37:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Message_ID=544801 AND AD_Language='de_CH'
+;
+
+-- 2018-10-19T07:38:20.306
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-10-19 07:38:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='No selected record has exportable attachments' WHERE AD_Message_ID=544801 AND AD_Language='en_US'
+;
+
+

@@ -56,7 +56,7 @@ public class XmlIntrospectionUtil
 
 						if (foundSchemaNameSpace && foundLocationAttributeName)
 						{
-							return r.getAttributeValue(0);
+							return r.getAttributeValue(i);
 						}
 					}
 					return null; // only checked the first element

@@ -8,6 +8,8 @@ import static org.compiere.util.Util.coalesce;
 
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -30,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.ordercandidate.rest.JsonAttachment;
 import de.metas.ordercandidate.rest.JsonBPartner;
+import de.metas.ordercandidate.rest.JsonBPartner.JsonBPartnerBuilder;
 import de.metas.ordercandidate.rest.JsonBPartnerContact;
 import de.metas.ordercandidate.rest.JsonBPartnerInfo;
 import de.metas.ordercandidate.rest.JsonBPartnerLocation;
@@ -40,6 +43,7 @@ import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
 import de.metas.ordercandidate.rest.JsonOLCandCreateBulkResponse;
 import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
 import de.metas.ordercandidate.rest.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
+import de.metas.ordercandidate.rest.JsonOrganization;
 import de.metas.ordercandidate.rest.JsonProductInfo;
 import de.metas.ordercandidate.rest.JsonProductInfo.Type;
 import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
@@ -47,12 +51,13 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GarantType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InsuranceAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InvoiceType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayantType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PersonType;
@@ -146,8 +151,8 @@ public class XmlToOLCandsService
 		try
 		{
 			final ImmutableList<String> tags = ImmutableList.of(
-					ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/*name*/, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/*value*/,
-					ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE/*name*/, externalReference/*value*/);
+					ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/* name */, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/* value */,
+					ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE/* name */, externalReference/* value */);
 
 			return orderCandidatesRestEndpoint.attachFile(
 					RestApiConstants.INPUT_SOURCE_INTERAL_NAME,
@@ -260,6 +265,8 @@ public class XmlToOLCandsService
 		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getInsurance()));
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getInsurance()));
 
+		insuranceBuilder.org(createBillerOrg(tiersGarant.getBiller()));
+
 		// despite having patient mater data in the XML, there is no point creating the master data in metasfresh;
 		// we can't invoice patients with the given XML
 		// final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
@@ -271,6 +278,31 @@ public class XmlToOLCandsService
 		return ImmutableList.of(insuranceBuilder/* , patientBuilder */);
 	}
 
+	private JsonOrganization createBillerOrg(@NonNull final BillerAddressType biller)
+	{
+		final JsonOrganization org = JsonOrganization
+				.builder()
+				.code(createBPartnerExternalId(biller))
+				.name(createNameString(biller))
+				.bpartner(createJsonBPartnerInfo(biller))
+				.build();
+		return org;
+	}
+
+	private String createNameString(final BillerAddressType biller)
+	{
+		final String orgName;
+		if (biller.getCompany() != null)
+		{
+			orgName = biller.getCompany().getCompanyname();
+		}
+		else
+		{
+			orgName = biller.getPerson().getGivenname() + " " + biller.getPerson().getFamilyname();
+		}
+		return orgName;
+	}
+
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertTiersPayantIntoBuilders(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final PayantType tiersPayant)
@@ -279,13 +311,10 @@ public class XmlToOLCandsService
 		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getInsurance()));
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getInsurance()));
 
+		insuranceBuilder.org(createBillerOrg(tiersPayant.getBiller()));
+
 		// despite having patient mater data in the XML, there is no point creating the master data in metasfresh;
 		// we can't invoice patients with the given XML
-		// final JsonOLCandCreateRequestBuilder patientBuilder = copyBuilder(requestBuilder);
-		// patientBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getPatient()));
-		// patientBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getPatient()));
-
-		// todo: what about "Gemeinde"?
 
 		return ImmutableList.of(insuranceBuilder /* , patientBuilder */);
 	}
@@ -298,25 +327,18 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final PatientAddressType patient)
-	{
-		return JsonDocTypeInfo.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice)
-				.docSubType("EA")
-				.build();
-	}
 
 	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final InsuranceAddressType insurance)
 	{
 		final CompanyType company = insurance.getCompany();
-		final String insuranceBPartnerCode = createBPartnerCode(insurance);
+		final String insuranceBPartnerExternalId = createBPartnerExternalId(insurance);
 
-		final JsonBPartnerLocation location = createJsonBPartnerLocation(insuranceBPartnerCode, company.getPostal());
+		final JsonBPartnerLocation location = createJsonBPartnerLocation(insuranceBPartnerExternalId, insurance.getEanParty(), company.getPostal());
 
 		final JsonBPartner bPartner = JsonBPartner
 				.builder()
 				.name(company.getCompanyname())
-				.code(insuranceBPartnerCode)
+				.externalId(insuranceBPartnerExternalId)
 				.build();
 
 		// final JsonBPartnerContact contact = createJsonBPartnerContact(insurance.getPerson());
@@ -331,50 +353,83 @@ public class XmlToOLCandsService
 		return bPartnerInfo;
 	}
 
-	private String createBPartnerCode(@NonNull final InsuranceAddressType insurance)
+	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final BillerAddressType biller)
 	{
-		return "EAN-" + insurance.getEanParty();
-	}
+		final String name = createNameString(biller);
 
-	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final PatientAddressType patient)
-	{
-		final PersonType person = patient.getPerson();
+		final CompanyType company = biller.getCompany();
+		final String billerBPartnerExternalId = createBPartnerExternalId(biller);
 
-		final String personName = createNameString(person);
-		final String partientBPartnerCode = createBPartnerCode(patient);
-
-		final JsonBPartner bPartner = JsonBPartner
+		final JsonBPartnerBuilder bPartnerBuilder = JsonBPartner
 				.builder()
-				.name(personName)
-				.code(partientBPartnerCode)
+				.name(name)
+				.externalId(billerBPartnerExternalId);
+
+		final JsonBPartnerLocation location;
+		final String email;
+		if (company != null)
+		{
+			bPartnerBuilder.companyName(company.getCompanyname());
+
+			email = extracFirsttEmailOrNull(company.getOnline());
+
+			location = createJsonBPartnerLocation(
+					billerBPartnerExternalId,
+					biller.getEanParty(),
+					company.getPostal());
+		}
+		else
+		{ // biller.getPerson() != null
+			email = extracFirsttEmailOrNull(biller.getPerson().getOnline());
+
+			location = createJsonBPartnerLocation(
+					billerBPartnerExternalId,
+					biller.getEanParty(),
+					biller.getPerson().getPostal());
+		}
+
+		final JsonBPartnerContact contact = JsonBPartnerContact
+				.builder()
+				.externalId(billerBPartnerExternalId + "_singlePerson")
+				.name(name)
+				.email(email)
 				.build();
-
-		final JsonBPartnerLocation location = createJsonBPartnerLocation(partientBPartnerCode, person.getPostal());
-
-		// final JsonBPartnerLocation location = JsonBPartnerLocation
-		// .builder()
-		// .externalId()
-		// .build();
-
-		// final JsonBPartnerContact contact = createJsonBPartnerContact(patient.getPerson());
 
 		final JsonBPartnerInfo bPartnerInfo = JsonBPartnerInfo
 				.builder()
-				// .contact(contact)
-				.bpartner(bPartner)
+				.bpartner(bPartnerBuilder.build())
+				.contact(contact)
 				.location(location)
 				.build();
 
 		return bPartnerInfo;
 	}
 
-	private String createBPartnerCode(@NonNull final PatientAddressType patient)
+	private String extracFirsttEmailOrNull(@Nullable final OnlineAddressType online)
 	{
-		return "SSN-" + patient.getSsn();
+		if (online != null)
+		{
+			if (!online.getEmail().isEmpty())
+			{
+				return online.getEmail().get(0);
+			}
+		}
+		return null;
+	}
+
+	private String createBPartnerExternalId(@NonNull final InsuranceAddressType insurance)
+	{
+		return "EAN-" + insurance.getEanParty();
+	}
+
+	private String createBPartnerExternalId(@NonNull final BillerAddressType biller)
+	{
+		return "EAN-" + biller.getEanParty();
 	}
 
 	private JsonBPartnerLocation createJsonBPartnerLocation(
-			@NonNull final String bPartnerCode,
+			@NonNull final String bPartnerExternalId,
+			@NonNull final String gln,
 			@NonNull final PostalAddressType postal)
 	{
 		final JsonBPartnerLocationBuilder builder = JsonBPartnerLocation.builder();
@@ -387,7 +442,7 @@ public class XmlToOLCandsService
 		final String statecode = zip != null ? StringUtils.trim(zip.getStatecode()) : null;
 		final String countrycode = zip != null ? StringUtils.trim(zip.getCountrycode()) : null;
 
-		if (!Check.isEmpty(street))
+		if (!Check.isEmpty(street, true))
 		{
 			builder.address1(street)
 					.address2(pobox);
@@ -396,8 +451,14 @@ public class XmlToOLCandsService
 		{
 			builder.address1(pobox);
 		}
+
+		if (!Check.isEmpty(gln, true))
+		{
+			builder.gln(gln);
+		}
+
 		final JsonBPartnerLocation location = builder
-				.externalId(bPartnerCode + "_singleAddress") // TODO
+				.externalId(bPartnerExternalId + "_singleAddress") // TODO
 				.city(city)
 				.postal(zip.getValue())
 				.state(statecode)
@@ -405,19 +466,6 @@ public class XmlToOLCandsService
 				.countryCode(coalesce(countrycode, "CH")) // TODO
 				.build();
 		return location;
-	}
-
-	private JsonBPartnerContact createJsonBPartnerContact(
-			@NonNull final String bPartnerCode,
-			@NonNull final PersonType person)
-	{
-		final String personName = createNameString(person);
-
-		return JsonBPartnerContact
-				.builder()
-				.name(personName)
-				.externalId(bPartnerCode + "_singlePerson") // TODO
-				.build();
 	}
 
 	private String createNameString(final PersonType person)
@@ -514,7 +562,7 @@ public class XmlToOLCandsService
 	{
 		final JsonOLCandCreateRequest request = requestBuilder.build();
 
-		return request.getBpartner().getBpartner().getCode()
+		return request.getBpartner().getBpartner().getExternalId()
 				+ "_"
 				+ request.getPoReference()
 				+ "_"

@@ -1,11 +1,14 @@
 package org.adempiere.warehouse.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import lombok.NonNull;
 
 import java.util.Collection;
 
@@ -66,8 +69,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 
-import lombok.NonNull;
-
 public class WarehouseDAO implements IWarehouseDAO
 {
 	private static final Logger logger = LogManager.getLogger(WarehouseDAO.class);
@@ -85,7 +86,13 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public <T extends I_M_Warehouse> T getById(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
 	{
-		return loadOutOfTrx(warehouseId, modelType);
+		final T outOfTrxWarehouseRecord = loadOutOfTrx(warehouseId, modelType);
+		if(outOfTrxWarehouseRecord != null)
+		{
+			return outOfTrxWarehouseRecord; // with is almost always the case
+		}
+
+		return load(warehouseId, modelType); // this fallback is needed if the WH was just created itself, within this very trx
 	}
 
 	@Override

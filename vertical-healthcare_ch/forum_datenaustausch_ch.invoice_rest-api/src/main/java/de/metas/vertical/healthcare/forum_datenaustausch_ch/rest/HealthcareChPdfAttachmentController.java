@@ -66,7 +66,7 @@ public class HealthcareChPdfAttachmentController
 	@ApiOperation(value = "Attach a PDF document to an externalOrderId")
 	// TODO only allow PDF
 	public JsonAttachment attachPdfFile(
-			@ApiParam(value = "String that was returned by the invoice controller", allowEmptyValue = false) @PathVariable("externalReference") final String externalReference,
+			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) @PathVariable("externalReference") final String externalReference,
 			@RequestParam("file") @NonNull final MultipartFile file)
 			throws IOException
 	{

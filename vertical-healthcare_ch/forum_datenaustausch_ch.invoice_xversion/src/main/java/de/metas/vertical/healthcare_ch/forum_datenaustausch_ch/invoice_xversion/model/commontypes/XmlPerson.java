@@ -32,10 +32,10 @@ import javax.annotation.Nullable;
 @Builder
 public class XmlPerson
 {
-	@NonNull
+	@Nullable
 	String title;
 
-	@NonNull
+	@Nullable
 	String salutation;
 
 	@NonNull
@@ -44,7 +44,7 @@ public class XmlPerson
 	@NonNull
 	String familyname;
 
-	@NonNull
+	@Nullable
 	String subaddressing;
 
 	@NonNull

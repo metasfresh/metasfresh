@@ -19,13 +19,14 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.compiere.util.MimeType;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.Maps;
-import com.google.common.net.MediaType;
 
 import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
@@ -161,7 +162,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceAttachment attachment : invoiceAttachments)
 		{
-			if (!MediaType.XML_UTF_8.toString().equals(attachment.getMimeType()))
+			if (!MimeType.TYPE_XML.equals(attachment.getMimeType()))
 			{
 				continue;
 			}
@@ -327,17 +328,24 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 	private XmlBank createXmlBank(@NonNull final ESRPaymentInfo paymentInfo)
 	{
+		final XmlCompany xmlCompany = createXmlCompany(paymentInfo.getCompanyName(), paymentInfo.getAddressInfo());
+		final XmlPerson xmlPerson = createXmlPerson(paymentInfo.getPersonInfo(), paymentInfo.getAddressInfo());
+
+		if (xmlCompany == null && xmlPerson == null)
+		{
+			return null;
+		}
 		return XmlBank.builder()
-				.company(createXmlCompany(paymentInfo.getCompanyName(), paymentInfo.getAddressInfo()))
-				.person(createXmlPerson(paymentInfo.getPersonInfo(), paymentInfo.getAddressInfo()))
+				.company(xmlCompany)
+				.person(xmlPerson)
 				.build();
 	}
 
 	private XmlCompany createXmlCompany(
 			@Nullable final String companyName,
-			@NonNull final AddressInfo addressInfo)
+			@Nullable final AddressInfo addressInfo)
 	{
-		if (companyName == null)
+		if (companyName == null || addressInfo == null)
 		{
 			return null;
 		}
@@ -350,9 +358,9 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 	private XmlPerson createXmlPerson(
 			@Nullable final PersonInfo personInfo,
-			@NonNull final AddressInfo addressInfo)
+			@Nullable final AddressInfo addressInfo)
 	{
-		if (personInfo == null)
+		if (personInfo == null || addressInfo == null)
 		{
 			return null;
 		}
@@ -366,6 +374,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	private XmlPostal createXmlPostal(@NonNull final AddressInfo addressInfo)
 	{
 		return XmlPostal.builder()
+				.pobox(addressInfo.getPobox())
 				.street(addressInfo.getStreet())
 				.zip(addressInfo.getZip())
 				.city(addressInfo.getCity())
@@ -439,7 +448,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceAttachment invoiceAttachment : invoiceAttachments)
 		{
-			if(invoiceAttachment.isPrimaryAttrachment())
+			if (invoiceAttachment.isPrimaryAttrachment())
 			{
 				continue;
 			}

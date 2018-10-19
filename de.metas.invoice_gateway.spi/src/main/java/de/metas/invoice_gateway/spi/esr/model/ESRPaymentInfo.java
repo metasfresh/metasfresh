@@ -1,8 +1,5 @@
 package de.metas.invoice_gateway.spi.esr.model;
 
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -72,10 +69,11 @@ public class ESRPaymentInfo implements CustomInvoicePayload
 		this.personInfo = personInfo;
 		this.addressInfo = addressInfo;
 
-		assume(isEmpty(companyName) || addressInfo != null,
-				"If a companyName is given, then an address needs to be given as well; this={}", this);
-		assume(isEmpty(personInfo) || addressInfo != null,
-				"If a personInfo is given, then an address needs to be given as well; this={}", this);
+// take whatever infos we can get, and let the consumers decide what to do with it
+//		assume(isEmpty(companyName) || addressInfo != null,
+//				"If a companyName is given, then an address needs to be given as well; this={}", this);
+//		assume(isEmpty(personInfo) || addressInfo != null,
+//				"If a personInfo is given, then an address needs to be given as well; this={}", this);
 	}
 
 }

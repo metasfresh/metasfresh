@@ -8,11 +8,13 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntryCreateRequest;
@@ -23,6 +25,9 @@ import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
 
 /*
@@ -50,6 +55,9 @@ import de.metas.util.StringUtils;
 @Service
 public class InvoiceExportService
 {
+
+	private static final Logger logger = LogManager.getLogger(InvoiceExportService.class);
+
 	private final InvoiceToExportFactory exportInvoiceFactory;
 
 	private final InvoiceExportServiceRegistry invoiceExportServiceRegistry;
@@ -77,7 +85,14 @@ public class InvoiceExportService
 
 	private void exportInvoice(@NonNull final InvoiceToExport invoiceToExport)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+
 		final List<InvoiceExportClient> exportClients = invoiceExportServiceRegistry.createExportClients(invoiceToExport);
+		if (exportClients.isEmpty())
+		{
+			loggable.addLog("InvoiceExportService - Found no InvoiceExportClient implementors for invoiceId={}; invoiceToExport={}", invoiceToExport.getId(), invoiceToExport);
+			return; // nothing more to do
+		}
 
 		final List<AttachmentEntryCreateRequest> attachmentEntryCreateRequests = new ArrayList<>();
 		for (final InvoiceExportClient exportClient : exportClients)
@@ -94,6 +109,7 @@ public class InvoiceExportService
 			attachmentEntryService.createNewAttachment(
 					TableRecordReference.of(I_C_Invoice.Table_Name, invoiceToExport.getId()),
 					attachmentEntryCreateRequest);
+			loggable.addLog("InvoiceExportService - Attached export data to invoiceId={}; attachment={}", invoiceToExport.getId(), attachmentEntryCreateRequest);
 		}
 	}
 
@@ -113,7 +129,7 @@ public class InvoiceExportService
 				.builderFromByteArray(
 						exportResult.getFileName(),
 						byteArrayData)
-				.tag(AttachmentConstants.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true))
+				.tag(AttachmentConstants.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
 				.tag(AttachmentConstants.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
 				.tag(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
 				.build();

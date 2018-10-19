@@ -1,8 +1,9 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlIvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlKvg;
@@ -37,21 +38,21 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 @Builder
 public class XmlLaw
 {
-	@NonNull
+	@Nullable
 	XmlKvg kvg;
 
-	@NonNull
+	@Nullable
 	XmlVvg vvg;
 
-	@NonNull
+	@Nullable
 	XmlUvg uvg;
 
-	@NonNull
+	@Nullable
 	XmlIvg ivg;
 
-	@NonNull
+	@Nullable
 	XmlMvg mvg;
 
-	@NonNull
+	@Nullable
 	XmlOrg org;
 }

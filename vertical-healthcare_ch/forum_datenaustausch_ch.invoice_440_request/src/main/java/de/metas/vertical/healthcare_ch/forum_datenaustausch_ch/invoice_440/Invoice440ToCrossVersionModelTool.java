@@ -32,15 +32,18 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OrgLawType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType.Card;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayantType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PersonType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PostalAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ProcessingType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ProcessingType.Demand;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PrologType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ProviderAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDRGType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType.XtraDrug;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordLabType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordMigelType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordOtherType;
@@ -54,6 +57,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.SoftwareType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.TelecomAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.TransportType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.TransportType.Via;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.TreatmentType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.UvgLawType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ValidationResultType;
@@ -66,128 +70,124 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.XtraHospitalType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.XtraStationaryType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType.Card;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ProcessingType.Demand;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType.XtraDrug;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.TransportType.Via;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.XmlPayloadBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlProcessing.XmlProcessingBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.XmlRequestBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlOnline;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany.XmlCompanyBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlOnline;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlOnline.XmlOnlineBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson.XmlPersonBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal.XmlPostalBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom.XmlTelecomBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlCredit;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlBody.XmlBodyBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlCredit;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlCredit.XmlCreditBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlInvoice.XmlInvoiceBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.XmlReminder.XmlReminderBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.XmlBalanceBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlDocument;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlDocument.XmlDocumentBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlEsr;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlLaw;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlLaw.XmlLawBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.XmlPrologBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTiers;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTreatment;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlBalance.XmlBalanceBuilder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlDocument.XmlDocumentBuilder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlLaw.XmlLawBuilder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlProlog.XmlPrologBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTiers.Tiers;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTiers.XmlTiersBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTreatment;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.XmlTreatment.XmlTreatmentBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlBank;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr5;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr9;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsrRed;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlBank.XmlBankBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr5;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr5.XmlEsr5Builder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr9;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsr9.XmlEsr9Builder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsrRed;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.esr.XmlEsrRed.XmlEsrRedBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlIvg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlKvg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlMvg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlOrg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlUvg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlVvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlIvg.XmlIvgBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlKvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlKvg.XmlKvgBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlMvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlMvg.XmlMvgBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlOrg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlOrg.XmlOrgBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlUvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlUvg.XmlUvgBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlVvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.law.XmlVvg.XmlVvgBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.prolog.XmlSoftware;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.prolog.XmlSoftware.XmlSoftwareBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordDrg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordDrug;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordLab;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordMigel;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordOther;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordParamed;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordTarmed;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlXtraDrug;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordDrg.XmlRecordDrgBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordDrug;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordDrug.XmlRecordDrugBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordLab;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordLab.XmlRecordLabBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordMigel;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordMigel.XmlRecordMigelBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordOther;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordOther.XmlRecordOtherBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordParamed;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordParamed.XmlRecordParamedBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordService.XmlRecordServiceBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordTarmed;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlRecordTarmed.XmlRecordTarmedBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlXtraDrug;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.service.XmlXtraDrug.XmlXtraDrugBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlBiller;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlEmployer;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlGuarantor;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlInsurance;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlPatient;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlPatientCard;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlProvider;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlReferrer;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlBiller.XmlBillerBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlEmployer;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlEmployer.XmlEmployerBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlGuarantor;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlGuarantor.XmlGuarantorBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlInsurance;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlInsurance.XmlInsuranceBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlPatient;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlPatient.XmlPatientBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlPatientCard;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlPatientCard.XmlPatientCardBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlProvider;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlProvider.XmlProviderBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlReferrer;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.tiers.XmlReferrer.XmlReferrerBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlBfsData;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlCaseDetail;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlGrouperData;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlXtraAmbulatory;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlXtraStationary;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlBfsData.XmlBfsDataBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlCaseDetail;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlCaseDetail.XmlCaseDetailBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlGrouperData;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlGrouperData.XmlGrouperDataBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlXtraAmbulatory;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlXtraAmbulatory.XmlXtraAmbulatoryBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlXtraStationary;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.treatment.XmlXtraStationary.XmlXtraStationaryBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVat;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVatRate;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVat.XmlVatBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVatRate;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.payload.body.vat.XmlVatRate.XmlVatRateBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlDemand;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidationResult;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlDemand.XmlDemandBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.XmlTransportBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.XmlVia;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlTransport.XmlVia.XmlViaBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidation.XmlValidationBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidationResult;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.processing.XmlValidationResult.XmlValidationResultBuilder;
 
 /*
@@ -220,7 +220,7 @@ public class Invoice440ToCrossVersionModelTool
 	{
 	}
 
-	public XmlRequest toCrossVersionModel(RequestType invoice440Request)
+	public XmlRequest toCrossVersionModel(@NonNull final RequestType invoice440Request)
 	{
 		final XmlRequestBuilder builder = XmlRequest.builder();
 
@@ -283,8 +283,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xVia.build();
 	}
 
-	private ImmutableList<XmlValidation> createXmlValidations(@NonNull final ValidationsType validations)
+	private ImmutableList<XmlValidation> createXmlValidations(@Nullable final ValidationsType validations)
 	{
+		if (validations == null)
+		{
+			return ImmutableList.of();
+		}
 		final ImmutableList.Builder<XmlValidation> xValidations = ImmutableList.builder();
 
 		for (final ValidationType validation : validations.getValidation())
@@ -865,8 +869,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xLaw.build();
 	}
 
-	private XmlKvg createXmlKvgLaw(@NonNull final KvgLawType kvgLawType)
+	private XmlKvg createXmlKvgLaw(@Nullable final KvgLawType kvgLawType)
 	{
+		if (kvgLawType == null)
+		{
+			return null;
+		}
 		final XmlKvgBuilder xKvg = XmlKvg.builder();
 
 		xKvg.insuredId(kvgLawType.getInsuredId());
@@ -877,8 +885,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xKvg.build();
 	}
 
-	private XmlVvg createXmlVvgLaw(@NonNull final VvgLawType vvgLawType)
+	private XmlVvg createXmlVvgLaw(@Nullable final VvgLawType vvgLawType)
 	{
+		if (vvgLawType == null)
+		{
+			return null;
+		}
 		final XmlVvgBuilder xVvg = XmlVvg.builder();
 
 		xVvg.insuredId(vvgLawType.getInsuredId());
@@ -889,8 +901,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xVvg.build();
 	}
 
-	private XmlUvg createXmlUvgLaw(@NonNull final UvgLawType uvgLawType)
+	private XmlUvg createXmlUvgLaw(@Nullable final UvgLawType uvgLawType)
 	{
+		if (uvgLawType == null)
+		{
+			return null;
+		}
 		final XmlUvgBuilder xUvg = XmlUvg.builder();
 
 		xUvg.insuredId(uvgLawType.getInsuredId());
@@ -902,8 +918,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xUvg.build();
 	}
 
-	private XmlIvg createXmlIvgLaw(@NonNull final IvgLawType ivgLawType)
+	private XmlIvg createXmlIvgLaw(@Nullable final IvgLawType ivgLawType)
 	{
+		if (ivgLawType == null)
+		{
+			return null;
+		}
 		final XmlIvgBuilder xIvg = XmlIvg.builder();
 
 		xIvg.caseId(ivgLawType.getCaseId());
@@ -915,8 +935,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xIvg.build();
 	}
 
-	private XmlMvg createXmlMvgLaw(@NonNull final MvgLawType mvgLawType)
+	private XmlMvg createXmlMvgLaw(@Nullable final MvgLawType mvgLawType)
 	{
+		if (mvgLawType == null)
+		{
+			return null;
+		}
 		final XmlMvgBuilder xMvg = XmlMvg.builder();
 
 		xMvg.insuredId(mvgLawType.getInsuredId());
@@ -928,8 +952,12 @@ public class Invoice440ToCrossVersionModelTool
 		return xMvg.build();
 	}
 
-	private XmlOrg createXmlOrgLaw(@NonNull final OrgLawType orgLawType)
+	private XmlOrg createXmlOrgLaw(@Nullable final OrgLawType orgLawType)
 	{
+		if (orgLawType == null)
+		{
+			return null;
+		}
 		final XmlOrgBuilder xOrg = XmlOrg.builder();
 
 		xOrg.insuredId(orgLawType.getInsuredId());

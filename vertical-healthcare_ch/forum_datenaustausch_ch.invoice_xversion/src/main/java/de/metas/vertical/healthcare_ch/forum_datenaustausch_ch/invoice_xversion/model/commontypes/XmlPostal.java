@@ -32,10 +32,10 @@ import javax.annotation.Nullable;
 @Builder
 public class XmlPostal
 {
-	@NonNull
+	@Nullable
 	String pobox;
 
-	@NonNull
+	@Nullable
 	String street;
 
 	@NonNull

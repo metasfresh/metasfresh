@@ -51,7 +51,7 @@ public class StoreConfigRepository
 		}
 		return StoreConfig
 				.builder()
-				//.directory(queryRecord.getDirecory())
+				.directory(queryRecord.getStoreDirectory())
 				.build();
 	}
 }

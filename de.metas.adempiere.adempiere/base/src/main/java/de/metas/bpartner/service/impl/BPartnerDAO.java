@@ -46,6 +46,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BP_Group;
@@ -176,6 +177,16 @@ public class BPartnerDAO implements IBPartnerDAO
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
 				.filter(bpLocation -> externalId.equals(bpLocation.getExternalId()))
+				.findFirst()
+				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
+	}
+
+	@Override
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByGln(@NonNull final BPartnerId bpartnerId, @NonNull final String gln)
+	{
+		return retrieveBPartnerLocations(bpartnerId)
+				.stream()
+				.filter(bpLocation -> gln.equals(bpLocation.getGLN()))
 				.findFirst()
 				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 	}
@@ -806,6 +817,22 @@ public class BPartnerDAO implements IBPartnerDAO
 		final int bpartnerRepoId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMN_Value, bpartnerValue)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly();
+
+		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
+	}
+
+	@Override
+	public Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(
+			@NonNull final String externalId,
+			@NonNull final OrgId orgId)
+	{
+		final int bpartnerRepoId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly();

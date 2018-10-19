@@ -1,5 +1,8 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.Builder;
+import lombok.Data;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -7,8 +10,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Data;
 
 /*
  * #%L
@@ -41,7 +42,15 @@ public class JsonBPartner
 	@Nullable
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "This translates to <code>C_BPartner.Value</code>. If Set, the system will attempt a lookup.\n"
+			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
+					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
+					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
+	private String externalId;
+
+	@Nullable
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to <code>C_BPartner.Value</code>. If set and <code>externalId<code> is empty, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or not bPartner was found, it will create a new BPartner.")
 	private String code;
@@ -52,4 +61,11 @@ public class JsonBPartner
 			value = "This translates to <code>C_BPartner.Name</code>.\n"
 					+ "If this is empty, and a BPartner with the given <code>code</code> does not yet exist, then the request will fail.")
 	private String name;
+
+	@Nullable
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to <code>C_BPartner.CompanyName</code>.\n"
+					+ "If set, the the respective <code>C_BPartner</code> record will also have <code>IsCompany='Y'</code>")
+	private String companyName;
 }

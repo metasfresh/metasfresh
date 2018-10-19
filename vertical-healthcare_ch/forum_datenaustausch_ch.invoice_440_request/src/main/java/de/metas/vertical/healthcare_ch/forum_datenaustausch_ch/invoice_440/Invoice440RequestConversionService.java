@@ -50,7 +50,11 @@ public class Invoice440RequestConversionService implements CrossVersionRequestCo
 	{
 		final JAXBElement<RequestType> jaxbType = Invoice440FromCrossVersionModelTool.INSTANCE.fromCrossVersionModel(xRequest);
 
-		JaxbUtil.marshal(jaxbType, RequestType.class, outputStream);
+		JaxbUtil.marshal(
+				jaxbType,
+				RequestType.class,
+				INVOICE_440_REQUEST_XSD,
+				outputStream);
 	}
 
 	@Override

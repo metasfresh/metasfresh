@@ -62,6 +62,8 @@ import de.metas.payment.esr.document.refid.spi.impl.InvoiceReferenceNoGenerator;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.StringUtils.TruncateAt;
 
 public class ESRBL implements IESRBL
 {
@@ -96,7 +98,6 @@ public class ESRBL implements IESRBL
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
 	{
-
 		// Do nothing if ESR is not enabled
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceRecord);
 		if (!ESRConstants.isEnabled(ctx))
@@ -111,12 +112,11 @@ public class ESRBL implements IESRBL
 			return;
 		}
 
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final I_C_BP_BankAccount bankAccount = retrieveEsrBankAccount(invoiceRecord);
 
 		final String invoiceReferenceNoStr = createInvoiceReferenceString(invoiceRecord, bankAccount);
 
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final BigDecimal openInvoiceAmount = invoiceDAO.retrieveOpenAmt(invoiceRecord);
 
 		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceNoStr, openInvoiceAmount, bankAccount);
@@ -166,7 +166,7 @@ public class ESRBL implements IESRBL
 	@VisibleForTesting
 	String createInvoiceReferenceString(
 			@NonNull final I_C_Invoice invoiceRecord,
-			final I_C_BP_BankAccount bankAccount)
+			@NonNull final I_C_BP_BankAccount bankAccount)
 	{
 		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
@@ -176,7 +176,7 @@ public class ESRBL implements IESRBL
 		sb.append(Util.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccount), 7, "BankAccountNo"));
 
 		final I_AD_Org org = invoiceRecord.getAD_Org();
-		sb.append(Util.lpadZero(org.getValue(), 3, "organization"));
+		sb.append(Util.lpadZero(StringUtils.trunc(org.getValue(), 3, TruncateAt.STRING_START), 3, "organization"));
 
 		final I_C_BPartner bPartner = invoiceRecord.getC_BPartner();
 		final String bpartnerValue = Util.getDigits(bPartner.getValue()); // we can only use the digits

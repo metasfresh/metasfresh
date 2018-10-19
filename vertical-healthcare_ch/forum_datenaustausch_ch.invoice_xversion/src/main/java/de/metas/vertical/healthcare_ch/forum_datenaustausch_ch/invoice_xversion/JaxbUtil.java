@@ -72,6 +72,7 @@ public class JaxbUtil
 	public static <T> void marshal(
 			@NonNull final JAXBElement<T> jaxbElement,
 			@NonNull final Class<T> jaxbType,
+			@NonNull String xsdName,
 			@NonNull final OutputStream outputStream)
 	{
 		try
@@ -82,6 +83,8 @@ public class JaxbUtil
 			final XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(writer);
 
 			final Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, xsdName); // important; finding the correct converter depends on this
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true); // since we are doing XML anyways, we can also expend some tabs and newlines..
 
 			marshaller.marshal(jaxbElement, xmlStreamWriter);
 		}

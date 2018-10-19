@@ -6,9 +6,16 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 
 /*
  * #%L
@@ -32,10 +39,13 @@ import de.metas.attachments.AttachmentEntry;
  * #L%
  */
 
+@Service
 public class StoreAttachmentService
 {
+	private static final Logger logger = LogManager.getLogger(StoreAttachmentService.class);
+
 	private final List<StoreAttachmentServiceImpl> storeAttachmentServices;
-	List<AttachmentStoredListener> attachmentStoredListeners;
+	private final List<AttachmentStoredListener> attachmentStoredListeners;
 
 	public StoreAttachmentService(
 			@NonNull final Optional<List<StoreAttachmentServiceImpl>> storeAttachmentServices,
@@ -60,13 +70,18 @@ public class StoreAttachmentService
 	 */
 	public boolean storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
 	{
+		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+
 		final StoreAttachmentServiceImpl service = extractFor(attachmentEntry);
 		if (service == null)
 		{
+			loggable.addLog("StoreAttachmentService - no StoreAttachmentServiceImpl found for attachment={}", attachmentEntry);
 			return false;
 		}
 
 		final URI storageIdentifier = service.storeAttachment(attachmentEntry);
+		loggable.addLog("StoreAttachmentService - stored attachment to URI={}; storeAttachmentServiceImpl={}, attachment={}", storageIdentifier, service, attachmentEntry);
+
 		for (final AttachmentStoredListener attachmentStoredListener : attachmentStoredListeners)
 		{
 			attachmentStoredListener.attachmentWasStored(attachmentEntry, storageIdentifier);

@@ -128,6 +128,29 @@ public interface I_HC_Forum_Datenaustausch_Config
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Export XML Version.
 	 *
 	 * <br>Type: List
@@ -151,27 +174,27 @@ public interface I_HC_Forum_Datenaustausch_Config
     public static final String COLUMNNAME_ExportXmlVersion = "ExportXmlVersion";
 
 	/**
-	 * Set HC_Forum_Datenaustausch.
+	 * Set forum-datenaustausch.ch config.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setHC_Forum_Datenaustausch_ID (int HC_Forum_Datenaustausch_ID);
+	public void setHC_Forum_Datenaustausch_Config_ID (int HC_Forum_Datenaustausch_Config_ID);
 
 	/**
-	 * Get HC_Forum_Datenaustausch.
+	 * Get forum-datenaustausch.ch config.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getHC_Forum_Datenaustausch_ID();
+	public int getHC_Forum_Datenaustausch_Config_ID();
 
-    /** Column definition for HC_Forum_Datenaustausch_ID */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_HC_Forum_Datenaustausch_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "HC_Forum_Datenaustausch_ID", null);
-    /** Column name HC_Forum_Datenaustausch_ID */
-    public static final String COLUMNNAME_HC_Forum_Datenaustausch_ID = "HC_Forum_Datenaustausch_ID";
+    /** Column definition for HC_Forum_Datenaustausch_Config_ID */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_HC_Forum_Datenaustausch_Config_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "HC_Forum_Datenaustausch_Config_ID", null);
+    /** Column name HC_Forum_Datenaustausch_Config_ID */
+    public static final String COLUMNNAME_HC_Forum_Datenaustausch_Config_ID = "HC_Forum_Datenaustausch_Config_ID";
 
 	/**
 	 * Set Aktiv.
@@ -197,6 +220,31 @@ public interface I_HC_Forum_Datenaustausch_Config
     public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Speicherverzeichnis.
+	 * Verzeichnis, in dem exportierte Dateien gespeichert werden.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStoreDirectory (java.lang.String StoreDirectory);
+
+	/**
+	 * Get Speicherverzeichnis.
+	 * Verzeichnis, in dem exportierte Dateien gespeichert werden.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStoreDirectory();
+
+    /** Column definition for StoreDirectory */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_StoreDirectory = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "StoreDirectory", null);
+    /** Column name StoreDirectory */
+    public static final String COLUMNNAME_StoreDirectory = "StoreDirectory";
 
 	/**
 	 * Get Aktualisiert.

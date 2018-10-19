@@ -1,5 +1,9 @@
 package de.metas.ordercandidate.api.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,8 +29,6 @@ package de.metas.ordercandidate.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -75,7 +77,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
-import lombok.NonNull;
 
 public class OLCandBL implements IOLCandBL
 {
@@ -256,17 +257,24 @@ public class OLCandBL implements IOLCandBL
 
 	@Override
 	public AttachmentEntry addAttachment(
-			@NonNull final OLCandQuery olCAndQuery,
+			@NonNull final OLCandQuery olCandQuery,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
 		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
 
 		final List<TableRecordReference> olCandRefs = olCandRepo
-				.getByQuery(olCAndQuery)
+				.getByQuery(olCandQuery)
 				.stream()
 				.map(olCand -> TableRecordReference.of(I_C_OLCand.Table_Name, olCand.getId()))
 				.collect(ImmutableList.toImmutableList());
+
+		if (olCandRefs.isEmpty())
+		{
+			throw new AdempiereException("Missing order line candiates for given olCandQuery")
+					.appendParametersToMessage()
+					.setParameter("olCandQuery", olCandQuery);
+		}
 
 		final TableRecordReference firstOLCandRef = olCandRefs.get(0);
 		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(firstOLCandRef, attachmentEntryCreateRequest);

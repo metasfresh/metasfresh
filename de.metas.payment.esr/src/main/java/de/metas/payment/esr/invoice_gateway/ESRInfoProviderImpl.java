@@ -5,6 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
@@ -15,8 +17,8 @@ import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.AddressInfo;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Services;
@@ -80,22 +82,24 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 				.codingLine(paymentRequestRecord.getFullPaymentString())
 				.companyName(companyName)
 				.addressInfo(createAddressInfo(esrBank))
+				.participantNumber(esrBankAccount.getESR_RenderedAccountNo())
 				.build();
 
 		return esrPaymentInfo;
 	}
 
-	private AddressInfo createAddressInfo(@NonNull final I_C_Bank esrBank)
+	private AddressInfo createAddressInfo(@Nullable final I_C_Bank esrBank)
 	{
-		if (esrBank.getC_Location_ID() < 0)
+		if (esrBank == null || esrBank.getC_Location_ID() <= 0)
 		{
 			return null;
 		}
-
 		final I_C_Location bankLocation = esrBank.getC_Location();
+
 		final AddressInfo bankAddressInfo = AddressInfo
 				.builder()
 				.street(bankLocation.getAddress1())
+				.pobox(bankLocation.getPOBox())
 				.city(bankLocation.getCity())
 				.zip(bankLocation.getPostal())
 				.state(bankLocation.getRegionName())

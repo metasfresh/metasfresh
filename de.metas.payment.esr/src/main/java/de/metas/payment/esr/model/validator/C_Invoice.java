@@ -6,6 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.util.Services;
@@ -33,11 +34,13 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_Invoice.class)
+@Component("de.metas.payment.esr.model.validator.C_Invoice")
 public class C_Invoice
 {
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createEsrPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		Services.get(IESRBL.class).createESRPaymentRequest(invoiceRecord);
+		final IESRBL esrbl = Services.get(IESRBL.class);
+		esrbl.createESRPaymentRequest(invoiceRecord);
 	}
 }

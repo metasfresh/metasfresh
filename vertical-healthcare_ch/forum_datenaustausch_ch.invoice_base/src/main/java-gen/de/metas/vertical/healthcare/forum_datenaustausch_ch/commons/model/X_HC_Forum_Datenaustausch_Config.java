@@ -14,7 +14,7 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 529857679L;
+	private static final long serialVersionUID = -1482848411L;
 
     /** Standard Constructor */
     public X_HC_Forum_Datenaustausch_Config (Properties ctx, int HC_Forum_Datenaustausch_Config_ID, String trxName)
@@ -23,7 +23,7 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
       /** if (HC_Forum_Datenaustausch_Config_ID == 0)
         {
 			setExportXmlVersion (null);
-			setHC_Forum_Datenaustausch_ID (0);
+			setHC_Forum_Datenaustausch_Config_ID (0);
         } */
     }
 
@@ -79,6 +79,22 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 		return ii.intValue();
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
 	/** 
 	 * ExportXmlVersion AD_Reference_ID=540921
 	 * Reference name: ExportXmlVersion
@@ -103,25 +119,44 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 		return (java.lang.String)get_Value(COLUMNNAME_ExportXmlVersion);
 	}
 
-	/** Set HC_Forum_Datenaustausch.
-		@param HC_Forum_Datenaustausch_ID HC_Forum_Datenaustausch	  */
+	/** Set forum-datenaustausch.ch config.
+		@param HC_Forum_Datenaustausch_Config_ID forum-datenaustausch.ch config	  */
 	@Override
-	public void setHC_Forum_Datenaustausch_ID (int HC_Forum_Datenaustausch_ID)
+	public void setHC_Forum_Datenaustausch_Config_ID (int HC_Forum_Datenaustausch_Config_ID)
 	{
-		if (HC_Forum_Datenaustausch_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_ID, null);
+		if (HC_Forum_Datenaustausch_Config_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_Config_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_ID, Integer.valueOf(HC_Forum_Datenaustausch_ID));
+			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_Config_ID, Integer.valueOf(HC_Forum_Datenaustausch_Config_ID));
 	}
 
-	/** Get HC_Forum_Datenaustausch.
-		@return HC_Forum_Datenaustausch	  */
+	/** Get forum-datenaustausch.ch config.
+		@return forum-datenaustausch.ch config	  */
 	@Override
-	public int getHC_Forum_Datenaustausch_ID () 
+	public int getHC_Forum_Datenaustausch_Config_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_HC_Forum_Datenaustausch_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_HC_Forum_Datenaustausch_Config_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Speicherverzeichnis.
+		@param StoreDirectory 
+		Verzeichnis, in dem exportierte Dateien gespeichert werden.
+	  */
+	@Override
+	public void setStoreDirectory (java.lang.String StoreDirectory)
+	{
+		set_Value (COLUMNNAME_StoreDirectory, StoreDirectory);
+	}
+
+	/** Get Speicherverzeichnis.
+		@return Verzeichnis, in dem exportierte Dateien gespeichert werden.
+	  */
+	@Override
+	public java.lang.String getStoreDirectory () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_StoreDirectory);
 	}
 }

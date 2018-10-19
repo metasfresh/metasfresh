@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.Adempiere;
 
 import de.metas.attachments.AttachmentEntry;
@@ -59,8 +61,7 @@ public class C_Doc_Outbound_Log_StoreAttachments
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int pInstanceId = getAD_PInstance_ID();
-		final Iterator<I_C_Doc_Outbound_Log> docOutboundLogRecords = retrieveSelectedDocOutboundLogs(pInstanceId);
+		final Iterator<I_C_Doc_Outbound_Log> docOutboundLogRecords = retrieveSelectedDocOutboundLogs();
 		while (docOutboundLogRecords.hasNext())
 		{
 			final I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundLogRecords.next();
@@ -72,11 +73,14 @@ public class C_Doc_Outbound_Log_StoreAttachments
 		return MSG_OK;
 	}
 
-	private final Iterator<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final int pInstanceId)
+	private final Iterator<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs()
 	{
+		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
 		final Stream<I_C_Doc_Outbound_Log> stream = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.setOnlySelection(pInstanceId)
+				.addOnlyActiveRecordsFilter()
+				.filter(filter)
 				.create()
 				.iterateAndStream()
 				.filter(this::hasAttachmentToStore);

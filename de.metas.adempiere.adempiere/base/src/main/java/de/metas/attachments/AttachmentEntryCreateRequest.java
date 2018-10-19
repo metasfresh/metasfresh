@@ -3,6 +3,7 @@ package de.metas.attachments;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 
 import java.io.File;
@@ -44,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 
 @Value
 @Builder
+@ToString(exclude="data")
 public class AttachmentEntryCreateRequest
 {
 	public static AttachmentEntryCreateRequest fromURI(

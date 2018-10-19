@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -152,14 +153,18 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	@Override
 	public JsonAttachment attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
+
+			@ApiParam(value = "External reference of the order line candidates to which the given file shall be attached", allowEmptyValue = false) //
 			@PathVariable("externalReference") final String externalReference,
 
-			@ApiParam(value = "List with an even number of values; transformed to a map of key-value pairs and added to the new attachment as tags", allowEmptyValue = true) //
+			@ApiParam(value = "List with an even number of items;\n"
+					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
+					+ "If the number of items is odd, the last item is discarded", allowEmptyValue = true) //
 			@RequestParam("tags") //
 			@Nullable final List<String> tagKeyValuePairs,
 
-			@RequestBody @NonNull final MultipartFile file)
-			throws IOException
+			@ApiParam(value = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
+			@RequestBody @NonNull final MultipartFile file) throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);
 
@@ -185,14 +190,18 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				attachmentEntry);
 	}
 
-	private ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
+	@VisibleForTesting
+	ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
 	{
 		if (tagKeyValuePairs == null)
 		{
 			return ImmutableMap.of();
 		}
 		final ImmutableMap.Builder<String, String> tags = ImmutableMap.builder();
-		final int maxIndex = tagKeyValuePairs.size() / 2;
+
+		final int listSize = tagKeyValuePairs.size();
+		final int maxIndex = listSize % 2 == 0 ? listSize : listSize - 1;
+
 		for (int i = 0; i < maxIndex; i += 2)
 		{
 			tags.put(tagKeyValuePairs.get(i), tagKeyValuePairs.get(i + 1));

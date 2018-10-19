@@ -1,12 +1,15 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -35,10 +38,9 @@ import lombok.NonNull;
 @Builder(toBuilder = true)
 public class JsonBPartnerLocation
 {
-	/** This translates to {@code C_BPartner_Location.ExternalId} */
 	@ApiModelProperty(allowEmptyValue = false, //
 			value = "This translates to <code>C_BPartner_Location.ExternalId</code>.\n"
-					+ "Needs to be unique over all business partners (not only the one this location belong to).")
+					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private String externalId;
 
 	private String address1;
@@ -49,4 +51,9 @@ public class JsonBPartnerLocation
 
 	@NonNull
 	private String countryCode;
+
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "This translates to <code>C_BPartner_Location.GLN</code>.")
+	@Nullable
+	private String gln;
 }

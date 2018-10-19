@@ -1,5 +1,6 @@
 package de.metas.invoice.export;
 
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import lombok.NonNull;
@@ -16,6 +17,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -96,7 +98,7 @@ public class InvoiceToExportFactory
 		final String currentyStr = invoiceRecord.getC_Currency().getISO_Code();
 		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currentyStr);
 
-		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceRecord);
+		final BigDecimal allocatedAmt = Util.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
 		final Money allocatedMoney = Money.of(allocatedAmt, currentyStr);
 
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
@@ -250,7 +252,7 @@ public class InvoiceToExportFactory
 		final I_C_BPartner_Location remittoLocation = bPartnerDAO.retrieveBPartnerLocation(query);
 		Check.assumeNotNull(remittoLocation, "The given invoice's orgBPartner needs to have a remit-to location; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
 
-		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), "The remot-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
+		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), "The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
 		final String vatTaxId = Check.assumeNotEmpty(orgBPartner.getVATaxID(), "The given invoice's orgBPartner needs to have a VATaxID; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
 
 		final BPartner recipient = BPartner.builder()

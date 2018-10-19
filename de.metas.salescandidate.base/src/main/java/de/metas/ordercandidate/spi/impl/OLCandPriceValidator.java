@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.spi.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -44,8 +46,6 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
 
-import lombok.NonNull;
-
 /**
  * Validates and sets the given OLCand's pricing data.
  *
@@ -86,6 +86,15 @@ public class OLCandPriceValidator implements IOLCandValidator
 			}
 
 			final IPricingResult pricingResult = getPricingResult(olCand);
+			if (pricingResult == null || pricingResult.getPricingSystemId() == null || pricingResult.getPricingSystemId().isNone())
+			{
+				olCand.setIsError(true);
+				final String msg = "@NotFound@ @M_PricingSystem_ID@";
+				olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg));
+				return false;
+			}
+			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
+
 			if (pricingResult == null || pricingResult.getC_TaxCategory_ID() <= 0)
 			{
 				olCand.setIsError(true);
@@ -93,7 +102,6 @@ public class OLCandPriceValidator implements IOLCandValidator
 				olCand.setErrorMsg(Services.get(IMsgBL.class).parseTranslation(ctx, msg));
 				return false;
 			}
-
 			olCand.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
 
 			// set the internal pricing info for the user's information, if we have it

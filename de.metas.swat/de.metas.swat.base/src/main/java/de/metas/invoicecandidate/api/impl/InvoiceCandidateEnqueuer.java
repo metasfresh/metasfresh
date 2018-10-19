@@ -2,6 +2,8 @@ package de.metas.invoicecandidate.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -64,8 +66,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.NullLoggable;
 import de.metas.util.Services;
-
-import lombok.NonNull;
 
 /**
  *

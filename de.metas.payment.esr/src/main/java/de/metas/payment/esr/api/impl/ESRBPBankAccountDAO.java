@@ -82,10 +82,17 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	@Override
 	public final List<I_C_BP_BankAccount> fetchOrgEsrAccounts(@NonNull final I_AD_Org org)
 	{
-		// task 07647: we need to get the Org's BPArtner!
-		final I_C_BPartner linkedBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
+		final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_BP_BankAccount> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_BP_BankAccount.class, org);
+		// task 07647: we need to get the Org's BPArtner!
+		final I_C_BPartner linkedBPartner = bPartnerOrgBL.retrieveLinkedBPartner(org);
+		if (linkedBPartner == null)
+		{
+			throwMissingEsrAccount(org);
+		}
+
+		final IQueryBuilder<I_C_BP_BankAccount> queryBuilder = queryBL.createQueryBuilder(I_C_BP_BankAccount.class, org);
 
 		queryBuilder.addOnlyActiveRecordsFilter();
 
@@ -103,15 +110,20 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 
 		if (esrAccounts.isEmpty())
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(org);
-
-			final String msg = msgBL.getMsg(ctx, MSG_NOT_ESR_ACCOUNT_FOR_ORG,
-					new Object[] { msgBL.translate(ctx, org.getValue())
-					});
-			throw new AdempiereException(msg);
+			throwMissingEsrAccount(org);
 		}
 
 		return esrAccounts;
+	}
+
+	private void throwMissingEsrAccount(final I_AD_Org org)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
+
+		final String msg = msgBL.getMsg(ctx, MSG_NOT_ESR_ACCOUNT_FOR_ORG,
+				new Object[] { msgBL.translate(ctx, org.getValue())
+				});
+		throw new AdempiereException(msg);
 	}
 }
