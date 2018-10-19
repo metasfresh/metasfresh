@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.ProcessId;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;

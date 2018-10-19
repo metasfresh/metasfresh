@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

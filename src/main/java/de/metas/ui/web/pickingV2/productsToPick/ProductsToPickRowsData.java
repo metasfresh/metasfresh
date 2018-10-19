@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -12,8 +13,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
@@ -51,7 +55,8 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 	private final PickingCandidateService pickingCandidateService;
 
 	private final ImmutableList<DocumentId> rowIdsOrdered;
-	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> rowsById;
+	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> _rowsById;
+	private volatile boolean rowIdsInvalid;
 
 	@Builder
 	private ProductsToPickRowsData(
@@ -65,20 +70,60 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
-		rowsById = rows.stream()
+		_rowsById = rows.stream()
 				.map(row -> GuavaCollectors.entry(row.getId(), row))
 				.collect(GuavaCollectors.toMap(ConcurrentHashMap::new));
+		rowIdsInvalid = false;
+	}
+
+	private synchronized Map<DocumentId, ProductsToPickRow> getRowsById()
+	{
+		if (rowIdsInvalid)
+		{
+			final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = _rowsById.values()
+					.stream()
+					.filter(row -> row.getPickingCandidateId() != null)
+					.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
+
+			final List<PickingCandidate> pickingCandidates = pickingCandidateService.getByIds(rowIdsByPickingCandidateId.keySet());
+
+			pickingCandidates
+					.forEach(pickingCandidate -> _rowsById.compute(
+							rowIdsByPickingCandidateId.get(pickingCandidate.getId()),
+							(rowId, row) -> row.withUpdatesFromPickingCandidateIfNotNull(pickingCandidate)));
+
+			rowIdsInvalid = false;
+		}
+		return _rowsById;
+	}
+
+	public synchronized void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
+	{
+		final Map<DocumentId, ProductsToPickRow> rowsById = getRowsById();
+		rowsById.compute(rowId, (k, row) -> {
+			if (row == null)
+			{
+				throw new AdempiereException("No row found for id: " + k);
+			}
+			else
+			{
+				final ProductsToPickRow newRow = mapper.apply(row);
+				Check.assumeNotNull(newRow, "newRow shall not be null");
+				return newRow;
+			}
+		});
 	}
 
 	@Override
 	public Map<DocumentId, ProductsToPickRow> getDocumentId2TopLevelRows()
 	{
-		return rowsById;
+		return getRowsById();
 	}
 
 	@Override
 	public Collection<ProductsToPickRow> getTopLevelRows()
 	{
+		final Map<DocumentId, ProductsToPickRow> rowsById = getRowsById();
 		return rowIdsOrdered.stream()
 				.map(rowsById::get)
 				.collect(ImmutableList.toImmutableList());
@@ -118,30 +163,35 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 		return row.withUpdatesFromPickingCandidateIfNotNull(pickingCandidate);
 	}
 
-	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
-	{
-		rowsById.compute(rowId, (k, row) -> {
-			if (row == null)
-			{
-				throw new AdempiereException("No row found for id: " + k);
-			}
-			else
-			{
-				final ProductsToPickRow newRow = mapper.apply(row);
-				Check.assumeNotNull(newRow, "newRow shall not be null");
-				return newRow;
-			}
-		});
-	}
-
 	@Override
 	public Stream<DocumentId> streamDocumentIdsToInvalidate(final TableRecordReference recordRef)
 	{
+		if (I_M_Picking_Candidate.Table_Name.equals(recordRef.getTableName()))
+		{
+			final PickingCandidateId pickingCandidateId = PickingCandidateId.ofRepoId(recordRef.getRecord_ID());
+			ProductsToPickRow row = getByPickingCandidateId(pickingCandidateId).orElse(null);
+			if (row != null)
+			{
+				return Stream.of(row.getId());
+			}
+		}
+
+		// fallback
 		return Stream.empty();
+	}
+
+	private Optional<ProductsToPickRow> getByPickingCandidateId(@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		return getRowsById()
+				.values()
+				.stream()
+				.filter(row -> pickingCandidateId.equals(row.getPickingCandidateId()))
+				.findFirst();
 	}
 
 	@Override
 	public void invalidateAll()
 	{
+		rowIdsInvalid = true;
 	}
 }

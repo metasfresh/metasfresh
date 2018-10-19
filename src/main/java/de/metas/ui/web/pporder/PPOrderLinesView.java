@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.GuavaCollectors;
+
 import lombok.Builder;
 import lombok.NonNull;
 

@@ -26,6 +26,7 @@ import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

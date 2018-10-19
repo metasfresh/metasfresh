@@ -18,7 +18,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.lang.RepoIdAwares;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -28,6 +27,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 
 /*
  * #%L

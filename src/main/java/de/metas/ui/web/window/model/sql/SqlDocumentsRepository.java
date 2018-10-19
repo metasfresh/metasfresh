@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
@@ -73,6 +72,8 @@ import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Check;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /*

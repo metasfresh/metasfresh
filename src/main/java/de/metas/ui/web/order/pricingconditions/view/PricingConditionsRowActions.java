@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -15,6 +14,8 @@ import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRe
 import de.metas.ui.web.order.pricingconditions.view.PricingConditionsRowChangeRequest.PartialPriceChange.PartialPriceChangeBuilder;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.util.lang.Percent;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

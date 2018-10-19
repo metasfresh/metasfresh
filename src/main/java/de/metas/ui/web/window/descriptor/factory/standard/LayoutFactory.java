@@ -53,6 +53,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
+
 import lombok.NonNull;
 
 /*

@@ -22,6 +22,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

@@ -1,5 +1,7 @@
 package de.metas.ui.web.config;
 
+import static de.metas.util.web.MetasfreshRestAPIConstants.createApiInfo;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,9 +49,11 @@ public class SwaggerConfig
 	{
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select()
-//				.apis(basePackages(WebRestApiApplication.class))
 				.paths(PathSelectors.any())
-				.build();
+				.build()
+				.apiInfo(createApiInfo(
+						"metasfresh webui REST API" /* title */,
+						"REST API backend for metasfresh UIs"/* description */));
 	}
 
 	@SuppressWarnings("unused")
@@ -61,7 +65,7 @@ public class SwaggerConfig
 			final String packageName = clazz.getPackage().getName();
 			predicates.add(RequestHandlerSelectors.basePackage(packageName));
 		}
-		
+
 		if(predicates.size() == 1)
 		{
 			return predicates.iterator().next();

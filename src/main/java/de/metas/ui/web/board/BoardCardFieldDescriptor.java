@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

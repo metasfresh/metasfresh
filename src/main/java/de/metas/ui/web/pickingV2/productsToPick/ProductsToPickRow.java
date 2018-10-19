@@ -100,6 +100,7 @@ public class ProductsToPickRow implements IViewRow
 
 	//
 	private final ProductsToPickRowId rowId;
+	private boolean processed;
 	@Getter
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Getter
@@ -125,6 +126,7 @@ public class ProductsToPickRow implements IViewRow
 			//
 			final PickingCandidatePickStatus pickStatus,
 			final PickingCandidateApprovalStatus approvalStatus,
+			final boolean processed,
 			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			final PickingCandidateId pickingCandidateId)
@@ -142,6 +144,7 @@ public class ProductsToPickRow implements IViewRow
 
 		this.pickStatus = pickStatus != null ? pickStatus : PickingCandidatePickStatus.TO_BE_PICKED;
 		this.approvalStatus = approvalStatus != null ? approvalStatus : PickingCandidateApprovalStatus.TO_BE_APPROVED;
+		this.processed = processed;
 
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
@@ -156,7 +159,7 @@ public class ProductsToPickRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return false; // not relevant
+		return processed;
 	}
 
 	@Override
@@ -192,6 +195,7 @@ public class ProductsToPickRow implements IViewRow
 				.qtyReview(pickingCandidate.getQtyReview())
 				.pickStatus(pickingCandidate.getPickStatus())
 				.approvalStatus(pickingCandidate.getApprovalStatus())
+				.processed(!pickingCandidate.isDraft())
 				.pickingCandidateId(pickingCandidate.getId())
 				.build();
 	}
@@ -206,33 +210,28 @@ public class ProductsToPickRow implements IViewRow
 		return toBuilder().qty(qty).build();
 	}
 
-	public boolean isToBePicked()
+	public boolean isApproved()
 	{
-		return pickStatus.isToBePicked();
-	}
-
-	public boolean isPickedOrPacked()
-	{
-		return pickStatus.isPickedOrPacked();
+		return approvalStatus.isApproved();
 	}
 
 	public boolean isEligibleForPicking()
 	{
-		return !isApproved();
+		return !isProcessed() && !isApproved();
 	}
 
 	public boolean isEligibleForPacking()
 	{
-		return isPickedOrPacked();
+		return !isProcessed() && pickStatus.isPickedOrPacked();
 	}
 
 	public boolean isEligibleForReview()
 	{
-		return pickStatus.isPacked() || pickStatus.isPickRejected();
+		return !isProcessed() && (pickStatus.isPacked() || pickStatus.isPickRejected());
 	}
 
-	public boolean isApproved()
+	public boolean isEligibleForProcessing()
 	{
-		return approvalStatus.isApproved();
+		return !isProcessed() && isApproved();
 	}
 }

@@ -116,7 +116,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	public LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
 	{
 		throw new UnsupportedOperationException();
-	}
+}
 
 	@Override
 	public LookupValuesList getFieldDropdown(RowEditingContext ctx, String fieldName)
