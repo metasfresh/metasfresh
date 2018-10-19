@@ -11,11 +11,8 @@ import OverlayField from '../app/OverlayField';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import RawWidget from '../widget/RawWidget';
-import {
-  openFilterBox,
-  closeFilterBox,
-  parseDateWithCurrenTimezone,
-} from '../../actions/WindowActions';
+import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
+import { parseDateWithCurrenTimezone } from '../../utils/documentListHelper';
 import { DATE_FIELDS } from '../../constants/Constants';
 class FiltersItem extends Component {
   constructor(props) {

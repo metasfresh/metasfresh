@@ -4,7 +4,7 @@ import classnames from 'classnames';
 
 import { getAttributesInstance, initLayout } from '../../../api';
 import { completeRequest, patchRequest } from '../../../actions/GenericActions';
-import { parseToDisplay } from '../../../actions/WindowActions';
+import { parseToDisplay } from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
 
 export default class Attributes extends Component {

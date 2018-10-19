@@ -4,10 +4,6 @@ import { push, replace } from 'react-router-redux';
 import SockJs from 'sockjs-client';
 import currentDevice from 'current-device';
 import Stomp from 'stompjs/lib/stomp.min.js';
-import Moment from 'moment';
-import { DateTime } from 'luxon';
-// import { isLuxonObject } from '../utils';
-
 import { Set } from 'immutable';
 
 import {
@@ -52,7 +48,6 @@ import {
   SHOW_SPINNER,
   HIDE_SPINNER,
 } from '../constants/ActionTypes';
-
 import {
   addNotification,
   setNotificationProgress,
@@ -64,6 +59,8 @@ import { getData, openFile, patchRequest } from './GenericActions';
 import { initLayout } from '../api';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
+import { getScope, toggleFullScreen } from '../utils';
+import { parseToDisplay } from '../utils/documentListHelper';
 
 export function setLatestNewDocument(id) {
   return {
@@ -1248,197 +1245,6 @@ export function startProcess(processType, pinstanceId) {
   return axios.get(
     `${config.API_URL}/process/${processType}/${pinstanceId}/start`
   );
-}
-
-// UTILITIES
-function toggleFullScreen() {
-  const doc = window.document;
-  const docEl = doc.documentElement;
-
-  const requestFullScreen =
-    docEl.requestFullscreen ||
-    docEl.mozRequestFullScreen ||
-    docEl.webkitRequestFullScreen ||
-    docEl.msRequestFullscreen;
-  const cancelFullScreen =
-    doc.exitFullscreen ||
-    doc.mozCancelFullScreen ||
-    doc.webkitExitFullscreen ||
-    doc.msExitFullscreen;
-
-  if (
-    !doc.fullscreenElement &&
-    !doc.mozFullScreenElement &&
-    !doc.webkitFullscreenElement &&
-    !doc.msFullscreenElement
-  ) {
-    requestFullScreen.call(docEl);
-  } else {
-    cancelFullScreen.call(doc);
-  }
-}
-
-function getScope(isModal) {
-  return isModal ? 'modal' : 'master';
-}
-
-export function parseToDisplay(fieldsByName) {
-  return parseDateToReadable(nullToEmptyStrings(fieldsByName));
-}
-
-// i.e 2018-01-27T17:00:00.000-06:00
-export function parseDateWithCurrenTimezone(value) {
-  if (value) {
-    let luxonOffset = 0;
-
-    if (!Moment.isMoment(value)) {
-      if (value instanceof Date) {
-        luxonOffset = DateTime.fromISO(value.toISOString()).offset;
-      } else {
-        luxonOffset = DateTime.fromISO(value).offset;
-      }
-
-      value = Moment(value);
-    } else {
-      luxonOffset = DateTime.fromISO(value.toISO()).offset;
-    }
-
-    const tempDate = Moment(value);
-    tempDate.utcOffset(luxonOffset);
-
-    return tempDate;
-  }
-  return '';
-}
-
-function parseDateToReadable(fieldsByName) {
-  const dateParse = ['Date', 'DateTime', 'Time'];
-
-  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
-    const field = fieldsByName[fieldName];
-    const isDateField = dateParse.indexOf(field.widgetType) > -1;
-    acc[fieldName] =
-      isDateField && field.value
-        ? {
-            ...field,
-            value: parseDateWithCurrenTimezone(field.value),
-          }
-        : field;
-    return acc;
-  }, {});
-}
-
-function nullToEmptyStrings(fieldsByName) {
-  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
-    acc[fieldName] =
-      fieldsByName[fieldName].value === null
-        ? { ...fieldsByName[fieldName], value: '' }
-        : fieldsByName[fieldName];
-    return acc;
-  }, {});
-}
-
-export function findRowByPropName(arr, name) {
-  let ret = -1;
-
-  if (!arr) {
-    return ret;
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i].field === name) {
-      ret = arr[i];
-      break;
-    }
-  }
-
-  return ret;
-}
-
-export function getItemsByProperty(arr, prop, value) {
-  let ret = [];
-
-  arr &&
-    arr.map(item => {
-      if (item[prop] === value) {
-        ret.push(item);
-      }
-    });
-
-  return ret;
-}
-/**
- * flatten array with 1 level deep max(with fieldByName)
- * from includedDocuments data
- */
-export function getRowsData(rowData) {
-  let data = [];
-  rowData &&
-    rowData.map(item => {
-      data = data.concat(mapIncluded(item));
-    });
-
-  return data;
-}
-
-export function mapIncluded(node, indent, isParentLastChild = false) {
-  let ind = indent ? indent : [];
-  let result = [];
-
-  const nodeCopy = {
-    ...node,
-    indent: ind,
-  };
-
-  result = result.concat([nodeCopy]);
-
-  if (isParentLastChild) {
-    ind[ind.length - 2] = false;
-  }
-
-  if (node.includedDocuments) {
-    for (let i = 0; i < node.includedDocuments.length; i++) {
-      let copy = node.includedDocuments[i];
-      copy.fieldsByName = parseToDisplay(copy.fieldsByName);
-      if (i === node.includedDocuments.length - 1) {
-        copy = {
-          ...copy,
-          lastChild: true,
-        };
-      }
-
-      result = result.concat(
-        mapIncluded(copy, ind.concat([true]), node.lastChild)
-      );
-    }
-  }
-  return result;
-}
-
-export function collapsedMap(node, isCollapsed, initialMap) {
-  let collapsedMap = [];
-  if (initialMap) {
-    if (!isCollapsed) {
-      initialMap.splice(
-        initialMap.indexOf(node.includedDocuments[0]),
-        node.includedDocuments.length
-      );
-      collapsedMap = initialMap;
-    } else {
-      initialMap.map(item => {
-        collapsedMap.push(item);
-        if (item.id === node.id) {
-          collapsedMap = collapsedMap.concat(node.includedDocuments);
-        }
-      });
-    }
-  } else {
-    if (node.includedDocuments) {
-      collapsedMap.push(node);
-    }
-  }
-
-  return collapsedMap;
 }
 
 export function connectWS(topic, onMessageCallback) {

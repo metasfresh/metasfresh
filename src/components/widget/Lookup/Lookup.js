@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 import * as _ from 'lodash';
 
-import { getItemsByProperty } from '../../../actions/WindowActions';
+import { getItemsByProperty } from '../../../utils';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
