@@ -16,12 +16,12 @@ import de.metas.translation.api.IElementTranslationBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,8 +30,12 @@ import de.metas.translation.api.IElementTranslationBL;
 
 public class ElementTranslationBL implements IElementTranslationBL
 {
-	public static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
-	public static final String FUNCTION_Update_FieldTranslation_From_AD_Name_Element = "update_FieldTranslation_From_AD_Name_Element";
+	private static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
+	private static final String FUNCTION_Update_FieldTranslation_From_AD_Name_Element = "update_FieldTranslation_From_AD_Name_Element";
+	private static final String FUNCTION_Update_Window_Translation_From_AD_Element = "update_window_translation_from_ad_element";
+	private static final String FUNCTION_Update_Tab_Translation_From_AD_Element = "update_tab_translation_from_ad_element";
+	private static final String FUNCTION_Update_Menu_Translation_From_AD_Element = "update_menu_translation_from_ad_element";
+
 
 	@Override
 	public void updateTranslations(final int elementId, final String adLanguage)
@@ -60,6 +64,33 @@ public class ElementTranslationBL implements IElementTranslationBL
 			DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForFieldTRL(FUNCTION_Update_FieldTranslation_From_AD_Name_Element, elementId), null);
 		}
 
+	}
+
+	@Override
+	public void updateWindowTranslationsFromElement(int elementId)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		{
+			DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForFieldTRL(FUNCTION_Update_Window_Translation_From_AD_Element, elementId), null);
+		}
+	}
+
+	@Override
+	public void updateTabTranslationsFromElement(int elementId)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		{
+			DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForFieldTRL(FUNCTION_Update_Tab_Translation_From_AD_Element, elementId), null);
+		}
+	}
+
+	@Override
+	public void updateMenuTranslationsFromElement(int elementId)
+	{
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		{
+			DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForFieldTRL(FUNCTION_Update_Menu_Translation_From_AD_Element, elementId), null);
+		}
 	}
 
 	private String addUpdateFunctionCallForFieldTRL(final String functionCall, int elementId)
