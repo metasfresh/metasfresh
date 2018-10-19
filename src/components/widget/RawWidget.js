@@ -4,6 +4,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
+import NumericInput from './NumericQuickInput';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
@@ -273,7 +274,12 @@ class RawWidget extends Component {
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: e => handleChange && handleChange(widgetField, e.target.value),
+      onChange: e => {
+        if (subentity === 'quickInput') {
+          return handleChange && handleChange(widgetField, e);
+        }
+        return handleChange && handleChange(widgetField, e.target.value);
+      },
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: e =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
@@ -599,12 +605,16 @@ class RawWidget extends Component {
               this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
-            <input
-              {...widgetProperties}
-              type="number"
-              min="0"
-              step={subentity === 'quickInput' ? 0.1 : 1}
-            />
+            {subentity === 'quickInput' ? (
+              <NumericInput
+                {...widgetProperties}
+                min={0}
+                precision={1}
+                step={subentity === 'quickInput' ? 0.1 : 1}
+              />
+            ) : (
+              <input {...widgetProperties} type="number" min="0" step={1} />
+            )}
           </div>
         );
       case 'Number':
