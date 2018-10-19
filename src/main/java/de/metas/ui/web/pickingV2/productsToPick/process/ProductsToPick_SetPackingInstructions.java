@@ -57,7 +57,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
 
-		if (!selectedRows.stream().allMatch(this::isEligible))
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isEligibleForPacking))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows are eligible");
 		}
@@ -71,7 +71,7 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 	{
 		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = getSelectedRows()
 				.stream()
-				.filter(this::isEligible)
+				.filter(ProductsToPickRow::isEligibleForPacking)
 				.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
 
 		final Set<PickingCandidateId> pickingCandidateIds = rowIdsByPickingCandidateId.keySet();
@@ -82,25 +82,10 @@ public class ProductsToPick_SetPackingInstructions extends ProductsToPickViewBas
 			final DocumentId rowId = rowIdsByPickingCandidateId.get(pickingCandidate.getId());
 			updateViewRowFromPickingCandidate(rowId, pickingCandidate);
 		});
-		
+
 		invalidateView();
 
 		return MSG_OK;
-	}
-
-	private boolean isEligible(final ProductsToPickRow row)
-	{
-		if (!row.isPickedOrPacked())
-		{
-			return false;
-		}
-
-		if (row.getPickingCandidateId() == null)
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	private HuPackingInstructionsId getHuPackingInstructionsId()
