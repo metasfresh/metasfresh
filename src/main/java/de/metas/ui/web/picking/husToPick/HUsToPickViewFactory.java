@@ -94,6 +94,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 
 		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);
 		builder.addStickyFilters(stickyFilter);
+		builder.setFilters(ImmutableList.of(HUsToPickViewFilters.createHUIdsFilter(true))); // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
 
 		return builder.build();
 	}

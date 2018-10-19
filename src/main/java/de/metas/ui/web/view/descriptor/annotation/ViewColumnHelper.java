@@ -141,6 +141,7 @@ public final class ViewColumnHelper
 
 		@NonNull
 		private final String fieldName;
+		private final WidgetSize widgetSize;
 		@Singular
 		private final ImmutableSet<MediaType> restrictToMediaTypes;
 	}
@@ -166,6 +167,10 @@ public final class ViewColumnHelper
 	{
 		final ClassViewColumnDescriptor.ClassViewColumnDescriptorBuilder columnBuilder = column.toBuilder();
 
+		if (overrides.getWidgetSize() != null)
+		{
+			columnBuilder.widgetSize(overrides.getWidgetSize());
+		}
 		if (overrides.getRestrictToMediaTypes() != null)
 		{
 			columnBuilder.restrictToMediaTypes(overrides.getRestrictToMediaTypes());
