@@ -29,6 +29,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -66,6 +67,7 @@ public class ProcessPickingCandidatesCommand
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
@@ -102,21 +104,31 @@ public class ProcessPickingCandidatesCommand
 	{
 		shipmentSchedulesCache.clear(); // because we want to get the fresh QtyToDeliver each time!
 
-		final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId());
-		final IHUProducerAllocationDestination packToDestination = getPackToDestination(pc);
-
-		HULoader.of(pickFromSource, packToDestination)
-				.load(createPackToAllocationRequest(pc));
-
-		final HuId packedHuId = packToDestination.getSingleCreatedHuId();
-		if (packedHuId == null)
+		final HuId packedToHuId;
+		if (pc.isRejectedToPick())
 		{
-			throw new AdempiereException("Nothing packed for " + pc);
+			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
+			shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+			packedToHuId = null;
+		}
+		else
+		{
+			final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId());
+			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pc);
+
+			HULoader.of(pickFromSource, packToDestination)
+					.load(createPackToAllocationRequest(pc));
+
+			packedToHuId = packToDestination.getSingleCreatedHuId();
+			if (packedToHuId == null)
+			{
+				throw new AdempiereException("Nothing packed for " + pc);
+			}
+
+			huShipmentScheduleBL.addQtyPickedAndUpdateHU(pc.getShipmentScheduleId(), pc.getQtyPicked(), packedToHuId);
 		}
 
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(pc.getShipmentScheduleId(), pc.getQtyPicked(), packedHuId);
-
-		pc.changeStatusToProcessed(packedHuId);
+		pc.changeStatusToProcessed(packedToHuId);
 		pickingCandidateRepository.save(pc);
 	}
 

@@ -74,7 +74,7 @@ public class SetHuPackingInstructionIdCommand
 
 	private void processPickingCandidate(final PickingCandidate pickingCandidate)
 	{
-		pickingCandidate.changePackToInstructionsId(huPackingInstructionsId);
+		pickingCandidate.packTo(huPackingInstructionsId);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 }
