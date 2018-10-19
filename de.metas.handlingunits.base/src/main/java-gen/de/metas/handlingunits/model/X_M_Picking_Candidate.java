@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2106422808L;
+	private static final long serialVersionUID = 1975427925L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -292,6 +292,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String PICKSTATUS_Picked = "P";
 	/** WillNotBePicked = N */
 	public static final String PICKSTATUS_WillNotBePicked = "N";
+	/** Packed = A */
+	public static final String PICKSTATUS_Packed = "A";
 	/** Set Pick Status.
 		@param PickStatus Pick Status	  */
 	@Override

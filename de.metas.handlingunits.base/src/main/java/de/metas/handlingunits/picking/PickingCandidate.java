@@ -174,7 +174,7 @@ public class PickingCandidate
 
 		this.qtyPicked = qtyPicked;
 		this.qtyReview = null;
-		this.pickStatus = PickingCandidatePickStatus.PICKED;
+		this.pickStatus = computePickOrPackStatus();
 		updateApprovalStatus();
 	}
 
@@ -207,11 +207,20 @@ public class PickingCandidate
 		{
 			return PickingCandidateApprovalStatus.TO_BE_APPROVED;
 		}
-		else if (PickingCandidatePickStatus.WILL_NOT_BE_PICKED == pickStatus)
+
+		//
+		final BigDecimal qtyReviewToMatch;
+		if (pickStatus.isPickRejected())
 		{
-			return PickingCandidateApprovalStatus.TO_BE_APPROVED;
+			qtyReviewToMatch = BigDecimal.ZERO;
 		}
-		else if (qtyPicked.getAsBigDecimal().equals(qtyReview))
+		else
+		{
+			qtyReviewToMatch = qtyPicked.getAsBigDecimal();
+		}
+
+		//
+		if (qtyReview.compareTo(qtyReviewToMatch) == 0)
 		{
 			return PickingCandidateApprovalStatus.APPROVED;
 		}
@@ -224,7 +233,17 @@ public class PickingCandidate
 	public void changePackToInstructionsId(final HuPackingInstructionsId packToInstructionsId)
 	{
 		assertDraft();
+		if (!pickStatus.isPickedOrPacked())
+		{
+			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
+		}
 
 		this.packToInstructionsId = packToInstructionsId;
+		this.pickStatus = computePickOrPackStatus();
+	}
+
+	private PickingCandidatePickStatus computePickOrPackStatus()
+	{
+		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
 	}
 }
