@@ -15,6 +15,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1989](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1989) Hourglass Overlay for pending Posts
     * Now showing a Loading indicator for windows with a large amount of records, to indicate about waiting time.
+  * [#2005](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2005) Allow decimal comma in Qty Fields
+    * New Number component that allows to record numbers with decimal point or comma.
 
 ## Fixes
 
