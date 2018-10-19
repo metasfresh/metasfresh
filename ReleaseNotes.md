@@ -17,6 +17,8 @@ Here come the actual release notes:
     * Now showing a Loading indicator for windows with a large amount of records, to indicate about waiting time.
   * [#2005](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2005) Allow decimal comma in Qty Fields
     * New Number component that allows to record numbers with decimal point or comma.
+  * [#2009](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2009) Views: Automatically remove view rows if GET /byIds it's not returning the row(s) frontend asked for
+    * Improvement in Frontend, removing rows automatically when API does not return them.
 
 ## Fixes
 * metasfresh-webui-frontend
