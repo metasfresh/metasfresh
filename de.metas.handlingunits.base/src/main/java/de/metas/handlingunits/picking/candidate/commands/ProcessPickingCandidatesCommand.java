@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.candidate.commands;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -10,7 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_BPartner;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -27,6 +28,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -72,7 +74,7 @@ public class ProcessPickingCandidatesCommand
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
-	private final ImmutableList<PickingCandidate> pickingCandidates;
+	private final ImmutableSet<PickingCandidateId> pickingCandidateIds;
 
 	private static final int PACKAGE_NO_ZERO = 0;
 	private final AtomicInteger PACKAGE_NO_SEQUENCE = new AtomicInteger(100);
@@ -84,20 +86,25 @@ public class ProcessPickingCandidatesCommand
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			//
-			@NonNull final List<PickingCandidate> pickingCandidates)
+			@NonNull final Set<PickingCandidateId> pickingCandidateIds)
 	{
-		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
+		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
 
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
-		this.pickingCandidates = ImmutableList.copyOf(pickingCandidates);
+		this.pickingCandidateIds = ImmutableSet.copyOf(pickingCandidateIds);
 	}
 
-	public void perform()
+	public ProcessPickingCandidatesResult perform()
 	{
+		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByIds(pickingCandidateIds);
 		pickingCandidates.forEach(PickingCandidate::assertDraft);
 
 		trxManager.runInThreadInheritedTrx(() -> pickingCandidates.forEach(this::processInTrx));
+
+		return ProcessPickingCandidatesResult.builder()
+				.pickingCandidates(pickingCandidates)
+				.build();
 	}
 
 	private void processInTrx(final PickingCandidate pc)
@@ -108,7 +115,10 @@ public class ProcessPickingCandidatesCommand
 		if (pc.isRejectedToPick())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
-			shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+			if (!shipmentSchedule.isClosed())
+			{
+				shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+			}
 			packedToHuId = null;
 		}
 		else

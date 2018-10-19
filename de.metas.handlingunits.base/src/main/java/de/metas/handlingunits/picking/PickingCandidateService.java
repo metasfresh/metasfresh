@@ -21,6 +21,7 @@ import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessHsAndPickingCandidateCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingCommand;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
 import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlotCommand;
@@ -76,6 +77,11 @@ public class PickingCandidateService
 	{
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
+	}
+
+	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
+	{
+		return pickingCandidateRepository.getByIds(pickingCandidateIds);
 	}
 
 	public PickHUResult pickHU(final PickHURequest request)
@@ -167,11 +173,11 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public void process(@NonNull final List<PickingCandidate> pickingCandidates)
+	public ProcessPickingCandidatesResult process(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
 	{
-		ProcessPickingCandidatesCommand.builder()
+		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
-				.pickingCandidates(pickingCandidates)
+				.pickingCandidateIds(pickingCandidateIds)
 				.build()
 				.perform();
 	}
