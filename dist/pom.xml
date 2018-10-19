@@ -452,6 +452,53 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.go</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.datev</groupId>
+			<artifactId>metasfresh-datev</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<!-- Elasticsearch -->
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.inbound</groupId>
+			<artifactId>de.metas.inbound.mail</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.swat</groupId>
@@ -492,51 +539,21 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.metas.shipper.gateway</groupId>
-			<artifactId>de.metas.shipper.gateway.go</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.metas.datev</groupId>
-			<artifactId>metasfresh-datev</artifactId>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
 
-		<!-- Elasticsearch -->
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 		<dependency>
-			<groupId>de.metas.elasticsearch</groupId>
-			<artifactId>de.metas.elasticsearch</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.elasticsearch</groupId>
-			<artifactId>de.metas.elasticsearch.server</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.inbound</groupId>
-			<artifactId>de.metas.inbound.mail</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
 		</dependency>
 
 	</dependencies>
@@ -848,6 +865,24 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
+					<!-- copy external-lib
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-external-lib-for-docker-build</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/report/external-lib</outputDirectory>
+							<includeArtifactIds>jp.osdn.ocra,jp.osdn.ocrb</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					
 				</executions>
 			</plugin>
 
@@ -930,7 +965,7 @@ note: when adding new records, please roughly order them by alphabet.
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

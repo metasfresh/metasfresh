@@ -11,4 +11,8 @@ ARG BASE_IMAGE_VERSION=latest
 
 FROM metasfresh/${BASE_IMAGE_REPO}:${BASE_IMAGE_VERSION}
 
+# Note: it's the pom.xml's job to provide these 2 folders
+COPY ./external-lib/* /opt/metasfresh/metasfresh-report/external-lib/
 COPY ./reports/ /opt/metasfresh/reports
+
+# Note: we go with the entry-point that was already specified by the base image's Dockerfile
