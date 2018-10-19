@@ -47,7 +47,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!selectedRows.stream().allMatch(ProductsToPickRow::isToBePicked))
+		if (!selectedRows.stream().allMatch(ProductsToPickRow::isEligibleForPicking))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only rows that can be picked");
 		}
@@ -61,7 +61,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	{
 		getSelectedRows()
 				.stream()
-				.filter(ProductsToPickRow::isToBePicked)
+				.filter(ProductsToPickRow::isEligibleForPicking)
 				.forEach(this::pickRow);
 
 		invalidateView();
