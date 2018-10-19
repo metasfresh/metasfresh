@@ -132,12 +132,12 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 
 		//
 		// Document Type
-		final int docTypeId = docTypeDAO
-				.getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
-						.adClientId(movement.getAD_Client_ID())
-						.adOrgId(movement.getAD_Org_ID())
-						.build());
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
+				.adClientId(movement.getAD_Client_ID())
+				.adOrgId(movement.getAD_Org_ID())
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 		movement.setC_DocType_ID(docTypeId);
 
 		//

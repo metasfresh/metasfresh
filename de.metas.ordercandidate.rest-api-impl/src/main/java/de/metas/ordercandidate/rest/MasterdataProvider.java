@@ -1,5 +1,18 @@
 package de.metas.ordercandidate.rest;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getId;
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,7 +23,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
@@ -18,8 +30,12 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
@@ -28,16 +44,21 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -63,7 +84,7 @@ import lombok.NonNull;
 
 final class MasterdataProvider
 {
-	public static final MasterdataProvider newInstance(final Properties ctx)
+	public static final MasterdataProvider createInstance(final Properties ctx)
 	{
 		return new MasterdataProvider(ctx);
 	}
@@ -78,7 +99,11 @@ final class MasterdataProvider
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
 
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	private final OrgId defaultOrgId;
+
+	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000); // TODO
 
 	private final UserRolePermissionsKey userRolePermissionsKey;
 	private final Set<PermissionRequest> permissionsGranted = new HashSet<>();
@@ -98,22 +123,22 @@ final class MasterdataProvider
 	{
 		assertPermission(PermissionRequest.builder()
 				.orgId(orgId)
-				.adTableId(InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+				.adTableId(getTableId(I_C_OLCand.class))
 				.build());
 	}
 
 	private void assertCanCreateOrUpdate(final Object record)
 	{
-		final OrgId orgId = InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY);
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(record);
+		final OrgId orgId = getOrgId(record).orElse(OrgId.ANY);
+		final int adTableId = getModelTableId(record);
 		final int recordId;
-		if (InterfaceWrapperHelper.isNew(record))
+		if (isNew(record))
 		{
 			recordId = -1;
 		}
 		else
 		{
-			recordId = InterfaceWrapperHelper.getId(record);
+			recordId = getId(record);
 		}
 
 		assertPermission(PermissionRequest.builder()
@@ -157,12 +182,74 @@ final class MasterdataProvider
 		permissionsGranted.add(request);
 	}
 
-	public ProductId getProductIdByValue(final String value)
+	public ProductId getCreateProductId(@NonNull final JsonProductInfo json, final OrgId orgId)
 	{
-		return productsRepo.retrieveProductIdByValue(value);
+		Context context = Context.ofOrg(orgId);
+		final ProductId existingProductId;
+		if (Check.isEmpty(json.getCode(), true))
+		{
+			existingProductId = null;
+		}
+		else
+		{
+			existingProductId = productsRepo.retrieveProductIdByValue(json.getCode());
+
+		}
+
+		final I_M_Product productRecord;
+		if (existingProductId != null)
+		{
+			productRecord = productsRepo.retrieveProductByValue(json.getCode());
+		}
+		else
+		{
+			productRecord = newInstanceOutOfTrx(I_M_Product.class);
+			productRecord.setAD_Org_ID(context.getOrgId().getRepoId());
+			productRecord.setValue(json.getCode());
+		}
+
+		try
+		{
+			productRecord.setName(json.getName());
+			final String productType;
+			switch (json.getType())
+			{
+				case SERVICE:
+					productType = X_M_Product.PRODUCTTYPE_Service;
+					break;
+				case ITEM:
+					productType = X_M_Product.PRODUCTTYPE_Item;
+					break;
+				default:
+					Check.fail("Unexpected type={}; jsonProductInfo={}", json.getType(), json);
+					productType = null;
+					break;
+			}
+
+			productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
+
+			productRecord.setProductType(productType);
+
+			final UomId uomId = uomsRepo.getUomIdByX12DE355(json.getUomCode());
+			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
+
+			save(productRecord);
+		}
+		catch (final PermissionNotGrantedException ex)
+		{
+			throw ex;
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed creating/updating record for " + json, ex);
+		}
+
+		return ProductId.ofRepoId(productRecord.getM_Product_ID());
 	}
 
-	public UomId getProductUOMId(final ProductId productId, final String uomCode)
+	public UomId getProductUOMId(
+			@NonNull final ProductId productId,
+			@Nullable final String uomCode)
 	{
 		if (!Check.isEmpty(uomCode, true))
 		{
@@ -184,7 +271,9 @@ final class MasterdataProvider
 		return priceListsRepo.getPricingSystemIdByValue(pricingSystemCode);
 	}
 
-	public final OLCandBPartnerInfo getCreateBPartnerInfo(final JsonBPartnerInfo json, final OrgId orgId)
+	public final OLCandBPartnerInfo getCreateBPartnerInfo(
+			@Nullable final JsonBPartnerInfo json,
+			final OrgId orgId)
 	{
 		if (json == null)
 		{
@@ -192,11 +281,18 @@ final class MasterdataProvider
 		}
 
 		Context context = Context.ofOrg(orgId);
+		return getCreateBPartnerInfo(json, context);
+	}
+
+	private OLCandBPartnerInfo getCreateBPartnerInfo(
+			@NonNull final JsonBPartnerInfo json,
+			@NonNull final Context context)
+	{
 		final BPartnerId bpartnerId = getCreateBPartnerId(json.getBpartner(), context);
 
-		context = context.with(bpartnerId);
-		final BPartnerLocationId bpartnerLocationId = getCreateBPartnerLocationId(json.getLocation(), context);
-		final BPartnerContactId bpartnerContactId = getCreateBPartnerContactId(json.getContact(), context);
+		final Context childContext = context.with(bpartnerId);
+		final BPartnerLocationId bpartnerLocationId = getCreateBPartnerLocationId(json.getLocation(), childContext);
+		final BPartnerContactId bpartnerContactId = getCreateBPartnerContactId(json.getContact(), childContext);
 
 		return OLCandBPartnerInfo.builder()
 				.bpartnerId(bpartnerId.getRepoId())
@@ -210,12 +306,22 @@ final class MasterdataProvider
 		return bpartnerIdsByJson.compute(json, (existingJson, existingBPartnerId) -> createOrUpdateBPartnerId(json, context.with(existingBPartnerId)));
 	}
 
-	private BPartnerId createOrUpdateBPartnerId(final JsonBPartner json, final Context context)
+	private BPartnerId createOrUpdateBPartnerId(
+			@NonNull final JsonBPartner json,
+			@NonNull final Context context)
 	{
 		final BPartnerId existingBPartnerId;
 		if (context.getBpartnerId() != null)
 		{
 			existingBPartnerId = context.getBpartnerId();
+		}
+		else if (json.getExternalId() != null)
+		{
+			existingBPartnerId = bpartnersRepo
+					.getBPartnerIdByExternalIdIfExists(
+							json.getExternalId(),
+							context.getOrgId())
+					.orElse(null);
 		}
 		else if (json.getCode() != null)
 		{
@@ -233,8 +339,12 @@ final class MasterdataProvider
 		}
 		else
 		{
-			bpartnerRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			bpartnerRecord = newInstance(I_C_BPartner.class);
 			bpartnerRecord.setAD_Org_ID(context.getOrgId().getRepoId());
+			if (context.isBPartnerIsOrgBP())
+			{
+				bpartnerRecord.setAD_OrgBP_ID(context.getOrgId().getRepoId());
+			}
 		}
 
 		try
@@ -257,7 +367,13 @@ final class MasterdataProvider
 
 	private final void updateBPartnerRecord(final I_C_BPartner bpartnerRecord, final JsonBPartner from)
 	{
-		final boolean isNew = InterfaceWrapperHelper.isNew(bpartnerRecord);
+		final boolean isNew = isNew(bpartnerRecord);
+
+		final String externalId = from.getExternalId();
+		if (!Check.isEmpty(externalId, true))
+		{
+			bpartnerRecord.setExternalId(externalId);
+		}
 
 		final String code = from.getCode();
 		if (!Check.isEmpty(code, true))
@@ -269,6 +385,10 @@ final class MasterdataProvider
 		if (!Check.isEmpty(name, true))
 		{
 			bpartnerRecord.setName(name);
+			if (Check.isEmpty(bpartnerRecord.getCompanyName(), true))
+			{
+				bpartnerRecord.setCompanyName(name);
+			}
 		}
 		else if (isNew)
 		{
@@ -290,7 +410,7 @@ final class MasterdataProvider
 				.build();
 	}
 
-	private BPartnerLocationId getCreateBPartnerLocationId(final JsonBPartnerLocation json, final Context context)
+	private BPartnerLocationId getCreateBPartnerLocationId(@Nullable final JsonBPartnerLocation json, @NonNull final Context context)
 	{
 		if (json == null)
 		{
@@ -315,6 +435,10 @@ final class MasterdataProvider
 		{
 			existingBPLocationId = bpartnersRepo.getBPartnerLocationIdByExternalId(bpartnerId, json.getExternalId()).orElse(null);
 		}
+		else if (json.getGln() != null)
+		{
+			existingBPLocationId = bpartnersRepo.getBPartnerLocationIdByGln(bpartnerId, json.getGln()).orElse(null);
+		}
 		else
 		{
 			existingBPLocationId = null;
@@ -327,7 +451,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			bpLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+			bpLocationRecord = newInstance(I_C_BPartner_Location.class);
 			bpLocationRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 		}
 
@@ -354,14 +478,16 @@ final class MasterdataProvider
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final JsonBPartnerLocation json)
 	{
-		final boolean isNew = InterfaceWrapperHelper.isNew(bpLocationRecord);
-
 		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpLocationRecord.setIsShipTo(true);
 		bpLocationRecord.setIsBillTo(true);
+
+		bpLocationRecord.setGLN(json.getGln());
+
 		bpLocationRecord.setExternalId(json.getExternalId());
 
-		if (isNew || !json.equals(toJsonBPartnerLocation(bpLocationRecord)))
+		final boolean newOrLocationHasChanged = isNew(bpLocationRecord) || !json.equals(toJsonBPartnerLocation(bpLocationRecord));
+		if (newOrLocationHasChanged)
 		{
 			final String countryCode = json.getCountryCode();
 			if (Check.isEmpty(countryCode))
@@ -371,17 +497,17 @@ final class MasterdataProvider
 			final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
-			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Location.class);
+			final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
 			locationRecord.setAddress1(json.getAddress1());
 			locationRecord.setAddress2(json.getAddress2());
 			locationRecord.setPostal(locationRecord.getPostal());
 			locationRecord.setCity(locationRecord.getCity());
 			locationRecord.setC_Country_ID(countryId);
+
 			locationsRepo.save(locationRecord);
 
 			bpLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
-
 	}
 
 	public JsonBPartnerLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
@@ -402,7 +528,8 @@ final class MasterdataProvider
 
 	private JsonBPartnerLocation toJsonBPartnerLocation(@NonNull final I_C_BPartner_Location bpLocationRecord)
 	{
-		final I_C_Location location = bpLocationRecord.getC_Location();
+		final I_C_Location location = Check.assumeNotNull(bpLocationRecord.getC_Location(), "The given bpLocationRecord needs to have a C_Location; bpLocationRecord={}", bpLocationRecord);
+
 		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(location.getC_Country_ID());
 
 		return JsonBPartnerLocation.builder()
@@ -453,7 +580,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			contactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			contactRecord = newInstance(I_AD_User.class);
 			contactRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 		}
 
@@ -505,7 +632,7 @@ final class MasterdataProvider
 				.build();
 	}
 
-	public OrgId getCreateOrgId(final JsonOrganization json)
+	public OrgId getCreateOrgId(@Nullable final JsonOrganization json)
 	{
 		if (json == null)
 		{
@@ -528,14 +655,14 @@ final class MasterdataProvider
 			existingOrgId = orgsRepo.getOrgIdByValue(code).orElse(null);
 		}
 
-		I_AD_Org orgRecord;
+		final I_AD_Org orgRecord;
 		if (existingOrgId != null)
 		{
 			orgRecord = orgsRepo.getById(existingOrgId);
 		}
 		else
 		{
-			orgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+			orgRecord = newInstance(I_AD_Org.class);
 		}
 
 		try
@@ -553,10 +680,26 @@ final class MasterdataProvider
 			throw new AdempiereException("Failed creating/updating record for " + json, ex);
 		}
 
-		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+		if (json.getBpartner() != null)
+		{
+			getCreateOrgBPartnerInfo(json.getBpartner(), orgId);
+		}
+
+		return orgId;
 	}
 
-	private void updateOrgRecord(final I_AD_Org orgRecord, final JsonOrganization json)
+	private OLCandBPartnerInfo getCreateOrgBPartnerInfo(@NonNull final JsonBPartnerInfo bpartner, @NonNull final OrgId orgId)
+	{
+		final Context context = Context
+				.builder()
+				.orgId(orgId)
+				.bPartnerIsOrgBP(true)
+				.build();
+		return getCreateBPartnerInfo(bpartner, context);
+	}
+
+	private void updateOrgRecord(@NonNull final I_AD_Org orgRecord, @NonNull final JsonOrganization json)
 	{
 		orgRecord.setValue(json.getCode());
 		orgRecord.setName(json.getName());
@@ -574,6 +717,40 @@ final class MasterdataProvider
 				.code(orgRecord.getValue())
 				.name(orgRecord.getName())
 				.build();
+	}
+
+	public DocTypeId getDocTypeId(
+			@NonNull final JsonDocTypeInfo invoiceDocType,
+			@NonNull final OrgId orgId)
+	{
+		final String docSubType = Util.firstNotEmptyTrimmed(
+				invoiceDocType.getDocSubType(),
+				DocTypeQuery.DOCSUBTYPE_NONE);
+
+		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId.getRepoId());
+
+		final DocTypeQuery query = DocTypeQuery
+				.builder()
+				.docBaseType(invoiceDocType.getDocBaseType())
+				.docSubType(docSubType)
+				.adClientId(orgRecord.getAD_Client_ID())
+				.adOrgId(orgRecord.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query);
+	}
+
+	public CurrencyId getCurrencyId(@NonNull final String currencyCode)
+	{
+		if (Check.isEmpty(currencyCode))
+		{
+			return null;
+		}
+		final I_C_Currency currencyRecord = Services
+				.get(ICurrencyDAO.class)
+				.retrieveCurrencyByISOCode(Env.getCtx(), currencyCode);
+		Check.errorIf(currencyRecord == null, "Unable to retrieve a C_Currency for ISO code={}", currencyCode);
+		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 	}
 
 	@lombok.Value
@@ -602,6 +779,8 @@ final class MasterdataProvider
 		BPartnerLocationId locationId;
 		BPartnerContactId contactId;
 
+		boolean bPartnerIsOrgBP;
+
 		public Context with(final BPartnerId bpartnerId)
 		{
 			return toBuilder().bpartnerId(bpartnerId).build();
@@ -621,7 +800,7 @@ final class MasterdataProvider
 	@SuppressWarnings("serial")
 	private static class PermissionNotGrantedException extends AdempiereException
 	{
-		public PermissionNotGrantedException(String message)
+		public PermissionNotGrantedException(@NonNull final String message)
 		{
 			super(message);
 		}

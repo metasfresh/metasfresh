@@ -13,9 +13,9 @@ import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyConversionResult;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.lang.Percent;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

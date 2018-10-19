@@ -60,13 +60,13 @@
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
+
+		<dependency>
+			<groupId>de.metas.invoice_gateway</groupId>
+			<artifactId>metasfresh-invoice_gateway.api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

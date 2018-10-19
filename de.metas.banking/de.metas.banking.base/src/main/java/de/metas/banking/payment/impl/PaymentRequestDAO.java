@@ -33,8 +33,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Invoice;
 
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestDAO;
-import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

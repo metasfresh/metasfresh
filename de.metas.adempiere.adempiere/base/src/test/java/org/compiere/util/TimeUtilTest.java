@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.compiere.util;
 
@@ -15,12 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,6 +38,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,7 +49,7 @@ import de.metas.util.time.SystemTime;
 
 /**
  * @author Teo Sarca
- * 
+ *
  */
 public class TimeUtilTest
 {
@@ -211,7 +215,7 @@ public class TimeUtilTest
 
 	/**
 	 * Make sure {@link TimeUtil#TRUNC_WEEK} is compliant with postgresql's <code>date_trunc('week', ...)</code>.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -461,5 +465,23 @@ public class TimeUtilTest
 		final Timestamp timestampFromLocalTime = TimeUtil.asTimestamp(initialTime);
 
 		assertThat(timestampFromLocalTime).isEqualTo(expectedTimestamp);
+	}
+
+	@Test
+	public void asLocalDate_XMLGregorianCalendar() throws DatatypeConfigurationException
+	{
+		final Timestamp timestamp = Timestamp.valueOf("2018-10-04 15:43:10.1");
+
+		final GregorianCalendar c = new GregorianCalendar();
+		c.setTime(timestamp);
+		final XMLGregorianCalendar xmlGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+
+		// invoke the method under test
+		final LocalDate result = TimeUtil.asLocalDate(xmlGregorianCalendar);
+
+
+		assertThat(result.getYear()).isEqualTo(2018);
+		assertThat(result.getMonth()).isEqualTo(Month.OCTOBER);
+		assertThat(result.getDayOfMonth()).isEqualTo(4);
 	}
 }

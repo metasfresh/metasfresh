@@ -7,6 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -60,6 +62,9 @@ import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocument;
@@ -68,6 +73,7 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
+import de.metas.invoice.InvoiceUtil;
 import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -325,7 +331,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getC_Currency_ID()); // 03805
-
 
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
@@ -606,6 +611,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceBL.setTaxAmt(invoiceLine);
 
 				final List<I_C_Invoice_Candidate> candsForIlVO = aggregate.getCandsFor(ilVO);
+
+				final List<String> externalIds = candsForIlVO
+						.stream()
+						.map(I_C_Invoice_Candidate::getExternalId)
+						.filter(Predicates.notNull())
+						.collect(ImmutableList.toImmutableList());
+				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it
@@ -902,12 +914,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	 * @return
 	 */
 	private List<I_AD_Note> createNoticesAndMarkICs(
-			final List<I_C_Invoice_Candidate> affectedCands,
-			final Throwable error)
+			@NonNull final List<I_C_Invoice_Candidate> affectedCands,
+			@NonNull final Throwable error)
 	{
-		Check.assumeNotNull(affectedCands, "Param 'affectedCands' is not empty");
-		Check.assumeNotNull(error, "Param 'error' is not empty");
-
 		Check.assume(!affectedCands.isEmpty(), "Given list of I_C_Invoice_Candidates is not empty");
 
 		final int USERINCHARGE_NA = -100; // placeholder for user in charge not available

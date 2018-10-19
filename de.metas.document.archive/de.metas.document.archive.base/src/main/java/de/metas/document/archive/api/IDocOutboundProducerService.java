@@ -1,6 +1,7 @@
 package de.metas.document.archive.api;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.util.ISingletonService;
 
 /**

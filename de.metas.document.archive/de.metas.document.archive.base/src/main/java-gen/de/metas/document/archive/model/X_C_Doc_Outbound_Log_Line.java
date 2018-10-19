@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1674843117L;
+	private static final long serialVersionUID = -340074797L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log_Line (Properties ctx, int C_Doc_Outbound_Log_Line_ID, String trxName)
@@ -55,10 +55,10 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	public static final String ACTION_EMail = "eMail";
 	/** PdfExport = pdf */
 	public static final String ACTION_PdfExport = "pdf";
+	/** AttachmentStored = attachmentStored */
+	public static final String ACTION_AttachmentStored = "attachmentStored";
 	/** Set Aktion.
-		@param Action 
-		Zeigt die durchzuführende Aktion an
-	  */
+		@param Action Aktion	  */
 	@Override
 	public void setAction (java.lang.String Action)
 	{
@@ -67,8 +67,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	/** Get Aktion.
-		@return Zeigt die durchzuführende Aktion an
-	  */
+		@return Aktion	  */
 	@Override
 	public java.lang.String getAction () 
 	{
@@ -537,5 +536,21 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	public java.lang.String getStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Status);
+	}
+
+	/** Set Speicherort.
+		@param StoreURI Speicherort	  */
+	@Override
+	public void setStoreURI (java.lang.String StoreURI)
+	{
+		set_Value (COLUMNNAME_StoreURI, StoreURI);
+	}
+
+	/** Get Speicherort.
+		@return Speicherort	  */
+	@Override
+	public java.lang.String getStoreURI () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_StoreURI);
 	}
 }

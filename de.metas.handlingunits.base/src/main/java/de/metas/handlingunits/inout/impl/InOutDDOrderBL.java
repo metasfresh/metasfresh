@@ -95,12 +95,12 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
 		Check.errorIf(productPlanning == null, "No Product Planning found for product Id {}", productId);
 
-		final int docTypeId = docTypeDAO
-				.getDocTypeId(DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-						.adClientId(inOutLine.getAD_Client_ID())
-						.adOrgId(inOutLine.getAD_Org_ID())
-						.build());
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.adClientId(inOutLine.getAD_Client_ID())
+				.adOrgId(inOutLine.getAD_Org_ID())
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeId(docTypeQuery).getRepoId();
 
 		final I_M_InOut inout = inOutLine.getM_InOut();
 

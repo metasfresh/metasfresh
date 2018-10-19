@@ -8,12 +8,13 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.lang.Percent;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Value;
 

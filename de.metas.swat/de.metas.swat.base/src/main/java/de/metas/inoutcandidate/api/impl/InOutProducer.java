@@ -418,11 +418,13 @@ public class InOutProducer implements IInOutProducer
 
 			// this is the doctype of the sched's source record (e.g. "Bestellung")
 			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
-			final int receiptDocTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 					.adClientId(rs.getAD_Client_ID())
 					.adOrgId(rs.getAD_Org_ID())
-					.build());
+					.build();
+			final int receiptDocTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			receiptHeader.setC_DocType_ID(receiptDocTypeId);
 		}
 

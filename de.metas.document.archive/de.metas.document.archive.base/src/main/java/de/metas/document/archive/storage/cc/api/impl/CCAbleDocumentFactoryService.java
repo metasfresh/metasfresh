@@ -1,5 +1,7 @@
 package de.metas.document.archive.storage.cc.api.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.document.archive.base
@@ -10,12 +12,12 @@ package de.metas.document.archive.storage.cc.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,29 +38,26 @@ import de.metas.util.Check;
 
 public class CCAbleDocumentFactoryService implements ICCAbleDocumentFactoryService
 {
-	private final Map<String, ICCAbleDocumentFactory> factories = new HashMap<String, ICCAbleDocumentFactory>();
+	private final Map<String, ICCAbleDocumentFactory> factories = new HashMap<>();
 
 	public CCAbleDocumentFactoryService()
 	{
-		super();
-
 		registerCCAbleDocumentFactory(org.compiere.model.I_C_Order.Table_Name, new OrderCCAbleDocumentFactory());
 	}
 
 	@Override
-	public void registerCCAbleDocumentFactory(final String tableName, final ICCAbleDocumentFactory factory)
+	public void registerCCAbleDocumentFactory(
+			@NonNull final String tableName,
+			@NonNull final ICCAbleDocumentFactory factory)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-		Check.assumeNotNull(factory, "factory not null");
 
 		factories.put(tableName, factory);
 	}
 
 	@Override
-	public ICCAbleDocument createCCAbleDocument(final Object model)
+	public ICCAbleDocument createCCAbleDocument(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		final ICCAbleDocumentFactory factory = getCCAbleDocumentFactoryOrNull(model);
 		if (factory == null)
 		{

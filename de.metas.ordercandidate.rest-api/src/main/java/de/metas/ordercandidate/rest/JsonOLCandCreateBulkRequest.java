@@ -46,4 +46,13 @@ public class JsonOLCandCreateBulkRequest
 	@JsonProperty("requests")
 	@Singular
 	private List<JsonOLCandCreateRequest> requests;
+
+	public JsonOLCandCreateBulkRequest validate()
+	{
+		for (final JsonOLCandCreateRequest request : requests)
+		{
+			request.validate();
+		}
+		return this;
+	}
 }

@@ -187,7 +187,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						, -1 // taxCategoryId
 						, oL1.getM_Product_ID()
 						, order1.getDatePromised()
-						, order1.getDatePromised()
 						, OrgId.ofRepoId(order1.getAD_Org_ID())
 						, WarehouseId.ofRepoId(order1.getM_Warehouse_ID())
 						, order1.getC_BPartner_Location_ID()

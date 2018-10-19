@@ -89,6 +89,7 @@ import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -101,6 +102,7 @@ import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -669,7 +671,12 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	{
 		if (invoiceCandidateValidator == null)
 		{
-			invoiceCandidateValidator = new C_Invoice_Candidate();
+			final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+			final InvoiceCandidateGroupRepository groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
+
+			invoiceCandidateValidator = new C_Invoice_Candidate(
+					groupsRepo,
+					attachmentEntryService);
 		}
 		return invoiceCandidateValidator;
 	}

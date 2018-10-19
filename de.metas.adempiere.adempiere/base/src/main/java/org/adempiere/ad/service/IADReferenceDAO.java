@@ -31,6 +31,7 @@ import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+
 import lombok.Builder;
 import lombok.Value;
 

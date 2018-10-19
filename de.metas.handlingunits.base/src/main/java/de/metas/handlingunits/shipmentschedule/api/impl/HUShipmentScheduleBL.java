@@ -53,6 +53,7 @@ import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -324,11 +325,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		//
 		// Document Type
 		{
-			final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
 					.adClientId(shipmentSchedule.getAD_Client_ID())
 					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build());
+					.build();
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(query);
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_DocType_ID, docTypeId);
 
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_MovementType, X_M_InOut.MOVEMENTTYPE_CustomerShipment);

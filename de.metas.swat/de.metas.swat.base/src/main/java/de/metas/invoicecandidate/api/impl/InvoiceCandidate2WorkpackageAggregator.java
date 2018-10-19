@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,12 +14,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +29,8 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.IdentityHashMap;
 import java.util.Properties;
+
+import org.compiere.util.Env;
 
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.async.api.IWorkPackageBlockBuilder;
@@ -65,14 +71,12 @@ import de.metas.util.collections.MapReduceAggregator;
 	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
 	private I_C_Async_Batch _asyncBatch = null;
-	
+
 	// status
 	private final IdentityHashMap<IWorkPackageBuilder, ICNetAmtToInvoiceChecker> group2netAmtToInvoiceChecker = new IdentityHashMap<>();
 
-	public InvoiceCandidate2WorkpackageAggregator(final Properties ctx, final String trxName)
+	public InvoiceCandidate2WorkpackageAggregator(@NonNull final Properties ctx, @Nullable final String trxName)
 	{
-		super();
-
 		Check.assumeNotNull(ctx, "ctx not null");
 		_ctx = ctx;
 		_trxName = trxName; // null/none it's accepted
@@ -128,6 +132,7 @@ import de.metas.util.collections.MapReduceAggregator;
 	{
 		final IWorkPackageBuilder workpackageBuilder = _queueBlockBuilder.newWorkpackage()
 				.setPriority(workpackagePriority)
+				.setUserInChargeId(Env.getAD_User_ID()) // we want the enqueuing user to be notified on problems
 				.bindToTrxName(getTrxName());
 
 		//
@@ -202,13 +207,13 @@ import de.metas.util.collections.MapReduceAggregator;
 		_asyncBatch = asyncBatch;
 		return this;
 	}
-	
+
 	public InvoiceCandidate2WorkpackageAggregator setPriority(final IWorkpackagePrioStrategy priority)
 	{
 		workpackagePriority = priority;
 		return this;
 	}
-	
+
 	/**
 	 * Gets unprocessed workpackages queue size
 	 */

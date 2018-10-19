@@ -80,12 +80,13 @@ public class M_Inventory
 
 	private int getPhysicalInventoryDocTypeId(final I_M_Inventory inventory)
 	{
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
 				.adClientId(inventory.getAD_Client_ID())
 				.adOrgId(inventory.getAD_Org_ID())
-				.build());
+				.build();
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 
 	}
 }

@@ -39,13 +39,13 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.X_C_Period;
 import org.compiere.util.TimeUtil;
 
-import de.metas.calendar.ExcludeWeekendBusinessDayMatcher;
-import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
+import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
+import de.metas.util.calendar.IBusinessDayMatcher;
 
 public class CalendarBL implements ICalendarBL
 {

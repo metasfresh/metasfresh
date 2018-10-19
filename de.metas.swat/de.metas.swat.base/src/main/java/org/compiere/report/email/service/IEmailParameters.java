@@ -21,5 +21,4 @@ public interface IEmailParameters {
 	String getExportFilePrefix();
 
 	MADBoilerPlate getDefaultTextPreset();
-
 }

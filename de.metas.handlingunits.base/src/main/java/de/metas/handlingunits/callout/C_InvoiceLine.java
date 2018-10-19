@@ -30,9 +30,9 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.InvoiceLineHUPackingAware;
-import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.handlingunits.model.I_C_InvoiceLine;
 import de.metas.util.Services;
+import de.metas.invoice.IInvoiceLineBL;
 
 @Callout(I_C_InvoiceLine.class)
 public class C_InvoiceLine

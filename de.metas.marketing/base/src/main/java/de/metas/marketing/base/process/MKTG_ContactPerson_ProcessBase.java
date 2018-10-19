@@ -11,8 +11,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Service;
 
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.marketing.base.CampaignService;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.util.Services;

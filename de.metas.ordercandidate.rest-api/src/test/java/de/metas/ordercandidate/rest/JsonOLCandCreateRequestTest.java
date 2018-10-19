@@ -81,6 +81,8 @@ public class JsonOLCandCreateRequestTest
 								.build())
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
+				.dataSourceInternalName("dataSourceInternalName")
+				.poReference("poReference")
 				.build();
 	}
 

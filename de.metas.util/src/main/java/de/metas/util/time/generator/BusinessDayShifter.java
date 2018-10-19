@@ -4,9 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import de.metas.calendar.CompositeBusinessDayMatcher;
-import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.util.Check;
+import de.metas.util.calendar.CompositeBusinessDayMatcher;
+import de.metas.util.calendar.IBusinessDayMatcher;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

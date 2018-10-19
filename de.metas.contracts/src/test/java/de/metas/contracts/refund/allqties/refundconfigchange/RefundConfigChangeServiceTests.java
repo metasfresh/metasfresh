@@ -31,9 +31,9 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.lang.Percent;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L

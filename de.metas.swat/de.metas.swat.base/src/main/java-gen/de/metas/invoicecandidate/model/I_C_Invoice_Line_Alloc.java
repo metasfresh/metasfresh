@@ -99,7 +99,6 @@ public interface I_C_Invoice_Line_Alloc
 
 	/**
 	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -109,7 +108,6 @@ public interface I_C_Invoice_Line_Alloc
 
 	/**
 	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -262,7 +260,7 @@ public interface I_C_Invoice_Line_Alloc
 
 	/**
 	 * Set Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Optional weitere Information
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -272,7 +270,7 @@ public interface I_C_Invoice_Line_Alloc
 
 	/**
 	 * Get Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Optional weitere Information
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

@@ -62,6 +62,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -173,14 +174,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveReferencing(final Object model)
+	public List<I_C_Invoice_Candidate> retrieveReferencing(@NonNull final Object model)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		return fetchInvoiceCandidates(ctx, tableName, recordId, trxName);
+		final TableRecordReference reference = TableRecordReference.of(model);
+		return fetchInvoiceCandidates(
+				ctx,
+				reference.getTableName(),
+				reference.getRecord_ID(),
+				trxName);
 	}
 
 	@Override
@@ -795,7 +799,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	@Cached(cacheName = I_C_Invoice_Candidate.Table_Name + "#by#AD_Table_ID#Record_ID")
 	@Override
-	public List<I_C_Invoice_Candidate> fetchInvoiceCandidates(@CacheCtx final Properties ctx, final String tableName, final int recordId, @CacheTrx final String trxName)
+	public List<I_C_Invoice_Candidate> fetchInvoiceCandidates(
+			@CacheCtx final Properties ctx,
+			@NonNull final String tableName,
+			final int recordId, @CacheTrx final String trxName)
 	{
 		Check.assume(recordId > 0, "Param 'recordId' is > 0");
 

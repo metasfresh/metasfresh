@@ -1754,7 +1754,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public void addUnion(final IQuery<T> query, final boolean distinct)
+	public IQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
 	{
 		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
@@ -1762,6 +1762,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			unions = new ArrayList<>();
 		}
 		unions.add(sqlQueryUnion);
+
+		return this;
 	}
 
 	@Override

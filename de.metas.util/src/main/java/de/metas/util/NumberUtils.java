@@ -25,7 +25,7 @@ package de.metas.util;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import de.metas.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * Number Utils

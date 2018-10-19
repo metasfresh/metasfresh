@@ -34,8 +34,9 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.lang.RepoIdAware;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
 import lombok.NonNull;
 
 /**

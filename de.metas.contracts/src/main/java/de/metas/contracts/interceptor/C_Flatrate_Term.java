@@ -84,6 +84,8 @@ import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import lombok.NonNull;
+
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
@@ -522,7 +524,7 @@ public class C_Flatrate_Term
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final boolean overlappingIsOK = flatrateBL.canOverlapWithOtherTerms(term);
-		if (overlappingIsOK)
+		if(overlappingIsOK)
 		{
 			return; // nothing to do
 		}
@@ -604,7 +606,7 @@ public class C_Flatrate_Term
 		if (orderId == null)
 		{
 			return;
-		}
+}
 
 		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
 		{

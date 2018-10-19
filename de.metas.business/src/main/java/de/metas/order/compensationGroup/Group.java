@@ -13,9 +13,10 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

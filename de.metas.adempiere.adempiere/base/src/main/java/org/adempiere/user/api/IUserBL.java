@@ -29,10 +29,10 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 
-import de.metas.hash.HashableString;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.util.ISingletonService;
+import de.metas.util.hash.HashableString;
 
 public interface IUserBL extends ISingletonService
 {

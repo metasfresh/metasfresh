@@ -67,7 +67,6 @@ public final class AppsAction extends AbstractAction
 
 	private AppsAction(final Builder builder)
 	{
-		super();
 		_actionCommand = builder.getAction();
 		_acceleratorDefault = builder.getAccelerator();
 		toggleButton = builder.isToggleButton();

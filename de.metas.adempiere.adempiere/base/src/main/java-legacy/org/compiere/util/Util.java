@@ -1494,6 +1494,9 @@ public class Util
 		return 0;
 	}
 
+	/**
+	 * @return the first non-empty string or {@code null}.
+	 */
 	public static final String firstNotEmptyTrimmed(@NonNull final String... values)
 	{
 		for (int i = 0; i < values.length; i++)

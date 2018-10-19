@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -177,8 +178,8 @@ public class RefundInvoiceCandidateFactory
 		final RefundInvoiceType refundInvoiceType = extractSingleElement(refundConfigs, RefundConfig::getRefundInvoiceType);
 		try
 		{
-			final int docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundInvoiceType);
-			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId);
+			final DocTypeId docTypeId = computeDocType(assignableInvoiceCandidateRecord, refundInvoiceType);
+			refundInvoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 		}
 		catch (final RuntimeException e)
 		{
@@ -202,7 +203,7 @@ public class RefundInvoiceCandidateFactory
 		return resultCandidate;
 	}
 
-	private int computeDocType(
+	private DocTypeId computeDocType(
 			final I_C_Invoice_Candidate assignableInvoiceCandidateRecord,
 			final RefundInvoiceType refundInvoiceType)
 	{
@@ -237,10 +238,10 @@ public class RefundInvoiceCandidateFactory
 				break;
 		}
 
-		final int docTypeId = Services.get(IDocTypeDAO.class)
-				.getDocTypeIdOrNull(docTypeQueryBuilder.build());
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQueryBuilder.build());
 
-		return Check.assumeGreaterThanZero(docTypeId, "docTypeId");
+		return docTypeId;
 	}
 
 	private void invalidateNewRefundRecordIfNeeded(@NonNull final I_C_Invoice_Candidate refundInvoiceCandidateRecord)

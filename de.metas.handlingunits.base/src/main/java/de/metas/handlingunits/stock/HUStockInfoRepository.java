@@ -20,6 +20,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

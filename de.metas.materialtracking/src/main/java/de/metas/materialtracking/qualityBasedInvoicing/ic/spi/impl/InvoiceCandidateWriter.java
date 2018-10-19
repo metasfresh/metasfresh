@@ -617,7 +617,6 @@ public class InvoiceCandidateWriter
 				ic,
 				taxCategoryId,
 				ic.getM_Product_ID(),
-				date, // bill date
 				date, // ship date
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,

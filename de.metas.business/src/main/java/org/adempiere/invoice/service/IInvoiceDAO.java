@@ -10,12 +10,12 @@ package org.adempiere.invoice.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,13 +39,14 @@ import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
 {
 
 	/**
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}
@@ -72,7 +73,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
-	 * 
+	 *
 	 * @param ctx
 	 * @param invoiceNo
 	 * @param bPartnerID
@@ -83,20 +84,20 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Gets all open invoices for the specific organization.<br>
 	 * Not guaranteed iterator. Do not use if modifying the "IsPaid" column.
-	 * 
+	 *
 	 * @param adOrg
 	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(I_AD_Org adOrg);
 
 	/**
-	 * Gets invoice open amount (not paid amount) by calling {@link #retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please not that the value
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please not that the value
 	 * is:
 	 * <ul>
 	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
 	 * <li>absolute regarding if is a credit memo or not
 	 * </ul>
-	 * 
+	 *
 	 * @param invoice
 	 * @return open amount
 	 */
@@ -106,7 +107,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	/**
 	 * Retrieves the reversal line for the given invoice line and C_Invoice_ID, using the line's <code>C_InvoiceLine.Line</code> value.
-	 * 
+	 *
 	 * @param line
 	 * @param reversalInvoiceId
 	 * @return the reversal line or <code>null</code> if the reversal invoice has no line with the given <code>line</code>'s number.
@@ -116,7 +117,7 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
-	 * 
+	 *
 	 * @param ctx
 	 * @param startDate
 	 * @return
@@ -125,7 +126,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	/**
 	 * Retrieve all Adjustment Charge entries that were created based on the given invoice
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */
@@ -133,7 +134,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	/**
 	 * Retrieve all Credit Memo entries that were created based on the given invoice
-	 * 
+	 *
 	 * @param invoice
 	 * @return
 	 */

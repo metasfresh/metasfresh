@@ -9,11 +9,11 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListenerAdapter
+public class OrderAndInOutInvoiceCandidateListener implements IInvoiceCandidateListener
 {
 	public static final OrderAndInOutInvoiceCandidateListener instance = new OrderAndInOutInvoiceCandidateListener();
 

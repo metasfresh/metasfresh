@@ -8,10 +8,13 @@ import javax.annotation.Nullable;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
 
-import de.metas.lang.Percent;
+import de.metas.document.DocTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,6 +46,9 @@ public class OLCandCreateRequest
 {
 	private String externalId;
 
+	private String dataSourceInternalName;
+	private String dataDestInternalName;
+
 	private OrgId orgId;
 
 	private OLCandBPartnerInfo bpartner;
@@ -53,6 +59,10 @@ public class OLCandCreateRequest
 	private String poReference;
 
 	private LocalDate dateRequired;
+
+	private LocalDate dateInvoiced;
+	private DocTypeId docTypeInvoiceId;
+
 	private int flatrateConditionsId;
 
 	private ProductId productId;
@@ -63,21 +73,23 @@ public class OLCandCreateRequest
 
 	private PricingSystemId pricingSystemId;
 	private BigDecimal price;
+	private CurrencyId currencyId; // mandatory if price is provided
 	private Percent discount;
-	// private String currencyCode; // shall come from pricingSystem/priceList
-
-	private String adInputDataSourceInternalName;
 
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalId,
 			final OrgId orgId,
+			@NonNull final  String dataSourceInternalName,
+			@Nullable final  String dataDestInternalName,
 			@NonNull final OLCandBPartnerInfo bpartner,
 			final OLCandBPartnerInfo billBPartner,
 			final OLCandBPartnerInfo dropShipBPartner,
 			final OLCandBPartnerInfo handOverBPartner,
 			final String poReference,
-			@NonNull final LocalDate dateRequired,
+			@Nullable final LocalDate dateRequired,
+			@Nullable final LocalDate dateInvoiced,
+			@Nullable final DocTypeId docTypeInvoiceId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
 			final String productDescription,
@@ -86,6 +98,7 @@ public class OLCandCreateRequest
 			final int huPIItemProductId,
 			@Nullable final PricingSystemId pricingSystemId,
 			final BigDecimal price,
+			final CurrencyId currencyId,
 			final Percent discount,
 			//
 			final String adInputDataSourceInternalName)
@@ -97,12 +110,20 @@ public class OLCandCreateRequest
 
 		this.externalId = externalId;
 		this.orgId = orgId;
+
+		this.dataDestInternalName = dataDestInternalName;
+		this.dataSourceInternalName = dataSourceInternalName;
+
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
 		this.handOverBPartner = handOverBPartner;
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
+
+		this.dateInvoiced = dateInvoiced;
+		this.docTypeInvoiceId = docTypeInvoiceId;
+
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
 		this.productDescription = productDescription;
@@ -111,9 +132,7 @@ public class OLCandCreateRequest
 		this.huPIItemProductId = huPIItemProductId;
 		this.pricingSystemId = pricingSystemId;
 		this.price = price;
+		this.currencyId = currencyId;
 		this.discount = discount;
-
-		this.adInputDataSourceInternalName = adInputDataSourceInternalName;
 	}
-
 }

@@ -46,6 +46,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPPrintFormat;
 import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.util.Services;
@@ -238,13 +239,15 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			return;
 		}
 
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 		final int printFormatId = importRecord.getAD_PrintFormat_ID();
 		final int adTableId;
-		final int docTypeId;
+		final DocTypeId docTypeId;
 		// for vendors we have print format for purchase order
 		if (importRecord.isVendor())
 		{
-			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
@@ -254,20 +257,19 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		// for customer we have print format for delivery
 		else
 		{
-			docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
 			adTableId = X_M_InOut.Table_ID;
-
 		}
 
 		final BPartnerPrintFormatRepository repo = Adempiere.getBean(BPartnerPrintFormatRepository.class);
 		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
 				.printFormatId(printFormatId)
-				.docTypeId(docTypeId)
+				.docTypeId(docTypeId.getRepoId())
 				.adTableId(adTableId)
 				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
 				.build();
@@ -277,7 +279,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			bpPrintFormat = BPPrintFormat.builder()
 					.adTableId(adTableId)
-					.docTypeId(docTypeId)
+					.docTypeId(docTypeId.getRepoId())
 					.printFormatId(printFormatId)
 					.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
 					.build();

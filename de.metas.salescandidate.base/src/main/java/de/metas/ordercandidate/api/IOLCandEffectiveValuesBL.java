@@ -215,13 +215,6 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	int getDropShip_User_Effective_ID(I_C_OLCand olCand);
 
 	/**
-	 * @Param olCand
-	 *
-	 * @return datePromised_Override if set, datePromised if not
-	 */
-	Timestamp getDatePromisedEffective(I_C_OLCand olCand);
-
-	/**
 	 * Returns, falling back to the next if not set:
 	 * <ul>
 	 * <li><code>M_Product_Override_ID</code></li>

@@ -156,7 +156,6 @@ public class InvoiceSchedule
 	}
 
 	private LocalDate computeNextMonthlyInvoiceDate(
-
 			@NonNull final LocalDate deliveryDate,
 			final int offset)
 	{

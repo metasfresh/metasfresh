@@ -20,6 +20,7 @@ import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.I_AD_User;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

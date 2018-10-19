@@ -40,9 +40,9 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
-import de.metas.hash.HashableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 /**
  * Server Monitor Filter. Application Server independent check of username/password

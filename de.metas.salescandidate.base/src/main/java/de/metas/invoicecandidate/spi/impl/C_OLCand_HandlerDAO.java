@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -47,27 +46,27 @@ class C_OLCand_HandlerDAO
 				.addOnlyContextClient();
 
 		//
+		// Only those without errors
+		queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_IsError, false);
+
+		//
 		// Only which are for our data source
-		{
-			final I_AD_InputDataSource dataSource = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
-			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_DataDestination_ID, dataSource.getAD_InputDataSource_ID());
-		}
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+		final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
+		queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_DataDestination_ID, dataSource.getAD_InputDataSource_ID());
 
 		//
 		// Only those which were not already created
-		{
-			final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
-					.create();
-			
-			queryBuilder.addNotInSubQueryFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, I_C_OLCand.COLUMNNAME_Record_ID, existingICsQuery);
-		}
-		
+		final IQuery<I_C_Invoice_Candidate> existingICsQuery = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+				.create();
+		queryBuilder.addNotInSubQueryFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, I_C_OLCand.COLUMNNAME_Record_ID, existingICsQuery);
+
 		//
 		// Order by
 		queryBuilder.orderBy()
 				.addColumn(I_C_OLCand.COLUMN_C_OLCand_ID);
-		
+
 		return queryBuilder;
 	}
 

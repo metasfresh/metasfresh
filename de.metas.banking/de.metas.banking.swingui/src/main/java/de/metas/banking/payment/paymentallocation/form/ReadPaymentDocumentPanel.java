@@ -69,6 +69,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
@@ -77,7 +78,6 @@ import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.LogManager;
-import de.metas.payment.model.I_C_Payment_Request;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.swing.MigLayout;

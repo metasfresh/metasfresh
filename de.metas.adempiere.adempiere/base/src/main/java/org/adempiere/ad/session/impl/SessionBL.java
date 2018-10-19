@@ -100,7 +100,7 @@ public class SessionBL implements ISessionBL
 			sessionPO.setClient_Info("N/A");
 		}
 
-		sessionPO.setDescription(Adempiere.getMainVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
+		sessionPO.setDescription(Adempiere.getBuildVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
 		sessionPO.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		sessionPO.setLoginDate(Env.getDate(ctx));
 		

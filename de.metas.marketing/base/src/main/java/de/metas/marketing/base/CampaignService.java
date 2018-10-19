@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
@@ -81,7 +81,7 @@ public class CampaignService
 	private void addToCampaignIfHasMaillAddressOrLocation(
 			@NonNull final User user,
 			@NonNull final Campaign campaign,
-			DefaultAddressType defaultAddressType)
+			@Nullable final DefaultAddressType defaultAddressType)
 	{
 
 		final Platform platform = platformRepository.getById(campaign.getPlatformId());

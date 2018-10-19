@@ -9,10 +9,10 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.Percent;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L

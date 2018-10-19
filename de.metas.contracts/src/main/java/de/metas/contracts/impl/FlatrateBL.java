@@ -434,7 +434,6 @@ public class FlatrateBL implements IFlatrateBL
 				term,
 				taxCategoryId,
 				productId,
-				dataEntry.getDate_Reported(),// billDate
 				dataEntry.getDate_Reported(),// shipDate
 				orgId,
 				(WarehouseId)null,
@@ -565,7 +564,6 @@ public class FlatrateBL implements IFlatrateBL
 				term,
 				taxCategoryId,
 				productIdForIc,
-				dataEntry.getDate_Reported(), // billDate
 				dataEntry.getDate_Reported(), // shipDate
 				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 				(WarehouseId)null,

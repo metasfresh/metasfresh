@@ -202,7 +202,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				ic,
 				orderLine.getC_TaxCategory_ID(),
 				orderLine.getM_Product_ID(),
-				order.getDatePromised(), // billDate
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),

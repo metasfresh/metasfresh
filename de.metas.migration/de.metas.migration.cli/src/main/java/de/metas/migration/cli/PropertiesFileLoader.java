@@ -1,12 +1,12 @@
 package de.metas.migration.cli;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -52,7 +52,11 @@ public class PropertiesFileLoader
 		final File settingsFile = new File(
 				directoryChecker.checkDirectory(filename, dir),
 				filename);
+		return loadFromFile(settingsFile);
+	}
 
+	public Properties loadFromFile(@NonNull final File settingsFile)
+	{
 		final Properties fileProperties = new Properties();
 
 		try (final FileInputStream in = new FileInputStream(settingsFile);)
@@ -64,6 +68,7 @@ public class PropertiesFileLoader
 			throw new CantLoadPropertiesException("Cannot load " + settingsFile, e);
 		}
 		return fileProperties;
+
 	}
 
 	public static final class CantLoadPropertiesException extends RuntimeException

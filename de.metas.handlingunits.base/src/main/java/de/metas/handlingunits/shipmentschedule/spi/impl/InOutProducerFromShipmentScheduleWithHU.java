@@ -296,11 +296,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Type
 		{
-			final int docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
 					.adClientId(shipmentSchedule.getAD_Client_ID())
 					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build());
+					.build();
+			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
 			shipment.setC_DocType_ID(docTypeId);
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);

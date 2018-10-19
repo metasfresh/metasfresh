@@ -122,7 +122,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_M_Inventory inventory = InterfaceWrapperHelper.create(inventoryLine.getM_Inventory(), I_M_Inventory.class);
 
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, inventoryLine);
-		
+
 		final ClientId clientId = ClientId.ofRepoId(inventoryLine.getAD_Client_ID());
 
 		final OrgId orgId = OrgId.ofRepoId(inventoryLine.getAD_Org_ID());
@@ -190,14 +190,13 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
 		final int taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : -1;
 		final Timestamp shipDate = inOut.getMovementDate();
-		final Timestamp billDate = inOut.getDateAcct();
 		final int locationId = inOut.getC_BPartner_Location_ID();
+
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				ic,
 				taxCategoryId,
 				productId.getRepoId(),
-				billDate,
 				shipDate,
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),

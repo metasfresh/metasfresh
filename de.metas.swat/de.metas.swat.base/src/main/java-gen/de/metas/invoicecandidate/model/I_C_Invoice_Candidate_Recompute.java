@@ -53,7 +53,6 @@ public interface I_C_Invoice_Candidate_Recompute
 
 	/**
 	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -63,7 +62,6 @@ public interface I_C_Invoice_Candidate_Recompute
 
 	/**
 	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true

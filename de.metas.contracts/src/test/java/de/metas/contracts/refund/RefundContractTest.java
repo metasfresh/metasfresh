@@ -17,8 +17,8 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
+import de.metas.util.lang.Percent;
 import de.metas.invoice.InvoiceScheduleId;
-import de.metas.lang.Percent;
 
 /*
  * #%L

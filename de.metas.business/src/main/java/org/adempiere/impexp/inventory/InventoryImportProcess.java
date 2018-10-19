@@ -184,12 +184,14 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 	private int getDocTypeIdForInternalUseInventory(@NonNull final I_I_Inventory importRecord)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+
+		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 				.adClientId(importRecord.getAD_Client_ID())
 				.adOrgId(importRecord.getAD_Org_ID())
-				.build());
+				.build();
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

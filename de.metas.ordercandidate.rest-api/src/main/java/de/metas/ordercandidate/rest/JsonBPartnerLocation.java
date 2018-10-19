@@ -1,10 +1,15 @@
 package de.metas.ordercandidate.rest;
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import lombok.Builder;
-import lombok.Data;
+import io.swagger.annotations.ApiModelProperty;
 
 /*
  * #%L
@@ -16,12 +21,12 @@ import lombok.Data;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,11 +38,22 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class JsonBPartnerLocation
 {
-	String externalId;
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "This translates to <code>C_BPartner_Location.ExternalId</code>.\n"
+					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
+	private String externalId;
 
-	String address1;
-	String address2;
-	String postal;
-	String city;
-	String countryCode;
+	private String address1;
+	private String address2;
+	private String postal;
+	private String city;
+	private String state;
+
+	@NonNull
+	private String countryCode;
+
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "This translates to <code>C_BPartner_Location.GLN</code>.")
+	@Nullable
+	private String gln;
 }

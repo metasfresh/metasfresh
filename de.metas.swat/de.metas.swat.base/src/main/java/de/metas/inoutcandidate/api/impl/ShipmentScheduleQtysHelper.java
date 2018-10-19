@@ -17,6 +17,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

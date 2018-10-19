@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 677554816L;
+	private static final long serialVersionUID = 658703404L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log (Properties ctx, int C_Doc_Outbound_Log_ID, String trxName)
@@ -310,6 +310,22 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastPrint);
 	}
 
+	/** Set Zuletzt gespeichert.
+		@param DateLastStore Zuletzt gespeichert	  */
+	@Override
+	public void setDateLastStore (java.sql.Timestamp DateLastStore)
+	{
+		set_Value (COLUMNNAME_DateLastStore, DateLastStore);
+	}
+
+	/** Get Zuletzt gespeichert.
+		@return Zuletzt gespeichert	  */
+	@Override
+	public java.sql.Timestamp getDateLastStore () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastStore);
+	}
+
 	/** 
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
@@ -515,6 +531,24 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Anz. gespeichert.
+		@param StoreCount Anz. gespeichert	  */
+	@Override
+	public void setStoreCount (int StoreCount)
+	{
+		throw new IllegalArgumentException ("StoreCount is virtual column");	}
+
+	/** Get Anz. gespeichert.
+		@return Anz. gespeichert	  */
+	@Override
+	public int getStoreCount () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_StoreCount);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -1,5 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
+import lombok.NonNull;
+
 import org.compiere.util.Util;
 
 import de.metas.payment.esr.api.IBPBankAccountBL;
@@ -10,10 +12,10 @@ import de.metas.util.Check;
 public class BPBankAccountBL implements IBPBankAccountBL
 {
 	@Override
-	public String retrieveBankAccountNo(final I_C_BP_BankAccount bankAccount)
+	public String retrieveBankAccountNo(@NonNull final I_C_BP_BankAccount bankAccount)
 	{
 		final I_C_Bank bank = bankAccount.getC_Bank();
-		if (bank.isESR_PostBank())
+		if (bank != null && bank.isESR_PostBank())
 		{
 			return "000000";
 		}
@@ -30,7 +32,7 @@ public class BPBankAccountBL implements IBPBankAccountBL
 
 		final String renderedNo = bankAccount.getESR_RenderedAccountNo();
 		Check.assume(!Check.isEmpty(renderedNo, true), bankAccount + " has a ESR_RenderedAccountNo");
-		
+
 		if (!renderedNo.contains("-"))
 		{
 			// task 07789: the rendered number is not "rendered" to start with. This happens e.g. if the number was parsed from an ESR payment string.

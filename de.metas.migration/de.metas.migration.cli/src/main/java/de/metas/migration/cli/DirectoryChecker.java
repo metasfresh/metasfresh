@@ -1,9 +1,9 @@
 package de.metas.migration.cli;
 
+import lombok.NonNull;
+
 import java.io.File;
 import java.io.IOException;
-
-import lombok.NonNull;
 
 /*
  * #%L

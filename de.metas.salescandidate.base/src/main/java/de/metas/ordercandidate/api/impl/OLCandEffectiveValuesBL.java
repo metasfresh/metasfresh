@@ -29,11 +29,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Util;
 
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 {
@@ -89,31 +91,13 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		return olCand.getAD_User_ID();
 	}
 
-	// TODO: figure out which of those getDatePromised methods shall stay!
 	@Override
-	public Timestamp getDatePromised_Effective(final I_C_OLCand olCand)
+	public Timestamp getDatePromised_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		if (olCand.getDatePromised_Override() == null)
-		{
-			return olCand.getDatePromised() != null
-					? olCand.getDatePromised()
-					: SystemTime.asDayTimestamp();
-		}
-		return olCand.getDatePromised_Override();
-	}
-
-	@Override
-	public Timestamp getDatePromisedEffective(final I_C_OLCand olCand)
-	{
-		Check.assumeNotNull(olCand, "OLCand not null");
-		final Timestamp datePromisedOverride = olCand.getDatePromised_Override();
-
-		if (datePromisedOverride != null)
-		{
-			return datePromisedOverride;
-		}
-
-		return olCand.getDatePromised();
+		return Util.coalesceSuppliers(
+				() -> olCand.getDatePromised_Override(),
+				() -> olCand.getDatePromised(),
+				() -> SystemTime.asDayTimestamp());
 	}
 
 	@Override

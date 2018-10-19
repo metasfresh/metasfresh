@@ -6,10 +6,11 @@ import javax.annotation.Nullable;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.lang.Percent;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

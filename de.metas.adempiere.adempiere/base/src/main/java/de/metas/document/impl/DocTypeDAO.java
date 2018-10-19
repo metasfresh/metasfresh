@@ -62,7 +62,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		return getById(DocTypeId.ofRepoId(docTypeId));
 	}
-	
+
 	@Override
 	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
@@ -71,9 +71,10 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	public int getDocTypeIdOrNull(final DocTypeQuery query)
+	public DocTypeId getDocTypeIdOrNull(final DocTypeQuery query)
 	{
-		return getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
+		final int docTypeIdOrNull = getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
+		return DocTypeId.ofRepoIdOrNull(docTypeIdOrNull);
 	}
 
 	@Cached(cacheName = I_C_DocType.Table_Name + "#by#query")
@@ -107,14 +108,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	public int getDocTypeId(final DocTypeQuery query)
+	public DocTypeId getDocTypeId(final DocTypeQuery query)
 	{
 		final int docTypeId = getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
 		if (docTypeId <= 0)
 		{
 			throw new DocTypeNotFoundException(query);
 		}
-		return docTypeId;
+		return DocTypeId.ofRepoId(docTypeId);
 	}
 
 	@Override
@@ -207,7 +208,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
-		
+
 		if(!Check.isEmpty(query.getName(), true))
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());

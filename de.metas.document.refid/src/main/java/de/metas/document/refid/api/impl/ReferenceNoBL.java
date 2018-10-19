@@ -10,12 +10,12 @@ package de.metas.document.refid.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+
 import de.metas.document.refid.api.IReferenceNoBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.api.IReferenceNoGeneratorInstance;
@@ -43,6 +43,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 public class ReferenceNoBL implements IReferenceNoBL
 {
@@ -58,8 +60,6 @@ public class ReferenceNoBL implements IReferenceNoBL
 		Env.setContext(localCtx, "#AD_Org_ID", po.getAD_Org_ID());
 
 		final String trxName = po.get_TrxName();
-		final int tableId = po.get_Table_ID();
-		final int recordId = po.get_ID();
 
 		final String referenceNoStr = instance.generateReferenceNo(po);
 		if (IReferenceNoGenerator.REFERENCENO_None == referenceNoStr)
@@ -69,9 +69,8 @@ public class ReferenceNoBL implements IReferenceNoBL
 		}
 
 		final I_C_ReferenceNo referenceNo = dao.getCreateReferenceNo(localCtx, instance.getType(), referenceNoStr, trxName);
-		dao.getCreateReferenceNoDoc(referenceNo, tableId, recordId);
+		dao.getCreateReferenceNoDoc(referenceNo, TableRecordReference.of(po));
 
-		
 		// 04153 : mark the reference numbers with 'referenceNoStr' created by the system with isManual = N
 		if(referenceNo != null)
 		{
@@ -106,7 +105,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 	{
 		final IReferenceNoDAO dao = Services.get(IReferenceNoDAO.class);
 
-		final List<IReferenceNoGeneratorInstance> result = new ArrayList<IReferenceNoGeneratorInstance>();
+		final List<IReferenceNoGeneratorInstance> result = new ArrayList<>();
 		for (I_C_ReferenceNo_Type type : dao.retrieveReferenceNoTypes(ctx))
 		{
 			final IReferenceNoGeneratorInstance generatorInstance = getReferenceNoGeneratorInstance(ctx, type);
@@ -123,7 +122,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 
 		//
 		// Build-up AD_Table_IDs list
-		final List<Integer> assignedTableIds = new ArrayList<Integer>();
+		final List<Integer> assignedTableIds = new ArrayList<>();
 		for (I_C_ReferenceNo_Type_Table assignment : dao.retrieveTableAssignments(type))
 		{
 			if (!assignment.isActive())
@@ -194,8 +193,6 @@ public class ReferenceNoBL implements IReferenceNoBL
 			return;
 		}
 
-		final String toTableName = InterfaceWrapperHelper.getModelTableName(toModel);
-		final int toTableId = MTable.getTable_ID(toTableName);
 		final int toRecordId = InterfaceWrapperHelper.getId(toModel);
 		if (toRecordId <= 0)
 		{
@@ -213,7 +210,7 @@ public class ReferenceNoBL implements IReferenceNoBL
 		for (final I_C_ReferenceNo_Doc fromAssignment : fromAssignments)
 		{
 			final I_C_ReferenceNo referenceNo = fromAssignment.getC_ReferenceNo();
-			dao.getCreateReferenceNoDoc(referenceNo, toTableId, toRecordId);
+			dao.getCreateReferenceNoDoc(referenceNo, TableRecordReference.of(toModel));
 
 			logger.info("Linked {} to {}", new Object[] { toModel, referenceNo });
 		}

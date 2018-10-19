@@ -44,6 +44,7 @@ import de.metas.notification.spi.impl.NullRecordTextProvider;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
 import lombok.NonNull;
 
 /*

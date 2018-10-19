@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
-import de.metas.calendar.IBusinessDayMatcher;
 import de.metas.calendar.ICalendarBL;
 import de.metas.tourplanning.api.ITourDAO;
 import de.metas.tourplanning.api.ITourVersionRange;
@@ -37,6 +36,7 @@ import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.calendar.IBusinessDayMatcher;
 import de.metas.util.time.generator.BusinessDayShifter;
 import de.metas.util.time.generator.DateSequenceGenerator;
 import de.metas.util.time.generator.Frequency;

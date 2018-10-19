@@ -23,9 +23,9 @@ import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Location;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.DefaultAddressType;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPersonRepository;

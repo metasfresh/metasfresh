@@ -38,8 +38,8 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.service.IInvoiceLineBL;
-import de.metas.adempiere.service.impl.InvoiceLineBL;
+import de.metas.invoice.IInvoiceLineBL;
+import de.metas.invoice.impl.InvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 

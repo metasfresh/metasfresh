@@ -47,7 +47,10 @@ public interface IInvoiceCandidateListener
 	 * @param fromInvoiceLine
 	 * @param fromCandidates
 	 */
-	void onBeforeInvoiceLineCreated(I_C_InvoiceLine invoiceLine, IInvoiceLineRW fromInvoiceLine, List<I_C_Invoice_Candidate> fromCandidates);
+	default void onBeforeInvoiceLineCreated(I_C_InvoiceLine invoiceLine, IInvoiceLineRW fromInvoiceLine, List<I_C_Invoice_Candidate> fromCandidates)
+	{
+		// nothing
+	}
 
 	/**
 	 * Method called before an invoice is completed. It is needed for particular details to be set, no matter from what project they come from
@@ -55,12 +58,18 @@ public interface IInvoiceCandidateListener
 	 * @param invoice
 	 * @param fromCandidates
 	 */
-	void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates);
+	default void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates)
+	{
+		// nothing
+	}
 
 	/**
 	 * Method called before an invoice candidate is closed
 	 *
 	 * @param invoice candidate
 	 */
-	void onBeforeClosed(I_C_Invoice_Candidate candidate);
+	default void onBeforeClosed(I_C_Invoice_Candidate candidate)
+	{
+		// nothing
+	}
 }

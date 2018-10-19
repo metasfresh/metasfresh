@@ -597,7 +597,7 @@ public class ServerMonitor extends HttpServlet
 		//
 		tr line = new tr();
 		line.addElement(new th().addElement(Adempiere.getName()));
-		line.addElement(new td().addElement(Adempiere.getVersion()));
+		line.addElement(new td().addElement(Adempiere.getBuildAndDateVersion()));
 		table.addElement(line);
 		line = new tr();
 		line.addElement(new th().addElement(Adempiere.getImplementationVendor()));

@@ -11,6 +11,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

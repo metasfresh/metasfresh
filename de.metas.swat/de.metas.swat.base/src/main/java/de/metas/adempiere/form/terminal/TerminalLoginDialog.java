@@ -35,9 +35,9 @@ import org.compiere.util.KeyNamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
-import de.metas.hash.HashableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.hash.HashableString;
 
 public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 {

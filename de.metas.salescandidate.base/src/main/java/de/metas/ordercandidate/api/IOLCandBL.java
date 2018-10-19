@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.compiere.model.PO;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
@@ -88,5 +89,5 @@ public interface IOLCandBL extends ISingletonService
 	 */
 	PricingSystemId getPricingSystemId(I_C_OLCand olCand, OLCandOrderDefaults orderDefaults);
 
-	AttachmentEntry addAttachment(String olCandExternalId, String filename, byte[] data);
+	AttachmentEntry addAttachment(OLCandQuery olCandQuery, AttachmentEntryCreateRequest attachmentEntryCreateRequest);
 }

@@ -78,7 +78,7 @@ public class CommandlineParams
 		// Rollout Directory
 		{
 			final Option option = new Option(OPTION_RolloutDirectory,
-					"The (d)irectory that contains the rollout package. The tool assumes that the actual SQL scripts are in a folder structure within <RolloutDirectory>/sql/. "
+					"The (d)irectory that contains the rollout package. The tool assumes that the actual SQL scripts are in a folder structure within <RolloutDirectory>/sql/.\n"
 							+ "If omitted, then '" + DEFAULT_RolloutDirectory + "' (i.e. " + new File(DEFAULT_RolloutDirectory).getAbsolutePath() + ") will be used");
 			option.setArgs(1);
 			option.setArgName("Rollout-Directory");
@@ -96,7 +96,9 @@ public class CommandlineParams
 		// Settings
 		{
 			final Option option = new Option(OPTION_SettingsFile,
-					"Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*. If ommitted, then "
+					"Name of the (s)ettings file that is needed to access the DB. May be an absolute file name (e.g. /home/metasfresh/rolloutdir/settings.properties).\n"
+					+ "If the given value can't be accessed as absolute file name, the tool will try again, prepending the rollout directory to the path.\n"
+					+ "If ommitted altogether, then "
 							+ System.getProperty("user.home") + "/" + Config.DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
 			option.setArgs(1);
 			option.setArgName("Settings file");
@@ -178,13 +180,13 @@ public class CommandlineParams
 		final ConfigBuilder configBuilder = Config.builder();
 
 		final String rolloutDir = cmd.getOptionValue(OPTION_RolloutDirectory, DEFAULT_RolloutDirectory);
-		configBuilder.rolloutDirName(rolloutDir);
+		configBuilder.rolloutDirName(stripQuotes(rolloutDir));
 
 		final String settingsFile = cmd.getOptionValue(OPTION_SettingsFile);
-		configBuilder.settingsFileName(settingsFile);
+		configBuilder.settingsFile(stripQuotes(settingsFile));
 
 		final String scriptFile = cmd.getOptionValue(OPTION_ScriptFile);
-		configBuilder.scriptFileName(scriptFile);
+		configBuilder.scriptFileName(stripQuotes(scriptFile));
 
 		final boolean justMarkScriptAsExecuted = cmd.hasOption(OPTION_JustMarkScriptAsExecuted);
 		configBuilder.justMarkScriptAsExecuted(justMarkScriptAsExecuted);
@@ -224,6 +226,17 @@ public class CommandlineParams
 		return config;
 	}
 
+	private String stripQuotes(final String rolloutDir)
+	{
+		if(rolloutDir==null)
+		{
+			return null;
+		}
+		return rolloutDir
+				.replaceAll("^\"|\"$", "")
+				.replaceAll("^'|'$", "");
+	}
+
 	public final void printHelp(final PrintStream out)
 	{
 		final PrintWriter writer = new PrintWriter(out);
@@ -239,12 +252,12 @@ public class CommandlineParams
 		formatter.printHelp(
 				writer,   // output
 				200,   // width,
-				commandName,   // cmdLineSyntax
-				header,   // header,
+				stripQuotes(commandName),   // cmdLineSyntax
+				stripQuotes(header),   // header,
 				options,   // options
 				4,   // leftPad,
 				4,   // descPad,
-				footer,   // footer,
+				stripQuotes(footer),   // footer,
 				true // autoUsage
 		);
 
@@ -258,6 +271,6 @@ public class CommandlineParams
 		printHelp(out);
 
 		final String content = baos.toString();
-		return content;
+		return stripQuotes(content);
 	}
 }
