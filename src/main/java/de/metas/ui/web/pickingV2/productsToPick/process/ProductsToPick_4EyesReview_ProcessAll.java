@@ -6,6 +6,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -13,8 +14,8 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesResult;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.process.Param;
@@ -50,8 +51,6 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 {
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	@Autowired
-	private PickingCandidateRepository pickingCandidatesRepo;
-	@Autowired
 	private PickingCandidateService pickingCandidatesService;
 
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, mandatory = true)
@@ -65,6 +64,12 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows were approved");
 		}
 
+		final Set<PickingCandidateId> pickingCandidateIds = getPickingCandidateIds();
+		if (pickingCandidateIds.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no rows eligible for processing found");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -76,19 +81,20 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			throw new AdempiereException("Not all rows were approved");
 		}
 
-		processAllPickingCandidates();
-		deliverAndInvoice();
+		final List<PickingCandidate> pickingCandidates = processAllPickingCandidates();
+		deliverAndInvoice(pickingCandidates);
 		return MSG_OK;
 	}
 
-	private void processAllPickingCandidates()
+	private ImmutableList<PickingCandidate> processAllPickingCandidates()
 	{
-		pickingCandidatesService.process(getPickingCandidates());
+		ProcessPickingCandidatesResult result = pickingCandidatesService.process(getPickingCandidateIds());
+		return result.getPickingCandidates();
 	}
 
-	private void deliverAndInvoice()
+	private void deliverAndInvoice(final List<PickingCandidate> pickingCandidates)
 	{
-		final Set<HuId> huIdsToDeliver = getPickingCandidates()
+		final Set<HuId> huIdsToDeliver = pickingCandidates
 				.stream()
 				.map(PickingCandidate::getPackedToHuId)
 				.collect(ImmutableSet.toImmutableSet());
@@ -107,9 +113,12 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.generateShippingDocuments();
 	}
 
-	private List<PickingCandidate> getPickingCandidates()
+	private ImmutableSet<PickingCandidateId> getPickingCandidateIds()
 	{
-		final Set<PickingCandidateId> pickingCandidateIds = getAllRows().stream().map(ProductsToPickRow::getPickingCandidateId).collect(ImmutableSet.toImmutableSet());
-		return pickingCandidatesRepo.getByIds(pickingCandidateIds);
+		return getAllRows()
+				.stream()
+				.filter(ProductsToPickRow::isEligibleForProcessing)
+				.map(ProductsToPickRow::getPickingCandidateId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

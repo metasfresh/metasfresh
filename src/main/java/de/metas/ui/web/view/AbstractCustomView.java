@@ -340,7 +340,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 	public interface IRowsData<T extends IViewRow>
 	{
-		Map<DocumentId, T> getDocumentId2TopLevelRows();
+		/* protected */ Map<DocumentId, T> getDocumentId2TopLevelRows();
 
 		Stream<DocumentId> streamDocumentIdsToInvalidate(TableRecordReference recordRef);
 
