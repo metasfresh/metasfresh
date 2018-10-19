@@ -128,7 +128,7 @@ public class XmlToOLCandsService
 		{
 			xmlInput = file.getInputStream();
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new XmlInvoiceInputStreamException();
 		}
@@ -138,7 +138,7 @@ public class XmlToOLCandsService
 			final JAXBElement<RequestType> request = JaxbUtil.unmarshalToJaxbElement(xmlInput, RequestType.class);
 			return request.getValue();
 		}
-		catch (RuntimeException e)
+		catch (final RuntimeException e)
 		{
 			throw new XmlInvoiceUnmarshalException();
 		}
@@ -160,7 +160,7 @@ public class XmlToOLCandsService
 					tags,
 					xmlInvoiceFile);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new XmlInvoiceAttachException();
 		}
@@ -236,8 +236,8 @@ public class XmlToOLCandsService
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final BodyType body)
 	{
-		boolean tiersGarantIsSet = body.getTiersGarant() != null;
-		boolean tiersPayantIsSet = body.getTiersPayant() != null;
+		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
+		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
 		Check.errorUnless(tiersGarantIsSet ^ tiersPayantIsSet,
 				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
 				tiersGarantIsSet, tiersPayantIsSet);
@@ -262,7 +262,7 @@ public class XmlToOLCandsService
 			@NonNull final GarantType tiersGarant)
 	{
 		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
-		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersGarant.getInsurance()));
+		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo());
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersGarant.getInsurance()));
 
 		insuranceBuilder.org(createBillerOrg(tiersGarant.getBiller()));
@@ -308,7 +308,7 @@ public class XmlToOLCandsService
 			@NonNull final PayantType tiersPayant)
 	{
 		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder);
-		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo(tiersPayant.getInsurance()));
+		insuranceBuilder.invoiceDocType(createJsonDocTypeInfo());
 		insuranceBuilder.bpartner(createJsonBPartnerInfo(tiersPayant.getInsurance()));
 
 		insuranceBuilder.org(createBillerOrg(tiersPayant.getBiller()));
@@ -319,14 +319,13 @@ public class XmlToOLCandsService
 		return ImmutableList.of(insuranceBuilder /* , patientBuilder */);
 	}
 
-	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final InsuranceAddressType insurance)
+	private JsonDocTypeInfo createJsonDocTypeInfo()
 	{
 		return JsonDocTypeInfo.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice)
 				.docSubType("KV")
 				.build();
 	}
-
 
 	private JsonBPartnerInfo createJsonBPartnerInfo(@NonNull final InsuranceAddressType insurance)
 	{
@@ -407,14 +406,11 @@ public class XmlToOLCandsService
 
 	private String extracFirsttEmailOrNull(@Nullable final OnlineAddressType online)
 	{
-		if (online != null)
+		if (online == null || online.getEmail().isEmpty())
 		{
-			if (!online.getEmail().isEmpty())
-			{
-				return online.getEmail().get(0);
-			}
+			return null;
 		}
-		return null;
+		return online.getEmail().get(0);
 	}
 
 	private String createBPartnerExternalId(@NonNull final InsuranceAddressType insurance)
@@ -488,7 +484,7 @@ public class XmlToOLCandsService
 			@NonNull final ImmutableList<JsonOLCandCreateRequestBuilder> invoiceRecipientBuilders,
 			@NonNull final ServicesType services)
 	{
-		ImmutableList.Builder<JsonOLCandCreateRequestBuilder> result = ImmutableList.builder();
+		final ImmutableList.Builder<JsonOLCandCreateRequestBuilder> result = ImmutableList.builder();
 
 		final List<Object> records = services.getRecordTarmedOrRecordDrgOrRecordLab();
 		for (final Object record : records)
@@ -507,58 +503,91 @@ public class XmlToOLCandsService
 
 		for (final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder : invoiceRecipientBuilders)
 		{
+			final String externalId;
+			final JsonProductInfo product;
+			final BigDecimal price;
+			final BigDecimal quantity;
 			if (record instanceof RecordTarmedType)
 			{
-				// TODO
+				throw new UnsupportedOperationException("Importing RecordTarmedTypes is not yet supported");
 			}
 			else if (record instanceof RecordDRGType)
 			{
-				// TODO
+				final RecordDRGType recordDRGType = (RecordDRGType)record;
+
+				externalId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
+				product = createProduct(recordDRGType.getCode(), recordDRGType.getName());
+				price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
+				quantity = recordDRGType.getQuantity();
 			}
 			else if (record instanceof RecordLabType)
 			{
-				// TODO
+				final RecordLabType recordLabType = (RecordLabType)record;
+
+				externalId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
+				product = createProduct(recordLabType.getCode(), recordLabType.getName());
+				price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
+				quantity = recordLabType.getQuantity();
 			}
 			else if (record instanceof RecordMigelType)
 			{
-				// TODO
+				final RecordMigelType recordMigelType = (RecordMigelType)record;
+
+				externalId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
+				product = createProduct(recordMigelType.getCode(), recordMigelType.getName());
+				price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
+				quantity = recordMigelType.getQuantity();
 			}
 			else if (record instanceof RecordParamedType)
 			{
-				// TODO
+				final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
+
+				externalId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
+				product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName());
+				price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
+				quantity = recordParamedOtherType.getQuantity();
 			}
 			else if (record instanceof RecordDrugType)
 			{
-				// TODO
+				final RecordDrugType recordDrugType = (RecordDrugType)record;
+
+				externalId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
+				product = createProduct(recordDrugType.getCode(), recordDrugType.getName());
+				price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
+				quantity = recordDrugType.getQuantity();
 			}
 			else if (record instanceof RecordOtherType)
 			{
-				final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
 				final RecordOtherType recordOtherType = (RecordOtherType)record;
 
-				final String externalId = createExternalId(invoiceRecipientBuilder, recordOtherType);
+				externalId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
+				product = createProduct(recordOtherType.getCode(), recordOtherType.getName());
+				price = createPrice(recordOtherType);
+				quantity = recordOtherType.getQuantity();
 
-				final JsonProductInfo product = createProduct(recordOtherType);
-
-				final BigDecimal price = createPrice(recordOtherType);
-
-				serviceRecordBuilder
-						.externalId(externalId)
-						.product(product)
-						.price(price)
-						.currencyCode("CHF") // TODO
-						.discount(ZERO)
-						.qty(recordOtherType.getQuantity());
-
-				result.add(serviceRecordBuilder);
 			}
+			else
+			{
+				Check.fail("Unexpected record type={}", record);
+				return null;
+			}
+			final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
+			serviceRecordBuilder
+					.externalId(externalId)
+					.product(product)
+					.price(price)
+					.currencyCode("CHF")
+					.discount(ZERO)
+					.qty(quantity);
+
+			result.add(serviceRecordBuilder);
 		}
 		return result.build();
 	}
 
 	private String createExternalId(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-			@NonNull final RecordOtherType recordOtherType)
+			final int recordId)
 	{
 		final JsonOLCandCreateRequest request = requestBuilder.build();
 
@@ -566,14 +595,16 @@ public class XmlToOLCandsService
 				+ "_"
 				+ request.getPoReference()
 				+ "_"
-				+ recordOtherType.getRecordId();
+				+ recordId;
 	}
 
-	private JsonProductInfo createProduct(@NonNull final RecordOtherType recordOtherType)
+	private JsonProductInfo createProduct(
+			@NonNull final String productCode,
+			@NonNull final String productName)
 	{
 		final JsonProductInfo product = JsonProductInfo.builder()
-				.code(recordOtherType.getCode())
-				.name(recordOtherType.getName())
+				.code(productCode)
+				.name(productName)
 				.type(Type.SERVICE)
 				.uomCode("HUR")
 				.build();
@@ -582,11 +613,22 @@ public class XmlToOLCandsService
 
 	private BigDecimal createPrice(@NonNull final RecordOtherType recordOtherType)
 	{
-		final BigDecimal unit = coalesce(recordOtherType.getUnit(), ONE); // tax point (TP) of the applied service
-		final BigDecimal unitFactor = coalesce(recordOtherType.getUnitFactor(), ONE); // tax point value (TPV) of the applied service
-		final BigDecimal externalFactor = coalesce(recordOtherType.getExternalFactor(), ONE);
+		return createPrice(
+				recordOtherType.getUnit(),
+				recordOtherType.getUnitFactor(),
+				recordOtherType.getExternalFactor());
+	}
 
-		final BigDecimal price = unit.multiply(unitFactor).multiply(externalFactor);
+	private BigDecimal createPrice(
+			@Nullable final BigDecimal unit,
+			@Nullable final BigDecimal unitFactor,
+			@Nullable final BigDecimal externalFactor)
+	{
+		final BigDecimal unitToUse = coalesce(unit, ONE); // tax point (TP) of the applied service
+		final BigDecimal unitFactorToUse = coalesce(unitFactor, ONE); // tax point value (TPV) of the applied service
+		final BigDecimal externalFactorToUse = coalesce(externalFactor, ONE);
+
+		final BigDecimal price = unitToUse.multiply(unitFactorToUse).multiply(externalFactorToUse);
 		return price;
 	}
 }

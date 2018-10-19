@@ -19,6 +19,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
 
 import com.google.common.base.Splitter;
@@ -97,14 +98,14 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 public class InvoiceExportClientImpl implements InvoiceExportClient
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
-	private CrossVersionRequestConverter<?> exportConverter;
+	private final CrossVersionRequestConverter<?> exportConverter;
 
 	public InvoiceExportClientImpl(
 			@NonNull final CrossVersionServiceRegistry crossVersionServiceRegistry,
 			@NonNull final XmlVersion exportVersion)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		this.exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportVersion);
+		exportConverter = crossVersionServiceRegistry.getConverterForSimpleVersionName(exportVersion);
 	}
 
 	@Override
@@ -198,8 +199,8 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	{
 		final boolean reversal = invoice.isReversal();
 
-		final boolean creditAdvise = (reversal && invoice.getAmount().signum() > 0)
-				|| (!reversal && invoice.getAmount().signum() < 0);
+		final boolean creditAdvise = reversal && invoice.getAmount().signum() > 0
+				|| !reversal && invoice.getAmount().signum() < 0;
 
 		return PayloadMod.builder()
 				.type(RequestType.INVOICE.getValue())
@@ -225,9 +226,10 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		{
 			return DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
 		}
-		catch (DatatypeConfigurationException e)
+		catch (final DatatypeConfigurationException e)
 		{
-			throw new RuntimeException(e);
+			throw new AdempiereException(e).appendParametersToMessage()
+					.setParameter("cal", cal);
 		}
 	}
 

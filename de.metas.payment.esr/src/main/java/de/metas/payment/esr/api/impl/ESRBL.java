@@ -123,7 +123,7 @@ public class ESRBL implements IESRBL
 
 		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class);
 		paymentRequestRecord.setReference(invoiceReferenceNoStr);
-		paymentRequestRecord.setFullPaymentString(renderedCodeStr.toString());
+		paymentRequestRecord.setFullPaymentString(renderedCodeStr);
 		paymentRequestRecord.setC_BP_BankAccount(bankAccount);
 		paymentRequestRecord.setC_Invoice(invoiceRecord);
 		paymentRequestRecord.setAmount(openInvoiceAmount);
@@ -251,7 +251,7 @@ public class ESRBL implements IESRBL
 		referenceNoDAO.getCreateReferenceNoDoc(invoiceReferenceNo, TableRecordReference.of(invoiceRecord));
 
 		final I_C_ReferenceNo_Type renderedCodeReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(Env.getCtx(), ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_ReferenceNumber);
-		final I_C_ReferenceNo renderedCodeReferenceNo = referenceNoDAO.getCreateReferenceNo(Env.getCtx(), renderedCodeReferenceNoType, renderedCodeStr.toString(), ITrx.TRXNAME_ThreadInherited);
+		final I_C_ReferenceNo renderedCodeReferenceNo = referenceNoDAO.getCreateReferenceNo(Env.getCtx(), renderedCodeReferenceNoType, renderedCodeStr, ITrx.TRXNAME_ThreadInherited);
 		referenceNoDAO.getCreateReferenceNoDoc(renderedCodeReferenceNo, TableRecordReference.of(invoiceRecord));
 	}
 }

@@ -57,7 +57,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
@@ -1176,7 +1175,7 @@ public class VLookup extends JComponent
 			if (m_mField != null)
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
-				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
+				multipleSelection = (getTableId(I_C_OrderLine.class) == AD_Table_ID)
 						|| (getTableId(I_C_InvoiceLine.class) == AD_Table_ID)
 						|| (getTableId(I_PP_Product_BOMLine.class) == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));

@@ -83,7 +83,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	{
 		bulkRequest.validate();
 
-		final MasterdataProvider masterdataProvider = MasterdataProvider.newInstance(Env.getCtx());
+		final MasterdataProvider masterdataProvider = MasterdataProvider.createInstance(Env.getCtx());
 
 		createOrUpdateMasterdata(bulkRequest, masterdataProvider);
 

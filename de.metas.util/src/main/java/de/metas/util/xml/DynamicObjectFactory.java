@@ -119,7 +119,6 @@ public class DynamicObjectFactory
 			{
 				continue;
 			}
-
 			return method;
 		}
 

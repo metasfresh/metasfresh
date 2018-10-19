@@ -1,6 +1,12 @@
 package de.metas.ordercandidate.rest;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getId;
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import lombok.NonNull;
@@ -17,7 +23,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.uom.UomId;
@@ -79,7 +84,7 @@ import de.metas.util.Services;
 
 final class MasterdataProvider
 {
-	public static final MasterdataProvider newInstance(final Properties ctx)
+	public static final MasterdataProvider createInstance(final Properties ctx)
 	{
 		return new MasterdataProvider(ctx);
 	}
@@ -118,22 +123,22 @@ final class MasterdataProvider
 	{
 		assertPermission(PermissionRequest.builder()
 				.orgId(orgId)
-				.adTableId(InterfaceWrapperHelper.getTableId(I_C_OLCand.class))
+				.adTableId(getTableId(I_C_OLCand.class))
 				.build());
 	}
 
 	private void assertCanCreateOrUpdate(final Object record)
 	{
-		final OrgId orgId = InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY);
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(record);
+		final OrgId orgId = getOrgId(record).orElse(OrgId.ANY);
+		final int adTableId = getModelTableId(record);
 		final int recordId;
-		if (InterfaceWrapperHelper.isNew(record))
+		if (isNew(record))
 		{
 			recordId = -1;
 		}
 		else
 		{
-			recordId = InterfaceWrapperHelper.getId(record);
+			recordId = getId(record);
 		}
 
 		assertPermission(PermissionRequest.builder()
@@ -198,7 +203,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			productRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Product.class);
+			productRecord = newInstanceOutOfTrx(I_M_Product.class);
 			productRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 			productRecord.setValue(json.getCode());
 		}
@@ -218,6 +223,7 @@ final class MasterdataProvider
 				default:
 					Check.fail("Unexpected type={}; jsonProductInfo={}", json.getType(), json);
 					productType = null;
+					break;
 			}
 
 			productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
@@ -333,7 +339,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			bpartnerRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			bpartnerRecord = newInstance(I_C_BPartner.class);
 			bpartnerRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 			if (context.isBPartnerIsOrgBP())
 			{
@@ -361,7 +367,7 @@ final class MasterdataProvider
 
 	private final void updateBPartnerRecord(final I_C_BPartner bpartnerRecord, final JsonBPartner from)
 	{
-		final boolean isNew = InterfaceWrapperHelper.isNew(bpartnerRecord);
+		final boolean isNew = isNew(bpartnerRecord);
 
 		final String externalId = from.getExternalId();
 		if (!Check.isEmpty(externalId, true))
@@ -445,7 +451,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			bpLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+			bpLocationRecord = newInstance(I_C_BPartner_Location.class);
 			bpLocationRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 		}
 
@@ -491,7 +497,7 @@ final class MasterdataProvider
 			final int countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 
 			// NOTE: C_Location table might be heavily used, so it's better to create the address OOT to not lock it.
-			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Location.class);
+			final I_C_Location locationRecord = newInstanceOutOfTrx(I_C_Location.class);
 			locationRecord.setAddress1(json.getAddress1());
 			locationRecord.setAddress2(json.getAddress2());
 			locationRecord.setPostal(locationRecord.getPostal());
@@ -574,7 +580,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			contactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			contactRecord = newInstance(I_AD_User.class);
 			contactRecord.setAD_Org_ID(context.getOrgId().getRepoId());
 		}
 
@@ -656,7 +662,7 @@ final class MasterdataProvider
 		}
 		else
 		{
-			orgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+			orgRecord = newInstance(I_AD_Org.class);
 		}
 
 		try

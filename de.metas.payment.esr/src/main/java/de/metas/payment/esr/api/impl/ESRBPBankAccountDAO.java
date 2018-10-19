@@ -50,7 +50,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
 				.filter(esrAccountNoFromBankAcctOrESRPostFinanceUser);
 
-		if (!innerAccountNo.equals("0000000")) // 7 x 0
+		if (!"0000000".equals(innerAccountNo)) // 7 x 0
 		{
 			bankAccountQuery.addEqualsFilter(org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_AccountNo, innerAccountNo);
 		}

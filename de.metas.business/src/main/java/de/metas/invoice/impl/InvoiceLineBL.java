@@ -1,5 +1,7 @@
 package de.metas.invoice.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -67,7 +69,6 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -161,7 +162,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public boolean isPriceLocked(I_C_InvoiceLine invoiceLine)
+	public boolean isPriceLocked(final I_C_InvoiceLine invoiceLine)
 	{
 		// // Introduced by US1184, because having the same price on Order and Invoice
 		// no - invoice does not generally have to have the same prive not generally
@@ -272,7 +273,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return qty;
 		}
-		
+
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		if (productId == null)
 		{
@@ -296,17 +297,17 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		return createPricingContext(invoiceLine, priceListId, qtyInvoicedInPriceUOM);
 	}
 
-	public IEditablePricingContext createPricingContext(I_C_InvoiceLine invoiceLine,
+	public IEditablePricingContext createPricingContext(final I_C_InvoiceLine invoiceLine,
 			final PriceListId priceListId,
 			final BigDecimal priceQty)
 	{
-		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		final boolean isSOTrx = invoice.isSOTrx();
 
 		final int productId = invoiceLine.getM_Product_ID();
 
-		int bPartnerId = invoice.getC_BPartner_ID();
+		final int bPartnerId = invoice.getC_BPartner_ID();
 
 		final Timestamp date = invoice.getDateInvoiced();
 
@@ -341,7 +342,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return 0;
 		}
 
-		final org.compiere.model.I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
+		final I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
 		if (bPartnerLocation.getC_Location_ID() <= 0)
 		{
 			return 0;

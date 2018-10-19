@@ -49,6 +49,7 @@ public interface IInvoiceCandidateListener
 	 */
 	default void onBeforeInvoiceLineCreated(I_C_InvoiceLine invoiceLine, IInvoiceLineRW fromInvoiceLine, List<I_C_Invoice_Candidate> fromCandidates)
 	{
+		// nothing
 	}
 
 	/**
@@ -59,6 +60,7 @@ public interface IInvoiceCandidateListener
 	 */
 	default void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates)
 	{
+		// nothing
 	}
 
 	/**
@@ -68,5 +70,6 @@ public interface IInvoiceCandidateListener
 	 */
 	default void onBeforeClosed(I_C_Invoice_Candidate candidate)
 	{
+		// nothing
 	}
 }

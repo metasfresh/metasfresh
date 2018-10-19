@@ -66,7 +66,17 @@ public class XmlIntrospectionUtil
 		}
 		catch (final XMLStreamException e)
 		{
-			throw new RuntimeException(e);
+			throw new XsdValueExtractionFailedException(e);
+		}
+	}
+
+	public static class XsdValueExtractionFailedException extends RuntimeException
+	{
+		private static final long serialVersionUID = 8456946625940728739L;
+
+		private XsdValueExtractionFailedException(@NonNull final XMLStreamException e)
+		{
+			super(e);
 		}
 	}
 }
