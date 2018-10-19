@@ -52,16 +52,27 @@ public class SettingsLoader
 
 	public Settings loadSettings(@NonNull final Config config)
 	{
-		final File settingsDir;
 		final Settings settings;
 		if (config.getSettingsFile() != null)
 		{
-			settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
-			settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
+			final File settigsFileAsSpecified = new File(config.getSettingsFile());
+			if (settigsFileAsSpecified.exists())
+			{
+				logger.info("Settings file {} found", settigsFileAsSpecified);
+				settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
+			}
+			else
+			{
+				final File settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
+				logger.info("Settings file {} not found; trying with rollout dir={}", settigsFileAsSpecified, settingsDir);
+
+				settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFile()));
+			}
 		}
 		else
 		{
-			settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
+			logger.info("No settings file specified; looking for");
+			final File settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
 			settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
 		}
 		return settings;
@@ -114,10 +125,10 @@ public class SettingsLoader
 		private CantLoadSettingsException(final Exception e)
 		{
 			super("Unable to load the settings file. It shall be a properties file that looks as follows:\n\n" +
-					"METASFRESH_DB_SERVER=localhost\n" +
-					"METASFRESH_DB_PORT=5432\n" +
-					"METASFRESH_DB_NAME=metasfresh\n" +
-					"METASFRESH_DB_USER=metasfresh\n" +
+					"METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost\n" +
+					"METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432\n" +
+					"METASFRESH_DB_NAME=<DB name> # e.g. metasfresh\n" +
+					"METASFRESH_DB_USER=<DB user name> # e.g. metasfresh\n" +
 					"METASFRESH_DB_PASSWORD=<pasword>\n", e);
 		}
 	}
