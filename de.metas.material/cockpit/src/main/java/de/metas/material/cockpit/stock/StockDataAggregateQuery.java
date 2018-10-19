@@ -1,17 +1,18 @@
 package de.metas.material.cockpit.stock;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.ProductId;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.product.ProductCategoryId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,17 +37,20 @@ import de.metas.product.ProductId;
  */
 
 @Value
-@Builder
-public class StockDataQuery
+public class StockDataAggregateQuery
 {
-	/** Empty list means "all warehouses" */
-	@Singular
+	ImmutableSet<ProductCategoryId> productCategoryIds;
 	Set<WarehouseId> warehouseIds;
+	ImmutableSet<StockDataQueryOrderBy> orderBys;
 
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	@Default
-	AttributesKey storageAttributesKey = AttributesKey.ALL;
+	@Builder
+	private StockDataAggregateQuery(
+			@NonNull @Singular final ImmutableSet<ProductCategoryId> productCategoryIds,
+			@NonNull @Singular final Set<WarehouseId> warehouseIds,
+			@NonNull @Singular final ImmutableSet<StockDataQueryOrderBy> orderBys)
+	{
+		this.productCategoryIds = productCategoryIds;
+		this.warehouseIds = Collections.unmodifiableSet(new HashSet<>(warehouseIds)); // we shall accept warehouseId=null
+		this.orderBys = orderBys;
+	}
 }

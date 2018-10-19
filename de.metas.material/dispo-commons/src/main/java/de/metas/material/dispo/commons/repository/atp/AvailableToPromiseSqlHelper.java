@@ -1,13 +1,13 @@
 package de.metas.material.dispo.commons.repository.atp;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.compiere.Adempiere;
@@ -17,12 +17,10 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.material.commons.AttributesKeyQueryHelper;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -115,7 +113,10 @@ import lombok.experimental.UtilityClass;
 
 		//
 		// Storage Attributes Key
-		queryBuilder.filter(createANDFilterForStorageAttributesKeys(query));
+		final AttributesKeyQueryHelper<I_MD_Candidate_ATP_QueryResult>//
+		helper = AttributesKeyQueryHelper.createFor(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey);
+
+		queryBuilder.filter(helper.createORFilterForStorageAttributesKeys(query.getStorageAttributesKeys()));
 		return queryBuilder;
 	}
 
@@ -125,70 +126,6 @@ import lombok.experimental.UtilityClass;
 		return isRealSqlQuery;
 	}
 
-	private static ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> createANDFilterForStorageAttributesKeys(@NonNull final AvailableToPromiseQuery query)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> orFilterForDifferentStorageAttributesKeys = queryBL
-				.createCompositeQueryFilter(I_MD_Candidate_ATP_QueryResult.class)
-				.setJoinOr();
 
-		for (final AttributesKey attributesKey : query.getStorageAttributesKeys())
-		{
-			final IQueryFilter<I_MD_Candidate_ATP_QueryResult> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, attributesKey);
-			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
-		}
-
-		return orFilterForDifferentStorageAttributesKeys;
-	}
-
-	private static ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> createANDFilterForStorageAttributesKey(
-			@NonNull final AvailableToPromiseQuery query,
-			@NonNull final AttributesKey attributesKey)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> filterForCurrentStorageAttributesKey = queryBL.createCompositeQueryFilter(I_MD_Candidate_ATP_QueryResult.class)
-				.setJoinAnd();
-
-		if (Objects.equals(attributesKey, AttributesKey.OTHER))
-		{
-			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
-		}
-		else if (Objects.equals(attributesKey, AttributesKey.ALL))
-		{
-			// nothing to add to the initial productIds filters
-		}
-		else
-		{
-			addLikeFilterForAttributesKey(attributesKey, filterForCurrentStorageAttributesKey);
-		}
-
-		return filterForCurrentStorageAttributesKey;
-	}
-
-	private static void addNotLikeFiltersForAttributesKeys(
-			@NonNull final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> compositeFilter,
-			@NonNull final List<AttributesKey> attributesKeys)
-	{
-		for (final AttributesKey storageAttributesKeyAgain : attributesKeys)
-		{
-			if (!Objects.equals(storageAttributesKeyAgain, AttributesKey.OTHER))
-			{
-				final String likeExpression = createLikeExpression(storageAttributesKeyAgain);
-				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression, false);
-			}
-		}
-	}
-
-	private static void addLikeFilterForAttributesKey(final AttributesKey attributesKey, final ICompositeQueryFilter<I_MD_Candidate_ATP_QueryResult> andFilterForCurrentStorageAttributesKey)
-	{
-		final String likeExpression = createLikeExpression(attributesKey);
-		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey, likeExpression, false);
-	}
-
-	private static String createLikeExpression(@NonNull final AttributesKey attributesKey)
-	{
-		final String storageAttributesKeyLikeExpression = attributesKey.getSqlLikeString();
-		return "%" + storageAttributesKeyLikeExpression + "%";
-	}
 
 }

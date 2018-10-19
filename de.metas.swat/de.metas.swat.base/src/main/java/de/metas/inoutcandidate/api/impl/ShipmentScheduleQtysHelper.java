@@ -1,5 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
 import java.math.BigDecimal;
 
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -18,9 +21,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -31,12 +31,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -166,7 +166,9 @@ import lombok.experimental.UtilityClass;
 		return shipmentCandidates.getStatusInfos(deliveryLineCandidate);
 	}
 
-	public static BigDecimal mkQtyToDeliver(final BigDecimal qtyRequired, final BigDecimal unconfirmedShippedQty)
+	public static BigDecimal mkQtyToDeliver(
+			@NonNull final BigDecimal qtyRequired,
+			@NonNull final BigDecimal unconfirmedShippedQty)
 	{
 		final StringBuilder logInfo = new StringBuilder("Unconfirmed Qty=" + unconfirmedShippedQty + " - ToDeliver=" + qtyRequired + "->");
 
